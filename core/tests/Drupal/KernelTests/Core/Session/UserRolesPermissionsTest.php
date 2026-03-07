@@ -14,34 +14,36 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Session')]
 #[RunTestsInSeparateProcesses]
-class UserRolesPermissionsTest extends KernelTestBase {
+class UserRolesPermissionsTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests that assigning a role grants that role's permissions.
+     */
+    public function testPermissionChange(): void
+    {
+        // Create two accounts to avoid dealing with user 1.
+        $this->createUser();
+        $account = $this->createUser();
 
-  /**
-   * Tests that assigning a role grants that role's permissions.
-   */
-  public function testPermissionChange(): void {
-    // Create two accounts to avoid dealing with user 1.
-    $this->createUser();
-    $account = $this->createUser();
-
-    $this->assertFalse($account->hasPermission('administer modules'));
-    $account->addRole($this->createRole(['administer modules']))->save();
-    $this->assertTrue($account->hasPermission('administer modules'));
-  }
+        $this->assertFalse($account->hasPermission('administer modules'));
+        $account->addRole($this->createRole(['administer modules']))->save();
+        $this->assertTrue($account->hasPermission('administer modules'));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Generic transliteration data for the PhpTransliteration class.
@@ -19,7 +21,7 @@ $base = [
   0xA0 => 'chen', 'chuo', 'yi', 'you', 'bian', 'li', 'jin', 'zhang', 'men', 'fu', 'li', 'zhui', 'yu', 'qing', 'fei', 'mian',
   0xB0 => 'ge', 'wei', 'jiu', 'yin', 'ye', 'feng', 'fei', 'shi', 'shou', 'xiang', 'ma', 'gu', 'gao', 'biao', 'dou', 'chang',
   0xC0 => 'ge', 'gui', 'yu', 'niao', 'lu', 'lu', 'mai', 'ma', 'huang', 'shu', 'hei', 'zhi', 'mian', 'ding', 'gu', 'shu',
-  0xD0 => 'bi', 'qi', 'chi', 'long', 'gui', 'yue', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xE0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xF0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+  0xD0 => 'bi', 'qi', 'chi', 'long', 'gui', 'yue', null, null, null, null, null, null, null, null, null, null,
+  0xE0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+  0xF0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
 ];

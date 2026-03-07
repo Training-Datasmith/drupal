@@ -17,45 +17,47 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ModulePermissionsLinkHelper::class)]
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class ModulePermissionsLinkHelperTest extends KernelTestBase {
+class ModulePermissionsLinkHelperTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'user',
+      'user_permissions_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'user',
-    'user_permissions_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpCurrentUser([], [
+          'administer permissions',
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setUp(): void {
-    parent::setUp();
-    $this->setUpCurrentUser([], [
-      'administer permissions',
-    ]);
-  }
+    /**
+     * Tests get module permissions link.
+     */
+    public function testGetModulePermissionsLink(): void
+    {
 
-  /**
-   * Tests get module permissions link.
-   */
-  public function testGetModulePermissionsLink(): void {
+        /** @var \Drupal\user\ModulePermissionsLinkHelper $permsLinkHelper */
+        $permsLinkHelper = $this->container->get('user.module_permissions_link_helper');
 
-    /** @var \Drupal\user\ModulePermissionsLinkHelper $permsLinkHelper */
-    $permsLinkHelper = $this->container->get('user.module_permissions_link_helper');
+        $permsLink = $permsLinkHelper->getModulePermissionsLink('user_permissions_test', 'User permissions test');
 
-    $permsLink = $permsLinkHelper->getModulePermissionsLink('user_permissions_test', 'User permissions test');
-
-    $this->assertNotEmpty($permsLink);
-    $this->assertEquals("Configure User permissions test permissions", $permsLink['title']);
-    /** @var \Drupal\Core\Url $url */
-    $url = $permsLink['url'];
-    $this->assertEquals('user.admin_permissions.module', $url->getRouteName());
-    $this->assertEquals('user_permissions_test', $url->getRouteParameters()['modules']);
-  }
+        $this->assertNotEmpty($permsLink);
+        $this->assertEquals('Configure User permissions test permissions', $permsLink['title']);
+        /** @var \Drupal\Core\Url $url */
+        $url = $permsLink['url'];
+        $this->assertEquals('user.admin_permissions.module', $url->getRouteName());
+        $this->assertEquals('user_permissions_test', $url->getRouteParameters()['modules']);
+    }
 
 }

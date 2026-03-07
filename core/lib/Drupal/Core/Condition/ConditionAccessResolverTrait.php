@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Condition;
 
 use Drupal\Component\Plugin\Exception\ContextException;
@@ -7,43 +9,43 @@ use Drupal\Component\Plugin\Exception\ContextException;
 /**
  * Resolves a set of conditions.
  */
-trait ConditionAccessResolverTrait {
+trait ConditionAccessResolverTrait
+{
+    /**
+     * Resolves the given conditions based on the condition logic ('and'/'or').
+     *
+     * @param \Drupal\Core\Condition\ConditionInterface[] $conditions
+     *   A set of conditions.
+     * @param string $condition_logic
+     *   The logic used to compute access, either 'and' or 'or'.
+     *
+     * @return bool
+     *   Whether these conditions grant or deny access.
+     */
+    protected function resolveConditions($conditions, $condition_logic)
+    {
+        foreach ($conditions as $condition) {
+            try {
+                $pass = $condition->execute();
+            } catch (ContextException) {
+                // If a condition is missing context and is not negated, consider that a
+                // fail.
+                $pass = $condition->isNegated();
+            }
+            // If a condition fails and all conditions were needed, deny access.
+            if (!$pass && $condition_logic == 'and') {
+                return false;
+            }
 
-  /**
-   * Resolves the given conditions based on the condition logic ('and'/'or').
-   *
-   * @param \Drupal\Core\Condition\ConditionInterface[] $conditions
-   *   A set of conditions.
-   * @param string $condition_logic
-   *   The logic used to compute access, either 'and' or 'or'.
-   *
-   * @return bool
-   *   Whether these conditions grant or deny access.
-   */
-  protected function resolveConditions($conditions, $condition_logic) {
-    foreach ($conditions as $condition) {
-      try {
-        $pass = $condition->execute();
-      }
-      catch (ContextException) {
-        // If a condition is missing context and is not negated, consider that a
-        // fail.
-        $pass = $condition->isNegated();
-      }
-      // If a condition fails and all conditions were needed, deny access.
-      if (!$pass && $condition_logic == 'and') {
-          return FALSE;
-      }
+            // If a condition fails and all conditions were needed, deny access.
+            if ($pass && $condition_logic == 'or') {
+                return true;
+            }
+        }
 
-      // If a condition fails and all conditions were needed, deny access.
-      if ($pass && $condition_logic == 'or') {
-          return TRUE;
-      }
+        // Return TRUE if logic was 'and', meaning all rules passed.
+        // Return FALSE if logic was 'or', meaning no rule passed.
+        return $condition_logic == 'and';
     }
-
-    // Return TRUE if logic was 'and', meaning all rules passed.
-    // Return FALSE if logic was 'or', meaning no rule passed.
-    return $condition_logic == 'and';
-  }
 
 }

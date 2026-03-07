@@ -15,54 +15,56 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(MenuLinkDefault::class)]
 #[Group('Menu')]
-class MenuLinkDefaultTest extends UnitTestCase {
+class MenuLinkDefaultTest extends UnitTestCase
+{
+    /**
+     * Tests update link.
+     */
+    public function testUpdateLink(): void
+    {
+        $plugin_definition = [
+          'title' => 'Hey jude',
+          'enabled' => 1,
+          'expanded' => 1,
+          'menu_name' => 'admin',
+          'parent' => '',
+          'weight' => 10,
+        ];
+        $expected_plugin_definition = $plugin_definition;
+        $expected_plugin_definition['weight'] = -10;
 
-  /**
-   * Tests update link.
-   */
-  public function testUpdateLink(): void {
-    $plugin_definition = [
-      'title' => 'Hey jude',
-      'enabled' => 1,
-      'expanded' => 1,
-      'menu_name' => 'admin',
-      'parent' => '',
-      'weight' => 10,
-    ];
-    $expected_plugin_definition = $plugin_definition;
-    $expected_plugin_definition['weight'] = -10;
+        $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
+        $static_override->saveOverride('example_menu_link', $expected_plugin_definition);
+        $static_override = $static_override->reveal();
 
-    $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
-    $static_override->saveOverride('example_menu_link', $expected_plugin_definition);
-    $static_override = $static_override->reveal();
+        $menu_link = new MenuLinkDefault([], 'example_menu_link', $plugin_definition, $static_override);
 
-    $menu_link = new MenuLinkDefault([], 'example_menu_link', $plugin_definition, $static_override);
+        $this->assertEquals($expected_plugin_definition, $menu_link->updateLink(['weight' => -10], true));
+    }
 
-    $this->assertEquals($expected_plugin_definition, $menu_link->updateLink(['weight' => -10], TRUE));
-  }
+    /**
+     * Tests update link without persist.
+     */
+    public function testUpdateLinkWithoutPersist(): void
+    {
+        $plugin_definition = [
+          'title' => 'Hey jude',
+          'enabled' => 1,
+          'expanded' => 1,
+          'menu_name' => 'admin',
+          'parent' => '',
+          'weight' => 10,
+        ];
+        $expected_plugin_definition = $plugin_definition;
+        $expected_plugin_definition['weight'] = -10;
 
-  /**
-   * Tests update link without persist.
-   */
-  public function testUpdateLinkWithoutPersist(): void {
-    $plugin_definition = [
-      'title' => 'Hey jude',
-      'enabled' => 1,
-      'expanded' => 1,
-      'menu_name' => 'admin',
-      'parent' => '',
-      'weight' => 10,
-    ];
-    $expected_plugin_definition = $plugin_definition;
-    $expected_plugin_definition['weight'] = -10;
+        $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
+        $static_override->saveOverride()->shouldNotBeCalled();
+        $static_override = $static_override->reveal();
 
-    $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
-    $static_override->saveOverride()->shouldNotBeCalled();
-    $static_override = $static_override->reveal();
+        $menu_link = new MenuLinkDefault([], 'example_menu_link', $plugin_definition, $static_override);
 
-    $menu_link = new MenuLinkDefault([], 'example_menu_link', $plugin_definition, $static_override);
-
-    $this->assertEquals($expected_plugin_definition, $menu_link->updateLink(['weight' => -10], FALSE));
-  }
+        $this->assertEquals($expected_plugin_definition, $menu_link->updateLink(['weight' => -10], false));
+    }
 
 }

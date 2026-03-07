@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\shortcut\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\shortcut\ShortcutSetInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -11,55 +12,55 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Builds the page for administering shortcut sets.
  */
-class ShortcutSetController extends ControllerBase {
-
-  /**
-   * Creates a new ShortcutSetController instance.
-   *
-   * @param \Drupal\Core\Path\PathValidatorInterface $pathValidator
-   *   The path validator.
-   */
-  public function __construct(protected \Drupal\Core\Path\PathValidatorInterface $pathValidator)
-  {
-  }
-
-  /**
-   * Creates a new link in the provided shortcut set.
-   *
-   * @param \Drupal\shortcut\ShortcutSetInterface $shortcut_set
-   *   The shortcut set to add a link to.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request object.
-   *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   A redirect response to the front page, or the previous location.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   */
-  public function addShortcutLinkInline(ShortcutSetInterface $shortcut_set, Request $request) {
-    $link = $request->query->get('link');
-    $name = $request->query->get('name');
-    if (parse_url((string) $link, PHP_URL_SCHEME) === NULL && $this->pathValidator->isValid($link)) {
-      $shortcut = $this->entityTypeManager()->getStorage('shortcut')->create([
-        'title' => $name,
-        'shortcut_set' => $shortcut_set->id(),
-        'link' => [
-          'uri' => 'internal:/' . $link,
-        ],
-      ]);
-
-      try {
-        $shortcut->save();
-        $this->messenger()->addStatus($this->t('Added a shortcut for %title.', ['%title' => $shortcut->label()]));
-      }
-      catch (\Exception) {
-        $this->messenger()->addError($this->t('Unable to add a shortcut for %title.', ['%title' => $shortcut->label()]));
-      }
-
-      return $this->redirect('<front>');
+class ShortcutSetController extends ControllerBase
+{
+    /**
+     * Creates a new ShortcutSetController instance.
+     *
+     * @param \Drupal\Core\Path\PathValidatorInterface $pathValidator
+     *   The path validator.
+     */
+    public function __construct(protected \Drupal\Core\Path\PathValidatorInterface $pathValidator)
+    {
     }
 
-    throw new AccessDeniedHttpException();
-  }
+    /**
+     * Creates a new link in the provided shortcut set.
+     *
+     * @param \Drupal\shortcut\ShortcutSetInterface $shortcut_set
+     *   The shortcut set to add a link to.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request object.
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     *   A redirect response to the front page, or the previous location.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+     */
+    public function addShortcutLinkInline(ShortcutSetInterface $shortcut_set, Request $request)
+    {
+        $link = $request->query->get('link');
+        $name = $request->query->get('name');
+        if (parse_url((string) $link, PHP_URL_SCHEME) === null && $this->pathValidator->isValid($link)) {
+            $shortcut = $this->entityTypeManager()->getStorage('shortcut')->create([
+              'title' => $name,
+              'shortcut_set' => $shortcut_set->id(),
+              'link' => [
+                'uri' => 'internal:/' . $link,
+              ],
+            ]);
+
+            try {
+                $shortcut->save();
+                $this->messenger()->addStatus($this->t('Added a shortcut for %title.', ['%title' => $shortcut->label()]));
+            } catch (\Exception) {
+                $this->messenger()->addError($this->t('Unable to add a shortcut for %title.', ['%title' => $shortcut->label()]));
+            }
+
+            return $this->redirect('<front>');
+        }
+
+        throw new AccessDeniedHttpException();
+    }
 
 }

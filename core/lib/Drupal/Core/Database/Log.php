@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database;
 
 use Drupal\Core\Database\Event\StatementExecutionEndEvent;
@@ -15,111 +17,115 @@ use Drupal\Core\Database\Event\StatementExecutionEndEvent;
  * Every connection has one and only one logging object on it for all targets
  * and logging keys.
  */
-class Log {
+class Log
+{
+    /**
+     * Cache of logged queries.
+     *
+     * This will only be used if the query logger is enabled.
+     *
+     * @var array
+     * The structure for the logging array is as follows:
+     *
+     * @code
+     * [
+     *   $logging_key = [
+     *     ['query' => '', 'args' => [], 'caller' => '', 'target' => '', 'time' => 0, 'start' => 0],
+     *     ['query' => '', 'args' => [], 'caller' => '', 'target' => '', 'time' => 0, 'start' => 0],
+     *   ],
+     * ];
+     * @endcode
+     */
+    protected $queryLog = [];
 
-  /**
-   * Cache of logged queries.
-   *
-   * This will only be used if the query logger is enabled.
-   *
-   * @var array
-   * The structure for the logging array is as follows:
-   *
-   * @code
-   * [
-   *   $logging_key = [
-   *     ['query' => '', 'args' => [], 'caller' => '', 'target' => '', 'time' => 0, 'start' => 0],
-   *     ['query' => '', 'args' => [], 'caller' => '', 'target' => '', 'time' => 0, 'start' => 0],
-   *   ],
-   * ];
-   * @endcode
-   */
-  protected $queryLog = [];
-
-  /**
-   * Constructor.
-   *
-   * @param string $connectionKey
-   *   The database connection key for which to enable logging.
-   */
-  public function __construct(
-      /**
-       * The connection key for which this object is logging.
-       */
-      protected $connectionKey = 'default'
-  )
-  {
-  }
-
-  /**
-   * Begin logging queries to the specified connection and logging key.
-   *
-   * If the specified logging key is already running this method does nothing.
-   *
-   * @param string $logging_key
-   *   The identification key for this log request. By specifying different
-   *   logging keys we are able to start and stop multiple logging runs
-   *   simultaneously without them colliding.
-   */
-  public function start($logging_key): void {
-    if (empty($this->queryLog[$logging_key])) {
-      $this->clear($logging_key);
+    /**
+     * Constructor.
+     *
+     * @param string $connectionKey
+     *   The database connection key for which to enable logging.
+     */
+    public function __construct(
+        /**
+         * The connection key for which this object is logging.
+         */
+        protected $connectionKey = 'default'
+    ) {
     }
-  }
 
-  /**
-   * Retrieve the query log for the specified logging key so far.
-   *
-   * @param string $logging_key
-   *   The logging key to fetch.
-   *
-   * @return array
-   *   An indexed array of all query records for this logging key.
-   */
-  public function get($logging_key) {
-    return $this->queryLog[$logging_key];
-  }
-
-  /**
-   * Empty the query log for the specified logging key.
-   *
-   * This method does not stop logging, it simply clears the log. To stop
-   * logging, use the end() method.
-   *
-   * @param string $logging_key
-   *   The logging key to empty.
-   */
-  public function clear($logging_key): void {
-    $this->queryLog[$logging_key] = [];
-  }
-
-  /**
-   * Stop logging for the specified logging key.
-   *
-   * @param string $logging_key
-   *   The logging key to stop.
-   */
-  public function end($logging_key): void {
-    unset($this->queryLog[$logging_key]);
-  }
-
-  /**
-   * Log a query to all active logging keys, from a statement execution event.
-   *
-   * @param \Drupal\Core\Database\Event\StatementExecutionEndEvent $event
-   *   The statement execution event.
-   */
-  public function logFromEvent(StatementExecutionEndEvent $event): void {
-    foreach (array_keys($this->queryLog) as $key) {
-      $this->queryLog[$key][] = [
-        'query' => $event->queryString,
-        'args' => $event->args,
-        'target' => $event->target,
-        'caller' => $event->caller,
-        'time' => $event->getElapsedTime(),
-        'start' => $event->startTime,
-      ];
+    /**
+     * Begin logging queries to the specified connection and logging key.
+     *
+     * If the specified logging key is already running this method does nothing.
+     *
+     * @param string $logging_key
+     *   The identification key for this log request. By specifying different
+     *   logging keys we are able to start and stop multiple logging runs
+     *   simultaneously without them colliding.
+     */
+    public function start($logging_key): void
+    {
+        if (empty($this->queryLog[$logging_key])) {
+            $this->clear($logging_key);
+        }
     }
-  }
+
+    /**
+     * Retrieve the query log for the specified logging key so far.
+     *
+     * @param string $logging_key
+     *   The logging key to fetch.
+     *
+     * @return array
+     *   An indexed array of all query records for this logging key.
+     */
+    public function get($logging_key)
+    {
+        return $this->queryLog[$logging_key];
+    }
+
+    /**
+     * Empty the query log for the specified logging key.
+     *
+     * This method does not stop logging, it simply clears the log. To stop
+     * logging, use the end() method.
+     *
+     * @param string $logging_key
+     *   The logging key to empty.
+     */
+    public function clear($logging_key): void
+    {
+        $this->queryLog[$logging_key] = [];
+    }
+
+    /**
+     * Stop logging for the specified logging key.
+     *
+     * @param string $logging_key
+     *   The logging key to stop.
+     */
+    public function end($logging_key): void
+    {
+        unset($this->queryLog[$logging_key]);
+    }
+
+    /**
+     * Log a query to all active logging keys, from a statement execution event.
+     *
+     * @param \Drupal\Core\Database\Event\StatementExecutionEndEvent $event
+     *   The statement execution event.
+     */
+    public function logFromEvent(StatementExecutionEndEvent $event): void
+    {
+        foreach (array_keys($this->queryLog) as $key) {
+            $this->queryLog[$key][] = [
+              'query' => $event->queryString,
+              'args' => $event->args,
+              'target' => $event->target,
+              'caller' => $event->caller,
+              'time' => $event->getElapsedTime(),
+              'start' => $event->startTime,
+            ];
+        }
+    }
 
 }

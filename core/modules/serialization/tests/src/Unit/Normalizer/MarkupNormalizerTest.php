@@ -17,42 +17,45 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(MarkupNormalizer::class)]
 #[Group('serialization')]
-final class MarkupNormalizerTest extends UnitTestCase {
+final class MarkupNormalizerTest extends UnitTestCase
+{
+    use JsonSchemaTestTrait;
 
-  use JsonSchemaTestTrait;
+    /**
+     * The TypedDataNormalizer instance.
+     *
+     * @var \Drupal\serialization\Normalizer\TypedDataNormalizer
+     */
+    protected $normalizer;
 
-  /**
-   * The TypedDataNormalizer instance.
-   *
-   * @var \Drupal\serialization\Normalizer\TypedDataNormalizer
-   */
-  protected $normalizer;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->normalizer = new MarkupNormalizer();
+    }
 
-    $this->normalizer = new MarkupNormalizer();
-  }
+    /**
+     * Test the normalizer properly delegates schema discovery to its subject.
+     */
+    public function testDelegatedSchemaDiscovery(): void
+    {
+        $schema = $this->normalizer->getNormalizationSchema(new Attribute(['data-test' => 'testing']));
+        $this->assertEquals('Rendered HTML element attributes', $schema['description']);
+    }
 
-  /**
-   * Test the normalizer properly delegates schema discovery to its subject.
-   */
-  public function testDelegatedSchemaDiscovery(): void {
-    $schema = $this->normalizer->getNormalizationSchema(new Attribute(['data-test' => 'testing']));
-    $this->assertEquals('Rendered HTML element attributes', $schema['description']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function jsonSchemaDataProvider(): array {
-    return [
-      'markup' => [Markup::create('Generic Markup')],
-      'attribute' => [new Attribute(['data-test' => 'testing'])],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function jsonSchemaDataProvider(): array
+    {
+        return [
+          'markup' => [Markup::create('Generic Markup')],
+          'attribute' => [new Attribute(['data-test' => 'testing'])],
+        ];
+    }
 
 }

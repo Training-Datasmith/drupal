@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views_ui\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -11,91 +13,96 @@ use Drupal\views\Views;
  *
  * @internal
  */
-class AdvancedSettingsForm extends ConfigFormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'views_ui_admin_settings_advanced';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames(): array {
-    return ['views.settings'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
-
-    $config = $this->config('views.settings');
-    $form['cache'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Caching'),
-      '#open' => TRUE,
-    ];
-
-    $form['cache']['clear_cache'] = [
-      '#type' => 'submit',
-      '#value' => $this->t("Clear Views' cache"),
-      '#submit' => ['::cacheSubmit'],
-    ];
-
-    $form['debug'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Debugging'),
-      '#open' => TRUE,
-    ];
-
-    $form['debug']['sql_signature'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Add Views signature to all SQL queries'),
-      '#description' => $this->t("All Views-generated queries will include the name of the views and display 'view-name:display-name' as a string at the end of the SELECT clause. This makes identifying Views queries in database server logs simpler, but should only be used when troubleshooting."),
-
-      '#default_value' => $config->get('sql_signature'),
-    ];
-
-    $options = Views::fetchPluginNames('display_extender');
-    if (!empty($options)) {
-      $form['extenders'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Display extenders'),
-        '#open' => TRUE,
-      ];
-      $form['extenders']['display_extenders'] = [
-        '#default_value' => array_filter($config->get('display_extenders')),
-        '#options' => $options,
-        '#type' => 'checkboxes',
-        '#description' => $this->t('Select extensions of the views interface.'),
-      ];
+class AdvancedSettingsForm extends ConfigFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'views_ui_admin_settings_advanced';
     }
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames(): array
+    {
+        return ['views.settings'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->config('views.settings')
-      ->set('sql_signature', $form_state->getValue('sql_signature'))
-      ->set('display_extenders', $form_state->getValue('display_extenders', []))
-      ->save();
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildForm($form, $form_state);
 
-    parent::submitForm($form, $form_state);
-  }
+        $config = $this->config('views.settings');
+        $form['cache'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Caching'),
+          '#open' => true,
+        ];
 
-  /**
-   * Submission handler to clear the Views cache.
-   */
-  public function cacheSubmit(): void {
-    views_invalidate_cache();
-    $this->messenger()->addStatus($this->t('The cache has been cleared.'));
-  }
+        $form['cache']['clear_cache'] = [
+          '#type' => 'submit',
+          '#value' => $this->t("Clear Views' cache"),
+          '#submit' => ['::cacheSubmit'],
+        ];
+
+        $form['debug'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Debugging'),
+          '#open' => true,
+        ];
+
+        $form['debug']['sql_signature'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Add Views signature to all SQL queries'),
+          '#description' => $this->t("All Views-generated queries will include the name of the views and display 'view-name:display-name' as a string at the end of the SELECT clause. This makes identifying Views queries in database server logs simpler, but should only be used when troubleshooting."),
+
+          '#default_value' => $config->get('sql_signature'),
+        ];
+
+        $options = Views::fetchPluginNames('display_extender');
+        if (!empty($options)) {
+            $form['extenders'] = [
+              '#type' => 'details',
+              '#title' => $this->t('Display extenders'),
+              '#open' => true,
+            ];
+            $form['extenders']['display_extenders'] = [
+              '#default_value' => array_filter($config->get('display_extenders')),
+              '#options' => $options,
+              '#type' => 'checkboxes',
+              '#description' => $this->t('Select extensions of the views interface.'),
+            ];
+        }
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->config('views.settings')
+          ->set('sql_signature', $form_state->getValue('sql_signature'))
+          ->set('display_extenders', $form_state->getValue('display_extenders', []))
+          ->save();
+
+        parent::submitForm($form, $form_state);
+    }
+
+    /**
+     * Submission handler to clear the Views cache.
+     */
+    public function cacheSubmit(): void
+    {
+        views_invalidate_cache();
+        $this->messenger()->addStatus($this->t('The cache has been cleared.'));
+    }
 
 }

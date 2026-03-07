@@ -12,29 +12,31 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerEmptySettingsTest extends InstallerTestBase {
+class InstallerEmptySettingsTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEnvironment(): void
+    {
+        parent::prepareEnvironment();
+        // Create an empty settings.php file.
+        $path = $this->root . DIRECTORY_SEPARATOR . $this->siteDirectory;
+        file_put_contents($path . '/settings.php', '');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEnvironment(): void {
-    parent::prepareEnvironment();
-    // Create an empty settings.php file.
-    $path = $this->root . DIRECTORY_SEPARATOR . $this->siteDirectory;
-    file_put_contents($path . '/settings.php', '');
-  }
-
-  /**
-   * Verifies that installation succeeded.
-   */
-  public function testInstaller(): void {
-    $this->assertSession()->addressEquals('user/1');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Verifies that installation succeeded.
+     */
+    public function testInstaller(): void
+    {
+        $this->assertSession()->addressEquals('user/1');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

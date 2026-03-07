@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Plugin\Filter;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,27 +14,29 @@ use Drupal\filter\Plugin\FilterInterface;
  * Provides a filter to convert line breaks to HTML.
  */
 #[Filter(
-  id: "filter_autop",
-  title: new TranslatableMarkup("Convert line breaks into HTML (i.e. <code>&lt;br&gt;</code> and <code>&lt;p&gt;</code>)"),
-  type: FilterInterface::TYPE_MARKUP_LANGUAGE
+    id: 'filter_autop',
+    title: new TranslatableMarkup('Convert line breaks into HTML (i.e. <code>&lt;br&gt;</code> and <code>&lt;p&gt;</code>)'),
+    type: FilterInterface::TYPE_MARKUP_LANGUAGE
 )]
-class FilterAutoP extends FilterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
-    return new FilterProcessResult(_filter_autop($text));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    if ($long) {
-      return $this->t('Lines and paragraphs are automatically recognized. The &lt;br /&gt; line break, &lt;p&gt; paragraph and &lt;/p&gt; close paragraph tags are inserted automatically. If paragraphs are not recognized simply add a couple of blank lines.');
+class FilterAutoP extends FilterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode): \Drupal\filter\FilterProcessResult
+    {
+        return new FilterProcessResult(_filter_autop($text));
     }
-    return $this->t('Lines and paragraphs break automatically.');
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function tips($long = false): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        if ($long) {
+            return $this->t('Lines and paragraphs are automatically recognized. The &lt;br /&gt; line break, &lt;p&gt; paragraph and &lt;/p&gt; close paragraph tags are inserted automatically. If paragraphs are not recognized simply add a couple of blank lines.');
+        }
+        return $this->t('Lines and paragraphs break automatically.');
+    }
 
 }

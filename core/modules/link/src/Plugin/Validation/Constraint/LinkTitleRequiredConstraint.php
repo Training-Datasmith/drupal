@@ -12,16 +12,16 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Validation constraint for link title subfields if a URL was entered.
  */
 #[Constraint(
-  id: 'LinkTitleRequired',
-  label: new TranslatableMarkup('A link title was entered if a URL was entered.', [], ['context' => 'Validation'])
+    id: 'LinkTitleRequired',
+    label: new TranslatableMarkup('A link title was entered if a URL was entered.', [], ['context' => 'Validation'])
 )]
-class LinkTitleRequiredConstraint extends SymfonyConstraint {
-
-  /**
-   * The error message.
-   *
-   * @var string
-   */
-  public $message = "The Link text field is required if there is URL input.";
+class LinkTitleRequiredConstraint extends SymfonyConstraint
+{
+    /**
+     * The error message.
+     *
+     * @var string
+     */
+    public $message = 'The Link text field is required if there is URL input.';
 
 }

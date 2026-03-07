@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Annotation;
 
 use Drupal\Component\Annotation\AnnotationBase;
@@ -40,66 +42,68 @@ use Drupal\Component\Annotation\AnnotationBase;
  *
  * @Annotation
  */
-class PluralTranslation extends AnnotationBase {
+class PluralTranslation extends AnnotationBase
+{
+    /**
+     * The string for the singular case.
+     *
+     * @var string
+     */
+    protected $singular;
 
-  /**
-   * The string for the singular case.
-   *
-   * @var string
-   */
-  protected $singular;
+    /**
+     * The string for the plural case.
+     *
+     * @var string
+     */
+    protected $plural;
 
-  /**
-   * The string for the plural case.
-   *
-   * @var string
-   */
-  protected $plural;
+    /**
+     * The context the source strings belong to.
+     *
+     * @var string
+     */
+    protected $context;
 
-  /**
-   * The context the source strings belong to.
-   *
-   * @var string
-   */
-  protected $context;
+    /**
+     * Constructs a new class instance.
+     *
+     * @param array $values
+     *   An associative array with the following keys:
+     *   - singular: The string for the singular case.
+     *   - plural: The string for the plural case.
+     *   - context: The context the source strings belong to.
+     *
+     * @throws \InvalidArgumentException
+     *   Thrown when the keys 'singular' or 'plural' are missing from the $values
+     *   array.
+     */
+    public function __construct(array $values)
+    {
+        if (!isset($values['singular'])) {
+            throw new \InvalidArgumentException('Missing "singular" value in the PluralTranslation annotation');
+        }
+        if (!isset($values['plural'])) {
+            throw new \InvalidArgumentException('Missing "plural" value in the PluralTranslation annotation');
+        }
 
-  /**
-   * Constructs a new class instance.
-   *
-   * @param array $values
-   *   An associative array with the following keys:
-   *   - singular: The string for the singular case.
-   *   - plural: The string for the plural case.
-   *   - context: The context the source strings belong to.
-   *
-   * @throws \InvalidArgumentException
-   *   Thrown when the keys 'singular' or 'plural' are missing from the $values
-   *   array.
-   */
-  public function __construct(array $values) {
-    if (!isset($values['singular'])) {
-      throw new \InvalidArgumentException('Missing "singular" value in the PluralTranslation annotation');
+        $this->singular = $values['singular'];
+        $this->plural = $values['plural'];
+        if (isset($values['context'])) {
+            $this->context = $values['context'];
+        }
     }
-    if (!isset($values['plural'])) {
-      throw new \InvalidArgumentException('Missing "plural" value in the PluralTranslation annotation');
-    }
 
-    $this->singular = $values['singular'];
-    $this->plural = $values['plural'];
-    if (isset($values['context'])) {
-      $this->context = $values['context'];
+    /**
+     * {@inheritdoc}
+     */
+    public function get(): array
+    {
+        return [
+          'singular' => $this->singular,
+          'plural' => $this->plural,
+          'context' => $this->context,
+        ];
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get(): array {
-    return [
-      'singular' => $this->singular,
-      'plural' => $this->plural,
-      'context' => $this->context,
-    ];
-  }
 
 }

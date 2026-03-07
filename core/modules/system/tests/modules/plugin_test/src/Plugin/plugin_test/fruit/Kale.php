@@ -11,4 +11,6 @@ namespace Drupal\plugin_test\Plugin\plugin_test\fruit;
  *   color = "green"
  * )
  */
-class Kale {}
+class Kale
+{
+}

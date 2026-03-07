@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin;
 
 use Drupal\Component\Plugin\Attribute\AttributeInterface;
@@ -23,50 +25,52 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  *
  * @ingroup migration
  */
-class MigratePluginManager extends DefaultPluginManager implements MigratePluginManagerInterface {
-
-  /**
-   * Constructs a MigratePluginManager object.
-   *
-   * @param string $type
-   *   The type of the plugin: row, source, process, destination, entity_field,
-   *   id_map.
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler to invoke the alter hook with.
-   * @param string $attribute
-   *   (optional) The attribute class name. Defaults to
-   *   'Drupal\Component\Plugin\Attribute\PluginID'.
-   * @param string $annotation
-   *   (optional) The annotation class name. Defaults to
-   *   'Drupal\Component\Annotation\PluginID'.
-   */
-  public function __construct($type, \Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ?string $attribute = PluginID::class, string|array|null $annotation = \Drupal\Component\Annotation\PluginID::class) {
-    if (!is_subclass_of($attribute, AttributeInterface::class)) {
-      // Backward compatibility.
-      $annotation = $attribute;
-      $attribute = PluginID::class;
+class MigratePluginManager extends DefaultPluginManager implements MigratePluginManagerInterface
+{
+    /**
+     * Constructs a MigratePluginManager object.
+     *
+     * @param string $type
+     *   The type of the plugin: row, source, process, destination, entity_field,
+     *   id_map.
+     * @param \Traversable $namespaces
+     *   An object that implements \Traversable which contains the root paths
+     *   keyed by the corresponding namespace to look for plugin implementations.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   Cache backend instance to use.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler to invoke the alter hook with.
+     * @param string $attribute
+     *   (optional) The attribute class name. Defaults to
+     *   'Drupal\Component\Plugin\Attribute\PluginID'.
+     * @param string $annotation
+     *   (optional) The annotation class name. Defaults to
+     *   'Drupal\Component\Annotation\PluginID'.
+     */
+    public function __construct($type, \Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ?string $attribute = PluginID::class, string|array|null $annotation = \Drupal\Component\Annotation\PluginID::class)
+    {
+        if (!is_subclass_of($attribute, AttributeInterface::class)) {
+            // Backward compatibility.
+            $annotation = $attribute;
+            $attribute = PluginID::class;
+        }
+        parent::__construct("Plugin/migrate/$type", $namespaces, $module_handler, null, $attribute, $annotation);
+        $this->alterInfo('migrate_' . $type . '_info');
+        $this->setCacheBackend($cache_backend, 'migrate_plugins_' . $type);
     }
-    parent::__construct("Plugin/migrate/$type", $namespaces, $module_handler, NULL, $attribute, $annotation);
-    $this->alterInfo('migrate_' . $type . '_info');
-    $this->setCacheBackend($cache_backend, 'migrate_plugins_' . $type);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createInstance($plugin_id, array $configuration = [], ?MigrationInterface $migration = NULL) {
-    $plugin_definition = $this->getDefinition($plugin_id);
-    $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
-    // If the plugin provides a factory method, pass the container to it.
-    if (is_subclass_of($plugin_class, \Drupal\Core\Plugin\ContainerFactoryPluginInterface::class)) {
-      return $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition, $migration);
+    /**
+     * {@inheritdoc}
+     */
+    public function createInstance($plugin_id, array $configuration = [], ?MigrationInterface $migration = null)
+    {
+        $plugin_definition = $this->getDefinition($plugin_id);
+        $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
+        // If the plugin provides a factory method, pass the container to it.
+        if (is_subclass_of($plugin_class, \Drupal\Core\Plugin\ContainerFactoryPluginInterface::class)) {
+            return $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition, $migration);
+        }
+        return new $plugin_class($configuration, $plugin_id, $plugin_definition, $migration);
     }
-    return new $plugin_class($configuration, $plugin_id, $plugin_definition, $migration);
-  }
 
 }

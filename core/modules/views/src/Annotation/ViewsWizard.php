@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Annotation;
 
 /**
@@ -12,38 +14,38 @@ namespace Drupal\views\Annotation;
  *
  * @Annotation
  */
-class ViewsWizard extends ViewsPluginAnnotationBase {
+class ViewsWizard extends ViewsPluginAnnotationBase
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The plugin title used in the views UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title = '';
 
-  /**
-   * The plugin title used in the views UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title = '';
+    /**
+     * An optional short title used in the views UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $short_title = '';
 
-  /**
-   * An optional short title used in the views UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $short_title = '';
-
-  /**
-   * The base tables on which this wizard is used.
-   *
-   * @var array
-   */
-  public $base_table;
+    /**
+     * The base tables on which this wizard is used.
+     *
+     * @var array
+     */
+    public $base_table;
 
 }

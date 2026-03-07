@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Mail\Plugin\Mail;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -53,138 +55,141 @@ use Symfony\Component\Mime\Email;
  * @internal
  */
 #[Mail(
-  id: 'symfony_mailer',
-  label: new TranslatableMarkup('Symfony mailer (Experimental)'),
+    id: 'symfony_mailer',
+    label: new TranslatableMarkup('Symfony mailer (Experimental)'),
 )]
-class SymfonyMailer implements MailInterface, ContainerFactoryPluginInterface {
+class SymfonyMailer implements MailInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * A list of headers that can contain multiple email addresses.
+     *
+     * @see \Symfony\Component\Mime\Header\Headers::HEADER_CLASS_MAP
+     */
+    protected const MAILBOX_LIST_HEADERS = ['from', 'to', 'reply-to', 'cc', 'bcc'];
 
-  /**
-   * A list of headers that can contain multiple email addresses.
-   *
-   * @see \Symfony\Component\Mime\Header\Headers::HEADER_CLASS_MAP
-   */
-  protected const MAILBOX_LIST_HEADERS = ['from', 'to', 'reply-to', 'cc', 'bcc'];
+    /**
+     * List of headers to skip copying from the message array.
+     *
+     * Symfony mailer sets Content-Type and Content-Transfer-Encoding according to
+     * the actual body content. Note that format=flowed is not supported by
+     * Symfony.
+     *
+     * @see \Symfony\Component\Mime\Part\TextPart
+     */
+    protected const SKIP_HEADERS = ['content-type', 'content-transfer-encoding'];
 
-  /**
-   * List of headers to skip copying from the message array.
-   *
-   * Symfony mailer sets Content-Type and Content-Transfer-Encoding according to
-   * the actual body content. Note that format=flowed is not supported by
-   * Symfony.
-   *
-   * @see \Symfony\Component\Mime\Part\TextPart
-   */
-  protected const SKIP_HEADERS = ['content-type', 'content-transfer-encoding'];
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $container->get('logger.channel.mail')
-    );
-  }
-
-  /**
-   * Symfony mailer constructor.
-   *
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger service.
-   * @param \Symfony\Component\Mailer\MailerInterface $mailer
-   *   The mailer service. Only specify an instance in unit tests, pass NULL in
-   *   production.
-   */
-  public function __construct(
-    protected LoggerInterface $logger,
-    protected ?MailerInterface $mailer = NULL,
-  ) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function format(array $message): array {
-    foreach ($message['body'] as &$part) {
-      // If the message contains HTML, convert it to plain text (which also
-      // wraps the mail body).
-      if ($part instanceof MarkupInterface) {
-        $part = MailFormatHelper::htmlToText($part);
-      }
-      // If the message does not contain HTML, it still needs to be wrapped
-      // properly.
-      else {
-        $part = MailFormatHelper::wrapMail($part);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $container->get('logger.channel.mail')
+        );
     }
 
-    // Join the body array into one string.
-    $message['body'] = implode("\n\n", $message['body']);
+    /**
+     * Symfony mailer constructor.
+     *
+     * @param \Psr\Log\LoggerInterface $logger
+     *   The logger service.
+     * @param \Symfony\Component\Mailer\MailerInterface $mailer
+     *   The mailer service. Only specify an instance in unit tests, pass NULL in
+     *   production.
+     */
+    public function __construct(
+        protected LoggerInterface $logger,
+        protected ?MailerInterface $mailer = null,
+    ) {
+    }
 
-    return $message;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mail(array $message): bool {
-    try {
-      $email = new Email();
-
-      $headers = $email->getHeaders();
-      foreach ($message['headers'] as $name => $value) {
-        if (!in_array(strtolower((string) $name), self::SKIP_HEADERS, TRUE)) {
-          if (in_array(strtolower((string) $name), self::MAILBOX_LIST_HEADERS, TRUE)) {
-            // Split values by comma, but ignore commas encapsulated in double
-            // quotes.
-            $value = str_getcsv((string) $value, escape: '\\');
-          }
-          $headers->addHeader($name, $value);
+    /**
+     * {@inheritdoc}
+     */
+    public function format(array $message): array
+    {
+        foreach ($message['body'] as &$part) {
+            // If the message contains HTML, convert it to plain text (which also
+            // wraps the mail body).
+            if ($part instanceof MarkupInterface) {
+                $part = MailFormatHelper::htmlToText($part);
+            }
+            // If the message does not contain HTML, it still needs to be wrapped
+            // properly.
+            else {
+                $part = MailFormatHelper::wrapMail($part);
+            }
         }
-      }
 
-      // Parse the recipients into an array of addresses.
-      $recipients = array_map(trim(...), str_getcsv((string) $message['to'], escape: "\\"));
+        // Join the body array into one string.
+        $message['body'] = implode("\n\n", $message['body']);
 
-      $email
-        ->to(...$recipients)
-        ->subject($message['subject'])
-        ->text($message['body']);
-
-      $mailer = $this->getMailer();
-      $mailer->send($email);
-      return TRUE;
-    }
-    catch (\Exception $e) {
-      Error::logException($this->logger, $e);
-      return FALSE;
-    }
-  }
-
-  /**
-   * Returns a minimalistic Symfony mailer service.
-   */
-  protected function getMailer(): MailerInterface {
-    if (!isset($this->mailer)) {
-      $dsn = \Drupal::config('system.mail')->get('mailer_dsn');
-      $dsnObject = new Dsn(...$dsn);
-
-      // Symfony Mailer and Transport classes both optionally depend on the
-      // event dispatcher. When provided, a MessageEvent is fired whenever an
-      // email is prepared before sending.
-      //
-      // The MessageEvent will likely play an important role in an upcoming mail
-      // API. However, emails handled by this plugin already were processed by
-      // hook_mail and hook_mail_alter. Firing the MessageEvent would leak those
-      // mails into the code path (i.e., event subscribers) of the new API.
-      // Therefore, this plugin deliberately refrains from injecting the event
-      // dispatcher.
-      $factories = Transport::getDefaultFactories();
-      $transportFactory = new Transport($factories);
-      $transport = $transportFactory->fromDsnObject($dsnObject);
-      $this->mailer = new Mailer($transport);
+        return $message;
     }
 
-    return $this->mailer;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function mail(array $message): bool
+    {
+        try {
+            $email = new Email();
+
+            $headers = $email->getHeaders();
+            foreach ($message['headers'] as $name => $value) {
+                if (!in_array(strtolower((string) $name), self::SKIP_HEADERS, true)) {
+                    if (in_array(strtolower((string) $name), self::MAILBOX_LIST_HEADERS, true)) {
+                        // Split values by comma, but ignore commas encapsulated in double
+                        // quotes.
+                        $value = str_getcsv((string) $value, escape: '\\');
+                    }
+                    $headers->addHeader($name, $value);
+                }
+            }
+
+            // Parse the recipients into an array of addresses.
+            $recipients = array_map(trim(...), str_getcsv((string) $message['to'], escape: '\\'));
+
+            $email
+              ->to(...$recipients)
+              ->subject($message['subject'])
+              ->text($message['body']);
+
+            $mailer = $this->getMailer();
+            $mailer->send($email);
+            return true;
+        } catch (\Exception $e) {
+            Error::logException($this->logger, $e);
+            return false;
+        }
+    }
+
+    /**
+     * Returns a minimalistic Symfony mailer service.
+     */
+    protected function getMailer(): MailerInterface
+    {
+        if (!isset($this->mailer)) {
+            $dsn = \Drupal::config('system.mail')->get('mailer_dsn');
+            $dsnObject = new Dsn(...$dsn);
+
+            // Symfony Mailer and Transport classes both optionally depend on the
+            // event dispatcher. When provided, a MessageEvent is fired whenever an
+            // email is prepared before sending.
+            //
+            // The MessageEvent will likely play an important role in an upcoming mail
+            // API. However, emails handled by this plugin already were processed by
+            // hook_mail and hook_mail_alter. Firing the MessageEvent would leak those
+            // mails into the code path (i.e., event subscribers) of the new API.
+            // Therefore, this plugin deliberately refrains from injecting the event
+            // dispatcher.
+            $factories = Transport::getDefaultFactories();
+            $transportFactory = new Transport($factories);
+            $transport = $transportFactory->fromDsnObject($dsnObject);
+            $this->mailer = new Mailer($transport);
+        }
+
+        return $this->mailer;
+    }
 
 }

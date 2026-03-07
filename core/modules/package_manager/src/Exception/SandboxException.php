@@ -11,18 +11,19 @@ use Drupal\package_manager\SandboxManagerBase;
  *
  * Should not be thrown by external code.
  */
-class SandboxException extends \RuntimeException {
-
-  /**
-   * Constructs a StageException object.
-   *
-   * @param \Drupal\package_manager\SandboxManagerBase $sandboxManager
-   *   The stage.
-   * @param mixed ...$arguments
-   *   Additional arguments to pass to the parent constructor.
-   */
-  public function __construct(public readonly SandboxManagerBase $sandboxManager, ...$arguments) {
-    parent::__construct(...$arguments);
-  }
+class SandboxException extends \RuntimeException
+{
+    /**
+     * Constructs a StageException object.
+     *
+     * @param \Drupal\package_manager\SandboxManagerBase $sandboxManager
+     *   The stage.
+     * @param mixed ...$arguments
+     *   Additional arguments to pass to the parent constructor.
+     */
+    public function __construct(public readonly SandboxManagerBase $sandboxManager, ...$arguments)
+    {
+        parent::__construct(...$arguments);
+    }
 
 }

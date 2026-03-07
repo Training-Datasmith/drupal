@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -14,8 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
  * @see \Drupal\Core\Cache\CacheableMetadata
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-class CacheableResponse extends Response implements CacheableResponseInterface {
-
-  use CacheableResponseTrait;
+class CacheableResponse extends Response implements CacheableResponseInterface
+{
+    use CacheableResponseTrait;
 
 }

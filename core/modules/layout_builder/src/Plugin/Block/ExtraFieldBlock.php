@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Render\Element;
@@ -29,151 +29,157 @@ use Drupal\layout_builder\Plugin\Derivative\ExtraFieldBlockDeriver;
  *   Plugin classes are internal.
  */
 #[Block(
-  id: "extra_field_block",
-  deriver: ExtraFieldBlockDeriver::class
+    id: 'extra_field_block',
+    deriver: ExtraFieldBlockDeriver::class
 )]
-class ExtraFieldBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
+class ExtraFieldBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * The field name.
+     */
+    protected string $fieldName;
 
-  /**
-   * The field name.
-   */
-  protected string $fieldName;
+    /**
+     * Constructs a new ExtraFieldBlock.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
+     *   The entity field manager.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
+    {
+        // Get field name from the plugin ID.
+        [, , , $field_name] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 4);
+        assert(!empty($field_name));
+        $this->fieldName = $field_name;
 
-  /**
-   * Constructs a new ExtraFieldBlock.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
-   *   The entity field manager.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager) {
-    // Get field name from the plugin ID.
-    [, , , $field_name] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 4);
-    assert(!empty($field_name));
-    $this->fieldName = $field_name;
-
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'label_display' => '0',
-      'formatter' => [
-        'settings' => [],
-        'third_party_settings' => [],
-      ],
-    ];
-  }
-
-  /**
-   * Gets the entity that has the field.
-   *
-   * @return \Drupal\Core\Entity\FieldableEntityInterface
-   *   The entity.
-   */
-  protected function getEntity() {
-    return $this->getContextValue('entity');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    $entity = $this->getEntity();
-    // Add a placeholder to replace after the entity view is built.
-    // @see layout_builder_entity_view_alter().
-    $extra_fields = $this->entityFieldManager->getExtraFields($entity->getEntityTypeId(), $entity->bundle());
-    if (!isset($extra_fields['display'][$this->fieldName])) {
-      $build = [];
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    else {
-      $build = [
-        '#extra_field_placeholder_field_name' => $this->fieldName,
-        // Always provide a placeholder. The Layout Builder will NOT invoke
-        // hook_entity_view_alter() so extra fields will not be added to the
-        // render array. If the hook is invoked the placeholder will be
-        // replaced.
-        // @see ::replaceFieldPlaceholder()
-        '#markup' => $this->t('Placeholder for the @preview_fallback', ['@preview_fallback' => $this->getPreviewFallbackString()]),
-      ];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'label_display' => '0',
+          'formatter' => [
+            'settings' => [],
+            'third_party_settings' => [],
+          ],
+        ];
     }
-    CacheableMetadata::createFromObject($this)->applyTo($build);
-    return $build;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPreviewFallbackString(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    $entity = $this->getEntity();
-    $extra_fields = $this->entityFieldManager->getExtraFields($entity->getEntityTypeId(), $entity->bundle());
-    return new TranslatableMarkup('"@field" field', ['@field' => $extra_fields['display'][$this->fieldName]['label']]);
-  }
-
-  /**
-   * Replaces all placeholders for a given field.
-   *
-   * @param array $build
-   *   The built render array for the elements.
-   * @param array $built_field
-   *   The render array to replace the placeholder.
-   * @param string $field_name
-   *   The field name.
-   *
-   * @see ::build()
-   */
-  public static function replaceFieldPlaceholder(array &$build, array $built_field, $field_name): void {
-    foreach (Element::children($build) as $child) {
-      if (isset($build[$child]['#extra_field_placeholder_field_name']) && $build[$child]['#extra_field_placeholder_field_name'] === $field_name) {
-        $placeholder_cache = CacheableMetadata::createFromRenderArray($build[$child]);
-        $built_cache = CacheableMetadata::createFromRenderArray($built_field);
-        $merged_cache = $placeholder_cache->merge($built_cache);
-        $build[$child] = $built_field;
-        $build['#pre_render'][] = [static::class, 'preRenderBlock'];
-        $merged_cache->applyTo($build);
-      }
-      else {
-        static::replaceFieldPlaceholder($build[$child], $built_field, $field_name);
-      }
+    /**
+     * Gets the entity that has the field.
+     *
+     * @return \Drupal\Core\Entity\FieldableEntityInterface
+     *   The entity.
+     */
+    protected function getEntity()
+    {
+        return $this->getContextValue('entity');
     }
-  }
 
-  /**
-   * Pre-render callback to ensure empty extra_field_block's are not rendered.
-   *
-   * @param array $block_build
-   *   The original block render array.
-   *
-   * @return array
-   *   The modified block render array.
-   */
-  #[TrustedCallback]
-  public static function preRenderBlock(array $block_build): array {
-    $content = $block_build['content'] ?? NULL;
-    if ($content === NULL || Element::isEmpty($content)) {
-      // Block content is empty, abort rendering the whole block and preserve
-      // cache metadata.
-      // @see \Drupal\Core\Render\Renderer::doRender
-      $block_build['#printed'] = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        $entity = $this->getEntity();
+        // Add a placeholder to replace after the entity view is built.
+        // @see layout_builder_entity_view_alter().
+        $extra_fields = $this->entityFieldManager->getExtraFields($entity->getEntityTypeId(), $entity->bundle());
+        if (!isset($extra_fields['display'][$this->fieldName])) {
+            $build = [];
+        } else {
+            $build = [
+              '#extra_field_placeholder_field_name' => $this->fieldName,
+              // Always provide a placeholder. The Layout Builder will NOT invoke
+              // hook_entity_view_alter() so extra fields will not be added to the
+              // render array. If the hook is invoked the placeholder will be
+              // replaced.
+              // @see ::replaceFieldPlaceholder()
+              '#markup' => $this->t('Placeholder for the @preview_fallback', ['@preview_fallback' => $this->getPreviewFallbackString()]),
+            ];
+        }
+        CacheableMetadata::createFromObject($this)->applyTo($build);
+        return $build;
     }
-    return $block_build;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function blockAccess(AccountInterface $account) {
-    return $this->getEntity()->access('view', $account, TRUE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPreviewFallbackString(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        $entity = $this->getEntity();
+        $extra_fields = $this->entityFieldManager->getExtraFields($entity->getEntityTypeId(), $entity->bundle());
+        return new TranslatableMarkup('"@field" field', ['@field' => $extra_fields['display'][$this->fieldName]['label']]);
+    }
+
+    /**
+     * Replaces all placeholders for a given field.
+     *
+     * @param array $build
+     *   The built render array for the elements.
+     * @param array $built_field
+     *   The render array to replace the placeholder.
+     * @param string $field_name
+     *   The field name.
+     *
+     * @see ::build()
+     */
+    public static function replaceFieldPlaceholder(array &$build, array $built_field, $field_name): void
+    {
+        foreach (Element::children($build) as $child) {
+            if (isset($build[$child]['#extra_field_placeholder_field_name']) && $build[$child]['#extra_field_placeholder_field_name'] === $field_name) {
+                $placeholder_cache = CacheableMetadata::createFromRenderArray($build[$child]);
+                $built_cache = CacheableMetadata::createFromRenderArray($built_field);
+                $merged_cache = $placeholder_cache->merge($built_cache);
+                $build[$child] = $built_field;
+                $build['#pre_render'][] = [static::class, 'preRenderBlock'];
+                $merged_cache->applyTo($build);
+            } else {
+                static::replaceFieldPlaceholder($build[$child], $built_field, $field_name);
+            }
+        }
+    }
+
+    /**
+     * Pre-render callback to ensure empty extra_field_block's are not rendered.
+     *
+     * @param array $block_build
+     *   The original block render array.
+     *
+     * @return array
+     *   The modified block render array.
+     */
+    #[TrustedCallback]
+    public static function preRenderBlock(array $block_build): array
+    {
+        $content = $block_build['content'] ?? null;
+        if ($content === null || Element::isEmpty($content)) {
+            // Block content is empty, abort rendering the whole block and preserve
+            // cache metadata.
+            // @see \Drupal\Core\Render\Renderer::doRender
+            $block_build['#printed'] = true;
+        }
+        return $block_build;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
+        return $this->getEntity()->access('view', $account, true);
+    }
 
 }

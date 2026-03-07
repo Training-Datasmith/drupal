@@ -13,49 +13,50 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class ConfigEntityStatusUITest extends BrowserTestBase {
+class ConfigEntityStatusUITest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['config_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['config_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests status operations.
+     */
+    public function testCRUD(): void
+    {
+        $this->drupalLogin($this->drupalCreateUser([
+          'administer site configuration',
+        ]));
 
-  /**
-   * Tests status operations.
-   */
-  public function testCRUD(): void {
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer site configuration',
-    ]));
+        $id = $this->randomMachineName();
+        $edit = [
+          'id' => $id,
+          'label' => $this->randomMachineName(),
+        ];
+        $this->drupalGet('admin/structure/config_test/add');
+        $this->submitForm($edit, 'Save');
 
-    $id = $this->randomMachineName();
-    $edit = [
-      'id' => $id,
-      'label' => $this->randomMachineName(),
-    ];
-    $this->drupalGet('admin/structure/config_test/add');
-    $this->submitForm($edit, 'Save');
+        $entity = \Drupal::entityTypeManager()->getStorage('config_test')->load($id);
 
-    $entity = \Drupal::entityTypeManager()->getStorage('config_test')->load($id);
+        // Disable an entity.
+        $disable_url = $entity->toUrl('disable');
+        $this->assertSession()->linkByHrefExists($disable_url->toString());
+        $this->drupalGet($disable_url);
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->linkByHrefNotExists($disable_url->toString());
 
-    // Disable an entity.
-    $disable_url = $entity->toUrl('disable');
-    $this->assertSession()->linkByHrefExists($disable_url->toString());
-    $this->drupalGet($disable_url);
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefNotExists($disable_url->toString());
-
-    // Enable an entity.
-    $enable_url = $entity->toUrl('enable');
-    $this->assertSession()->linkByHrefExists($enable_url->toString());
-    $this->drupalGet($enable_url);
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefNotExists($enable_url->toString());
-  }
+        // Enable an entity.
+        $enable_url = $entity->toUrl('enable');
+        $this->assertSession()->linkByHrefExists($enable_url->toString());
+        $this->drupalGet($enable_url);
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->linkByHrefNotExists($enable_url->toString());
+    }
 
 }

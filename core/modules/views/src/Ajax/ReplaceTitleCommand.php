@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -10,32 +12,32 @@ use Drupal\Core\Ajax\CommandInterface;
  * This command is implemented in
  * Drupal.AjaxCommands.prototype.viewsReplaceTitle.
  */
-class ReplaceTitleCommand implements CommandInterface {
+class ReplaceTitleCommand implements CommandInterface
+{
+    /**
+     * Constructs a \Drupal\views\Ajax\ReplaceTitleCommand object.
+     *
+     * @param string $title
+     *   The title of the page.
+     */
+    public function __construct(
+        /**
+         * The page title to replace.
+         */
+        protected $title
+    ) {
+    }
 
-  /**
-   * Constructs a \Drupal\views\Ajax\ReplaceTitleCommand object.
-   *
-   * @param string $title
-   *   The title of the page.
-   */
-  public function __construct(
-      /**
-       * The page title to replace.
-       */
-      protected $title
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'viewsReplaceTitle',
-      'title' => $this->title,
-      'siteName' => \Drupal::config('system.site')->get('name'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'viewsReplaceTitle',
+          'title' => $this->title,
+          'siteName' => \Drupal::config('system.site')->get('name'),
+        ];
+    }
 
 }

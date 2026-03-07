@@ -13,4 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('core_standard_responsive_images_recipe')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericRecipeTestBase {}
+class GenericTest extends GenericRecipeTestBase
+{
+}

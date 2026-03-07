@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Entity;
 
 use Drupal\Core\Entity\Attribute\ContentEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -11,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Flood\PrefixFloodInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\Form\UserCancelForm;
 use Drupal\user\ProfileForm;
 use Drupal\user\ProfileTranslationHandler;
@@ -32,17 +34,17 @@ use Drupal\user\UserViewsData;
  * because "user" is a reserved word in many databases.
  */
 #[ContentEntityType(
-  id: 'user',
-  label: new TranslatableMarkup('User'),
-  label_collection: new TranslatableMarkup('Users'),
-  label_singular: new TranslatableMarkup('user'),
-  label_plural: new TranslatableMarkup('users'),
-  entity_keys: [
+    id: 'user',
+    label: new TranslatableMarkup('User'),
+    label_collection: new TranslatableMarkup('Users'),
+    label_singular: new TranslatableMarkup('user'),
+    label_plural: new TranslatableMarkup('users'),
+    entity_keys: [
     'id' => 'uid',
     'langcode' => 'langcode',
     'uuid' => 'uuid',
   ],
-  handlers: [
+    handlers: [
     'storage' => UserStorage::class,
     'storage_schema' => UserStorageSchema::class,
     'access' => UserAccessControlHandler::class,
@@ -58,561 +60,597 @@ use Drupal\user\UserViewsData;
     ],
     'translation' => ProfileTranslationHandler::class,
   ],
-  links: [
+    links: [
     'canonical' => '/user/{user}',
     'edit-form' => '/user/{user}/edit',
     'cancel-form' => '/user/{user}/cancel',
     'collection' => '/admin/people',
   ],
-  admin_permission: 'administer users',
-  base_table: 'users',
-  data_table: 'users_field_data',
-  translatable: TRUE,
-  label_count: [
+    admin_permission: 'administer users',
+    base_table: 'users',
+    data_table: 'users_field_data',
+    translatable: true,
+    label_count: [
     'singular' => '@count user',
     'plural' => '@count users',
   ],
-  field_ui_base_route: 'entity.user.admin_form',
-  common_reference_target: TRUE,
+    field_ui_base_route: 'entity.user.admin_form',
+    common_reference_target: true,
 )]
-class User extends ContentEntityBase implements UserInterface {
+class User extends ContentEntityBase implements UserInterface
+{
+    use EntityChangedTrait;
 
-  use EntityChangedTrait;
+    /**
+     * Stores a reference for a reusable anonymous user entity.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected static $anonymousUser;
 
-  /**
-   * Stores a reference for a reusable anonymous user entity.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected static $anonymousUser;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isNew(): bool {
-    return !empty($this->enforceIsNew) || $this->id() === NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getDisplayName();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-    parent::preSave($storage);
-
-    // Make sure that the authenticated/anonymous roles are not persisted.
-    foreach ($this->get('roles') as $index => $item) {
-      if (in_array($item->target_id, [RoleInterface::ANONYMOUS_ID, RoleInterface::AUTHENTICATED_ID])) {
-        $this->get('roles')->offsetUnset($index);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function isNew(): bool
+    {
+        return !empty($this->enforceIsNew) || $this->id() === null;
     }
 
-    // Store account cancellation information.
-    foreach (['user_cancel_method', 'user_cancel_notify'] as $key) {
-      if (isset($this->{$key})) {
-        \Drupal::service('user.data')->set('user', $this->id(), substr($key, 5), $this->{$key});
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getDisplayName();
     }
 
-    $config = \Drupal::config('system.date');
-    if (
-      $config->get('timezone.user.configurable') && !$this->getTimeZone() &&
-      $config->get('timezone.user.default') == UserInterface::TIMEZONE_DEFAULT
-    ) {
-      $this->set('timezone', $config->get('timezone.default'));
-    }
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function preSave(EntityStorageInterface $storage): void
+    {
+        parent::preSave($storage);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage, $update);
-
-    if ($update) {
-      $session_manager = \Drupal::service('session_manager');
-      // If the password has been changed, delete all open sessions for the
-      // user and recreate the current one.
-      if ($this->pass->value != $this->getOriginal()->pass->value) {
-        $session_manager->delete($this->id());
-        if ($this->id() == \Drupal::currentUser()->id()) {
-          \Drupal::service('session')->migrate();
+        // Make sure that the authenticated/anonymous roles are not persisted.
+        foreach ($this->get('roles') as $index => $item) {
+            if (in_array($item->target_id, [RoleInterface::ANONYMOUS_ID, RoleInterface::AUTHENTICATED_ID])) {
+                $this->get('roles')->offsetUnset($index);
+            }
         }
 
-        $flood_config = \Drupal::config('user.flood');
-        $flood_service = \Drupal::flood();
-        $identifier = $this->id();
-        if ($flood_config->get('uid_only')) {
-          // Clear flood events based on the uid only if configured.
-          $flood_service->clear('user.failed_login_user', $identifier);
-        }
-        elseif ($flood_service instanceof PrefixFloodInterface) {
-          $flood_service->clearByPrefix('user.failed_login_user', $identifier);
+        // Store account cancellation information.
+        foreach (['user_cancel_method', 'user_cancel_notify'] as $key) {
+            if (isset($this->{$key})) {
+                \Drupal::service('user.data')->set('user', $this->id(), substr($key, 5), $this->{$key});
+            }
         }
 
-      }
-
-      // If the user was blocked, delete the user's sessions to force a logout.
-      if ($this->getOriginal()->status->value != $this->status->value && $this->status->value == 0) {
-        $session_manager->delete($this->id());
-      }
-
-      // Send emails after we have the new user object.
-      if ($this->status->value != $this->getOriginal()->status->value) {
-        // The user's status is changing; conditionally send notification email.
-        $op = $this->status->value == 1 ? 'status_activated' : 'status_blocked';
-        _user_mail_notify($op, $this);
-      }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::postDelete($storage, $entities);
-
-    $uids = array_keys($entities);
-    \Drupal::service('user.data')->delete(NULL, $uids);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getRoles($exclude_locked_roles = FALSE): array {
-    $roles = [];
-
-    // Users with an ID always have the authenticated user role.
-    if (!$exclude_locked_roles) {
-      if ($this->isAuthenticated()) {
-        $roles[] = RoleInterface::AUTHENTICATED_ID;
-      }
-      else {
-        $roles[] = RoleInterface::ANONYMOUS_ID;
-      }
+        $config = \Drupal::config('system.date');
+        if (
+            $config->get('timezone.user.configurable') && !$this->getTimeZone() &&
+            $config->get('timezone.user.default') == UserInterface::TIMEZONE_DEFAULT
+        ) {
+            $this->set('timezone', $config->get('timezone.default'));
+        }
     }
 
-    foreach ($this->get('roles') as $role) {
-      if ($role->target_id) {
-        $roles[] = $role->target_id;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave(EntityStorageInterface $storage, $update = true): void
+    {
+        parent::postSave($storage, $update);
+
+        if ($update) {
+            $session_manager = \Drupal::service('session_manager');
+            // If the password has been changed, delete all open sessions for the
+            // user and recreate the current one.
+            if ($this->pass->value != $this->getOriginal()->pass->value) {
+                $session_manager->delete($this->id());
+                if ($this->id() == \Drupal::currentUser()->id()) {
+                    \Drupal::service('session')->migrate();
+                }
+
+                $flood_config = \Drupal::config('user.flood');
+                $flood_service = \Drupal::flood();
+                $identifier = $this->id();
+                if ($flood_config->get('uid_only')) {
+                    // Clear flood events based on the uid only if configured.
+                    $flood_service->clear('user.failed_login_user', $identifier);
+                } elseif ($flood_service instanceof PrefixFloodInterface) {
+                    $flood_service->clearByPrefix('user.failed_login_user', $identifier);
+                }
+
+            }
+
+            // If the user was blocked, delete the user's sessions to force a logout.
+            if ($this->getOriginal()->status->value != $this->status->value && $this->status->value == 0) {
+                $session_manager->delete($this->id());
+            }
+
+            // Send emails after we have the new user object.
+            if ($this->status->value != $this->getOriginal()->status->value) {
+                // The user's status is changing; conditionally send notification email.
+                $op = $this->status->value == 1 ? 'status_activated' : 'status_blocked';
+                _user_mail_notify($op, $this);
+            }
+        }
     }
 
-    return $roles;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::postDelete($storage, $entities);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasRole(string $rid): bool {
-    return in_array($rid, $this->getRoles());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addRole($rid): static {
-
-    if (in_array($rid, [RoleInterface::AUTHENTICATED_ID, RoleInterface::ANONYMOUS_ID])) {
-      throw new \InvalidArgumentException('Anonymous or authenticated role ID must not be assigned manually.');
+        $uids = array_keys($entities);
+        \Drupal::service('user.data')->delete(null, $uids);
     }
 
-    $roles = $this->getRoles(TRUE);
-    $roles[] = $rid;
-    $this->set('roles', array_unique($roles));
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getRoles($exclude_locked_roles = false): array
+    {
+        $roles = [];
 
-    return $this;
-  }
+        // Users with an ID always have the authenticated user role.
+        if (!$exclude_locked_roles) {
+            if ($this->isAuthenticated()) {
+                $roles[] = RoleInterface::AUTHENTICATED_ID;
+            } else {
+                $roles[] = RoleInterface::ANONYMOUS_ID;
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function removeRole($rid): static {
-    $this->set('roles', array_diff($this->getRoles(TRUE), [$rid]));
+        foreach ($this->get('roles') as $role) {
+            if ($role->target_id) {
+                $roles[] = $role->target_id;
+            }
+        }
 
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function hasPermission(string $permission) {
-    return \Drupal::service('permission_checker')->hasPermission($permission, $this);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPassword() {
-    return $this->get('pass')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setPassword(#[\SensitiveParameter] $password): static {
-    $this->get('pass')->value = $password;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEmail() {
-    return $this->get('mail')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setEmail($mail): static {
-    $this->get('mail')->value = $mail;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLastAccessedTime() {
-    return $this->get('access')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setLastAccessTime($timestamp): static {
-    $this->get('access')->value = $timestamp;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLastLoginTime() {
-    return $this->get('login')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setLastLoginTime($timestamp): static {
-    $this->get('login')->value = $timestamp;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isActive(): bool {
-    return $this->get('status')->value == 1;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isBlocked(): bool {
-    return $this->get('status')->value == 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function activate(): static {
-    if ($this->isAnonymous()) {
-      throw new \LogicException('The anonymous user account should remain blocked at all times.');
+        return $roles;
     }
-    $this->get('status')->value = 1;
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function block(): static {
-    $this->get('status')->value = 0;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTimeZone() {
-    return $this->get('timezone')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPreferredLangcode($fallback_to_default = TRUE) {
-    $language_list = $this->languageManager()->getLanguages();
-    $preferred_langcode = $this->get('preferred_langcode')->value;
-    if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
-      return $language_list[$preferred_langcode]->getId();
+    /**
+     * {@inheritdoc}
+     */
+    public function hasRole(string $rid): bool
+    {
+        return in_array($rid, $this->getRoles());
     }
-    return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPreferredAdminLangcode($fallback_to_default = TRUE) {
-    $language_list = $this->languageManager()->getLanguages();
-    $preferred_langcode = $this->get('preferred_admin_langcode')->value;
-    if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
-      return $language_list[$preferred_langcode]->getId();
+    /**
+     * {@inheritdoc}
+     */
+    public function addRole($rid): static
+    {
+
+        if (in_array($rid, [RoleInterface::AUTHENTICATED_ID, RoleInterface::ANONYMOUS_ID])) {
+            throw new \InvalidArgumentException('Anonymous or authenticated role ID must not be assigned manually.');
+        }
+
+        $roles = $this->getRoles(true);
+        $roles[] = $rid;
+        $this->set('roles', array_unique($roles));
+
+        return $this;
     }
-    return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getInitialEmail() {
-    return $this->get('init')->value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function removeRole($rid): static
+    {
+        $this->set('roles', array_diff($this->getRoles(true), [$rid]));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isAuthenticated(): bool {
-    return $this->id() > 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isAnonymous(): bool
-  {
-      if ($this->id() === 0) {
-          return true;
-      }
-      return $this->id() === '0';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAccountName() {
-    return $this->get('name')->value ?: '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDisplayName() {
-    $name = $this->getAccountName() ?: \Drupal::config('user.settings')->get('anonymous');
-    \Drupal::moduleHandler()->alter('user_format_name', $name, $this);
-    return $name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setUsername($username): static {
-    $this->set('name', $username);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setExistingPassword(#[\SensitiveParameter] $password): static {
-    $this->get('pass')->existing = $password;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function checkExistingPassword(UserInterface $account_unchanged): bool {
-    $existing = $this->get('pass')->existing;
-    return $existing !== NULL && strlen($existing) > 0 &&
-      \Drupal::service('password')->check(trim($existing), $account_unchanged->getPassword());
-  }
-
-  /**
-   * Returns an anonymous user entity.
-   *
-   * @return \Drupal\user\UserInterface
-   *   An anonymous user entity.
-   */
-  public static function getAnonymousUser() {
-    if (!isset(static::$anonymousUser)) {
-
-      // @todo Use the entity factory once available, see
-      //   https://www.drupal.org/node/1867228.
-      $entity_type_manager = \Drupal::entityTypeManager();
-      $entity_type = $entity_type_manager->getDefinition('user');
-      $class = $entity_type->getClass();
-
-      static::$anonymousUser = new $class([
-        'uid' => [LanguageInterface::LANGCODE_DEFAULT => 0],
-        'name' => [LanguageInterface::LANGCODE_DEFAULT => ''],
-        // Explicitly set the langcode to ensure that field definitions do not
-        // need to be fetched to figure out a default.
-        'langcode' => [LanguageInterface::LANGCODE_DEFAULT => LanguageInterface::LANGCODE_NOT_SPECIFIED],
-      ], $entity_type->id());
+        return $this;
     }
-    return clone static::$anonymousUser;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
-    $fields = parent::baseFieldDefinitions($entity_type);
+    /**
+     * {@inheritdoc}
+     */
+    public function hasPermission(string $permission)
+    {
+        return \Drupal::service('permission_checker')->hasPermission($permission, $this);
+    }
 
-    $fields['uid']->setLabel(t('User ID'))
-      ->setDescription(t('The user ID.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function getPassword()
+    {
+        return $this->get('pass')->value;
+    }
 
-    $fields['uuid']->setDescription(t('The user UUID.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function setPassword(#[\SensitiveParameter] $password): static
+    {
+        $this->get('pass')->value = $password;
+        return $this;
+    }
 
-    $fields['langcode']->setLabel(t('Language code'))
-      ->setDescription(t('The user language code.'))
-      ->setDisplayOptions('form', ['region' => 'hidden']);
+    /**
+     * {@inheritdoc}
+     */
+    public function getEmail()
+    {
+        return $this->get('mail')->value;
+    }
 
-    $fields['preferred_langcode'] = BaseFieldDefinition::create('language')
-      ->setLabel(t('Preferred language code'))
-      ->setDescription(t("The user's preferred language code for receiving emails and viewing the site."))
-      // @todo Define this via an options provider once
-      //   https://www.drupal.org/node/2329937 is completed.
-      ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public function setEmail($mail): static
+    {
+        $this->get('mail')->value = $mail;
+        return $this;
+    }
 
-    $fields['preferred_admin_langcode'] = BaseFieldDefinition::create('language')
-      ->setLabel(t('Preferred admin language code'))
-      ->setDescription(t("The user's preferred language code for viewing administration pages."))
-      // @todo A default value of NULL is ignored, so we have to specify
-      //   an empty field item structure instead. Fix this in
-      //   https://www.drupal.org/node/2318605.
-      ->setDefaultValue([0 => ['value' => NULL]])
-      // @todo Define this via an options provider once
-      //   https://www.drupal.org/node/2329937 is completed.
-      ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public function getCreatedTime()
+    {
+        return $this->get('created')->value;
+    }
 
-    // The name should not vary per language. The username is the visual
-    // identifier for a user and needs to be consistent in all languages.
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('The name of this user.'))
-      ->setRequired(TRUE)
-      ->setConstraints([
-        // No Length constraint here because the UserName constraint also covers
-        // that.
-        'UserName' => [],
-        'UserNameUnique' => [],
-      ]);
-    $fields['name']->getItemDefinition()->setClass(\Drupal\user\UserNameItem::class);
+    /**
+     * {@inheritdoc}
+     */
+    public function getLastAccessedTime()
+    {
+        return $this->get('access')->value;
+    }
 
-    $fields['pass'] = BaseFieldDefinition::create('password')
-      ->setLabel(t('Password'))
-      ->setDescription(t('The password of this user (hashed).'))
-      ->addConstraint('ProtectedUserField');
+    /**
+     * {@inheritdoc}
+     */
+    public function setLastAccessTime($timestamp): static
+    {
+        $this->get('access')->value = $timestamp;
+        return $this;
+    }
 
-    $fields['mail'] = BaseFieldDefinition::create('email')
-      ->setLabel(t('Email'))
-      ->setDescription(t('The email of this user.'))
-      ->setDefaultValue('')
-      ->addConstraint('UserMailUnique')
-      ->addConstraint('UserMailRequired')
-      ->addConstraint('ProtectedUserField');
+    /**
+     * {@inheritdoc}
+     */
+    public function getLastLoginTime()
+    {
+        return $this->get('login')->value;
+    }
 
-    $fields['timezone'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Timezone'))
-      ->setDescription(t('The timezone of this user.'))
-      ->setSetting('max_length', 32)
-      // @todo Define this via an options provider once
-      //   https://www.drupal.org/node/2329937 is completed.
-      ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => self::class . '::getAllowedTimezones'],
-      ]);
-    $fields['timezone']->getItemDefinition()->setClass(TimeZoneItem::class);
+    /**
+     * {@inheritdoc}
+     */
+    public function setLastLoginTime($timestamp): static
+    {
+        $this->get('login')->value = $timestamp;
+        return $this;
+    }
 
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('User status'))
-      ->setDescription(t('Whether the user is active or blocked.'))
-      ->setDefaultValue(FALSE);
-    $fields['status']->getItemDefinition()->setClass(StatusItem::class);
+    /**
+     * {@inheritdoc}
+     */
+    public function isActive(): bool
+    {
+        return $this->get('status')->value == 1;
+    }
 
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The time that the user was created.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function isBlocked(): bool
+    {
+        return $this->get('status')->value == 0;
+    }
 
-    $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the user was last edited.'))
-      ->setTranslatable(TRUE);
+    /**
+     * {@inheritdoc}
+     */
+    public function activate(): static
+    {
+        if ($this->isAnonymous()) {
+            throw new \LogicException('The anonymous user account should remain blocked at all times.');
+        }
+        $this->get('status')->value = 1;
+        return $this;
+    }
 
-    $fields['access'] = BaseFieldDefinition::create('timestamp')
-      ->setLabel(t('Last access'))
-      ->setDescription(t('The time that the user last accessed the site.'))
-      ->setDefaultValue(0);
+    /**
+     * {@inheritdoc}
+     */
+    public function block(): static
+    {
+        $this->get('status')->value = 0;
+        return $this;
+    }
 
-    $fields['login'] = BaseFieldDefinition::create('timestamp')
-      ->setLabel(t('Last login'))
-      ->setDescription(t('The time that the user last logged in.'))
-      ->setDefaultValue(0);
+    /**
+     * {@inheritdoc}
+     */
+    public function getTimeZone()
+    {
+        return $this->get('timezone')->value;
+    }
 
-    $fields['init'] = BaseFieldDefinition::create('email')
-      ->setLabel(t('Initial email'))
-      ->setDescription(t('The email address used for initial account creation.'))
-      ->setDefaultValue('');
+    /**
+     * {@inheritdoc}
+     */
+    public function getPreferredLangcode($fallback_to_default = true)
+    {
+        $language_list = $this->languageManager()->getLanguages();
+        $preferred_langcode = $this->get('preferred_langcode')->value;
+        if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
+            return $language_list[$preferred_langcode]->getId();
+        }
+        return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
+    }
 
-    $fields['roles'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Roles'))
-      ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
-      ->setDescription(t('The roles the user has.'))
-      ->setSetting('target_type', 'user_role');
+    /**
+     * {@inheritdoc}
+     */
+    public function getPreferredAdminLangcode($fallback_to_default = true)
+    {
+        $language_list = $this->languageManager()->getLanguages();
+        $preferred_langcode = $this->get('preferred_admin_langcode')->value;
+        if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
+            return $language_list[$preferred_langcode]->getId();
+        }
+        return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
+    }
 
-    return $fields;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getInitialEmail()
+    {
+        return $this->get('init')->value;
+    }
 
-  /**
-   * Returns the role storage object.
-   *
-   * @return \Drupal\user\RoleStorageInterface
-   *   The role storage object.
-   */
-  protected function getRoleStorage() {
-    return \Drupal::entityTypeManager()->getStorage('user_role');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isAuthenticated(): bool
+    {
+        return $this->id() > 0;
+    }
 
-  /**
-   * Defines allowed timezones for the field's AllowedValues constraint.
-   *
-   * @return string[]
-   *   The allowed values.
-   */
-  public static function getAllowedTimezones(): array {
-    return \DateTimeZone::listIdentifiers();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isAnonymous(): bool
+    {
+        if ($this->id() === 0) {
+            return true;
+        }
+        return $this->id() === '0';
+    }
 
-  /**
-   * Defines allowed configurable language codes for AllowedValues constraints.
-   *
-   * @return string[]
-   *   The allowed values.
-   */
-  public static function getAllowedConfigurableLanguageCodes(): array {
-    return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_CONFIGURABLE));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAccountName()
+    {
+        return $this->get('name')->value ?: '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDisplayName()
+    {
+        $name = $this->getAccountName() ?: \Drupal::config('user.settings')->get('anonymous');
+        \Drupal::moduleHandler()->alter('user_format_name', $name, $this);
+        return $name;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setUsername($username): static
+    {
+        $this->set('name', $username);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setExistingPassword(#[\SensitiveParameter] $password): static
+    {
+        $this->get('pass')->existing = $password;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function checkExistingPassword(UserInterface $account_unchanged): bool
+    {
+        $existing = $this->get('pass')->existing;
+        return $existing !== null && strlen($existing) > 0 &&
+          \Drupal::service('password')->check(trim($existing), $account_unchanged->getPassword());
+    }
+
+    /**
+     * Returns an anonymous user entity.
+     *
+     * @return \Drupal\user\UserInterface
+     *   An anonymous user entity.
+     */
+    public static function getAnonymousUser()
+    {
+        if (!isset(static::$anonymousUser)) {
+
+            // @todo Use the entity factory once available, see
+            //   https://www.drupal.org/node/1867228.
+            $entity_type_manager = \Drupal::entityTypeManager();
+            $entity_type = $entity_type_manager->getDefinition('user');
+            $class = $entity_type->getClass();
+
+            static::$anonymousUser = new $class([
+              'uid' => [LanguageInterface::LANGCODE_DEFAULT => 0],
+              'name' => [LanguageInterface::LANGCODE_DEFAULT => ''],
+              // Explicitly set the langcode to ensure that field definitions do not
+              // need to be fetched to figure out a default.
+              'langcode' => [LanguageInterface::LANGCODE_DEFAULT => LanguageInterface::LANGCODE_NOT_SPECIFIED],
+            ], $entity_type->id());
+        }
+        return clone static::$anonymousUser;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
+        $fields = parent::baseFieldDefinitions($entity_type);
+
+        $fields['uid']->setLabel(t('User ID'))
+          ->setDescription(t('The user ID.'));
+
+        $fields['uuid']->setDescription(t('The user UUID.'));
+
+        $fields['langcode']->setLabel(t('Language code'))
+          ->setDescription(t('The user language code.'))
+          ->setDisplayOptions('form', ['region' => 'hidden']);
+
+        $fields['preferred_langcode'] = BaseFieldDefinition::create('language')
+          ->setLabel(t('Preferred language code'))
+          ->setDescription(t("The user's preferred language code for receiving emails and viewing the site."))
+          // @todo Define this via an options provider once
+          //   https://www.drupal.org/node/2329937 is completed.
+          ->addPropertyConstraints('value', [
+            'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
+          ]);
+
+        $fields['preferred_admin_langcode'] = BaseFieldDefinition::create('language')
+          ->setLabel(t('Preferred admin language code'))
+          ->setDescription(t("The user's preferred language code for viewing administration pages."))
+          // @todo A default value of NULL is ignored, so we have to specify
+          //   an empty field item structure instead. Fix this in
+          //   https://www.drupal.org/node/2318605.
+          ->setDefaultValue([0 => ['value' => null]])
+          // @todo Define this via an options provider once
+          //   https://www.drupal.org/node/2329937 is completed.
+          ->addPropertyConstraints('value', [
+            'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
+          ]);
+
+        // The name should not vary per language. The username is the visual
+        // identifier for a user and needs to be consistent in all languages.
+        $fields['name'] = BaseFieldDefinition::create('string')
+          ->setLabel(t('Name'))
+          ->setDescription(t('The name of this user.'))
+          ->setRequired(true)
+          ->setConstraints([
+            // No Length constraint here because the UserName constraint also covers
+            // that.
+            'UserName' => [],
+            'UserNameUnique' => [],
+          ]);
+        $fields['name']->getItemDefinition()->setClass(\Drupal\user\UserNameItem::class);
+
+        $fields['pass'] = BaseFieldDefinition::create('password')
+          ->setLabel(t('Password'))
+          ->setDescription(t('The password of this user (hashed).'))
+          ->addConstraint('ProtectedUserField');
+
+        $fields['mail'] = BaseFieldDefinition::create('email')
+          ->setLabel(t('Email'))
+          ->setDescription(t('The email of this user.'))
+          ->setDefaultValue('')
+          ->addConstraint('UserMailUnique')
+          ->addConstraint('UserMailRequired')
+          ->addConstraint('ProtectedUserField');
+
+        $fields['timezone'] = BaseFieldDefinition::create('string')
+          ->setLabel(t('Timezone'))
+          ->setDescription(t('The timezone of this user.'))
+          ->setSetting('max_length', 32)
+          // @todo Define this via an options provider once
+          //   https://www.drupal.org/node/2329937 is completed.
+          ->addPropertyConstraints('value', [
+            'AllowedValues' => ['callback' => self::class . '::getAllowedTimezones'],
+          ]);
+        $fields['timezone']->getItemDefinition()->setClass(TimeZoneItem::class);
+
+        $fields['status'] = BaseFieldDefinition::create('boolean')
+          ->setLabel(t('User status'))
+          ->setDescription(t('Whether the user is active or blocked.'))
+          ->setDefaultValue(false);
+        $fields['status']->getItemDefinition()->setClass(StatusItem::class);
+
+        $fields['created'] = BaseFieldDefinition::create('created')
+          ->setLabel(t('Created'))
+          ->setDescription(t('The time that the user was created.'));
+
+        $fields['changed'] = BaseFieldDefinition::create('changed')
+          ->setLabel(t('Changed'))
+          ->setDescription(t('The time that the user was last edited.'))
+          ->setTranslatable(true);
+
+        $fields['access'] = BaseFieldDefinition::create('timestamp')
+          ->setLabel(t('Last access'))
+          ->setDescription(t('The time that the user last accessed the site.'))
+          ->setDefaultValue(0);
+
+        $fields['login'] = BaseFieldDefinition::create('timestamp')
+          ->setLabel(t('Last login'))
+          ->setDescription(t('The time that the user last logged in.'))
+          ->setDefaultValue(0);
+
+        $fields['init'] = BaseFieldDefinition::create('email')
+          ->setLabel(t('Initial email'))
+          ->setDescription(t('The email address used for initial account creation.'))
+          ->setDefaultValue('');
+
+        $fields['roles'] = BaseFieldDefinition::create('entity_reference')
+          ->setLabel(t('Roles'))
+          ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
+          ->setDescription(t('The roles the user has.'))
+          ->setSetting('target_type', 'user_role');
+
+        return $fields;
+    }
+
+    /**
+     * Returns the role storage object.
+     *
+     * @return \Drupal\user\RoleStorageInterface
+     *   The role storage object.
+     */
+    protected function getRoleStorage()
+    {
+        return \Drupal::entityTypeManager()->getStorage('user_role');
+    }
+
+    /**
+     * Defines allowed timezones for the field's AllowedValues constraint.
+     *
+     * @return string[]
+     *   The allowed values.
+     */
+    public static function getAllowedTimezones(): array
+    {
+        return \DateTimeZone::listIdentifiers();
+    }
+
+    /**
+     * Defines allowed configurable language codes for AllowedValues constraints.
+     *
+     * @return string[]
+     *   The allowed values.
+     */
+    public static function getAllowedConfigurableLanguageCodes(): array
+    {
+        return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_CONFIGURABLE));
+    }
 
 }

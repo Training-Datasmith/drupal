@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 use Drupal\Component\Assertion\Inspector;
@@ -21,34 +23,36 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  *
  * @see https://jsonapi.org/format/#error-objects
  */
-class ErrorCollection implements \IteratorAggregate {
+class ErrorCollection implements \IteratorAggregate
+{
+    /**
+     * The HTTP exceptions.
+     *
+     * @var list<\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface>
+     */
+    protected array $errors;
 
-  /**
-   * The HTTP exceptions.
-   *
-   * @var list<\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface>
-   */
-  protected array $errors;
+    /**
+     * Instantiates an ErrorCollection object.
+     *
+     * @param list<\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface> $errors
+     *   The errors.
+     */
+    public function __construct(array $errors)
+    {
+        assert(Inspector::assertAll(fn ($error) => $error instanceof HttpExceptionInterface, $errors));
+        $this->errors = $errors;
+    }
 
-  /**
-   * Instantiates an ErrorCollection object.
-   *
-   * @param list<\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface> $errors
-   *   The errors.
-   */
-  public function __construct(array $errors) {
-    assert(Inspector::assertAll(fn($error) => $error instanceof HttpExceptionInterface, $errors));
-    $this->errors = $errors;
-  }
-
-  /**
-   * Returns an iterator for errors.
-   *
-   * @return \ArrayIterator<int, \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface>
-   *   An \ArrayIterator instance.
-   */
-  public function getIterator(): \ArrayIterator {
-    return new \ArrayIterator($this->errors);
-  }
+    /**
+     * Returns an iterator for errors.
+     *
+     * @return \ArrayIterator<int, \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface>
+     *   An \ArrayIterator instance.
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator($this->errors);
+    }
 
 }

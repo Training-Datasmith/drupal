@@ -16,81 +16,83 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(LayoutDefault::class)]
 #[Group('Layout')]
-class LayoutDefaultTest extends UnitTestCase {
+class LayoutDefaultTest extends UnitTestCase
+{
+    /**
+     * Tests build.
+     */
+    #[DataProvider('providerTestBuild')]
+    public function testBuild($regions, $expected): void
+    {
+        $definition = new LayoutDefinition([
+          'theme_hook' => 'layout',
+          'library' => 'core/drupal',
+          'regions' => [
+            'left' => [
+              'label' => 'Left',
+            ],
+            'right' => [
+              'label' => 'Right',
+            ],
+          ],
+        ]);
+        $expected += [
+          '#in_preview' => false,
+          '#settings' => [
+            'label' => '',
+          ],
+          '#layout' => $definition,
+          '#theme' => 'layout',
+          '#attached' => [
+            'library' => [
+              'core/drupal',
+            ],
+          ],
+        ];
 
-  /**
-   * Tests build.
-   */
-  #[DataProvider('providerTestBuild')]
-  public function testBuild($regions, $expected): void {
-    $definition = new LayoutDefinition([
-      'theme_hook' => 'layout',
-      'library' => 'core/drupal',
-      'regions' => [
-        'left' => [
-          'label' => 'Left',
-        ],
-        'right' => [
-          'label' => 'Right',
-        ],
-      ],
-    ]);
-    $expected += [
-      '#in_preview' => FALSE,
-      '#settings' => [
-        'label' => '',
-      ],
-      '#layout' => $definition,
-      '#theme' => 'layout',
-      '#attached' => [
-        'library' => [
-          'core/drupal',
-        ],
-      ],
-    ];
+        $layout = new LayoutDefault([], '', $definition);
+        $this->assertSame($expected, $layout->build($regions));
+    }
 
-    $layout = new LayoutDefault([], '', $definition);
-    $this->assertSame($expected, $layout->build($regions));
-  }
-
-  /**
-   * Provides test data for ::testBuild().
-   */
-  public static function providerTestBuild(): array {
-    $data = [];
-    // Empty regions are not added.
-    $data['right_only'] = [
-      [
-        'right' => [
-          'foo' => 'bar',
-        ],
-      ],
-      [
-        'right' => [
-          'foo' => 'bar',
-        ],
-      ],
-    ];
-    // Regions will be in the order defined by the layout.
-    $data['switched_order'] = [
-      [
-        'right' => [
-          'foo' => 'bar',
-        ],
-        'left' => [
-          'foo' => 'baz',
-        ],
-      ],
-      [
-        'left' => [
-          'foo' => 'baz',
-        ],
-        'right' => [
-          'foo' => 'bar',
-        ],
-      ],
-    ];
-    return $data;
-  }
+    /**
+     * Provides test data for ::testBuild().
+     */
+    public static function providerTestBuild(): array
+    {
+        $data = [];
+        // Empty regions are not added.
+        $data['right_only'] = [
+          [
+            'right' => [
+              'foo' => 'bar',
+            ],
+          ],
+          [
+            'right' => [
+              'foo' => 'bar',
+            ],
+          ],
+        ];
+        // Regions will be in the order defined by the layout.
+        $data['switched_order'] = [
+          [
+            'right' => [
+              'foo' => 'bar',
+            ],
+            'left' => [
+              'foo' => 'baz',
+            ],
+          ],
+          [
+            'left' => [
+              'foo' => 'baz',
+            ],
+            'right' => [
+              'foo' => 'bar',
+            ],
+          ],
+        ];
+        return $data;
+    }
 
 }

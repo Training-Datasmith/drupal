@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Development;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Config\ConfigCrudEvent;
 use Drupal\Core\Config\ConfigEvents;
 use Drupal\Core\Config\Schema\SchemaCheckTrait;
 use Drupal\Core\Config\Schema\SchemaIncompleteException;
 use Drupal\Core\Config\StorageInterface;
-use Drupal\Core\Config\TypedConfigManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -22,82 +23,84 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @see \Drupal\KernelTests\KernelTestBase::register()
  * @see \Drupal\Core\Test\FunctionalTestSetupTrait::prepareSettings()
  */
-class ConfigSchemaChecker implements EventSubscriberInterface {
-  use SchemaCheckTrait;
+class ConfigSchemaChecker implements EventSubscriberInterface
+{
+    use SchemaCheckTrait;
 
-  /**
-   * An array of config checked already. Keyed by config name and a checksum.
-   *
-   * @var array
-   */
-  protected $checked = [];
+    /**
+     * An array of config checked already. Keyed by config name and a checksum.
+     *
+     * @var array
+     */
+    protected $checked = [];
 
-  /**
-   * Constructs the ConfigSchemaChecker object.
-   *
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedManager
-   *   The typed config manager.
-   * @param string[] $exclude
-   *   An array of config object names that are excluded from schema checking.
-   * @param bool $validateConstraints
-   *   Determines if constraints will be validated. If TRUE, constraint
-   *   validation errors will be added to the errors found by
-   *   SchemaCheckTrait::checkConfigSchema().
-   */
-  public function __construct(
-      protected \Drupal\Core\Config\TypedConfigManagerInterface $typedManager,
-      /**
-       * An array of config object names that are excluded from schema checking.
-       */
-      protected array $exclude = [],
-      private readonly bool $validateConstraints = FALSE
-  )
-  {
-  }
-
-  /**
-   * Checks that configuration complies with its schema on config save.
-   *
-   * @param \Drupal\Core\Config\ConfigCrudEvent $event
-   *   The configuration event.
-   *
-   * @throws \Drupal\Core\Config\Schema\SchemaIncompleteException
-   *   Exception thrown when configuration does not match its schema.
-   */
-  public function onConfigSave(ConfigCrudEvent $event): void {
-    // Only validate configuration if in the default collection. Other
-    // collections may have incomplete configuration (for example language
-    // overrides only). These are not valid in themselves.
-    $saved_config = $event->getConfig();
-    if ($saved_config->getStorage()->getCollectionName() != StorageInterface::DEFAULT_COLLECTION) {
-      return;
+    /**
+     * Constructs the ConfigSchemaChecker object.
+     *
+     * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedManager
+     *   The typed config manager.
+     * @param string[] $exclude
+     *   An array of config object names that are excluded from schema checking.
+     * @param bool $validateConstraints
+     *   Determines if constraints will be validated. If TRUE, constraint
+     *   validation errors will be added to the errors found by
+     *   SchemaCheckTrait::checkConfigSchema().
+     */
+    public function __construct(
+        protected \Drupal\Core\Config\TypedConfigManagerInterface $typedManager,
+        /**
+         * An array of config object names that are excluded from schema checking.
+         */
+        protected array $exclude = [],
+        private readonly bool $validateConstraints = false
+    ) {
     }
 
-    $name = $saved_config->getName();
-    $data = $saved_config->get();
-    $checksum = Crypt::hashBase64(serialize($data));
-    if (!in_array($name, $this->exclude) && !isset($this->checked[$name . ':' . $checksum])) {
-      $this->checked[$name . ':' . $checksum] = TRUE;
-      $errors = $this->checkConfigSchema($this->typedManager, $name, $data, $this->validateConstraints);
-      if ($errors === FALSE) {
-          throw new SchemaIncompleteException("No schema for $name");
-      }
-      if (is_array($errors)) {
-          $text_errors = [];
-          foreach ($errors as $key => $error) {
-            $text_errors[] = new FormattableMarkup('@key @error', ['@key' => $key, '@error' => $error]);
-          }
-          throw new SchemaIncompleteException("Schema errors for $name with the following errors: " . implode(', ', $text_errors));
-      }
-    }
-  }
+    /**
+     * Checks that configuration complies with its schema on config save.
+     *
+     * @param \Drupal\Core\Config\ConfigCrudEvent $event
+     *   The configuration event.
+     *
+     * @throws \Drupal\Core\Config\Schema\SchemaIncompleteException
+     *   Exception thrown when configuration does not match its schema.
+     */
+    public function onConfigSave(ConfigCrudEvent $event): void
+    {
+        // Only validate configuration if in the default collection. Other
+        // collections may have incomplete configuration (for example language
+        // overrides only). These are not valid in themselves.
+        $saved_config = $event->getConfig();
+        if ($saved_config->getStorage()->getCollectionName() != StorageInterface::DEFAULT_COLLECTION) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[ConfigEvents::SAVE][] = ['onConfigSave', 255];
-    return $events;
-  }
+        $name = $saved_config->getName();
+        $data = $saved_config->get();
+        $checksum = Crypt::hashBase64(serialize($data));
+        if (!in_array($name, $this->exclude) && !isset($this->checked[$name . ':' . $checksum])) {
+            $this->checked[$name . ':' . $checksum] = true;
+            $errors = $this->checkConfigSchema($this->typedManager, $name, $data, $this->validateConstraints);
+            if ($errors === false) {
+                throw new SchemaIncompleteException("No schema for $name");
+            }
+            if (is_array($errors)) {
+                $text_errors = [];
+                foreach ($errors as $key => $error) {
+                    $text_errors[] = new FormattableMarkup('@key @error', ['@key' => $key, '@error' => $error]);
+                }
+                throw new SchemaIncompleteException("Schema errors for $name with the following errors: " . implode(', ', $text_errors));
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[ConfigEvents::SAVE][] = ['onConfigSave', 255];
+        return $events;
+    }
 
 }

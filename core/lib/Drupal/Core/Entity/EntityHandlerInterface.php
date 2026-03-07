@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -12,24 +14,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ingroup entity_api
  */
-interface EntityHandlerInterface {
-
-  /**
-   * Instantiates a new instance of this entity handler.
-   *
-   * This is a factory method that returns a new instance of this object. The
-   * factory should pass any needed dependencies into the constructor of this
-   * object, but not the container itself. Every call to this method must return
-   * a new instance of this object; that is, it may not implement a singleton.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The service container this object should use.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   *
-   * @return static
-   *   A new instance of the entity handler.
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type);
+interface EntityHandlerInterface
+{
+    /**
+     * Instantiates a new instance of this entity handler.
+     *
+     * This is a factory method that returns a new instance of this object. The
+     * factory should pass any needed dependencies into the constructor of this
+     * object, but not the container itself. Every call to this method must return
+     * a new instance of this object; that is, it may not implement a singleton.
+     *
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+     *   The service container this object should use.
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     *
+     * @return static
+     *   A new instance of the entity handler.
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type);
 
 }

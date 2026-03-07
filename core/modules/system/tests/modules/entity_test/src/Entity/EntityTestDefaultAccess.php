@@ -11,15 +11,15 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines a test entity class with no access control handler.
  */
 #[ContentEntityType(
-  id: 'entity_test_default_access',
-  label: new TranslatableMarkup('Test entity with default access'),
-  entity_keys: [
+    id: 'entity_test_default_access',
+    label: new TranslatableMarkup('Test entity with default access'),
+    entity_keys: [
     'id' => 'id',
     'bundle' => 'type',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_default_access',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_default_access',
 )]
-class EntityTestDefaultAccess extends EntityTest {
-
+class EntityTestDefaultAccess extends EntityTest
+{
 }

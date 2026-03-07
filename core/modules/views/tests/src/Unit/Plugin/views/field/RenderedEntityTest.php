@@ -22,28 +22,30 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RenderedEntity::class)]
 #[Group('Views')]
-class RenderedEntityTest extends UnitTestCase {
+class RenderedEntityTest extends UnitTestCase
+{
+    use ViewsLoggerTestTrait;
 
-  use ViewsLoggerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMockLoggerWithMissingEntity();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->setUpMockLoggerWithMissingEntity();
-  }
-
-  /**
-   * Tests the render method when getEntity returns NULL.
-   */
-  public function testRenderNullEntity(): void {
-    $row = new ResultRow();
-    $field = new RenderedEntity(['entity_type' => 'foo', 'entity field' => 'bar'], '', [], $this->createMock(EntityTypeManagerInterface::class), $this->createMock(LanguageManagerInterface::class), $this->createMock(EntityRepositoryInterface::class), $this->createMock(EntityDisplayRepositoryInterface::class));
-    $view = $this->createMock(ViewExecutable::class);
-    $display = $this->createMock(DisplayPluginBase::class);
-    $field->init($view, $display);
-    $this->assertEmpty($field->render($row));
-  }
+    /**
+     * Tests the render method when getEntity returns NULL.
+     */
+    public function testRenderNullEntity(): void
+    {
+        $row = new ResultRow();
+        $field = new RenderedEntity(['entity_type' => 'foo', 'entity field' => 'bar'], '', [], $this->createMock(EntityTypeManagerInterface::class), $this->createMock(LanguageManagerInterface::class), $this->createMock(EntityRepositoryInterface::class), $this->createMock(EntityDisplayRepositoryInterface::class));
+        $view = $this->createMock(ViewExecutable::class);
+        $display = $this->createMock(DisplayPluginBase::class);
+        $field->init($view, $display);
+        $this->assertEmpty($field->render($row));
+    }
 
 }

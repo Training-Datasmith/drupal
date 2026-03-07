@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -9,42 +11,47 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
  *
  * @internal
  */
-class DeleteForm extends ContentEntityDeleteForm {
+class DeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl()
+    {
+        // Point to the entity of which this comment is a reply.
+        return $this->entity->get('entity_id')->entity->toUrl();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl() {
-    // Point to the entity of which this comment is a reply.
-    return $this->entity->get('entity_id')->entity->toUrl();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRedirectUrl()
+    {
+        return $this->getCancelUrl();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    return $this->getCancelUrl();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Any replies to this comment will be lost. This action cannot be undone.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Any replies to this comment will be lost. This action cannot be undone.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('The comment and all its replies have been deleted.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('The comment and all its replies have been deleted.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function logDeletionMessage(): void {
-    $this->logger('comment')->info('Deleted comment @cid and its replies.', ['@cid' => $this->entity->id()]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function logDeletionMessage(): void
+    {
+        $this->logger('comment')->info('Deleted comment @cid and its replies.', ['@cid' => $this->entity->id()]);
+    }
 
 }

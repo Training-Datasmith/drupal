@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Plugin\Filter;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -16,52 +18,56 @@ use Drupal\filter\Plugin\FilterInterface;
  * formats. It returns an empty string.
  */
 #[Filter(
-  id: "filter_null",
-  title: new TranslatableMarkup("Provides a fallback for missing filters. Do not use."),
-  type: FilterInterface::TYPE_HTML_RESTRICTOR,
-  weight: -10
+    id: 'filter_null',
+    title: new TranslatableMarkup('Provides a fallback for missing filters. Do not use.'),
+    type: FilterInterface::TYPE_HTML_RESTRICTOR,
+    weight: -10
 )]
-class FilterNull extends FilterBase {
+class FilterNull extends FilterBase
+{
+    /**
+     * Tracks if an alert about this filter has been logged.
+     *
+     * @var bool
+     */
+    protected $logged = false;
 
-  /**
-   * Tracks if an alert about this filter has been logged.
-   *
-   * @var bool
-   */
-  protected $logged = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    // Once per filter, log that a filter plugin was missing.
-    if (!$this->logged) {
-      $this->logged = TRUE;
-      \Drupal::logger('filter')->alert('Missing filter plugin: %filter.', ['%filter' => $plugin_id]);
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        // Once per filter, log that a filter plugin was missing.
+        if (!$this->logged) {
+            $this->logged = true;
+            \Drupal::logger('filter')->alert('Missing filter plugin: %filter.', ['%filter' => $plugin_id]);
+        }
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
-    return new FilterProcessResult('');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode): \Drupal\filter\FilterProcessResult
+    {
+        return new FilterProcessResult('');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getHTMLRestrictions(): array {
-    // Nothing is allowed.
-    return ['allowed' => []];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getHTMLRestrictions(): array
+    {
+        // Nothing is allowed.
+        return ['allowed' => []];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Missing filter. All text is removed');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function tips($long = false): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Missing filter. All text is removed');
+    }
 
 }

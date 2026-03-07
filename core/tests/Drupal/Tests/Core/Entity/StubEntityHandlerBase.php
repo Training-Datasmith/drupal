@@ -9,16 +9,16 @@ use Drupal\Core\Entity\EntityHandlerBase;
 /**
  * A stub base entity handler for testing purposes.
  */
-class StubEntityHandlerBase extends EntityHandlerBase {
+class StubEntityHandlerBase extends EntityHandlerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public $moduleHandler;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $moduleHandler;
-
-  /**
-   * {@inheritdoc}
-   */
-  public $stringTranslation;
+    /**
+     * {@inheritdoc}
+     */
+    public $stringTranslation;
 
 }

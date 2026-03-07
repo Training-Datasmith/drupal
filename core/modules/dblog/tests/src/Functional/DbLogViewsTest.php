@@ -15,57 +15,60 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('dblog')]
 #[RunTestsInSeparateProcesses]
-class DbLogViewsTest extends DbLogTest {
+class DbLogViewsTest extends DbLogTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'dblog',
+      'node',
+      'help',
+      'block',
+      'views',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'dblog',
-    'node',
-    'help',
-    'block',
-    'views',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getLogsEntriesTable() {
-    return $this->xpath('.//div[contains(@class, "views-element-container")]//table/tbody/tr');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function filterLogsEntries($type = NULL, $severity = NULL): void {
-    $query = [];
-    if (isset($type)) {
-      $query['type[]'] = $type;
-    }
-    if (isset($severity)) {
-      $query['severity[]'] = $severity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLogsEntriesTable()
+    {
+        return $this->xpath('.//div[contains(@class, "views-element-container")]//table/tbody/tr');
     }
 
-    $this->drupalGet('admin/reports/dblog', ['query' => $query]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function filterLogsEntries($type = null, $severity = null): void
+    {
+        $query = [];
+        if (isset($type)) {
+            $query['type[]'] = $type;
+        }
+        if (isset($severity)) {
+            $query['severity[]'] = $severity;
+        }
 
-  /**
-   * Tests the empty text for the watchdog view is not using an input format.
-   */
-  public function testEmptyText(): void {
-    $view = Views::getView('watchdog');
-    $data = $view->storage->toArray();
-    $area = $data['display']['default']['display_options']['empty']['area'];
+        $this->drupalGet('admin/reports/dblog', ['query' => $query]);
+    }
 
-    $this->assertEquals('text_custom', $area['plugin_id']);
-    $this->assertEquals('area_text_custom', $area['field']);
-    $this->assertEquals('No log messages available.', $area['content']);
-  }
+    /**
+     * Tests the empty text for the watchdog view is not using an input format.
+     */
+    public function testEmptyText(): void
+    {
+        $view = Views::getView('watchdog');
+        $data = $view->storage->toArray();
+        $area = $data['display']['default']['display_options']['empty']['area'];
+
+        $this->assertEquals('text_custom', $area['plugin_id']);
+        $this->assertEquals('area_text_custom', $area['field']);
+        $this->assertEquals('No log messages available.', $area['content']);
+    }
 
 }

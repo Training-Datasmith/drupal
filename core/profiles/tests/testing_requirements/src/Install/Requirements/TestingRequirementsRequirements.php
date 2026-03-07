@@ -10,20 +10,21 @@ use Drupal\Core\Extension\Requirement\RequirementSeverity;
 /**
  * Install time requirements for the testing_requirements module.
  */
-class TestingRequirementsRequirements implements InstallRequirementsInterface {
+class TestingRequirementsRequirements implements InstallRequirementsInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getRequirements(): array
+    {
+        $requirements = [];
+        $requirements['testing_requirements'] = [
+          'title' => t('Testing requirements'),
+          'severity' => RequirementSeverity::Error,
+          'description' => t('Testing requirements failed requirements.'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getRequirements(): array {
-    $requirements = [];
-    $requirements['testing_requirements'] = [
-      'title' => t('Testing requirements'),
-      'severity' => RequirementSeverity::Error,
-      'description' => t('Testing requirements failed requirements.'),
-    ];
-
-    return $requirements;
-  }
+        return $requirements;
+    }
 
 }

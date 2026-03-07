@@ -16,71 +16,77 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Test')]
 #[Group('KernelTests')]
 #[RunTestsInSeparateProcesses]
-class KernelTestBaseShutdownTest extends KernelTestBase {
+class KernelTestBaseShutdownTest extends KernelTestBase
+{
+    /**
+     * Indicates which shutdown functions are expected to be called.
+     *
+     * @var array
+     */
+    protected $expectedShutdownCalled;
 
-  /**
-   * Indicates which shutdown functions are expected to be called.
-   *
-   * @var array
-   */
-  protected $expectedShutdownCalled;
+    /**
+     * Indicates which shutdown functions have been called.
+     *
+     * @var array
+     */
+    protected static $shutdownCalled;
 
-  /**
-   * Indicates which shutdown functions have been called.
-   *
-   * @var array
-   */
-  protected static $shutdownCalled;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        // Initialize static variable prior to testing.
+        self::$shutdownCalled = [];
+        parent::setUp();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    // Initialize static variable prior to testing.
-    self::$shutdownCalled = [];
-    parent::setUp();
-  }
+    /**
+     * Tests shutdown function.
+     *
+     * @legacy-covers ::assertPostConditions
+     */
+    public function testShutdownFunction(): void
+    {
+        $this->expectedShutdownCalled = ['shutdownFunction', 'shutdownFunction2'];
+        drupal_register_shutdown_function([$this, 'shutdownFunction']);
+    }
 
-  /**
-   * Tests shutdown function.
-   *
-   * @legacy-covers ::assertPostConditions
-   */
-  public function testShutdownFunction(): void {
-    $this->expectedShutdownCalled = ['shutdownFunction', 'shutdownFunction2'];
-    drupal_register_shutdown_function([$this, 'shutdownFunction']);
-  }
+    /**
+     * Tests no shutdown function.
+     *
+     * @legacy-covers ::assertPostConditions
+     */
+    public function testNoShutdownFunction(): void
+    {
+        $this->expectedShutdownCalled = [];
+    }
 
-  /**
-   * Tests no shutdown function.
-   *
-   * @legacy-covers ::assertPostConditions
-   */
-  public function testNoShutdownFunction(): void {
-    $this->expectedShutdownCalled = [];
-  }
+    /**
+     * Registers that this shutdown function has been called.
+     */
+    public function shutdownFunction(): void
+    {
+        self::$shutdownCalled[] = 'shutdownFunction';
+        drupal_register_shutdown_function([$this, 'shutdownFunction2']);
+    }
 
-  /**
-   * Registers that this shutdown function has been called.
-   */
-  public function shutdownFunction(): void {
-    self::$shutdownCalled[] = 'shutdownFunction';
-    drupal_register_shutdown_function([$this, 'shutdownFunction2']);
-  }
+    /**
+     * Registers that this shutdown function has been called.
+     */
+    public function shutdownFunction2(): void
+    {
+        self::$shutdownCalled[] = 'shutdownFunction2';
+    }
 
-  /**
-   * Registers that this shutdown function has been called.
-   */
-  public function shutdownFunction2(): void {
-    self::$shutdownCalled[] = 'shutdownFunction2';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function assertPostConditions(): void {
-    parent::assertPostConditions();
-    $this->assertSame($this->expectedShutdownCalled, self::$shutdownCalled);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function assertPostConditions(): void
+    {
+        parent::assertPostConditions();
+        $this->assertSame($this->expectedShutdownCalled, self::$shutdownCalled);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor\Plugin;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -19,32 +21,36 @@ use Drupal\Core\Plugin\PluginBase;
  * @see \Drupal\editor\Plugin\EditorManager
  * @see plugin_api
  */
-abstract class EditorBase extends PluginBase implements EditorPluginInterface {
+abstract class EditorBase extends PluginBase implements EditorPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultSettings()
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultSettings() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

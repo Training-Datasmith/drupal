@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin;
 
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
@@ -8,42 +10,44 @@ use Drupal\Component\Plugin\Discovery\DiscoveryTrait;
 /**
  * Remove definitions which refer to a non-existing source plugin.
  */
-class NoSourcePluginDecorator implements DiscoveryInterface {
+class NoSourcePluginDecorator implements DiscoveryInterface
+{
+    use DiscoveryTrait;
 
-  use DiscoveryTrait;
+    /**
+     * Constructs a NoSourcePluginDecorator object.
+     *
+     * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
+     *   The object implementing DiscoveryInterface that is being decorated.
+     */
+    public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated)
+    {
+    }
 
-  /**
-   * Constructs a NoSourcePluginDecorator object.
-   *
-   * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
-   *   The object implementing DiscoveryInterface that is being decorated.
-   */
-  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinitions(): array
+    {
+        /** @var \Drupal\Component\Plugin\PluginManagerInterface $source_plugin_manager */
+        $source_plugin_manager = \Drupal::service('plugin.manager.migrate.source');
+        return array_filter($this->decorated->getDefinitions(), fn (array $definition) => !empty($definition['source']['plugin']) && $source_plugin_manager->hasDefinition($definition['source']['plugin']));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefinitions(): array {
-    /** @var \Drupal\Component\Plugin\PluginManagerInterface $source_plugin_manager */
-    $source_plugin_manager = \Drupal::service('plugin.manager.migrate.source');
-    return array_filter($this->decorated->getDefinitions(), fn(array $definition) => !empty($definition['source']['plugin']) && $source_plugin_manager->hasDefinition($definition['source']['plugin']));
-  }
-
-  /**
-   * Passes through all unknown calls onto the decorated object.
-   *
-   * @param string $method
-   *   The method to call on the decorated object.
-   * @param array $args
-   *   Call arguments.
-   *
-   * @return mixed
-   *   The return value from the method on the decorated object.
-   */
-  public function __call(string $method, array $args) {
-    return call_user_func_array([$this->decorated, $method], $args);
-  }
+    /**
+     * Passes through all unknown calls onto the decorated object.
+     *
+     * @param string $method
+     *   The method to call on the decorated object.
+     * @param array $args
+     *   Call arguments.
+     *
+     * @return mixed
+     *   The return value from the method on the decorated object.
+     */
+    public function __call(string $method, array $args)
+    {
+        return call_user_func_array([$this->decorated, $method], $args);
+    }
 
 }

@@ -16,145 +16,154 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[CoversClass(ContextualLinkDefault::class)]
 #[Group('Menu')]
-class ContextualLinkDefaultTest extends UnitTestCase {
+class ContextualLinkDefaultTest extends UnitTestCase
+{
+    /**
+     * The tested contextual link default plugin.
+     *
+     * @var \Drupal\Core\Menu\ContextualLinkDefault
+     */
+    protected $contextualLinkDefault;
 
-  /**
-   * The tested contextual link default plugin.
-   *
-   * @var \Drupal\Core\Menu\ContextualLinkDefault
-   */
-  protected $contextualLinkDefault;
+    /**
+     * The used plugin configuration.
+     *
+     * @var array
+     */
+    protected $config = [];
 
-  /**
-   * The used plugin configuration.
-   *
-   * @var array
-   */
-  protected $config = [];
+    /**
+     * The used plugin ID.
+     *
+     * @var string
+     */
+    protected $pluginId = 'contextual_link_default';
 
-  /**
-   * The used plugin ID.
-   *
-   * @var string
-   */
-  protected $pluginId = 'contextual_link_default';
+    /**
+     * The used plugin definition.
+     *
+     * @var array
+     */
+    protected $pluginDefinition = [
+      'id' => 'contextual_link_default',
+    ];
 
-  /**
-   * The used plugin definition.
-   *
-   * @var array
-   */
-  protected $pluginDefinition = [
-    'id' => 'contextual_link_default',
-  ];
+    /**
+     * The mocked translator.
+     *
+     * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $stringTranslation;
 
-  /**
-   * The mocked translator.
-   *
-   * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $stringTranslation;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->stringTranslation = $this->createMock('Drupal\Core\StringTranslation\TranslationInterface');
+    }
 
-    $this->stringTranslation = $this->createMock('Drupal\Core\StringTranslation\TranslationInterface');
-  }
+    protected function setupContextualLinkDefault(): void
+    {
+        $this->contextualLinkDefault = new ContextualLinkDefault($this->config, $this->pluginId, $this->pluginDefinition);
+    }
 
-  protected function setupContextualLinkDefault(): void {
-    $this->contextualLinkDefault = new ContextualLinkDefault($this->config, $this->pluginId, $this->pluginDefinition);
-  }
+    /**
+     * Tests get title.
+     */
+    public function testGetTitle(): void
+    {
+        $title = 'Example';
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $this->pluginDefinition['title'] = (new TranslatableMarkup($title, [], [], $this->stringTranslation));
+        $this->stringTranslation->expects($this->once())
+          ->method('translateString')
+          ->with($this->pluginDefinition['title'])
+          ->willReturn('Example translated');
 
-  /**
-   * Tests get title.
-   */
-  public function testGetTitle(): void {
-    $title = 'Example';
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    $this->pluginDefinition['title'] = (new TranslatableMarkup($title, [], [], $this->stringTranslation));
-    $this->stringTranslation->expects($this->once())
-      ->method('translateString')
-      ->with($this->pluginDefinition['title'])
-      ->willReturn('Example translated');
+        $this->setupContextualLinkDefault();
+        $this->assertEquals('Example translated', $this->contextualLinkDefault->getTitle());
+    }
 
-    $this->setupContextualLinkDefault();
-    $this->assertEquals('Example translated', $this->contextualLinkDefault->getTitle());
-  }
+    /**
+     * Tests get title with context.
+     */
+    public function testGetTitleWithContext(): void
+    {
+        $title = 'Example';
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $this->pluginDefinition['title'] = (new TranslatableMarkup($title, [], ['context' => 'context'], $this->stringTranslation));
+        $this->stringTranslation->expects($this->once())
+          ->method('translateString')
+          ->with($this->pluginDefinition['title'])
+          ->willReturn('Example translated with context');
 
-  /**
-   * Tests get title with context.
-   */
-  public function testGetTitleWithContext(): void {
-    $title = 'Example';
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    $this->pluginDefinition['title'] = (new TranslatableMarkup($title, [], ['context' => 'context'], $this->stringTranslation));
-    $this->stringTranslation->expects($this->once())
-      ->method('translateString')
-      ->with($this->pluginDefinition['title'])
-      ->willReturn('Example translated with context');
+        $this->setupContextualLinkDefault();
+        $this->assertEquals('Example translated with context', $this->contextualLinkDefault->getTitle());
+    }
 
-    $this->setupContextualLinkDefault();
-    $this->assertEquals('Example translated with context', $this->contextualLinkDefault->getTitle());
-  }
+    /**
+     * Tests get title with title arguments.
+     */
+    public function testGetTitleWithTitleArguments(): void
+    {
+        $title = 'Example @test';
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $this->pluginDefinition['title'] = (new TranslatableMarkup($title, ['@test' => 'value'], [], $this->stringTranslation));
+        $this->stringTranslation->expects($this->once())
+          ->method('translateString')
+          ->with($this->pluginDefinition['title'])
+          ->willReturn('Example value');
 
-  /**
-   * Tests get title with title arguments.
-   */
-  public function testGetTitleWithTitleArguments(): void {
-    $title = 'Example @test';
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    $this->pluginDefinition['title'] = (new TranslatableMarkup($title, ['@test' => 'value'], [], $this->stringTranslation));
-    $this->stringTranslation->expects($this->once())
-      ->method('translateString')
-      ->with($this->pluginDefinition['title'])
-      ->willReturn('Example value');
+        $this->setupContextualLinkDefault();
+        $request = new Request();
+        $this->assertEquals('Example value', $this->contextualLinkDefault->getTitle($request));
+    }
 
-    $this->setupContextualLinkDefault();
-    $request = new Request();
-    $this->assertEquals('Example value', $this->contextualLinkDefault->getTitle($request));
-  }
+    /**
+     * Tests get route name.
+     */
+    public function testGetRouteName($route_name = 'test_route_name'): void
+    {
+        $this->pluginDefinition['route_name'] = $route_name;
+        $this->setupContextualLinkDefault();
 
-  /**
-   * Tests get route name.
-   */
-  public function testGetRouteName($route_name = 'test_route_name'): void {
-    $this->pluginDefinition['route_name'] = $route_name;
-    $this->setupContextualLinkDefault();
+        $this->assertEquals($route_name, $this->contextualLinkDefault->getRouteName());
+    }
 
-    $this->assertEquals($route_name, $this->contextualLinkDefault->getRouteName());
-  }
+    /**
+     * Tests get group.
+     */
+    public function testGetGroup($group_name = 'test_group'): void
+    {
+        $this->pluginDefinition['group'] = $group_name;
+        $this->setupContextualLinkDefault();
 
-  /**
-   * Tests get group.
-   */
-  public function testGetGroup($group_name = 'test_group'): void {
-    $this->pluginDefinition['group'] = $group_name;
-    $this->setupContextualLinkDefault();
+        $this->assertEquals($group_name, $this->contextualLinkDefault->getGroup());
+    }
 
-    $this->assertEquals($group_name, $this->contextualLinkDefault->getGroup());
-  }
+    /**
+     * Tests get options.
+     */
+    public function testGetOptions($options = ['key' => 'value']): void
+    {
+        $this->pluginDefinition['options'] = $options;
+        $this->setupContextualLinkDefault();
 
-  /**
-   * Tests get options.
-   */
-  public function testGetOptions($options = ['key' => 'value']): void {
-    $this->pluginDefinition['options'] = $options;
-    $this->setupContextualLinkDefault();
+        $this->assertEquals($options, $this->contextualLinkDefault->getOptions());
+    }
 
-    $this->assertEquals($options, $this->contextualLinkDefault->getOptions());
-  }
+    /**
+     * Tests get weight.
+     */
+    public function testGetWeight($weight = 5): void
+    {
+        $this->pluginDefinition['weight'] = $weight;
+        $this->setupContextualLinkDefault();
 
-  /**
-   * Tests get weight.
-   */
-  public function testGetWeight($weight = 5): void {
-    $this->pluginDefinition['weight'] = $weight;
-    $this->setupContextualLinkDefault();
-
-    $this->assertEquals($weight, $this->contextualLinkDefault->getWeight());
-  }
+        $this->assertEquals($weight, $this->contextualLinkDefault->getWeight());
+    }
 
 }

@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateException;
-use Drupal\migrate\MigrateLookupInterface;
-use Drupal\migrate\MigrateSkipRowException;
-use Drupal\migrate\MigrateStubInterface;
-use Drupal\migrate\ProcessPluginBase;
-use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\MigrateSkipRowException;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -123,176 +123,172 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('migration_lookup')]
-class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a MigrationLookup object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\migrate\Plugin\MigrationInterface $migration
-   *   The Migration the plugin is being used in.
-   * @param \Drupal\migrate\MigrateLookupInterface $migrateLookup
-   *   The migrate lookup service.
-   * @param \Drupal\migrate\MigrateStubInterface $migrateStub
-   *   The migrate stub service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\migrate\Plugin\MigrationInterface $migration, protected \Drupal\migrate\MigrateLookupInterface $migrateLookup, protected \Drupal\migrate\MigrateStubInterface $migrateStub) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('migrate.lookup'),
-      $container->get('migrate.stub')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\migrate\MigrateException
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $lookup_migration_ids = (array) $this->configuration['migration'];
-    $self = FALSE;
-    $destination_ids = NULL;
-    $source_id_values = [];
-    foreach ($lookup_migration_ids as $lookup_migration_id) {
-      $lookup_value = $value;
-      if ($lookup_migration_id == $this->migration->id()) {
-        $self = TRUE;
-      }
-      if (isset($this->configuration['source_ids'][$lookup_migration_id])) {
-        $lookup_value = array_values($row->getMultiple($this->configuration['source_ids'][$lookup_migration_id]));
-      }
-      $lookup_value = (array) $lookup_value;
-      $this->skipInvalid($lookup_value);
-      if ($this->isPipelineStopped()) {
-        return NULL;
-      }
-      $source_id_values[$lookup_migration_id] = $lookup_value;
-
-      // Re-throw any PluginException as a MigrateException so the executable
-      // can shut down the migration.
-      try {
-        $destination_id_array = $this->migrateLookup->lookup($lookup_migration_id, $lookup_value);
-      }
-      catch (PluginNotFoundException) {
-        $destination_id_array = [];
-      }
-      catch (MigrateException $e) {
-        throw $e;
-      }
-      catch (\Exception $e) {
-        throw new MigrateException(sprintf('A %s was thrown while processing this migration lookup', gettype($e)), $e->getCode(), $e);
-      }
-
-      if ($destination_id_array) {
-        $destination_ids = array_values(reset($destination_id_array));
-        break;
-      }
+class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a MigrationLookup object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+     *   The Migration the plugin is being used in.
+     * @param \Drupal\migrate\MigrateLookupInterface $migrateLookup
+     *   The migrate lookup service.
+     * @param \Drupal\migrate\MigrateStubInterface $migrateStub
+     *   The migrate stub service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\migrate\Plugin\MigrationInterface $migration, protected \Drupal\migrate\MigrateLookupInterface $migrateLookup, protected \Drupal\migrate\MigrateStubInterface $migrateStub)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    if (!$destination_ids && !empty($this->configuration['no_stub'])) {
-      return NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('migrate.lookup'),
+            $container->get('migrate.stub')
+        );
     }
 
-    if (!$destination_ids && ($self || isset($this->configuration['stub_id']) || count($lookup_migration_ids) == 1)) {
-      // If the lookup didn't succeed, figure out which migration will do the
-      // stubbing.
-      if ($self) {
-        $stub_migration = $this->migration->id();
-      }
-      elseif (isset($this->configuration['stub_id'])) {
-        $stub_migration = $this->configuration['stub_id'];
-      }
-      else {
-        $stub_migration = reset($lookup_migration_ids);
-      }
-      // Rethrow any exception as a MigrateException so the executable can shut
-      // down the migration.
-      try {
-        $destination_ids = $this->migrateStub->createStub($stub_migration, $source_id_values[$stub_migration], [], FALSE);
-      }
-      catch (\LogicException) {
-        // For BC reasons, we must allow attempting to stub a derived migration.
-      }
-      catch (PluginNotFoundException) {
-        // For BC reasons, we must allow attempting to stub a non-existent
-        // migration.
-      }
-      catch (MigrateException $e) {
-        throw $e;
-      }
-      catch (MigrateSkipRowException $e) {
-        // Build a new message.
-        $skip_row_exception_message = $e->getMessage();
-        if (empty($skip_row_exception_message)) {
-          $new_message = sprintf("Migration lookup for value '%s' and destination '%s' attempted to create a stub using migration %s, which resulted in a row skip",
-            $value,
-            $destination_property,
-            $stub_migration,
-          );
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \Drupal\migrate\MigrateException
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        $lookup_migration_ids = (array) $this->configuration['migration'];
+        $self = false;
+        $destination_ids = null;
+        $source_id_values = [];
+        foreach ($lookup_migration_ids as $lookup_migration_id) {
+            $lookup_value = $value;
+            if ($lookup_migration_id == $this->migration->id()) {
+                $self = true;
+            }
+            if (isset($this->configuration['source_ids'][$lookup_migration_id])) {
+                $lookup_value = array_values($row->getMultiple($this->configuration['source_ids'][$lookup_migration_id]));
+            }
+            $lookup_value = (array) $lookup_value;
+            $this->skipInvalid($lookup_value);
+            if ($this->isPipelineStopped()) {
+                return null;
+            }
+            $source_id_values[$lookup_migration_id] = $lookup_value;
+
+            // Re-throw any PluginException as a MigrateException so the executable
+            // can shut down the migration.
+            try {
+                $destination_id_array = $this->migrateLookup->lookup($lookup_migration_id, $lookup_value);
+            } catch (PluginNotFoundException) {
+                $destination_id_array = [];
+            } catch (MigrateException $e) {
+                throw $e;
+            } catch (\Exception $e) {
+                throw new MigrateException(sprintf('A %s was thrown while processing this migration lookup', gettype($e)), $e->getCode(), $e);
+            }
+
+            if ($destination_id_array) {
+                $destination_ids = array_values(reset($destination_id_array));
+                break;
+            }
         }
-        else {
-          $new_message = sprintf("Migration lookup for value '%s' and destination '%s' attempted to create a stub using migration %s, which resulted in a row skip, with message '%s'",
-            $value,
-            $destination_property,
-            $stub_migration,
-            $skip_row_exception_message,
-          );
+
+        if (!$destination_ids && !empty($this->configuration['no_stub'])) {
+            return null;
         }
-        throw new MigrateSkipRowException($new_message, 0);
-      }
-      catch (\Exception $e) {
-        throw new MigrateException(sprintf('%s was thrown while attempting to stub: %s', $e::class, $e->getMessage()), $e->getCode(), $e);
-      }
-    }
-    if ($destination_ids) {
-      if (count($destination_ids) == 1) {
-        return reset($destination_ids);
-      }
-      return $destination_ids;
-    }
-  }
 
-  /**
-   * Skips the migration process entirely if the value is invalid.
-   *
-   * @param array $value
-   *   The incoming value to check.
-   */
-  protected function skipInvalid(array $value) {
-    if (!array_filter($value, $this->isValid(...))) {
-      $this->stopPipeline();
+        if (!$destination_ids && ($self || isset($this->configuration['stub_id']) || count($lookup_migration_ids) == 1)) {
+            // If the lookup didn't succeed, figure out which migration will do the
+            // stubbing.
+            if ($self) {
+                $stub_migration = $this->migration->id();
+            } elseif (isset($this->configuration['stub_id'])) {
+                $stub_migration = $this->configuration['stub_id'];
+            } else {
+                $stub_migration = reset($lookup_migration_ids);
+            }
+            // Rethrow any exception as a MigrateException so the executable can shut
+            // down the migration.
+            try {
+                $destination_ids = $this->migrateStub->createStub($stub_migration, $source_id_values[$stub_migration], [], false);
+            } catch (\LogicException) {
+                // For BC reasons, we must allow attempting to stub a derived migration.
+            } catch (PluginNotFoundException) {
+                // For BC reasons, we must allow attempting to stub a non-existent
+                // migration.
+            } catch (MigrateException $e) {
+                throw $e;
+            } catch (MigrateSkipRowException $e) {
+                // Build a new message.
+                $skip_row_exception_message = $e->getMessage();
+                if (empty($skip_row_exception_message)) {
+                    $new_message = sprintf(
+                        "Migration lookup for value '%s' and destination '%s' attempted to create a stub using migration %s, which resulted in a row skip",
+                        $value,
+                        $destination_property,
+                        $stub_migration,
+                    );
+                } else {
+                    $new_message = sprintf(
+                        "Migration lookup for value '%s' and destination '%s' attempted to create a stub using migration %s, which resulted in a row skip, with message '%s'",
+                        $value,
+                        $destination_property,
+                        $stub_migration,
+                        $skip_row_exception_message,
+                    );
+                }
+                throw new MigrateSkipRowException($new_message, 0);
+            } catch (\Exception $e) {
+                throw new MigrateException(sprintf('%s was thrown while attempting to stub: %s', $e::class, $e->getMessage()), $e->getCode(), $e);
+            }
+        }
+        if ($destination_ids) {
+            if (count($destination_ids) == 1) {
+                return reset($destination_ids);
+            }
+            return $destination_ids;
+        }
     }
-  }
 
-  /**
-   * Determines if the value is valid for lookup.
-   *
-   * The only values considered invalid are: NULL, FALSE, [] and "".
-   *
-   * @param string $value
-   *   The value to test.
-   *
-   * @return bool
-   *   Return true if the value is valid.
-   */
-  protected function isValid($value): bool {
-    return !in_array($value, [NULL, FALSE, [], ""], TRUE);
-  }
+    /**
+     * Skips the migration process entirely if the value is invalid.
+     *
+     * @param array $value
+     *   The incoming value to check.
+     */
+    protected function skipInvalid(array $value)
+    {
+        if (!array_filter($value, $this->isValid(...))) {
+            $this->stopPipeline();
+        }
+    }
+
+    /**
+     * Determines if the value is valid for lookup.
+     *
+     * The only values considered invalid are: NULL, FALSE, [] and "".
+     *
+     * @param string $value
+     *   The value to test.
+     *
+     * @return bool
+     *   Return true if the value is valid.
+     */
+    protected function isValid($value): bool
+    {
+        return !in_array($value, [null, false, [], ''], true);
+    }
 
 }

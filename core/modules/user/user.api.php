@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the User module.
@@ -40,31 +42,32 @@ use Drupal\user\UserInterface;
  * @see user_cancel_methods()
  * @see hook_user_cancel_methods_alter()
  */
-function hook_user_cancel($edit, UserInterface $account, $method): void {
-  switch ($method) {
-    case 'user_cancel_block_unpublish':
-      // Unpublish nodes (current revisions).
-      $nodes = \Drupal::entityQuery('node')
-        ->accessCheck(FALSE)
-        ->condition('uid', $account->id())
-        ->execute();
-      \Drupal::service(NodeBulkUpdate::class)->process($nodes, ['status' => 0], NULL, TRUE);
-      break;
+function hook_user_cancel($edit, UserInterface $account, $method): void
+{
+    switch ($method) {
+        case 'user_cancel_block_unpublish':
+            // Unpublish nodes (current revisions).
+            $nodes = \Drupal::entityQuery('node')
+              ->accessCheck(false)
+              ->condition('uid', $account->id())
+              ->execute();
+            \Drupal::service(NodeBulkUpdate::class)->process($nodes, ['status' => 0], null, true);
+            break;
 
-    case 'user_cancel_reassign':
-      // Anonymize nodes (current revisions).
-      $nodes = \Drupal::entityQuery('node')
-        ->accessCheck(FALSE)
-        ->condition('uid', $account->id())
-        ->execute();
-      \Drupal::service(NodeBulkUpdate::class)->process($nodes, ['uid' => 0], NULL, TRUE);
-      // Anonymize old revisions.
-      \Drupal::database()->update('node_field_revision')
-        ->fields(['uid' => 0])
-        ->condition('uid', $account->id())
-        ->execute();
-      break;
-  }
+        case 'user_cancel_reassign':
+            // Anonymize nodes (current revisions).
+            $nodes = \Drupal::entityQuery('node')
+              ->accessCheck(false)
+              ->condition('uid', $account->id())
+              ->execute();
+            \Drupal::service(NodeBulkUpdate::class)->process($nodes, ['uid' => 0], null, true);
+            // Anonymize old revisions.
+            \Drupal::database()->update('node_field_revision')
+              ->fields(['uid' => 0])
+              ->condition('uid', $account->id())
+              ->execute();
+            break;
+    }
 }
 
 /**
@@ -89,21 +92,22 @@ function hook_user_cancel($edit, UserInterface $account, $method): void {
  * @see user_cancel_methods()
  * @see \Drupal\user\Form\UserCancelForm
  */
-function hook_user_cancel_methods_alter(array &$methods): void {
-  $account = \Drupal::currentUser();
-  // Limit access to disable account and unpublish content method.
-  $methods['user_cancel_block_unpublish']['access'] = $account->hasPermission('administer site configuration');
+function hook_user_cancel_methods_alter(array &$methods): void
+{
+    $account = \Drupal::currentUser();
+    // Limit access to disable account and unpublish content method.
+    $methods['user_cancel_block_unpublish']['access'] = $account->hasPermission('administer site configuration');
 
-  // Remove the content re-assigning method.
-  unset($methods['user_cancel_reassign']);
+    // Remove the content re-assigning method.
+    unset($methods['user_cancel_reassign']);
 
-  // Add a custom zero-out method.
-  $methods['my_module_zero_out'] = [
-    'title' => t('Delete the account and remove all content.'),
-    'description' => t('All your content will be replaced by empty strings.'),
-    // Access should be used for administrative methods only.
-    'access' => $account->hasPermission('access zero-out account cancellation method'),
-  ];
+    // Add a custom zero-out method.
+    $methods['my_module_zero_out'] = [
+      'title' => t('Delete the account and remove all content.'),
+      'description' => t('All your content will be replaced by empty strings.'),
+      // Access should be used for administrative methods only.
+      'access' => $account->hasPermission('access zero-out account cancellation method'),
+    ];
 }
 
 /**
@@ -132,11 +136,12 @@ function hook_user_cancel_methods_alter(array &$methods): void {
  * @see \Drupal\Core\Session\AccountInterface::getDisplayName()
  * @see sanitization
  */
-function hook_user_format_name_alter(&$name, AccountInterface $account): void {
-  // Display the user's uid instead of name.
-  if ($account->id()) {
-    $name = t('User @uid', ['@uid' => $account->id()]);
-  }
+function hook_user_format_name_alter(&$name, AccountInterface $account): void
+{
+    // Display the user's uid instead of name.
+    if ($account->id()) {
+        $name = t('User @uid', ['@uid' => $account->id()]);
+    }
 }
 
 /**
@@ -145,19 +150,20 @@ function hook_user_format_name_alter(&$name, AccountInterface $account): void {
  * @param \Drupal\user\UserInterface $account
  *   The user object on which the operation was just performed.
  */
-function hook_user_login(UserInterface $account): void {
-  $config = \Drupal::config('system.date');
-  // If the user has a NULL time zone, notify them to set a time zone.
-  if (!$account->getTimezone() && $config->get('timezone.user.configurable') && $config->get('timezone.user.warn')) {
-    \Drupal::messenger()
-      ->addStatus(t('Configure your <a href=":user-edit">account time zone setting</a>.', [
-        ':user-edit' => $account->toUrl('edit-form', [
-          'query' => \Drupal::destination()
-            ->getAsArray(),
-          'fragment' => 'edit-timezone',
-        ])->toString(),
-      ]));
-  }
+function hook_user_login(UserInterface $account): void
+{
+    $config = \Drupal::config('system.date');
+    // If the user has a NULL time zone, notify them to set a time zone.
+    if (!$account->getTimezone() && $config->get('timezone.user.configurable') && $config->get('timezone.user.warn')) {
+        \Drupal::messenger()
+          ->addStatus(t('Configure your <a href=":user-edit">account time zone setting</a>.', [
+            ':user-edit' => $account->toUrl('edit-form', [
+              'query' => \Drupal::destination()
+                ->getAsArray(),
+              'fragment' => 'edit-timezone',
+            ])->toString(),
+          ]));
+    }
 }
 
 /**
@@ -166,13 +172,14 @@ function hook_user_login(UserInterface $account): void {
  * @param \Drupal\Core\Session\AccountInterface $account
  *   The user object on which the operation was just performed.
  */
-function hook_user_logout(AccountInterface $account): void {
-  \Drupal::database()->insert('logouts')
-    ->fields([
-      'uid' => $account->id(),
-      'time' => time(),
-    ])
-    ->execute();
+function hook_user_logout(AccountInterface $account): void
+{
+    \Drupal::database()->insert('logouts')
+      ->fields([
+        'uid' => $account->id(),
+        'time' => time(),
+      ])
+      ->execute();
 }
 
 /**

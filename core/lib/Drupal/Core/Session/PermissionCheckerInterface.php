@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Session;
 
 /**
@@ -11,19 +13,19 @@ namespace Drupal\Core\Session;
  *
  * @ingroup user_api
  */
-interface PermissionCheckerInterface {
-
-  /**
-   * Checks whether an account has a permission.
-   *
-   * @param string $permission
-   *   The name of the permission to check for.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user account for which to check the permissions.
-   *
-   * @return bool
-   *   Whether the account has the permission.
-   */
-  public function hasPermission(string $permission, AccountInterface $account): bool;
+interface PermissionCheckerInterface
+{
+    /**
+     * Checks whether an account has a permission.
+     *
+     * @param string $permission
+     *   The name of the permission to check for.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The user account for which to check the permissions.
+     *
+     * @return bool
+     *   Whether the account has the permission.
+     */
+    public function hasPermission(string $permission, AccountInterface $account): bool;
 
 }

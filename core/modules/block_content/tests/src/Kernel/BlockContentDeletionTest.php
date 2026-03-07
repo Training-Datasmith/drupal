@@ -17,73 +17,75 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block_content')]
 #[RunTestsInSeparateProcesses]
-class BlockContentDeletionTest extends KernelTestBase {
+class BlockContentDeletionTest extends KernelTestBase
+{
+    use BlockCreationTrait;
 
-  use BlockCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block', 'block_content', 'field', 'system', 'text', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block', 'block_content', 'field', 'system', 'text', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('block_content');
+        $this->installConfig(['block_content']);
+        $this->container->get('theme_installer')->install(['stark']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('block_content');
-    $this->installConfig(['block_content']);
-    $this->container->get('theme_installer')->install(['stark']);
-  }
+    /**
+     * Tests deleting a block_content updates the discovered block plugin.
+     */
+    public function testDeletingBlockContentShouldClearPluginCache(): void
+    {
+        // Create a block content type.
+        $block_content_type = BlockContentType::create([
+          'id' => 'spiffy',
+          'label' => 'Very spiffy',
+          'description' => "Provides a block type that increases your site's spiffy rating by upto 11%",
+        ]);
+        $block_content_type->save();
+        // And a block content entity.
+        $block_content = BlockContent::create([
+          'info' => 'Spiffy prototype',
+          'type' => 'spiffy',
+        ]);
+        $block_content->save();
 
-  /**
-   * Tests deleting a block_content updates the discovered block plugin.
-   */
-  public function testDeletingBlockContentShouldClearPluginCache(): void {
-    // Create a block content type.
-    $block_content_type = BlockContentType::create([
-      'id' => 'spiffy',
-      'label' => 'Very spiffy',
-      'description' => "Provides a block type that increases your site's spiffy rating by upto 11%",
-    ]);
-    $block_content_type->save();
-    // And a block content entity.
-    $block_content = BlockContent::create([
-      'info' => 'Spiffy prototype',
-      'type' => 'spiffy',
-    ]);
-    $block_content->save();
+        // Make sure the block content provides a derivative block plugin in the
+        // block repository.
+        /** @var \Drupal\Core\Block\BlockManagerInterface $block_manager */
+        $block_manager = $this->container->get('plugin.manager.block');
+        $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
+        $this->assertTrue($block_manager->hasDefinition($plugin_id));
 
-    // Make sure the block content provides a derivative block plugin in the
-    // block repository.
-    /** @var \Drupal\Core\Block\BlockManagerInterface $block_manager */
-    $block_manager = $this->container->get('plugin.manager.block');
-    $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
-    $this->assertTrue($block_manager->hasDefinition($plugin_id));
+        // Now delete the block content entity.
+        $block_content->delete();
+        // The plugin should no longer exist.
+        $this->assertFalse($block_manager->hasDefinition($plugin_id));
 
-    // Now delete the block content entity.
-    $block_content->delete();
-    // The plugin should no longer exist.
-    $this->assertFalse($block_manager->hasDefinition($plugin_id));
+        // Create another block content entity.
+        $block_content = BlockContent::create([
+          'info' => 'Spiffy prototype',
+          'type' => 'spiffy',
+        ]);
+        $block_content->save();
 
-    // Create another block content entity.
-    $block_content = BlockContent::create([
-      'info' => 'Spiffy prototype',
-      'type' => 'spiffy',
-    ]);
-    $block_content->save();
+        $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
+        $block = $this->placeBlock($plugin_id, ['region' => 'content', 'theme' => 'stark']);
 
-    $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
-    $block = $this->placeBlock($plugin_id, ['region' => 'content', 'theme' => 'stark']);
+        // Delete it via storage.
+        $storage = $this->container->get('entity_type.manager')->getStorage('block_content');
+        $storage->delete([$block_content]);
+        // The plugin should no longer exist.
+        $this->assertFalse($block_manager->hasDefinition($plugin_id));
 
-    // Delete it via storage.
-    $storage = $this->container->get('entity_type.manager')->getStorage('block_content');
-    $storage->delete([$block_content]);
-    // The plugin should no longer exist.
-    $this->assertFalse($block_manager->hasDefinition($plugin_id));
-
-    $this->assertNull($this->container->get('entity_type.manager')->getStorage('block')->loadUnchanged($block->id()));
-  }
+        $this->assertNull($this->container->get('entity_type.manager')->getStorage('block')->loadUnchanged($block->id()));
+    }
 
 }

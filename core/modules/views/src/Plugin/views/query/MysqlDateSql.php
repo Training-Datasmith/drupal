@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\query;
 
 use Drupal\Core\Database\Connection;
@@ -12,78 +14,82 @@ use Drupal\Core\Database\Connection;
  *
  * @see \Drupal\views\Plugin\views\query\Sql
  */
-class MysqlDateSql implements DateSqlInterface {
+class MysqlDateSql implements DateSqlInterface
+{
+    /**
+     * An array of PHP-to-MySQL replacement patterns.
+     *
+     * @var string[]
+     */
+    protected static $replace = [
+      'Y' => '%Y',
+      'y' => '%y',
+      'o' => '%x',
+      'M' => '%b',
+      'm' => '%m',
+      'n' => '%c',
+      'F' => '%M',
+      'D' => '%a',
+      'd' => '%d',
+      'l' => '%W',
+      'j' => '%e',
+      'W' => '%v',
+      'H' => '%H',
+      'h' => '%h',
+      'i' => '%i',
+      's' => '%s',
+      'A' => '%p',
+    ];
 
-  /**
-   * An array of PHP-to-MySQL replacement patterns.
-   *
-   * @var string[]
-   */
-  protected static $replace = [
-    'Y' => '%Y',
-    'y' => '%y',
-    'o' => '%x',
-    'M' => '%b',
-    'm' => '%m',
-    'n' => '%c',
-    'F' => '%M',
-    'D' => '%a',
-    'd' => '%d',
-    'l' => '%W',
-    'j' => '%e',
-    'W' => '%v',
-    'H' => '%H',
-    'h' => '%h',
-    'i' => '%i',
-    's' => '%s',
-    'A' => '%p',
-  ];
-
-  /**
-   * Constructs the MySQL-specific date sql class.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
-   */
-  public function __construct(protected \Drupal\Core\Database\Connection $database)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDateField($field, $string_date) {
-    if ($string_date) {
-      return $field;
+    /**
+     * Constructs the MySQL-specific date sql class.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   The database connection.
+     */
+    public function __construct(protected \Drupal\Core\Database\Connection $database)
+    {
     }
 
-    // Base date field storage is timestamp, so the date to be returned here is
-    // epoch + stored value (seconds from epoch).
-    return "DATE_ADD('19700101', INTERVAL $field SECOND)";
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDateField($field, $string_date)
+    {
+        if ($string_date) {
+            return $field;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDateFormat($field, $format): string {
-    $format = strtr($format, static::$replace);
-    return "DATE_FORMAT($field, '$format')";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setTimezoneOffset($offset): void {
-    $this->database->query("SET @@session.time_zone = '$offset'");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFieldTimezoneOffset(&$field, $offset): void {
-    if (!empty($offset)) {
-      $field = "($field + INTERVAL $offset SECOND)";
+        // Base date field storage is timestamp, so the date to be returned here is
+        // epoch + stored value (seconds from epoch).
+        return "DATE_ADD('19700101', INTERVAL $field SECOND)";
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDateFormat($field, $format): string
+    {
+        $format = strtr($format, static::$replace);
+        return "DATE_FORMAT($field, '$format')";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setTimezoneOffset($offset): void
+    {
+        $this->database->query("SET @@session.time_zone = '$offset'");
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setFieldTimezoneOffset(&$field, $offset): void
+    {
+        if (!empty($offset)) {
+            $field = "($field + INTERVAL $offset SECOND)";
+        }
+    }
 
 }

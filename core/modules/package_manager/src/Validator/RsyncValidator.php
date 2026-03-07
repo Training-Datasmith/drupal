@@ -22,62 +22,64 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class RsyncValidator implements EventSubscriberInterface {
+final class RsyncValidator implements EventSubscriberInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  public function __construct(
-    private readonly ExecutableFinderInterface $executableFinder,
-    private readonly ModuleHandlerInterface $moduleHandler,
-  ) {}
-
-  /**
-   * Checks that rsync is available.
-   *
-   * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
-   *   The event being handled.
-   */
-  public function validate(SandboxValidationEvent $event): void {
-    // If the we are going to change the active directory directly, we don't
-    // need rsync.
-    if ($event->sandboxManager->isDirectWrite()) {
-      return;
+    public function __construct(
+        private readonly ExecutableFinderInterface $executableFinder,
+        private readonly ModuleHandlerInterface $moduleHandler,
+    ) {
     }
 
-    try {
-      $this->executableFinder->find('rsync');
-      $rsync_found = TRUE;
+    /**
+     * Checks that rsync is available.
+     *
+     * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
+     *   The event being handled.
+     */
+    public function validate(SandboxValidationEvent $event): void
+    {
+        // If the we are going to change the active directory directly, we don't
+        // need rsync.
+        if ($event->sandboxManager->isDirectWrite()) {
+            return;
+        }
+
+        try {
+            $this->executableFinder->find('rsync');
+            $rsync_found = true;
+        } catch (LogicException) {
+            $rsync_found = false;
+        }
+
+        if ($rsync_found === false) {
+            $message = $this->t('<code>rsync</code> is not available.');
+
+            if ($this->moduleHandler->moduleExists('help')) {
+                $help_url = Url::fromRoute('help.page')
+                  ->setRouteParameter('name', 'package_manager')
+                  ->setOption('fragment', 'package-manager-faq-rsync')
+                  ->toString();
+
+                $message = $this->t('@message See the <a href=":url">Package Manager help</a> for more information on how to resolve this.', [
+                  '@message' => $message,
+                  ':url' => $help_url,
+                ]);
+            }
+            $event->addError([$message]);
+        }
     }
-    catch (LogicException) {
-      $rsync_found = FALSE;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          StatusCheckEvent::class => 'validate',
+          PreCreateEvent::class => 'validate',
+        ];
     }
-
-    if ($rsync_found === FALSE) {
-      $message = $this->t('<code>rsync</code> is not available.');
-
-      if ($this->moduleHandler->moduleExists('help')) {
-        $help_url = Url::fromRoute('help.page')
-          ->setRouteParameter('name', 'package_manager')
-          ->setOption('fragment', 'package-manager-faq-rsync')
-          ->toString();
-
-        $message = $this->t('@message See the <a href=":url">Package Manager help</a> for more information on how to resolve this.', [
-          '@message' => $message,
-          ':url' => $help_url,
-        ]);
-      }
-      $event->addError([$message]);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      StatusCheckEvent::class => 'validate',
-      PreCreateEvent::class => 'validate',
-    ];
-  }
 
 }

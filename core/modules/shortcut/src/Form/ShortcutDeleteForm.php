@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\shortcut\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -10,29 +12,32 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-class ShortcutDeleteForm extends ContentEntityDeleteForm {
+class ShortcutDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'shortcut_confirm_delete';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'shortcut_confirm_delete';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return new Url('entity.shortcut_set.customize_form', [
+          'shortcut_set' => $this->entity->bundle(),
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return new Url('entity.shortcut_set.customize_form', [
-      'shortcut_set' => $this->entity->bundle(),
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    return $this->getCancelUrl();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRedirectUrl()
+    {
+        return $this->getCancelUrl();
+    }
 
 }

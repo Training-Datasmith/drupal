@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
@@ -18,93 +19,97 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\migrate\Plugin\migrate\destination\PerComponentEntityDisplay
  * @see \Drupal\migrate\Plugin\migrate\destination\PerComponentEntityFormDisplay
  */
-abstract class ComponentEntityDisplayBase extends DestinationBase implements ContainerFactoryPluginInterface {
+abstract class ComponentEntityDisplayBase extends DestinationBase implements ContainerFactoryPluginInterface
+{
+    public const MODE_NAME = '';
 
-  const MODE_NAME = '';
-
-  /**
-   * PerComponentEntityDisplay constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\migrate\Plugin\MigrationInterface $migration
-   *   The migration.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
-   *   The entity display repository service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('entity_display.repository')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []) {
-    $values = [];
-    // array_intersect_key() won't work because the order is important because
-    // this is also the return value.
-    foreach (array_keys($this->getIds()) as $id) {
-      $values[$id] = $row->getDestinationProperty($id);
+    /**
+     * PerComponentEntityDisplay constructor.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+     *   The migration.
+     * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
+     *   The entity display repository service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
     }
-    $entity = $this->getEntity($values['entity_type'], $values['bundle'], $values[static::MODE_NAME]);
-    if (!$row->getDestinationProperty('hidden')) {
-      $entity->setComponent($values['field_name'], $row->getDestinationProperty('options') ?: []);
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null)
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('entity_display.repository')
+        );
     }
-    else {
-      $entity->removeComponent($values['field_name']);
+
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = [])
+    {
+        $values = [];
+        // array_intersect_key() won't work because the order is important because
+        // this is also the return value.
+        foreach (array_keys($this->getIds()) as $id) {
+            $values[$id] = $row->getDestinationProperty($id);
+        }
+        $entity = $this->getEntity($values['entity_type'], $values['bundle'], $values[static::MODE_NAME]);
+        if (!$row->getDestinationProperty('hidden')) {
+            $entity->setComponent($values['field_name'], $row->getDestinationProperty('options') ?: []);
+        } else {
+            $entity->removeComponent($values['field_name']);
+        }
+        $entity->save();
+        return array_values($values);
     }
-    $entity->save();
-    return array_values($values);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['entity_type']['type'] = 'string';
-    $ids['bundle']['type'] = 'string';
-    $ids[static::MODE_NAME]['type'] = 'string';
-    $ids['field_name']['type'] = 'string';
-    return $ids;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['entity_type']['type'] = 'string';
+        $ids['bundle']['type'] = 'string';
+        $ids[static::MODE_NAME]['type'] = 'string';
+        $ids['field_name']['type'] = 'string';
+        return $ids;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): void {
-    // This is intentionally left empty.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): void
+    {
+        // This is intentionally left empty.
+    }
 
-  /**
-   * Gets the entity.
-   *
-   * @param string $entity_type
-   *   The entity type to retrieve.
-   * @param string $bundle
-   *   The entity bundle.
-   * @param string $mode
-   *   The display mode.
-   *
-   * @return \Drupal\Core\Entity\Display\EntityDisplayInterface
-   *   The entity display object.
-   */
-  abstract protected function getEntity($entity_type, $bundle, $mode);
+    /**
+     * Gets the entity.
+     *
+     * @param string $entity_type
+     *   The entity type to retrieve.
+     * @param string $bundle
+     *   The entity bundle.
+     * @param string $mode
+     *   The display mode.
+     *
+     * @return \Drupal\Core\Entity\Display\EntityDisplayInterface
+     *   The entity display object.
+     */
+    abstract protected function getEntity($entity_type, $bundle, $mode);
 
 }

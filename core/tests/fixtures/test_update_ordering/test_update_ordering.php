@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Test fixture.
@@ -12,6 +14,7 @@ use Drupal\Tests\Core\Update\UpdateOrderingTest;
  *
  * @see hook_update_dependencies()
  */
-function a_module_update_dependencies(): array {
-  return UpdateOrderingTest::$updateDependenciesHookReturn;
+function a_module_update_dependencies(): array
+{
+    return UpdateOrderingTest::$updateDependenciesHookReturn;
 }

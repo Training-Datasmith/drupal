@@ -16,66 +16,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldFileSizeTest extends ViewsKernelTestBase {
+class FieldFileSizeTest extends ViewsKernelTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Provides a dataset with various 'age' values representing file sizes.
+     */
+    public function dataSet()
+    {
+        $data = parent::dataSet();
+        $data[0]['age'] = 0;
+        $data[1]['age'] = 10;
+        $data[2]['age'] = 1000;
+        $data[3]['age'] = 10000;
 
-  /**
-   * Provides a dataset with various 'age' values representing file sizes.
-   */
-  public function dataSet() {
-    $data = parent::dataSet();
-    $data[0]['age'] = 0;
-    $data[1]['age'] = 10;
-    $data[2]['age'] = 1000;
-    $data[3]['age'] = 10000;
+        return $data;
+    }
 
-    return $data;
-  }
+    /**
+     * Maps the 'age' field to the 'file_size' handler for Views.
+     */
+    public function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['age']['field']['id'] = 'file_size';
 
-  /**
-   * Maps the 'age' field to the 'file_size' handler for Views.
-   */
-  public function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['age']['field']['id'] = 'file_size';
+        return $data;
+    }
 
-    return $data;
-  }
+    /**
+     * Tests the FileSize field handler for correct formatting in Views.
+     */
+    public function testFieldFileSize(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests the FileSize field handler for correct formatting in Views.
-   */
-  public function testFieldFileSize(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'age' => [
+            'id' => 'age',
+            'table' => 'views_test_data',
+            'field' => 'age',
+          ],
+        ]);
 
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'age' => [
-        'id' => 'age',
-        'table' => 'views_test_data',
-        'field' => 'age',
-      ],
-    ]);
+        $this->executeView($view);
 
-    $this->executeView($view);
-
-    // Test with the formatted option.
-    $this->assertEquals('', $view->field['age']->advancedRender($view->result[0]));
-    $this->assertEquals('10 bytes', $view->field['age']->advancedRender($view->result[1]));
-    $this->assertEquals('1000 bytes', $view->field['age']->advancedRender($view->result[2]));
-    $this->assertEquals('9.77 KB', $view->field['age']->advancedRender($view->result[3]));
-    // Test with the bytes option.
-    $view->field['age']->options['file_size_display'] = 'bytes';
-    $this->assertEquals('', $view->field['age']->advancedRender($view->result[0]));
-    $this->assertEquals('10', $view->field['age']->advancedRender($view->result[1]));
-    $this->assertEquals('1000', $view->field['age']->advancedRender($view->result[2]));
-    $this->assertEquals('10000', $view->field['age']->advancedRender($view->result[3]));
-  }
+        // Test with the formatted option.
+        $this->assertEquals('', $view->field['age']->advancedRender($view->result[0]));
+        $this->assertEquals('10 bytes', $view->field['age']->advancedRender($view->result[1]));
+        $this->assertEquals('1000 bytes', $view->field['age']->advancedRender($view->result[2]));
+        $this->assertEquals('9.77 KB', $view->field['age']->advancedRender($view->result[3]));
+        // Test with the bytes option.
+        $view->field['age']->options['file_size_display'] = 'bytes';
+        $this->assertEquals('', $view->field['age']->advancedRender($view->result[0]));
+        $this->assertEquals('10', $view->field['age']->advancedRender($view->result[1]));
+        $this->assertEquals('1000', $view->field['age']->advancedRender($view->result[2]));
+        $this->assertEquals('10000', $view->field['age']->advancedRender($view->result[3]));
+    }
 
 }

@@ -23,71 +23,74 @@ use Symfony\Component\Console\Tester\CommandTester;
 #[Group('Command')]
 #[CoversTrait(BootableCommandTrait::class)]
 #[RequiresPhpExtension('pdo_sqlite')]
-class BootableCommandTraitTest extends UnitTestCase {
+class BootableCommandTraitTest extends UnitTestCase
+{
+    /**
+     * The class loader, which is needed to boot Drupal.
+     */
+    private readonly object $classLoader;
 
-  /**
-   * The class loader, which is needed to boot Drupal.
-   */
-  private readonly object $classLoader;
+    /**
+     * A console application to manage the commands under test.
+     */
+    private readonly Application $application;
 
-  /**
-   * A console application to manage the commands under test.
-   */
-  private readonly Application $application;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // To boot Drupal, we need a database. For the purposes of this test, an
+        // in-memory SQLite database is sufficient.
+        Database::addConnectionInfo('default', 'default', [
+          'driver' => 'sqlite',
+          'namespace' => 'Drupal\\sqlite\\Driver\\Database\\sqlite',
+          'autoload' => 'core/modules/sqlite/src/Driver/Database/sqlite/',
+          'database' => ':memory:',
+        ]);
+        $class_loaders = ClassLoader::getRegisteredLoaders();
+        $this->classLoader = reset($class_loaders);
+        $this->application = new Application('drupal', \Drupal::VERSION);
+    }
 
-    // To boot Drupal, we need a database. For the purposes of this test, an
-    // in-memory SQLite database is sufficient.
-    Database::addConnectionInfo('default', 'default', [
-      'driver' => 'sqlite',
-      'namespace' => 'Drupal\\sqlite\\Driver\\Database\\sqlite',
-      'autoload' => 'core/modules/sqlite/src/Driver/Database/sqlite/',
-      'database' => ':memory:',
-    ]);
-    $class_loaders = ClassLoader::getRegisteredLoaders();
-    $this->classLoader = reset($class_loaders);
-    $this->application = new Application('drupal', \Drupal::VERSION);
-  }
+    /**
+     * Tests that commands are initialized with a reasonable base URL.
+     */
+    public function testRequestUrlIsValid(): void
+    {
+        // Create a fake command that boots Drupal and outputs the base URL.
+        $this->application->addCommand(new class ($this->classLoader) extends Command {
+            use BootableCommandTrait;
 
-  /**
-   * Tests that commands are initialized with a reasonable base URL.
-   */
-  public function testRequestUrlIsValid(): void {
-    // Create a fake command that boots Drupal and outputs the base URL.
-    $this->application->addCommand(new class ($this->classLoader) extends Command {
+            public function __construct(object $classLoader)
+            {
+                parent::__construct('test');
+                $this->classLoader = $classLoader;
+            }
 
-      use BootableCommandTrait;
+            /**
+             * {@inheritdoc}
+             */
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $this->boot();
+                $output->write($GLOBALS['base_url']);
 
-      public function __construct(object $classLoader) {
-        parent::__construct('test');
-        $this->classLoader = $classLoader;
-      }
+                // Symfony Console apparently changes the error and exception handlers,
+                // which will anger PHPUnit.
+                restore_error_handler();
+                restore_exception_handler();
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function execute(InputInterface $input, OutputInterface $output): int {
-        $this->boot();
-        $output->write($GLOBALS['base_url']);
+                return 0;
+            }
 
-        // Symfony Console apparently changes the error and exception handlers,
-        // which will anger PHPUnit.
-        restore_error_handler();
-        restore_exception_handler();
+        });
 
-        return 0;
-      }
-
-    });
-
-    $tester = new CommandTester($this->application->find('test'));
-    $tester->execute([]);
-    $this->assertSame('http://default', $tester->getDisplay());
-  }
+        $tester = new CommandTester($this->application->find('test'));
+        $tester->execute([]);
+        $this->assertSame('http://default', $tester->getDisplay());
+    }
 
 }

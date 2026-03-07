@@ -12,27 +12,30 @@ use Drupal\Core\Cache\Context\CacheContextInterface;
  *
  * Cache context ID: 'views_test_cache_context'.
  */
-class ViewsTestCacheContext implements CacheContextInterface {
+class ViewsTestCacheContext implements CacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Views test cache context');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Views test cache context');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext()
+    {
+        return \Drupal::state()->get('views_test_cache_context', 'George');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext() {
-    return \Drupal::state()->get('views_test_cache_context', 'George');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata() {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata()
+    {
+        return new CacheableMetadata();
+    }
 
 }

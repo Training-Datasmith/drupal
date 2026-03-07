@@ -12,36 +12,37 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests that list of plugin is correct.
  */
 #[Group('views')]
-class PluginTypeListTest extends UnitTestCase {
+class PluginTypeListTest extends UnitTestCase
+{
+    /**
+     * Tests the plugins list is correct.
+     */
+    public function testPluginList(): void
+    {
+        $plugin_list = [
+          'access',
+          'area',
+          'argument',
+          'argument_default',
+          'argument_validator',
+          'cache',
+          'display_extender',
+          'display',
+          'exposed_form',
+          'field',
+          'filter',
+          'join',
+          'pager',
+          'query',
+          'relationship',
+          'row',
+          'sort',
+          'style',
+          'wizard',
+        ];
 
-  /**
-   * Tests the plugins list is correct.
-   */
-  public function testPluginList(): void {
-    $plugin_list = [
-      'access',
-      'area',
-      'argument',
-      'argument_default',
-      'argument_validator',
-      'cache',
-      'display_extender',
-      'display',
-      'exposed_form',
-      'field',
-      'filter',
-      'join',
-      'pager',
-      'query',
-      'relationship',
-      'row',
-      'sort',
-      'style',
-      'wizard',
-    ];
-
-    $diff = array_diff($plugin_list, ViewExecutable::getPluginTypes());
-    $this->assertEmpty($diff);
-  }
+        $diff = array_diff($plugin_list, ViewExecutable::getPluginTypes());
+        $this->assertEmpty($diff);
+    }
 
 }

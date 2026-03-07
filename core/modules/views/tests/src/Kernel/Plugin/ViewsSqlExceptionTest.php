@@ -15,45 +15,47 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class ViewsSqlExceptionTest extends ViewsKernelTestBase {
+class ViewsSqlExceptionTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_filter'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['name']['filter']['id'] = 'test_exception_filter';
+        return $data;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['name']['filter']['id'] = 'test_exception_filter';
-    return $data;
-  }
+    /**
+     * Tests for the SQL exception.
+     */
+    public function testSqlException(): void
+    {
+        $view = Views::getView('test_filter');
+        $view->initDisplay();
 
-  /**
-   * Tests for the SQL exception.
-   */
-  public function testSqlException(): void {
-    $view = Views::getView('test_filter');
-    $view->initDisplay();
+        // Adding a filter that will result in an invalid query.
+        $view->displayHandlers->get('default')->overrideOption('filters', [
+          'test_filter' => [
+            'id' => 'test_exception_filter',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'operator' => '=',
+            'value' => 'John',
+            'group' => 0,
+          ],
+        ]);
 
-    // Adding a filter that will result in an invalid query.
-    $view->displayHandlers->get('default')->overrideOption('filters', [
-      'test_filter' => [
-        'id' => 'test_exception_filter',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'operator' => '=',
-        'value' => 'John',
-        'group' => 0,
-      ],
-    ]);
+        $this->expectException(DatabaseExceptionWrapper::class);
+        $this->expectExceptionMessageMatches('/^Exception in Test filters\[test_filter\]:/');
 
-    $this->expectException(DatabaseExceptionWrapper::class);
-    $this->expectExceptionMessageMatches('/^Exception in Test filters\[test_filter\]:/');
-
-    $this->executeView($view);
-  }
+        $this->executeView($view);
+    }
 
 }

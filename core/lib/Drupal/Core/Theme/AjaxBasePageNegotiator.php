@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Theme;
 
-use Drupal\Core\Access\CsrfTokenGenerator;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -22,53 +22,56 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * "Add another item" button should be rendered using the same theme as the rest
  * of the page.
  */
-class AjaxBasePageNegotiator implements ThemeNegotiatorInterface {
+class AjaxBasePageNegotiator implements ThemeNegotiatorInterface
+{
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
-
-  /**
-   * Constructs a new AjaxBasePageNegotiator.
-   *
-   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator
-   *   The CSRF token generator.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack used to retrieve the current request.
-   */
-  public function __construct(protected \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, RequestStack $request_stack) {
-    $this->requestStack = $request_stack;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(RouteMatchInterface $route_match): bool {
-    $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
-    return !empty($ajax_page_state['theme']) && isset($ajax_page_state['theme_token']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function determineActiveTheme(RouteMatchInterface $route_match) {
-    $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
-    $theme = $ajax_page_state['theme'];
-    $token = $ajax_page_state['theme_token'];
-
-    // Prevent a request forgery from giving a person access to a theme they
-    // shouldn't be otherwise allowed to see. However, since everyone is
-    // allowed to see the default theme, token validation isn't required for
-    // that, and bypassing it allows most use-cases to work even when accessed
-    // from the page cache.
-    if ($theme === $this->configFactory->get('system.theme')->get('default') || $this->csrfGenerator->validate($token, $theme)) {
-      return $theme;
+    /**
+     * Constructs a new AjaxBasePageNegotiator.
+     *
+     * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator
+     *   The CSRF token generator.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack used to retrieve the current request.
+     */
+    public function __construct(protected \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, RequestStack $request_stack)
+    {
+        $this->requestStack = $request_stack;
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(RouteMatchInterface $route_match): bool
+    {
+        $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
+        return !empty($ajax_page_state['theme']) && isset($ajax_page_state['theme_token']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function determineActiveTheme(RouteMatchInterface $route_match)
+    {
+        $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
+        $theme = $ajax_page_state['theme'];
+        $token = $ajax_page_state['theme_token'];
+
+        // Prevent a request forgery from giving a person access to a theme they
+        // shouldn't be otherwise allowed to see. However, since everyone is
+        // allowed to see the default theme, token validation isn't required for
+        // that, and bypassing it allows most use-cases to work even when accessed
+        // from the page cache.
+        if ($theme === $this->configFactory->get('system.theme')->get('default') || $this->csrfGenerator->validate($token, $theme)) {
+            return $theme;
+        }
+    }
 
 }

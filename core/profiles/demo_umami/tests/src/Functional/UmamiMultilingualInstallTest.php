@@ -14,50 +14,53 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Installer')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class UmamiMultilingualInstallTest extends InstallerTestBase {
+class UmamiMultilingualInstallTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'demo_umami';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'demo_umami';
+    /**
+     * {@inheritdoc}
+     */
+    protected $langcode = 'es';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $langcode = 'es';
+    /**
+     * Ensures that Umami can be installed with Spanish as the default language.
+     */
+    public function testUmami(): void
+    {
+        $this->drupalGet('');
+        // cSpell:disable-next-line
+        $this->assertSession()->pageTextContains('Crema catalana');
+    }
 
-  /**
-   * Ensures that Umami can be installed with Spanish as the default language.
-   */
-  public function testUmami(): void {
-    $this->drupalGet('');
-    // cSpell:disable-next-line
-    $this->assertSession()->pageTextContains('Crema catalana');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpLanguage(): void
+    {
+        // Place custom local translations in the translations directory to avoid
+        // getting translations from localize.drupal.org.
+        mkdir(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations', 0777, true);
+        file_put_contents(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.es.po', $this->getPo('es'));
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpLanguage(): void {
-    // Place custom local translations in the translations directory to avoid
-    // getting translations from localize.drupal.org.
-    mkdir(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations', 0777, TRUE);
-    file_put_contents(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.es.po', $this->getPo('es'));
+        parent::setUpLanguage();
+    }
 
-    parent::setUpLanguage();
-  }
-
-  /**
-   * Returns the string for the test .po file.
-   *
-   * @param string $langcode
-   *   The language code.
-   *
-   * @return string
-   *   Contents for the test .po file.
-   */
-  protected function getPo($langcode): string {
-    return <<<PO
+    /**
+     * Returns the string for the test .po file.
+     *
+     * @param string $langcode
+     *   The language code.
+     *
+     * @return string
+     *   Contents for the test .po file.
+     */
+    protected function getPo($langcode): string
+    {
+        return <<<PO
 msgid ""
 msgstr ""
 
@@ -74,6 +77,6 @@ msgstr "Language $langcode"
 msgid "Drupal"
 msgstr "Drupal"
 PO;
-  }
+    }
 
 }

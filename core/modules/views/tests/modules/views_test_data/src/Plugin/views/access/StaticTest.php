@@ -14,45 +14,49 @@ use Symfony\Component\Routing\Route;
  * Tests a static access plugin.
  */
 #[ViewsAccess(
-  id: 'test_static',
-  title: new TranslatableMarkup('Static test access plugin'),
-  help: new TranslatableMarkup('Provides a static test access plugin.'),
+    id: 'test_static',
+    title: new TranslatableMarkup('Static test access plugin'),
+    help: new TranslatableMarkup('Provides a static test access plugin.'),
 )]
-class StaticTest extends AccessPluginBase {
+class StaticTest extends AccessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['access'] = ['default' => false];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['access'] = ['default' => FALSE];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access(AccountInterface $account) {
-    return !empty($this->options['access']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alterRouteDefinition(Route $route) {
-    if (!empty($this->options['access'])) {
-      $route->setRequirement('_access', 'TRUE');
+        return $options;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    return [
-      'content' => ['StaticTest'],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function access(AccountInterface $account)
+    {
+        return !empty($this->options['access']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function alterRouteDefinition(Route $route)
+    {
+        if (!empty($this->options['access'])) {
+            $route->setRequirement('_access', 'TRUE');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        return [
+          'content' => ['StaticTest'],
+        ];
+    }
 
 }

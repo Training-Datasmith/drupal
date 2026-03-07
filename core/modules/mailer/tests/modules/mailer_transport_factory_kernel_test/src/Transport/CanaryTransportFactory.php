@@ -13,21 +13,23 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 /**
  * A transport factory only used to test the transport factory adapter.
  */
-class CanaryTransportFactory extends AbstractTransportFactory implements TransportFactoryInterface {
-
-  protected function getSupportedSchemes(): array {
-    return ['drupal.test-canary'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function create(Dsn $dsn): TransportInterface {
-    if ($dsn->getScheme() === 'drupal.test-canary') {
-      return new CanaryTransport($this->dispatcher, $this->logger);
+class CanaryTransportFactory extends AbstractTransportFactory implements TransportFactoryInterface
+{
+    protected function getSupportedSchemes(): array
+    {
+        return ['drupal.test-canary'];
     }
 
-    throw new UnsupportedSchemeException($dsn, 'test_canary', $this->getSupportedSchemes());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function create(Dsn $dsn): TransportInterface
+    {
+        if ($dsn->getScheme() === 'drupal.test-canary') {
+            return new CanaryTransport($this->dispatcher, $this->logger);
+        }
+
+        throw new UnsupportedSchemeException($dsn, 'test_canary', $this->getSupportedSchemes());
+    }
 
 }

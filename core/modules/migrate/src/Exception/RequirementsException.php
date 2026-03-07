@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Exception;
 
 /**
@@ -7,52 +9,55 @@ namespace Drupal\migrate\Exception;
  *
  * @see \Drupal\migrate\Plugin\RequirementsInterface
  */
-class RequirementsException extends \RuntimeException {
-
-  /**
-   * Constructs a new RequirementsException instance.
-   *
-   * @param string $message
-   *   (optional) The Exception message to throw.
-   * @param array $requirements
-   *   (optional) The missing requirements.
-   * @param int $code
-   *   (optional) The Exception code.
-   * @param \Throwable $previous
-   *   (optional) The previous exception used for the exception chaining.
-   */
-  public function __construct($message = "", protected array $requirements = [], $code = 0, ?\Throwable $previous = NULL) {
-    parent::__construct($message, $code, $previous);
-  }
-
-  /**
-   * Get an array of requirements.
-   *
-   * @return array
-   *   The requirements.
-   */
-  public function getRequirements() {
-    return $this->requirements;
-  }
-
-  /**
-   * Get the requirements as a string.
-   *
-   * @return string
-   *   A formatted requirements string.
-   */
-  public function getRequirementsString(): string {
-    $output = '';
-    foreach ($this->requirements as $requirement_type => $requirements) {
-      if (!is_array($requirements)) {
-        $requirements = [$requirements];
-      }
-
-      foreach ($requirements as $value) {
-        $output .= "$requirement_type: $value. ";
-      }
+class RequirementsException extends \RuntimeException
+{
+    /**
+     * Constructs a new RequirementsException instance.
+     *
+     * @param string $message
+     *   (optional) The Exception message to throw.
+     * @param array $requirements
+     *   (optional) The missing requirements.
+     * @param int $code
+     *   (optional) The Exception code.
+     * @param \Throwable $previous
+     *   (optional) The previous exception used for the exception chaining.
+     */
+    public function __construct($message = '', protected array $requirements = [], $code = 0, ?\Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
     }
-    return trim($output);
-  }
+
+    /**
+     * Get an array of requirements.
+     *
+     * @return array
+     *   The requirements.
+     */
+    public function getRequirements()
+    {
+        return $this->requirements;
+    }
+
+    /**
+     * Get the requirements as a string.
+     *
+     * @return string
+     *   A formatted requirements string.
+     */
+    public function getRequirementsString(): string
+    {
+        $output = '';
+        foreach ($this->requirements as $requirement_type => $requirements) {
+            if (!is_array($requirements)) {
+                $requirements = [$requirements];
+            }
+
+            foreach ($requirements as $value) {
+                $output .= "$requirement_type: $value. ";
+            }
+        }
+        return trim($output);
+    }
 
 }

@@ -13,21 +13,22 @@ use Drupal\dialog_test\DialogTestEntityEditForm;
  * Define the dialog test entity form entity.
  */
 #[ConfigEntityType(
-  id: 'dialog_test_entity_form',
-  label: new TranslatableMarkup('dialog test entity type'),
-  entity_keys: [
+    id: 'dialog_test_entity_form',
+    label: new TranslatableMarkup('dialog test entity type'),
+    entity_keys: [
     'id' => 'id',
     'label' => 'label',
   ],
-  handlers: [
+    handlers: [
     'form' => [
       'add' => DialogTestEntityEditForm::class,
     ],
   ],
-  config_export: [
+    config_export: [
     'id',
     'label',
   ],
 )]
-class DialogTestEntityForm extends ConfigEntityBundleBase {
+class DialogTestEntityForm extends ConfigEntityBundleBase
+{
 }

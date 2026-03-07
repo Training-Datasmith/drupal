@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\EventDispatcher;
 
 use Symfony\Contracts\EventDispatcher\Event as SymfonyEvent;
@@ -12,4 +14,6 @@ use Symfony\Contracts\EventDispatcher\Event as SymfonyEvent;
  * class should extend this intermediary class, which will handle switching
  * from Symfony\Component to Symfony\Contracts without a further change.
  */
-class Event extends SymfonyEvent {}
+class Event extends SymfonyEvent
+{
+}

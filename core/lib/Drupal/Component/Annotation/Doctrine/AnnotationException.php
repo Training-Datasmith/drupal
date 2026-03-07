@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 // cspell:ignore optimizerplus
 
@@ -27,13 +29,14 @@
 namespace Drupal\Component\Annotation\Doctrine;
 
 use Exception;
-use Throwable;
 
-use function get_class;
 use function gettype;
+
 use function implode;
 use function is_object;
 use function sprintf;
+
+use Throwable;
 
 /**
  * Description of AnnotationException

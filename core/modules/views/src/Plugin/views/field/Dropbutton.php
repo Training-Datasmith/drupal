@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -10,22 +12,23 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("dropbutton")]
-class Dropbutton extends Links {
+#[ViewsField('dropbutton')]
+class Dropbutton extends Links
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values): array|string
+    {
+        $links = $this->getLinks();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values): array|string {
-    $links = $this->getLinks();
-
-    if (!empty($links)) {
-      return [
-        '#type' => 'dropbutton',
-        '#links' => $links,
-      ];
+        if (!empty($links)) {
+            return [
+              '#type' => 'dropbutton',
+              '#links' => $links,
+            ];
+        }
+        return '';
     }
-    return '';
-  }
 
 }

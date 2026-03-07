@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Annotation;
 
 /**
@@ -11,6 +13,6 @@ namespace Drupal\views\Annotation;
  *
  * @Annotation
  */
-class ViewsField extends ViewsHandlerAnnotationBase {
-
+class ViewsField extends ViewsHandlerAnnotationBase
+{
 }

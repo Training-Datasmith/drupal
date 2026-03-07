@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\style;
 
 use Drupal\Component\Utility\Html;
@@ -37,801 +39,827 @@ use Drupal\views\ViewExecutable;
 /**
  * Base class for views style plugins.
  */
-abstract class StylePluginBase extends PluginBase {
+abstract class StylePluginBase extends PluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $usesOptions = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $usesOptions = TRUE;
+    /**
+     * Store all available tokens row rows.
+     *
+     * @var array
+     */
+    protected $rowTokens = [];
 
-  /**
-   * Store all available tokens row rows.
-   *
-   * @var array
-   */
-  protected $rowTokens = [];
+    /**
+     * Whether or not this style uses a row plugin.
+     *
+     * @var bool
+     */
+    protected $usesRowPlugin = false;
 
-  /**
-   * Whether or not this style uses a row plugin.
-   *
-   * @var bool
-   */
-  protected $usesRowPlugin = FALSE;
+    /**
+     * Does the style plugin support custom css class for the rows.
+     *
+     * @var bool
+     */
+    protected $usesRowClass = false;
 
-  /**
-   * Does the style plugin support custom css class for the rows.
-   *
-   * @var bool
-   */
-  protected $usesRowClass = FALSE;
+    /**
+     * Does the style plugin support grouping of rows.
+     *
+     * @var bool
+     */
+    protected $usesGrouping = true;
 
-  /**
-   * Does the style plugin support grouping of rows.
-   *
-   * @var bool
-   */
-  protected $usesGrouping = TRUE;
+    /**
+     * Does the style plugin for itself support to add fields to its output.
+     *
+     * This option only makes sense on style plugins without row plugins, like
+     * for example table.
+     *
+     * @var bool
+     */
+    protected $usesFields = false;
 
-  /**
-   * Does the style plugin for itself support to add fields to its output.
-   *
-   * This option only makes sense on style plugins without row plugins, like
-   * for example table.
-   *
-   * @var bool
-   */
-  protected $usesFields = FALSE;
+    /**
+     * Stores the rendered field values, keyed by the row index and field name.
+     *
+     * @var array|null
+     *
+     * @see \Drupal\views\Plugin\views\style\StylePluginBase::renderFields()
+     * @see \Drupal\views\Plugin\views\style\StylePluginBase::getField()
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected $rendered_fields;
 
-  /**
-   * Stores the rendered field values, keyed by the row index and field name.
-   *
-   * @var array|null
-   *
-   * @see \Drupal\views\Plugin\views\style\StylePluginBase::renderFields()
-   * @see \Drupal\views\Plugin\views\style\StylePluginBase::getField()
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $rendered_fields;
+    /**
+     * The theme function used to render the grouping set.
+     *
+     * Plugins may override this attribute if they wish to use some other theme
+     * function to render the grouping set.
+     *
+     * @var string
+     *
+     * @see StylePluginBase::renderGroupingSets()
+     */
+    protected $groupingTheme = 'views_view_grouping';
 
-  /**
-   * The theme function used to render the grouping set.
-   *
-   * Plugins may override this attribute if they wish to use some other theme
-   * function to render the grouping set.
-   *
-   * @var string
-   *
-   * @see StylePluginBase::renderGroupingSets()
-   */
-  protected $groupingTheme = 'views_view_grouping';
+    /**
+     * Should field labels be enabled by default.
+     *
+     * @var bool
+     */
+    protected $defaultFieldLabels = false;
 
-  /**
-   * Should field labels be enabled by default.
-   *
-   * @var bool
-   */
-  protected $defaultFieldLabels = FALSE;
+    /**
+     * Keyed array by placeholder a cached per row tokens to render.
+     *
+     * @var string[]
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    public array $render_tokens = [];
 
-  /**
-   * Keyed array by placeholder a cached per row tokens to render.
-   *
-   * @var string[]
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public array $render_tokens = [];
+    /**
+     * Overrides \Drupal\views\Plugin\views\PluginBase::init().
+     *
+     * The style options might come externally as the style can be sourced from at
+     * least two locations. If it's not included, look on the display.
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * Overrides \Drupal\views\Plugin\views\PluginBase::init().
-   *
-   * The style options might come externally as the style can be sourced from at
-   * least two locations. If it's not included, look on the display.
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    if ($this->usesRowPlugin() && $display->getOption('row')) {
-      $this->view->rowPlugin = $display->getPlugin('row');
-    }
-
-    $this->options += [
-      'grouping' => [],
-    ];
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function destroy(): void {
-    parent::destroy();
-
-    if (isset($this->view->rowPlugin)) {
-      $this->view->rowPlugin->destroy();
-    }
-  }
-
-  /**
-   * Returns the usesRowPlugin property.
-   *
-   * @return bool
-   *   TRUE if this style uses a row plugin, FALSE otherwise.
-   */
-  public function usesRowPlugin() {
-    return $this->usesRowPlugin;
-
-  }
-
-  /**
-   * Returns the usesRowClass property.
-   *
-   * @return bool
-   *   TRUE if this style uses a row class, FALSE otherwise.
-   */
-  public function usesRowClass() {
-    return $this->usesRowClass;
-  }
-
-  /**
-   * Returns the usesGrouping property.
-   *
-   * @return bool
-   *   TRUE if this style supports grouping, FALSE otherwise.
-   */
-  public function usesGrouping() {
-    return $this->usesGrouping;
-  }
-
-  /**
-   * Return TRUE if this style also uses fields.
-   *
-   * @return bool
-   *   TRUE if fields are used, FALSE otherwise.
-   */
-  public function usesFields() {
-    // If we use a row plugin, ask the row plugin. Chances are, we don't
-    // care, it does.
-    $row_uses_fields = FALSE;
-    if ($this->usesRowPlugin() && ($row_plugin = $this->displayHandler->getPlugin('row'))) {
-      $row_uses_fields = $row_plugin->usesFields();
-    }
-    // Otherwise, check the definition or the option.
-    return $row_uses_fields || $this->usesFields || !empty($this->options['uses_fields']);
-  }
-
-  /**
-   * Return TRUE if this style uses tokens.
-   *
-   * Used to ensure we don't fetch tokens when not needed for performance.
-   */
-  public function usesTokens() {
-    if ($this->usesRowClass()) {
-      $class = $this->options['row_class'];
-      if (str_contains($class, '{{')) {
-        return TRUE;
-      }
-    }
-  }
-
-  /**
-   * Return TRUE if this style enables field labels by default.
-   *
-   * @return bool
-   *   TRUE if field labels are enabled by default, FALSE otherwise.
-   */
-  public function defaultFieldLabels() {
-    return $this->defaultFieldLabels;
-  }
-
-  /**
-   * Return the token replaced row class for the specified row.
-   */
-  public function getRowClass($row_index) {
-    if ($this->usesRowClass()) {
-      $class = $this->options['row_class'];
-      if ($this->usesFields() && $this->view->field) {
-        $class = strip_tags((string) $this->tokenizeValue($class, $row_index));
-      }
-
-      $classes = explode(' ', $class);
-      foreach ($classes as &$class) {
-        $class = Html::cleanCssIdentifier($class);
-      }
-      return implode(' ', $classes);
-    }
-  }
-
-  /**
-   * Take a value and apply token replacement logic to it.
-   */
-  public function tokenizeValue($value, $row_index) {
-    if (str_contains((string) $value, '{{')) {
-      // Row tokens might be empty, for example for node row style.
-      $tokens = $this->rowTokens[$row_index] ?? [];
-      if (!empty($this->view->build_info['substitutions'])) {
-        $tokens += $this->view->build_info['substitutions'];
-      }
-
-      return $this->viewsTokenReplace($value, $tokens);
-    }
-    // ::viewsTokenReplace() will run Xss::filterAdmin on the
-    // resulting string. We do the same here for consistency.
-    return Xss::filterAdmin($value);
-  }
-
-  /**
-   * Determines if the style plugin is rendered even if the view is empty.
-   */
-  public function evenEmpty() {
-    return !empty($this->definition['even empty']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['grouping'] = ['default' => []];
-    if ($this->usesRowClass()) {
-      $options['row_class'] = ['default' => ''];
-      $options['default_row_class'] = ['default' => TRUE];
-    }
-    $options['uses_fields'] = ['default' => FALSE];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-    // Only fields-based views can handle grouping.  Style plugins can also
-    // exclude themselves from being groupable by setting their "usesGrouping"
-    // property to FALSE.
-    // @todo Document "usesGrouping" in docs.php when docs.php is written.
-    if ($this->usesFields() && $this->usesGrouping()) {
-      $options = ['' => $this->t('- None -')];
-      $field_labels = $this->displayHandler->getFieldLabels(TRUE);
-      $options += $field_labels;
-      // If there are no fields, we can't group on them.
-      if (count($options) > 1) {
-        // This is for backward compatibility, when there was just a single
-        // select form.
-        if (is_string($this->options['grouping'])) {
-          $grouping = $this->options['grouping'];
-          $this->options['grouping'] = [];
-          $this->options['grouping'][0]['field'] = $grouping;
-        }
-        if (isset($this->options['group_rendered']) && is_string($this->options['group_rendered'])) {
-          $this->options['grouping'][0]['rendered'] = $this->options['group_rendered'];
-          unset($this->options['group_rendered']);
+        if ($this->usesRowPlugin() && $display->getOption('row')) {
+            $this->view->rowPlugin = $display->getPlugin('row');
         }
 
-        $c = count($this->options['grouping']);
-        // Add a form for every grouping, plus one.
-        for ($i = 0; $i <= $c; $i++) {
-          $grouping = !empty($this->options['grouping'][$i]) ? $this->options['grouping'][$i] : [];
-          $grouping += ['field' => '', 'rendered' => TRUE, 'rendered_strip' => FALSE];
-          $form['grouping'][$i]['field'] = [
-            '#type' => 'select',
-            '#title' => $this->t('Grouping field Nr.@number', ['@number' => $i + 1]),
-            '#options' => $options,
-            '#default_value' => $grouping['field'],
-            '#description' => $this->t('You may optionally specify a field by which to group the records. Leave blank to not group.'),
-          ];
-          $form['grouping'][$i]['rendered'] = [
-            '#type' => 'checkbox',
-            '#title' => $this->t('Use rendered output to group rows'),
-            '#default_value' => $grouping['rendered'],
-            '#description' => $this->t('If enabled the rendered output of the grouping field is used to group the rows.'),
-            '#states' => [
-              'invisible' => [
-                ':input[name="style_options[grouping][' . $i . '][field]"]' => ['value' => ''],
-              ],
-            ],
-          ];
-          $form['grouping'][$i]['rendered_strip'] = [
-            '#type' => 'checkbox',
-            '#title' => $this->t('Remove tags from rendered output'),
-            '#default_value' => $grouping['rendered_strip'],
-            '#states' => [
-              'invisible' => [
-                ':input[name="style_options[grouping][' . $i . '][field]"]' => ['value' => ''],
-              ],
-            ],
-          ];
-        }
-      }
-    }
-
-    if ($this->usesRowClass()) {
-      $form['row_class'] = [
-        '#title' => $this->t('Row class'),
-        '#description' => $this->t('The class to provide on each row.'),
-        '#type' => 'textfield',
-        '#default_value' => $this->options['row_class'],
-      ];
-
-      if ($this->usesFields()) {
-        $form['row_class']['#description'] .= ' ' . $this->t('You may use field tokens as per the "Replacement patterns" used in "Rewrite the output of this field" for all fields.');
-      }
-
-      $form['default_row_class'] = [
-        '#title' => $this->t('Add views row classes'),
-        '#description' => $this->t('Add the default row classes like @classes to the output. You can use this to quickly reduce the amount of markup the view provides by default, at the cost of making it more difficult to apply CSS.', ['@classes' => 'views-row']),
-        '#type' => 'checkbox',
-        '#default_value' => $this->options['default_row_class'],
-      ];
-    }
-
-    if (!$this->usesFields() || !empty($this->options['uses_fields'])) {
-      $form['uses_fields'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Force using fields'),
-        '#description' => $this->t('If neither the row nor the style plugin supports fields, this field allows to enable them, so you can for example use group by.'),
-        '#default_value' => $this->options['uses_fields'],
-      ];
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
-    // Don't run validation on style plugins without the grouping setting.
-    if ($form_state->hasValue(['style_options', 'grouping'])) {
-      // Don't save grouping if no field is specified.
-      $groupings = $form_state->getValue(['style_options', 'grouping']);
-      foreach ($groupings as $index => $grouping) {
-        if (empty($grouping['field'])) {
-          $form_state->unsetValue(['style_options', 'grouping', $index]);
-        }
-      }
-    }
-  }
-
-  /**
-   * Alter the options of a display before they are added to the view.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\views\Plugin\views\wizard\WizardInterface $wizard
-   *   The current used wizard.
-   * @param array $display_options
-   *   The options which will be used on the view. The style plugin should
-   *   alter this to its own needs.
-   * @param string $display_type
-   *   The display type, either block or page.
-   */
-  public function wizardSubmit(&$form, FormStateInterface $form_state, WizardInterface $wizard, &$display_options, $display_type) {
-  }
-
-  /**
-   * Determines if the style handler should interfere with sorts.
-   *
-   * Called by the view builder to see if this style handler wants to
-   * interfere with the sorts. If so it should build; if it returns
-   * any non-TRUE value, normal sorting will NOT be added to the query.
-   */
-  public function buildSort() {
-    return TRUE;
-  }
-
-  /**
-   * Allows the view builder to build a second set of sorts.
-   *
-   * Called by the view builder to let the style build a second set of
-   * sorts that will come after any other sorts in the view.
-   */
-  public function buildSortPost() {}
-
-  /**
-   * Allow the style to do stuff before each row is rendered.
-   *
-   * @param array $result
-   *   The full array of results from the query.
-   */
-  public function preRender($result): void {
-    if (!empty($this->view->rowPlugin)) {
-      $this->view->rowPlugin->preRender($result);
-    }
-  }
-
-  /**
-   * Renders a group of rows of the grouped view.
-   *
-   * @param array $rows
-   *   The result rows rendered in this group.
-   *
-   * @return array
-   *   The render array containing the single group theme output.
-   */
-  protected function renderRowGroup(array $rows = []) {
-    return [
-      '#theme' => $this->themeFunctions(),
-      '#view' => $this->view,
-      '#rows' => $rows,
-    ];
-  }
-
-  /**
-   * Render the display in this style.
-   */
-  public function render() {
-    // Group the rows according to the grouping instructions, if specified.
-    $sets = $this->renderGrouping(
-      $this->view->result,
-      $this->options['grouping'],
-      TRUE
-    );
-
-    return $this->renderGroupingSets($sets);
-  }
-
-  /**
-   * Render the grouping sets.
-   *
-   * Plugins may override this method if they wish some other way of handling
-   * grouping.
-   *
-   * @param array $sets
-   *   An array keyed by group content containing the grouping sets to render.
-   *   Each set contains the following associative array:
-   *   - group: The group content.
-   *   - level: The hierarchical level of the grouping.
-   *   - rows: The result rows to be rendered in this group.
-   *
-   * @return array
-   *   Render array of grouping sets.
-   */
-  public function renderGroupingSets($sets) {
-    $output = [];
-    $theme_functions = $this->view->buildThemeFunctions($this->groupingTheme);
-    foreach ($sets as $set) {
-      $level = $set['level'] ?? 0;
-
-      $row = reset($set['rows']);
-      // Render as a grouping set.
-      if (is_array($row) && isset($row['group'])) {
-        $single_output = [
-          '#theme' => $theme_functions,
-          '#view' => $this->view,
-          '#grouping' => $this->options['grouping'][$level],
-          '#rows' => $set['rows'],
+        $this->options += [
+          'grouping' => [],
         ];
-      }
-      // Render as a record set.
-      else {
-        if ($this->usesRowPlugin()) {
-          foreach ($set['rows'] as $index => $row) {
-            $this->view->row_index = $index;
-            $set['rows'][$index] = $this->view->rowPlugin->render($row);
-          }
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function destroy(): void
+    {
+        parent::destroy();
+
+        if (isset($this->view->rowPlugin)) {
+            $this->view->rowPlugin->destroy();
+        }
+    }
+
+    /**
+     * Returns the usesRowPlugin property.
+     *
+     * @return bool
+     *   TRUE if this style uses a row plugin, FALSE otherwise.
+     */
+    public function usesRowPlugin()
+    {
+        return $this->usesRowPlugin;
+
+    }
+
+    /**
+     * Returns the usesRowClass property.
+     *
+     * @return bool
+     *   TRUE if this style uses a row class, FALSE otherwise.
+     */
+    public function usesRowClass()
+    {
+        return $this->usesRowClass;
+    }
+
+    /**
+     * Returns the usesGrouping property.
+     *
+     * @return bool
+     *   TRUE if this style supports grouping, FALSE otherwise.
+     */
+    public function usesGrouping()
+    {
+        return $this->usesGrouping;
+    }
+
+    /**
+     * Return TRUE if this style also uses fields.
+     *
+     * @return bool
+     *   TRUE if fields are used, FALSE otherwise.
+     */
+    public function usesFields()
+    {
+        // If we use a row plugin, ask the row plugin. Chances are, we don't
+        // care, it does.
+        $row_uses_fields = false;
+        if ($this->usesRowPlugin() && ($row_plugin = $this->displayHandler->getPlugin('row'))) {
+            $row_uses_fields = $row_plugin->usesFields();
+        }
+        // Otherwise, check the definition or the option.
+        return $row_uses_fields || $this->usesFields || !empty($this->options['uses_fields']);
+    }
+
+    /**
+     * Return TRUE if this style uses tokens.
+     *
+     * Used to ensure we don't fetch tokens when not needed for performance.
+     */
+    public function usesTokens()
+    {
+        if ($this->usesRowClass()) {
+            $class = $this->options['row_class'];
+            if (str_contains($class, '{{')) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Return TRUE if this style enables field labels by default.
+     *
+     * @return bool
+     *   TRUE if field labels are enabled by default, FALSE otherwise.
+     */
+    public function defaultFieldLabels()
+    {
+        return $this->defaultFieldLabels;
+    }
+
+    /**
+     * Return the token replaced row class for the specified row.
+     */
+    public function getRowClass($row_index)
+    {
+        if ($this->usesRowClass()) {
+            $class = $this->options['row_class'];
+            if ($this->usesFields() && $this->view->field) {
+                $class = strip_tags((string) $this->tokenizeValue($class, $row_index));
+            }
+
+            $classes = explode(' ', $class);
+            foreach ($classes as &$class) {
+                $class = Html::cleanCssIdentifier($class);
+            }
+            return implode(' ', $classes);
+        }
+    }
+
+    /**
+     * Take a value and apply token replacement logic to it.
+     */
+    public function tokenizeValue($value, $row_index)
+    {
+        if (str_contains((string) $value, '{{')) {
+            // Row tokens might be empty, for example for node row style.
+            $tokens = $this->rowTokens[$row_index] ?? [];
+            if (!empty($this->view->build_info['substitutions'])) {
+                $tokens += $this->view->build_info['substitutions'];
+            }
+
+            return $this->viewsTokenReplace($value, $tokens);
+        }
+        // ::viewsTokenReplace() will run Xss::filterAdmin on the
+        // resulting string. We do the same here for consistency.
+        return Xss::filterAdmin($value);
+    }
+
+    /**
+     * Determines if the style plugin is rendered even if the view is empty.
+     */
+    public function evenEmpty()
+    {
+        return !empty($this->definition['even empty']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['grouping'] = ['default' => []];
+        if ($this->usesRowClass()) {
+            $options['row_class'] = ['default' => ''];
+            $options['default_row_class'] = ['default' => true];
+        }
+        $options['uses_fields'] = ['default' => false];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+        // Only fields-based views can handle grouping.  Style plugins can also
+        // exclude themselves from being groupable by setting their "usesGrouping"
+        // property to FALSE.
+        // @todo Document "usesGrouping" in docs.php when docs.php is written.
+        if ($this->usesFields() && $this->usesGrouping()) {
+            $options = ['' => $this->t('- None -')];
+            $field_labels = $this->displayHandler->getFieldLabels(true);
+            $options += $field_labels;
+            // If there are no fields, we can't group on them.
+            if (count($options) > 1) {
+                // This is for backward compatibility, when there was just a single
+                // select form.
+                if (is_string($this->options['grouping'])) {
+                    $grouping = $this->options['grouping'];
+                    $this->options['grouping'] = [];
+                    $this->options['grouping'][0]['field'] = $grouping;
+                }
+                if (isset($this->options['group_rendered']) && is_string($this->options['group_rendered'])) {
+                    $this->options['grouping'][0]['rendered'] = $this->options['group_rendered'];
+                    unset($this->options['group_rendered']);
+                }
+
+                $c = count($this->options['grouping']);
+                // Add a form for every grouping, plus one.
+                for ($i = 0; $i <= $c; $i++) {
+                    $grouping = !empty($this->options['grouping'][$i]) ? $this->options['grouping'][$i] : [];
+                    $grouping += ['field' => '', 'rendered' => true, 'rendered_strip' => false];
+                    $form['grouping'][$i]['field'] = [
+                      '#type' => 'select',
+                      '#title' => $this->t('Grouping field Nr.@number', ['@number' => $i + 1]),
+                      '#options' => $options,
+                      '#default_value' => $grouping['field'],
+                      '#description' => $this->t('You may optionally specify a field by which to group the records. Leave blank to not group.'),
+                    ];
+                    $form['grouping'][$i]['rendered'] = [
+                      '#type' => 'checkbox',
+                      '#title' => $this->t('Use rendered output to group rows'),
+                      '#default_value' => $grouping['rendered'],
+                      '#description' => $this->t('If enabled the rendered output of the grouping field is used to group the rows.'),
+                      '#states' => [
+                        'invisible' => [
+                          ':input[name="style_options[grouping][' . $i . '][field]"]' => ['value' => ''],
+                        ],
+                      ],
+                    ];
+                    $form['grouping'][$i]['rendered_strip'] = [
+                      '#type' => 'checkbox',
+                      '#title' => $this->t('Remove tags from rendered output'),
+                      '#default_value' => $grouping['rendered_strip'],
+                      '#states' => [
+                        'invisible' => [
+                          ':input[name="style_options[grouping][' . $i . '][field]"]' => ['value' => ''],
+                        ],
+                      ],
+                    ];
+                }
+            }
         }
 
-        $single_output = $this->renderRowGroup($set['rows']);
-      }
+        if ($this->usesRowClass()) {
+            $form['row_class'] = [
+              '#title' => $this->t('Row class'),
+              '#description' => $this->t('The class to provide on each row.'),
+              '#type' => 'textfield',
+              '#default_value' => $this->options['row_class'],
+            ];
 
-      $single_output['#grouping_level'] = $level;
-      $single_output['#title'] = $set['group'];
-      $output[] = $single_output;
-    }
-    unset($this->view->row_index);
-    return $output;
-  }
+            if ($this->usesFields()) {
+                $form['row_class']['#description'] .= ' ' . $this->t('You may use field tokens as per the "Replacement patterns" used in "Rewrite the output of this field" for all fields.');
+            }
 
-  /**
-   * Group records as needed for rendering.
-   *
-   * @param array $records
-   *   An array of records from the view to group.
-   * @param array $groupings
-   *   An array of grouping instructions on which fields to group. If empty, the
-   *   result set will be given a single group with an empty string as a label.
-   * @param bool $group_rendered
-   *   Boolean value whether to use the rendered or the raw field value for
-   *   grouping. If set to NULL the return is structured as before
-   *   Views 7.x-3.0-rc2. After Views 7.x-3.0 this boolean is only used if
-   *   $groupings is an old-style string or if the rendered option is missing
-   *   for a grouping instruction.
-   *
-   * @return array
-   *   The grouped record set.
-   *   A nested set structure is generated if multiple grouping fields are used.
-   *
-   *   @code
-   *   [
-   *     'grouping_field_1:grouping_1' => [
-   *       'group' => 'grouping_field_1:content_1',
-   *       'level' => 0,
-   *       'rows' => [
-   *         'grouping_field_2:grouping_a' => [
-   *           'group' => 'grouping_field_2:content_a',
-   *           'level' => 1,
-   *           'rows' => [
-   *             $row_index_1 => $row_1,
-   *             $row_index_2 => $row_2,
-   *             // ...
-   *           ]
-   *         ],
-   *       ],
-   *     ],
-   *     'grouping_field_1:grouping_2' => [
-   *       // ...
-   *     ],
-   *   ]
-   *   @endcode
-   */
-  public function renderGrouping($records, $groupings = [], $group_rendered = NULL) {
-    // This is for backward compatibility, when $groupings was a string
-    // containing the ID of a single field.
-    if (is_string($groupings)) {
-      $rendered = $group_rendered ?? TRUE;
-      $groupings = [['field' => $groupings, 'rendered' => $rendered]];
+            $form['default_row_class'] = [
+              '#title' => $this->t('Add views row classes'),
+              '#description' => $this->t('Add the default row classes like @classes to the output. You can use this to quickly reduce the amount of markup the view provides by default, at the cost of making it more difficult to apply CSS.', ['@classes' => 'views-row']),
+              '#type' => 'checkbox',
+              '#default_value' => $this->options['default_row_class'],
+            ];
+        }
+
+        if (!$this->usesFields() || !empty($this->options['uses_fields'])) {
+            $form['uses_fields'] = [
+              '#type' => 'checkbox',
+              '#title' => $this->t('Force using fields'),
+              '#description' => $this->t('If neither the row nor the style plugin supports fields, this field allows to enable them, so you can for example use group by.'),
+              '#default_value' => $this->options['uses_fields'],
+            ];
+        }
     }
 
-    // Make sure fields are rendered.
-    $this->renderFields($this->view->result);
-    $sets = [];
-    if ($groupings) {
-      foreach ($records as $index => $row) {
-        // Iterate through configured grouping fields to determine the
-        // hierarchically positioned set where the current row belongs to.
-        // While iterating, parent groups, that do not exist yet, are added.
-        $set = &$sets;
-        foreach ($groupings as $level => $info) {
-          $field = $info['field'];
-          $rendered = $info['rendered'] ?? $group_rendered;
-          $rendered_strip = $info['rendered_strip'] ?? FALSE;
-          $grouping = '';
-          $group_content = '';
-          // Group on the rendered version of the field, not the raw.  That way,
-          // we can control any special formatting of the grouping field through
-          // the admin or theme layer or anywhere else we'd like.
-          if (isset($this->view->field[$field])) {
-            $group_content = $this->getField($index, $field);
-            if ($this->view->field[$field]->options['label']) {
-              $delimiter = $this->view->field[$field]->options['element_label_colon'] ? ': ' : ' ';
-              $group_content = $this->view->field[$field]->options['label'] . $delimiter . $group_content;
+    /**
+     * {@inheritdoc}
+     */
+    public function validateOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        // Don't run validation on style plugins without the grouping setting.
+        if ($form_state->hasValue(['style_options', 'grouping'])) {
+            // Don't save grouping if no field is specified.
+            $groupings = $form_state->getValue(['style_options', 'grouping']);
+            foreach ($groupings as $index => $grouping) {
+                if (empty($grouping['field'])) {
+                    $form_state->unsetValue(['style_options', 'grouping', $index]);
+                }
             }
-            if ($rendered) {
-              $grouping = (string) $group_content;
-              if ($rendered_strip) {
-                $group_content = $grouping = strip_tags(htmlspecialchars_decode($group_content));
-              }
+        }
+    }
+
+    /**
+     * Alter the options of a display before they are added to the view.
+     *
+     * @param array $form
+     *   An associative array containing the structure of the form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param \Drupal\views\Plugin\views\wizard\WizardInterface $wizard
+     *   The current used wizard.
+     * @param array $display_options
+     *   The options which will be used on the view. The style plugin should
+     *   alter this to its own needs.
+     * @param string $display_type
+     *   The display type, either block or page.
+     */
+    public function wizardSubmit(&$form, FormStateInterface $form_state, WizardInterface $wizard, &$display_options, $display_type)
+    {
+    }
+
+    /**
+     * Determines if the style handler should interfere with sorts.
+     *
+     * Called by the view builder to see if this style handler wants to
+     * interfere with the sorts. If so it should build; if it returns
+     * any non-TRUE value, normal sorting will NOT be added to the query.
+     */
+    public function buildSort()
+    {
+        return true;
+    }
+
+    /**
+     * Allows the view builder to build a second set of sorts.
+     *
+     * Called by the view builder to let the style build a second set of
+     * sorts that will come after any other sorts in the view.
+     */
+    public function buildSortPost()
+    {
+    }
+
+    /**
+     * Allow the style to do stuff before each row is rendered.
+     *
+     * @param array $result
+     *   The full array of results from the query.
+     */
+    public function preRender($result): void
+    {
+        if (!empty($this->view->rowPlugin)) {
+            $this->view->rowPlugin->preRender($result);
+        }
+    }
+
+    /**
+     * Renders a group of rows of the grouped view.
+     *
+     * @param array $rows
+     *   The result rows rendered in this group.
+     *
+     * @return array
+     *   The render array containing the single group theme output.
+     */
+    protected function renderRowGroup(array $rows = [])
+    {
+        return [
+          '#theme' => $this->themeFunctions(),
+          '#view' => $this->view,
+          '#rows' => $rows,
+        ];
+    }
+
+    /**
+     * Render the display in this style.
+     */
+    public function render()
+    {
+        // Group the rows according to the grouping instructions, if specified.
+        $sets = $this->renderGrouping(
+            $this->view->result,
+            $this->options['grouping'],
+            true
+        );
+
+        return $this->renderGroupingSets($sets);
+    }
+
+    /**
+     * Render the grouping sets.
+     *
+     * Plugins may override this method if they wish some other way of handling
+     * grouping.
+     *
+     * @param array $sets
+     *   An array keyed by group content containing the grouping sets to render.
+     *   Each set contains the following associative array:
+     *   - group: The group content.
+     *   - level: The hierarchical level of the grouping.
+     *   - rows: The result rows to be rendered in this group.
+     *
+     * @return array
+     *   Render array of grouping sets.
+     */
+    public function renderGroupingSets($sets)
+    {
+        $output = [];
+        $theme_functions = $this->view->buildThemeFunctions($this->groupingTheme);
+        foreach ($sets as $set) {
+            $level = $set['level'] ?? 0;
+
+            $row = reset($set['rows']);
+            // Render as a grouping set.
+            if (is_array($row) && isset($row['group'])) {
+                $single_output = [
+                  '#theme' => $theme_functions,
+                  '#view' => $this->view,
+                  '#grouping' => $this->options['grouping'][$level],
+                  '#rows' => $set['rows'],
+                ];
             }
+            // Render as a record set.
             else {
-              $grouping = $this->getFieldValue($index, $field);
-              // Not all field handlers return a scalar value,
-              // e.g. views_handler_field_field.
-              if (!is_scalar($grouping)) {
-                $grouping = hash('sha256', serialize($grouping));
-              }
+                if ($this->usesRowPlugin()) {
+                    foreach ($set['rows'] as $index => $row) {
+                        $this->view->row_index = $index;
+                        $set['rows'][$index] = $this->view->rowPlugin->render($row);
+                    }
+                }
+
+                $single_output = $this->renderRowGroup($set['rows']);
             }
-          }
 
-          // Create the group if it does not exist yet.
-          if (empty($set[$grouping])) {
-            $set[$grouping]['group'] = $group_content;
-            $set[$grouping]['level'] = $level;
-            $set[$grouping]['rows'] = [];
-          }
-
-          // Move the set reference into the row set of the group we just
-          // determined.
-          $set = &$set[$grouping]['rows'];
+            $single_output['#grouping_level'] = $level;
+            $single_output['#title'] = $set['group'];
+            $output[] = $single_output;
         }
-        // Add the row to the hierarchically positioned row set we just
-        // determined.
-        $set[$index] = $row;
-      }
-    }
-    else {
-      // Create a single group with an empty grouping field.
-      $sets[''] = [
-        'group' => '',
-        'rows' => $records,
-      ];
+        unset($this->view->row_index);
+        return $output;
     }
 
-    // If this parameter isn't explicitly set, modify the output to be fully
-    // backward compatible to code before Views 7.x-3.0-rc2.
-    // @todo Remove this as soon as possible e.g. October 2020
-    if ($group_rendered === NULL) {
-      $old_style_sets = [];
-      foreach ($sets as $group) {
-        $old_style_sets[$group['group']] = $group['rows'];
-      }
-      $sets = $old_style_sets;
-    }
+    /**
+     * Group records as needed for rendering.
+     *
+     * @param array $records
+     *   An array of records from the view to group.
+     * @param array $groupings
+     *   An array of grouping instructions on which fields to group. If empty, the
+     *   result set will be given a single group with an empty string as a label.
+     * @param bool $group_rendered
+     *   Boolean value whether to use the rendered or the raw field value for
+     *   grouping. If set to NULL the return is structured as before
+     *   Views 7.x-3.0-rc2. After Views 7.x-3.0 this boolean is only used if
+     *   $groupings is an old-style string or if the rendered option is missing
+     *   for a grouping instruction.
+     *
+     * @return array
+     *   The grouped record set.
+     *   A nested set structure is generated if multiple grouping fields are used.
+     *
+     *   @code
+     *   [
+     *     'grouping_field_1:grouping_1' => [
+     *       'group' => 'grouping_field_1:content_1',
+     *       'level' => 0,
+     *       'rows' => [
+     *         'grouping_field_2:grouping_a' => [
+     *           'group' => 'grouping_field_2:content_a',
+     *           'level' => 1,
+     *           'rows' => [
+     *             $row_index_1 => $row_1,
+     *             $row_index_2 => $row_2,
+     *             // ...
+     *           ]
+     *         ],
+     *       ],
+     *     ],
+     *     'grouping_field_1:grouping_2' => [
+     *       // ...
+     *     ],
+     *   ]
+     *   @endcode
+     */
+    public function renderGrouping($records, $groupings = [], $group_rendered = null)
+    {
+        // This is for backward compatibility, when $groupings was a string
+        // containing the ID of a single field.
+        if (is_string($groupings)) {
+            $rendered = $group_rendered ?? true;
+            $groupings = [['field' => $groupings, 'rendered' => $rendered]];
+        }
 
-    return $sets;
-  }
+        // Make sure fields are rendered.
+        $this->renderFields($this->view->result);
+        $sets = [];
+        if ($groupings) {
+            foreach ($records as $index => $row) {
+                // Iterate through configured grouping fields to determine the
+                // hierarchically positioned set where the current row belongs to.
+                // While iterating, parent groups, that do not exist yet, are added.
+                $set = &$sets;
+                foreach ($groupings as $level => $info) {
+                    $field = $info['field'];
+                    $rendered = $info['rendered'] ?? $group_rendered;
+                    $rendered_strip = $info['rendered_strip'] ?? false;
+                    $grouping = '';
+                    $group_content = '';
+                    // Group on the rendered version of the field, not the raw.  That way,
+                    // we can control any special formatting of the grouping field through
+                    // the admin or theme layer or anywhere else we'd like.
+                    if (isset($this->view->field[$field])) {
+                        $group_content = $this->getField($index, $field);
+                        if ($this->view->field[$field]->options['label']) {
+                            $delimiter = $this->view->field[$field]->options['element_label_colon'] ? ': ' : ' ';
+                            $group_content = $this->view->field[$field]->options['label'] . $delimiter . $group_content;
+                        }
+                        if ($rendered) {
+                            $grouping = (string) $group_content;
+                            if ($rendered_strip) {
+                                $group_content = $grouping = strip_tags(htmlspecialchars_decode($group_content));
+                            }
+                        } else {
+                            $grouping = $this->getFieldValue($index, $field);
+                            // Not all field handlers return a scalar value,
+                            // e.g. views_handler_field_field.
+                            if (!is_scalar($grouping)) {
+                                $grouping = hash('sha256', serialize($grouping));
+                            }
+                        }
+                    }
 
-  /**
-   * Renders all of the fields for a given style and store them on the object.
-   *
-   * @param array $result
-   *   The result array from $view->result.
-   */
-  protected function renderFields(array $result) {
-    if (!$this->usesFields()) {
-      return;
-    }
+                    // Create the group if it does not exist yet.
+                    if (empty($set[$grouping])) {
+                        $set[$grouping]['group'] = $group_content;
+                        $set[$grouping]['level'] = $level;
+                        $set[$grouping]['rows'] = [];
+                    }
 
-    if (!isset($this->rendered_fields)) {
-      $this->rendered_fields = [];
-      $this->view->row_index = 0;
-      $field_ids = array_keys($this->view->field);
-
-      // Only tokens relating to field handlers preceding the one we invoke
-      // ::getRenderTokens() on are returned, so here we need to pick the last
-      // available field handler.
-      $render_tokens_field_id = end($field_ids);
-
-      // If all fields have a field::access FALSE there might be no fields, so
-      // there is no reason to execute this code.
-      if (!empty($field_ids)) {
-        $renderer = $this->getRenderer();
-        /** @var \Drupal\views\Plugin\views\cache\CachePluginBase $cache_plugin */
-        $cache_plugin = $this->view->display_handler->getPlugin('cache');
-        $max_age = $cache_plugin->getCacheMaxAge();
-
-        /** @var \Drupal\views\ResultRow $row */
-        foreach ($result as $index => $row) {
-          $this->view->row_index = $index;
-
-          $data = [
-            '#pre_render' => [$this->elementPreRenderRow(...)],
-            '#row' => $row,
-            '#cache' => [
-              'tags' => $cache_plugin->getRowCacheTags($row),
-              'max-age' => $max_age,
-            ],
-          ];
-          $renderer->addCacheableDependency($data, $this->view->storage);
-          // Views may be rendered both inside and outside a render context:
-          // - HTML views are rendered inside a render context: then we want to
-          //   use ::render(), so that attachments and cacheability are bubbled.
-          // - non-HTML views are rendered outside a render context: then we
-          //   want to use ::renderInIsolation(), so that no bubbling happens.
-          if ($renderer->hasRenderContext()) {
-            $renderer->render($data);
-          }
-          else {
-            $renderer->renderInIsolation($data);
-          }
-
-          // Extract field output from the render array and post process it.
-          $fields = $this->view->field;
-          $rendered_fields = &$this->rendered_fields[$index];
-          $post_render_tokens = [];
-          foreach ($field_ids as $id) {
-            $rendered_fields[$id] = $data[$id]['#markup'];
-            $tokens = $fields[$id]->postRender($row, $rendered_fields[$id]);
-            if ($tokens) {
-              $post_render_tokens += $tokens;
+                    // Move the set reference into the row set of the group we just
+                    // determined.
+                    $set = &$set[$grouping]['rows'];
+                }
+                // Add the row to the hierarchically positioned row set we just
+                // determined.
+                $set[$index] = $row;
             }
-          }
+        } else {
+            // Create a single group with an empty grouping field.
+            $sets[''] = [
+              'group' => '',
+              'rows' => $records,
+            ];
+        }
 
-          // Populate row tokens.
-          $this->rowTokens[$index] = $this->view->field[$render_tokens_field_id]->getRenderTokens([]);
-
-          // Replace post-render tokens.
-          if ($post_render_tokens) {
-            $placeholders = array_keys($post_render_tokens);
-            $values = array_values($post_render_tokens);
-            foreach ($this->rendered_fields[$index] as &$rendered_field) {
-              // Placeholders and rendered fields have been processed by the
-              // render system and are therefore safe.
-              $rendered_field = ViewsRenderPipelineMarkup::create(str_replace($placeholders, $values, $rendered_field));
+        // If this parameter isn't explicitly set, modify the output to be fully
+        // backward compatible to code before Views 7.x-3.0-rc2.
+        // @todo Remove this as soon as possible e.g. October 2020
+        if ($group_rendered === null) {
+            $old_style_sets = [];
+            foreach ($sets as $group) {
+                $old_style_sets[$group['group']] = $group['rows'];
             }
-          }
+            $sets = $old_style_sets;
         }
-      }
 
-      unset($this->view->row_index);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks() {
-    $callbacks = parent::trustedCallbacks();
-    $callbacks[] = 'elementPreRenderRow';
-    return $callbacks;
-  }
-
-  /**
-   * Render API callback: Performs view row field rendering.
-   *
-   * This function is assigned as a #pre_render callback.
-   *
-   * @param array $data
-   *   The element to #pre_render.
-   *
-   * @return array
-   *   The processed element.
-   *
-   * @see self::render()
-   */
-  public function elementPreRenderRow(array $data) {
-    // Render row fields.
-    foreach ($this->view->field as $id => $field) {
-      $data[$id] = ['#markup' => $field->theme($data['#row'])];
-    }
-    return $data;
-  }
-
-  /**
-   * Gets a rendered field.
-   *
-   * @param int $index
-   *   The index count of the row.
-   * @param string $field
-   *   The ID of the field.
-   *
-   * @return \Drupal\Component\Render\MarkupInterface|null
-   *   The output of the field, or NULL if it was empty.
-   */
-  public function getField($index, $field) {
-    if (!isset($this->rendered_fields)) {
-      $this->renderFields($this->view->result);
+        return $sets;
     }
 
-    if (isset($this->rendered_fields[$index][$field])) {
-      return $this->rendered_fields[$index][$field];
-    }
-  }
-
-  /**
-   * Get the raw field value.
-   *
-   * @param int $index
-   *   The index count of the row.
-   * @param string $field
-   *   The id of the field.
-   */
-  public function getFieldValue($index, $field) {
-    $this->view->row_index = $index;
-    $value = $this->view->field[$field]->getValue($this->view->result[$index]);
-    unset($this->view->row_index);
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate() {
-    $errors = parent::validate();
-
-    if ($this->usesRowPlugin()) {
-      $plugin = $this->displayHandler->getPlugin('row');
-      if (empty($plugin)) {
-        $errors[] = $this->t('Style @style requires a row style but the row plugin is invalid.', ['@style' => $this->definition['title']]);
-      }
-      else {
-        $result = $plugin->validate();
-        if (!empty($result) && is_array($result)) {
-          $errors = array_merge($errors, $result);
+    /**
+     * Renders all of the fields for a given style and store them on the object.
+     *
+     * @param array $result
+     *   The result array from $view->result.
+     */
+    protected function renderFields(array $result)
+    {
+        if (!$this->usesFields()) {
+            return;
         }
-      }
-    }
-    return $errors;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    parent::query();
-    if (isset($this->view->rowPlugin)) {
-      $this->view->rowPlugin->query();
+        if (!isset($this->rendered_fields)) {
+            $this->rendered_fields = [];
+            $this->view->row_index = 0;
+            $field_ids = array_keys($this->view->field);
+
+            // Only tokens relating to field handlers preceding the one we invoke
+            // ::getRenderTokens() on are returned, so here we need to pick the last
+            // available field handler.
+            $render_tokens_field_id = end($field_ids);
+
+            // If all fields have a field::access FALSE there might be no fields, so
+            // there is no reason to execute this code.
+            if (!empty($field_ids)) {
+                $renderer = $this->getRenderer();
+                /** @var \Drupal\views\Plugin\views\cache\CachePluginBase $cache_plugin */
+                $cache_plugin = $this->view->display_handler->getPlugin('cache');
+                $max_age = $cache_plugin->getCacheMaxAge();
+
+                /** @var \Drupal\views\ResultRow $row */
+                foreach ($result as $index => $row) {
+                    $this->view->row_index = $index;
+
+                    $data = [
+                      '#pre_render' => [$this->elementPreRenderRow(...)],
+                      '#row' => $row,
+                      '#cache' => [
+                        'tags' => $cache_plugin->getRowCacheTags($row),
+                        'max-age' => $max_age,
+                      ],
+                    ];
+                    $renderer->addCacheableDependency($data, $this->view->storage);
+                    // Views may be rendered both inside and outside a render context:
+                    // - HTML views are rendered inside a render context: then we want to
+                    //   use ::render(), so that attachments and cacheability are bubbled.
+                    // - non-HTML views are rendered outside a render context: then we
+                    //   want to use ::renderInIsolation(), so that no bubbling happens.
+                    if ($renderer->hasRenderContext()) {
+                        $renderer->render($data);
+                    } else {
+                        $renderer->renderInIsolation($data);
+                    }
+
+                    // Extract field output from the render array and post process it.
+                    $fields = $this->view->field;
+                    $rendered_fields = &$this->rendered_fields[$index];
+                    $post_render_tokens = [];
+                    foreach ($field_ids as $id) {
+                        $rendered_fields[$id] = $data[$id]['#markup'];
+                        $tokens = $fields[$id]->postRender($row, $rendered_fields[$id]);
+                        if ($tokens) {
+                            $post_render_tokens += $tokens;
+                        }
+                    }
+
+                    // Populate row tokens.
+                    $this->rowTokens[$index] = $this->view->field[$render_tokens_field_id]->getRenderTokens([]);
+
+                    // Replace post-render tokens.
+                    if ($post_render_tokens) {
+                        $placeholders = array_keys($post_render_tokens);
+                        $values = array_values($post_render_tokens);
+                        foreach ($this->rendered_fields[$index] as &$rendered_field) {
+                            // Placeholders and rendered fields have been processed by the
+                            // render system and are therefore safe.
+                            $rendered_field = ViewsRenderPipelineMarkup::create(str_replace($placeholders, $values, $rendered_field));
+                        }
+                    }
+                }
+            }
+
+            unset($this->view->row_index);
+        }
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function trustedCallbacks()
+    {
+        $callbacks = parent::trustedCallbacks();
+        $callbacks[] = 'elementPreRenderRow';
+        return $callbacks;
+    }
+
+    /**
+     * Render API callback: Performs view row field rendering.
+     *
+     * This function is assigned as a #pre_render callback.
+     *
+     * @param array $data
+     *   The element to #pre_render.
+     *
+     * @return array
+     *   The processed element.
+     *
+     * @see self::render()
+     */
+    public function elementPreRenderRow(array $data)
+    {
+        // Render row fields.
+        foreach ($this->view->field as $id => $field) {
+            $data[$id] = ['#markup' => $field->theme($data['#row'])];
+        }
+        return $data;
+    }
+
+    /**
+     * Gets a rendered field.
+     *
+     * @param int $index
+     *   The index count of the row.
+     * @param string $field
+     *   The ID of the field.
+     *
+     * @return \Drupal\Component\Render\MarkupInterface|null
+     *   The output of the field, or NULL if it was empty.
+     */
+    public function getField($index, $field)
+    {
+        if (!isset($this->rendered_fields)) {
+            $this->renderFields($this->view->result);
+        }
+
+        if (isset($this->rendered_fields[$index][$field])) {
+            return $this->rendered_fields[$index][$field];
+        }
+    }
+
+    /**
+     * Get the raw field value.
+     *
+     * @param int $index
+     *   The index count of the row.
+     * @param string $field
+     *   The id of the field.
+     */
+    public function getFieldValue($index, $field)
+    {
+        $this->view->row_index = $index;
+        $value = $this->view->field[$field]->getValue($this->view->result[$index]);
+        unset($this->view->row_index);
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validate()
+    {
+        $errors = parent::validate();
+
+        if ($this->usesRowPlugin()) {
+            $plugin = $this->displayHandler->getPlugin('row');
+            if (empty($plugin)) {
+                $errors[] = $this->t('Style @style requires a row style but the row plugin is invalid.', ['@style' => $this->definition['title']]);
+            } else {
+                $result = $plugin->validate();
+                if (!empty($result) && is_array($result)) {
+                    $errors = array_merge($errors, $result);
+                }
+            }
+        }
+        return $errors;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        parent::query();
+        if (isset($this->view->rowPlugin)) {
+            $this->view->rowPlugin->query();
+        }
+    }
 
 }
 

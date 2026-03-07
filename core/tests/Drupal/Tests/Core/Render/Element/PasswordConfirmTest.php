@@ -16,30 +16,32 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PasswordConfirm::class)]
 #[Group('Render')]
-class PasswordConfirmTest extends UnitTestCase {
+class PasswordConfirmTest extends UnitTestCase
+{
+    /**
+     * Tests value callback.
+     */
+    #[DataProvider('providerTestValueCallback')]
+    public function testValueCallback($expected, $element, $input): void
+    {
+        $form_state = $this->prophesize(FormStateInterface::class)->reveal();
+        $this->assertSame($expected, PasswordConfirm::valueCallback($element, $input, $form_state));
+    }
 
-  /**
-   * Tests value callback.
-   */
-  #[DataProvider('providerTestValueCallback')]
-  public function testValueCallback($expected, $element, $input): void {
-    $form_state = $this->prophesize(FormStateInterface::class)->reveal();
-    $this->assertSame($expected, PasswordConfirm::valueCallback($element, $input, $form_state));
-  }
+    /**
+     * Data provider for testValueCallback().
+     */
+    public static function providerTestValueCallback(): array
+    {
+        $data = [];
+        $data[] = [['pass1' => '', 'pass2' => ''], [], null];
+        $data[] = [['pass1' => '', 'pass2' => ''], ['#default_value' => ['pass2' => 'value']], null];
+        $data[] = [['pass2' => 'value', 'pass1' => ''], ['#default_value' => ['pass2' => 'value']], false];
+        $data[] = [['pass1' => '123456', 'pass2' => 'qwerty'], [], ['pass1' => '123456', 'pass2' => 'qwerty']];
+        $data[] = [['pass1' => '123', 'pass2' => '234'], [], ['pass1' => 123, 'pass2' => 234]];
+        $data[] = [['pass1' => '', 'pass2' => '234'], [], ['pass1' => ['array'], 'pass2' => 234]];
 
-  /**
-   * Data provider for testValueCallback().
-   */
-  public static function providerTestValueCallback(): array {
-    $data = [];
-    $data[] = [['pass1' => '', 'pass2' => ''], [], NULL];
-    $data[] = [['pass1' => '', 'pass2' => ''], ['#default_value' => ['pass2' => 'value']], NULL];
-    $data[] = [['pass2' => 'value', 'pass1' => ''], ['#default_value' => ['pass2' => 'value']], FALSE];
-    $data[] = [['pass1' => '123456', 'pass2' => 'qwerty'], [], ['pass1' => '123456', 'pass2' => 'qwerty']];
-    $data[] = [['pass1' => '123', 'pass2' => '234'], [], ['pass1' => 123, 'pass2' => 234]];
-    $data[] = [['pass1' => '', 'pass2' => '234'], [], ['pass1' => ['array'], 'pass2' => 234]];
-
-    return $data;
-  }
+        return $data;
+    }
 
 }

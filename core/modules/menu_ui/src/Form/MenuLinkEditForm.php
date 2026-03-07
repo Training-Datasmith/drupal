@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\menu_ui\Form;
 
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Menu\MenuLinkInterface;
@@ -17,82 +18,87 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\Core\Menu\MenuLinkInterface::getFormClass()
  */
-class MenuLinkEditForm extends FormBase {
+class MenuLinkEditForm extends FormBase
+{
+    /**
+     * Constructs a MenuLinkEditForm object.
+     *
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver.
+     */
+    public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+    {
+    }
 
-  /**
-   * Constructs a MenuLinkEditForm object.
-   *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver.
-   */
-  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('class_resolver')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('class_resolver')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'menu_link_edit';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'menu_link_edit';
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * @param array $form
+     *   An associative array containing the structure of the form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param \Drupal\Core\Menu\MenuLinkInterface $menu_link_plugin
+     *   The plugin instance to use for this form.
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = null): array
+    {
+        $form['menu_link_id'] = [
+          '#type' => 'value',
+          '#value' => $menu_link_plugin->getPluginId(),
+        ];
+        $class_name = $menu_link_plugin->getFormClass();
+        $form['#plugin_form'] = $this->classResolver->getInstanceFromDefinition($class_name);
+        $form['#plugin_form']->setMenuLinkInstance($menu_link_plugin);
 
-  /**
-   * {@inheritdoc}
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\Core\Menu\MenuLinkInterface $menu_link_plugin
-   *   The plugin instance to use for this form.
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = NULL): array {
-    $form['menu_link_id'] = [
-      '#type' => 'value',
-      '#value' => $menu_link_plugin->getPluginId(),
-    ];
-    $class_name = $menu_link_plugin->getFormClass();
-    $form['#plugin_form'] = $this->classResolver->getInstanceFromDefinition($class_name);
-    $form['#plugin_form']->setMenuLinkInstance($menu_link_plugin);
+        $form += $form['#plugin_form']->buildConfigurationForm($form, $form_state);
 
-    $form += $form['#plugin_form']->buildConfigurationForm($form, $form_state);
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Save'),
+          '#button_type' => 'primary',
+        ];
+        return $form;
+    }
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-      '#button_type' => 'primary',
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form['#plugin_form']->validateConfigurationForm($form, $form_state);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $form['#plugin_form']->validateConfigurationForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $link = $form['#plugin_form']->submitConfigurationForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $link = $form['#plugin_form']->submitConfigurationForm($form, $form_state);
-
-    $this->messenger()->addStatus($this->t('The menu link has been saved.'));
-    $form_state->setRedirect(
-      'entity.menu.edit_form',
-      ['menu' => $link->getMenuName()]
-    );
-  }
+        $this->messenger()->addStatus($this->t('The menu link has been saved.'));
+        $form_state->setRedirect(
+            'entity.menu.edit_form',
+            ['menu' => $link->getMenuName()]
+        );
+    }
 
 }

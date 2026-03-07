@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -14,132 +16,138 @@ use Drupal\Core\TypedData\DataDefinition;
  * Plugin implementation of the 'datetime' field type.
  */
 #[FieldType(
-  id: "datetime",
-  label: new TranslatableMarkup("Datetime"),
-  description: [
-    new TranslatableMarkup("Human-readable string format"),
-    new TranslatableMarkup("Choose either date or date and time"),
-    new TranslatableMarkup("Examples: 2001-01-15, 2001-01-15T05:28:07"),
+    id: 'datetime',
+    label: new TranslatableMarkup('Datetime'),
+    description: [
+    new TranslatableMarkup('Human-readable string format'),
+    new TranslatableMarkup('Choose either date or date and time'),
+    new TranslatableMarkup('Examples: 2001-01-15, 2001-01-15T05:28:07'),
   ],
-  category: "date_time",
-  default_widget: "datetime_default",
-  default_formatter: "datetime_default",
-  list_class: DateTimeFieldItemList::class,
-  constraints: ["DateTimeFormat" => []]
+    category: 'date_time',
+    default_widget: 'datetime_default',
+    default_formatter: 'datetime_default',
+    list_class: DateTimeFieldItemList::class,
+    constraints: ['DateTimeFormat' => []]
 )]
-class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultStorageSettings() {
-    return [
-      'datetime_type' => 'datetime',
-    ] + parent::defaultStorageSettings();
-  }
-
-  /**
-   * Value for the 'datetime_type' setting: store only a date.
-   */
-  const DATETIME_TYPE_DATE = 'date';
-
-  /**
-   * Value for the 'datetime_type' setting: store a date and time.
-   */
-  const DATETIME_TYPE_DATETIME = 'datetime';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('datetime_iso8601')
-      ->setLabel(new TranslatableMarkup('Date value'))
-      ->setRequired(TRUE);
-
-    $properties['date'] = DataDefinition::create('any')
-      ->setLabel(new TranslatableMarkup('Computed date'))
-      ->setDescription(new TranslatableMarkup('The computed DateTime object.'))
-      ->setComputed(TRUE)
-      ->setClass(\Drupal\datetime\DateTimeComputed::class)
-      ->setSetting('date source', 'value');
-
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'description' => 'The date value.',
-          'type' => 'varchar',
-          'length' => 20,
-        ],
-      ],
-      'indexes' => [
-        'value' => ['value'],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
-    $element = [];
-
-    $element['datetime_type'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Date type'),
-      '#description' => $this->t('Choose the type of date to create.'),
-      '#default_value' => $this->getSetting('datetime_type'),
-      '#options' => [
-        static::DATETIME_TYPE_DATETIME => $this->t('Date and time'),
-        static::DATETIME_TYPE_DATE => $this->t('Date only'),
-      ],
-      '#disabled' => $has_data,
-    ];
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $type = $field_definition->getSetting('datetime_type');
-
-    // Just pick a date in the past year. No guidance is provided by this Field
-    // type.
-    $timestamp = \Drupal::time()->getRequestTime() - mt_rand(0, 86400 * 365);
-    if ($type == DateTimeItem::DATETIME_TYPE_DATE) {
-      $values['value'] = gmdate(static::DATE_STORAGE_FORMAT, $timestamp);
+class DateTimeItem extends FieldItemBase implements DateTimeItemInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultStorageSettings()
+    {
+        return [
+          'datetime_type' => 'datetime',
+        ] + parent::defaultStorageSettings();
     }
-    else {
-      $values['value'] = gmdate(static::DATETIME_STORAGE_FORMAT, $timestamp);
-    }
-    return $values;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty(): bool {
-    $value = $this->get('value')->getValue();
-    return $value === NULL || $value === '';
-  }
+    /**
+     * Value for the 'datetime_type' setting: store only a date.
+     */
+    public const DATETIME_TYPE_DATE = 'date';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onChange($property_name, $notify = TRUE): void {
-    // Enforce that the computed date is recalculated.
-    if ($property_name == 'value') {
-      $this->set('date', NULL);
+    /**
+     * Value for the 'datetime_type' setting: store a date and time.
+     */
+    public const DATETIME_TYPE_DATETIME = 'datetime';
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('datetime_iso8601')
+          ->setLabel(new TranslatableMarkup('Date value'))
+          ->setRequired(true);
+
+        $properties['date'] = DataDefinition::create('any')
+          ->setLabel(new TranslatableMarkup('Computed date'))
+          ->setDescription(new TranslatableMarkup('The computed DateTime object.'))
+          ->setComputed(true)
+          ->setClass(\Drupal\datetime\DateTimeComputed::class)
+          ->setSetting('date source', 'value');
+
+        return $properties;
     }
-    parent::onChange($property_name, $notify);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'description' => 'The date value.',
+              'type' => 'varchar',
+              'length' => 20,
+            ],
+          ],
+          'indexes' => [
+            'value' => ['value'],
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array
+    {
+        $element = [];
+
+        $element['datetime_type'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Date type'),
+          '#description' => $this->t('Choose the type of date to create.'),
+          '#default_value' => $this->getSetting('datetime_type'),
+          '#options' => [
+            static::DATETIME_TYPE_DATETIME => $this->t('Date and time'),
+            static::DATETIME_TYPE_DATE => $this->t('Date only'),
+          ],
+          '#disabled' => $has_data,
+        ];
+
+        return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateSampleValue(FieldDefinitionInterface $field_definition)
+    {
+        $type = $field_definition->getSetting('datetime_type');
+
+        // Just pick a date in the past year. No guidance is provided by this Field
+        // type.
+        $timestamp = \Drupal::time()->getRequestTime() - mt_rand(0, 86400 * 365);
+        if ($type == DateTimeItem::DATETIME_TYPE_DATE) {
+            $values['value'] = gmdate(static::DATE_STORAGE_FORMAT, $timestamp);
+        } else {
+            $values['value'] = gmdate(static::DATETIME_STORAGE_FORMAT, $timestamp);
+        }
+        return $values;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty(): bool
+    {
+        $value = $this->get('value')->getValue();
+        return $value === null || $value === '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onChange($property_name, $notify = true): void
+    {
+        // Enforce that the computed date is recalculated.
+        if ($property_name == 'value') {
+            $this->set('date', null);
+        }
+        parent::onChange($property_name, $notify);
+    }
 
 }

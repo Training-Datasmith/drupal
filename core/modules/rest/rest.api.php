@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Describes hooks provided by the RESTful Web Services module.
@@ -16,16 +18,17 @@
  * @param array $definitions
  *   The collection of resource definitions.
  */
-function hook_rest_resource_alter(array &$definitions): void {
-  if (isset($definitions['entity:node'])) {
-    // We want to handle REST requests regarding nodes with our own plugin
-    // class.
-    $definitions['entity:node']['class'] = 'Drupal\my_module\Plugin\rest\resource\NodeResource';
-    // Serialized nodes should be expanded to my specific node class.
-    $definitions['entity:node']['serialization_class'] = 'Drupal\my_module\Entity\MyNode';
-  }
-  // We don't want Views to show up in the array of plugins at all.
-  unset($definitions['entity:view']);
+function hook_rest_resource_alter(array &$definitions): void
+{
+    if (isset($definitions['entity:node'])) {
+        // We want to handle REST requests regarding nodes with our own plugin
+        // class.
+        $definitions['entity:node']['class'] = 'Drupal\my_module\Plugin\rest\resource\NodeResource';
+        // Serialized nodes should be expanded to my specific node class.
+        $definitions['entity:node']['serialization_class'] = 'Drupal\my_module\Entity\MyNode';
+    }
+    // We don't want Views to show up in the array of plugins at all.
+    unset($definitions['entity:view']);
 }
 
 /**

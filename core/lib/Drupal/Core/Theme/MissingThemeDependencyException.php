@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Theme;
 
 /**
@@ -7,31 +9,33 @@ namespace Drupal\Core\Theme;
  *
  * @see \Drupal\Core\Theme\ThemeInitialization::getActiveThemeByName().
  */
-class MissingThemeDependencyException extends \Exception {
-
-  /**
-   * Constructs the exception.
-   *
-   * @param string $message
-   *   The exception message.
-   * @param string $theme
-   *   The missing theme dependency.
-   */
-  public function __construct($message, /**
+class MissingThemeDependencyException extends \Exception
+{
+    /**
+     * Constructs the exception.
+     *
+     * @param string $message
+     *   The exception message.
+     * @param string $theme
+     *   The missing theme dependency.
+     */
+    public function __construct($message, /**
    * The missing theme dependency.
    */
-  protected $theme) {
-    parent::__construct($message);
-  }
+        protected $theme)
+    {
+        parent::__construct($message);
+    }
 
-  /**
-   * Gets the machine name of the missing theme.
-   *
-   * @return string
-   *   The machine name of the theme that is missing.
-   */
-  public function getMissingThemeName() {
-    return $this->theme;
-  }
+    /**
+     * Gets the machine name of the missing theme.
+     *
+     * @return string
+     *   The machine name of the theme that is missing.
+     */
+    public function getMissingThemeName()
+    {
+        return $this->theme;
+    }
 
 }

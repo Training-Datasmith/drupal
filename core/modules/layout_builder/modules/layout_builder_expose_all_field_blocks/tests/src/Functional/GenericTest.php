@@ -15,4 +15,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('layout_builder_expose_all_field_blocks')]
 #[IgnoreDeprecations]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {}
+class GenericTest extends GenericModuleTestBase
+{
+}

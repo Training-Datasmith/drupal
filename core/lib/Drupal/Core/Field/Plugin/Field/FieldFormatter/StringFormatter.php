@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
@@ -17,152 +18,158 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'string' formatter.
  */
 #[FieldFormatter(
-  id: 'string',
-  label: new TranslatableMarkup('Plain text'),
-  field_types: [
+    id: 'string',
+    label: new TranslatableMarkup('Plain text'),
+    field_types: [
     'string',
     'uri',
   ],
 )]
-class StringFormatter extends FormatterBase {
-
-  /**
-   * Constructs a StringFormatter instance.
-   *
-   * @param string $plugin_id
-   *   The plugin ID for the formatter.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The definition of the field to which the formatter is associated.
-   * @param array $settings
-   *   The formatter settings.
-   * @param string $label
-   *   The formatter label display setting.
-   * @param string $view_mode
-   *   The view mode.
-   * @param array $third_party_settings
-   *   Any third party settings.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $options = parent::defaultSettings();
-
-    $options['link_to_entity'] = FALSE;
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-    $entity_type = $this->entityTypeManager->getDefinition($this->fieldDefinition->getTargetEntityTypeId());
-
-    if ($entity_type->hasLinkTemplate('canonical')) {
-      $form['link_to_entity'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Link to the @entity_label', ['@entity_label' => $entity_type->getLabel()]),
-        '#default_value' => $this->getSetting('link_to_entity'),
-      ];
+class StringFormatter extends FormatterBase
+{
+    /**
+     * Constructs a StringFormatter instance.
+     *
+     * @param string $plugin_id
+     *   The plugin ID for the formatter.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+     *   The definition of the field to which the formatter is associated.
+     * @param array $settings
+     *   The formatter settings.
+     * @param string $label
+     *   The formatter label display setting.
+     * @param string $view_mode
+     *   The view mode.
+     * @param array $third_party_settings
+     *   Any third party settings.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
+        parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     }
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        $options = parent::defaultSettings();
 
-  /**
-   * {@inheritdoc}
-   * @return list
-   */
-  public function settingsSummary(): array {
-    $summary = [];
-    if ($this->getSetting('link_to_entity')) {
-      $entity_type = $this->entityTypeManager->getDefinition($this->fieldDefinition->getTargetEntityTypeId());
-      if ($entity_type->hasLinkTemplate('canonical')) {
-        $summary[] = $this->t('Linked to the @entity_label', ['@entity_label' => $entity_type->getLabel()]);
-      }
-    }
-    return $summary;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode): array {
-    $elements = [];
-    $entity = $items->getEntity();
-    $entity_type = $entity->getEntityType();
-
-    $render_as_link = FALSE;
-    if ($this->getSetting('link_to_entity') && !$entity->isNew() && $entity_type->hasLinkTemplate('canonical')) {
-      $url = $this->getEntityUrl($entity);
-      $access = $url->access(return_as_object: TRUE);
-      (new CacheableMetadata())
-        ->addCacheableDependency($access)
-        ->applyTo($elements);
-      $render_as_link = $access->isAllowed();
+        $options['link_to_entity'] = false;
+        return $options;
     }
 
-    foreach ($items as $delta => $item) {
-      if ($render_as_link) {
-        assert(isset($url));
-        $elements[$delta] = [
-          '#type' => 'link',
-          '#title' => $this->viewValue($item),
-          '#url' => $url,
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::settingsForm($form, $form_state);
+        $entity_type = $this->entityTypeManager->getDefinition($this->fieldDefinition->getTargetEntityTypeId());
+
+        if ($entity_type->hasLinkTemplate('canonical')) {
+            $form['link_to_entity'] = [
+              '#type' => 'checkbox',
+              '#title' => $this->t('Link to the @entity_label', ['@entity_label' => $entity_type->getLabel()]),
+              '#default_value' => $this->getSetting('link_to_entity'),
+            ];
+        }
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return list
+     */
+    public function settingsSummary(): array
+    {
+        $summary = [];
+        if ($this->getSetting('link_to_entity')) {
+            $entity_type = $this->entityTypeManager->getDefinition($this->fieldDefinition->getTargetEntityTypeId());
+            if ($entity_type->hasLinkTemplate('canonical')) {
+                $summary[] = $this->t('Linked to the @entity_label', ['@entity_label' => $entity_type->getLabel()]);
+            }
+        }
+        return $summary;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode): array
+    {
+        $elements = [];
+        $entity = $items->getEntity();
+        $entity_type = $entity->getEntityType();
+
+        $render_as_link = false;
+        if ($this->getSetting('link_to_entity') && !$entity->isNew() && $entity_type->hasLinkTemplate('canonical')) {
+            $url = $this->getEntityUrl($entity);
+            $access = $url->access(return_as_object: true);
+            (new CacheableMetadata())
+              ->addCacheableDependency($access)
+              ->applyTo($elements);
+            $render_as_link = $access->isAllowed();
+        }
+
+        foreach ($items as $delta => $item) {
+            if ($render_as_link) {
+                assert(isset($url));
+                $elements[$delta] = [
+                  '#type' => 'link',
+                  '#title' => $this->viewValue($item),
+                  '#url' => $url,
+                ];
+            } else {
+                $elements[$delta] = $this->viewValue($item);
+            }
+        }
+
+        return $elements;
+    }
+
+    /**
+     * Generate the output appropriate for one field item.
+     *
+     * @param \Drupal\Core\Field\FieldItemInterface $item
+     *   One field item.
+     *
+     * @return array
+     *   The textual output generated as a render array.
+     */
+    protected function viewValue(FieldItemInterface $item): array
+    {
+        // The text value has no text format assigned to it, so the user input
+        // should equal the output, including newlines.
+        return [
+          '#type' => 'inline_template',
+          '#template' => '{{ value|nl2br }}',
+          '#context' => ['value' => $item->value],
         ];
-      }
-      else {
-        $elements[$delta] = $this->viewValue($item);
-      }
     }
 
-    return $elements;
-  }
-
-  /**
-   * Generate the output appropriate for one field item.
-   *
-   * @param \Drupal\Core\Field\FieldItemInterface $item
-   *   One field item.
-   *
-   * @return array
-   *   The textual output generated as a render array.
-   */
-  protected function viewValue(FieldItemInterface $item): array {
-    // The text value has no text format assigned to it, so the user input
-    // should equal the output, including newlines.
-    return [
-      '#type' => 'inline_template',
-      '#template' => '{{ value|nl2br }}',
-      '#context' => ['value' => $item->value],
-    ];
-  }
-
-  /**
-   * Gets the URI elements of the entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity object.
-   *
-   * @return \Drupal\Core\Url
-   *   The URI elements of the entity.
-   */
-  protected function getEntityUrl(EntityInterface $entity) {
-    // For the default revision, the 'revision' link template falls back to
-    // 'canonical'.
-    // @see \Drupal\Core\Entity\EntityBase::toUrl()
-    $rel = $entity->getEntityType()->hasLinkTemplate('revision') ? 'revision' : 'canonical';
-    return $entity->toUrl($rel);
-  }
+    /**
+     * Gets the URI elements of the entity.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface $entity
+     *   The entity object.
+     *
+     * @return \Drupal\Core\Url
+     *   The URI elements of the entity.
+     */
+    protected function getEntityUrl(EntityInterface $entity)
+    {
+        // For the default revision, the 'revision' link template falls back to
+        // 'canonical'.
+        // @see \Drupal\Core\Entity\EntityBase::toUrl()
+        $rel = $entity->getEntityType()->hasLinkTemplate('revision') ? 'revision' : 'canonical';
+        return $entity->toUrl($rel);
+    }
 
 }

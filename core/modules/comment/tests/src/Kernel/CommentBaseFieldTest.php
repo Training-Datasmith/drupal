@@ -18,53 +18,55 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('comment')]
 #[RunTestsInSeparateProcesses]
-class CommentBaseFieldTest extends KernelTestBase {
+class CommentBaseFieldTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'user',
+      'comment',
+      'comment_base_field_test',
+      'entity_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'user',
-    'comment',
-    'comment_base_field_test',
-    'entity_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('comment_test_base_field');
+        $this->installEntitySchema('comment');
+        $this->installEntitySchema('user');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('comment_test_base_field');
-    $this->installEntitySchema('comment');
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests comment as a base field.
+     */
+    public function testCommentBaseField(): void
+    {
+        // Verify entity creation.
+        $entity = CommentTestBaseField::create([
+          'name' => $this->randomMachineName(),
+          'test_comment' => CommentItemInterface::OPEN,
+        ]);
+        $entity->save();
 
-  /**
-   * Tests comment as a base field.
-   */
-  public function testCommentBaseField(): void {
-    // Verify entity creation.
-    $entity = CommentTestBaseField::create([
-      'name' => $this->randomMachineName(),
-      'test_comment' => CommentItemInterface::OPEN,
-    ]);
-    $entity->save();
-
-    $comment = Comment::create([
-      'entity_id' => $entity->id(),
-      'entity_type' => 'comment_test_base_field',
-      'field_name' => 'test_comment',
-      'pid' => 0,
-      'uid' => 0,
-      'status' => CommentInterface::PUBLISHED,
-      'subject' => $this->randomMachineName(),
-      'hostname' => '127.0.0.1',
-      'langcode' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
-      'comment_body' => [['value' => $this->randomMachineName()]],
-    ]);
-    $comment->save();
-    $this->assertEquals('test_comment_type', $comment->bundle());
-  }
+        $comment = Comment::create([
+          'entity_id' => $entity->id(),
+          'entity_type' => 'comment_test_base_field',
+          'field_name' => 'test_comment',
+          'pid' => 0,
+          'uid' => 0,
+          'status' => CommentInterface::PUBLISHED,
+          'subject' => $this->randomMachineName(),
+          'hostname' => '127.0.0.1',
+          'langcode' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
+          'comment_body' => [['value' => $this->randomMachineName()]],
+        ]);
+        $comment->save();
+        $this->assertEquals('test_comment_type', $comment->bundle());
+    }
 
 }

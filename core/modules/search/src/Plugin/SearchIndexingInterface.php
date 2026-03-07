@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\search\Plugin;
 
 /**
@@ -22,65 +24,65 @@ namespace Drupal\search\Plugin;
  * they must not use any search page-specific configuration while indexing) or
  * they will have separate indexes (which will use additional server resources).
  */
-interface SearchIndexingInterface {
+interface SearchIndexingInterface
+{
+    /**
+     * Updates the search index for this plugin.
+     *
+     * This method is called every cron run if the plugin has been set as
+     * an active search module on the Search settings page
+     * (admin/config/search/pages). It allows your module to add items to the
+     * built-in search index by calling the index() method on the search.index
+     * service class, or to add them to your module's own indexing mechanism.
+     *
+     * When implementing this method, your module should index content items that
+     * were modified or added since the last run. There is a time limit for cron,
+     * so it is advisable to limit how many items you index per run using
+     * config('search.settings')->get('index.cron_limit') or with your own
+     * setting. And since the cron run could time out and abort in the middle of
+     * your run, you should update any needed internal bookkeeping on when items
+     * have last been indexed as you go rather than waiting to the end of
+     * indexing.
+     */
+    public function updateIndex();
 
-  /**
-   * Updates the search index for this plugin.
-   *
-   * This method is called every cron run if the plugin has been set as
-   * an active search module on the Search settings page
-   * (admin/config/search/pages). It allows your module to add items to the
-   * built-in search index by calling the index() method on the search.index
-   * service class, or to add them to your module's own indexing mechanism.
-   *
-   * When implementing this method, your module should index content items that
-   * were modified or added since the last run. There is a time limit for cron,
-   * so it is advisable to limit how many items you index per run using
-   * config('search.settings')->get('index.cron_limit') or with your own
-   * setting. And since the cron run could time out and abort in the middle of
-   * your run, you should update any needed internal bookkeeping on when items
-   * have last been indexed as you go rather than waiting to the end of
-   * indexing.
-   */
-  public function updateIndex();
+    /**
+     * Clears the search index for this plugin.
+     *
+     * When a request is made to clear all items from the search index related to
+     * this plugin, this method will be called. If this plugin uses the default
+     * search index, this method can call clear($type) method on the search.index
+     * service class to remove indexed items from the search database.
+     *
+     * @see \Drupal\search\SearchIndexInterface::clear()
+     */
+    public function indexClear();
 
-  /**
-   * Clears the search index for this plugin.
-   *
-   * When a request is made to clear all items from the search index related to
-   * this plugin, this method will be called. If this plugin uses the default
-   * search index, this method can call clear($type) method on the search.index
-   * service class to remove indexed items from the search database.
-   *
-   * @see \Drupal\search\SearchIndexInterface::clear()
-   */
-  public function indexClear();
+    /**
+     * Marks the search index for reindexing for this plugin.
+     *
+     * When a request is made to mark all items from the search index related to
+     * this plugin for reindexing, this method will be called. If this plugin uses
+     * the default search index, this method can call markForReindex($type) method
+     * on the search.index service class to mark the items in the search database
+     * for reindexing.
+     *
+     * @see \Drupal\search\SearchIndexInterface::markForReindex()
+     */
+    public function markForReindex();
 
-  /**
-   * Marks the search index for reindexing for this plugin.
-   *
-   * When a request is made to mark all items from the search index related to
-   * this plugin for reindexing, this method will be called. If this plugin uses
-   * the default search index, this method can call markForReindex($type) method
-   * on the search.index service class to mark the items in the search database
-   * for reindexing.
-   *
-   * @see \Drupal\search\SearchIndexInterface::markForReindex()
-   */
-  public function markForReindex();
-
-  /**
-   * Reports the status of indexing.
-   *
-   * The core search module only invokes this method on active module plugins.
-   * Implementing modules do not need to check whether they are active when
-   * calculating their return values.
-   *
-   * @return array
-   *   An associative array with the key-value pairs:
-   *   - remaining: The number of items left to index.
-   *   - total: The total number of items to index.
-   */
-  public function indexStatus();
+    /**
+     * Reports the status of indexing.
+     *
+     * The core search module only invokes this method on active module plugins.
+     * Implementing modules do not need to check whether they are active when
+     * calculating their return values.
+     *
+     * @return array
+     *   An associative array with the key-value pairs:
+     *   - remaining: The number of items left to index.
+     *   - total: The total number of items to index.
+     */
+    public function indexStatus();
 
 }

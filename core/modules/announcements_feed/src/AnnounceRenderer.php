@@ -11,72 +11,72 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * @internal
  */
-final class AnnounceRenderer {
+final class AnnounceRenderer
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs an AnnouncementRenderer object.
-   *
-   * @param \Drupal\announcements_feed\AnnounceFetcher $announceFetcher
-   *   The AnnounceFetcher service.
-   * @param string $feedLink
-   *   The feed url path.
-   */
-  public function __construct(
-    protected AnnounceFetcher $announceFetcher,
-    protected string $feedLink,
-  ) {
-  }
-
-  /**
-   * Generates the announcements feed render array.
-   *
-   * @return array
-   *   Render array containing the announcements feed.
-   */
-  public function render(): array {
-    try {
-      $announcements = $this->announceFetcher->fetch();
+    /**
+     * Constructs an AnnouncementRenderer object.
+     *
+     * @param \Drupal\announcements_feed\AnnounceFetcher $announceFetcher
+     *   The AnnounceFetcher service.
+     * @param string $feedLink
+     *   The feed url path.
+     */
+    public function __construct(
+        protected AnnounceFetcher $announceFetcher,
+        protected string $feedLink,
+    ) {
     }
-    catch (\Exception) {
-      return [
-        '#theme' => 'status_messages',
-        '#message_list' => [
-          'error' => [
-            $this->t('An error occurred while parsing the announcements feed, check the logs for more information.'),
+
+    /**
+     * Generates the announcements feed render array.
+     *
+     * @return array
+     *   Render array containing the announcements feed.
+     */
+    public function render(): array
+    {
+        try {
+            $announcements = $this->announceFetcher->fetch();
+        } catch (\Exception) {
+            return [
+              '#theme' => 'status_messages',
+              '#message_list' => [
+                'error' => [
+                  $this->t('An error occurred while parsing the announcements feed, check the logs for more information.'),
+                ],
+              ],
+              '#status_headings' => [
+                'error' => $this->t('Error Message'),
+              ],
+            ];
+        }
+
+        $build = [];
+        foreach ($announcements as $announcement) {
+            $key = $announcement->featured ? '#featured' : '#standard';
+            $build[$key][] = $announcement;
+        }
+
+        return $build + [
+          '#theme' => 'announcements_feed',
+          '#count' => count($announcements),
+          '#feed_link' => $this->feedLink,
+          '#cache' => [
+            'contexts' => [
+              'url.query_args:_wrapper_format',
+            ],
+            'tags' => [
+              'announcements_feed:feed',
+            ],
           ],
-        ],
-        '#status_headings' => [
-          'error' => $this->t('Error Message'),
-        ],
-      ];
+          '#attached' => [
+            'library' => [
+              'announcements_feed/drupal.announcements_feed.dialog',
+            ],
+          ],
+        ];
     }
-
-    $build = [];
-    foreach ($announcements as $announcement) {
-      $key = $announcement->featured ? '#featured' : '#standard';
-      $build[$key][] = $announcement;
-    }
-
-    return $build + [
-      '#theme' => 'announcements_feed',
-      '#count' => count($announcements),
-      '#feed_link' => $this->feedLink,
-      '#cache' => [
-        'contexts' => [
-          'url.query_args:_wrapper_format',
-        ],
-        'tags' => [
-          'announcements_feed:feed',
-        ],
-      ],
-      '#attached' => [
-        'library' => [
-          'announcements_feed/drupal.announcements_feed.dialog',
-        ],
-      ],
-    ];
-  }
 
 }

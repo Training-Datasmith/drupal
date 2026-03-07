@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 use Drupal\Component\Utility\NestedArray;
@@ -19,198 +21,213 @@ use Drupal\jsonapi\Routing\Routes;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class Relationship implements TopLevelDataInterface {
+class Relationship implements TopLevelDataInterface
+{
+    /**
+     * The relationship object's links.
+     *
+     * @var \Drupal\jsonapi\JsonApiResource\LinkCollection
+     */
+    protected $links;
 
-  /**
-   * The relationship object's links.
-   *
-   * @var \Drupal\jsonapi\JsonApiResource\LinkCollection
-   */
-  protected $links;
-
-  /**
-   * Relationship constructor.
-   *
-   * This constructor is protected by design. To create a new relationship, use
-   * static::createFromEntityReferenceField().
-   *
-   * @param string $fieldName
-   *   The public field name of the relationship field.
-   * @param \Drupal\jsonapi\JsonApiResource\RelationshipData $data
-   *   The relationship data.
-   * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
-   *   Any links for the resource object, if a `self` link is not
-   *   provided, one will be automatically added if the resource is locatable
-   *   and is not internal.
-   * @param array $meta
-   *   Any relationship metadata.
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
-   *   The relationship's context resource object. Use the
-   *   self::withContext() method to establish a context.
-   *
-   * @see \Drupal\jsonapi\JsonApiResource\Relationship::createFromEntityReferenceField()
-   */
-  protected function __construct(/**
+    /**
+     * Relationship constructor.
+     *
+     * This constructor is protected by design. To create a new relationship, use
+     * static::createFromEntityReferenceField().
+     *
+     * @param string $fieldName
+     *   The public field name of the relationship field.
+     * @param \Drupal\jsonapi\JsonApiResource\RelationshipData $data
+     *   The relationship data.
+     * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
+     *   Any links for the resource object, if a `self` link is not
+     *   provided, one will be automatically added if the resource is locatable
+     *   and is not internal.
+     * @param array $meta
+     *   Any relationship metadata.
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
+     *   The relationship's context resource object. Use the
+     *   self::withContext() method to establish a context.
+     *
+     * @see \Drupal\jsonapi\JsonApiResource\Relationship::createFromEntityReferenceField()
+     */
+    protected function __construct(/**
    * The relationship's public field name.
    */
-  protected $fieldName, protected \Drupal\jsonapi\JsonApiResource\RelationshipData $data, LinkCollection $links, protected array $meta, protected \Drupal\jsonapi\JsonApiResource\ResourceObject $context) {
-    $this->links = $links->withContext($this);
-  }
-
-  /**
-   * Creates a new Relationship from an entity reference field.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
-   *   The context resource object of the relationship to be created.
-   * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
-   *   The entity reference field from which to create the relationship.
-   * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
-   *   (optional) Any extra links for the Relationship, if a `self` link is not
-   *   provided, one will be automatically added if the context resource is
-   *   locatable and is not internal.
-   * @param array $meta
-   *   (optional) Any relationship metadata.
-   *
-   * @return static
-   *   An instantiated relationship object.
-   */
-  public static function createFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, ?LinkCollection $links = NULL, array $meta = []): static {
-    $context_resource_type = $context->getResourceType();
-    $resource_field = $context_resource_type->getFieldByInternalName($field->getName());
-    return new static(
-      $resource_field->getPublicName(),
-      new RelationshipData(ResourceIdentifier::toResourceIdentifiers($field), $resource_field->hasOne() ? 1 : -1),
-      static::buildLinkCollectionFromEntityReferenceField($context, $field, $links ?: new LinkCollection([])),
-      $meta,
-      $context
-    );
-  }
-
-  /**
-   * Gets context resource object of the relationship.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\ResourceObject
-   *   The context ResourceObject.
-   *
-   * @see \Drupal\jsonapi\JsonApiResource\Relationship::$context
-   */
-  public function getContext() {
-    return $this->context;
-  }
-
-  /**
-   * Gets the relationship object's public field name.
-   *
-   * @return string
-   *   The relationship's field name.
-   */
-  public function getFieldName() {
-    return $this->fieldName;
-  }
-
-  /**
-   * Gets the relationship object's data.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\RelationshipData
-   *   The relationship's data.
-   */
-  public function getData() {
-    return $this->data;
-  }
-
-  /**
-   * Gets the relationship object's links.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
-   *   The relationship object's links.
-   */
-  public function getLinks() {
-    return $this->links;
-  }
-
-  /**
-   * Gets the relationship object's metadata.
-   *
-   * @return array
-   *   The relationship object's metadata.
-   */
-  public function getMeta() {
-    return $this->meta;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData {
-    return new OmittedData([]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMergedLinks(LinkCollection $top_level_links) {
-    // When directly fetching a relationship object, the relationship object's
-    // links become the top-level object's links unless they've been
-    // overridden. Overrides are especially important for the `self` link, which
-    // must match the link that generated the response. For example, the
-    // top-level `self` link might have an `include` query parameter that would
-    // be lost otherwise.
-    // See https://jsonapi.org/format/#fetching-relationships-responses-200 and
-    // https://jsonapi.org/format/#document-top-level.
-    return LinkCollection::merge($top_level_links, $this->getLinks()->filter(fn($key) => !$top_level_links->hasLinkWithKey($key))->withContext($top_level_links->getContext()));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMergedMeta(array $top_level_meta) {
-    return NestedArray::mergeDeep($top_level_meta, $this->getMeta());
-  }
-
-  /**
-   * Builds a LinkCollection for the given entity reference field.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
-   *   The context resource object of the relationship object.
-   * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
-   *   The entity reference field from which to create the links.
-   * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
-   *   Any extra links for the Relationship, if a `self` link is not provided,
-   *   one will be automatically added if the context resource is locatable and
-   *   is not internal.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
-   *   The built links.
-   */
-  protected static function buildLinkCollectionFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, LinkCollection $links) {
-    $context_resource_type = $context->getResourceType();
-    $public_field_name = $context_resource_type->getPublicName($field->getName());
-    if ($context_resource_type->isLocatable() && !$context_resource_type->isInternal()) {
-      $context_is_versionable = $context_resource_type->isVersionable();
-      if (!$links->hasLinkWithKey('self')) {
-        $route_name = Routes::getRouteName($context_resource_type, "$public_field_name.relationship.get");
-        $self_link = Url::fromRoute($route_name, ['entity' => $context->getId()]);
-        if ($context_is_versionable) {
-          $self_link->setOption('query', [JsonApiSpec::VERSION_QUERY_PARAMETER => $context->getVersionIdentifier()]);
-        }
-        $links = $links->withLink('self', new Link(new CacheableMetadata(), $self_link, 'self'));
-      }
-      $has_non_internal_resource_type = array_reduce($context_resource_type->getRelatableResourceTypesByField($public_field_name), fn($carry, ResourceType $target) => $carry ?: !$target->isInternal(), FALSE);
-      // If a `related` link was not provided, automatically generate one from
-      // the relationship object to the collection resource with all of the
-      // resources targeted by this relationship. However, that link should
-      // *not* be generated if all of the relatable resources are internal.
-      // That's because, in that case, a route will not exist for it.
-      if (!$links->hasLinkWithKey('related') && $has_non_internal_resource_type) {
-        $route_name = Routes::getRouteName($context_resource_type, "$public_field_name.related");
-        $related_link = Url::fromRoute($route_name, ['entity' => $context->getId()]);
-        if ($context_is_versionable) {
-          $related_link->setOption('query', [JsonApiSpec::VERSION_QUERY_PARAMETER => $context->getVersionIdentifier()]);
-        }
-        $links = $links->withLink('related', new Link(new CacheableMetadata(), $related_link, 'related'));
-      }
+        protected $fieldName,
+        protected \Drupal\jsonapi\JsonApiResource\RelationshipData $data,
+        LinkCollection $links,
+        protected array $meta,
+        protected \Drupal\jsonapi\JsonApiResource\ResourceObject $context
+    ) {
+        $this->links = $links->withContext($this);
     }
-    return $links;
-  }
+
+    /**
+     * Creates a new Relationship from an entity reference field.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
+     *   The context resource object of the relationship to be created.
+     * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
+     *   The entity reference field from which to create the relationship.
+     * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
+     *   (optional) Any extra links for the Relationship, if a `self` link is not
+     *   provided, one will be automatically added if the context resource is
+     *   locatable and is not internal.
+     * @param array $meta
+     *   (optional) Any relationship metadata.
+     *
+     * @return static
+     *   An instantiated relationship object.
+     */
+    public static function createFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, ?LinkCollection $links = null, array $meta = []): static
+    {
+        $context_resource_type = $context->getResourceType();
+        $resource_field = $context_resource_type->getFieldByInternalName($field->getName());
+        return new static(
+            $resource_field->getPublicName(),
+            new RelationshipData(ResourceIdentifier::toResourceIdentifiers($field), $resource_field->hasOne() ? 1 : -1),
+            static::buildLinkCollectionFromEntityReferenceField($context, $field, $links ?: new LinkCollection([])),
+            $meta,
+            $context
+        );
+    }
+
+    /**
+     * Gets context resource object of the relationship.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\ResourceObject
+     *   The context ResourceObject.
+     *
+     * @see \Drupal\jsonapi\JsonApiResource\Relationship::$context
+     */
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * Gets the relationship object's public field name.
+     *
+     * @return string
+     *   The relationship's field name.
+     */
+    public function getFieldName()
+    {
+        return $this->fieldName;
+    }
+
+    /**
+     * Gets the relationship object's data.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\RelationshipData
+     *   The relationship's data.
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * Gets the relationship object's links.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
+     *   The relationship object's links.
+     */
+    public function getLinks()
+    {
+        return $this->links;
+    }
+
+    /**
+     * Gets the relationship object's metadata.
+     *
+     * @return array
+     *   The relationship object's metadata.
+     */
+    public function getMeta()
+    {
+        return $this->meta;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData
+    {
+        return new OmittedData([]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMergedLinks(LinkCollection $top_level_links)
+    {
+        // When directly fetching a relationship object, the relationship object's
+        // links become the top-level object's links unless they've been
+        // overridden. Overrides are especially important for the `self` link, which
+        // must match the link that generated the response. For example, the
+        // top-level `self` link might have an `include` query parameter that would
+        // be lost otherwise.
+        // See https://jsonapi.org/format/#fetching-relationships-responses-200 and
+        // https://jsonapi.org/format/#document-top-level.
+        return LinkCollection::merge($top_level_links, $this->getLinks()->filter(fn ($key) => !$top_level_links->hasLinkWithKey($key))->withContext($top_level_links->getContext()));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMergedMeta(array $top_level_meta)
+    {
+        return NestedArray::mergeDeep($top_level_meta, $this->getMeta());
+    }
+
+    /**
+     * Builds a LinkCollection for the given entity reference field.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceObject $context
+     *   The context resource object of the relationship object.
+     * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
+     *   The entity reference field from which to create the links.
+     * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $links
+     *   Any extra links for the Relationship, if a `self` link is not provided,
+     *   one will be automatically added if the context resource is locatable and
+     *   is not internal.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
+     *   The built links.
+     */
+    protected static function buildLinkCollectionFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, LinkCollection $links)
+    {
+        $context_resource_type = $context->getResourceType();
+        $public_field_name = $context_resource_type->getPublicName($field->getName());
+        if ($context_resource_type->isLocatable() && !$context_resource_type->isInternal()) {
+            $context_is_versionable = $context_resource_type->isVersionable();
+            if (!$links->hasLinkWithKey('self')) {
+                $route_name = Routes::getRouteName($context_resource_type, "$public_field_name.relationship.get");
+                $self_link = Url::fromRoute($route_name, ['entity' => $context->getId()]);
+                if ($context_is_versionable) {
+                    $self_link->setOption('query', [JsonApiSpec::VERSION_QUERY_PARAMETER => $context->getVersionIdentifier()]);
+                }
+                $links = $links->withLink('self', new Link(new CacheableMetadata(), $self_link, 'self'));
+            }
+            $has_non_internal_resource_type = array_reduce($context_resource_type->getRelatableResourceTypesByField($public_field_name), fn ($carry, ResourceType $target) => $carry ?: !$target->isInternal(), false);
+            // If a `related` link was not provided, automatically generate one from
+            // the relationship object to the collection resource with all of the
+            // resources targeted by this relationship. However, that link should
+            // *not* be generated if all of the relatable resources are internal.
+            // That's because, in that case, a route will not exist for it.
+            if (!$links->hasLinkWithKey('related') && $has_non_internal_resource_type) {
+                $route_name = Routes::getRouteName($context_resource_type, "$public_field_name.related");
+                $related_link = Url::fromRoute($route_name, ['entity' => $context->getId()]);
+                if ($context_is_versionable) {
+                    $related_link->setOption('query', [JsonApiSpec::VERSION_QUERY_PARAMETER => $context->getVersionIdentifier()]);
+                }
+                $links = $links->withLink('related', new Link(new CacheableMetadata(), $related_link, 'related'));
+            }
+        }
+        return $links;
+    }
 
 }

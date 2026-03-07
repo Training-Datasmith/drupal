@@ -13,64 +13,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerBrokenDatabaseCredentialsTest extends InstallerTestBase {
+class InstallerBrokenDatabaseCredentialsTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEnvironment(): void
+    {
+        parent::prepareEnvironment();
+        // Pre-configure database credentials in settings.php.
+        $connection_info = Database::getConnectionInfo();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEnvironment(): void {
-    parent::prepareEnvironment();
-    // Pre-configure database credentials in settings.php.
-    $connection_info = Database::getConnectionInfo();
+        if ($connection_info['default']['driver'] !== 'mysql') {
+            $this->markTestSkipped('This test relies on overriding the mysql driver');
+        }
 
-    if ($connection_info['default']['driver'] !== 'mysql') {
-      $this->markTestSkipped('This test relies on overriding the mysql driver');
+        // Provide incorrect host name and test the new error messages.
+        $connection_info['default']['host'] = 'localhost';
+
+        $this->settings['databases']['default'] = (object) [
+          'value' => $connection_info,
+          'required' => true,
+        ];
     }
 
-    // Provide incorrect host name and test the new error messages.
-    $connection_info['default']['host'] = 'localhost';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpSettings(): void
+    {
+        // This form will never be reached.
+    }
 
-    $this->settings['databases']['default'] = (object) [
-      'value' => $connection_info,
-      'required' => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpSite(): void
+    {
+        // This form will never be reached.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpSettings(): void {
-    // This form will never be reached.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpRequirementsProblem(): void
+    {
+        // We are testing an update requirements problem, so we need to override the
+        // parent method.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpSite(): void {
-    // This form will never be reached.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpRequirementsProblem(): void {
-    // We are testing an update requirements problem, so we need to override the
-    // parent method.
-  }
-
-  /**
-   * Tests the expected requirements problem.
-   */
-  public function testRequirementsProblem(): void {
-    $this->assertSession()->titleEquals('Requirements problem | Drupal');
-    $this->assertSession()->pageTextContains('Database settings');
-    $this->assertSession()->pageTextContains('Resolve all issues below to continue the installation. For help configuring your database server,');
-    $this->assertSession()->pageTextContains('[Tip: Drupal was attempting to connect to the database server via a socket, but the socket file could not be found. A Unix socket file is used if you do not specify a host name or if you specify the special host name localhost. To connect via TCP/IP use an IP address (127.0.0.1 for IPv4) instead of "localhost". This message normally means that there is no MySQL server running on the system or that you are using an incorrect Unix socket file name when trying to connect to the server.]');
-  }
+    /**
+     * Tests the expected requirements problem.
+     */
+    public function testRequirementsProblem(): void
+    {
+        $this->assertSession()->titleEquals('Requirements problem | Drupal');
+        $this->assertSession()->pageTextContains('Database settings');
+        $this->assertSession()->pageTextContains('Resolve all issues below to continue the installation. For help configuring your database server,');
+        $this->assertSession()->pageTextContains('[Tip: Drupal was attempting to connect to the database server via a socket, but the socket file could not be found. A Unix socket file is used if you do not specify a host name or if you specify the special host name localhost. To connect via TCP/IP use an IP address (127.0.0.1 for IPv4) instead of "localhost". This message normally means that there is no MySQL server running on the system or that you are using an incorrect Unix socket file name when trying to connect to the server.]');
+    }
 
 }

@@ -23,44 +23,45 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[CoversClass(DatabaseDriverList::class)]
 #[Group('Database')]
-#[PreserveGlobalState(FALSE)]
+#[PreserveGlobalState(false)]
 #[RunTestsInSeparateProcesses]
-class DriverModuleMissingDependenciesTest extends UnitTestCase {
+class DriverModuleMissingDependenciesTest extends UnitTestCase
+{
+    /**
+     * Tests determine drivers autoloading failing on missing dependency.
+     *
+     * @legacy-covers ::get
+     */
+    public function testDetermineDriversAutoloadingFailingOnMissingDependency(): void
+    {
+        $root = realpath(dirname(__FILE__) . '/fixtures');
 
-  /**
-   * Tests determine drivers autoloading failing on missing dependency.
-   *
-   * @legacy-covers ::get
-   */
-  public function testDetermineDriversAutoloadingFailingOnMissingDependency(): void {
-    $root = realpath(dirname(__FILE__) . '/fixtures');
+        // Mock the container so we don't need to mock drupal_valid_test_ua().
+        // @see \Drupal\Core\Extension\ExtensionDiscovery::scan()
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects($this->any())
+          ->method('has')
+          ->with('kernel')
+          ->willReturn(true);
+        $container->expects($this->any())
+          ->method('getParameter')
+          ->with()
+          ->willReturnMap([
+              ['install_profile', ''],
+              ['site.path', ''],
+          ]);
+        $container->expects($this->any())
+          ->method('get')
+          ->with('extension.list.database_driver')
+          ->willReturn(new DatabaseDriverList($root, 'database_driver', new NullBackend('database_driver')));
+        \Drupal::setContainer($container);
 
-    // Mock the container so we don't need to mock drupal_valid_test_ua().
-    // @see \Drupal\Core\Extension\ExtensionDiscovery::scan()
-    $container = $this->createMock(ContainerInterface::class);
-    $container->expects($this->any())
-      ->method('has')
-      ->with('kernel')
-      ->willReturn(TRUE);
-    $container->expects($this->any())
-      ->method('getParameter')
-      ->with()
-      ->willReturnMap([
-          ['install_profile', ''],
-          ['site.path', ''],
-      ]);
-    $container->expects($this->any())
-      ->method('get')
-      ->with('extension.list.database_driver')
-      ->willReturn(new DatabaseDriverList($root, 'database_driver', new NullBackend('database_driver')));
-    \Drupal::setContainer($container);
-
-    $this->expectException(UnknownExtensionException::class);
-    $this->expectExceptionMessage("The database_driver a_really_missing_module\dependent_driver does not exist.");
-    $container->get('extension.list.database_driver')
-      ->includeTestDrivers(TRUE)
-      ->get('a_really_missing_module\\dependent_driver')
-      ->getAutoloadInfo();
-  }
+        $this->expectException(UnknownExtensionException::class);
+        $this->expectExceptionMessage("The database_driver a_really_missing_module\dependent_driver does not exist.");
+        $container->get('extension.list.database_driver')
+          ->includeTestDrivers(true)
+          ->get('a_really_missing_module\\dependent_driver')
+          ->getAutoloadInfo();
+    }
 
 }

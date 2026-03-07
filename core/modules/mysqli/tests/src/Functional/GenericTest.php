@@ -14,17 +14,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('mysqli')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {
-
-  /**
-   * Checks visibility of the module.
-   */
-  public function testMysqliModule(): void {
-    $module = $this->getModule();
-    \Drupal::service('module_installer')->install([$module]);
-    $info = \Drupal::service('extension.list.module')->getExtensionInfo($module);
-    $this->assertTrue($info['hidden']);
-    $this->assertSame(ExtensionLifecycle::EXPERIMENTAL, $info['lifecycle']);
-  }
+class GenericTest extends GenericModuleTestBase
+{
+    /**
+     * Checks visibility of the module.
+     */
+    public function testMysqliModule(): void
+    {
+        $module = $this->getModule();
+        \Drupal::service('module_installer')->install([$module]);
+        $info = \Drupal::service('extension.list.module')->getExtensionInfo($module);
+        $this->assertTrue($info['hidden']);
+        $this->assertSame(ExtensionLifecycle::EXPERIMENTAL, $info['lifecycle']);
+    }
 
 }

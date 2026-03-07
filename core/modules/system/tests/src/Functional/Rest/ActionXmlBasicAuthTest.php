@@ -14,34 +14,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Action')]
 #[RunTestsInSeparateProcesses]
-class ActionXmlBasicAuthTest extends ActionResourceTestBase {
+class ActionXmlBasicAuthTest extends ActionResourceTestBase
+{
+    use BasicAuthResourceTestTrait;
+    use XmlEntityNormalizationQuirksTrait;
 
-  use BasicAuthResourceTestTrait;
-  use XmlEntityNormalizationQuirksTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['basic_auth'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['basic_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'xml';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'xml';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'text/xml; charset=utf-8';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'text/xml; charset=utf-8';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'basic_auth';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'basic_auth';
 
 }

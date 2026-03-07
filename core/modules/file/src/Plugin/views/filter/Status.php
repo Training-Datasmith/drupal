@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\views\filter;
 
 use Drupal\file\FileInterface;
@@ -11,20 +13,21 @@ use Drupal\views\Plugin\views\filter\InOperator;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("file_status")]
-class Status extends InOperator {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValueOptions() {
-    if (!isset($this->valueOptions)) {
-      $this->valueOptions = [
-        0 => $this->t('Temporary'),
-        FileInterface::STATUS_PERMANENT => $this->t('Permanent'),
-      ];
+#[ViewsFilter('file_status')]
+class Status extends InOperator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getValueOptions()
+    {
+        if (!isset($this->valueOptions)) {
+            $this->valueOptions = [
+              0 => $this->t('Temporary'),
+              FileInterface::STATUS_PERMANENT => $this->t('Permanent'),
+            ];
+        }
+        return $this->valueOptions;
     }
-    return $this->valueOptions;
-  }
 
 }

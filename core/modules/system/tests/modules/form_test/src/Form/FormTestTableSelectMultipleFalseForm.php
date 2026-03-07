@@ -11,27 +11,30 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestTableSelectMultipleFalseForm extends FormTestTableSelectFormBase {
+class FormTestTableSelectMultipleFalseForm extends FormTestTableSelectFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return '_form_test_tableselect_multiple_false_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return '_form_test_tableselect_multiple_false_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        return $this->tableselectFormBuilder($form, $form_state, ['#multiple' => false]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    return $this->tableselectFormBuilder($form, $form_state, ['#multiple' => FALSE]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->messenger()->addStatus($this->t('Submitted: @value', ['@value' => $form_state->getValue('tableselect')]));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $this->messenger()->addStatus($this->t('Submitted: @value', ['@value' => $form_state->getValue('tableselect')]));
+    }
 
 }

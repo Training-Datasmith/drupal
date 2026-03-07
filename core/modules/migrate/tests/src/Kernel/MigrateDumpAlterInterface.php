@@ -9,14 +9,14 @@ use Drupal\KernelTests\KernelTestBase;
 /**
  * Allows tests to alter dumps after they have loaded.
  */
-interface MigrateDumpAlterInterface {
-
-  /**
-   * Allows tests to alter dumps after they have loaded.
-   *
-   * @param \Drupal\KernelTests\KernelTestBase $test
-   *   The test that is being run.
-   */
-  public static function migrateDumpAlter(KernelTestBase $test);
+interface MigrateDumpAlterInterface
+{
+    /**
+     * Allows tests to alter dumps after they have loaded.
+     *
+     * @param \Drupal\KernelTests\KernelTestBase $test
+     *   The test that is being run.
+     */
+    public static function migrateDumpAlter(KernelTestBase $test);
 
 }

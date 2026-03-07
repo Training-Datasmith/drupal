@@ -13,4 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('core_document_media_type_recipe')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericRecipeTestBase {}
+class GenericTest extends GenericRecipeTestBase
+{
+}

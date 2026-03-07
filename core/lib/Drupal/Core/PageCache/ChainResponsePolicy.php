@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PageCache;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -17,36 +19,38 @@ use Symfony\Component\HttpFoundation\Response;
  *   <li>Otherwise returns NULL</li>
  * </ol>
  */
-class ChainResponsePolicy implements ChainResponsePolicyInterface {
+class ChainResponsePolicy implements ChainResponsePolicyInterface
+{
+    /**
+     * A list of policy rules to apply when this policy is checked.
+     *
+     * @var \Drupal\Core\PageCache\ResponsePolicyInterface[]
+     */
+    protected $rules = [];
 
-  /**
-   * A list of policy rules to apply when this policy is checked.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicyInterface[]
-   */
-  protected $rules = [];
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Response $response, Request $request) {
-    foreach ($this->rules as $rule) {
-      $result = $rule->check($response, $request);
-      if ($result === static::DENY) {
-          return $result;
-      }
-      if (isset($result)) {
-          throw new \UnexpectedValueException('Return value of ResponsePolicyInterface::check() must be one of ResponsePolicyInterface::DENY or NULL');
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Response $response, Request $request)
+    {
+        foreach ($this->rules as $rule) {
+            $result = $rule->check($response, $request);
+            if ($result === static::DENY) {
+                return $result;
+            }
+            if (isset($result)) {
+                throw new \UnexpectedValueException('Return value of ResponsePolicyInterface::check() must be one of ResponsePolicyInterface::DENY or NULL');
+            }
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addPolicy(ResponsePolicyInterface $policy): static {
-    $this->rules[] = $policy;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addPolicy(ResponsePolicyInterface $policy): static
+    {
+        $this->rules[] = $policy;
+        return $this;
+    }
 
 }

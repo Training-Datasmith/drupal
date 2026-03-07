@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\views\Attribute\ViewsField;
-use Drupal\views\ResultRow;
-use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
+use Drupal\views\ResultRow;
+use Drupal\views\ViewExecutable;
 
 /**
  * Field handler to provide simple renderer that allows linking to a node.
@@ -19,84 +21,87 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("node")]
-class Node extends FieldPluginBase {
+#[ViewsField('node')]
+class Node extends FieldPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    // Don't add the additional fields to group by.
-    if (!empty($this->options['link_to_node'])) {
-      $this->additional_fields['nid'] = ['table' => 'node_field_data', 'field' => 'nid'];
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['link_to_node'] = ['default' => $this->definition['link_to_node default'] ?? FALSE];
-    return $options;
-  }
-
-  /**
-   * Provide link to node option.
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['link_to_node'] = [
-      '#title' => $this->t('Link this field to the original piece of content'),
-      '#description' => $this->t("Enable to override this field's links."),
-      '#type' => 'checkbox',
-      '#default_value' => !empty($this->options['link_to_node']),
-    ];
-
-    parent::buildOptionsForm($form, $form_state);
-  }
-
-  /**
-   * Prepares link to the node.
-   *
-   * @param string $data
-   *   The XSS safe string for the link text.
-   * @param \Drupal\views\ResultRow $values
-   *   The values retrieved from a single row of a view's query result.
-   *
-   * @return string
-   *   Returns a string for the link text.
-   */
-  protected function renderLink($data, ResultRow $values) {
-    if (!empty($this->options['link_to_node']) && !empty($this->additional_fields['nid'])) {
-      if ($data !== NULL && $data !== '') {
-        $this->options['alter']['make_link'] = TRUE;
-        $this->options['alter']['url'] = Url::fromRoute('entity.node.canonical', ['node' => $this->getValue($values, 'nid')]);
-        if (isset($this->aliases['langcode'])) {
-          $languages = \Drupal::languageManager()->getLanguages();
-          $langcode = $this->getValue($values, 'langcode');
-          if (isset($languages[$langcode])) {
-            $this->options['alter']['language'] = $languages[$langcode];
-          }
-          else {
-            unset($this->options['alter']['language']);
-          }
+        // Don't add the additional fields to group by.
+        if (!empty($this->options['link_to_node'])) {
+            $this->additional_fields['nid'] = ['table' => 'node_field_data', 'field' => 'nid'];
         }
-      }
-      else {
-        $this->options['alter']['make_link'] = FALSE;
-      }
     }
-    return $data;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $this->getValue($values);
-    return $this->renderLink($this->sanitizeValue($value), $values);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['link_to_node'] = ['default' => $this->definition['link_to_node default'] ?? false];
+        return $options;
+    }
+
+    /**
+     * Provide link to node option.
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['link_to_node'] = [
+          '#title' => $this->t('Link this field to the original piece of content'),
+          '#description' => $this->t("Enable to override this field's links."),
+          '#type' => 'checkbox',
+          '#default_value' => !empty($this->options['link_to_node']),
+        ];
+
+        parent::buildOptionsForm($form, $form_state);
+    }
+
+    /**
+     * Prepares link to the node.
+     *
+     * @param string $data
+     *   The XSS safe string for the link text.
+     * @param \Drupal\views\ResultRow $values
+     *   The values retrieved from a single row of a view's query result.
+     *
+     * @return string
+     *   Returns a string for the link text.
+     */
+    protected function renderLink($data, ResultRow $values)
+    {
+        if (!empty($this->options['link_to_node']) && !empty($this->additional_fields['nid'])) {
+            if ($data !== null && $data !== '') {
+                $this->options['alter']['make_link'] = true;
+                $this->options['alter']['url'] = Url::fromRoute('entity.node.canonical', ['node' => $this->getValue($values, 'nid')]);
+                if (isset($this->aliases['langcode'])) {
+                    $languages = \Drupal::languageManager()->getLanguages();
+                    $langcode = $this->getValue($values, 'langcode');
+                    if (isset($languages[$langcode])) {
+                        $this->options['alter']['language'] = $languages[$langcode];
+                    } else {
+                        unset($this->options['alter']['language']);
+                    }
+                }
+            } else {
+                $this->options['alter']['make_link'] = false;
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $this->getValue($values);
+        return $this->renderLink($this->sanitizeValue($value), $values);
+    }
 
 }

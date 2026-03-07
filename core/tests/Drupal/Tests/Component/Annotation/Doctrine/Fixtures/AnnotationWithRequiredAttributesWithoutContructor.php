@@ -10,7 +10,6 @@ namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
  */
 final class AnnotationWithRequiredAttributesWithoutContructor
 {
-
     /**
      * @Required
      * @var string

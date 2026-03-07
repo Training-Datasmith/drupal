@@ -20,104 +20,111 @@ use Psr\Log\NullLogger;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class ProcessOutputCallback implements OutputCallbackInterface, LoggerAwareInterface {
+final class ProcessOutputCallback implements OutputCallbackInterface, LoggerAwareInterface
+{
+    use LoggerAwareTrait;
 
-  use LoggerAwareTrait;
+    /**
+     * The output buffer.
+     */
+    private array $outBuffer = [];
 
-  /**
-   * The output buffer.
-   */
-  private array $outBuffer = [];
+    /**
+     * The error buffer.
+     */
+    private array $errorBuffer = [];
 
-  /**
-   * The error buffer.
-   */
-  private array $errorBuffer = [];
-
-  /**
-   * Constructs a ProcessOutputCallback object.
-   */
-  public function __construct() {
-    $this->setLogger(new NullLogger());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __invoke(OutputTypeEnum $type, string $buffer): void {
-
-    if ($type === OutputTypeEnum::OUT) {
-      $this->outBuffer[] = $buffer;
+    /**
+     * Constructs a ProcessOutputCallback object.
+     */
+    public function __construct()
+    {
+        $this->setLogger(new NullLogger());
     }
-    elseif ($type === OutputTypeEnum::ERR) {
-      $this->errorBuffer[] = $buffer;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __invoke(OutputTypeEnum $type, string $buffer): void
+    {
+
+        if ($type === OutputTypeEnum::OUT) {
+            $this->outBuffer[] = $buffer;
+        } elseif ($type === OutputTypeEnum::ERR) {
+            $this->errorBuffer[] = $buffer;
+        }
     }
-  }
 
-  /**
-   * Gets the output.
-   *
-   * If there is anything in the error buffer, it will be logged as a warning.
-   *
-   * @return array
-   *   The output buffer.
-   */
-  public function getOutput(): array {
-    $error_output = $this->getErrorOutput();
-    if ($error_output) {
-      $this->logger->warning(implode('', $error_output));
+    /**
+     * Gets the output.
+     *
+     * If there is anything in the error buffer, it will be logged as a warning.
+     *
+     * @return array
+     *   The output buffer.
+     */
+    public function getOutput(): array
+    {
+        $error_output = $this->getErrorOutput();
+        if ($error_output) {
+            $this->logger->warning(implode('', $error_output));
+        }
+        return $this->outBuffer;
     }
-    return $this->outBuffer;
-  }
 
-  /**
-   * Gets the parsed JSON output.
-   *
-   * @return mixed
-   *   The decoded JSON output or NULL if there isn't any.
-   */
-  public function parseJsonOutput(): mixed {
-    $output = $this->getOutput();
-    if ($output) {
-      return json_decode(trim(implode('', $output)), TRUE, flags: JSON_THROW_ON_ERROR);
+    /**
+     * Gets the parsed JSON output.
+     *
+     * @return mixed
+     *   The decoded JSON output or NULL if there isn't any.
+     */
+    public function parseJsonOutput(): mixed
+    {
+        $output = $this->getOutput();
+        if ($output) {
+            return json_decode(trim(implode('', $output)), true, flags: JSON_THROW_ON_ERROR);
+        }
+        return null;
     }
-    return NULL;
-  }
 
-  /**
-   * Gets the error output.
-   *
-   * @return array
-   *   The error output buffer.
-   */
-  public function getErrorOutput(): array {
-    return $this->errorBuffer;
-  }
+    /**
+     * Gets the error output.
+     *
+     * @return array
+     *   The error output buffer.
+     */
+    public function getErrorOutput(): array
+    {
+        return $this->errorBuffer;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearErrorOutput(): void {
-    $this->errorBuffer = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function clearErrorOutput(): void
+    {
+        $this->errorBuffer = [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearOutput(): void {
-    $this->outBuffer = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function clearOutput(): void
+    {
+        $this->outBuffer = [];
+    }
 
-  /**
-   * Resets buffers.
-   *
-   * @return self
-   *   The current instance for method chaining.
-   */
-  public function reset(): self {
-    $this->clearErrorOutput();
-    $this->clearOutput();
-    return $this;
-  }
+    /**
+     * Resets buffers.
+     *
+     * @return self
+     *   The current instance for method chaining.
+     */
+    public function reset(): self
+    {
+        $this->clearErrorOutput();
+        $this->clearOutput();
+        return $this;
+    }
 
 }

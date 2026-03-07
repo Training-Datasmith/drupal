@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
@@ -7,26 +9,28 @@ use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 /**
  * Converts empty reference values for entity reference items.
  */
-trait EntityReferenceFieldItemNormalizerTrait {
-
-  protected function normalizeRootReferenceValue(array &$values, EntityReferenceItem $field_item) {
-    // @todo Generalize for all tree-structured entity types.
-    if ($this->fieldItemReferencesTaxonomyTerm($field_item) && empty($values['target_id'])) {
-      $values['target_id'] = NULL;
+trait EntityReferenceFieldItemNormalizerTrait
+{
+    protected function normalizeRootReferenceValue(array &$values, EntityReferenceItem $field_item)
+    {
+        // @todo Generalize for all tree-structured entity types.
+        if ($this->fieldItemReferencesTaxonomyTerm($field_item) && empty($values['target_id'])) {
+            $values['target_id'] = null;
+        }
     }
-  }
 
-  /**
-   * Determines if a field item references a taxonomy term.
-   *
-   * @param \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $field_item
-   *   The entity reference item.
-   *
-   * @return bool
-   *   TRUE if the field item references a taxonomy term, FALSE otherwise.
-   */
-  protected function fieldItemReferencesTaxonomyTerm(EntityReferenceItem $field_item): bool {
-    return $field_item->getFieldDefinition()->getSetting('target_type') === 'taxonomy_term';
-  }
+    /**
+     * Determines if a field item references a taxonomy term.
+     *
+     * @param \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $field_item
+     *   The entity reference item.
+     *
+     * @return bool
+     *   TRUE if the field item references a taxonomy term, FALSE otherwise.
+     */
+    protected function fieldItemReferencesTaxonomyTerm(EntityReferenceItem $field_item): bool
+    {
+        return $field_item->getFieldDefinition()->getSetting('target_type') === 'taxonomy_term';
+    }
 
 }

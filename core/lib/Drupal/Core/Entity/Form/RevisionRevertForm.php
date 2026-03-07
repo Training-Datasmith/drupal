@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -11,10 +13,10 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\RevisionableStorageInterface;
+use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -25,295 +27,315 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class RevisionRevertForm extends ConfirmFormBase implements EntityFormInterface {
+class RevisionRevertForm extends ConfirmFormBase implements EntityFormInterface
+{
+    /**
+     * The entity operation.
+     */
+    protected string $operation;
 
-  /**
-   * The entity operation.
-   */
-  protected string $operation;
+    /**
+     * The entity revision.
+     */
+    protected RevisionableInterface $revision;
 
-  /**
-   * The entity revision.
-   */
-  protected RevisionableInterface $revision;
+    /**
+     * The module handler.
+     */
+    protected ModuleHandlerInterface $moduleHandler;
 
-  /**
-   * The module handler.
-   */
-  protected ModuleHandlerInterface $moduleHandler;
+    /**
+     * The entity type manager.
+     */
+    protected EntityTypeManagerInterface $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Creates a new RevisionRevertForm instance.
-   *
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInformation
-   *   The bundle information.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   */
-  public function __construct(
-    protected DateFormatterInterface $dateFormatter,
-    protected EntityTypeBundleInfoInterface $bundleInformation,
-    MessengerInterface $messenger,
-    protected TimeInterface $time,
-    protected AccountInterface $currentUser,
-  ) {
-    $this->messenger = $messenger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('date.formatter'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('messenger'),
-      $container->get('datetime.time'),
-      $container->get('current_user'),
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseFormId(): string {
-    return $this->revision->getEntityTypeId() . '_revision_revert';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return $this->revision->getEntityTypeId() . '_revision_revert';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuestion() {
-    return ($this->getEntity() instanceof RevisionLogInterface)
-      ? $this->t('Are you sure you want to revert to the revision from %revision-date?', [
-        '%revision-date' => $this->dateFormatter->format($this->getEntity()->getRevisionCreationTime()),
-      ])
-      : $this->t('Are you sure you want to revert the revision?');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl() {
-    return $this->getEntity()->getEntityType()->hasLinkTemplate('version-history') && $this->getEntity()->toUrl('version-history')->access($this->currentUser)
-      ? $this->getEntity()->toUrl('version-history')
-      : $this->getEntity()->toUrl();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfirmText() {
-    return $this->t('Revert');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): string {
-    return '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
-    $form['actions']['submit']['#submit'] = [
-      '::submitForm',
-      '::save',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $revisionId = $this->revision->getRevisionId();
-    $revisionLabel = $this->revision->label();
-    $bundleLabel = $this->getBundleLabel($this->revision);
-    if ($this->revision instanceof RevisionLogInterface) {
-      $originalRevisionTimestamp = $this->revision->getRevisionCreationTime();
+    /**
+     * Creates a new RevisionRevertForm instance.
+     *
+     * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+     *   The date formatter.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInformation
+     *   The bundle information.
+     * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+     *   The messenger service.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     * @param \Drupal\Core\Session\AccountInterface $currentUser
+     *   The current user.
+     */
+    public function __construct(
+        protected DateFormatterInterface $dateFormatter,
+        protected EntityTypeBundleInfoInterface $bundleInformation,
+        MessengerInterface $messenger,
+        protected TimeInterface $time,
+        protected AccountInterface $currentUser,
+    ) {
+        $this->messenger = $messenger;
     }
 
-    $this->revision = $this->prepareRevision($this->revision, $form_state);
-
-    if (isset($originalRevisionTimestamp)) {
-      $date = $this->dateFormatter->format($originalRevisionTimestamp);
-      $this->messenger->addMessage($this->t('@type %title has been reverted to the revision from %revision-date.', [
-        '@type' => $bundleLabel,
-        '%title' => $revisionLabel,
-        '%revision-date' => $date,
-      ]));
-    }
-    else {
-      $this->messenger->addMessage($this->t('@type %title has been reverted.', [
-        '@type' => $bundleLabel,
-        '%title' => $revisionLabel,
-      ]));
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('date.formatter'),
+            $container->get('entity_type.bundle.info'),
+            $container->get('messenger'),
+            $container->get('datetime.time'),
+            $container->get('current_user'),
+        );
     }
 
-    $this->logger($this->revision->getEntityType()->getProvider())->info('@type: reverted %title revision %revision.', [
-      '@type' => $this->revision->bundle(),
-      '%title' => $revisionLabel,
-      '%revision' => $revisionId,
-    ]);
-
-    $versionHistoryUrl = $this->revision->toUrl('version-history');
-    if ($versionHistoryUrl->access($this->currentUser())) {
-      $form_state->setRedirectUrl($versionHistoryUrl);
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseFormId(): string
+    {
+        return $this->revision->getEntityTypeId() . '_revision_revert';
     }
 
-    if (!$form_state->getRedirect()) {
-      $canonicalUrl = $this->revision->toUrl();
-      if ($canonicalUrl->access($this->currentUser())) {
-        $form_state->setRedirectUrl($canonicalUrl);
-      }
-    }
-  }
-
-  /**
-   * Prepares a revision to be reverted.
-   *
-   * @param \Drupal\Core\Entity\RevisionableInterface $revision
-   *   The revision to be reverted.
-   * @param \Drupal\Core\Form\FormStateInterface $formState
-   *   The current state of the form.
-   *
-   * @return \Drupal\Core\Entity\RevisionableInterface
-   *   The new revision, the same type as passed to $revision.
-   */
-  protected function prepareRevision(RevisionableInterface $revision, FormStateInterface $formState): RevisionableInterface {
-    $storage = $this->entityTypeManager->getStorage($revision->getEntityTypeId());
-    if (!$storage instanceof RevisionableStorageInterface) {
-      throw new \LogicException('Revisionable entities are expected to implement RevisionableStorageInterface');
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return $this->revision->getEntityTypeId() . '_revision_revert';
     }
 
-    $revision = $storage->createRevision($revision);
-
-    $time = $this->time->getRequestTime();
-    if ($revision instanceof EntityChangedInterface) {
-      $revision->setChangedTime($time);
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuestion()
+    {
+        return ($this->getEntity() instanceof RevisionLogInterface)
+          ? $this->t('Are you sure you want to revert to the revision from %revision-date?', [
+            '%revision-date' => $this->dateFormatter->format($this->getEntity()->getRevisionCreationTime()),
+          ])
+          : $this->t('Are you sure you want to revert the revision?');
     }
 
-    if ($revision instanceof RevisionLogInterface) {
-      $originalRevisionTimestamp = $revision->getRevisionCreationTime();
-      $date = $this->dateFormatter->format($originalRevisionTimestamp);
-      $revision
-        ->setRevisionLogMessage($this->t('Copy of the revision from %date.', ['%date' => $date]))
-        ->setRevisionCreationTime($time)
-        ->setRevisionUserId($this->currentUser()->id());
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl()
+    {
+        return $this->getEntity()->getEntityType()->hasLinkTemplate('version-history') && $this->getEntity()->toUrl('version-history')->access($this->currentUser)
+          ? $this->getEntity()->toUrl('version-history')
+          : $this->getEntity()->toUrl();
     }
 
-    return $revision;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfirmText()
+    {
+        return $this->t('Revert');
+    }
 
-  /**
-   * Returns the bundle label of an entity.
-   *
-   * @param \Drupal\Core\Entity\RevisionableInterface $entity
-   *   The entity.
-   *
-   * @return string|null
-   *   The bundle label.
-   */
-  protected function getBundleLabel(RevisionableInterface $entity): ?string {
-    $bundleInfo = $this->bundleInformation->getBundleInfo($entity->getEntityTypeId());
-    return isset($bundleInfo[$entity->bundle()]['label']) ? (string) $bundleInfo[$entity->bundle()]['label'] : NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): string
+    {
+        return '';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setOperation($operation): static {
-    $this->operation = $operation;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildForm($form, $form_state);
+        $form['actions']['submit']['#submit'] = [
+          '::submitForm',
+          '::save',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOperation(): string {
-    return $this->operation;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $revisionId = $this->revision->getRevisionId();
+        $revisionLabel = $this->revision->label();
+        $bundleLabel = $this->getBundleLabel($this->revision);
+        if ($this->revision instanceof RevisionLogInterface) {
+            $originalRevisionTimestamp = $this->revision->getRevisionCreationTime();
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntity(): \Drupal\Core\Entity\RevisionableInterface {
-    return $this->revision;
-  }
+        $this->revision = $this->prepareRevision($this->revision, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setEntity(EntityInterface $entity): static {
-    assert($entity instanceof RevisionableInterface);
-    $this->revision = $entity;
-    return $this;
-  }
+        if (isset($originalRevisionTimestamp)) {
+            $date = $this->dateFormatter->format($originalRevisionTimestamp);
+            $this->messenger->addMessage($this->t('@type %title has been reverted to the revision from %revision-date.', [
+              '@type' => $bundleLabel,
+              '%title' => $revisionLabel,
+              '%revision-date' => $date,
+            ]));
+        } else {
+            $this->messenger->addMessage($this->t('@type %title has been reverted.', [
+              '@type' => $bundleLabel,
+              '%title' => $revisionLabel,
+            ]));
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
-    return $route_match->getParameter($entity_type_id . '_revision');
-  }
+        $this->logger($this->revision->getEntityType()->getProvider())->info('@type: reverted %title revision %revision.', [
+          '@type' => $this->revision->bundle(),
+          '%title' => $revisionLabel,
+          '%revision' => $revisionId,
+        ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildEntity(array $form, FormStateInterface $form_state): \Drupal\Core\Entity\RevisionableInterface {
-    return $this->revision;
-  }
+        $versionHistoryUrl = $this->revision->toUrl('version-history');
+        if ($versionHistoryUrl->access($this->currentUser())) {
+            $form_state->setRedirectUrl($versionHistoryUrl);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state) {
-    return $this->revision->save();
-  }
+        if (!$form_state->getRedirect()) {
+            $canonicalUrl = $this->revision->toUrl();
+            if ($canonicalUrl->access($this->currentUser())) {
+                $form_state->setRedirectUrl($canonicalUrl);
+            }
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setModuleHandler(ModuleHandlerInterface $module_handler): static {
-    $this->moduleHandler = $module_handler;
-    return $this;
-  }
+    /**
+     * Prepares a revision to be reverted.
+     *
+     * @param \Drupal\Core\Entity\RevisionableInterface $revision
+     *   The revision to be reverted.
+     * @param \Drupal\Core\Form\FormStateInterface $formState
+     *   The current state of the form.
+     *
+     * @return \Drupal\Core\Entity\RevisionableInterface
+     *   The new revision, the same type as passed to $revision.
+     */
+    protected function prepareRevision(RevisionableInterface $revision, FormStateInterface $formState): RevisionableInterface
+    {
+        $storage = $this->entityTypeManager->getStorage($revision->getEntityTypeId());
+        if (!$storage instanceof RevisionableStorageInterface) {
+            throw new \LogicException('Revisionable entities are expected to implement RevisionableStorageInterface');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): static {
-    $this->entityTypeManager = $entity_type_manager;
-    return $this;
-  }
+        $revision = $storage->createRevision($revision);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function currentUser(): \Drupal\Core\Session\AccountInterface {
-    return $this->currentUser;
-  }
+        $time = $this->time->getRequestTime();
+        if ($revision instanceof EntityChangedInterface) {
+            $revision->setChangedTime($time);
+        }
+
+        if ($revision instanceof RevisionLogInterface) {
+            $originalRevisionTimestamp = $revision->getRevisionCreationTime();
+            $date = $this->dateFormatter->format($originalRevisionTimestamp);
+            $revision
+              ->setRevisionLogMessage($this->t('Copy of the revision from %date.', ['%date' => $date]))
+              ->setRevisionCreationTime($time)
+              ->setRevisionUserId($this->currentUser()->id());
+        }
+
+        return $revision;
+    }
+
+    /**
+     * Returns the bundle label of an entity.
+     *
+     * @param \Drupal\Core\Entity\RevisionableInterface $entity
+     *   The entity.
+     *
+     * @return string|null
+     *   The bundle label.
+     */
+    protected function getBundleLabel(RevisionableInterface $entity): ?string
+    {
+        $bundleInfo = $this->bundleInformation->getBundleInfo($entity->getEntityTypeId());
+        return isset($bundleInfo[$entity->bundle()]['label']) ? (string) $bundleInfo[$entity->bundle()]['label'] : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setOperation($operation): static
+    {
+        $this->operation = $operation;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOperation(): string
+    {
+        return $this->operation;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntity(): \Drupal\Core\Entity\RevisionableInterface
+    {
+        return $this->revision;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setEntity(EntityInterface $entity): static
+    {
+        assert($entity instanceof RevisionableInterface);
+        $this->revision = $entity;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id)
+    {
+        return $route_match->getParameter($entity_type_id . '_revision');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildEntity(array $form, FormStateInterface $form_state): \Drupal\Core\Entity\RevisionableInterface
+    {
+        return $this->revision;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state)
+    {
+        return $this->revision->save();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setModuleHandler(ModuleHandlerInterface $module_handler): static
+    {
+        $this->moduleHandler = $module_handler;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): static
+    {
+        $this->entityTypeManager = $entity_type_manager;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function currentUser(): \Drupal\Core\Session\AccountInterface
+    {
+        return $this->currentUser;
+    }
 
 }

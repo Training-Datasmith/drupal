@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http\Exception;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -9,16 +11,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * A cacheable HttpException.
  */
-class CacheableHttpException extends HttpException implements CacheableDependencyInterface {
+class CacheableHttpException extends HttpException implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
 
-  use CacheableDependencyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(CacheableDependencyInterface $cacheability, $statusCode = 0, $message = '', ?\Throwable $previous = NULL, array $headers = [], $code = 0) {
-    $this->setCacheability($cacheability);
-    parent::__construct($statusCode, $message, $previous, $headers, $code);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(CacheableDependencyInterface $cacheability, $statusCode = 0, $message = '', ?\Throwable $previous = null, array $headers = [], $code = 0)
+    {
+        $this->setCacheability($cacheability);
+        parent::__construct($statusCode, $message, $previous, $headers, $code);
+    }
 
 }

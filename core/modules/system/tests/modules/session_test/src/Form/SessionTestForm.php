@@ -13,39 +13,42 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class SessionTestForm extends FormBase {
+class SessionTestForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'session_test_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'session_test_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['input'] = [
+          '#type' => 'textfield',
+          '#title' => 'Input',
+          '#required' => true,
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['input'] = [
-      '#type' => 'textfield',
-      '#title' => 'Input',
-      '#required' => TRUE,
-    ];
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Save',
+        ];
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Save',
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->messenger()->addStatus(new FormattableMarkup('Ok: @input', ['@input' => $form_state->getValue('input')]));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $this->messenger()->addStatus(new FormattableMarkup('Ok: @input', ['@input' => $form_state->getValue('input')]));
+    }
 
 }

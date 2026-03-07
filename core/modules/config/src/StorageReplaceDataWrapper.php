@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\config;
 
 use Drupal\Core\Config\StorageInterface;
@@ -8,180 +10,194 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 /**
  * Wraps a configuration storage to allow replacing specific configuration data.
  */
-class StorageReplaceDataWrapper implements StorageInterface {
-  use DependencySerializationTrait;
+class StorageReplaceDataWrapper implements StorageInterface
+{
+    use DependencySerializationTrait;
 
-  /**
-   * The configuration replacement data, keyed by configuration object name.
-   *
-   * @var array
-   */
-  protected $replacementData = [];
+    /**
+     * The configuration replacement data, keyed by configuration object name.
+     *
+     * @var array
+     */
+    protected $replacementData = [];
 
-  /**
-   * Constructs a new StorageReplaceDataWrapper.
-   *
-   * @param \Drupal\Core\Config\StorageInterface $storage
-   *   A configuration storage to be used to read and write configuration.
-   * @param string $collection
-   *   (optional) The collection to store configuration in. Defaults to the
-   *   default collection.
-   */
-  public function __construct(protected \Drupal\Core\Config\StorageInterface $storage, /**
+    /**
+     * Constructs a new StorageReplaceDataWrapper.
+     *
+     * @param \Drupal\Core\Config\StorageInterface $storage
+     *   A configuration storage to be used to read and write configuration.
+     * @param string $collection
+     *   (optional) The collection to store configuration in. Defaults to the
+     *   default collection.
+     */
+    public function __construct(protected \Drupal\Core\Config\StorageInterface $storage, /**
    * The storage collection.
    */
-  protected $collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->replacementData[$this->collection] = [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function exists($name): bool {
-    return isset($this->replacementData[$this->collection][$name]) || $this->storage->exists($name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function read($name) {
-    return $this->replacementData[$this->collection][$name] ?? $this->storage->read($name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function readMultiple(array $names) {
-    $data = $this->storage->readMultiple(($names));
-    foreach ($names as $name) {
-      if (isset($this->replacementData[$this->collection][$name])) {
-        $data[$name] = $this->replacementData[$this->collection][$name];
-      }
+        protected $collection = StorageInterface::DEFAULT_COLLECTION)
+    {
+        $this->replacementData[$this->collection] = [];
     }
-    return $data;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function write($name, array $data) {
-    if (isset($this->replacementData[$this->collection][$name])) {
-      unset($this->replacementData[$this->collection][$name]);
+    /**
+     * {@inheritdoc}
+     */
+    public function exists($name): bool
+    {
+        return isset($this->replacementData[$this->collection][$name]) || $this->storage->exists($name);
     }
-    return $this->storage->write($name, $data);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($name) {
-    if (isset($this->replacementData[$this->collection][$name])) {
-      unset($this->replacementData[$this->collection][$name]);
+    /**
+     * {@inheritdoc}
+     */
+    public function read($name)
+    {
+        return $this->replacementData[$this->collection][$name] ?? $this->storage->read($name);
     }
-    return $this->storage->delete($name);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function rename($name, $new_name) {
-    if (isset($this->replacementData[$this->collection][$name])) {
-      $this->replacementData[$this->collection][$new_name] = $this->replacementData[$this->collection][$name];
-      unset($this->replacementData[$this->collection][$name]);
-    }
-    return $this->storage->rename($name, $new_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function encode($data) {
-    return $this->storage->encode($data);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function decode($raw) {
-    return $this->storage->decode($raw);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function listAll($prefix = '') {
-    $names = $this->storage->listAll($prefix);
-    $additional_names = [];
-    if ($prefix === '') {
-      $additional_names = array_keys($this->replacementData[$this->collection]);
-    }
-    else {
-      foreach (array_keys($this->replacementData[$this->collection]) as $name) {
-        if (str_starts_with((string) $name, $prefix)) {
-          $additional_names[] = $name;
+    /**
+     * {@inheritdoc}
+     */
+    public function readMultiple(array $names)
+    {
+        $data = $this->storage->readMultiple(($names));
+        foreach ($names as $name) {
+            if (isset($this->replacementData[$this->collection][$name])) {
+                $data[$name] = $this->replacementData[$this->collection][$name];
+            }
         }
-      }
+        return $data;
     }
-    if (!empty($additional_names)) {
-      return array_unique(array_merge($names, $additional_names));
-    }
-    return $names;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll($prefix = '') {
-    if ($prefix === '') {
-      $this->replacementData[$this->collection] = [];
-    }
-    else {
-      foreach (array_keys($this->replacementData[$this->collection]) as $name) {
-        if (str_starts_with((string) $name, $prefix)) {
-          unset($this->replacementData[$this->collection][$name]);
+    /**
+     * {@inheritdoc}
+     */
+    public function write($name, array $data)
+    {
+        if (isset($this->replacementData[$this->collection][$name])) {
+            unset($this->replacementData[$this->collection][$name]);
         }
-      }
+        return $this->storage->write($name, $data);
     }
-    return $this->storage->deleteAll($prefix);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createCollection($collection): static {
-    return new static(
-      $this->storage->createCollection($collection),
-      $collection
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($name)
+    {
+        if (isset($this->replacementData[$this->collection][$name])) {
+            unset($this->replacementData[$this->collection][$name]);
+        }
+        return $this->storage->delete($name);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAllCollectionNames() {
-    return $this->storage->getAllCollectionNames();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function rename($name, $new_name)
+    {
+        if (isset($this->replacementData[$this->collection][$name])) {
+            $this->replacementData[$this->collection][$new_name] = $this->replacementData[$this->collection][$name];
+            unset($this->replacementData[$this->collection][$name]);
+        }
+        return $this->storage->rename($name, $new_name);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCollectionName() {
-    return $this->collection;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function encode($data)
+    {
+        return $this->storage->encode($data);
+    }
 
-  /**
-   * Replaces the configuration object data with the supplied data.
-   *
-   * @param string $name
-   *   The configuration object name whose data to replace.
-   * @param array $data
-   *   The configuration data.
-   *
-   * @return $this
-   */
-  public function replaceData($name, array $data): static {
-    $this->replacementData[$this->collection][$name] = $data;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function decode($raw)
+    {
+        return $this->storage->decode($raw);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listAll($prefix = '')
+    {
+        $names = $this->storage->listAll($prefix);
+        $additional_names = [];
+        if ($prefix === '') {
+            $additional_names = array_keys($this->replacementData[$this->collection]);
+        } else {
+            foreach (array_keys($this->replacementData[$this->collection]) as $name) {
+                if (str_starts_with((string) $name, $prefix)) {
+                    $additional_names[] = $name;
+                }
+            }
+        }
+        if (!empty($additional_names)) {
+            return array_unique(array_merge($names, $additional_names));
+        }
+        return $names;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll($prefix = '')
+    {
+        if ($prefix === '') {
+            $this->replacementData[$this->collection] = [];
+        } else {
+            foreach (array_keys($this->replacementData[$this->collection]) as $name) {
+                if (str_starts_with((string) $name, $prefix)) {
+                    unset($this->replacementData[$this->collection][$name]);
+                }
+            }
+        }
+        return $this->storage->deleteAll($prefix);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createCollection($collection): static
+    {
+        return new static(
+            $this->storage->createCollection($collection),
+            $collection
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllCollectionNames()
+    {
+        return $this->storage->getAllCollectionNames();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCollectionName()
+    {
+        return $this->collection;
+    }
+
+    /**
+     * Replaces the configuration object data with the supplied data.
+     *
+     * @param string $name
+     *   The configuration object name whose data to replace.
+     * @param array $data
+     *   The configuration data.
+     *
+     * @return $this
+     */
+    public function replaceData($name, array $data): static
+    {
+        $this->replacementData[$this->collection][$name] = $data;
+        return $this;
+    }
 
 }

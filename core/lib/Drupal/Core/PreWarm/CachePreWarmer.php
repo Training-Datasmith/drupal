@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PreWarm;
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
@@ -38,43 +40,45 @@ use Drupal\Core\DependencyInjection\ClassResolverInterface;
  * @see Drupal\Core\LockBackendAbstract::wait()
  * @see Drupal\Core\Routing\RouteProvider::preLoadRoutes()
  */
-class CachePreWarmer implements CachePreWarmerInterface {
+class CachePreWarmer implements CachePreWarmerInterface
+{
+    /**
+     * Whether to prewarm caches at the end of the request.
+     */
+    protected bool $needsPreWarming = false;
 
-  /**
-   * Whether to prewarm caches at the end of the request.
-   */
-  protected bool $needsPreWarming = FALSE;
-
-  public function __construct(
-    protected readonly ClassResolverInterface $classResolver,
-    protected array $serviceIds,
-  ) {
-    // Ensure the serviceId order is random to reduce chances of conflicts.
-    shuffle($this->serviceIds);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preWarmOneCache(): bool {
-    $candidate = array_pop($this->serviceIds);
-    if ($candidate === NULL) {
-      return FALSE;
+    public function __construct(
+        protected readonly ClassResolverInterface $classResolver,
+        protected array $serviceIds,
+    ) {
+        // Ensure the serviceId order is random to reduce chances of conflicts.
+        shuffle($this->serviceIds);
     }
-    $service = $this->classResolver->getInstanceFromDefinition($candidate);
-    $service->preWarm();
-    return TRUE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function preWarmAllCaches(): bool {
-    $prewarmed = FALSE;
-    while ($this->preWarmOneCache()) {
-      $prewarmed = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function preWarmOneCache(): bool
+    {
+        $candidate = array_pop($this->serviceIds);
+        if ($candidate === null) {
+            return false;
+        }
+        $service = $this->classResolver->getInstanceFromDefinition($candidate);
+        $service->preWarm();
+        return true;
     }
-    return $prewarmed;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preWarmAllCaches(): bool
+    {
+        $prewarmed = false;
+        while ($this->preWarmOneCache()) {
+            $prewarmed = true;
+        }
+        return $prewarmed;
+    }
 
 }

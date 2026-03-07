@@ -14,19 +14,20 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests that core module info files have the expected keys.
  */
 #[Group('Extension')]
-class ModuleInfoTest extends UnitTestCase {
+class ModuleInfoTest extends UnitTestCase
+{
+    use FileSystemModuleDiscoveryDataProviderTrait;
 
-  use FileSystemModuleDiscoveryDataProviderTrait;
-
-  /**
-   * Tests that core module info files have the expected keys.
-   */
-  #[DataProvider('coreModuleListDataProvider')]
-  public function testModuleInfo($module): void {
-    $module_directory = __DIR__ . '/../../../../../modules/' . $module;
-    $info = Yaml::decode(file_get_contents($module_directory . '/' . $module . '.info.yml'));
-    $this->assertArrayHasKey('version', $info);
-    $this->assertEquals('VERSION', $info['version']);
-  }
+    /**
+     * Tests that core module info files have the expected keys.
+     */
+    #[DataProvider('coreModuleListDataProvider')]
+    public function testModuleInfo($module): void
+    {
+        $module_directory = __DIR__ . '/../../../../../modules/' . $module;
+        $info = Yaml::decode(file_get_contents($module_directory . '/' . $module . '.info.yml'));
+        $this->assertArrayHasKey('version', $info);
+        $this->assertEquals('VERSION', $info['version']);
+    }
 
 }

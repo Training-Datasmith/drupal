@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,27 +14,28 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  *
  * @internal
  */
-class ToolbarItemDependencyConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+class ToolbarItemDependencyConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    use PluginManagerDependentValidatorTrait;
 
-  use PluginManagerDependentValidatorTrait;
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \Symfony\Component\Validator\Exception\UnexpectedTypeException
+     *   Thrown when the given constraint is not supported by this validator.
+     */
+    public function validate($toolbar_item, Constraint $constraint): void
+    {
+        if (!$constraint instanceof ToolbarItemDependencyConstraint) {
+            throw new UnexpectedTypeException($constraint, __NAMESPACE__ . '\ToolbarItemDependency');
+        }
 
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Symfony\Component\Validator\Exception\UnexpectedTypeException
-   *   Thrown when the given constraint is not supported by this validator.
-   */
-  public function validate($toolbar_item, Constraint $constraint): void {
-    if (!$constraint instanceof ToolbarItemDependencyConstraint) {
-      throw new UnexpectedTypeException($constraint, __NAMESPACE__ . '\ToolbarItemDependency');
+        $toolbar_items = $this->context->getRoot()->get('settings.toolbar.items')->toArray();
+        if (!in_array($constraint->toolbarItem, $toolbar_items, true)) {
+            $this->context->buildViolation($constraint->message)
+              ->setParameter('%toolbar_item', $constraint->toolbarItem)
+              ->addViolation();
+        }
     }
-
-    $toolbar_items = $this->context->getRoot()->get('settings.toolbar.items')->toArray();
-    if (!in_array($constraint->toolbarItem, $toolbar_items, TRUE)) {
-      $this->context->buildViolation($constraint->message)
-        ->setParameter('%toolbar_item', $constraint->toolbarItem)
-        ->addViolation();
-    }
-  }
 
 }

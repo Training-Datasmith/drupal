@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -44,16 +46,17 @@ use Drupal\migrate\Row;
  * @endcode
  */
 #[MigrateDestination('entity:base_field_override')]
-class EntityBaseFieldOverride extends EntityConfigBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityId(Row $row): string {
-    $entity_type = $row->getDestinationProperty('entity_type');
-    $bundle = $row->getDestinationProperty('bundle');
-    $field_name = $row->getDestinationProperty('field_name');
-    return "$entity_type.$bundle.$field_name";
-  }
+class EntityBaseFieldOverride extends EntityConfigBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityId(Row $row): string
+    {
+        $entity_type = $row->getDestinationProperty('entity_type');
+        $bundle = $row->getDestinationProperty('bundle');
+        $field_name = $row->getDestinationProperty('field_name');
+        return "$entity_type.$bundle.$field_name";
+    }
 
 }

@@ -6,8 +6,8 @@ namespace Drupal\package_manager\Validator;
 
 use Drupal\package_manager\Event\PreApplyEvent;
 use Drupal\package_manager\Event\PreCreateEvent;
-use Drupal\package_manager\Event\SandboxValidationEvent;
 use Drupal\package_manager\Event\PreRequireEvent;
+use Drupal\package_manager\Event\SandboxValidationEvent;
 use Drupal\package_manager\Event\StatusCheckEvent;
 
 /**
@@ -21,30 +21,31 @@ use Drupal\package_manager\Event\StatusCheckEvent;
  *
  * @see \Drupal\package_manager\Validator\BaseRequirementsFulfilledValidator
  */
-trait BaseRequirementValidatorTrait {
+trait BaseRequirementValidatorTrait
+{
+    /**
+     * Validates base requirements.
+     *
+     * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
+     *   The event being handled.
+     */
+    abstract public function validate(SandboxValidationEvent $event): void;
 
-  /**
-   * Validates base requirements.
-   *
-   * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
-   *   The event being handled.
-   */
-  abstract public function validate(SandboxValidationEvent $event): void;
+    /**
+     * Implements EventSubscriberInterface::getSubscribedEvents().
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Always run before the BaseRequirementsFulfilledValidator.
+        // @see \Drupal\package_manager\Validator\BaseRequirementsFulfilledValidator
+        $priority = BaseRequirementsFulfilledValidator::PRIORITY + 10;
 
-  /**
-   * Implements EventSubscriberInterface::getSubscribedEvents().
-   */
-  public static function getSubscribedEvents(): array {
-    // Always run before the BaseRequirementsFulfilledValidator.
-    // @see \Drupal\package_manager\Validator\BaseRequirementsFulfilledValidator
-    $priority = BaseRequirementsFulfilledValidator::PRIORITY + 10;
-
-    return [
-      PreCreateEvent::class => ['validate', $priority],
-      PreRequireEvent::class => ['validate', $priority],
-      PreApplyEvent::class => ['validate', $priority],
-      StatusCheckEvent::class => ['validate', $priority],
-    ];
-  }
+        return [
+          PreCreateEvent::class => ['validate', $priority],
+          PreRequireEvent::class => ['validate', $priority],
+          PreApplyEvent::class => ['validate', $priority],
+          StatusCheckEvent::class => ['validate', $priority],
+        ];
+    }
 
 }

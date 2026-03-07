@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Plugin\EntityReferenceSelection;
 
 use Drupal\Component\Utility\Html;
@@ -13,132 +15,139 @@ use Drupal\taxonomy\Entity\Vocabulary;
  * Provides specific access control for the taxonomy_term entity type.
  */
 #[EntityReferenceSelection(
-  id: "default:taxonomy_term",
-  label: new TranslatableMarkup("Taxonomy Term selection"),
-  entity_types: ["taxonomy_term"],
-  group: "default",
-  weight: 1
+    id: 'default:taxonomy_term',
+    label: new TranslatableMarkup('Taxonomy Term selection'),
+    entity_types: ['taxonomy_term'],
+    group: 'default',
+    weight: 1
 )]
-class TermSelection extends DefaultSelection {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'sort' => [
-        'field' => 'name',
-        'direction' => 'asc',
-      ],
-    ] + parent::defaultConfiguration();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
-
-    // Sorting is not possible for taxonomy terms because we use
-    // \Drupal\taxonomy\TermStorageInterface::loadTree() to retrieve matches.
-    $form['sort']['#access'] = FALSE;
-
-    return $form;
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
-    if ($match || $limit) {
-      return parent::getReferenceableEntities($match, $match_operator, $limit);
+class TermSelection extends DefaultSelection
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'sort' => [
+            'field' => 'name',
+            'direction' => 'asc',
+          ],
+        ] + parent::defaultConfiguration();
     }
 
-    $options = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildConfigurationForm($form, $form_state);
 
-    $bundles = $this->entityTypeBundleInfo->getBundleInfo('taxonomy_term');
-    $bundle_names = $this->getConfiguration()['target_bundles'] ?: array_keys($bundles);
+        // Sorting is not possible for taxonomy terms because we use
+        // \Drupal\taxonomy\TermStorageInterface::loadTree() to retrieve matches.
+        $form['sort']['#access'] = false;
 
-    $has_admin_access = $this->currentUser->hasPermission('administer taxonomy');
-    $unpublished_terms = [];
-    foreach ($bundle_names as $bundle) {
-        if (!$vocabulary = Vocabulary::load($bundle)) {
-            continue;
+        return $form;
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getReferenceableEntities($match = null, $match_operator = 'CONTAINS', $limit = 0): array
+    {
+        if ($match || $limit) {
+            return parent::getReferenceableEntities($match, $match_operator, $limit);
         }
-        /** @var \Drupal\taxonomy\TermInterface[] $terms */
-        if (!$terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary->id(), 0, NULL, TRUE)) {
-            continue;
+
+        $options = [];
+
+        $bundles = $this->entityTypeBundleInfo->getBundleInfo('taxonomy_term');
+        $bundle_names = $this->getConfiguration()['target_bundles'] ?: array_keys($bundles);
+
+        $has_admin_access = $this->currentUser->hasPermission('administer taxonomy');
+        $unpublished_terms = [];
+        foreach ($bundle_names as $bundle) {
+            if (!$vocabulary = Vocabulary::load($bundle)) {
+                continue;
+            }
+            /** @var \Drupal\taxonomy\TermInterface[] $terms */
+            if (!$terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary->id(), 0, null, true)) {
+                continue;
+            }
+            foreach ($terms as $term) {
+                if (!$has_admin_access && (!$term->isPublished() || in_array($term->parent->target_id, $unpublished_terms))) {
+                    $unpublished_terms[] = $term->id();
+                    continue;
+                }
+                $options[$vocabulary->id()][$term->id()] = str_repeat('-', $term->depth) . Html::escape($this->entityRepository->getTranslationFromContext($term)->label());
+            }
         }
-        foreach ($terms as $term) {
-          if (!$has_admin_access && (!$term->isPublished() || in_array($term->parent->target_id, $unpublished_terms))) {
-            $unpublished_terms[] = $term->id();
-            continue;
-          }
-          $options[$vocabulary->id()][$term->id()] = str_repeat('-', $term->depth) . Html::escape($this->entityRepository->getTranslationFromContext($term)->label());
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function countReferenceableEntities($match = null, $match_operator = 'CONTAINS')
+    {
+        if ($match) {
+            return parent::countReferenceableEntities($match, $match_operator);
         }
+
+        $total = 0;
+        $referenceable_entities = $this->getReferenceableEntities($match, $match_operator, 0);
+        foreach ($referenceable_entities as $entities) {
+            $total += count($entities);
+        }
+        return $total;
     }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildEntityQuery($match = null, $match_operator = 'CONTAINS')
+    {
+        $query = parent::buildEntityQuery($match, $match_operator);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS') {
-    if ($match) {
-      return parent::countReferenceableEntities($match, $match_operator);
+        // Adding the 'taxonomy_term_access' tag is sadly insufficient for terms:
+        // core requires us to also know about the concept of 'published' and
+        // 'unpublished'.
+        if (!$this->currentUser->hasPermission('administer taxonomy')) {
+            $query->condition('status', 1);
+        }
+        return $query;
     }
 
-    $total = 0;
-    $referenceable_entities = $this->getReferenceableEntities($match, $match_operator, 0);
-    foreach ($referenceable_entities as $entities) {
-      $total += count($entities);
-    }
-    return $total;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createNewEntity($entity_type_id, $bundle, $label, $uid)
+    {
+        $term = parent::createNewEntity($entity_type_id, $bundle, $label, $uid);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
-    $query = parent::buildEntityQuery($match, $match_operator);
-
-    // Adding the 'taxonomy_term_access' tag is sadly insufficient for terms:
-    // core requires us to also know about the concept of 'published' and
-    // 'unpublished'.
-    if (!$this->currentUser->hasPermission('administer taxonomy')) {
-      $query->condition('status', 1);
-    }
-    return $query;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createNewEntity($entity_type_id, $bundle, $label, $uid) {
-    $term = parent::createNewEntity($entity_type_id, $bundle, $label, $uid);
-
-    // In order to create a referenceable term, it needs to published.
-    /** @var \Drupal\taxonomy\TermInterface $term */
-    $term->setPublished();
-
-    return $term;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateReferenceableNewEntities(array $entities): array {
-    $entities = parent::validateReferenceableNewEntities($entities);
-    // Mirror the conditions checked in buildEntityQuery().
-    if (!$this->currentUser->hasPermission('administer taxonomy')) {
-      return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $term) {
+        // In order to create a referenceable term, it needs to published.
         /** @var \Drupal\taxonomy\TermInterface $term */
-        return $term->isPublished();
-      });
+        $term->setPublished();
+
+        return $term;
     }
-    return $entities;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateReferenceableNewEntities(array $entities): array
+    {
+        $entities = parent::validateReferenceableNewEntities($entities);
+        // Mirror the conditions checked in buildEntityQuery().
+        if (!$this->currentUser->hasPermission('administer taxonomy')) {
+            return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $term) {
+                /** @var \Drupal\taxonomy\TermInterface $term */
+                return $term->isPublished();
+            });
+        }
+        return $entities;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -11,21 +13,22 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("comment_depth")]
-class Depth extends EntityField {
+#[ViewsField('comment_depth')]
+class Depth extends EntityField
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getItems(ResultRow $values)
+    {
+        $items = parent::getItems($values);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getItems(ResultRow $values) {
-    $items = parent::getItems($values);
-
-    foreach ($items as &$item) {
-      // Work out the depth of this comment.
-      $comment_thread = $item['rendered']['#context']['value'];
-      $item['rendered']['#context']['value'] = count(explode('.', (string) $comment_thread)) - 1;
+        foreach ($items as &$item) {
+            // Work out the depth of this comment.
+            $comment_thread = $item['rendered']['#context']['value'];
+            $item['rendered']['#context']['value'] = count(explode('.', (string) $comment_thread)) - 1;
+        }
+        return $items;
     }
-    return $items;
-  }
 
 }

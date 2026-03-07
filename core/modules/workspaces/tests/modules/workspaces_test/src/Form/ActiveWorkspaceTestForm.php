@@ -18,68 +18,72 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class ActiveWorkspaceTestForm extends FormBase implements WorkspaceSafeFormInterface {
+class ActiveWorkspaceTestForm extends FormBase implements WorkspaceSafeFormInterface
+{
+    /**
+     * The workspace manager.
+     */
+    protected WorkspaceManagerInterface $workspaceManager;
 
-  /**
-   * The workspace manager.
-   */
-  protected WorkspaceManagerInterface $workspaceManager;
+    /**
+     * The test key-value store.
+     */
+    protected KeyValueStoreInterface $keyValue;
 
-  /**
-   * The test key-value store.
-   */
-  protected KeyValueStoreInterface $keyValue;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        $instance = parent::create($container);
+        $instance->workspaceManager = $container->get('workspaces.manager');
+        $instance->keyValue = $container->get('keyvalue')->get('ws_test');
+        return $instance;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    $instance = parent::create($container);
-    $instance->workspaceManager = $container->get('workspaces.manager');
-    $instance->keyValue = $container->get('keyvalue')->get('ws_test');
-    return $instance;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'active_workspace_test_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'active_workspace_test_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $form['test'] = [
-      '#type' => 'textfield',
-      '#ajax' => [
-        'url' => Url::fromRoute('workspaces_test.get_form'),
-        'callback' => function () {
-          $this->keyValue->set('ajax_test_active_workspace', $this->workspaceManager->getActiveWorkspace()->id());
-          return new AjaxResponse();
-        },
-      ],
-    ];
-    $form['collision_test'] = [
-      '#type' => 'textfield',
-      '#ajax' => [
-        'url' => Url::fromRoute('workspaces_test.get_form'),
-        'options' => [
-          'query' => [
-            'media_library_opener_id' => 'test',
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $form['test'] = [
+          '#type' => 'textfield',
+          '#ajax' => [
+            'url' => Url::fromRoute('workspaces_test.get_form'),
+            'callback' => function () {
+                $this->keyValue->set('ajax_test_active_workspace', $this->workspaceManager->getActiveWorkspace()->id());
+                return new AjaxResponse();
+            },
           ],
-        ],
-      ],
-    ];
-    return $form;
-  }
+        ];
+        $form['collision_test'] = [
+          '#type' => 'textfield',
+          '#ajax' => [
+            'url' => Url::fromRoute('workspaces_test.get_form'),
+            'options' => [
+              'query' => [
+                'media_library_opener_id' => 'test',
+              ],
+            ],
+          ],
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->keyValue->set('form_test_active_workspace', $this->workspaceManager->getActiveWorkspace()->id());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->keyValue->set('form_test_active_workspace', $this->workspaceManager->getActiveWorkspace()->id());
+    }
 
 }

@@ -17,46 +17,48 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ContentModerationStateAccessControlHandler::class)]
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class ContentModerationStateAccessControlHandlerTest extends KernelTestBase {
+class ContentModerationStateAccessControlHandlerTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'content_moderation',
+      'workflows',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'content_moderation',
-    'workflows',
-    'user',
-  ];
+    /**
+     * The content_moderation_state access control handler.
+     *
+     * @var \Drupal\Core\Entity\EntityAccessControlHandlerInterface
+     */
+    protected $accessControlHandler;
 
-  /**
-   * The content_moderation_state access control handler.
-   *
-   * @var \Drupal\Core\Entity\EntityAccessControlHandlerInterface
-   */
-  protected $accessControlHandler;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('content_moderation_state');
+        $this->installEntitySchema('user');
+        $this->accessControlHandler = $this->container->get('entity_type.manager')->getAccessControlHandler('content_moderation_state');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('content_moderation_state');
-    $this->installEntitySchema('user');
-    $this->accessControlHandler = $this->container->get('entity_type.manager')->getAccessControlHandler('content_moderation_state');
-  }
-
-  /**
-   * Tests handler.
-   *
-   * @legacy-covers ::checkAccess
-   * @legacy-covers ::checkCreateAccess
-   */
-  public function testHandler(): void {
-    $entity = ContentModerationState::create([]);
-    $this->assertFalse($this->accessControlHandler->access($entity, 'view'));
-    $this->assertFalse($this->accessControlHandler->access($entity, 'update'));
-    $this->assertFalse($this->accessControlHandler->access($entity, 'delete'));
-    $this->assertFalse($this->accessControlHandler->createAccess());
-  }
+    /**
+     * Tests handler.
+     *
+     * @legacy-covers ::checkAccess
+     * @legacy-covers ::checkCreateAccess
+     */
+    public function testHandler(): void
+    {
+        $entity = ContentModerationState::create([]);
+        $this->assertFalse($this->accessControlHandler->access($entity, 'view'));
+        $this->assertFalse($this->accessControlHandler->access($entity, 'update'));
+        $this->assertFalse($this->accessControlHandler->access($entity, 'delete'));
+        $this->assertFalse($this->accessControlHandler->createAccess());
+    }
 
 }

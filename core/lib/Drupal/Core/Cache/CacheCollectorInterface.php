@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -16,61 +18,61 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheCollectorInterface {
+interface CacheCollectorInterface
+{
+    /**
+     * Gets value from the cache.
+     *
+     * @param string $key
+     *   Key that identifies the data.
+     *
+     * @return mixed
+     *   The corresponding cache data.
+     */
+    public function get($key);
 
-  /**
-   * Gets value from the cache.
-   *
-   * @param string $key
-   *   Key that identifies the data.
-   *
-   * @return mixed
-   *   The corresponding cache data.
-   */
-  public function get($key);
+    /**
+     * Sets cache data.
+     *
+     * It depends on the specific case and implementation whether this has a
+     * permanent effect or if it just affects the current request.
+     *
+     * @param string $key
+     *   Key that identifies the data.
+     * @param mixed $value
+     *   The data to be set.
+     */
+    public function set($key, $value);
 
-  /**
-   * Sets cache data.
-   *
-   * It depends on the specific case and implementation whether this has a
-   * permanent effect or if it just affects the current request.
-   *
-   * @param string $key
-   *   Key that identifies the data.
-   * @param mixed $value
-   *   The data to be set.
-   */
-  public function set($key, $value);
+    /**
+     * Deletes the element.
+     *
+     * It depends on the specific case and implementation whether this has a
+     * permanent effect or if it just affects the current request.
+     *
+     * @param string $key
+     *   Key that identifies the data.
+     */
+    public function delete($key);
 
-  /**
-   * Deletes the element.
-   *
-   * It depends on the specific case and implementation whether this has a
-   * permanent effect or if it just affects the current request.
-   *
-   * @param string $key
-   *   Key that identifies the data.
-   */
-  public function delete($key);
+    /**
+     * Returns whether data exists for this key.
+     *
+     * @param string $key
+     *   Key that identifies the data.
+     */
+    public function has($key);
 
-  /**
-   * Returns whether data exists for this key.
-   *
-   * @param string $key
-   *   Key that identifies the data.
-   */
-  public function has($key);
+    /**
+     * Resets the local cache.
+     *
+     * Does not clear the persistent cache.
+     */
+    public function reset();
 
-  /**
-   * Resets the local cache.
-   *
-   * Does not clear the persistent cache.
-   */
-  public function reset();
-
-  /**
-   * Clears the collected cache entry.
-   */
-  public function clear();
+    /**
+     * Clears the collected cache entry.
+     */
+    public function clear();
 
 }

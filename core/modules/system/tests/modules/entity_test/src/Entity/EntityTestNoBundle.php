@@ -12,21 +12,21 @@ use Drupal\views\EntityViewsData;
  * Test entity class with no bundle.
  */
 #[ContentEntityType(
-  id: 'entity_test_no_bundle',
-  label: new TranslatableMarkup('Entity Test without bundle'),
-  entity_keys: [
+    id: 'entity_test_no_bundle',
+    label: new TranslatableMarkup('Entity Test without bundle'),
+    entity_keys: [
     'id' => 'id',
     'revision' => 'revision_id',
   ],
-  handlers: [
+    handlers: [
     'views_data' => EntityViewsData::class,
   ],
-  links: [
+    links: [
     'add-form' => '/entity_test_no_bundle/add',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_no_bundle',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_no_bundle',
 )]
-class EntityTestNoBundle extends EntityTest {
-
+class EntityTestNoBundle extends EntityTest
+{
 }

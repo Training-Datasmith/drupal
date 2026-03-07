@@ -14,23 +14,24 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(MenuLinkContent::class)]
 #[Group('Menu')]
-class MenuLinkPluginTest extends UnitTestCase {
+class MenuLinkPluginTest extends UnitTestCase
+{
+    /**
+     * Tests get instance reflection.
+     *
+     * @legacy-covers ::getUuid
+     */
+    public function testGetInstanceReflection(): void
+    {
+        /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $menu_link_content_plugin */
+        $menu_link_content_plugin = $this->prophesize(MenuLinkContent::class);
+        $menu_link_content_plugin->getDerivativeId()->willReturn('test_id');
+        $menu_link_content_plugin = $menu_link_content_plugin->reveal();
 
-  /**
-   * Tests get instance reflection.
-   *
-   * @legacy-covers ::getUuid
-   */
-  public function testGetInstanceReflection(): void {
-    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $menu_link_content_plugin */
-    $menu_link_content_plugin = $this->prophesize(MenuLinkContent::class);
-    $menu_link_content_plugin->getDerivativeId()->willReturn('test_id');
-    $menu_link_content_plugin = $menu_link_content_plugin->reveal();
+        $class = new \ReflectionClass(MenuLinkContent::class);
+        $instance_method = $class->getMethod('getUuid');
 
-    $class = new \ReflectionClass(MenuLinkContent::class);
-    $instance_method = $class->getMethod('getUuid');
-
-    $this->assertEquals('test_id', $instance_method->invoke($menu_link_content_plugin));
-  }
+        $this->assertEquals('test_id', $instance_method->invoke($menu_link_content_plugin));
+    }
 
 }

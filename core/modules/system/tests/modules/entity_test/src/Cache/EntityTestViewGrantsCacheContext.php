@@ -14,29 +14,32 @@ use Drupal\Core\Cache\Context\CacheContextInterface;
  *
  * @see \Drupal\node\Cache\NodeAccessViewGrantsCacheContext
  */
-class EntityTestViewGrantsCacheContext implements CacheContextInterface {
+class EntityTestViewGrantsCacheContext implements CacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Entity test view grants');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t("Entity test view grants");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext()
+    {
+        // Return a constant value, so we can fetch render cache both in actual
+        // requests and test code itself.
+        return '299792458';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext() {
-    // Return a constant value, so we can fetch render cache both in actual
-    // requests and test code itself.
-    return '299792458';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata() {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata()
+    {
+        return new CacheableMetadata();
+    }
 
 }

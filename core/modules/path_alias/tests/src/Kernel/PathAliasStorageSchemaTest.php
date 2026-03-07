@@ -16,32 +16,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(PathAliasStorageSchema::class)]
 #[Group('path_alias')]
 #[RunTestsInSeparateProcesses]
-class PathAliasStorageSchemaTest extends KernelTestBase {
+class PathAliasStorageSchemaTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['path_alias'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['path_alias'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('path_alias');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('path_alias');
-  }
-
-  /**
-   * Tests that the path_alias__status index is removed.
-   *
-   * @legacy-covers ::getEntitySchema
-   */
-  public function testPathAliasStatusIndexRemoved(): void {
-    $schema = \Drupal::database()->schema();
-    $table_name = 'path_alias';
-    $this->assertTrue($schema->indexExists($table_name, 'path_alias__alias_langcode_id_status'));
-    $this->assertTrue($schema->indexExists($table_name, 'path_alias__path_langcode_id_status'));
-    $this->assertFalse($schema->indexExists($table_name, 'path_alias__status'));
-  }
+    /**
+     * Tests that the path_alias__status index is removed.
+     *
+     * @legacy-covers ::getEntitySchema
+     */
+    public function testPathAliasStatusIndexRemoved(): void
+    {
+        $schema = \Drupal::database()->schema();
+        $table_name = 'path_alias';
+        $this->assertTrue($schema->indexExists($table_name, 'path_alias__alias_langcode_id_status'));
+        $this->assertTrue($schema->indexExists($table_name, 'path_alias__path_langcode_id_status'));
+        $this->assertFalse($schema->indexExists($table_name, 'path_alias__status'));
+    }
 
 }

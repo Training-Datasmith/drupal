@@ -17,20 +17,21 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('asset')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class AssetOptimizationUmamiTest extends AssetOptimizationTest {
+class AssetOptimizationUmamiTest extends AssetOptimizationTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'demo_umami';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'demo_umami';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function requestPage(): void {
-    $user = $this->createUser([], NULL, TRUE);
-    $this->drupalLogin($user);
-    $this->drupalGet('node/add/article');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function requestPage(): void
+    {
+        $user = $this->createUser([], null, true);
+        $this->drupalLogin($user);
+        $this->drupalGet('node/add/article');
+    }
 
 }

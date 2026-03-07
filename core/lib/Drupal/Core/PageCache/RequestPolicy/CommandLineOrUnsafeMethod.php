@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PageCache\RequestPolicy;
 
 use Drupal\Core\PageCache\RequestPolicyInterface;
@@ -12,22 +14,24 @@ use Symfony\Component\HttpFoundation\Request;
  * interface (drush) or the request method is neither GET nor HEAD (see RFC
  * 2616, section 9.1.1 - Safe Methods).
  */
-class CommandLineOrUnsafeMethod implements RequestPolicyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    if ($this->isCli() || !$request->isMethodCacheable()) {
-      return static::DENY;
+class CommandLineOrUnsafeMethod implements RequestPolicyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        if ($this->isCli() || !$request->isMethodCacheable()) {
+            return static::DENY;
+        }
     }
-  }
 
-  /**
-   * Indicates whether this is a CLI request.
-   */
-  protected function isCli(): bool {
-    return PHP_SAPI === 'cli';
-  }
+    /**
+     * Indicates whether this is a CLI request.
+     */
+    protected function isCli(): bool
+    {
+        return PHP_SAPI === 'cli';
+    }
 
 }

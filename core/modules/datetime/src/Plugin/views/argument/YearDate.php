@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -8,13 +10,13 @@ use Drupal\views\Attribute\ViewsArgument;
  * Argument handler for a year.
   */
 #[ViewsArgument(
-  id: 'datetime_year',
+    id: 'datetime_year',
 )]
-class YearDate extends Date {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $argFormat = 'Y';
+class YearDate extends Date
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $argFormat = 'Y';
 
 }

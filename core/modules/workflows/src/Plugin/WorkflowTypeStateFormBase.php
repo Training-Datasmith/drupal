@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workflows\Plugin;
 
 use Drupal\Component\Plugin\PluginAwareInterface;
@@ -11,39 +13,42 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * A base class for workflow type state forms.
  */
-abstract class WorkflowTypeStateFormBase implements PluginFormInterface, PluginAwareInterface {
+abstract class WorkflowTypeStateFormBase implements PluginFormInterface, PluginAwareInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The workflow type.
+     *
+     * @var \Drupal\workflows\WorkflowTypeInterface
+     */
+    protected $workflowType;
 
-  /**
-   * The workflow type.
-   *
-   * @var \Drupal\workflows\WorkflowTypeInterface
-   */
-  protected $workflowType;
+    /**
+     * {@inheritdoc}
+     */
+    public function setPlugin(PluginInspectionInterface $plugin): void
+    {
+        $this->workflowType = $plugin;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPlugin(PluginInspectionInterface $plugin): void {
-    $this->workflowType = $plugin;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $values = $form_state->getValues();
-    $state = $form_state->get('state');
-    $configuration = $this->workflowType->getConfiguration();
-    $configuration['states'][$state->id()] = $values + $configuration['states'][$state->id()];
-    $this->workflowType->setConfiguration($configuration);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $values = $form_state->getValues();
+        $state = $form_state->get('state');
+        $configuration = $this->workflowType->getConfiguration();
+        $configuration['states'][$state->id()] = $values + $configuration['states'][$state->id()];
+        $this->workflowType->setConfiguration($configuration);
+    }
 
 }

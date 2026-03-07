@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -10,24 +12,25 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *
  * @see \Drupal\Component\DependencyInjection\Container::get()
  */
-class DeprecatedServicePass implements CompilerPassInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function process(ContainerBuilder $container): void {
-    $deprecated_services = [];
-    foreach ($container->getDefinitions() as $service_id => $definition) {
-      if ($definition->isDeprecated()) {
-        $deprecated_services[$service_id] = $definition->getDeprecation($service_id)['message'];
-      }
+class DeprecatedServicePass implements CompilerPassInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
+    {
+        $deprecated_services = [];
+        foreach ($container->getDefinitions() as $service_id => $definition) {
+            if ($definition->isDeprecated()) {
+                $deprecated_services[$service_id] = $definition->getDeprecation($service_id)['message'];
+            }
+        }
+        foreach ($container->getAliases() as $service_id => $definition) {
+            if ($definition->isDeprecated()) {
+                $deprecated_services[$service_id] = $definition->getDeprecation($service_id)['message'];
+            }
+        }
+        $container->setParameter('_deprecated_service_list', $deprecated_services);
     }
-    foreach ($container->getAliases() as $service_id => $definition) {
-      if ($definition->isDeprecated()) {
-        $deprecated_services[$service_id] = $definition->getDeprecation($service_id)['message'];
-      }
-    }
-    $container->setParameter('_deprecated_service_list', $deprecated_services);
-  }
 
 }

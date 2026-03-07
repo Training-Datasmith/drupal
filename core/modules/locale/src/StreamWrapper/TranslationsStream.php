@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\locale\StreamWrapper;
 
 use Drupal\Core\StreamWrapper\LocalStream;
@@ -11,47 +13,52 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * Provides support for storing translation files.
  */
-class TranslationsStream extends LocalStream {
+class TranslationsStream extends LocalStream
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public static function getType(): int
+    {
+        return StreamWrapperInterface::LOCAL_HIDDEN;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getType(): int {
-    return StreamWrapperInterface::LOCAL_HIDDEN;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getName(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Translation files');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Translation files');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Translation files');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Translation files');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectoryPath()
+    {
+        return \Drupal::config('locale.settings')->get('translation.path');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDirectoryPath() {
-    return \Drupal::config('locale.settings')->get('translation.path');
-  }
-
-  /**
-   * phpcs:ignore Drupal.Files.LineLength
-   * Implements Drupal\Core\StreamWrapper\StreamWrapperInterface::getExternalUrl().
-   *
-   * @throws \LogicException
-   *   PO files URL should not be public.
-   */
-  public function getExternalUrl(): never {
-    throw new \LogicException('PO files URL should not be public.');
-  }
+    /**
+     * phpcs:ignore Drupal.Files.LineLength
+     * Implements Drupal\Core\StreamWrapper\StreamWrapperInterface::getExternalUrl().
+     *
+     * @throws \LogicException
+     *   PO files URL should not be public.
+     */
+    public function getExternalUrl(): never
+    {
+        throw new \LogicException('PO files URL should not be public.');
+    }
 
 }

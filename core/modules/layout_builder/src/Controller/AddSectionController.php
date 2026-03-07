@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Controller;
 
 use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,53 +17,55 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * @internal
  *   Controller classes are internal.
  */
-class AddSectionController implements ContainerInjectionInterface {
+class AddSectionController implements ContainerInjectionInterface
+{
+    use AjaxHelperTrait;
+    use LayoutRebuildTrait;
 
-  use AjaxHelperTrait;
-  use LayoutRebuildTrait;
-
-  /**
-   * AddSectionController constructor.
-   *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
-   *   The layout tempstore repository.
-   */
-  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('layout_builder.tempstore_repository')
-    );
-  }
-
-  /**
-   * Adds the new section.
-   *
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage.
-   * @param int $delta
-   *   The delta of the section to splice.
-   * @param string $plugin_id
-   *   The plugin ID of the layout to add.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The controller response.
-   */
-  public function build(SectionStorageInterface $section_storage, int $delta, $plugin_id) {
-    $section_storage->insertSection($delta, new Section($plugin_id));
-
-    $this->layoutTempstoreRepository->set($section_storage);
-
-    if ($this->isAjax()) {
-      return $this->rebuildAndClose($section_storage);
+    /**
+     * AddSectionController constructor.
+     *
+     * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
+     *   The layout tempstore repository.
+     */
+    public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository)
+    {
     }
-    $url = $section_storage->getLayoutBuilderUrl();
-    return new RedirectResponse($url->setAbsolute()->toString());
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('layout_builder.tempstore_repository')
+        );
+    }
+
+    /**
+     * Adds the new section.
+     *
+     * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+     *   The section storage.
+     * @param int $delta
+     *   The delta of the section to splice.
+     * @param string $plugin_id
+     *   The plugin ID of the layout to add.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   The controller response.
+     */
+    public function build(SectionStorageInterface $section_storage, int $delta, $plugin_id)
+    {
+        $section_storage->insertSection($delta, new Section($plugin_id));
+
+        $this->layoutTempstoreRepository->set($section_storage);
+
+        if ($this->isAjax()) {
+            return $this->rebuildAndClose($section_storage);
+        }
+        $url = $section_storage->getLayoutBuilderUrl();
+        return new RedirectResponse($url->setAbsolute()->toString());
+    }
 
 }

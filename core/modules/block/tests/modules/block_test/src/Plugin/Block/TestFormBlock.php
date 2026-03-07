@@ -12,16 +12,17 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a block to test caching.
  */
 #[Block(
-  id: "test_form_in_block",
-  admin_label: new TranslatableMarkup("Test form block caching"),
+    id: 'test_form_in_block',
+    admin_label: new TranslatableMarkup('Test form block caching'),
 )]
-class TestFormBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return \Drupal::formBuilder()->getForm('Drupal\block_test\Form\TestForm');
-  }
+class TestFormBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return \Drupal::formBuilder()->getForm('Drupal\block_test\Form\TestForm');
+    }
 
 }

@@ -24,112 +24,117 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[CoversClass(OEmbedResourceConstraintValidator::class)]
 #[Group('media')]
 #[RunTestsInSeparateProcesses]
-class OEmbedResourceConstraintValidatorTest extends KernelTestBase {
+class OEmbedResourceConstraintValidatorTest extends KernelTestBase
+{
+    use MediaTypeCreationTrait;
 
-  use MediaTypeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'file', 'image', 'media', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'file', 'image', 'media', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('file');
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('media');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('file');
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('media');
-  }
+    /**
+     * Tests validate empty source.
+     */
+    public function testValidateEmptySource(): void
+    {
+        $media = Media::create([
+          'bundle' => $this->createMediaType('oembed:video')->id(),
+        ]);
 
-  /**
-   * Tests validate empty source.
-   */
-  public function testValidateEmptySource(): void {
-    $media = Media::create([
-      'bundle' => $this->createMediaType('oembed:video')->id(),
-    ]);
+        $constraint = new OEmbedResourceConstraint();
 
-    $constraint = new OEmbedResourceConstraint();
+        // The media item has an empty source value, so the constraint validator
+        // should add a violation and return early before invoking the URL resolver.
+        $context = $this->prophesize(ExecutionContextInterface::class);
+        $context->addViolation($constraint->invalidResourceMessage)->shouldBeCalled();
 
-    // The media item has an empty source value, so the constraint validator
-    // should add a violation and return early before invoking the URL resolver.
-    $context = $this->prophesize(ExecutionContextInterface::class);
-    $context->addViolation($constraint->invalidResourceMessage)->shouldBeCalled();
+        $url_resolver = $this->prophesize(UrlResolverInterface::class);
+        $url_resolver->getProviderByUrl(Argument::any())->shouldNotBeCalled();
 
-    $url_resolver = $this->prophesize(UrlResolverInterface::class);
-    $url_resolver->getProviderByUrl(Argument::any())->shouldNotBeCalled();
+        $validator = new OEmbedResourceConstraintValidator(
+            $url_resolver->reveal(),
+            $this->container->get('media.oembed.resource_fetcher'),
+            $this->container->get('logger.factory')
+        );
+        $validator->initialize($context->reveal());
+        $validator->validate($this->getValue($media), $constraint);
+    }
 
-    $validator = new OEmbedResourceConstraintValidator(
-      $url_resolver->reveal(),
-      $this->container->get('media.oembed.resource_fetcher'),
-      $this->container->get('logger.factory')
-    );
-    $validator->initialize($context->reveal());
-    $validator->validate($this->getValue($media), $constraint);
-  }
+    /**
+     * Tests validate url resolver invoked.
+     */
+    public function testValidateUrlResolverInvoked(): void
+    {
+        $media = Media::create([
+          'bundle' => $this->createMediaType('oembed:video')->id(),
+          'field_media_oembed_video' => 'source value',
+        ]);
 
-  /**
-   * Tests validate url resolver invoked.
-   */
-  public function testValidateUrlResolverInvoked(): void {
-    $media = Media::create([
-      'bundle' => $this->createMediaType('oembed:video')->id(),
-      'field_media_oembed_video' => 'source value',
-    ]);
+        $constraint = new OEmbedResourceConstraint();
 
-    $constraint = new OEmbedResourceConstraint();
+        $context = $this->prophesize(ExecutionContextInterface::class);
 
-    $context = $this->prophesize(ExecutionContextInterface::class);
+        $provider = $this->prophesize(Provider::class);
+        $provider->getName()->willReturn('YouTube');
 
-    $provider = $this->prophesize(Provider::class);
-    $provider->getName()->willReturn('YouTube');
+        $url_resolver = $this->prophesize(UrlResolverInterface::class);
+        $url_resolver->getProviderByUrl(Argument::any())->willReturn($provider->reveal());
+        $url_resolver->getResourceUrl(Argument::any())->shouldBeCalledOnce();
 
-    $url_resolver = $this->prophesize(UrlResolverInterface::class);
-    $url_resolver->getProviderByUrl(Argument::any())->willReturn($provider->reveal());
-    $url_resolver->getResourceUrl(Argument::any())->shouldBeCalledOnce();
+        $validator = new OEmbedResourceConstraintValidator(
+            $url_resolver->reveal(),
+            $this->prophesize(ResourceFetcher::class)->reveal(),
+            $this->container->get('logger.factory')
+        );
+        $validator->initialize($context->reveal());
+        $validator->validate($this->getValue($media), $constraint);
+    }
 
-    $validator = new OEmbedResourceConstraintValidator(
-      $url_resolver->reveal(),
-      $this->prophesize(ResourceFetcher::class)->reveal(),
-      $this->container->get('logger.factory')
-    );
-    $validator->initialize($context->reveal());
-    $validator->validate($this->getValue($media), $constraint);
-  }
+    /**
+     * Wraps a media entity in an anonymous class to mock a field value.
+     *
+     * @param \Drupal\media\Entity\Media $media
+     *   The media object.
+     *
+     * @return object
+     *   The mock field value to validate.
+     */
+    protected function getValue(Media $media)
+    {
+        return new class ($media) {
+            /**
+             * The test entity.
+             *
+             * @var \Drupal\media\Entity\Media
+             */
+            private $entity;
 
-  /**
-   * Wraps a media entity in an anonymous class to mock a field value.
-   *
-   * @param \Drupal\media\Entity\Media $media
-   *   The media object.
-   *
-   * @return object
-   *   The mock field value to validate.
-   */
-  protected function getValue(Media $media) {
-    return new class ($media) {
+            public function __construct($entity)
+            {
+                $this->entity = $entity;
+            }
 
-      /**
-       * The test entity.
-       *
-       * @var \Drupal\media\Entity\Media
-       */
-      private $entity;
+            /**
+             * Returns the test entity.
+             */
+            public function getEntity(): Media
+            {
+                return $this->entity;
+            }
 
-      public function __construct($entity) {
-        $this->entity = $entity;
-      }
-
-      /**
-       * Returns the test entity.
-       */
-      public function getEntity(): Media {
-        return $this->entity;
-      }
-
-    };
-  }
+        };
+    }
 
 }

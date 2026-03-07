@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\style;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -13,24 +15,24 @@ use Drupal\views\Attribute\ViewsStyle;
  * @ingroup views_style_plugins
  */
 #[ViewsStyle(
-  id: "default",
-  title: new TranslatableMarkup("Unformatted list"),
-  help: new TranslatableMarkup("Displays rows one after another."),
-  theme: "views_view_unformatted",
-  display_types: ["normal"],
+    id: 'default',
+    title: new TranslatableMarkup('Unformatted list'),
+    help: new TranslatableMarkup('Displays rows one after another.'),
+    theme: 'views_view_unformatted',
+    display_types: ['normal'],
 )]
-class DefaultStyle extends StylePluginBase {
+class DefaultStyle extends StylePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $usesRowPlugin = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $usesRowPlugin = TRUE;
-
-  /**
-   * Does the style plugin support custom css class for the rows.
-   *
-   * @var bool
-   */
-  protected $usesRowClass = TRUE;
+    /**
+     * Does the style plugin support custom css class for the rows.
+     *
+     * @var bool
+     */
+    protected $usesRowClass = true;
 
 }

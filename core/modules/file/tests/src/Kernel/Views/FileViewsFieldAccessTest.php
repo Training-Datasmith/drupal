@@ -16,59 +16,61 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('File')]
 #[RunTestsInSeparateProcesses]
-class FileViewsFieldAccessTest extends FieldFieldAccessTestBase {
+class FileViewsFieldAccessTest extends FieldFieldAccessTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['file', 'entity_test', 'language', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['file', 'entity_test', 'language', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installEntitySchema('file');
+    }
 
-    $this->installEntitySchema('file');
-  }
+    /**
+     * Check access for file fields.
+     */
+    public function testFileFields(): void
+    {
+        ConfigurableLanguage::create([
+          'id' => 'fr',
+          'label' => 'French',
+        ])->save();
 
-  /**
-   * Check access for file fields.
-   */
-  public function testFileFields(): void {
-    ConfigurableLanguage::create([
-      'id' => 'fr',
-      'label' => 'French',
-    ])->save();
+        $user = User::create([
+          'name' => 'test user',
+        ]);
+        $user->save();
 
-    $user = User::create([
-      'name' => 'test user',
-    ]);
-    $user->save();
+        file_put_contents('public://test.txt', 'test');
+        $file = File::create([
+          'filename' => 'test.txt',
+          'uri' => 'public://test.txt',
+          'status' => true,
+          'langcode' => 'fr',
+          'uid' => $user->id(),
+        ]);
+        $file->save();
 
-    file_put_contents('public://test.txt', 'test');
-    $file = File::create([
-      'filename' => 'test.txt',
-      'uri' => 'public://test.txt',
-      'status' => TRUE,
-      'langcode' => 'fr',
-      'uid' => $user->id(),
-    ]);
-    $file->save();
+        // @todo Expand the test coverage in https://www.drupal.org/node/2464635
 
-    // @todo Expand the test coverage in https://www.drupal.org/node/2464635
-
-    $this->assertFieldAccess('file', 'fid', $file->id());
-    $this->assertFieldAccess('file', 'uuid', $file->uuid());
-    $this->assertFieldAccess('file', 'langcode', $file->language()->getName());
-    $this->assertFieldAccess('file', 'uid', 'test user');
-    $this->assertFieldAccess('file', 'filename', $file->getFilename());
-    $this->assertFieldAccess('file', 'uri', $file->getFileUri());
-    $this->assertFieldAccess('file', 'filemime', $file->filemime->value);
-    $this->assertFieldAccess('file', 'filesize', '4 bytes');
-    $this->assertFieldAccess('file', 'status', 'Permanent');
-    // $this->assertFieldAccess('file', 'created', \Drupal::service('date.formatter')->format(123456));
-    // $this->assertFieldAccess('file', 'changed', \Drupal::service('date.formatter')->format(\Drupal::time()->getRequestTime()));
-  }
+        $this->assertFieldAccess('file', 'fid', $file->id());
+        $this->assertFieldAccess('file', 'uuid', $file->uuid());
+        $this->assertFieldAccess('file', 'langcode', $file->language()->getName());
+        $this->assertFieldAccess('file', 'uid', 'test user');
+        $this->assertFieldAccess('file', 'filename', $file->getFilename());
+        $this->assertFieldAccess('file', 'uri', $file->getFileUri());
+        $this->assertFieldAccess('file', 'filemime', $file->filemime->value);
+        $this->assertFieldAccess('file', 'filesize', '4 bytes');
+        $this->assertFieldAccess('file', 'status', 'Permanent');
+        // $this->assertFieldAccess('file', 'created', \Drupal::service('date.formatter')->format(123456));
+        // $this->assertFieldAccess('file', 'changed', \Drupal::service('date.formatter')->format(\Drupal::time()->getRequestTime()));
+    }
 
 }

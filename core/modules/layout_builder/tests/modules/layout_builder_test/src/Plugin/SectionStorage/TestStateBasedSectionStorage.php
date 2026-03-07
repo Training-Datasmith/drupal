@@ -16,112 +16,126 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Provides a test section storage that is controlled by state.
  */
-#[SectionStorage(id: "layout_builder_test_state")]
-class TestStateBasedSectionStorage extends SectionStorageBase implements SupportAwareSectionStorageInterface {
+#[SectionStorage(id: 'layout_builder_test_state')]
+class TestStateBasedSectionStorage extends SectionStorageBase implements SupportAwareSectionStorageInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getSections()
+    {
+        // Return a custom section.
+        $section = new Section('layout_onecol');
+        $section->appendComponent(new SectionComponent('fake-uuid', 'content', [
+          'id' => 'system_powered_by_block',
+          'label' => 'Test block title',
+          'label_display' => 'visible',
+        ]));
+        return [$section];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSections() {
-    // Return a custom section.
-    $section = new Section('layout_onecol');
-    $section->appendComponent(new SectionComponent('fake-uuid', 'content', [
-      'id' => 'system_powered_by_block',
-      'label' => 'Test block title',
-      'label_display' => 'visible',
-    ]));
-    return [$section];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isApplicable(RefinableCacheableDependencyInterface $cacheability)
+    {
+        $cacheability->mergeCacheMaxAge(0);
+        return \Drupal::state()->get('layout_builder_test_state', false);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
-    $cacheability->mergeCacheMaxAge(0);
-    return \Drupal::state()->get('layout_builder_test_state', FALSE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function access($operation, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getSectionList()
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSectionList() {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageId()
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageId() {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSectionListFromId($id)
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSectionListFromId($id) {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRoutes(RouteCollection $collection)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRoutes(RouteCollection $collection) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRedirectUrl()
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRedirectUrl() {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutBuilderUrl($rel = 'view')
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLayoutBuilderUrl($rel = 'view') {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function extractIdFromRoute($value, $definition, $name, array $defaults)
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function extractIdFromRoute($value, $definition, $name, array $defaults) {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function deriveContextsFromRoute($value, $definition, $name, array $defaults)
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults) {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save()
+    {
+        throw new \RuntimeException(__METHOD__ . ' not implemented for ' . __CLASS__);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    throw new \RuntimeException(__METHOD__ . " not implemented for " . __CLASS__);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool {
-    return \Drupal::state()->get('layout_builder_test_state', FALSE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool
+    {
+        return \Drupal::state()->get('layout_builder_test_state', false);
+    }
 
 }

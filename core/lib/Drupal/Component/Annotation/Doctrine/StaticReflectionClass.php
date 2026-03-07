@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -31,14 +33,12 @@ use ReflectionException;
 
 class StaticReflectionClass extends ReflectionClass
 {
-
     public function __construct(
         /**
          * The static reflection parser object.
          */
         private readonly StaticReflectionParser $staticReflectionParser
-    )
-    {
+    ) {
     }
 
     /**
@@ -52,7 +52,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getDocComment(): string|FALSE
+    public function getDocComment(): string|false
     {
         return $this->staticReflectionParser->getDocComment();
     }
@@ -134,7 +134,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getEndLine(): int|FALSE
+    public function getEndLine(): int|false
     {
         throw new ReflectionException('Method not implemented');
     }
@@ -150,7 +150,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getExtensionName(): string|FALSE
+    public function getExtensionName(): string|false
     {
         throw new ReflectionException('Method not implemented');
     }
@@ -158,7 +158,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getFileName(): string|FALSE
+    public function getFileName(): string|false
     {
         throw new ReflectionException('Method not implemented');
     }
@@ -198,7 +198,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getParentClass(): \ReflectionClass|FALSE
+    public function getParentClass(): \ReflectionClass|false
     {
         throw new ReflectionException('Method not implemented');
     }
@@ -222,7 +222,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function getStartLine(): int|FALSE
+    public function getStartLine(): int|false
     {
         throw new ReflectionException('Method not implemented');
     }

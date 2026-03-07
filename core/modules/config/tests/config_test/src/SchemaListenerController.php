@@ -11,30 +11,31 @@ use Drupal\Core\Controller\ControllerBase;
 /**
  * Controller for testing \Drupal\Core\Config\Development\ConfigSchemaChecker.
  */
-class SchemaListenerController extends ControllerBase {
-
-  /**
-   * Constructs the SchemaListenerController object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
-  }
-
-  /**
-   * Tests the BrowserTestBase tests can use strict schema checking.
-   */
-  public function test() {
-    try {
-      $this->configFactory->getEditable('config_schema_test.schemaless')->set('foo', 'bar')->save();
+class SchemaListenerController extends ControllerBase
+{
+    /**
+     * Constructs the SchemaListenerController object.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The config factory.
+     */
+    public function __construct(ConfigFactoryInterface $config_factory)
+    {
+        $this->configFactory = $config_factory;
     }
-    catch (SchemaIncompleteException $e) {
-      return [
-        '#markup' => $e->getMessage(),
-      ];
+
+    /**
+     * Tests the BrowserTestBase tests can use strict schema checking.
+     */
+    public function test()
+    {
+        try {
+            $this->configFactory->getEditable('config_schema_test.schemaless')->set('foo', 'bar')->save();
+        } catch (SchemaIncompleteException $e) {
+            return [
+              '#markup' => $e->getMessage(),
+            ];
+        }
     }
-  }
 
 }

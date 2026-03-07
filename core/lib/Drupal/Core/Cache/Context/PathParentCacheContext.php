@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -12,30 +14,33 @@ use Drupal\Core\Cache\CacheableMetadata;
  * This allows for caching based on the path, excluding everything after the
  * last forward slash.
  */
-class PathParentCacheContext extends RequestStackCacheContextBase implements CacheContextInterface {
+class PathParentCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Parent path');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Parent path');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): string
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $path_elements = explode('/', trim((string) $request->getPathInfo(), '/'));
+        array_pop($path_elements);
+        return implode('/', $path_elements);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext(): string {
-    $request = $this->requestStack->getCurrentRequest();
-    $path_elements = explode('/', trim((string) $request->getPathInfo(), '/'));
-    array_pop($path_elements);
-    return implode('/', $path_elements);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    {
+        return new CacheableMetadata();
+    }
 
 }

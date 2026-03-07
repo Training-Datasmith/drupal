@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 /**
@@ -13,5 +15,6 @@ namespace Drupal\Core\Render\Element;
  * @see \Drupal\Core\Security\TrustedCallbackInterface
  * @see \Drupal\Core\Render\Renderer::doCallback()
  */
-interface RenderCallbackInterface {
+interface RenderCallbackInterface
+{
 }

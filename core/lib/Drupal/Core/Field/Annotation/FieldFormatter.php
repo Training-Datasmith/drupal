@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -20,59 +22,59 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @ingroup field_formatter
  */
-class FieldFormatter extends Plugin {
+class FieldFormatter extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the formatter type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the formatter type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * A short description of the formatter type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description;
 
-  /**
-   * A short description of the formatter type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description;
+    /**
+     * The name of the field formatter class.
+     *
+     * This is not provided manually, it will be added by the discovery mechanism.
+     *
+     * @var string
+     */
+    public $class;
 
-  /**
-   * The name of the field formatter class.
-   *
-   * This is not provided manually, it will be added by the discovery mechanism.
-   *
-   * @var string
-   */
-  public $class;
+    /**
+     * An array of field types the formatter supports.
+     *
+     * @var array
+     */
+    public $field_types = [];
 
-  /**
-   * An array of field types the formatter supports.
-   *
-   * @var array
-   */
-  public $field_types = [];
-
-  /**
-   * An integer to determine the weight of this formatter.
-   *
-   * Weight is relative to other formatter in the Field UI when selecting a
-   * formatter for a given field instance.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var int
-   */
-  public $weight;
+    /**
+     * An integer to determine the weight of this formatter.
+     *
+     * Weight is relative to other formatter in the Field UI when selecting a
+     * formatter for a given field instance.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var int
+     */
+    public $weight;
 
 }

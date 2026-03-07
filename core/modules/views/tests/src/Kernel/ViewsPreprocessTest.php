@@ -15,104 +15,109 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class ViewsPreprocessTest extends ViewsKernelTestBase {
+class ViewsPreprocessTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_preprocess'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_preprocess'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'user', 'node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'user', 'node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp();
+        $this->installEntitySchema('entity_test');
+    }
 
-    $this->installEntitySchema('entity_test');
-  }
+    /**
+     * Tests css classes on displays are cleaned correctly.
+     */
+    public function testCssClassCleaning(): void
+    {
+        \Drupal::service('theme_installer')->install(['test_theme']);
+        $this->config('system.theme')->set('default', 'test_theme')->save();
 
-  /**
-   * Tests css classes on displays are cleaned correctly.
-   */
-  public function testCssClassCleaning(): void {
-    \Drupal::service('theme_installer')->install(['test_theme']);
-    $this->config('system.theme')->set('default', 'test_theme')->save();
+        $entity = EntityTest::create();
+        $entity->save();
+        /** @var \Drupal\Core\Render\RendererInterface $renderer */
+        $renderer = \Drupal::service('renderer');
 
-    $entity = EntityTest::create();
-    $entity->save();
-    /** @var \Drupal\Core\Render\RendererInterface $renderer */
-    $renderer = \Drupal::service('renderer');
+        $view = Views::getView('test_preprocess');
+        $build = $view->buildRenderable();
+        $renderer->renderRoot($build);
+        $this->assertStringContainsString('class="entity-test__default', (string) $build['#markup']);
+        $view->destroy();
 
-    $view = Views::getView('test_preprocess');
-    $build = $view->buildRenderable();
-    $renderer->renderRoot($build);
-    $this->assertStringContainsString('class="entity-test__default', (string) $build['#markup']);
-    $view->destroy();
+        $view->setDisplay('display_2');
+        $build = $view->buildRenderable();
+        $renderer->renderRoot($build);
+        $markup = (string) $build['#markup'];
+        $this->assertStringContainsString('css_class: entity-test__default and-another-class', $markup);
+        $this->assertStringContainsString('attributes: class="entity-test__default and-another-class', $markup);
+    }
 
-    $view->setDisplay('display_2');
-    $build = $view->buildRenderable();
-    $renderer->renderRoot($build);
-    $markup = (string) $build['#markup'];
-    $this->assertStringContainsString('css_class: entity-test__default and-another-class', $markup);
-    $this->assertStringContainsString('attributes: class="entity-test__default and-another-class', $markup);
-  }
+    /**
+     * Tests template_preprocess_views_mini_pager() when an empty pagination_heading_level value is passed.
+     *
+     * @legacy-covers ::template_preprocess_views_mini_pager
+     */
+    public function testEmptyPaginationHeadingLevelSet(): void
+    {
+        $variables = [
+          'tags' => [],
+          'quantity' => 9,
+          'element' => 0,
+          'pagination_heading_level' => '',
+          'parameters' => [],
+        ];
+        \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
 
-  /**
-   * Tests template_preprocess_views_mini_pager() when an empty pagination_heading_level value is passed.
-   *
-   * @legacy-covers ::template_preprocess_views_mini_pager
-   */
-  public function testEmptyPaginationHeadingLevelSet(): void {
-    $variables = [
-      'tags' => [],
-      'quantity' => 9,
-      'element' => 0,
-      'pagination_heading_level' => '',
-      'parameters' => [],
-    ];
-    \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
+        $this->assertEquals('h4', $variables['pagination_heading_level']);
+    }
 
-    $this->assertEquals('h4', $variables['pagination_heading_level']);
-  }
+    /**
+     * Tests template_preprocess_views_mini_pager() when no pagination_heading_level is passed.
+     *
+     * @legacy-covers ::template_preprocess_views_mini_pager
+     */
+    public function testPaginationHeadingLevelNotSet(): void
+    {
+        $variables = [
+          'tags' => [],
+          'quantity' => 9,
+          'element' => 0,
+          'parameters' => [],
+        ];
+        \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
 
-  /**
-   * Tests template_preprocess_views_mini_pager() when no pagination_heading_level is passed.
-   *
-   * @legacy-covers ::template_preprocess_views_mini_pager
-   */
-  public function testPaginationHeadingLevelNotSet(): void {
-    $variables = [
-      'tags' => [],
-      'quantity' => 9,
-      'element' => 0,
-      'parameters' => [],
-    ];
-    \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
+        $this->assertEquals('h4', $variables['pagination_heading_level']);
+    }
 
-    $this->assertEquals('h4', $variables['pagination_heading_level']);
-  }
+    /**
+     * Tests template_preprocess_views_mini_pager() when a pagination_heading_level value is passed.
+     *
+     * @legacy-covers ::template_preprocess_views_mini_pager
+     */
+    public function testPaginationHeadingLevelSet(): void
+    {
+        $variables = [
+          'tags' => [],
+          'quantity' => 9,
+          'element' => 0,
+          'pagination_heading_level' => 'h5',
+          'parameters' => [],
+        ];
+        \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
 
-  /**
-   * Tests template_preprocess_views_mini_pager() when a pagination_heading_level value is passed.
-   *
-   * @legacy-covers ::template_preprocess_views_mini_pager
-   */
-  public function testPaginationHeadingLevelSet(): void {
-    $variables = [
-      'tags' => [],
-      'quantity' => 9,
-      'element' => 0,
-      'pagination_heading_level' => 'h5',
-      'parameters' => [],
-    ];
-    \Drupal::service(ViewsThemeHooks::class)->preprocessViewsMiniPager($variables);
-
-    $this->assertEquals('h5', $variables['pagination_heading_level']);
-  }
+        $this->assertEquals('h5', $variables['pagination_heading_level']);
+    }
 
 }

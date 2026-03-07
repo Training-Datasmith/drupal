@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Plugin\Scaffold;
 
 use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
@@ -9,13 +11,14 @@ use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
  *
  * @internal
  */
-class CommandProvider implements CommandProviderCapability {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCommands(): array {
-    return [new ComposerScaffoldCommand()];
-  }
+class CommandProvider implements CommandProviderCapability
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCommands(): array
+    {
+        return [new ComposerScaffoldCommand()];
+    }
 
 }

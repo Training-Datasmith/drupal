@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin;
 
@@ -12,14 +12,14 @@ namespace Drupal\ckeditor5\Plugin;
  * every supported element. Plugins that implement this interface return a
  * subset based on the configuration in the Text Editor's settings.
  */
-interface CKEditor5PluginElementsSubsetInterface extends CKEditor5PluginConfigurableInterface {
-
-  /**
-   * Returns a configured subset of the elements supported by this plugin.
-   *
-   * @return string[]
-   *   An array of supported elements.
-   */
-  public function getElementsSubset(): array;
+interface CKEditor5PluginElementsSubsetInterface extends CKEditor5PluginConfigurableInterface
+{
+    /**
+     * Returns a configured subset of the elements supported by this plugin.
+     *
+     * @return string[]
+     *   An array of supported elements.
+     */
+    public function getElementsSubset(): array;
 
 }

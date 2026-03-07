@@ -16,42 +16,44 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\form_test\Form\RedirectBlockForm
  */
 #[Block(
-  id: "redirect_form_block",
-  admin_label: new TranslatableMarkup("Redirecting form"),
-  category: new TranslatableMarkup("Forms"),
+    id: 'redirect_form_block',
+    admin_label: new TranslatableMarkup('Redirecting form'),
+    category: new TranslatableMarkup('Forms'),
 )]
-class RedirectFormBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class RedirectFormBlock extends BlockBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * The form builder.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
 
-  /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
+    /**
+     * Constructs a new RedirectFormBlock.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-  /**
-   * Constructs a new RedirectFormBlock.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->formBuilder = $form_builder;
+    }
 
-    $this->formBuilder = $form_builder;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return $this->formBuilder->getForm('Drupal\form_test\Form\RedirectBlockForm');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return $this->formBuilder->getForm('Drupal\form_test\Form\RedirectBlockForm');
+    }
 
 }

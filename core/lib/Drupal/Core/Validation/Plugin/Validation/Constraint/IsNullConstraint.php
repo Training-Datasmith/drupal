@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,8 +14,10 @@ use Symfony\Component\Validator\Constraints\IsNull;
  * Overrides the symfony constraint to handle empty Typed Data structures.
  */
 #[Constraint(
-  id: 'Null',
-  label: new TranslatableMarkup('Null', [], ['context' => 'Validation']),
-  type: FALSE
+    id: 'Null',
+    label: new TranslatableMarkup('Null', [], ['context' => 'Validation']),
+    type: false
 )]
-class IsNullConstraint extends IsNull {}
+class IsNullConstraint extends IsNull
+{
+}

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\Discovery\YamlDiscovery;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\Core\Plugin\Discovery\YamlDiscovery;
 
 /**
  * Defines a field type category info plugin manager.
@@ -37,67 +39,71 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * @see \Drupal\Core\Field\FieldTypeCategory
  * @see \hook_field_type_category_info_alter
  */
-class FieldTypeCategoryManager extends DefaultPluginManager implements FieldTypeCategoryManagerInterface, FallbackPluginManagerInterface {
+class FieldTypeCategoryManager extends DefaultPluginManager implements FieldTypeCategoryManagerInterface, FallbackPluginManagerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaults = [
+      'label' => '',
+      'description' => '',
+      'summary' => '',
+      'weight' => 0,
+      'class' => FieldTypeCategory::class,
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaults = [
-    'label' => '',
-    'description' => '',
-    'summary' => '',
-    'weight' => 0,
-    'class' => FieldTypeCategory::class,
-  ];
-
-  /**
-   * Constructs a new FieldTypeCategoryManager.
-   *
-   * @param string $root
-   *   The app root.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   The cache backend.
-   */
-  public function __construct(protected readonly string $root, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend) {
-    $this->moduleHandler = $module_handler;
-    $this->alterInfo('field_type_category_info');
-    $this->setCacheBackend($cache_backend, 'field_type_category_info_plugins');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDiscovery(): YamlDiscovery {
-    if (!isset($this->discovery)) {
-      $directories = ['core' => $this->root . '/core'];
-      $directories += $this->moduleHandler->getModuleDirectories();
-      $this->discovery = new YamlDiscovery('field_type_categories', $directories);
-      $this->discovery
-        ->addTranslatableProperty('label')
-        ->addTranslatableProperty('description')
-        ->addTranslatableProperty('summary');
+    /**
+     * Constructs a new FieldTypeCategoryManager.
+     *
+     * @param string $root
+     *   The app root.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   The cache backend.
+     */
+    public function __construct(protected readonly string $root, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend)
+    {
+        $this->moduleHandler = $module_handler;
+        $this->alterInfo('field_type_category_info');
+        $this->setCacheBackend($cache_backend, 'field_type_category_info_plugins');
     }
-    return $this->discovery;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function alterDefinitions(&$definitions): void {
-    parent::alterDefinitions($definitions);
-
-    if (!isset($definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY])) {
-      throw new \LogicException('Missing fallback category.');
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDiscovery(): YamlDiscovery
+    {
+        if (!isset($this->discovery)) {
+            $directories = ['core' => $this->root . '/core'];
+            $directories += $this->moduleHandler->getModuleDirectories();
+            $this->discovery = new YamlDiscovery('field_type_categories', $directories);
+            $this->discovery
+              ->addTranslatableProperty('label')
+              ->addTranslatableProperty('description')
+              ->addTranslatableProperty('summary');
+        }
+        return $this->discovery;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
-    return FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function alterDefinitions(&$definitions): void
+    {
+        parent::alterDefinitions($definitions);
+
+        if (!isset($definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY])) {
+            throw new \LogicException('Missing fallback category.');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFallbackPluginId($plugin_id, array $configuration = []): string
+    {
+        return FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY;
+    }
 
 }

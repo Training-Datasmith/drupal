@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library\Form;
 
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -10,12 +12,8 @@ use Drupal\Core\File\Exception\FileWriteException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\ElementInfoManagerInterface;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
-use Drupal\file\FileRepositoryInterface;
 use Drupal\file\FileInterface;
-use Drupal\file\FileUsage\FileUsageInterface;
 use Drupal\file\Plugin\Field\FieldType\FileFieldItemList;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
 use Drupal\media\MediaInterface;
@@ -30,328 +28,342 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Form classes are internal.
  */
-class FileUploadForm extends AddFormBase {
-
-  /**
-   * Constructs a new FileUploadForm.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
-   *   The media library UI builder.
-   * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo
-   *   The element info manager.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
-   *   The file system service.
-   * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
-   *   The opener resolver.
-   * @param \Drupal\file\FileUsage\FileUsageInterface $fileUsage
-   *   The file usage service.
-   * @param \Drupal\file\FileRepositoryInterface $fileRepository
-   *   The file repository service.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo, /**
+class FileUploadForm extends AddFormBase
+{
+    /**
+     * Constructs a new FileUploadForm.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
+     *   The media library UI builder.
+     * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo
+     *   The element info manager.
+     * @param \Drupal\Core\Render\RendererInterface $renderer
+     *   The renderer service.
+     * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+     *   The file system service.
+     * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
+     *   The opener resolver.
+     * @param \Drupal\file\FileUsage\FileUsageInterface $fileUsage
+     *   The file usage service.
+     * @param \Drupal\file\FileRepositoryInterface $fileRepository
+     *   The file repository service.
+     */
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo, /**
    * The renderer service.
    */
-  protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\File\FileSystemInterface $fileSystem, OpenerResolverInterface $opener_resolver, protected \Drupal\file\FileUsage\FileUsageInterface $fileUsage, protected \Drupal\file\FileRepositoryInterface $fileRepository) {
-    parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('media_library.ui_builder'),
-      $container->get('element_info'),
-      $container->get('renderer'),
-      $container->get('file_system'),
-      $container->get('media_library.opener_resolver'),
-      $container->get('file.usage'),
-      $container->get('file.repository')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return $this->getBaseFormId() . '_upload';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getMediaType(FormStateInterface $form_state) {
-    if ($this->mediaType) {
-      return $this->mediaType;
+        protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\File\FileSystemInterface $fileSystem, OpenerResolverInterface $opener_resolver, protected \Drupal\file\FileUsage\FileUsageInterface $fileUsage, protected \Drupal\file\FileRepositoryInterface $fileRepository)
+    {
+        parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
     }
 
-    $media_type = parent::getMediaType($form_state);
-    // The file upload form only supports media types which use a file field as
-    // a source field.
-    $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
-    if (!is_a($field_definition->getClass(), FileFieldItemList::class, TRUE)) {
-      throw new \InvalidArgumentException('Can only add media types which use a file field as a source field.');
-    }
-    return $media_type;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  protected function buildInputElement(array $form, FormStateInterface $form_state): array {
-    // Create a file item to get the upload validators.
-    $media_type = $this->getMediaType($form_state);
-    $item = $this->createFileItem($media_type);
-
-    /** @var \Drupal\media_library\MediaLibraryState $state */
-    $state = $this->getMediaLibraryState($form_state);
-    if (!$state->hasSlotsAvailable()) {
-      return $form;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity_type.manager'),
+            $container->get('media_library.ui_builder'),
+            $container->get('element_info'),
+            $container->get('renderer'),
+            $container->get('file_system'),
+            $container->get('media_library.opener_resolver'),
+            $container->get('file.usage'),
+            $container->get('file.repository')
+        );
     }
 
-    $slots = $state->getAvailableSlots();
-
-    // Add a container to group the input elements for styling purposes.
-    $form['container'] = [
-      '#type' => 'container',
-    ];
-
-    $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
-    $form['container']['upload'] = [
-      '#type' => 'managed_file',
-      '#title' => $this->formatPlural($slots, 'Add file', 'Add files'),
-      // @todo Move validation in https://www.drupal.org/node/2988215
-      '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),
-      '#upload_validators' => $item->getUploadValidators(),
-      // Set multiple to true only if available slots is not exactly one
-      // to ensure correct language (singular or plural) in UI.
-      '#multiple' => $slots != 1 ? TRUE : FALSE,
-      // Do not limit the number uploaded. There is validation based on the
-      // number selected in the media library that prevents overages.
-      // @see Drupal\media_library\Form\AddFormBase::updateLibrary()
-      '#cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
-      '#remaining_slots' => $slots,
-    ];
-
-    $file_upload_help = [
-      '#theme' => 'file_upload_help',
-      '#upload_validators' => $form['container']['upload']['#upload_validators'],
-      '#cardinality' => $slots,
-    ];
-
-    // The file upload help needs to be rendered since the description does not
-    // accept render arrays. The FileWidget::formElement() method adds the file
-    // upload help in the same way, so any theming improvements made to file
-    // fields would also be applied to this upload field.
-    // @see \Drupal\file\Plugin\Field\FieldWidget\FileWidget::formElement()
-    $form['container']['upload']['#description'] = $this->renderer->renderInIsolation($file_upload_help);
-
-    return $form;
-  }
-
-  /**
-   * Validates the upload element.
-   *
-   * @param array $element
-   *   The upload element.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return array
-   *   The processed upload element.
-   */
-  public function validateUploadElement(array $element, FormStateInterface $form_state): array {
-    if ($form_state::hasAnyErrors()) {
-      // When an error occurs during uploading files, remove all files so the
-      // user can re-upload the files.
-      $element['#value'] = [];
-    }
-    $values = $form_state->getValue('upload', []);
-    if (count($values['fids']) > $element['#cardinality'] && $element['#cardinality'] !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      $form_state->setError($element, $this->t('A maximum of @count files can be uploaded.', [
-        '@count' => $element['#cardinality'],
-      ]));
-      $form_state->setValue('upload', []);
-      $element['#value'] = [];
-    }
-    return $element;
-  }
-
-  /**
-   * Processes an upload (managed_file) element.
-   *
-   * @param array $element
-   *   The upload element.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return array
-   *   The processed upload element.
-   */
-  public function processUploadElement(array $element, FormStateInterface $form_state): array {
-    $element['upload_button']['#submit'] = ['::uploadButtonSubmit'];
-    // Limit the validation errors to make sure
-    // FormValidator::handleErrorsWithLimitedValidation doesn't remove the
-    // current selection from the form state.
-    // @see Drupal\Core\Form\FormValidator::handleErrorsWithLimitedValidation()
-    $element['upload_button']['#limit_validation_errors'] = [
-      ['upload'],
-      ['current_selection'],
-    ];
-    $element['upload_button']['#ajax'] = [
-      'callback' => '::updateFormCallback',
-      'wrapper' => 'media-library-wrapper',
-      // Add a fixed URL to post the form since AJAX forms are automatically
-      // posted to <current> instead of $form['#action'].
-      // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
-      //   is fixed.
-      'url' => Url::fromRoute('media_library.ui'),
-      'options' => [
-        'query' => $this->getMediaLibraryState($form_state)->all() + [
-          FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
-        ],
-      ],
-    ];
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildEntityFormElement(MediaInterface $media, array $form, FormStateInterface $form_state, $delta) {
-    $element = parent::buildEntityFormElement($media, $form, $form_state, $delta);
-    $source_field = $this->getSourceFieldName($media->bundle->entity);
-    if (isset($element['fields'][$source_field])) {
-      $element['fields'][$source_field]['widget'][0]['#process'][] = [static::class, 'hideExtraSourceFieldComponents'];
-    }
-    return $element;
-  }
-
-  /**
-   * Processes an image or file source field element.
-   *
-   * @param array $element
-   *   The entity form source field element.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current form state.
-   * @param array $form
-   *   The complete form.
-   *
-   * @return array
-   *   The processed form element.
-   */
-  public static function hideExtraSourceFieldComponents(array $element, FormStateInterface $form_state, $form): array {
-    // Remove original button added by ManagedFile::processManagedFile().
-    if (!empty($element['remove_button'])) {
-      $element['remove_button']['#access'] = FALSE;
-    }
-    // Remove preview added by ImageWidget::process().
-    if (!empty($element['preview'])) {
-      $element['preview']['#access'] = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return $this->getBaseFormId() . '_upload';
     }
 
-    $element['#title_display'] = 'none';
-    $element['#description_display'] = 'none';
+    /**
+     * {@inheritdoc}
+     */
+    protected function getMediaType(FormStateInterface $form_state)
+    {
+        if ($this->mediaType) {
+            return $this->mediaType;
+        }
 
-    // Remove the filename display.
-    foreach ($element['#files'] as $file) {
-      $element['file_' . $file->id()]['filename']['#access'] = FALSE;
+        $media_type = parent::getMediaType($form_state);
+        // The file upload form only supports media types which use a file field as
+        // a source field.
+        $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
+        if (!is_a($field_definition->getClass(), FileFieldItemList::class, true)) {
+            throw new \InvalidArgumentException('Can only add media types which use a file field as a source field.');
+        }
+        return $media_type;
     }
 
-    return $element;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    protected function buildInputElement(array $form, FormStateInterface $form_state): array
+    {
+        // Create a file item to get the upload validators.
+        $media_type = $this->getMediaType($form_state);
+        $item = $this->createFileItem($media_type);
 
-  /**
-   * Submit handler for the upload button, inside the managed_file element.
-   *
-   * @param array $form
-   *   The form render array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   */
-  public function uploadButtonSubmit(array $form, FormStateInterface $form_state): void {
-    $files = $this->entityTypeManager
-      ->getStorage('file')
-      ->loadMultiple($form_state->getValue('upload', []));
-    $this->processInputValues($files, $form, $form_state);
-  }
+        /** @var \Drupal\media_library\MediaLibraryState $state */
+        $state = $this->getMediaLibraryState($form_state);
+        if (!$state->hasSlotsAvailable()) {
+            return $form;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createMediaFromValue(MediaTypeInterface $media_type, EntityStorageInterface $media_storage, $source_field_name, $file) {
-    if (!($file instanceof FileInterface)) {
-      throw new \InvalidArgumentException('Cannot create a media item without a file entity.');
+        $slots = $state->getAvailableSlots();
+
+        // Add a container to group the input elements for styling purposes.
+        $form['container'] = [
+          '#type' => 'container',
+        ];
+
+        $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
+        $form['container']['upload'] = [
+          '#type' => 'managed_file',
+          '#title' => $this->formatPlural($slots, 'Add file', 'Add files'),
+          // @todo Move validation in https://www.drupal.org/node/2988215
+          '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),
+          '#upload_validators' => $item->getUploadValidators(),
+          // Set multiple to true only if available slots is not exactly one
+          // to ensure correct language (singular or plural) in UI.
+          '#multiple' => $slots != 1 ? true : false,
+          // Do not limit the number uploaded. There is validation based on the
+          // number selected in the media library that prevents overages.
+          // @see Drupal\media_library\Form\AddFormBase::updateLibrary()
+          '#cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+          '#remaining_slots' => $slots,
+        ];
+
+        $file_upload_help = [
+          '#theme' => 'file_upload_help',
+          '#upload_validators' => $form['container']['upload']['#upload_validators'],
+          '#cardinality' => $slots,
+        ];
+
+        // The file upload help needs to be rendered since the description does not
+        // accept render arrays. The FileWidget::formElement() method adds the file
+        // upload help in the same way, so any theming improvements made to file
+        // fields would also be applied to this upload field.
+        // @see \Drupal\file\Plugin\Field\FieldWidget\FileWidget::formElement()
+        $form['container']['upload']['#description'] = $this->renderer->renderInIsolation($file_upload_help);
+
+        return $form;
     }
 
-    // Create a file item to get the upload location.
-    $item = $this->createFileItem($media_type);
-    $upload_location = $item->getUploadLocation();
-    if (!$this->fileSystem->prepareDirectory($upload_location, FileSystemInterface::CREATE_DIRECTORY)) {
-      throw new FileWriteException("The destination directory '$upload_location' is not writable");
-    }
-    $file = $this->fileRepository->move($file, $upload_location);
-    if (!$file) {
-      throw new \RuntimeException("Unable to move file to '$upload_location'");
-    }
-
-    return parent::createMediaFromValue($media_type, $media_storage, $source_field_name, $file);
-  }
-
-  /**
-   * Create a file field item.
-   *
-   * @param \Drupal\media\MediaTypeInterface $media_type
-   *   The media type of the media item.
-   *
-   * @return \Drupal\file\Plugin\Field\FieldType\FileItem
-   *   A created file item.
-   */
-  protected function createFileItem(MediaTypeInterface $media_type): \Drupal\file\Plugin\Field\FieldType\FileItem {
-    $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
-    $data_definition = FieldItemDataDefinition::create($field_definition);
-    return new FileItem($data_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareMediaEntityForSave(MediaInterface $media) {
-    /** @var \Drupal\file\FileInterface $file */
-    $file = $media->get($this->getSourceFieldName($media->bundle->entity))->entity;
-    $file->setPermanent();
-    $file->save();
-  }
-
-  /**
-   * Submit handler for the remove button.
-   *
-   * @param array $form
-   *   The form render array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   */
-  public function removeButtonSubmit(array $form, FormStateInterface $form_state): void {
-    // Retrieve the delta of the media item from the parents of the remove
-    // button.
-    $triggering_element = $form_state->getTriggeringElement();
-    $delta = array_slice($triggering_element['#array_parents'], -2, 1)[0];
-
-    /** @var \Drupal\media\MediaInterface $removed_media */
-    $removed_media = $form_state->get(['media', $delta]);
-
-    $file = $removed_media->get($this->getSourceFieldName($removed_media->bundle->entity))->entity;
-    if ($file instanceof FileInterface && empty($this->fileUsage->listUsage($file))) {
-      $file->delete();
+    /**
+     * Validates the upload element.
+     *
+     * @param array $element
+     *   The upload element.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     *
+     * @return array
+     *   The processed upload element.
+     */
+    public function validateUploadElement(array $element, FormStateInterface $form_state): array
+    {
+        if ($form_state::hasAnyErrors()) {
+            // When an error occurs during uploading files, remove all files so the
+            // user can re-upload the files.
+            $element['#value'] = [];
+        }
+        $values = $form_state->getValue('upload', []);
+        if (count($values['fids']) > $element['#cardinality'] && $element['#cardinality'] !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
+            $form_state->setError($element, $this->t('A maximum of @count files can be uploaded.', [
+              '@count' => $element['#cardinality'],
+            ]));
+            $form_state->setValue('upload', []);
+            $element['#value'] = [];
+        }
+        return $element;
     }
 
-    parent::removeButtonSubmit($form, $form_state);
-  }
+    /**
+     * Processes an upload (managed_file) element.
+     *
+     * @param array $element
+     *   The upload element.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     *
+     * @return array
+     *   The processed upload element.
+     */
+    public function processUploadElement(array $element, FormStateInterface $form_state): array
+    {
+        $element['upload_button']['#submit'] = ['::uploadButtonSubmit'];
+        // Limit the validation errors to make sure
+        // FormValidator::handleErrorsWithLimitedValidation doesn't remove the
+        // current selection from the form state.
+        // @see Drupal\Core\Form\FormValidator::handleErrorsWithLimitedValidation()
+        $element['upload_button']['#limit_validation_errors'] = [
+          ['upload'],
+          ['current_selection'],
+        ];
+        $element['upload_button']['#ajax'] = [
+          'callback' => '::updateFormCallback',
+          'wrapper' => 'media-library-wrapper',
+          // Add a fixed URL to post the form since AJAX forms are automatically
+          // posted to <current> instead of $form['#action'].
+          // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
+          //   is fixed.
+          'url' => Url::fromRoute('media_library.ui'),
+          'options' => [
+            'query' => $this->getMediaLibraryState($form_state)->all() + [
+              FormBuilderInterface::AJAX_FORM_REQUEST => true,
+            ],
+          ],
+        ];
+        return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildEntityFormElement(MediaInterface $media, array $form, FormStateInterface $form_state, $delta)
+    {
+        $element = parent::buildEntityFormElement($media, $form, $form_state, $delta);
+        $source_field = $this->getSourceFieldName($media->bundle->entity);
+        if (isset($element['fields'][$source_field])) {
+            $element['fields'][$source_field]['widget'][0]['#process'][] = [static::class, 'hideExtraSourceFieldComponents'];
+        }
+        return $element;
+    }
+
+    /**
+     * Processes an image or file source field element.
+     *
+     * @param array $element
+     *   The entity form source field element.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current form state.
+     * @param array $form
+     *   The complete form.
+     *
+     * @return array
+     *   The processed form element.
+     */
+    public static function hideExtraSourceFieldComponents(array $element, FormStateInterface $form_state, $form): array
+    {
+        // Remove original button added by ManagedFile::processManagedFile().
+        if (!empty($element['remove_button'])) {
+            $element['remove_button']['#access'] = false;
+        }
+        // Remove preview added by ImageWidget::process().
+        if (!empty($element['preview'])) {
+            $element['preview']['#access'] = false;
+        }
+
+        $element['#title_display'] = 'none';
+        $element['#description_display'] = 'none';
+
+        // Remove the filename display.
+        foreach ($element['#files'] as $file) {
+            $element['file_' . $file->id()]['filename']['#access'] = false;
+        }
+
+        return $element;
+    }
+
+    /**
+     * Submit handler for the upload button, inside the managed_file element.
+     *
+     * @param array $form
+     *   The form render array.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     */
+    public function uploadButtonSubmit(array $form, FormStateInterface $form_state): void
+    {
+        $files = $this->entityTypeManager
+          ->getStorage('file')
+          ->loadMultiple($form_state->getValue('upload', []));
+        $this->processInputValues($files, $form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createMediaFromValue(MediaTypeInterface $media_type, EntityStorageInterface $media_storage, $source_field_name, $file)
+    {
+        if (!($file instanceof FileInterface)) {
+            throw new \InvalidArgumentException('Cannot create a media item without a file entity.');
+        }
+
+        // Create a file item to get the upload location.
+        $item = $this->createFileItem($media_type);
+        $upload_location = $item->getUploadLocation();
+        if (!$this->fileSystem->prepareDirectory($upload_location, FileSystemInterface::CREATE_DIRECTORY)) {
+            throw new FileWriteException("The destination directory '$upload_location' is not writable");
+        }
+        $file = $this->fileRepository->move($file, $upload_location);
+        if (!$file) {
+            throw new \RuntimeException("Unable to move file to '$upload_location'");
+        }
+
+        return parent::createMediaFromValue($media_type, $media_storage, $source_field_name, $file);
+    }
+
+    /**
+     * Create a file field item.
+     *
+     * @param \Drupal\media\MediaTypeInterface $media_type
+     *   The media type of the media item.
+     *
+     * @return \Drupal\file\Plugin\Field\FieldType\FileItem
+     *   A created file item.
+     */
+    protected function createFileItem(MediaTypeInterface $media_type): \Drupal\file\Plugin\Field\FieldType\FileItem
+    {
+        $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
+        $data_definition = FieldItemDataDefinition::create($field_definition);
+        return new FileItem($data_definition);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareMediaEntityForSave(MediaInterface $media)
+    {
+        /** @var \Drupal\file\FileInterface $file */
+        $file = $media->get($this->getSourceFieldName($media->bundle->entity))->entity;
+        $file->setPermanent();
+        $file->save();
+    }
+
+    /**
+     * Submit handler for the remove button.
+     *
+     * @param array $form
+     *   The form render array.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     */
+    public function removeButtonSubmit(array $form, FormStateInterface $form_state): void
+    {
+        // Retrieve the delta of the media item from the parents of the remove
+        // button.
+        $triggering_element = $form_state->getTriggeringElement();
+        $delta = array_slice($triggering_element['#array_parents'], -2, 1)[0];
+
+        /** @var \Drupal\media\MediaInterface $removed_media */
+        $removed_media = $form_state->get(['media', $delta]);
+
+        $file = $removed_media->get($this->getSourceFieldName($removed_media->bundle->entity))->entity;
+        if ($file instanceof FileInterface && empty($this->fileUsage->listUsage($file))) {
+            $file->delete();
+        }
+
+        parent::removeButtonSubmit($form, $form_state);
+    }
 
 }

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\dynamic_page_cache\PageCache\ResponsePolicy;
 
 use Drupal\Core\PageCache\ResponsePolicyInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,25 +15,26 @@ use Symfony\Component\HttpFoundation\Response;
  * because admin routes have very low cache hit ratios due to low traffic and
  * form submissions.
  */
-class DenyAdminRoutes implements ResponsePolicyInterface {
-
-  /**
-   * Constructs a deny admin route page cache policy.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Response $response, Request $request) {
-    if (($route = $this->routeMatch->getRouteObject()) && $route->getOption('_admin_route')) {
-      return static::DENY;
+class DenyAdminRoutes implements ResponsePolicyInterface
+{
+    /**
+     * Constructs a deny admin route page cache policy.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Response $response, Request $request)
+    {
+        if (($route = $this->routeMatch->getRouteObject()) && $route->getOption('_admin_route')) {
+            return static::DENY;
+        }
+    }
 
 }

@@ -17,40 +17,43 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(HWLDFWordAccumulator::class)]
 #[Group('Diff')]
-class HWLDFWordAccumulatorTest extends TestCase {
+class HWLDFWordAccumulatorTest extends TestCase
+{
+    /**
+     * Verify that we only get back a NBSP from an empty accumulator.
+     *
+     * @see Drupal\Component\Diff\Engine\HWLDFWordAccumulator::NBSP
+     */
+    public function testGetLinesEmpty(): void
+    {
+        $acc = new HWLDFWordAccumulator();
+        $this->assertEquals(['&#160;'], $acc->getLines());
+    }
 
-  /**
-   * Verify that we only get back a NBSP from an empty accumulator.
-   *
-   * @see Drupal\Component\Diff\Engine\HWLDFWordAccumulator::NBSP
-   */
-  public function testGetLinesEmpty(): void {
-    $acc = new HWLDFWordAccumulator();
-    $this->assertEquals(['&#160;'], $acc->getLines());
-  }
+    /**
+     * @return array
+     *   - Expected array of lines from getLines().
+     *   - Array of strings for the $words parameter to addWords().
+     *   - String tag for the $tag parameter to addWords().
+     */
+    public static function provideAddWords(): array
+    {
+        return [
+          [['wordword2'], ['word', 'word2'], 'tag'],
+          [['word', 'word2'], ['word', "\nword2"], 'tag'],
+          [['&#160;', 'word2'], ['', "\nword2"], 'tag'],
+        ];
+    }
 
-  /**
-   * @return array
-   *   - Expected array of lines from getLines().
-   *   - Array of strings for the $words parameter to addWords().
-   *   - String tag for the $tag parameter to addWords().
-   */
-  public static function provideAddWords(): array {
-    return [
-      [['wordword2'], ['word', 'word2'], 'tag'],
-      [['word', 'word2'], ['word', "\nword2"], 'tag'],
-      [['&#160;', 'word2'], ['', "\nword2"], 'tag'],
-    ];
-  }
-
-  /**
-   * Tests add words.
-   */
-  #[DataProvider('provideAddWords')]
-  public function testAddWords($expected, $words, $tag): void {
-    $acc = new HWLDFWordAccumulator();
-    $acc->addWords($words, $tag);
-    $this->assertEquals($expected, $acc->getLines());
-  }
+    /**
+     * Tests add words.
+     */
+    #[DataProvider('provideAddWords')]
+    public function testAddWords($expected, $words, $tag): void
+    {
+        $acc = new HWLDFWordAccumulator();
+        $acc->addWords($words, $tag);
+        $this->assertEquals($expected, $acc->getLines());
+    }
 
 }

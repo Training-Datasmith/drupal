@@ -22,42 +22,44 @@ namespace Drupal\TestTools\Extension\DeprecationBridge;
  *
  * @internal
  */
-trait ExpectDeprecationTrait {
+trait ExpectDeprecationTrait
+{
+    /**
+     * Adds an expected deprecation.
+     *
+     * @param string $message
+     *   The expected deprecation message.
+     *
+     * @deprecated in drupal:11.4.0 and is removed from drupal:12.0.0. Use
+     *   $this->expectUserDeprecationMessage() or
+     *   $this->expectUserDeprecationMessageMatches() instead.
+     *
+     * @see https://www.drupal.org/node/3545276
+     */
+    public function expectDeprecation(string $message): void
+    {
+        @trigger_error('expectDeprecation() is deprecated in drupal:11.4.0 and is removed from drupal:12.0.0. Use $this->expectUserDeprecationMessage() or $this->expectUserDeprecationMessageMatches() instead. See https://www.drupal.org/node/3545276', E_USER_DEPRECATED);
+        $this->expectUserDeprecationMessageMatches($this->regularExpressionForFormatDescription('%A' . $message . '%A'));
+    }
 
-  /**
-   * Adds an expected deprecation.
-   *
-   * @param string $message
-   *   The expected deprecation message.
-   *
-   * @deprecated in drupal:11.4.0 and is removed from drupal:12.0.0. Use
-   *   $this->expectUserDeprecationMessage() or
-   *   $this->expectUserDeprecationMessageMatches() instead.
-   *
-   * @see https://www.drupal.org/node/3545276
-   */
-  public function expectDeprecation(string $message): void {
-    @trigger_error('expectDeprecation() is deprecated in drupal:11.4.0 and is removed from drupal:12.0.0. Use $this->expectUserDeprecationMessage() or $this->expectUserDeprecationMessageMatches() instead. See https://www.drupal.org/node/3545276', E_USER_DEPRECATED);
-    $this->expectUserDeprecationMessageMatches($this->regularExpressionForFormatDescription('%A' . $message . '%A'));
-  }
-
-  private function regularExpressionForFormatDescription(string $string): string {
-    $string = strtr(preg_quote($string, '/'), [
-      '%%' => '%',
-      '%e' => preg_quote(\DIRECTORY_SEPARATOR, '/'),
-      '%s' => '[^\r\n]+',
-      '%S' => '[^\r\n]*',
-      '%a' => '.+?',
-      '%A' => '.*?',
-      '%w' => '\s*',
-      '%i' => '[+-]?\d+',
-      '%d' => '\d+',
-      '%x' => '[0-9a-fA-F]+',
-      '%f' => '[+-]?(?:\d+|(?=\.\d))(?:\.\d+)?(?:[Ee][+-]?\d+)?',
-      '%c' => '.',
-      '%0' => '\x00',
-    ]);
-    return '/^' . $string . '$/s';
-  }
+    private function regularExpressionForFormatDescription(string $string): string
+    {
+        $string = strtr(preg_quote($string, '/'), [
+          '%%' => '%',
+          '%e' => preg_quote(\DIRECTORY_SEPARATOR, '/'),
+          '%s' => '[^\r\n]+',
+          '%S' => '[^\r\n]*',
+          '%a' => '.+?',
+          '%A' => '.*?',
+          '%w' => '\s*',
+          '%i' => '[+-]?\d+',
+          '%d' => '\d+',
+          '%x' => '[0-9a-fA-F]+',
+          '%f' => '[+-]?(?:\d+|(?=\.\d))(?:\.\d+)?(?:[Ee][+-]?\d+)?',
+          '%c' => '.',
+          '%0' => '\x00',
+        ]);
+        return '/^' . $string . '$/s';
+    }
 
 }

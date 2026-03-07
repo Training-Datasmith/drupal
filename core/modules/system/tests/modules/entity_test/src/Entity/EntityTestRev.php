@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Drupal\entity_test\Entity;
 
 use Drupal\Core\Entity\Attribute\ContentEntityType;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Form\DeleteMultipleForm;
+use Drupal\Core\Entity\Form\RevisionDeleteForm;
+use Drupal\Core\Entity\Form\RevisionRevertForm;
 use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
 use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
-use Drupal\Core\Entity\Form\RevisionRevertForm;
-use Drupal\Core\Entity\Form\RevisionDeleteForm;
-use Drupal\Core\Entity\Form\DeleteMultipleForm;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\entity_test\EntityTestAccessControlHandler;
 use Drupal\entity_test\EntityTestDeleteForm;
 use Drupal\entity_test\EntityTestForm;
@@ -23,9 +23,9 @@ use Drupal\views\EntityViewsData;
  * Defines the test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_rev',
-  label: new TranslatableMarkup('Test entity - revisions'),
-  entity_keys: [
+    id: 'entity_test_rev',
+    label: new TranslatableMarkup('Test entity - revisions'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'revision' => 'revision_id',
@@ -33,7 +33,7 @@ use Drupal\views\EntityViewsData;
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
     'view_builder' => TestViewBuilder::class,
     'form' => [
@@ -49,7 +49,7 @@ use Drupal\views\EntityViewsData;
       'revision' => RevisionHtmlRouteProvider::class,
     ],
   ],
-  links: [
+    links: [
     'add-form' => '/entity_test_rev/add/{type}',
     'add-page' => '/entity_test_rev/add',
     'canonical' => '/entity_test_rev/manage/{entity_test_rev}',
@@ -61,30 +61,32 @@ use Drupal\views\EntityViewsData;
     'revision-revert-form' => '/entity_test_rev/{entity_test_rev}/revision/{entity_test_rev_revision}/revert',
     'version-history' => '/entity_test_rev/{entity_test_rev}/revisions',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_rev',
-  revision_table: 'entity_test_rev_revision', show_revision_ui: TRUE,
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_rev',
+    revision_table: 'entity_test_rev_revision',
+    show_revision_ui: true,
 )]
-class EntityTestRev extends EntityTest {
+class EntityTestRev extends EntityTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        $fields = parent::baseFieldDefinitions($entity_type);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
+        $fields['name']->setRevisionable(true);
+        $fields['user_id']->setRevisionable(true);
 
-    $fields['name']->setRevisionable(TRUE);
-    $fields['user_id']->setRevisionable(TRUE);
+        $fields['non_rev_field'] = BaseFieldDefinition::create('string')
+          ->setLabel(t('Non Revisionable Field'))
+          ->setDescription(t('A non-revisionable test field.'))
+          ->setRevisionable(false)
+          ->setTranslatable(true)
+          ->setCardinality(1)
+          ->setReadOnly(true);
 
-    $fields['non_rev_field'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Non Revisionable Field'))
-      ->setDescription(t('A non-revisionable test field.'))
-      ->setRevisionable(FALSE)
-      ->setTranslatable(TRUE)
-      ->setCardinality(1)
-      ->setReadOnly(TRUE);
-
-    return $fields;
-  }
+        return $fields;
+    }
 
 }

@@ -12,25 +12,25 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Defines an encoding constraint for files.
  */
 #[Constraint(
-  id: 'FileEncoding',
-  label: new TranslatableMarkup('File encoding', [], ['context' => 'Validation'])
+    id: 'FileEncoding',
+    label: new TranslatableMarkup('File encoding', [], ['context' => 'Validation'])
 )]
-class FileEncodingConstraint extends SymfonyConstraint {
+class FileEncodingConstraint extends SymfonyConstraint
+{
+    /**
+     * The allowed file encodings.
+     */
+    public array $encodings;
 
-  /**
-   * The allowed file encodings.
-   */
-  public array $encodings;
-
-  public function __construct(
-    mixed $options = NULL,
-    ?array $encodings = NULL,
-    public string $message = "The file is encoded with %detected. It must be encoded with %encoding",
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->encodings = $encodings ?? $this->encodings;
-  }
+    public function __construct(
+        mixed $options = null,
+        ?array $encodings = null,
+        public string $message = 'The file is encoded with %detected. It must be encoded with %encoding',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->encodings = $encodings ?? $this->encodings;
+    }
 
 }

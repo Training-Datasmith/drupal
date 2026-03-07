@@ -14,40 +14,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeListBuilderTest extends KernelTestBase {
+class NodeListBuilderTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('node');
+    }
 
-    $this->installEntitySchema('node');
-  }
+    /**
+     * Tests that the correct cache contexts are set.
+     */
+    public function testCacheContexts(): void
+    {
+        /** @var \Drupal\Core\Entity\EntityListBuilderInterface $list_builder */
+        $list_builder = $this->container->get('entity_type.manager')->getListBuilder('node');
 
-  /**
-   * Tests that the correct cache contexts are set.
-   */
-  public function testCacheContexts(): void {
-    /** @var \Drupal\Core\Entity\EntityListBuilderInterface $list_builder */
-    $list_builder = $this->container->get('entity_type.manager')->getListBuilder('node');
+        $build = $list_builder->render();
+        $this->container->get('renderer')->renderRoot($build);
 
-    $build = $list_builder->render();
-    $this->container->get('renderer')->renderRoot($build);
-
-    $this->assertEqualsCanonicalizing([
+        $this->assertEqualsCanonicalizing(
+            [
       'languages:' . LanguageInterface::TYPE_INTERFACE,
       'theme',
       'url.query_args.pagers:0',
       'user.node_grants:view',
       'user.permissions',
     ],
-    $build['#cache']['contexts']);
-  }
+            $build['#cache']['contexts']
+        );
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\rest;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -12,23 +14,24 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @see \Drupal\rest\ResourceResponse
  */
-class ModifiedResourceResponse extends Response implements ResourceResponseInterface {
+class ModifiedResourceResponse extends Response implements ResourceResponseInterface
+{
+    use ResourceResponseTrait;
 
-  use ResourceResponseTrait;
-
-  /**
-   * Constructor for ModifiedResourceResponse objects.
-   *
-   * @param mixed $data
-   *   Response data that should be serialized.
-   * @param int $status
-   *   The response status code.
-   * @param array $headers
-   *   An array of response headers.
-   */
-  public function __construct($data = NULL, $status = 200, $headers = []) {
-    $this->responseData = $data;
-    parent::__construct('', $status, $headers);
-  }
+    /**
+     * Constructor for ModifiedResourceResponse objects.
+     *
+     * @param mixed $data
+     *   Response data that should be serialized.
+     * @param int $status
+     *   The response status code.
+     * @param array $headers
+     *   An array of response headers.
+     */
+    public function __construct($data = null, $status = 200, $headers = [])
+    {
+        $this->responseData = $data;
+        parent::__construct('', $status, $headers);
+    }
 
 }

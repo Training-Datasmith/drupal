@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node;
 
 use Drupal\Core\Entity\ContentEntityStorageInterface;
@@ -9,62 +11,62 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Defines an interface for node entity storage classes.
  */
-interface NodeStorageInterface extends ContentEntityStorageInterface {
+interface NodeStorageInterface extends ContentEntityStorageInterface
+{
+    /**
+     * Gets a list of node revision IDs for a specific node.
+     *
+     * @param \Drupal\node\NodeInterface $node
+     *   The node entity.
+     *
+     * @return int[]
+     *   Node revision IDs (in ascending order).
+     *
+     * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. Use an
+     *   entity query instead.
+     *
+     * @see https://www.drupal.org/node/3519187
+     */
+    public function revisionIds(NodeInterface $node);
 
-  /**
-   * Gets a list of node revision IDs for a specific node.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node entity.
-   *
-   * @return int[]
-   *   Node revision IDs (in ascending order).
-   *
-   * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. Use an
-   *   entity query instead.
-   *
-   * @see https://www.drupal.org/node/3519187
-   */
-  public function revisionIds(NodeInterface $node);
+    /**
+     * Gets a list of revision IDs having a given user as node author.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The user entity.
+     *
+     * @return int[]
+     *   Node revision IDs (in ascending order).
+     *
+     * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. Use an
+     *    entity query instead.
+     *
+     * @see https://www.drupal.org/node/3519187
+     */
+    public function userRevisionIds(AccountInterface $account);
 
-  /**
-   * Gets a list of revision IDs having a given user as node author.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user entity.
-   *
-   * @return int[]
-   *   Node revision IDs (in ascending order).
-   *
-   * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. Use an
-   *    entity query instead.
-   *
-   * @see https://www.drupal.org/node/3519187
-   */
-  public function userRevisionIds(AccountInterface $account);
+    /**
+     * Counts the number of revisions in the default language.
+     *
+     * @param \Drupal\node\NodeInterface $node
+     *   The node entity.
+     *
+     * @return int
+     *   The number of revisions in the default language.
+     *
+     * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no
+     *   replacement.
+     *
+     * @see https://www.drupal.org/node/3519187
+     */
+    public function countDefaultLanguageRevisions(NodeInterface $node);
 
-  /**
-   * Counts the number of revisions in the default language.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node entity.
-   *
-   * @return int
-   *   The number of revisions in the default language.
-   *
-   * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no
-   *   replacement.
-   *
-   * @see https://www.drupal.org/node/3519187
-   */
-  public function countDefaultLanguageRevisions(NodeInterface $node);
-
-  /**
-   * Unsets the language for all nodes with the given language.
-   *
-   * @param \Drupal\Core\Language\LanguageInterface $language
-   *   The language object.
-   */
-  public function clearRevisionsLanguage(LanguageInterface $language);
+    /**
+     * Unsets the language for all nodes with the given language.
+     *
+     * @param \Drupal\Core\Language\LanguageInterface $language
+     *   The language object.
+     */
+    public function clearRevisionsLanguage(LanguageInterface $language);
 
 }

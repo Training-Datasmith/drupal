@@ -15,24 +15,25 @@ use PHPUnit\Event\Tracer\Tracer;
  *
  * @internal
  */
-class PhpUnitTestDiscoveryTracer implements Tracer {
-
-  public function __construct(
-    private readonly PHPUnitTestDiscovery $testDiscovery,
-  ) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function trace(Event $event): void {
-    if (in_array(get_class($event), [
-      PhpunitErrorTriggered::class,
-      PhpunitWarningTriggered::class,
-      WarningTriggered::class,
-    ])) {
-      $this->testDiscovery->addWarning(sprintf('%s: %s', get_class($event), $event->message()));
+class PhpUnitTestDiscoveryTracer implements Tracer
+{
+    public function __construct(
+        private readonly PHPUnitTestDiscovery $testDiscovery,
+    ) {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function trace(Event $event): void
+    {
+        if (in_array(get_class($event), [
+          PhpunitErrorTriggered::class,
+          PhpunitWarningTriggered::class,
+          WarningTriggered::class,
+        ])) {
+            $this->testDiscovery->addWarning(sprintf('%s: %s', get_class($event), $event->message()));
+        }
+    }
 
 }

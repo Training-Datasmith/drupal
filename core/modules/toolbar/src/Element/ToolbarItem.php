@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\toolbar\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -12,74 +14,76 @@ use Drupal\Core\Url;
  * The 'tray' property contains a renderable array.
  */
 #[RenderElement('toolbar_item')]
-class ToolbarItem extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#pre_render' => [
-        [static::class, 'preRenderToolbarItem'],
-      ],
-      'tab' => [
-        '#type' => 'link',
-        '#title' => '',
-        '#url' => Url::fromRoute('<front>'),
-      ],
-    ];
-  }
-
-  /**
-   * Provides markup for associating a tray trigger with a tray element.
-   *
-   * A tray is a responsive container that wraps renderable content. Trays
-   * present content well on small and large screens alike.
-   *
-   * @param array $element
-   *   A renderable array.
-   *
-   * @return array
-   *   A renderable array.
-   */
-  public static function preRenderToolbarItem(array $element): array {
-    $id = $element['#id'];
-
-    // Provide attributes for a toolbar item.
-    $attributes = [
-      'id' => $id,
-    ];
-
-    // If tray content is present, markup the tray and its associated trigger.
-    if (!empty($element['tray'])) {
-      // Provide attributes necessary for trays.
-      $attributes += [
-        'data-toolbar-tray' => $id . '-tray',
-        'role' => 'button',
-        'aria-pressed' => 'false',
-      ];
-
-      // Merge in module-provided attributes.
-      $element['tab'] += ['#attributes' => []];
-      $element['tab']['#attributes'] += $attributes;
-      $element['tab']['#attributes']['class'][] = 'trigger';
-
-      // Provide attributes for the tray theme wrapper.
-      $attributes = [
-        'id' => $id . '-tray',
-        'data-toolbar-tray' => $id . '-tray',
-      ];
-      // Merge in module-provided attributes.
-      if (!isset($element['tray']['#wrapper_attributes'])) {
-        $element['tray']['#wrapper_attributes'] = [];
-      }
-      $element['tray']['#wrapper_attributes'] += $attributes;
-      $element['tray']['#wrapper_attributes']['class'][] = 'toolbar-tray';
+class ToolbarItem extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#pre_render' => [
+            [static::class, 'preRenderToolbarItem'],
+          ],
+          'tab' => [
+            '#type' => 'link',
+            '#title' => '',
+            '#url' => Url::fromRoute('<front>'),
+          ],
+        ];
     }
 
-    $element['tab']['#attributes']['class'][] = 'toolbar-item';
+    /**
+     * Provides markup for associating a tray trigger with a tray element.
+     *
+     * A tray is a responsive container that wraps renderable content. Trays
+     * present content well on small and large screens alike.
+     *
+     * @param array $element
+     *   A renderable array.
+     *
+     * @return array
+     *   A renderable array.
+     */
+    public static function preRenderToolbarItem(array $element): array
+    {
+        $id = $element['#id'];
 
-    return $element;
-  }
+        // Provide attributes for a toolbar item.
+        $attributes = [
+          'id' => $id,
+        ];
+
+        // If tray content is present, markup the tray and its associated trigger.
+        if (!empty($element['tray'])) {
+            // Provide attributes necessary for trays.
+            $attributes += [
+              'data-toolbar-tray' => $id . '-tray',
+              'role' => 'button',
+              'aria-pressed' => 'false',
+            ];
+
+            // Merge in module-provided attributes.
+            $element['tab'] += ['#attributes' => []];
+            $element['tab']['#attributes'] += $attributes;
+            $element['tab']['#attributes']['class'][] = 'trigger';
+
+            // Provide attributes for the tray theme wrapper.
+            $attributes = [
+              'id' => $id . '-tray',
+              'data-toolbar-tray' => $id . '-tray',
+            ];
+            // Merge in module-provided attributes.
+            if (!isset($element['tray']['#wrapper_attributes'])) {
+                $element['tray']['#wrapper_attributes'] = [];
+            }
+            $element['tray']['#wrapper_attributes'] += $attributes;
+            $element['tray']['#wrapper_attributes']['class'][] = 'toolbar-tray';
+        }
+
+        $element['tab']['#attributes']['class'][] = 'toolbar-item';
+
+        return $element;
+    }
 
 }

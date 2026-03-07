@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -27,57 +29,60 @@ use Drupal\Core\Render\Element;
  * @see \Drupal\Core\Render\Element\Number
  */
 #[FormElement('range')]
-class Range extends Number {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    $info = parent::getInfo();
-    return [
-      '#min' => 0,
-      '#max' => 100,
-      '#pre_render' => [
-        [static::class, 'preRenderRange'],
-      ],
-      '#theme' => 'input__range',
-    ] + $info;
-  }
-
-  /**
-   * Prepares a #type 'range' render element for input.html.twig.
-   *
-   * @param array $element
-   *   An associative array containing the properties of the element.
-   *   Properties used: #title, #value, #description, #min, #max, #attributes,
-   *   #step.
-   *
-   * @return array
-   *   The $element with prepared variables ready for input.html.twig.
-   */
-  public static function preRenderRange(array $element): array {
-    $element['#attributes']['type'] = 'range';
-    Element::setAttributes($element, ['id', 'name', 'value', 'step', 'min', 'max']);
-    static::setAttributes($element, ['form-range']);
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
-    if ($input === '') {
-      $offset = ($element['#max'] - $element['#min']) / 2;
-
-      // Round to the step.
-      if (strtolower((string) $element['#step']) != 'any') {
-        $steps = round($offset / $element['#step']);
-        $offset = $element['#step'] * $steps;
-      }
-
-      return $element['#min'] + $offset;
+class Range extends Number
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        $info = parent::getInfo();
+        return [
+          '#min' => 0,
+          '#max' => 100,
+          '#pre_render' => [
+            [static::class, 'preRenderRange'],
+          ],
+          '#theme' => 'input__range',
+        ] + $info;
     }
-  }
+
+    /**
+     * Prepares a #type 'range' render element for input.html.twig.
+     *
+     * @param array $element
+     *   An associative array containing the properties of the element.
+     *   Properties used: #title, #value, #description, #min, #max, #attributes,
+     *   #step.
+     *
+     * @return array
+     *   The $element with prepared variables ready for input.html.twig.
+     */
+    public static function preRenderRange(array $element): array
+    {
+        $element['#attributes']['type'] = 'range';
+        Element::setAttributes($element, ['id', 'name', 'value', 'step', 'min', 'max']);
+        static::setAttributes($element, ['form-range']);
+
+        return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state)
+    {
+        if ($input === '') {
+            $offset = ($element['#max'] - $element['#min']) / 2;
+
+            // Round to the step.
+            if (strtolower((string) $element['#step']) != 'any') {
+                $steps = round($offset / $element['#step']);
+                $offset = $element['#step'] * $steps;
+            }
+
+            return $element['#min'] + $offset;
+        }
+    }
 
 }

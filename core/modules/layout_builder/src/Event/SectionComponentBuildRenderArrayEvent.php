@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Event;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Cache\CacheableResponseTrait;
 use Drupal\Core\Plugin\PreviewAwarePluginInterface;
-use Drupal\layout_builder\SectionComponent;
-use Drupal\Component\EventDispatcher\Event;
 
 /**
  * Event fired when a section component's render array is being built.
@@ -15,106 +16,113 @@ use Drupal\Component\EventDispatcher\Event;
  *
  * @see \Drupal\layout_builder\LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY
  */
-class SectionComponentBuildRenderArrayEvent extends Event {
+class SectionComponentBuildRenderArrayEvent extends Event
+{
+    use CacheableResponseTrait;
 
-  use CacheableResponseTrait;
+    /**
+     * The plugin for the section component being built.
+     *
+     * @var \Drupal\Component\Plugin\PluginInspectionInterface
+     */
+    protected $plugin;
 
-  /**
-   * The plugin for the section component being built.
-   *
-   * @var \Drupal\Component\Plugin\PluginInspectionInterface
-   */
-  protected $plugin;
+    /**
+     * The render array built by the event subscribers.
+     *
+     * @var array
+     */
+    protected $build = [];
 
-  /**
-   * The render array built by the event subscribers.
-   *
-   * @var array
-   */
-  protected $build = [];
-
-  /**
-   * Creates a new SectionComponentBuildRenderArrayEvent object.
-   *
-   * @param \Drupal\layout_builder\SectionComponent $component
-   *   The section component whose render array is being built.
-   * @param \Drupal\Core\Plugin\Context\ContextInterface[] $contexts
-   *   The available contexts.
-   * @param bool $inPreview
-   *   (optional) Whether the component is in preview mode or not.
-   */
-  public function __construct(protected \Drupal\layout_builder\SectionComponent $component, /**
+    /**
+     * Creates a new SectionComponentBuildRenderArrayEvent object.
+     *
+     * @param \Drupal\layout_builder\SectionComponent $component
+     *   The section component whose render array is being built.
+     * @param \Drupal\Core\Plugin\Context\ContextInterface[] $contexts
+     *   The available contexts.
+     * @param bool $inPreview
+     *   (optional) Whether the component is in preview mode or not.
+     */
+    public function __construct(protected \Drupal\layout_builder\SectionComponent $component, /**
    * The available contexts.
    */
-  protected array $contexts, /**
+        protected array $contexts, /**
    * Whether the component is in preview mode or not.
    */
-  protected $inPreview = FALSE) {
-    $this->plugin = $this->component->getPlugin($this->contexts);
+        protected $inPreview = false)
+    {
+        $this->plugin = $this->component->getPlugin($this->contexts);
 
-    if ($this->plugin instanceof PreviewAwarePluginInterface) {
-      $this->plugin->setInPreview($this->inPreview);
+        if ($this->plugin instanceof PreviewAwarePluginInterface) {
+            $this->plugin->setInPreview($this->inPreview);
+        }
     }
-  }
 
-  /**
-   * Get the section component whose render array is being built.
-   *
-   * @return \Drupal\layout_builder\SectionComponent
-   *   The section component whose render array is being built.
-   */
-  public function getComponent() {
-    return $this->component;
-  }
+    /**
+     * Get the section component whose render array is being built.
+     *
+     * @return \Drupal\layout_builder\SectionComponent
+     *   The section component whose render array is being built.
+     */
+    public function getComponent()
+    {
+        return $this->component;
+    }
 
-  /**
-   * Get the available contexts.
-   *
-   * @return array|\Drupal\Core\Plugin\Context\ContextInterface[]
-   *   The available contexts.
-   */
-  public function getContexts() {
-    return $this->contexts;
-  }
+    /**
+     * Get the available contexts.
+     *
+     * @return array|\Drupal\Core\Plugin\Context\ContextInterface[]
+     *   The available contexts.
+     */
+    public function getContexts()
+    {
+        return $this->contexts;
+    }
 
-  /**
-   * Get the plugin for the section component being built.
-   *
-   * @return \Drupal\Component\Plugin\PluginInspectionInterface
-   *   The plugin for the section component being built.
-   */
-  public function getPlugin() {
-    return $this->plugin;
-  }
+    /**
+     * Get the plugin for the section component being built.
+     *
+     * @return \Drupal\Component\Plugin\PluginInspectionInterface
+     *   The plugin for the section component being built.
+     */
+    public function getPlugin()
+    {
+        return $this->plugin;
+    }
 
-  /**
-   * Determine if the component is in preview mode.
-   *
-   * @return bool
-   *   Whether the component is in preview mode or not.
-   */
-  public function inPreview() {
-    return $this->inPreview;
-  }
+    /**
+     * Determine if the component is in preview mode.
+     *
+     * @return bool
+     *   Whether the component is in preview mode or not.
+     */
+    public function inPreview()
+    {
+        return $this->inPreview;
+    }
 
-  /**
-   * Get the render array in its current state.
-   *
-   * @return array
-   *   The render array built by the event subscribers.
-   */
-  public function getBuild() {
-    return $this->build;
-  }
+    /**
+     * Get the render array in its current state.
+     *
+     * @return array
+     *   The render array built by the event subscribers.
+     */
+    public function getBuild()
+    {
+        return $this->build;
+    }
 
-  /**
-   * Set the render array.
-   *
-   * @param array $build
-   *   A render array.
-   */
-  public function setBuild(array $build): void {
-    $this->build = $build;
-  }
+    /**
+     * Set the render array.
+     *
+     * @param array $build
+     *   A render array.
+     */
+    public function setBuild(array $build): void
+    {
+        $this->build = $build;
+    }
 
 }

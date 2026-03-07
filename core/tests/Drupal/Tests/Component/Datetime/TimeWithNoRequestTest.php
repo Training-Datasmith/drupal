@@ -17,45 +17,48 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Time::class)]
 #[Group('Datetime')]
 #[Group('#slow')]
-#[PreserveGlobalState(FALSE)]
+#[PreserveGlobalState(false)]
 #[RunTestsInSeparateProcesses]
-class TimeWithNoRequestTest extends TestCase {
+class TimeWithNoRequestTest extends TestCase
+{
+    /**
+     * The time class for testing.
+     */
+    protected Time $time;
 
-  /**
-   * The time class for testing.
-   */
-  protected Time $time;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // We need to explicitly unset the $_SERVER variables, so that Time is
+        // forced to look for current time.
+        unset($_SERVER['REQUEST_TIME']);
+        unset($_SERVER['REQUEST_TIME_FLOAT']);
 
-    // We need to explicitly unset the $_SERVER variables, so that Time is
-    // forced to look for current time.
-    unset($_SERVER['REQUEST_TIME']);
-    unset($_SERVER['REQUEST_TIME_FLOAT']);
+        $this->time = new Time();
+    }
 
-    $this->time = new Time();
-  }
+    /**
+     * Tests the getRequestTime method.
+     */
+    public function testGetRequestTimeImmutable(): void
+    {
+        $requestTime = $this->time->getRequestTime();
+        sleep(2);
+        $this->assertSame($requestTime, $this->time->getRequestTime());
+    }
 
-  /**
-   * Tests the getRequestTime method.
-   */
-  public function testGetRequestTimeImmutable(): void {
-    $requestTime = $this->time->getRequestTime();
-    sleep(2);
-    $this->assertSame($requestTime, $this->time->getRequestTime());
-  }
-
-  /**
-   * Tests the getRequestMicroTime method.
-   */
-  public function testGetRequestMicroTimeImmutable(): void {
-    $requestTime = $this->time->getRequestMicroTime();
-    usleep(20000);
-    $this->assertSame($requestTime, $this->time->getRequestMicroTime());
-  }
+    /**
+     * Tests the getRequestMicroTime method.
+     */
+    public function testGetRequestMicroTimeImmutable(): void
+    {
+        $requestTime = $this->time->getRequestMicroTime();
+        usleep(20000);
+        $this->assertSame($requestTime, $this->time->getRequestMicroTime());
+    }
 
 }

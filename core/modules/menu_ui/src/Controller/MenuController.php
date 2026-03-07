@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\menu_ui\Controller;
 
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Menu\MenuParentFormSelectorInterface;
 use Drupal\system\MenuInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,52 +13,54 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Returns responses for Menu routes.
  */
-class MenuController extends ControllerBase {
-
-  /**
-   * Creates a new MenuController object.
-   *
-   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector
-   *   The menu parent form service.
-   */
-  public function __construct(protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector)
-  {
-  }
-
-  /**
-   * Gets all the available menus and menu items as a JavaScript array.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request of the page.
-   *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   The available menu and menu items.
-   */
-  public function getParentOptions(Request $request) {
-    $available_menus = [];
-    if ($menus = $request->request->all('menus')) {
-      foreach ($menus as $menu) {
-        $available_menus[$menu] = $menu;
-      }
+class MenuController extends ControllerBase
+{
+    /**
+     * Creates a new MenuController object.
+     *
+     * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector
+     *   The menu parent form service.
+     */
+    public function __construct(protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector)
+    {
     }
-    // @todo Update this to use the optional $cacheability parameter, so that
-    //   a cacheable JSON response can be sent.
-    $options = $this->menuParentSelector->getParentSelectOptions('', $available_menus);
 
-    return new JsonResponse($options);
-  }
+    /**
+     * Gets all the available menus and menu items as a JavaScript array.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request of the page.
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     *   The available menu and menu items.
+     */
+    public function getParentOptions(Request $request)
+    {
+        $available_menus = [];
+        if ($menus = $request->request->all('menus')) {
+            foreach ($menus as $menu) {
+                $available_menus[$menu] = $menu;
+            }
+        }
+        // @todo Update this to use the optional $cacheability parameter, so that
+        //   a cacheable JSON response can be sent.
+        $options = $this->menuParentSelector->getParentSelectOptions('', $available_menus);
 
-  /**
-   * Route title callback.
-   *
-   * @param \Drupal\system\MenuInterface $menu
-   *   The menu entity.
-   *
-   * @return array
-   *   The menu label as a render array.
-   */
-  public function menuTitle(MenuInterface $menu): array {
-    return ['#markup' => $menu->label(), '#allowed_tags' => Xss::getHtmlTagList()];
-  }
+        return new JsonResponse($options);
+    }
+
+    /**
+     * Route title callback.
+     *
+     * @param \Drupal\system\MenuInterface $menu
+     *   The menu entity.
+     *
+     * @return array
+     *   The menu label as a render array.
+     */
+    public function menuTitle(MenuInterface $menu): array
+    {
+        return ['#markup' => $menu->label(), '#allowed_tags' => Xss::getHtmlTagList()];
+    }
 
 }

@@ -13,32 +13,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('path_alias')]
 #[RunTestsInSeparateProcesses]
-class PathAliasRevisionIndexesUpdatePathTest extends UpdatePathTestBase {
+class PathAliasRevisionIndexesUpdatePathTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests the update path for the path_alias_revision table indices.
+     */
+    public function testRunUpdates(): void
+    {
+        $schema = \Drupal::database()->schema();
 
-  /**
-   * Tests the update path for the path_alias_revision table indices.
-   */
-  public function testRunUpdates(): void {
-    $schema = \Drupal::database()->schema();
+        $this->assertFalse($schema->indexExists('path_alias_revision', 'path_alias_revision__alias_langcode_id_status'));
+        $this->assertFalse($schema->indexExists('path_alias_revision', 'path_alias_revision__path_langcode_id_status'));
 
-    $this->assertFalse($schema->indexExists('path_alias_revision', 'path_alias_revision__alias_langcode_id_status'));
-    $this->assertFalse($schema->indexExists('path_alias_revision', 'path_alias_revision__path_langcode_id_status'));
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $this->assertTrue($schema->indexExists('path_alias_revision', 'path_alias_revision__alias_langcode_id_status'));
-    $this->assertTrue($schema->indexExists('path_alias_revision', 'path_alias_revision__path_langcode_id_status'));
-  }
+        $this->assertTrue($schema->indexExists('path_alias_revision', 'path_alias_revision__alias_langcode_id_status'));
+        $this->assertTrue($schema->indexExists('path_alias_revision', 'path_alias_revision__path_langcode_id_status'));
+    }
 
 }

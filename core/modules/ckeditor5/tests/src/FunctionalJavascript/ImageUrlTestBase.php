@@ -16,79 +16,80 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  *
  * @internal
  */
-abstract class ImageUrlTestBase extends ImageTestBase {
+abstract class ImageUrlTestBase extends ImageTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    FilterFormat::create([
-      'format' => 'test_format',
-      'name' => 'Test format',
-      'filters' => [
-        'filter_html' => [
-          'status' => TRUE,
+        FilterFormat::create([
+          'format' => 'test_format',
+          'name' => 'Test format',
+          'filters' => [
+            'filter_html' => [
+              'status' => true,
+              'settings' => [
+                'allowed_html' => '<p> <br> <em> <a href> <img alt height width src data-caption data-align>',
+              ],
+            ],
+            'filter_align' => ['status' => true],
+            'filter_caption' => ['status' => true],
+          ],
+        ])->save();
+        Editor::create([
+          'editor' => 'ckeditor5',
+          'format' => 'test_format',
           'settings' => [
-            'allowed_html' => '<p> <br> <em> <a href> <img alt height width src data-caption data-align>',
+            'toolbar' => [
+              'items' => [
+                'drupalInsertImage',
+                'sourceEditing',
+                'link',
+                'italic',
+              ],
+            ],
+            'plugins' => [
+              'ckeditor5_sourceEditing' => [
+                'allowed_tags' => [],
+              ],
+              'ckeditor5_imageResize' => [
+                'allow_resize' => true,
+              ],
+            ],
           ],
-        ],
-        'filter_align' => ['status' => TRUE],
-        'filter_caption' => ['status' => TRUE],
-      ],
-    ])->save();
-    Editor::create([
-      'editor' => 'ckeditor5',
-      'format' => 'test_format',
-      'settings' => [
-        'toolbar' => [
-          'items' => [
-            'drupalInsertImage',
-            'sourceEditing',
-            'link',
-            'italic',
+          'image_upload' => [
+            'status' => false,
           ],
-        ],
-        'plugins' => [
-          'ckeditor5_sourceEditing' => [
-            'allowed_tags' => [],
-          ],
-          'ckeditor5_imageResize' => [
-            'allow_resize' => TRUE,
-          ],
-        ],
-      ],
-      'image_upload' => [
-        'status' => FALSE,
-      ],
-    ])->save();
-    $this->assertSame([], array_map(
-      function (ConstraintViolationInterface $v) {
-        return (string) $v->getMessage();
-      },
-      iterator_to_array(CKEditor5::validatePair(
-        Editor::load('test_format'),
-        FilterFormat::load('test_format')
-      ))
-    ));
-    $this->adminUser = $this->drupalCreateUser([
-      'use text format test_format',
-      'bypass node access',
-      'administer filters',
-    ]);
+        ])->save();
+        $this->assertSame([], array_map(
+            function (ConstraintViolationInterface $v) {
+                return (string) $v->getMessage();
+            },
+            iterator_to_array(CKEditor5::validatePair(
+                Editor::load('test_format'),
+                FilterFormat::load('test_format')
+            ))
+        ));
+        $this->adminUser = $this->drupalCreateUser([
+          'use text format test_format',
+          'bypass node access',
+          'administer filters',
+        ]);
 
-    $this->host = $this->createNode([
-      'type' => 'page',
-      'title' => 'Animals with strange names',
-      'body' => [
-        'value' => '<p>The pirate is irate.</p>',
-        'format' => 'test_format',
-      ],
-    ]);
-    $this->host->save();
+        $this->host = $this->createNode([
+          'type' => 'page',
+          'title' => 'Animals with strange names',
+          'body' => [
+            'value' => '<p>The pirate is irate.</p>',
+            'format' => 'test_format',
+          ],
+        ]);
+        $this->host->save();
 
-    $this->drupalLogin($this->adminUser);
-  }
+        $this->drupalLogin($this->adminUser);
+    }
 
 }

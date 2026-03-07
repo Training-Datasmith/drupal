@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Plugin\migrate\destination;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -15,38 +17,38 @@ use Drupal\migrate\Row;
  * dependency on the d6_file migration to ensure it runs first.
  */
 #[MigrateDestination('entity:image_style')]
-class EntityImageStyle extends EntityConfigBase {
+class EntityImageStyle extends EntityConfigBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = []): array
+    {
+        $effects = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []): array {
-    $effects = [];
+        // Need to set the effects property to null on the row before the ImageStyle
+        // is created, this prevents improper effect plugin initialization.
+        if ($row->getDestinationProperty('effects')) {
+            $effects = $row->getDestinationProperty('effects');
+            $row->setDestinationProperty('effects', []);
+        }
 
-    // Need to set the effects property to null on the row before the ImageStyle
-    // is created, this prevents improper effect plugin initialization.
-    if ($row->getDestinationProperty('effects')) {
-      $effects = $row->getDestinationProperty('effects');
-      $row->setDestinationProperty('effects', []);
+        /** @var \Drupal\image\Entity\ImageStyle $style */
+        $style = $this->getEntity($row, $old_destination_id_values);
+
+        // Iterate the effects array so each effect plugin can be initialized.
+        // Catch any missing plugin exceptions.
+        foreach ($effects as $effect) {
+            try {
+                $style->addImageEffect($effect);
+            } catch (PluginNotFoundException $e) {
+                throw new MigrateException($e->getMessage(), 0, $e);
+            }
+        }
+
+        $style->save();
+
+        return [$style->id()];
     }
-
-    /** @var \Drupal\image\Entity\ImageStyle $style */
-    $style = $this->getEntity($row, $old_destination_id_values);
-
-    // Iterate the effects array so each effect plugin can be initialized.
-    // Catch any missing plugin exceptions.
-    foreach ($effects as $effect) {
-      try {
-        $style->addImageEffect($effect);
-      }
-      catch (PluginNotFoundException $e) {
-        throw new MigrateException($e->getMessage(), 0, $e);
-      }
-    }
-
-    $style->save();
-
-    return [$style->id()];
-  }
 
 }

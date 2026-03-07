@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -10,11 +12,11 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-interface CommandInterface {
-
-  /**
-   * Return an array to be run through json_encode and sent to the client.
-   */
-  public function render();
+interface CommandInterface
+{
+    /**
+     * Return an array to be run through json_encode and sent to the client.
+     */
+    public function render();
 
 }

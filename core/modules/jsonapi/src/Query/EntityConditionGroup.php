@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Query;
 
 /**
@@ -11,58 +13,61 @@ namespace Drupal\jsonapi\Query;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class EntityConditionGroup {
+class EntityConditionGroup
+{
+    /**
+     * The AND conjunction value.
+     *
+     * @var array
+     */
+    protected static $allowedConjunctions = ['AND', 'OR'];
 
-  /**
-   * The AND conjunction value.
-   *
-   * @var array
-   */
-  protected static $allowedConjunctions = ['AND', 'OR'];
+    /**
+     * The conjunction.
+     *
+     * @var string
+     */
+    protected $conjunction;
 
-  /**
-   * The conjunction.
-   *
-   * @var string
-   */
-  protected $conjunction;
-
-  /**
-   * Constructs a new condition group object.
-   *
-   * @param string $conjunction
-   *   The group conjunction to use.
-   * @param array $members
-   *   (optional) The group conjunction to use.
-   */
-  public function __construct($conjunction, /**
+    /**
+     * Constructs a new condition group object.
+     *
+     * @param string $conjunction
+     *   The group conjunction to use.
+     * @param array $members
+     *   (optional) The group conjunction to use.
+     */
+    public function __construct($conjunction, /**
    * The members of the condition group.
    */
-  protected array $members = []) {
-    if (!in_array($conjunction, self::$allowedConjunctions)) {
-      throw new \InvalidArgumentException('Allowed conjunctions: AND, OR.');
+        protected array $members = [])
+    {
+        if (!in_array($conjunction, self::$allowedConjunctions)) {
+            throw new \InvalidArgumentException('Allowed conjunctions: AND, OR.');
+        }
+        $this->conjunction = $conjunction;
     }
-    $this->conjunction = $conjunction;
-  }
 
-  /**
-   * The condition group conjunction.
-   *
-   * @return string
-   *   The condition group conjunction.
-   */
-  public function conjunction() {
-    return $this->conjunction;
-  }
+    /**
+     * The condition group conjunction.
+     *
+     * @return string
+     *   The condition group conjunction.
+     */
+    public function conjunction()
+    {
+        return $this->conjunction;
+    }
 
-  /**
-   * The members which belong to the condition group.
-   *
-   * @return \Drupal\jsonapi\Query\EntityCondition[]
-   *   The member conditions of this condition group.
-   */
-  public function members() {
-    return $this->members;
-  }
+    /**
+     * The members which belong to the condition group.
+     *
+     * @return \Drupal\jsonapi\Query\EntityCondition[]
+     *   The member conditions of this condition group.
+     */
+    public function members()
+    {
+        return $this->members;
+    }
 
 }

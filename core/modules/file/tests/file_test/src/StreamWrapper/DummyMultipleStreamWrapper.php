@@ -9,4 +9,6 @@ namespace Drupal\file_test\StreamWrapper;
  *
  * Dummy stream wrapper implementation (dummy1://, dummy2://).
  */
-class DummyMultipleStreamWrapper extends DummyStreamWrapper {}
+class DummyMultipleStreamWrapper extends DummyStreamWrapper
+{
+}

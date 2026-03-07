@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime_range\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -16,37 +18,40 @@ use Drupal\datetime_range\DateTimeRangeTrait;
  * separator.
  */
 #[FieldFormatter(
-  id: 'daterange_default',
-  label: new TranslatableMarkup('Default'),
-  field_types: [
+    id: 'daterange_default',
+    label: new TranslatableMarkup('Default'),
+    field_types: [
     'daterange',
   ],
 )]
-class DateRangeDefaultFormatter extends DateTimeDefaultFormatter {
+class DateRangeDefaultFormatter extends DateTimeDefaultFormatter
+{
+    use DateTimeRangeTrait;
 
-  use DateTimeRangeTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return static::dateTimeRangeDefaultSettings() + parent::defaultSettings();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return static::dateTimeRangeDefaultSettings() + parent::defaultSettings();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state): array
+    {
+        $form = parent::settingsForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state): array {
-    $form = parent::settingsForm($form, $form_state);
+        return $this->dateTimeRangeSettingsForm($form);
+    }
 
-    return $this->dateTimeRangeSettingsForm($form);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary(): array {
-    return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary(): array
+    {
+        return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
+    }
 
 }

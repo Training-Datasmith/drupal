@@ -14,47 +14,49 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class AdminPathEntityConverterLanguageTest extends BrowserTestBase {
+class AdminPathEntityConverterLanguageTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language', 'language_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language', 'language_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $permissions = [
+          'access administration pages',
+          'administer site configuration',
+        ];
+        $this->drupalLogin($this->drupalCreateUser($permissions));
+        ConfigurableLanguage::createFromLangcode('es')->save();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $permissions = [
-      'access administration pages',
-      'administer site configuration',
-    ];
-    $this->drupalLogin($this->drupalCreateUser($permissions));
-    ConfigurableLanguage::createFromLangcode('es')->save();
-  }
+    /**
+     * Tests the translated and untranslated config entities are loaded properly.
+     */
+    public function testConfigUsingCurrentLanguage(): void
+    {
+        \Drupal::languageManager()
+          ->getLanguageConfigOverride('es', 'language.entity.es')
+          ->set('label', 'Español')
+          ->save();
 
-  /**
-   * Tests the translated and untranslated config entities are loaded properly.
-   */
-  public function testConfigUsingCurrentLanguage(): void {
-    \Drupal::languageManager()
-      ->getLanguageConfigOverride('es', 'language.entity.es')
-      ->set('label', 'Español')
-      ->save();
+        $this->drupalGet('es/admin/language_test/entity_using_current_language/es');
+        $this->assertSession()->pageTextNotContains('Loaded Spanish.');
+        $this->assertSession()->pageTextContains('Loaded Español.');
 
-    $this->drupalGet('es/admin/language_test/entity_using_current_language/es');
-    $this->assertSession()->pageTextNotContains('Loaded Spanish.');
-    $this->assertSession()->pageTextContains('Loaded Español.');
-
-    $this->drupalGet('es/admin/language_test/entity_using_original_language/es');
-    $this->assertSession()->pageTextContains('Loaded Spanish.');
-    $this->assertSession()->pageTextNotContains('Loaded Español.');
-  }
+        $this->drupalGet('es/admin/language_test/entity_using_original_language/es');
+        $this->assertSession()->pageTextContains('Loaded Spanish.');
+        $this->assertSession()->pageTextNotContains('Loaded Español.');
+    }
 
 }

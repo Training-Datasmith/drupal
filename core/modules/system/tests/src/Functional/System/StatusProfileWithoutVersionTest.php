@@ -14,41 +14,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class StatusProfileWithoutVersionTest extends BrowserTestBase {
+class StatusProfileWithoutVersionTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'testing_no_version';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'testing_no_version';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $admin_user = $this->drupalCreateUser([
+          'administer site configuration',
+          'access site reports',
+        ]);
+        $this->drupalLogin($admin_user);
+    }
 
-    $admin_user = $this->drupalCreateUser([
-      'administer site configuration',
-      'access site reports',
-    ]);
-    $this->drupalLogin($admin_user);
-  }
+    /**
+     * Tests that an installation profile that has no version is displayed.
+     */
+    #[IgnoreDeprecations]
+    public function testStatusPage(): void
+    {
+        $this->drupalGet('admin/reports/status');
+        $this->assertSession()->statusCodeEquals(200);
 
-  /**
-   * Tests that an installation profile that has no version is displayed.
-   */
-  #[IgnoreDeprecations]
-  public function testStatusPage(): void {
-    $this->drupalGet('admin/reports/status');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Check that the installation profile information is displayed.
-    $this->assertSession()->pageTextContains('Testing - No Version (testing_no_version)');
-  }
+        // Check that the installation profile information is displayed.
+        $this->assertSession()->pageTextContains('Testing - No Version (testing_no_version)');
+    }
 
 }

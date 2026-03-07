@@ -17,22 +17,24 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
  *
  * @see \Drupal\entity_test\Plugin\Field\ComputedTestCacheableStringItemList
  */
-class ComputedTestCacheableIntegerItemList extends FieldItemList implements CacheableDependencyInterface {
+class ComputedTestCacheableIntegerItemList extends FieldItemList implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
+    use ComputedItemListTrait;
 
-  use CacheableDependencyTrait, ComputedItemListTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function computeValue() {
-    $value = \Drupal::state()->get('entity_test_computed_integer_value', 0);
-    $item = $this->createItem(0, $value);
-    $cacheability = (new CacheableMetadata())
-      ->setCacheContexts(['url.query_args:computed_test_cacheable_integer_field'])
-      ->setCacheTags(['field:computed_test_cacheable_integer_field'])
-      ->setCacheMaxAge(31536000);
-    $this->setCacheability($cacheability);
-    $this->list[0] = $item;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function computeValue()
+    {
+        $value = \Drupal::state()->get('entity_test_computed_integer_value', 0);
+        $item = $this->createItem(0, $value);
+        $cacheability = (new CacheableMetadata())
+          ->setCacheContexts(['url.query_args:computed_test_cacheable_integer_field'])
+          ->setCacheTags(['field:computed_test_cacheable_integer_field'])
+          ->setCacheMaxAge(31536000);
+        $this->setCacheability($cacheability);
+        $this->list[0] = $item;
+    }
 
 }

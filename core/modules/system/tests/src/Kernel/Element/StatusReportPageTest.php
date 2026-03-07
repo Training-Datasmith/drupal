@@ -19,41 +19,42 @@ include_once \DRUPAL_ROOT . '/core/includes/install.inc';
 #[Group('system')]
 #[IgnoreDeprecations]
 #[RunTestsInSeparateProcesses]
-class StatusReportPageTest extends KernelTestBase {
+class StatusReportPageTest extends KernelTestBase
+{
+    /**
+     * Tests the status report page element.
+     */
+    public function testPeRenderCounters(): void
+    {
+        $element = [
+          '#requirements' => [
+            'foo' => [
+              'title' => 'Foo',
+              'severity' => RequirementSeverity::Info,
+            ],
+            'baz' => [
+              'title' => 'Baz',
+              'severity' => RequirementSeverity::Warning,
+            ],
+            'wiz' => [
+              'title' => 'Wiz',
+              'severity' => RequirementSeverity::Error,
+            ],
+          ],
+        ];
+        $element = StatusReportPage::preRenderCounters($element);
 
-  /**
-   * Tests the status report page element.
-   */
-  public function testPeRenderCounters(): void {
-    $element = [
-      '#requirements' => [
-        'foo' => [
-          'title' => 'Foo',
-          'severity' => RequirementSeverity::Info,
-        ],
-        'baz' => [
-          'title' => 'Baz',
-          'severity' => RequirementSeverity::Warning,
-        ],
-        'wiz' => [
-          'title' => 'Wiz',
-          'severity' => RequirementSeverity::Error,
-        ],
-      ],
-    ];
-    $element = StatusReportPage::preRenderCounters($element);
+        $error = $element['#counters']['error'];
+        $this->assertEquals(1, $error['#amount']);
+        $this->assertEquals('error', $error['#severity']);
 
-    $error = $element['#counters']['error'];
-    $this->assertEquals(1, $error['#amount']);
-    $this->assertEquals('error', $error['#severity']);
+        $warning = $element['#counters']['warning'];
+        $this->assertEquals(1, $warning['#amount']);
+        $this->assertEquals('warning', $warning['#severity']);
 
-    $warning = $element['#counters']['warning'];
-    $this->assertEquals(1, $warning['#amount']);
-    $this->assertEquals('warning', $warning['#severity']);
-
-    $checked = $element['#counters']['checked'];
-    $this->assertEquals(1, $checked['#amount']);
-    $this->assertEquals('checked', $checked['#severity']);
-  }
+        $checked = $element['#counters']['checked'];
+        $this->assertEquals(1, $checked['#amount']);
+        $this->assertEquals('checked', $checked['#severity']);
+    }
 
 }

@@ -15,30 +15,31 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Render')]
 #[RunTestsInSeparateProcesses]
-class UrlBubbleableMetadataBubblingTest extends BrowserTestBase {
+class UrlBubbleableMetadataBubblingTest extends BrowserTestBase
+{
+    use AssertPageCacheContextsAndTagsTrait;
 
-  use AssertPageCacheContextsAndTagsTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['cache_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['cache_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests that URL bubbleable metadata is correctly bubbled.
-   */
-  public function testUrlBubbleableMetadataBubbling(): void {
-    // Test that regular URLs bubble up bubbleable metadata when converted to
-    // string.
-    $url = Url::fromRoute('cache_test.url_bubbling');
-    $this->drupalGet($url);
-    $this->assertCacheContext('url.site');
-    $this->assertSession()->responseContains($url->setAbsolute()->toString());
-  }
+    /**
+     * Tests that URL bubbleable metadata is correctly bubbled.
+     */
+    public function testUrlBubbleableMetadataBubbling(): void
+    {
+        // Test that regular URLs bubble up bubbleable metadata when converted to
+        // string.
+        $url = Url::fromRoute('cache_test.url_bubbling');
+        $this->drupalGet($url);
+        $this->assertCacheContext('url.site');
+        $this->assertSession()->responseContains($url->setAbsolute()->toString());
+    }
 
 }

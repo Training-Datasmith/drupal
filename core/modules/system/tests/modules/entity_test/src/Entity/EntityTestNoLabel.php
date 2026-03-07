@@ -12,28 +12,29 @@ use Drupal\entity_test\EntityTestAccessControlHandler;
  * Test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_no_label',
-  label: new TranslatableMarkup('Entity Test without label'),
-  persistent_cache: FALSE,
-  entity_keys: [
+    id: 'entity_test_no_label',
+    label: new TranslatableMarkup('Entity Test without label'),
+    persistent_cache: false,
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_no_label',
-  internal: TRUE,
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_no_label',
+    internal: true,
 )]
-class EntityTestNoLabel extends EntityTest {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getName();
-  }
+class EntityTestNoLabel extends EntityTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getName();
+    }
 
 }

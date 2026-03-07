@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * A script to generate proxy classes for lazy services.
@@ -20,7 +22,7 @@ use Drupal\Core\Site\Settings;
 use Symfony\Component\HttpFoundation\Request;
 
 if (PHP_SAPI !== 'cli') {
-  return;
+    return;
 }
 
 // Bootstrap.

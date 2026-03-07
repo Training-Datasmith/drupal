@@ -23,377 +23,388 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class TimezoneTest extends EntityKernelTestBase implements FormInterface {
+class TimezoneTest extends EntityKernelTestBase implements FormInterface
+{
+    /**
+     * The date used in tests.
+     *
+     * @var \Drupal\Core\Datetime\DrupalDateTime
+     */
+    protected $date;
 
-  /**
-   * The date used in tests.
-   *
-   * @var \Drupal\Core\Datetime\DrupalDateTime
-   */
-  protected $date;
-
-  /**
-   * An array of timezones with labels denoting their use in the tests.
-   *
-   * @var array
-   */
-  protected $timezones = [
-    // UTC-12, no DST.
-    'zone A' => 'Pacific/Kwajalein',
-    // UTC-7, no DST.
-    'zone B' => 'America/Phoenix',
-    // UTC+5:30, no DST.
-    'user' => 'Asia/Kolkata',
-    'UTC' => 'UTC',
-  ];
-
-  /**
-   * The test date formatted in various formats and timezones.
-   *
-   * @var array
-   */
-  protected $formattedDates = [];
-
-  /**
-   * HTML date format pattern.
-   *
-   * @var string
-   */
-  protected $dateFormat;
-
-  /**
-   * HTML time format pattern.
-   *
-   * @var string
-   */
-  protected $timeFormat;
-
-  /**
-   * The element type that is being tested ('datetime' or 'datelist').
-   *
-   * @var string
-   */
-  protected $elementType;
-
-  /**
-   * The number of test elements on the form.
-   *
-   * @var int
-   */
-  protected $testConditions;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-
-    $form['test1'] = [
-      '#title' => 'No default date, #date_timezone present',
-      '#type' => $this->elementType,
-      '#default_value' => '',
-      '#date_timezone' => $this->timezones['zone A'],
-      '#test_expect_timezone' => 'zone A',
+    /**
+     * An array of timezones with labels denoting their use in the tests.
+     *
+     * @var array
+     */
+    protected $timezones = [
+      // UTC-12, no DST.
+      'zone A' => 'Pacific/Kwajalein',
+      // UTC-7, no DST.
+      'zone B' => 'America/Phoenix',
+      // UTC+5:30, no DST.
+      'user' => 'Asia/Kolkata',
+      'UTC' => 'UTC',
     ];
 
-    $form['test2'] = [
-      '#title' => 'No default date, no #date_timezone',
-      '#type' => $this->elementType,
-      '#default_value' => '',
-      '#test_expect_timezone' => 'user',
-    ];
+    /**
+     * The test date formatted in various formats and timezones.
+     *
+     * @var array
+     */
+    protected $formattedDates = [];
 
-    $form['test3'] = [
-      '#title' => 'Default date present with default timezone, #date_timezone same',
-      '#type' => $this->elementType,
-      '#default_value' => $this->date,
-      '#date_timezone' => $this->timezones['user'],
-      '#test_expect_timezone' => 'user',
-    ];
+    /**
+     * HTML date format pattern.
+     *
+     * @var string
+     */
+    protected $dateFormat;
 
-    $form['test4'] = [
-      '#title' => 'Default date present with default timezone, #date_timezone different',
-      '#type' => $this->elementType,
-      '#default_value' => $this->date,
-      '#date_timezone' => $this->timezones['zone A'],
-      '#test_expect_timezone' => 'zone A',
-    ];
+    /**
+     * HTML time format pattern.
+     *
+     * @var string
+     */
+    protected $timeFormat;
 
-    $form['test5'] = [
-      '#title' => 'Default date present with default timezone, no #date_timezone',
-      '#type' => $this->elementType,
-      '#default_value' => $this->date,
-      '#test_expect_timezone' => 'user',
-    ];
+    /**
+     * The element type that is being tested ('datetime' or 'datelist').
+     *
+     * @var string
+     */
+    protected $elementType;
 
-    $dateWithTimeZoneA = clone $this->date;
-    $dateWithTimeZoneA->setTimezone(new \DateTimeZone($this->timezones['zone A']));
-    $form['test6'] = [
-      '#title' => 'Default date present with unusual timezone, #date_timezone same',
-      '#type' => $this->elementType,
-      '#default_value' => $dateWithTimeZoneA,
-      '#date_timezone' => $this->timezones['zone A'],
-      '#test_expect_timezone' => 'zone A',
-    ];
+    /**
+     * The number of test elements on the form.
+     *
+     * @var int
+     */
+    protected $testConditions;
 
-    $form['test7'] = [
-      '#title' => 'Default date present with unusual timezone, #date_timezone different',
-      '#type' => $this->elementType,
-      '#default_value' => $dateWithTimeZoneA,
-      '#date_timezone' => $this->timezones['zone B'],
-      '#test_expect_timezone' => 'zone B',
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
 
-    $form['test8'] = [
-      '#title' => 'Default date present with unusual timezone, no #date_timezone',
-      '#type' => $this->elementType,
-      '#default_value' => $dateWithTimeZoneA,
-      '#test_expect_timezone' => 'user',
-    ];
+        $form['test1'] = [
+          '#title' => 'No default date, #date_timezone present',
+          '#type' => $this->elementType,
+          '#default_value' => '',
+          '#date_timezone' => $this->timezones['zone A'],
+          '#test_expect_timezone' => 'zone A',
+        ];
 
-    $this->testConditions = 8;
-    return $form;
-  }
+        $form['test2'] = [
+          '#title' => 'No default date, no #date_timezone',
+          '#type' => $this->elementType,
+          '#default_value' => '',
+          '#test_expect_timezone' => 'user',
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $form['test3'] = [
+          '#title' => 'Default date present with default timezone, #date_timezone same',
+          '#type' => $this->elementType,
+          '#default_value' => $this->date,
+          '#date_timezone' => $this->timezones['user'],
+          '#test_expect_timezone' => 'user',
+        ];
 
-    $this->installConfig(['system']);
+        $form['test4'] = [
+          '#title' => 'Default date present with default timezone, #date_timezone different',
+          '#type' => $this->elementType,
+          '#default_value' => $this->date,
+          '#date_timezone' => $this->timezones['zone A'],
+          '#test_expect_timezone' => 'zone A',
+        ];
 
-    // Setup the background time zones.
-    $this->timezones['php initial'] = date_default_timezone_get();
-    $user = $this->createUser();
-    $user->set('timezone', $this->timezones['user'])->save();
-    // This also sets PHP's assumed time.
-    \Drupal::currentUser()->setAccount($user);
+        $form['test5'] = [
+          '#title' => 'Default date present with default timezone, no #date_timezone',
+          '#type' => $this->elementType,
+          '#default_value' => $this->date,
+          '#test_expect_timezone' => 'user',
+        ];
 
-    // Set a reference date to use in tests.
-    $this->date = new DrupalDatetime('2000-01-01 12:00', NULL);
+        $dateWithTimeZoneA = clone $this->date;
+        $dateWithTimeZoneA->setTimezone(new \DateTimeZone($this->timezones['zone A']));
+        $form['test6'] = [
+          '#title' => 'Default date present with unusual timezone, #date_timezone same',
+          '#type' => $this->elementType,
+          '#default_value' => $dateWithTimeZoneA,
+          '#date_timezone' => $this->timezones['zone A'],
+          '#test_expect_timezone' => 'zone A',
+        ];
 
-    // Create arrays listing the dates and times of $this->date formatted
-    // according to the various timezones of $this->timezones.
-    $this->dateFormat = DateFormat::load('html_date')->getPattern();
-    $this->timeFormat = DateFormat::load('html_time')->getPattern();
-    $date = clone $this->date;
-    foreach ($this->timezones as $label => $timezone) {
-      $date->setTimezone(new \DateTimeZone($timezone));
-      $this->formattedDates['date'][$label] = $date->format($this->dateFormat);
-      $this->formattedDates['time'][$label] = $date->format($this->timeFormat);
-      $this->formattedDates['day'][$label] = $date->format('j');
-      $this->formattedDates['month'][$label] = $date->format('n');
-      $this->formattedDates['year'][$label] = $date->format('Y');
-      $this->formattedDates['hour'][$label] = $date->format('G');
-      $this->formattedDates['minute'][$label] = $date->format('i');
-      $this->formattedDates['second'][$label] = $date->format('s');
+        $form['test7'] = [
+          '#title' => 'Default date present with unusual timezone, #date_timezone different',
+          '#type' => $this->elementType,
+          '#default_value' => $dateWithTimeZoneA,
+          '#date_timezone' => $this->timezones['zone B'],
+          '#test_expect_timezone' => 'zone B',
+        ];
+
+        $form['test8'] = [
+          '#title' => 'Default date present with unusual timezone, no #date_timezone',
+          '#type' => $this->elementType,
+          '#default_value' => $dateWithTimeZoneA,
+          '#test_expect_timezone' => 'user',
+        ];
+
+        $this->testConditions = 8;
+        return $form;
     }
 
-    // Validate the timezone setup.
-    $this->assertEquals($this->timezones['user'], date_default_timezone_get(), 'Subsequent tests assume specific value for date_default_timezone_get().');
-    $this->assertEquals(date_default_timezone_get(), $this->date->getTimezone()->getName(), 'Subsequent tests assume DrupalDateTime objects default to Drupal user time zone if none specified');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * Tests datetime elements interpret their times correctly when saving.
-   *
-   * Initial times are inevitably presented to the user using a timezone, and so
-   * the time must be interpreted using the same timezone when it is time to
-   * save the form, otherwise stored times may be changed without the user
-   * changing the element's values.
-   */
-  public function testDatetimeElementTimesUnderstoodCorrectly(): void {
-    $this->assertTimesUnderstoodCorrectly('datetime', ['date', 'time']);
-  }
+        $this->installConfig(['system']);
 
-  /**
-   * Tests datelist elements interpret their times correctly when saving.
-   *
-   * See testDatetimeElementTimesUnderstoodCorrectly() for more explanation.
-   */
-  public function testDatelistElementTimesUnderstoodCorrectly(): void {
-    $this->assertTimesUnderstoodCorrectly('datelist', [
-      'day',
-      'month',
-      'year',
-      'hour',
-      'minute',
-      'second',
-    ]);
-  }
+        // Setup the background time zones.
+        $this->timezones['php initial'] = date_default_timezone_get();
+        $user = $this->createUser();
+        $user->set('timezone', $this->timezones['user'])->save();
+        // This also sets PHP's assumed time.
+        \Drupal::currentUser()->setAccount($user);
 
-  /**
-   * On datetime elements test #date_timezone after ::processDatetime.
-   *
-   * The element's render array has a #date_timezone value that should
-   * accurately reflect the timezone that will be used to interpret times
-   * entered through the element.
-   */
-  public function testDatetimeTimezonePropertyProcessed(): void {
-    $this->assertDateTimezonePropertyProcessed('datetime');
-  }
+        // Set a reference date to use in tests.
+        $this->date = new DrupalDatetime('2000-01-01 12:00', null);
 
-  /**
-   * On datelist elements test #date_timezone after ::processDatetime.
-   *
-   * See testDatetimeTimezonePropertyProcessed() for more explanation.
-   */
-  public function testDatelistTimezonePropertyProcessed(): void {
-    $this->assertDateTimezonePropertyProcessed('datelist');
-  }
-
-  /**
-   * Asserts that elements interpret dates using the expected time zones.
-   *
-   * @param string $elementType
-   *   The element type to test.
-   * @param array $inputs
-   *   The names of the default input elements used by this element type.
-   *
-   * @throws \Exception
-   *
-   * @internal
-   */
-  protected function assertTimesUnderstoodCorrectly(string $elementType, array $inputs): void {
-    $this->elementType = $elementType;
-
-    // Simulate the form being saved, with the user adding the date for any
-    // initially empty elements, but not changing other elements.
-    $form_state = new FormState();
-    $form_builder = $this->container->get('form_builder');
-    $form = $this->setupForm($form_state, $form_builder);
-    foreach ($form as $elementName => $element) {
-      if (
-        isset($element['#type']) &&
-        $element['#type'] === $this->elementType &&
-        $element['#default_value'] === ''
-      ) {
-        $newValues = [];
-        // Build an array of new values for the initially empty elements,
-        // depending on the inputs required by the element type, and using
-        // the timezone that will be expected for that test element.
-        foreach ($inputs as $input) {
-          $newValues[$input] = $this->formattedDates[$input][$element['#test_expect_timezone']];
+        // Create arrays listing the dates and times of $this->date formatted
+        // according to the various timezones of $this->timezones.
+        $this->dateFormat = DateFormat::load('html_date')->getPattern();
+        $this->timeFormat = DateFormat::load('html_time')->getPattern();
+        $date = clone $this->date;
+        foreach ($this->timezones as $label => $timezone) {
+            $date->setTimezone(new \DateTimeZone($timezone));
+            $this->formattedDates['date'][$label] = $date->format($this->dateFormat);
+            $this->formattedDates['time'][$label] = $date->format($this->timeFormat);
+            $this->formattedDates['day'][$label] = $date->format('j');
+            $this->formattedDates['month'][$label] = $date->format('n');
+            $this->formattedDates['year'][$label] = $date->format('Y');
+            $this->formattedDates['hour'][$label] = $date->format('G');
+            $this->formattedDates['minute'][$label] = $date->format('i');
+            $this->formattedDates['second'][$label] = $date->format('s');
         }
-        $form_state->setValue([$elementName], $newValues);
-      }
-    }
-    $form_builder->submitForm($this, $form_state);
 
-    // Examine the output of each test element.
-    $utc = new \DateTimeZone('UTC');
-    $expectedDateUTC = clone $this->date;
-    $expectedDateUTC->setTimezone($utc)->format('Y-m-d H:i:s');
-    $wrongDates = [];
-    $wrongTimezones = [];
-    $rightDates = 0;
-    foreach ($form_state->getCompleteForm() as $elementName => $element) {
-      if (isset($element['#type']) && $element['#type'] === $this->elementType) {
-        $actualDate = $form_state->getValue($elementName);
-        $actualTimezone = array_search($actualDate->getTimezone()->getName(), $this->timezones);
-        $actualDateUTC = $actualDate->setTimezone($utc)->format('Y-m-d H:i:s');
-
-        // Check that $this->date has not anywhere been accidentally changed
-        // from its default timezone, invalidating the test logic.
-        $this->assertEquals(date_default_timezone_get(), $this->date->getTimezone()->getName(), "Test date still set to user timezone.");
-
-        // Build a list of cases where the result is not as expected.
-        // Check the time has been understood correctly.
-        if ($actualDate != $this->date) {
-          $wrongDates[$element['#title']] = $actualDateUTC;
-        }
-        else {
-          // Explicitly counting test passes prevents the test from seeming to
-          // pass just because the whole loop is being skipped.
-          $rightDates++;
-        }
-        // Check the correct timezone is set on the value object.
-        if ($element['#test_expect_timezone'] !== $actualTimezone) {
-          $wrongTimezones[$element['#title']] = [$element['#test_expect_timezone'], $actualTimezone];
-        }
-      }
+        // Validate the timezone setup.
+        $this->assertEquals($this->timezones['user'], date_default_timezone_get(), 'Subsequent tests assume specific value for date_default_timezone_get().');
+        $this->assertEquals(date_default_timezone_get(), $this->date->getTimezone()->getName(), 'Subsequent tests assume DrupalDateTime objects default to Drupal user time zone if none specified');
     }
 
-    $message = "On all elements the time should be understood correctly as $expectedDateUTC: \n" . print_r($wrongDates, TRUE);
-    $this->assertEquals($this->testConditions, $rightDates, $message);
-    $message = "On all elements the correct timezone should be set on the value object: (expected, actual) \n" . print_r($wrongTimezones, TRUE);
-    $this->assertCount(0, $wrongTimezones, $message);
-  }
-
-  /**
-   * Asserts that elements set #date_timezone correctly.
-   *
-   * @param string $elementType
-   *   The element type to test.
-   *
-   * @throws \Exception
-   *
-   * @internal
-   */
-  public function assertDateTimezonePropertyProcessed(string $elementType): void {
-    $this->elementType = $elementType;
-    // Simulate form being loaded and default values displayed to user.
-    $form_state = new FormState();
-    $form_builder = $this->container->get('form_builder');
-    $this->setupForm($form_state, $form_builder);
-
-    // Check the #date_timezone property on each processed test element.
-    $wrongTimezones = [];
-    foreach ($form_state->getCompleteForm() as $element) {
-      if (isset($element['#type']) && $element['#type'] === $this->elementType) {
-        // Check the correct timezone is set on the value object.
-        $actualTimezone = array_search($element['#date_timezone'], $this->timezones, TRUE);
-        if ($element['#test_expect_timezone'] !== $actualTimezone) {
-          $wrongTimezones[$element['#title']] = [
-            $element['#test_expect_timezone'],
-            $actualTimezone,
-          ];
-        }
-      }
-      $this->assertEquals($this->timezones['user'], date_default_timezone_get(), 'Subsequent tests assume specific value for date_default_timezone_get().');
-      $message = "The correct timezone should be set on the processed {$this->elementType}  elements: (expected, actual) \n" . print_r($wrongTimezones, TRUE);
-      $this->assertCount(0, $wrongTimezones, $message);
+    /**
+     * Tests datetime elements interpret their times correctly when saving.
+     *
+     * Initial times are inevitably presented to the user using a timezone, and so
+     * the time must be interpreted using the same timezone when it is time to
+     * save the form, otherwise stored times may be changed without the user
+     * changing the element's values.
+     */
+    public function testDatetimeElementTimesUnderstoodCorrectly(): void
+    {
+        $this->assertTimesUnderstoodCorrectly('datetime', ['date', 'time']);
     }
-  }
 
-  /**
-   * Simulate form being loaded and default values displayed to user.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   A form_state object.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   A form_builder object.
-   *
-   * @return \Drupal\Core\Form\FormStateInterface
-   *   The modified form state.
-   */
-  protected function setupForm(FormStateInterface $form_state, FormBuilderInterface $form_builder) {
-    $form_id = $form_builder->getFormId($this, $form_state);
-    $form = $form_builder->retrieveForm($form_id, $form_state);
-    $form_state->setValidationEnforced();
-    $form_state->clearErrors();
-    $form_builder->prepareForm($form_id, $form, $form_state);
-    $form_builder->processForm($form_id, $form, $form_state);
-    return $form_builder->retrieveForm($form_id, $form_state);
-  }
+    /**
+     * Tests datelist elements interpret their times correctly when saving.
+     *
+     * See testDatetimeElementTimesUnderstoodCorrectly() for more explanation.
+     */
+    public function testDatelistElementTimesUnderstoodCorrectly(): void
+    {
+        $this->assertTimesUnderstoodCorrectly('datelist', [
+          'day',
+          'month',
+          'year',
+          'hour',
+          'minute',
+          'second',
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'test_datetime_elements';
-  }
+    /**
+     * On datetime elements test #date_timezone after ::processDatetime.
+     *
+     * The element's render array has a #date_timezone value that should
+     * accurately reflect the timezone that will be used to interpret times
+     * entered through the element.
+     */
+    public function testDatetimeTimezonePropertyProcessed(): void
+    {
+        $this->assertDateTimezonePropertyProcessed('datetime');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * On datelist elements test #date_timezone after ::processDatetime.
+     *
+     * See testDatetimeTimezonePropertyProcessed() for more explanation.
+     */
+    public function testDatelistTimezonePropertyProcessed(): void
+    {
+        $this->assertDateTimezonePropertyProcessed('datelist');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * Asserts that elements interpret dates using the expected time zones.
+     *
+     * @param string $elementType
+     *   The element type to test.
+     * @param array $inputs
+     *   The names of the default input elements used by this element type.
+     *
+     * @throws \Exception
+     *
+     * @internal
+     */
+    protected function assertTimesUnderstoodCorrectly(string $elementType, array $inputs): void
+    {
+        $this->elementType = $elementType;
+
+        // Simulate the form being saved, with the user adding the date for any
+        // initially empty elements, but not changing other elements.
+        $form_state = new FormState();
+        $form_builder = $this->container->get('form_builder');
+        $form = $this->setupForm($form_state, $form_builder);
+        foreach ($form as $elementName => $element) {
+            if (
+                isset($element['#type']) &&
+                $element['#type'] === $this->elementType &&
+                $element['#default_value'] === ''
+            ) {
+                $newValues = [];
+                // Build an array of new values for the initially empty elements,
+                // depending on the inputs required by the element type, and using
+                // the timezone that will be expected for that test element.
+                foreach ($inputs as $input) {
+                    $newValues[$input] = $this->formattedDates[$input][$element['#test_expect_timezone']];
+                }
+                $form_state->setValue([$elementName], $newValues);
+            }
+        }
+        $form_builder->submitForm($this, $form_state);
+
+        // Examine the output of each test element.
+        $utc = new \DateTimeZone('UTC');
+        $expectedDateUTC = clone $this->date;
+        $expectedDateUTC->setTimezone($utc)->format('Y-m-d H:i:s');
+        $wrongDates = [];
+        $wrongTimezones = [];
+        $rightDates = 0;
+        foreach ($form_state->getCompleteForm() as $elementName => $element) {
+            if (isset($element['#type']) && $element['#type'] === $this->elementType) {
+                $actualDate = $form_state->getValue($elementName);
+                $actualTimezone = array_search($actualDate->getTimezone()->getName(), $this->timezones);
+                $actualDateUTC = $actualDate->setTimezone($utc)->format('Y-m-d H:i:s');
+
+                // Check that $this->date has not anywhere been accidentally changed
+                // from its default timezone, invalidating the test logic.
+                $this->assertEquals(date_default_timezone_get(), $this->date->getTimezone()->getName(), 'Test date still set to user timezone.');
+
+                // Build a list of cases where the result is not as expected.
+                // Check the time has been understood correctly.
+                if ($actualDate != $this->date) {
+                    $wrongDates[$element['#title']] = $actualDateUTC;
+                } else {
+                    // Explicitly counting test passes prevents the test from seeming to
+                    // pass just because the whole loop is being skipped.
+                    $rightDates++;
+                }
+                // Check the correct timezone is set on the value object.
+                if ($element['#test_expect_timezone'] !== $actualTimezone) {
+                    $wrongTimezones[$element['#title']] = [$element['#test_expect_timezone'], $actualTimezone];
+                }
+            }
+        }
+
+        $message = "On all elements the time should be understood correctly as $expectedDateUTC: \n" . print_r($wrongDates, true);
+        $this->assertEquals($this->testConditions, $rightDates, $message);
+        $message = "On all elements the correct timezone should be set on the value object: (expected, actual) \n" . print_r($wrongTimezones, true);
+        $this->assertCount(0, $wrongTimezones, $message);
+    }
+
+    /**
+     * Asserts that elements set #date_timezone correctly.
+     *
+     * @param string $elementType
+     *   The element type to test.
+     *
+     * @throws \Exception
+     *
+     * @internal
+     */
+    public function assertDateTimezonePropertyProcessed(string $elementType): void
+    {
+        $this->elementType = $elementType;
+        // Simulate form being loaded and default values displayed to user.
+        $form_state = new FormState();
+        $form_builder = $this->container->get('form_builder');
+        $this->setupForm($form_state, $form_builder);
+
+        // Check the #date_timezone property on each processed test element.
+        $wrongTimezones = [];
+        foreach ($form_state->getCompleteForm() as $element) {
+            if (isset($element['#type']) && $element['#type'] === $this->elementType) {
+                // Check the correct timezone is set on the value object.
+                $actualTimezone = array_search($element['#date_timezone'], $this->timezones, true);
+                if ($element['#test_expect_timezone'] !== $actualTimezone) {
+                    $wrongTimezones[$element['#title']] = [
+                      $element['#test_expect_timezone'],
+                      $actualTimezone,
+                    ];
+                }
+            }
+            $this->assertEquals($this->timezones['user'], date_default_timezone_get(), 'Subsequent tests assume specific value for date_default_timezone_get().');
+            $message = "The correct timezone should be set on the processed {$this->elementType}  elements: (expected, actual) \n" . print_r($wrongTimezones, true);
+            $this->assertCount(0, $wrongTimezones, $message);
+        }
+    }
+
+    /**
+     * Simulate form being loaded and default values displayed to user.
+     *
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   A form_state object.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   A form_builder object.
+     *
+     * @return \Drupal\Core\Form\FormStateInterface
+     *   The modified form state.
+     */
+    protected function setupForm(FormStateInterface $form_state, FormBuilderInterface $form_builder)
+    {
+        $form_id = $form_builder->getFormId($this, $form_state);
+        $form = $form_builder->retrieveForm($form_id, $form_state);
+        $form_state->setValidationEnforced();
+        $form_state->clearErrors();
+        $form_builder->prepareForm($form_id, $form, $form_state);
+        $form_builder->processForm($form_id, $form, $form_state);
+        return $form_builder->retrieveForm($form_id, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'test_datetime_elements';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

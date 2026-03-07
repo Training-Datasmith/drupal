@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
-use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\file\FileInterface;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
@@ -11,80 +12,83 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 /**
  * Adds the file URI to embedded file entities.
  */
-class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
+class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer
+{
+    use EntityReferenceFieldItemNormalizerTrait;
 
-  use EntityReferenceFieldItemNormalizerTrait;
-
-  /**
-   * Constructs an EntityReferenceFieldItemNormalizer object.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($field_item, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    $values = parent::normalize($field_item, $format, $context);
-
-    $this->normalizeRootReferenceValue($values, $field_item);
-
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
-    if ($entity = $field_item->get('entity')->getValue()) {
-      $values['target_type'] = $entity->getEntityTypeId();
-      // Add the target entity UUID to the normalized output values.
-      $values['target_uuid'] = $entity->uuid();
-
-      // Add a 'url' value if there is a reference and a canonical URL. Hard
-      // code 'canonical' here as config entities override the default $rel
-      // parameter value to 'edit-form.
-      if ($entity->hasLinkTemplate('canonical') && !$entity->isNew() && $url = $entity->toUrl('canonical')->toString(TRUE)) {
-        $this->addCacheableDependency($context, $url);
-        $values['url'] = $url->getGeneratedUrl();
-      }
-      // @todo Remove in https://www.drupal.org/project/drupal/issues/2925520
-      elseif ($entity instanceof FileInterface) {
-        $values['url'] = $entity->createFileUrl(FALSE);
-      }
+    /**
+     * Constructs an EntityReferenceFieldItemNormalizer object.
+     *
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+    {
     }
 
-    return $values;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($field_item, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        $values = parent::normalize($field_item, $format, $context);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function constructValue($data, $context) {
-    if (isset($data['target_uuid'])) {
-      /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $field_item */
-      $field_item = $context['target_instance'];
-      if (empty($data['target_uuid'])) {
-        throw new InvalidArgumentException(sprintf('If provided "target_uuid" cannot be empty for field "%s".', $field_item->getName()));
-      }
-      $target_type = $field_item->getFieldDefinition()->getSetting('target_type');
-      if (!empty($data['target_type']) && $target_type !== $data['target_type']) {
-        throw new UnexpectedValueException(sprintf('The field "%s" property "target_type" must be set to "%s" or omitted.', $field_item->getFieldDefinition()->getName(), $target_type));
-      }
-      if ($entity = $this->entityRepository->loadEntityByUuid($target_type, $data['target_uuid'])) {
-        return ['target_id' => $entity->id()] + array_intersect_key($data, $field_item->getProperties());
-      }
-      // Unable to load entity by uuid.
-      throw new InvalidArgumentException(sprintf('No "%s" entity found with UUID "%s" for field "%s".', $data['target_type'], $data['target_uuid'], $field_item->getName()));
+        $this->normalizeRootReferenceValue($values, $field_item);
+
+        /** @var \Drupal\Core\Entity\EntityInterface $entity */
+        if ($entity = $field_item->get('entity')->getValue()) {
+            $values['target_type'] = $entity->getEntityTypeId();
+            // Add the target entity UUID to the normalized output values.
+            $values['target_uuid'] = $entity->uuid();
+
+            // Add a 'url' value if there is a reference and a canonical URL. Hard
+            // code 'canonical' here as config entities override the default $rel
+            // parameter value to 'edit-form.
+            if ($entity->hasLinkTemplate('canonical') && !$entity->isNew() && $url = $entity->toUrl('canonical')->toString(true)) {
+                $this->addCacheableDependency($context, $url);
+                $values['url'] = $url->getGeneratedUrl();
+            }
+            // @todo Remove in https://www.drupal.org/project/drupal/issues/2925520
+            elseif ($entity instanceof FileInterface) {
+                $values['url'] = $entity->createFileUrl(false);
+            }
+        }
+
+        return $values;
     }
-    return parent::constructValue($data, $context);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      EntityReferenceItem::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function constructValue($data, $context)
+    {
+        if (isset($data['target_uuid'])) {
+            /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $field_item */
+            $field_item = $context['target_instance'];
+            if (empty($data['target_uuid'])) {
+                throw new InvalidArgumentException(sprintf('If provided "target_uuid" cannot be empty for field "%s".', $field_item->getName()));
+            }
+            $target_type = $field_item->getFieldDefinition()->getSetting('target_type');
+            if (!empty($data['target_type']) && $target_type !== $data['target_type']) {
+                throw new UnexpectedValueException(sprintf('The field "%s" property "target_type" must be set to "%s" or omitted.', $field_item->getFieldDefinition()->getName(), $target_type));
+            }
+            if ($entity = $this->entityRepository->loadEntityByUuid($target_type, $data['target_uuid'])) {
+                return ['target_id' => $entity->id()] + array_intersect_key($data, $field_item->getProperties());
+            }
+            // Unable to load entity by uuid.
+            throw new InvalidArgumentException(sprintf('No "%s" entity found with UUID "%s" for field "%s".', $data['target_type'], $data['target_uuid'], $field_item->getName()));
+        }
+        return parent::constructValue($data, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          EntityReferenceItem::class => true,
+        ];
+    }
 
 }

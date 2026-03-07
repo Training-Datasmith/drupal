@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PathProcessor;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -17,13 +19,14 @@ use Symfony\Component\HttpFoundation\Request;
  *   controllers should be required to implement this logic themselves. If we
  *   decide to keep this code, remove this TODO.
  */
-class PathProcessorDecode implements InboundPathProcessorInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request): string {
-    return urldecode($path);
-  }
+class PathProcessorDecode implements InboundPathProcessorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request): string
+    {
+        return urldecode($path);
+    }
 
 }

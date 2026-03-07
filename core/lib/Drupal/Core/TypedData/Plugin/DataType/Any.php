@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,16 +16,16 @@ use Drupal\Core\TypedData\TypedData;
  * which no further metadata is available.
  */
 #[DataType(
-  id: "any",
-  label: new TranslatableMarkup("Any data")
+    id: 'any',
+    label: new TranslatableMarkup('Any data')
 )]
-class Any extends TypedData {
-
-  /**
-   * The data value.
-   *
-   * @var mixed
-   */
-  protected $value;
+class Any extends TypedData
+{
+    /**
+     * The data value.
+     *
+     * @var mixed
+     */
+    protected $value;
 
 }

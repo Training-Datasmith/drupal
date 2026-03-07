@@ -13,99 +13,103 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  * Tests block local tasks.
  */
 #[Group('block')]
-class BlockLocalTasksTest extends LocalTaskIntegrationTestBase {
+class BlockLocalTasksTest extends LocalTaskIntegrationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->directoryList = ['block' => 'core/modules/block'];
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->directoryList = ['block' => 'core/modules/block'];
-    parent::setUp();
+        $config_factory = $this->getConfigFactoryStub([
+          'system.theme' => ['default' => 'test_c'],
+        ]);
 
-    $config_factory = $this->getConfigFactoryStub([
-      'system.theme' => ['default' => 'test_c'],
-    ]);
-
-    $themes = [];
-    $themes['test_a'] = (object) [
-      'status' => 1,
-      'info' => [
-        'name' => 'test_a',
-        'hidden' => TRUE,
-      ],
-    ];
-    $themes['test_b'] = (object) [
-      'status' => 1,
-      'info' => [
-        'name' => 'test_b',
-      ],
-    ];
-    $themes['test_c'] = (object) [
-      'status' => 1,
-      'info' => [
-        'name' => 'test_c',
-      ],
-    ];
-    $theme_handler = $this->createMock('Drupal\Core\Extension\ThemeHandlerInterface');
-    $theme_handler->expects($this->any())
-      ->method('listInfo')
-      ->willReturn($themes);
-    $theme_handler->expects($this->any())
-      ->method('hasUi')
-      ->willReturnMap([
-        ['test_a', FALSE],
-        ['test_b', TRUE],
-        ['test_c', TRUE],
-      ]);
-
-    $container = new ContainerBuilder();
-    $container->set('config.factory', $config_factory);
-    $container->set('theme_handler', $theme_handler);
-    $container->setParameter('app.root', $this->root);
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests the admin edit local task.
-   */
-  public function testBlockAdminLocalTasks(): void {
-    $this->assertLocalTasks('entity.block.edit_form', [['entity.block.edit_form']]);
-  }
-
-  /**
-   * Tests the block admin display local tasks.
-   */
-  #[DataProvider('providerTestBlockAdminDisplay')]
-  public function testBlockAdminDisplay($route, $expected): void {
-    $this->assertLocalTasks($route, $expected);
-  }
-
-  /**
-   * Provides a list of routes to test.
-   */
-  public static function providerTestBlockAdminDisplay() {
-    return [
-      [
-        'block.admin_display',
-        [
-          ['block.admin_display'],
-          [
-            'block.admin_display_theme:test_b',
-            'block.admin_display_theme:test_c',
+        $themes = [];
+        $themes['test_a'] = (object) [
+          'status' => 1,
+          'info' => [
+            'name' => 'test_a',
+            'hidden' => true,
           ],
-        ],
-      ],
-      [
-        'block.admin_display_theme',
-        [
-          ['block.admin_display'],
-          [
-            'block.admin_display_theme:test_b',
-            'block.admin_display_theme:test_c',
+        ];
+        $themes['test_b'] = (object) [
+          'status' => 1,
+          'info' => [
+            'name' => 'test_b',
           ],
-        ],
-      ],
-    ];
-  }
+        ];
+        $themes['test_c'] = (object) [
+          'status' => 1,
+          'info' => [
+            'name' => 'test_c',
+          ],
+        ];
+        $theme_handler = $this->createMock('Drupal\Core\Extension\ThemeHandlerInterface');
+        $theme_handler->expects($this->any())
+          ->method('listInfo')
+          ->willReturn($themes);
+        $theme_handler->expects($this->any())
+          ->method('hasUi')
+          ->willReturnMap([
+            ['test_a', false],
+            ['test_b', true],
+            ['test_c', true],
+          ]);
+
+        $container = new ContainerBuilder();
+        $container->set('config.factory', $config_factory);
+        $container->set('theme_handler', $theme_handler);
+        $container->setParameter('app.root', $this->root);
+        \Drupal::setContainer($container);
+    }
+
+    /**
+     * Tests the admin edit local task.
+     */
+    public function testBlockAdminLocalTasks(): void
+    {
+        $this->assertLocalTasks('entity.block.edit_form', [['entity.block.edit_form']]);
+    }
+
+    /**
+     * Tests the block admin display local tasks.
+     */
+    #[DataProvider('providerTestBlockAdminDisplay')]
+    public function testBlockAdminDisplay($route, $expected): void
+    {
+        $this->assertLocalTasks($route, $expected);
+    }
+
+    /**
+     * Provides a list of routes to test.
+     */
+    public static function providerTestBlockAdminDisplay()
+    {
+        return [
+          [
+            'block.admin_display',
+            [
+              ['block.admin_display'],
+              [
+                'block.admin_display_theme:test_b',
+                'block.admin_display_theme:test_c',
+              ],
+            ],
+          ],
+          [
+            'block.admin_display_theme',
+            [
+              ['block.admin_display'],
+              [
+                'block.admin_display_theme:test_b',
+                'block.admin_display_theme:test_c',
+              ],
+            ],
+          ],
+        ];
+    }
 
 }

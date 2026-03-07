@@ -15,25 +15,27 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-class NodeModulesExcluder implements EventSubscriberInterface {
+class NodeModulesExcluder implements EventSubscriberInterface
+{
+    /**
+     * Excludes node_modules directories from stage operations.
+     *
+     * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
+     *   The event object.
+     */
+    public function excludeNodeModulesFiles(CollectPathsToExcludeEvent $event): void
+    {
+        $event->addPathsRelativeToProjectRoot($event->scanForDirectoriesByName('node_modules'));
+    }
 
-  /**
-   * Excludes node_modules directories from stage operations.
-   *
-   * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
-   *   The event object.
-   */
-  public function excludeNodeModulesFiles(CollectPathsToExcludeEvent $event): void {
-    $event->addPathsRelativeToProjectRoot($event->scanForDirectoriesByName('node_modules'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      CollectPathsToExcludeEvent::class => 'excludeNodeModulesFiles',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          CollectPathsToExcludeEvent::class => 'excludeNodeModulesFiles',
+        ];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Command;
 
 use Symfony\Component\Console\Application;
@@ -7,23 +9,25 @@ use Symfony\Component\Console\Application;
 /**
  * Provides a command to import a database generation script.
  */
-class DbToolsApplication extends Application {
+class DbToolsApplication extends Application
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct()
+    {
+        parent::__construct('Database Tools', \Drupal::VERSION);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-    parent::__construct('Database Tools', \Drupal::VERSION);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultCommands(): array {
-    $default_commands = parent::getDefaultCommands();
-    $default_commands[] = new DbDumpCommand();
-    $default_commands[] = new DbImportCommand();
-    return $default_commands;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultCommands(): array
+    {
+        $default_commands = parent::getDefaultCommands();
+        $default_commands[] = new DbDumpCommand();
+        $default_commands[] = new DbImportCommand();
+        return $default_commands;
+    }
 
 }

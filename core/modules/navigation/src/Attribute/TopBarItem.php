@@ -12,28 +12,29 @@ use Drupal\navigation\TopBarRegion;
  * The top bar item attribute.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class TopBarItem extends Plugin {
-
-  /**
-   * Constructs a new TopBarItem instance.
-   *
-   * @param string $id
-   *   The top bar item ID.
-   * @param \Drupal\navigation\TopBarRegion $region
-   *   The region where the top bar item belongs to.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $label
-   *   (optional) The human-readable name of the top bar item.
-   * @param class-string|null $deriver
-   *   (optional) The deriver class.
-   * @param int $weight
-   *   (optional) The weight of the top bar item.
-   */
-  public function __construct(
-    public readonly string $id,
-    public readonly TopBarRegion $region,
-    public readonly ?TranslatableMarkup $label = NULL,
-    public readonly ?string $deriver = NULL,
-    public readonly int $weight = 0,
-  ) {}
+final class TopBarItem extends Plugin
+{
+    /**
+     * Constructs a new TopBarItem instance.
+     *
+     * @param string $id
+     *   The top bar item ID.
+     * @param \Drupal\navigation\TopBarRegion $region
+     *   The region where the top bar item belongs to.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $label
+     *   (optional) The human-readable name of the top bar item.
+     * @param class-string|null $deriver
+     *   (optional) The deriver class.
+     * @param int $weight
+     *   (optional) The weight of the top bar item.
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly TopBarRegion $region,
+        public readonly ?TranslatableMarkup $label = null,
+        public readonly ?string $deriver = null,
+        public readonly int $weight = 0,
+    ) {
+    }
 
 }

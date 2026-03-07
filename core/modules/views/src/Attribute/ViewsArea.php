@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Attribute;
 
 use Drupal\Component\Plugin\Attribute\PluginID;
@@ -12,6 +14,6 @@ use Drupal\Component\Plugin\Attribute\PluginID;
  * @ingroup views_area_handlers
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ViewsArea extends PluginID {
-
+class ViewsArea extends PluginID
+{
 }

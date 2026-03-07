@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core;
 
 use Drupal\Core\Render\BubbleableMetadata;
@@ -10,36 +12,38 @@ use Drupal\Core\Render\BubbleableMetadata;
  * Note: not to be confused with \Drupal\Core\Url, which is for passing around
  *   URLs that are not generated (typically route name + route parameters).
  */
-class GeneratedUrl extends BubbleableMetadata {
+class GeneratedUrl extends BubbleableMetadata
+{
+    /**
+     * The string value of the URL.
+     *
+     * @var string
+     */
+    protected $generatedUrl = '';
 
-  /**
-   * The string value of the URL.
-   *
-   * @var string
-   */
-  protected $generatedUrl = '';
+    /**
+     * Gets the generated URL.
+     *
+     * @return string
+     *   The generated URL.
+     */
+    public function getGeneratedUrl()
+    {
+        return $this->generatedUrl;
+    }
 
-  /**
-   * Gets the generated URL.
-   *
-   * @return string
-   *   The generated URL.
-   */
-  public function getGeneratedUrl() {
-    return $this->generatedUrl;
-  }
-
-  /**
-   * Sets the generated URL.
-   *
-   * @param string $generated_url
-   *   The generated URL.
-   *
-   * @return $this
-   */
-  public function setGeneratedUrl($generated_url): static {
-    $this->generatedUrl = $generated_url;
-    return $this;
-  }
+    /**
+     * Sets the generated URL.
+     *
+     * @param string $generated_url
+     *   The generated URL.
+     *
+     * @return $this
+     */
+    public function setGeneratedUrl($generated_url): static
+    {
+        $this->generatedUrl = $generated_url;
+        return $this;
+    }
 
 }

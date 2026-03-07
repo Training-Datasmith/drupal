@@ -10,10 +10,11 @@ use Drupal\Core\Config\Action\Attribute\ActionMethod;
 /**
  * Test entity class.
  */
-class DuplicatePluralizedMethodName extends ConfigTest {
-
-  #[ActionMethod(pluralize: 'testMethod')]
-  public function testMethod() {
-  }
+class DuplicatePluralizedMethodName extends ConfigTest
+{
+    #[ActionMethod(pluralize: 'testMethod')]
+    public function testMethod()
+    {
+    }
 
 }

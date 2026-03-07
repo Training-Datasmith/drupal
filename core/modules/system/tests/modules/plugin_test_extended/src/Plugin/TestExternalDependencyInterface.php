@@ -10,4 +10,6 @@ namespace Drupal\plugin_test_extended\Plugin;
  * This is used to test that other modules' plugin classes implementing this
  * interface will not be discovered unless plugin_test_extended is installed.
  */
-interface TestExternalDependencyInterface {}
+interface TestExternalDependencyInterface
+{
+}

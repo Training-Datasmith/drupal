@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Drupal\Core\Render\HtmlResponse;
-use Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * HTML response subscriber to allow for different placeholder strategies.
@@ -17,47 +18,49 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * BigPipe service and render them after the main content has been sent to
  * the client.
  */
-class HtmlResponsePlaceholderStrategySubscriber implements EventSubscriberInterface {
-
-  /**
-   * Constructs a HtmlResponsePlaceholderStrategySubscriber object.
-   *
-   * @param \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy
-   *   The placeholder strategy to use.
-   */
-  public function __construct(protected \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy)
-  {
-  }
-
-  /**
-   * Processes placeholders for HTML responses.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
-   *   The event to process.
-   */
-  public function onRespond(ResponseEvent $event): void {
-    $response = $event->getResponse();
-    if (!$response instanceof HtmlResponse) {
-      return;
+class HtmlResponsePlaceholderStrategySubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs a HtmlResponsePlaceholderStrategySubscriber object.
+     *
+     * @param \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy
+     *   The placeholder strategy to use.
+     */
+    public function __construct(protected \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy)
+    {
     }
 
-    $attachments = $response->getAttachments();
-    if (empty($attachments['placeholders'])) {
-      return;
+    /**
+     * Processes placeholders for HTML responses.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
+     *   The event to process.
+     */
+    public function onRespond(ResponseEvent $event): void
+    {
+        $response = $event->getResponse();
+        if (!$response instanceof HtmlResponse) {
+            return;
+        }
+
+        $attachments = $response->getAttachments();
+        if (empty($attachments['placeholders'])) {
+            return;
+        }
+
+        $attachments['placeholders'] = $this->placeholderStrategy->processPlaceholders($attachments['placeholders']);
+
+        $response->setAttachments($attachments);
     }
 
-    $attachments['placeholders'] = $this->placeholderStrategy->processPlaceholders($attachments['placeholders']);
-
-    $response->setAttachments($attachments);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Run shortly before HtmlResponseSubscriber.
-    $events[KernelEvents::RESPONSE][] = ['onRespond', 5];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Run shortly before HtmlResponseSubscriber.
+        $events[KernelEvents::RESPONSE][] = ['onRespond', 5];
+        return $events;
+    }
 
 }

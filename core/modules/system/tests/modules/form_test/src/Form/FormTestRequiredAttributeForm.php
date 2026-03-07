@@ -12,37 +12,40 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestRequiredAttributeForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_required_attribute';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    foreach (['textfield', 'textarea', 'password'] as $type) {
-      $form[$type] = [
-        '#type' => $type,
-        '#required' => TRUE,
-        '#title' => $type,
-      ];
+class FormTestRequiredAttributeForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_required_attribute';
     }
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Submit',
-    ];
-    return $form;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        foreach (['textfield', 'textarea', 'password'] as $type) {
+            $form[$type] = [
+              '#type' => $type,
+              '#required' => true,
+              '#title' => $type,
+            ];
+        }
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Submit',
+        ];
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field_ui\Form;
 
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -9,18 +11,19 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @internal
  */
-class EntityFormModeAddForm extends EntityDisplayModeAddForm {
+class EntityFormModeAddForm extends EntityDisplayModeAddForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEntity()
+    {
+        $definition = $this->entityTypeManager->getDefinition($this->targetEntityTypeId);
+        if (!$definition->get('field_ui_base_route') || !$definition->hasFormClasses()) {
+            throw new NotFoundHttpException();
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEntity() {
-    $definition = $this->entityTypeManager->getDefinition($this->targetEntityTypeId);
-    if (!$definition->get('field_ui_base_route') || !$definition->hasFormClasses()) {
-      throw new NotFoundHttpException();
+        $this->entity->setTargetType($this->targetEntityTypeId);
     }
-
-    $this->entity->setTargetType($this->targetEntityTypeId);
-  }
 
 }

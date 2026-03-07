@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\TypedData\TranslatableInterface as TranslatableDataInterface;
@@ -9,14 +11,14 @@ use Drupal\Core\TypedData\TranslatableInterface as TranslatableDataInterface;
  *
  * @ingroup entity_type_characteristics
  */
-interface TranslatableInterface extends TranslatableDataInterface, EntityInterface {
-
-  /**
-   * Determines if the current translation of the entity has unsaved changes.
-   *
-   * @return bool
-   *   TRUE if the current translation of the entity has changes.
-   */
-  public function hasTranslationChanges();
+interface TranslatableInterface extends TranslatableDataInterface, EntityInterface
+{
+    /**
+     * Determines if the current translation of the entity has unsaved changes.
+     *
+     * @return bool
+     *   TRUE if the current translation of the entity has changes.
+     */
+    public function hasTranslationChanges();
 
 }

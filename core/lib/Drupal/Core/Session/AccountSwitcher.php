@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Session;
 
 /**
@@ -9,68 +11,69 @@ namespace Drupal\Core\Session;
  * data for one user is not leaked in to others. It also provides a stack that
  * allows reverting to a previous user after switching.
  */
-class AccountSwitcher implements AccountSwitcherInterface {
+class AccountSwitcher implements AccountSwitcherInterface
+{
+    /**
+     * A stack of previous overridden accounts.
+     *
+     * @var \Drupal\Core\Session\AccountInterface[]
+     */
+    protected $accountStack = [];
 
-  /**
-   * A stack of previous overridden accounts.
-   *
-   * @var \Drupal\Core\Session\AccountInterface[]
-   */
-  protected $accountStack = [];
+    /**
+     * The original state of session saving prior to account switching.
+     *
+     * @var bool
+     */
+    protected $originalSessionSaving;
 
-  /**
-   * The original state of session saving prior to account switching.
-   *
-   * @var bool
-   */
-  protected $originalSessionSaving;
-
-  /**
-   * Constructs a new AccountSwitcher.
-   *
-   * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
-   *   The current user service.
-   * @param \Drupal\Core\Session\WriteSafeSessionHandlerInterface $writeSafeHandler
-   *   The write-safe session handler.
-   */
-  public function __construct(protected \Drupal\Core\Session\AccountProxyInterface $currentUser, protected \Drupal\Core\Session\WriteSafeSessionHandlerInterface $writeSafeHandler)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function switchTo(AccountInterface $account): static {
-    // Prevent session information from being saved and push previous account.
-    if (!isset($this->originalSessionSaving)) {
-      // Ensure that only the first session saving status is saved.
-      $this->originalSessionSaving = $this->writeSafeHandler->isSessionWritable();
+    /**
+     * Constructs a new AccountSwitcher.
+     *
+     * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
+     *   The current user service.
+     * @param \Drupal\Core\Session\WriteSafeSessionHandlerInterface $writeSafeHandler
+     *   The write-safe session handler.
+     */
+    public function __construct(protected \Drupal\Core\Session\AccountProxyInterface $currentUser, protected \Drupal\Core\Session\WriteSafeSessionHandlerInterface $writeSafeHandler)
+    {
     }
-    $this->writeSafeHandler->setSessionWritable(FALSE);
-    array_push($this->accountStack, $this->currentUser->getAccount());
-    $this->currentUser->setAccount($account);
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function switchBack(): static {
-    // Restore the previous account from the stack.
-    if (!empty($this->accountStack)) {
-      $this->currentUser->setAccount(array_pop($this->accountStack));
+    /**
+     * {@inheritdoc}
+     */
+    public function switchTo(AccountInterface $account): static
+    {
+        // Prevent session information from being saved and push previous account.
+        if (!isset($this->originalSessionSaving)) {
+            // Ensure that only the first session saving status is saved.
+            $this->originalSessionSaving = $this->writeSafeHandler->isSessionWritable();
+        }
+        $this->writeSafeHandler->setSessionWritable(false);
+        array_push($this->accountStack, $this->currentUser->getAccount());
+        $this->currentUser->setAccount($account);
+        return $this;
     }
-    else {
-      throw new \RuntimeException('No more accounts to revert to.');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function switchBack(): static
+    {
+        // Restore the previous account from the stack.
+        if (!empty($this->accountStack)) {
+            $this->currentUser->setAccount(array_pop($this->accountStack));
+        } else {
+            throw new \RuntimeException('No more accounts to revert to.');
+        }
+        // Restore original session saving status if all account switches are
+        // reverted.
+        if (empty($this->accountStack)) {
+            if ($this->originalSessionSaving) {
+                $this->writeSafeHandler->setSessionWritable(true);
+            }
+        }
+        return $this;
     }
-    // Restore original session saving status if all account switches are
-    // reverted.
-    if (empty($this->accountStack)) {
-      if ($this->originalSessionSaving) {
-        $this->writeSafeHandler->setSessionWritable(TRUE);
-      }
-    }
-    return $this;
-  }
 
 }

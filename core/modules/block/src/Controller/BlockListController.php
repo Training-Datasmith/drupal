@@ -1,46 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block\Controller;
 
 use Drupal\Core\Entity\Controller\EntityListController;
-use Drupal\Core\Extension\ThemeHandlerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Defines a controller to list blocks.
  */
-class BlockListController extends EntityListController {
-
-  /**
-   * Constructs the BlockListController.
-   *
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
-   *   The theme handler.
-   */
-  public function __construct(protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
-  {
-  }
-
-  /**
-   * Shows the block administration page.
-   *
-   * @param string|null $theme
-   *   Theme key of block list.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The current request.
-   *
-   * @return array
-   *   A render array as expected by
-   *   \Drupal\Core\Render\RendererInterface::render().
-   */
-  public function listing($theme = NULL, ?Request $request = NULL) {
-    $theme = $theme ?: $this->config('system.theme')->get('default');
-    if (!$this->themeHandler->hasUi($theme)) {
-      throw new NotFoundHttpException();
+class BlockListController extends EntityListController
+{
+    /**
+     * Constructs the BlockListController.
+     *
+     * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+     *   The theme handler.
+     */
+    public function __construct(protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
+    {
     }
 
-    return $this->entityTypeManager()->getListBuilder('block')->render($theme, $request);
-  }
+    /**
+     * Shows the block administration page.
+     *
+     * @param string|null $theme
+     *   Theme key of block list.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The current request.
+     *
+     * @return array
+     *   A render array as expected by
+     *   \Drupal\Core\Render\RendererInterface::render().
+     */
+    public function listing($theme = null, ?Request $request = null)
+    {
+        $theme = $theme ?: $this->config('system.theme')->get('default');
+        if (!$this->themeHandler->hasUi($theme)) {
+            throw new NotFoundHttpException();
+        }
+
+        return $this->entityTypeManager()->getListBuilder('block')->render($theme, $request);
+    }
 
 }

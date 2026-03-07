@@ -10,8 +10,8 @@ use Drupal\Core\Cache\UncacheableDependencyTrait;
 /**
  * Test domain class with implemented CacheableDependencyInterface.
  */
-class CacheableTestDomainObject extends TestDomainObject implements CacheableDependencyInterface {
-
-  use UncacheableDependencyTrait;
+class CacheableTestDomainObject extends TestDomainObject implements CacheableDependencyInterface
+{
+    use UncacheableDependencyTrait;
 
 }

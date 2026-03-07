@@ -17,36 +17,37 @@ use Drupal\Core\Theme\Icon\IconPackExtractorForm;
  *   This API is experimental.
  */
 #[IconExtractor(
-  id: 'path',
-  label: new TranslatableMarkup('Path or URL'),
-  description: new TranslatableMarkup('Handles paths or URLs for icons.'),
-  forms: [
+    id: 'path',
+    label: new TranslatableMarkup('Path or URL'),
+    description: new TranslatableMarkup('Handles paths or URLs for icons.'),
+    forms: [
     'settings' => IconPackExtractorForm::class,
   ]
 )]
-class PathExtractor extends IconExtractorWithFinder {
+class PathExtractor extends IconExtractorWithFinder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function discoverIcons(): array
+    {
+        $files = $this->getFilesFromSources();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function discoverIcons(): array {
-    $files = $this->getFilesFromSources();
+        if (empty($files)) {
+            return [];
+        }
 
-    if (empty($files)) {
-      return [];
+        $icons = [];
+        foreach ($files as $file) {
+            $id = IconDefinition::createIconId($this->configuration['id'], $file['icon_id']);
+            $icons[$id] = [
+              'absolute_path' => $file['absolute_path'],
+              'source' => $file['source'],
+              'group' => $file['group'] ?? null,
+            ];
+        }
+
+        return $icons;
     }
-
-    $icons = [];
-    foreach ($files as $file) {
-      $id = IconDefinition::createIconId($this->configuration['id'], $file['icon_id']);
-      $icons[$id] = [
-        'absolute_path' => $file['absolute_path'],
-        'source' => $file['source'],
-        'group' => $file['group'] ?? NULL,
-      ];
-    }
-
-    return $icons;
-  }
 
 }

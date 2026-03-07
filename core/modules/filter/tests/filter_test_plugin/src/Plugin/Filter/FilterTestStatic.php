@@ -14,18 +14,19 @@ use Drupal\filter\Plugin\FilterInterface;
  * Provides a filter that returns the same static text.
  */
 #[Filter(
-  id: "filter_static_text",
-  title: new TranslatableMarkup("Static filter"),
-  type: FilterInterface::TYPE_HTML_RESTRICTOR,
-  settings: [],
+    id: 'filter_static_text',
+    title: new TranslatableMarkup('Static filter'),
+    type: FilterInterface::TYPE_HTML_RESTRICTOR,
+    settings: [],
 )]
-class FilterTestStatic extends FilterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode) {
-    return new FilterProcessResult('filtered text');
-  }
+class FilterTestStatic extends FilterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode)
+    {
+        return new FilterProcessResult('filtered text');
+    }
 
 }

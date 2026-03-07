@@ -10,13 +10,16 @@ use Drupal\non_installed_module\NonExistingTrait;
 /**
  * This class does not have a plugin attribute or plugin annotation on purpose.
  */
-class UsingNonInstalledTraitClass {
-  use NonExistingTrait;
+class UsingNonInstalledTraitClass
+{
+    use NonExistingTrait;
 
-  /**
-   * Provides an empty test method.
-   */
-  #[TrustedCallback]
-  public function testMethod() {}
+    /**
+     * Provides an empty test method.
+     */
+    #[TrustedCallback]
+    public function testMethod()
+    {
+    }
 
 }

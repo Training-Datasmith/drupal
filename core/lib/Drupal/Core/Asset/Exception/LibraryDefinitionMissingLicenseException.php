@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Asset\Exception;
 
 /**
  * Defines a custom exception if a library has a remote but no license.
  */
-class LibraryDefinitionMissingLicenseException extends \RuntimeException {
-
+class LibraryDefinitionMissingLicenseException extends \RuntimeException
+{
 }

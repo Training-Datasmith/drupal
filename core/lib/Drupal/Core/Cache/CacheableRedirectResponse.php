@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -14,8 +16,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * @see \Drupal\Core\Cache\CacheableMetadata
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-class CacheableRedirectResponse extends RedirectResponse implements CacheableResponseInterface {
-
-  use CacheableResponseTrait;
+class CacheableRedirectResponse extends RedirectResponse implements CacheableResponseInterface
+{
+    use CacheableResponseTrait;
 
 }

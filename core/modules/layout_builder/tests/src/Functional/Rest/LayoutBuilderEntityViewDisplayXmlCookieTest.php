@@ -15,29 +15,29 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('layout_builder')]
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderEntityViewDisplayXmlCookieTest extends LayoutBuilderEntityViewDisplayResourceTestBase {
+class LayoutBuilderEntityViewDisplayXmlCookieTest extends LayoutBuilderEntityViewDisplayResourceTestBase
+{
+    use CookieResourceTestTrait;
+    use XmlEntityNormalizationQuirksTrait;
 
-  use CookieResourceTestTrait;
-  use XmlEntityNormalizationQuirksTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'xml';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'xml';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'text/xml; charset=utf-8';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'text/xml; charset=utf-8';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'cookie';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'cookie';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

@@ -14,11 +14,11 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Database')]
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class SqliteCastedIntFieldJoinTest extends CastedIntFieldJoinTestBase {
-
-  /**
-   * The db type that should be used for casting fields as integers.
-   */
-  protected string $castingType = 'INTEGER';
+class SqliteCastedIntFieldJoinTest extends CastedIntFieldJoinTestBase
+{
+    /**
+     * The db type that should be used for casting fields as integers.
+     */
+    protected string $castingType = 'INTEGER';
 
 }

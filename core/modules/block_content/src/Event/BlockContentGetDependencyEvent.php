@@ -1,63 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Event;
 
-use Drupal\block_content\BlockContentInterface;
-use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\Core\Access\AccessibleInterface;
 
 /**
  * Block content event to allow setting an access dependency.
  *
  * @internal
  */
-class BlockContentGetDependencyEvent extends Event {
+class BlockContentGetDependencyEvent extends Event
+{
+    /**
+     * The dependency.
+     *
+     * @var \Drupal\Core\Access\AccessibleInterface
+     */
+    protected $accessDependency;
 
-  /**
-   * The dependency.
-   *
-   * @var \Drupal\Core\Access\AccessibleInterface
-   */
-  protected $accessDependency;
+    /**
+     * BlockContentGetDependencyEvent constructor.
+     *
+     * @param \Drupal\block_content\BlockContentInterface $blockContent
+     *   The block content entity.
+     */
+    public function __construct(protected \Drupal\block_content\BlockContentInterface $blockContent)
+    {
+    }
 
-  /**
-   * BlockContentGetDependencyEvent constructor.
-   *
-   * @param \Drupal\block_content\BlockContentInterface $blockContent
-   *   The block content entity.
-   */
-  public function __construct(protected \Drupal\block_content\BlockContentInterface $blockContent)
-  {
-  }
+    /**
+     * Gets the block content entity.
+     *
+     * @return \Drupal\block_content\BlockContentInterface
+     *   The block content entity.
+     */
+    public function getBlockContentEntity()
+    {
+        return $this->blockContent;
+    }
 
-  /**
-   * Gets the block content entity.
-   *
-   * @return \Drupal\block_content\BlockContentInterface
-   *   The block content entity.
-   */
-  public function getBlockContentEntity() {
-    return $this->blockContent;
-  }
+    /**
+     * Gets the access dependency.
+     *
+     * @return \Drupal\Core\Access\AccessibleInterface
+     *   The access dependency.
+     */
+    public function getAccessDependency()
+    {
+        return $this->accessDependency;
+    }
 
-  /**
-   * Gets the access dependency.
-   *
-   * @return \Drupal\Core\Access\AccessibleInterface
-   *   The access dependency.
-   */
-  public function getAccessDependency() {
-    return $this->accessDependency;
-  }
-
-  /**
-   * Sets the access dependency.
-   *
-   * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
-   *   The access dependency.
-   */
-  public function setAccessDependency(AccessibleInterface $access_dependency): void {
-    $this->accessDependency = $access_dependency;
-  }
+    /**
+     * Sets the access dependency.
+     *
+     * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
+     *   The access dependency.
+     */
+    public function setAccessDependency(AccessibleInterface $access_dependency): void
+    {
+        $this->accessDependency = $access_dependency;
+    }
 
 }

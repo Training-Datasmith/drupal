@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Controller;
 
 use Drupal\Component\Assertion\Inspector;
@@ -12,38 +14,40 @@ use Drupal\layout_builder\SectionStorageInterface;
  * @internal
  *   Controller classes are internal.
  */
-class LayoutBuilderController {
+class LayoutBuilderController
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Provides a title callback.
+     *
+     * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+     *   The section storage.
+     *
+     * @return string
+     *   The title for the layout page.
+     */
+    public function title(SectionStorageInterface $section_storage): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        assert(Inspector::assertStringable($section_storage->label()), 'Section storage label is expected to be a string.');
+        return $this->t('Edit layout for %label', ['%label' => $section_storage->label() ?? $section_storage->getStorageType() . ' ' . $section_storage->getStorageId()]);
+    }
 
-  /**
-   * Provides a title callback.
-   *
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage.
-   *
-   * @return string
-   *   The title for the layout page.
-   */
-  public function title(SectionStorageInterface $section_storage): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    assert(Inspector::assertStringable($section_storage->label()), 'Section storage label is expected to be a string.');
-    return $this->t('Edit layout for %label', ['%label' => $section_storage->label() ?? $section_storage->getStorageType() . ' ' . $section_storage->getStorageId()]);
-  }
-
-  /**
-   * Renders the Layout UI.
-   *
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage.
-   *
-   * @return array
-   *   A render array.
-   */
-  public function layout(SectionStorageInterface $section_storage): array {
-    return [
-      '#type' => 'layout_builder',
-      '#section_storage' => $section_storage,
-    ];
-  }
+    /**
+     * Renders the Layout UI.
+     *
+     * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+     *   The section storage.
+     *
+     * @return array
+     *   A render array.
+     */
+    public function layout(SectionStorageInterface $section_storage): array
+    {
+        return [
+          '#type' => 'layout_builder',
+          '#section_storage' => $section_storage,
+        ];
+    }
 
 }

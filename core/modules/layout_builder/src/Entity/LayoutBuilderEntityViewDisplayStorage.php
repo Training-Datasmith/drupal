@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityStorage;
@@ -12,31 +14,33 @@ use Drupal\layout_builder\Section;
  * @internal
  *   Entity handlers are internal.
  */
-class LayoutBuilderEntityViewDisplayStorage extends ConfigEntityStorage {
+class LayoutBuilderEntityViewDisplayStorage extends ConfigEntityStorage
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function mapToStorageRecord(EntityInterface $entity)
+    {
+        $record = parent::mapToStorageRecord($entity);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function mapToStorageRecord(EntityInterface $entity) {
-    $record = parent::mapToStorageRecord($entity);
-
-    if (!empty($record['third_party_settings']['layout_builder']['sections'])) {
-      $record['third_party_settings']['layout_builder']['sections'] = array_map(fn(Section $section) => $section->toArray(), $record['third_party_settings']['layout_builder']['sections']);
+        if (!empty($record['third_party_settings']['layout_builder']['sections'])) {
+            $record['third_party_settings']['layout_builder']['sections'] = array_map(fn (Section $section) => $section->toArray(), $record['third_party_settings']['layout_builder']['sections']);
+        }
+        return $record;
     }
-    return $record;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function mapFromStorageRecords(array $records) {
-    foreach ($records as &$record) {
-      if (!empty($record['third_party_settings']['layout_builder']['sections'])) {
-        $sections = &$record['third_party_settings']['layout_builder']['sections'];
-        $sections = array_map([Section::class, 'fromArray'], $sections);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    protected function mapFromStorageRecords(array $records)
+    {
+        foreach ($records as &$record) {
+            if (!empty($record['third_party_settings']['layout_builder']['sections'])) {
+                $sections = &$record['third_party_settings']['layout_builder']['sections'];
+                $sections = array_map([Section::class, 'fromArray'], $sections);
+            }
+        }
+        return parent::mapFromStorageRecords($records);
     }
-    return parent::mapFromStorageRecords($records);
-  }
 
 }

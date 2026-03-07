@@ -15,14 +15,15 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class ConnectionTest extends DriverSpecificDatabaseTestBase {
-
-  /**
-   * Ensure that you cannot execute multiple statements on MySQL.
-   */
-  public function testMultipleStatementsForNewPhp(): void {
-    $this->expectException(DatabaseExceptionWrapper::class);
-    Database::getConnection('default', 'default')->query('SELECT * FROM {test}; SELECT * FROM {test_people}', [], ['allow_delimiter_in_query' => TRUE]);
-  }
+class ConnectionTest extends DriverSpecificDatabaseTestBase
+{
+    /**
+     * Ensure that you cannot execute multiple statements on MySQL.
+     */
+    public function testMultipleStatementsForNewPhp(): void
+    {
+        $this->expectException(DatabaseExceptionWrapper::class);
+        Database::getConnection('default', 'default')->query('SELECT * FROM {test}; SELECT * FROM {test_people}', [], ['allow_delimiter_in_query' => true]);
+    }
 
 }

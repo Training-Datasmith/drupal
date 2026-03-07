@@ -13,15 +13,16 @@ use Drupal\Core\Hook\Attribute\Hook;
  * to the alphabetical module names. Some of the implementations are reordered
  * using order attributes.
  */
-class TestHookAfterClassMethod {
-
-  /**
-   * This pair tests OrderAfter with a passed class and method.
-   */
-  #[Hook('custom_hook_test_hook_after_class_method')]
-  public static function hookAfterClassMethod(): string {
-    // This should be run first since another hook overrides the natural order.
-    return __METHOD__;
-  }
+class TestHookAfterClassMethod
+{
+    /**
+     * This pair tests OrderAfter with a passed class and method.
+     */
+    #[Hook('custom_hook_test_hook_after_class_method')]
+    public static function hookAfterClassMethod(): string
+    {
+        // This should be run first since another hook overrides the natural order.
+        return __METHOD__;
+    }
 
 }

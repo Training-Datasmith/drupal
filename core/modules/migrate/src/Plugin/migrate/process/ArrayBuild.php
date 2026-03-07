@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -71,38 +73,39 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "array_build",
-  handle_multiples: TRUE,
+    id: 'array_build',
+    handle_multiples: true,
 )]
-class ArrayBuild extends ProcessPluginBase {
+class ArrayBuild extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array
+    {
+        $new_value = [];
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
-    $new_value = [];
+        foreach ((array) $value as $old_value) {
+            // Checks that $old_value is an array.
+            if (!is_array($old_value)) {
+                throw new MigrateException('The input should be an array of arrays');
+            }
 
-    foreach ((array) $value as $old_value) {
-      // Checks that $old_value is an array.
-      if (!is_array($old_value)) {
-        throw new MigrateException("The input should be an array of arrays");
-      }
+            // Checks that the key exists.
+            if (!array_key_exists($this->configuration['key'], $old_value)) {
+                throw new MigrateException("The key '" . $this->configuration['key'] . "' does not exist");
+            }
 
-      // Checks that the key exists.
-      if (!array_key_exists($this->configuration['key'], $old_value)) {
-        throw new MigrateException("The key '" . $this->configuration['key'] . "' does not exist");
-      }
+            // Checks that the value exists.
+            if (!array_key_exists($this->configuration['value'], $old_value)) {
+                throw new MigrateException("The key '" . $this->configuration['value'] . "' does not exist");
+            }
 
-      // Checks that the value exists.
-      if (!array_key_exists($this->configuration['value'], $old_value)) {
-        throw new MigrateException("The key '" . $this->configuration['value'] . "' does not exist");
-      }
+            $new_value[$old_value[$this->configuration['key']]] = $old_value[$this->configuration['value']];
+        }
 
-      $new_value[$old_value[$this->configuration['key']]] = $old_value[$this->configuration['value']];
+        return $new_value;
     }
-
-    return $new_value;
-  }
 
 }

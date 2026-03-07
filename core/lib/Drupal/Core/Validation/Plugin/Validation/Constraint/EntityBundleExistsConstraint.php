@@ -15,45 +15,47 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * value is the *name of a bundle* of a particular entity type.
  */
 #[Constraint(
-  id: 'EntityBundleExists',
-  label: new TranslatableMarkup('Entity bundle exists', [], ['context' => 'Validation']),
-  type: 'entity'
+    id: 'EntityBundleExists',
+    label: new TranslatableMarkup('Entity bundle exists', [], ['context' => 'Validation']),
+    type: 'entity'
 )]
-class EntityBundleExistsConstraint extends SymfonyConstraint {
+class EntityBundleExistsConstraint extends SymfonyConstraint
+{
+    /**
+     * The entity type ID which should have the given bundle.
+     *
+     * This can contain variable values (e.g., `%parent`) that will be replaced.
+     *
+     *
+     * @see \Drupal\Core\Config\Schema\TypeResolver::replaceVariable()
+     */
+    public string $entityTypeId;
 
-  /**
-   * The entity type ID which should have the given bundle.
-   *
-   * This can contain variable values (e.g., `%parent`) that will be replaced.
-   *
-   *
-   * @see \Drupal\Core\Config\Schema\TypeResolver::replaceVariable()
-   */
-  public string $entityTypeId;
+    public function __construct(
+        mixed $options = null,
+        ?string $entityTypeId = null,
+        public $message = "The '@bundle' bundle does not exist on the '@entity_type_id' entity type.",
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->entityTypeId = $entityTypeId ?? $this->entityTypeId;
+    }
 
-  public function __construct(
-    mixed $options = NULL,
-    ?string $entityTypeId = NULL,
-    public $message = "The '@bundle' bundle does not exist on the '@entity_type_id' entity type.",
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->entityTypeId = $entityTypeId ?? $this->entityTypeId;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultOption(): ?string
+    {
+        return 'entityTypeId';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultOption(): ?string {
-    return 'entityTypeId';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequiredOptions(): array {
-    return ['entityTypeId'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredOptions(): array
+    {
+        return ['entityTypeId'];
+    }
 
 }

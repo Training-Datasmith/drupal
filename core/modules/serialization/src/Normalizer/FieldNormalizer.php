@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -16,46 +18,48 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
  *
  * @see \Drupal\serialization\Normalizer\FieldItemNormalizer.
  */
-class FieldNormalizer extends ListNormalizer implements DenormalizerInterface {
+class FieldNormalizer extends ListNormalizer implements DenormalizerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function denormalize($data, $class, $format = null, array $context = []): mixed
+    {
+        if (!isset($context['target_instance'])) {
+            throw new InvalidArgumentException('$context[\'target_instance\'] must be set to denormalize with the FieldNormalizer');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function denormalize($data, $class, $format = NULL, array $context = []): mixed {
-    if (!isset($context['target_instance'])) {
-      throw new InvalidArgumentException('$context[\'target_instance\'] must be set to denormalize with the FieldNormalizer');
+        if ($context['target_instance']->getParent() == null) {
+            throw new InvalidArgumentException('The field passed in via $context[\'target_instance\'] must have a parent set.');
+        }
+
+        /** @var \Drupal\Core\Field\FieldItemListInterface $items */
+        $items = $context['target_instance'];
+        $item_class = $items->getItemDefinition()->getClass();
+
+        if (!is_array($data)) {
+            throw new UnexpectedValueException(sprintf('Field values for "%s" must use an array structure', $items->getName()));
+        }
+
+        foreach ($data as $item_data) {
+            // Create a new item and pass it as the target for the unserialization of
+            // $item_data. All items in field should have removed before this method
+            // was called.
+            // @see \Drupal\serialization\Normalizer\ContentEntityNormalizer::denormalize().
+            $context['target_instance'] = $items->appendItem();
+            $this->serializer->denormalize($item_data, $item_class, $format, $context);
+        }
+        return $items;
     }
 
-    if ($context['target_instance']->getParent() == NULL) {
-      throw new InvalidArgumentException('The field passed in via $context[\'target_instance\'] must have a parent set.');
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          FieldItemListInterface::class => true,
+        ];
     }
-
-    /** @var \Drupal\Core\Field\FieldItemListInterface $items */
-    $items = $context['target_instance'];
-    $item_class = $items->getItemDefinition()->getClass();
-
-    if (!is_array($data)) {
-      throw new UnexpectedValueException(sprintf('Field values for "%s" must use an array structure', $items->getName()));
-    }
-
-    foreach ($data as $item_data) {
-      // Create a new item and pass it as the target for the unserialization of
-      // $item_data. All items in field should have removed before this method
-      // was called.
-      // @see \Drupal\serialization\Normalizer\ContentEntityNormalizer::denormalize().
-      $context['target_instance'] = $items->appendItem();
-      $this->serializer->denormalize($item_data, $item_class, $format, $context);
-    }
-    return $items;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      FieldItemListInterface::class => TRUE,
-    ];
-  }
 
 }

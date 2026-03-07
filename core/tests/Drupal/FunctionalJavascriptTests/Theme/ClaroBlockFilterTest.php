@@ -15,26 +15,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block')]
 #[RunTestsInSeparateProcesses]
-class ClaroBlockFilterTest extends BlockFilterTest {
+class ClaroBlockFilterTest extends BlockFilterTest
+{
+    /**
+     * Modules to install.
+     *
+     * Install the shortcut module so that claro.settings has its schema checked.
+     * There's currently no way for Claro to provide a default and have valid
+     * configuration as themes cannot react to a module install.
+     *
+     * @var string[]
+     */
+    protected static $modules = ['shortcut'];
 
-  /**
-   * Modules to install.
-   *
-   * Install the shortcut module so that claro.settings has its schema checked.
-   * There's currently no way for Claro to provide a default and have valid
-   * configuration as themes cannot react to a module install.
-   *
-   * @var string[]
-   */
-  protected static $modules = ['shortcut'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->container->get('theme_installer')->install(['claro']);
-    $this->config('system.theme')->set('default', 'claro')->save();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->container->get('theme_installer')->install(['claro']);
+        $this->config('system.theme')->set('default', 'claro')->save();
+    }
 
 }

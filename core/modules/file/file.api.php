@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  */
@@ -75,14 +77,15 @@ use Drupal\file\FileInterface;
  *
  * @see \Drupal\file\FileRepositoryInterface::copy()
  */
-function hook_file_copy(FileInterface $file, FileInterface $source): void {
-  // Make sure that the file name starts with the owner's user name.
-  if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
-    $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
-    $file->save();
+function hook_file_copy(FileInterface $file, FileInterface $source): void
+{
+    // Make sure that the file name starts with the owner's user name.
+    if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
+        $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
+        $file->save();
 
-    \Drupal::logger('file')->notice('Copied file %source has been renamed to %destination', ['%source' => $source->filename, '%destination' => $file->getFilename()]);
-  }
+        \Drupal::logger('file')->notice('Copied file %source has been renamed to %destination', ['%source' => $source->filename, '%destination' => $file->getFilename()]);
+    }
 }
 
 /**
@@ -95,14 +98,15 @@ function hook_file_copy(FileInterface $file, FileInterface $source): void {
  *
  * @see \Drupal\file\FileRepositoryInterface::move()
  */
-function hook_file_move(FileInterface $file, FileInterface $source): void {
-  // Make sure that the file name starts with the owner's user name.
-  if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
-    $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
-    $file->save();
+function hook_file_move(FileInterface $file, FileInterface $source): void
+{
+    // Make sure that the file name starts with the owner's user name.
+    if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
+        $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
+        $file->save();
 
-    \Drupal::logger('file')->notice('Moved file %source has been renamed to %destination', ['%source' => $source->filename, '%destination' => $file->getFilename()]);
-  }
+        \Drupal::logger('file')->notice('Moved file %source has been renamed to %destination', ['%source' => $source->filename, '%destination' => $file->getFilename()]);
+    }
 }
 
 /**

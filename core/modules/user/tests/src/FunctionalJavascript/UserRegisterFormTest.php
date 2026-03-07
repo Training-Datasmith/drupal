@@ -13,32 +13,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserRegisterFormTest extends WebDriverTestBase {
+class UserRegisterFormTest extends WebDriverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests if registration form writes to localStorage.
+     */
+    public function testRegistrationFormStorage(): void
+    {
 
-  /**
-   * Tests if registration form writes to localStorage.
-   */
-  public function testRegistrationFormStorage(): void {
+        // Load register form.
+        $this->drupalGet('user/register');
 
-    // Load register form.
-    $this->drupalGet('user/register');
+        // Register user.
+        $name = $this->randomMachineName();
 
-    // Register user.
-    $name = $this->randomMachineName();
+        $page = $this->getSession()->getPage();
+        $page->fillField('edit-name', $name);
+        $page->fillField('edit-mail', $name . '@example.com');
+        $page->pressButton('edit-submit');
 
-    $page = $this->getSession()->getPage();
-    $page->fillField('edit-name', $name);
-    $page->fillField('edit-mail', $name . '@example.com');
-    $page->pressButton('edit-submit');
+        // Test if localStorage is set now.
+        $this->assertJsCondition("localStorage.getItem('Drupal.visitor.name') === null", 10000, 'Failed to assert that the visitor name was not written to localStorage.');
 
-    // Test if localStorage is set now.
-    $this->assertJsCondition("localStorage.getItem('Drupal.visitor.name') === null", 10000, 'Failed to assert that the visitor name was not written to localStorage.');
-
-  }
+    }
 
 }

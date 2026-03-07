@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
 
-use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationEnumLiteral as SelfEnum;
-
 /**
  * @Annotation
  * @Target("ALL")
  */
 final class AnnotationEnumLiteral
 {
-    const ONE   = 1;
-    const TWO   = 2;
-    const THREE = 3;
+    public const ONE   = 1;
+    public const TWO   = 2;
+    public const THREE = 3;
 
     /**
      * @var mixed

@@ -19,20 +19,21 @@ use Drupal\file\FileInterface;
  * @see \Drupal\file\FileInterface::createFileUrl()
  * @see \Drupal\Core\File\FileUrlGeneratorInterface
  */
-class FileLinkTarget implements EntityLinkTargetInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLinkTarget(EntityInterface $entity): GeneratedUrl {
-    assert($entity instanceof FileInterface);
-    $url = $entity->createFileUrl(TRUE);
-    // The $url is a string, which provides no cacheability metadata.
-    assert(is_string($url));
-    return (new GeneratedUrl())
-      ->setGeneratedUrl($url)
-      // No path & route processing means permanent cacheability.
-      ->setCacheMaxAge(Cache::PERMANENT);
-  }
+class FileLinkTarget implements EntityLinkTargetInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLinkTarget(EntityInterface $entity): GeneratedUrl
+    {
+        assert($entity instanceof FileInterface);
+        $url = $entity->createFileUrl(true);
+        // The $url is a string, which provides no cacheability metadata.
+        assert(is_string($url));
+        return (new GeneratedUrl())
+          ->setGeneratedUrl($url)
+          // No path & route processing means permanent cacheability.
+          ->setCacheMaxAge(Cache::PERMANENT);
+    }
 
 }

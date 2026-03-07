@@ -1,58 +1,60 @@
 <?php
 
-namespace Drupal\Core\Entity;
+declare(strict_types=1);
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
+namespace Drupal\Core\Entity;
 
 /**
  * Reacts to entity bundle CRUD on behalf of the Entity system.
  */
-class EntityBundleListener implements EntityBundleListenerInterface {
-
-  /**
-   * Constructs a new EntityBundleListener.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
-   *   The entity type bundle info.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
-   *   The entity field manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onBundleCreate($bundle, $entity_type_id): void {
-    $this->entityTypeBundleInfo->clearCachedBundles();
-    // Notify the entity storage.
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    if ($storage instanceof EntityBundleListenerInterface) {
-      $storage->onBundleCreate($bundle, $entity_type_id);
+class EntityBundleListener implements EntityBundleListenerInterface
+{
+    /**
+     * Constructs a new EntityBundleListener.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+     *   The entity type bundle info.
+     * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
+     *   The entity field manager.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+    {
     }
-    // Invoke hook_entity_bundle_create() hook.
-    $this->moduleHandler->invokeAll('entity_bundle_create', [$entity_type_id, $bundle]);
-    $this->entityFieldManager->clearCachedFieldDefinitions();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onBundleDelete($bundle, $entity_type_id): void {
-    $this->entityTypeBundleInfo->clearCachedBundles();
-    // Notify the entity storage.
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    if ($storage instanceof EntityBundleListenerInterface) {
-      $storage->onBundleDelete($bundle, $entity_type_id);
+    /**
+     * {@inheritdoc}
+     */
+    public function onBundleCreate($bundle, $entity_type_id): void
+    {
+        $this->entityTypeBundleInfo->clearCachedBundles();
+        // Notify the entity storage.
+        $storage = $this->entityTypeManager->getStorage($entity_type_id);
+        if ($storage instanceof EntityBundleListenerInterface) {
+            $storage->onBundleCreate($bundle, $entity_type_id);
+        }
+        // Invoke hook_entity_bundle_create() hook.
+        $this->moduleHandler->invokeAll('entity_bundle_create', [$entity_type_id, $bundle]);
+        $this->entityFieldManager->clearCachedFieldDefinitions();
     }
-    // Invoke hook_entity_bundle_delete() hook.
-    $this->moduleHandler->invokeAll('entity_bundle_delete', [$entity_type_id, $bundle]);
-    $this->entityFieldManager->clearCachedFieldDefinitions();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onBundleDelete($bundle, $entity_type_id): void
+    {
+        $this->entityTypeBundleInfo->clearCachedBundles();
+        // Notify the entity storage.
+        $storage = $this->entityTypeManager->getStorage($entity_type_id);
+        if ($storage instanceof EntityBundleListenerInterface) {
+            $storage->onBundleDelete($bundle, $entity_type_id);
+        }
+        // Invoke hook_entity_bundle_delete() hook.
+        $this->moduleHandler->invokeAll('entity_bundle_delete', [$entity_type_id, $bundle]);
+        $this->entityFieldManager->clearCachedFieldDefinitions();
+    }
 
 }

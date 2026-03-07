@@ -11,42 +11,47 @@ use Drupal\Core\StreamWrapper\LocalStream;
  *
  * Dummy stream wrapper implementation (dummy://).
  */
-class DummyStreamWrapper extends LocalStream {
+class DummyStreamWrapper extends LocalStream
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'Dummy files';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return 'Dummy files';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return 'Dummy wrapper for testing.';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return 'Dummy wrapper for testing.';
-  }
+    public function getDirectoryPath()
+    {
+        return \Drupal::getContainer()->getParameter('site.path') . '/files';
+    }
 
-  public function getDirectoryPath() {
-    return \Drupal::getContainer()->getParameter('site.path') . '/files';
-  }
+    /**
+     * Override getInternalUri().
+     *
+     * Return a dummy path for testing.
+     */
+    public function getInternalUri()
+    {
+        return '/dummy/example.txt';
+    }
 
-  /**
-   * Override getInternalUri().
-   *
-   * Return a dummy path for testing.
-   */
-  public function getInternalUri() {
-    return '/dummy/example.txt';
-  }
-
-  /**
-   * Override getExternalUrl().
-   *
-   * Return the HTML URI of a public file.
-   */
-  public function getExternalUrl() {
-    return '/dummy/example.txt';
-  }
+    /**
+     * Override getExternalUrl().
+     *
+     * Return the HTML URI of a public file.
+     */
+    public function getExternalUrl()
+    {
+        return '/dummy/example.txt';
+    }
 
 }

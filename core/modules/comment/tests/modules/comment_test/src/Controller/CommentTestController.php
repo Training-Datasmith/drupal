@@ -10,13 +10,14 @@ use Drupal\Core\Controller\ControllerBase;
 /**
  * Controller for the comment_test.module.
  */
-class CommentTestController extends ControllerBase {
-
-  /**
-   * Provides a comment report.
-   */
-  public function commentReport(CommentInterface $comment) {
-    return ['#markup' => $this->t('Report for a comment')];
-  }
+class CommentTestController extends ControllerBase
+{
+    /**
+     * Provides a comment report.
+     */
+    public function commentReport(CommentInterface $comment)
+    {
+        return ['#markup' => $this->t('Report for a comment')];
+    }
 
 }

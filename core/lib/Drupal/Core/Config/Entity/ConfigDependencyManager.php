@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Entity;
 
 use Drupal\Component\Graph\Graph;
@@ -129,214 +131,220 @@ use Drupal\Component\Graph\Graph;
  * @see \Drupal\Core\Entity\EntityInterface::getConfigDependencyName()
  * @see \Drupal\Core\Plugin\PluginDependencyTrait
  */
-class ConfigDependencyManager {
+class ConfigDependencyManager
+{
+    /**
+     * The config entity data.
+     *
+     * @var \Drupal\Core\Config\Entity\ConfigEntityDependency[]
+     */
+    protected $data = [];
 
-  /**
-   * The config entity data.
-   *
-   * @var \Drupal\Core\Config\Entity\ConfigEntityDependency[]
-   */
-  protected $data = [];
+    /**
+     * The directed acyclic graph.
+     *
+     * @var array
+     */
+    protected $graph;
 
-  /**
-   * The directed acyclic graph.
-   *
-   * @var array
-   */
-  protected $graph;
+    /**
+     * Gets dependencies.
+     *
+     * @param string $type
+     *   The type of dependency being checked. Either 'module', 'theme', 'config'
+     *   or 'content'.
+     * @param string $name
+     *   The specific name to check. If $type equals 'module' or 'theme' then it
+     *   should be a module name or theme name. In the case of entity it should be
+     *   the full configuration object name.
+     *
+     * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
+     *   An array of config entity dependency objects that are dependent.
+     */
+    public function getDependentEntities($type, $name): array
+    {
+        $dependent_entities = [];
 
-  /**
-   * Gets dependencies.
-   *
-   * @param string $type
-   *   The type of dependency being checked. Either 'module', 'theme', 'config'
-   *   or 'content'.
-   * @param string $name
-   *   The specific name to check. If $type equals 'module' or 'theme' then it
-   *   should be a module name or theme name. In the case of entity it should be
-   *   the full configuration object name.
-   *
-   * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
-   *   An array of config entity dependency objects that are dependent.
-   */
-  public function getDependentEntities($type, $name): array {
-    $dependent_entities = [];
-
-    $entities_to_check = [];
-    if ($type == 'config') {
-      $entities_to_check[] = $name;
-    }
-    else {
-      if ($type == 'module' || $type == 'theme' || $type == 'content') {
-        $dependent_entities = array_filter($this->data, fn(ConfigEntityDependency $entity) => $entity->hasDependency($type, $name));
-      }
-      // If checking content, module, or theme dependencies, discover which
-      // entities are dependent on the entities that have a direct dependency.
-      foreach ($dependent_entities as $entity) {
-        $entities_to_check[] = $entity->getConfigDependencyName();
-      }
-    }
-    $dependencies = array_merge($this->createGraphConfigEntityDependencies($entities_to_check), $dependent_entities);
-    // Sort dependencies in the reverse order of the graph. So the least
-    // dependent is at the top. For example, this ensures that fields are
-    // always after field storages. This is because field storages need to be
-    // created before a field.
-    $graph = $this->getGraph();
-    $sorts = $this->prepareMultisort($graph, ['weight', 'name']);
-    array_multisort($sorts['weight'], SORT_DESC, SORT_NUMERIC, $sorts['name'], SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE, $graph);
-    return array_replace(array_intersect_key($graph, $dependencies), $dependencies);
-  }
-
-  /**
-   * Extracts data from the graph for use in array_multisort().
-   *
-   * @param array $graph
-   *   The graph to extract data from.
-   * @param array $keys
-   *   The keys whose values to extract.
-   *
-   * @return array
-   *   An array keyed by the $keys passed in. The values are arrays keyed by the
-   *   row from the graph and the value is the corresponding value for the key
-   *   from the graph.
-   */
-  protected function prepareMultisort($graph, $keys): array {
-    $return = array_fill_keys($keys, []);
-    foreach ($graph as $graph_key => $graph_row) {
-      foreach ($keys as $key) {
-        $return[$key][$graph_key] = $graph_row[$key];
-      }
-    }
-    return $return;
-  }
-
-  /**
-   * Sorts the dependencies in order of most dependent last.
-   *
-   * @return array
-   *   The list of entities in order of most dependent last, otherwise
-   *   alphabetical.
-   */
-  public function sortAll(): array {
-    $graph = $this->getGraph();
-    // Sort by weight and alphabetically. The most dependent entities
-    // are last and entities with the same weight are alphabetically ordered.
-    $sorts = $this->prepareMultisort($graph, ['weight', 'name']);
-    array_multisort($sorts['weight'], SORT_ASC, SORT_NUMERIC, $sorts['name'], SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE, $graph);
-    // Use array_intersect_key() to exclude modules and themes from the list.
-    return array_keys(array_intersect_key($graph, $this->data));
-  }
-
-  /**
-   * Creates a graph of config entity dependencies.
-   *
-   * @param array $entities_to_check
-   *   The configuration entity full configuration names to determine the
-   *   dependencies for.
-   *
-   * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
-   *   A graph of config entity dependency objects that are dependent on the
-   *   supplied entities to check.
-   */
-  protected function createGraphConfigEntityDependencies($entities_to_check): array {
-    $dependent_entities = [];
-    $graph = $this->getGraph();
-
-    foreach ($entities_to_check as $entity) {
-      if (isset($graph[$entity]) && !empty($graph[$entity]['paths'])) {
-        foreach ($graph[$entity]['paths'] as $dependency => $value) {
-          if (isset($this->data[$dependency])) {
-            $dependent_entities[$dependency] = $this->data[$dependency];
-          }
+        $entities_to_check = [];
+        if ($type == 'config') {
+            $entities_to_check[] = $name;
+        } else {
+            if ($type == 'module' || $type == 'theme' || $type == 'content') {
+                $dependent_entities = array_filter($this->data, fn (ConfigEntityDependency $entity) => $entity->hasDependency($type, $name));
+            }
+            // If checking content, module, or theme dependencies, discover which
+            // entities are dependent on the entities that have a direct dependency.
+            foreach ($dependent_entities as $entity) {
+                $entities_to_check[] = $entity->getConfigDependencyName();
+            }
         }
-      }
+        $dependencies = array_merge($this->createGraphConfigEntityDependencies($entities_to_check), $dependent_entities);
+        // Sort dependencies in the reverse order of the graph. So the least
+        // dependent is at the top. For example, this ensures that fields are
+        // always after field storages. This is because field storages need to be
+        // created before a field.
+        $graph = $this->getGraph();
+        $sorts = $this->prepareMultisort($graph, ['weight', 'name']);
+        array_multisort($sorts['weight'], SORT_DESC, SORT_NUMERIC, $sorts['name'], SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE, $graph);
+        return array_replace(array_intersect_key($graph, $dependencies), $dependencies);
     }
-    return $dependent_entities;
-  }
 
-  /**
-   * Gets the dependency graph of all the config entities.
-   *
-   * @return array
-   *   The dependency graph of all the config entities.
-   */
-  protected function getGraph() {
-    if (!isset($this->graph)) {
-      $graph = [];
-      foreach ($this->data as $entity) {
-        $graph_key = $entity->getConfigDependencyName();
-        if (!isset($graph[$graph_key])) {
-          $graph[$graph_key] = [
-            'edges' => [],
-            'name' => $graph_key,
-          ];
+    /**
+     * Extracts data from the graph for use in array_multisort().
+     *
+     * @param array $graph
+     *   The graph to extract data from.
+     * @param array $keys
+     *   The keys whose values to extract.
+     *
+     * @return array
+     *   An array keyed by the $keys passed in. The values are arrays keyed by the
+     *   row from the graph and the value is the corresponding value for the key
+     *   from the graph.
+     */
+    protected function prepareMultisort($graph, $keys): array
+    {
+        $return = array_fill_keys($keys, []);
+        foreach ($graph as $graph_key => $graph_row) {
+            foreach ($keys as $key) {
+                $return[$key][$graph_key] = $graph_row[$key];
+            }
         }
-        // Include all dependencies in the graph so that topographical sorting
-        // works.
-        foreach (array_merge($entity->getDependencies('config'), $entity->getDependencies('module'), $entity->getDependencies('theme')) as $dependency) {
-          $graph[$dependency]['edges'][$graph_key] = TRUE;
-          $graph[$dependency]['name'] = $dependency;
-        }
-      }
-      // Ensure that order of the graph is consistent.
-      krsort($graph);
-      $graph_object = new Graph($graph);
-      $this->graph = $graph_object->searchAndSort();
+        return $return;
     }
-    return $this->graph;
-  }
 
-  /**
-   * Sets data to calculate dependencies for.
-   *
-   * The data is converted into lightweight ConfigEntityDependency objects.
-   *
-   * @param array $data
-   *   Configuration data keyed by configuration object name. Typically the
-   *   output of \Drupal\Core\Config\StorageInterface::loadMultiple().
-   *
-   * @return $this
-   */
-  public function setData(array $data): static {
-    array_walk($data, function (&$config, $name): void {
-      $config = new ConfigEntityDependency($name, $config);
-    });
-    $this->data = $data;
-    $this->graph = NULL;
-    return $this;
-  }
+    /**
+     * Sorts the dependencies in order of most dependent last.
+     *
+     * @return array
+     *   The list of entities in order of most dependent last, otherwise
+     *   alphabetical.
+     */
+    public function sortAll(): array
+    {
+        $graph = $this->getGraph();
+        // Sort by weight and alphabetically. The most dependent entities
+        // are last and entities with the same weight are alphabetically ordered.
+        $sorts = $this->prepareMultisort($graph, ['weight', 'name']);
+        array_multisort($sorts['weight'], SORT_ASC, SORT_NUMERIC, $sorts['name'], SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE, $graph);
+        // Use array_intersect_key() to exclude modules and themes from the list.
+        return array_keys(array_intersect_key($graph, $this->data));
+    }
 
-  /**
-   * Updates one of the lightweight ConfigEntityDependency objects.
-   *
-   * @param string $name
-   *   The configuration dependency name.
-   * @param array $dependencies
-   *   The configuration dependencies. The array is structured like this:
-   *   @code
-   *   [
-   *     'config' => [
-   *       // An array of configuration entity object names.
-   *     ],
-   *     'content' => [
-   *       // An array of content entity configuration dependency names. The default
-   *       // format is "ENTITY_TYPE_ID:BUNDLE:UUID".
-   *     ],
-   *     'module' => [
-   *       // An array of module names.
-   *     ],
-   *     'theme' => [
-   *       // An array of theme names.
-   *     ],
-   *   ];
-   *   @endcode
-   *
-   * @return $this
-   */
-  public function updateData($name, array $dependencies): static {
-    $this->graph = NULL;
-    $this->data[$name] = new ConfigEntityDependency($name, ['dependencies' => $dependencies]);
-    return $this;
-  }
+    /**
+     * Creates a graph of config entity dependencies.
+     *
+     * @param array $entities_to_check
+     *   The configuration entity full configuration names to determine the
+     *   dependencies for.
+     *
+     * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
+     *   A graph of config entity dependency objects that are dependent on the
+     *   supplied entities to check.
+     */
+    protected function createGraphConfigEntityDependencies($entities_to_check): array
+    {
+        $dependent_entities = [];
+        $graph = $this->getGraph();
+
+        foreach ($entities_to_check as $entity) {
+            if (isset($graph[$entity]) && !empty($graph[$entity]['paths'])) {
+                foreach ($graph[$entity]['paths'] as $dependency => $value) {
+                    if (isset($this->data[$dependency])) {
+                        $dependent_entities[$dependency] = $this->data[$dependency];
+                    }
+                }
+            }
+        }
+        return $dependent_entities;
+    }
+
+    /**
+     * Gets the dependency graph of all the config entities.
+     *
+     * @return array
+     *   The dependency graph of all the config entities.
+     */
+    protected function getGraph()
+    {
+        if (!isset($this->graph)) {
+            $graph = [];
+            foreach ($this->data as $entity) {
+                $graph_key = $entity->getConfigDependencyName();
+                if (!isset($graph[$graph_key])) {
+                    $graph[$graph_key] = [
+                      'edges' => [],
+                      'name' => $graph_key,
+                    ];
+                }
+                // Include all dependencies in the graph so that topographical sorting
+                // works.
+                foreach (array_merge($entity->getDependencies('config'), $entity->getDependencies('module'), $entity->getDependencies('theme')) as $dependency) {
+                    $graph[$dependency]['edges'][$graph_key] = true;
+                    $graph[$dependency]['name'] = $dependency;
+                }
+            }
+            // Ensure that order of the graph is consistent.
+            krsort($graph);
+            $graph_object = new Graph($graph);
+            $this->graph = $graph_object->searchAndSort();
+        }
+        return $this->graph;
+    }
+
+    /**
+     * Sets data to calculate dependencies for.
+     *
+     * The data is converted into lightweight ConfigEntityDependency objects.
+     *
+     * @param array $data
+     *   Configuration data keyed by configuration object name. Typically the
+     *   output of \Drupal\Core\Config\StorageInterface::loadMultiple().
+     *
+     * @return $this
+     */
+    public function setData(array $data): static
+    {
+        array_walk($data, function (&$config, $name): void {
+            $config = new ConfigEntityDependency($name, $config);
+        });
+        $this->data = $data;
+        $this->graph = null;
+        return $this;
+    }
+
+    /**
+     * Updates one of the lightweight ConfigEntityDependency objects.
+     *
+     * @param string $name
+     *   The configuration dependency name.
+     * @param array $dependencies
+     *   The configuration dependencies. The array is structured like this:
+     *   @code
+     *   [
+     *     'config' => [
+     *       // An array of configuration entity object names.
+     *     ],
+     *     'content' => [
+     *       // An array of content entity configuration dependency names. The default
+     *       // format is "ENTITY_TYPE_ID:BUNDLE:UUID".
+     *     ],
+     *     'module' => [
+     *       // An array of module names.
+     *     ],
+     *     'theme' => [
+     *       // An array of theme names.
+     *     ],
+     *   ];
+     *   @endcode
+     *
+     * @return $this
+     */
+    public function updateData($name, array $dependencies): static
+    {
+        $this->graph = null;
+        $this->data[$name] = new ConfigEntityDependency($name, ['dependencies' => $dependencies]);
+        return $this;
+    }
 
 }

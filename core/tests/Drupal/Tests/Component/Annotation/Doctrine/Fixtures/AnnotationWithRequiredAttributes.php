@@ -14,8 +14,7 @@ namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
  */
 final class AnnotationWithRequiredAttributes
 {
-
-    public final function __construct(array $data)
+    final public function __construct(array $data)
     {
         foreach ($data as $key => $value) {
             $this->$key = $value;

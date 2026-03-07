@@ -13,55 +13,57 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('help')]
 #[RunTestsInSeparateProcesses]
-class NoHelpTest extends BrowserTestBase {
+class NoHelpTest extends BrowserTestBase
+{
+    /**
+     * Modules to install.
+     *
+     * Use one of the test modules that do not implement hook_help().
+     *
+     * @var array
+     */
+    protected static $modules = ['help', 'menu_test'];
 
-  /**
-   * Modules to install.
-   *
-   * Use one of the test modules that do not implement hook_help().
-   *
-   * @var array
-   */
-  protected static $modules = ['help', 'menu_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The user who will be created.
+     *
+     * @var \Drupal\user\Entity\User|false
+     */
+    protected $adminUser;
 
-  /**
-   * The user who will be created.
-   *
-   * @var \Drupal\user\Entity\User|false
-   */
-  protected $adminUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = $this->drupalCreateUser(['access help pages']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->adminUser = $this->drupalCreateUser(['access help pages']);
-  }
+    /**
+     * Ensures modules not implementing help do not appear on admin/help.
+     */
+    public function testMainPageNoHelp(): void
+    {
+        $this->drupalLogin($this->adminUser);
 
-  /**
-   * Ensures modules not implementing help do not appear on admin/help.
-   */
-  public function testMainPageNoHelp(): void {
-    $this->drupalLogin($this->adminUser);
+        $this->drupalGet('admin/help');
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->pageTextContains('Module overviews are provided by modules');
+        $this->assertFalse(\Drupal::moduleHandler()->hasImplementations('help', 'menu_test'), 'The menu_test module does not implement hook_help');
+        // Make sure the test module menu_test does not display a help link on
+        // admin/help.
+        $this->assertSession()->pageTextNotContains(\Drupal::service('extension.list.module')->getName('menu_test'));
 
-    $this->drupalGet('admin/help');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('Module overviews are provided by modules');
-    $this->assertFalse(\Drupal::moduleHandler()->hasImplementations('help', 'menu_test'), 'The menu_test module does not implement hook_help');
-    // Make sure the test module menu_test does not display a help link on
-    // admin/help.
-    $this->assertSession()->pageTextNotContains(\Drupal::service('extension.list.module')->getName('menu_test'));
-
-    // Ensure that the module overview help page for a module that does not
-    // implement hook_help() results in a 404.
-    $this->drupalGet('admin/help/menu_test');
-    $this->assertSession()->statusCodeEquals(404);
-  }
+        // Ensure that the module overview help page for a module that does not
+        // implement hook_help() results in a 404.
+        $this->drupalGet('admin/help/menu_test');
+        $this->assertSession()->statusCodeEquals(404);
+    }
 
 }

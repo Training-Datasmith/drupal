@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Revisions;
 
 /**
@@ -11,4 +13,6 @@ namespace Drupal\jsonapi\Revisions;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class InvalidVersionIdentifierException extends \InvalidArgumentException {}
+class InvalidVersionIdentifierException extends \InvalidArgumentException
+{
+}

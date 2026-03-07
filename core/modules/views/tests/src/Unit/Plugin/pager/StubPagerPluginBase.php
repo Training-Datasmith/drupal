@@ -9,5 +9,6 @@ use Drupal\views\Plugin\views\pager\PagerPluginBase;
 /**
  * A stub pager plugin for testing purposes.
  */
-class StubPagerPluginBase extends PagerPluginBase {
+class StubPagerPluginBase extends PagerPluginBase
+{
 }

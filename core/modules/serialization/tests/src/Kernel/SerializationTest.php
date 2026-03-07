@@ -14,47 +14,48 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
  */
 #[Group('serialization')]
 #[RunTestsInSeparateProcesses]
-class SerializationTest extends KernelTestBase {
+class SerializationTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['serialization', 'serialization_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['serialization', 'serialization_test'];
+    /**
+     * The serializer service to test.
+     *
+     * @var \Symfony\Component\Serializer\SerializerInterface
+     */
+    protected $serializer;
 
-  /**
-   * The serializer service to test.
-   *
-   * @var \Symfony\Component\Serializer\SerializerInterface
-   */
-  protected $serializer;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->serializer = $this->container->get('serializer');
-  }
-
-  /**
-   * Confirms that modules can register normalizers and encoders.
-   */
-  public function testSerializerComponentRegistration(): void {
-    $object = new \stdClass();
-    $format = 'serialization_test';
-    $expected = 'Normalized by SerializationTestNormalizer, Encoded by SerializationTestEncoder';
-
-    // Ensure the serialization invokes the expected normalizer and encoder.
-    $this->assertSame($expected, $this->serializer->serialize($object, $format));
-
-    // Ensure the serialization fails for an unsupported format.
-    try {
-      $this->serializer->serialize($object, 'unsupported_format');
-      $this->fail('The serializer was expected to throw an exception for an unsupported format, but did not.');
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->serializer = $this->container->get('serializer');
     }
-    catch (UnexpectedValueException) {
-      // Expected exception; just continue testing.
+
+    /**
+     * Confirms that modules can register normalizers and encoders.
+     */
+    public function testSerializerComponentRegistration(): void
+    {
+        $object = new \stdClass();
+        $format = 'serialization_test';
+        $expected = 'Normalized by SerializationTestNormalizer, Encoded by SerializationTestEncoder';
+
+        // Ensure the serialization invokes the expected normalizer and encoder.
+        $this->assertSame($expected, $this->serializer->serialize($object, $format));
+
+        // Ensure the serialization fails for an unsupported format.
+        try {
+            $this->serializer->serialize($object, 'unsupported_format');
+            $this->fail('The serializer was expected to throw an exception for an unsupported format, but did not.');
+        } catch (UnexpectedValueException) {
+            // Expected exception; just continue testing.
+        }
     }
-  }
 
 }

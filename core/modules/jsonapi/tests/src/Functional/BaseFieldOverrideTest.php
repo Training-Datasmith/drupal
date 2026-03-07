@@ -16,141 +16,147 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class BaseFieldOverrideTest extends ConfigEntityResourceTestBase {
+class BaseFieldOverrideTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'node', 'field_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'node', 'field_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'base_field_override';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'base_field_override';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'base_field_override--base_field_override';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'base_field_override--base_field_override';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\Core\Field\Entity\BaseFieldOverride
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\Core\Field\Entity\BaseFieldOverride
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer node fields']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer node fields']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $camelids = NodeType::create([
+          'name' => 'Camelids',
+          'type' => 'camelids',
+        ]);
+        $camelids->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $camelids = NodeType::create([
-      'name' => 'Camelids',
-      'type' => 'camelids',
-    ]);
-    $camelids->save();
-
-    $entity = BaseFieldOverride::create([
-      'field_name' => 'promote',
-      'entity_type' => 'node',
-      'bundle' => 'camelids',
-      'label' => 'Promote to front page',
-    ]);
-    $entity->save();
-
-    return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/base_field_override/base_field_override/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'base_field_override--base_field_override',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
+        $entity = BaseFieldOverride::create([
+          'field_name' => 'promote',
+          'entity_type' => 'node',
           'bundle' => 'camelids',
-          'default_value' => [],
-          'default_value_callback' => '',
-          'dependencies' => [
-            'config' => [
-              'node.type.camelids',
+          'label' => 'Promote to front page',
+        ]);
+        $entity->save();
+
+        return $entity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/base_field_override/base_field_override/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'base_field_override--base_field_override',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'bundle' => 'camelids',
+              'default_value' => [],
+              'default_value_callback' => '',
+              'dependencies' => [
+                'config' => [
+                  'node.type.camelids',
+                ],
+              ],
+              'description' => '',
+              'entity_type' => 'node',
+              'field_name' => 'promote',
+              'field_type' => 'boolean',
+              'label' => 'Promote to front page',
+              'langcode' => 'en',
+              'required' => false,
+              'settings' => [
+                'on_label' => 'On',
+                'off_label' => 'Off',
+              ],
+              'status' => true,
+              'translatable' => true,
+              'drupal_internal__id' => 'node.camelids.promote',
             ],
           ],
-          'description' => '',
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method): string
+    {
+        return "The 'administer node fields' permission is required.";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createAnotherEntity($key)
+    {
+        $entity = BaseFieldOverride::create([
+          'field_name' => 'status',
           'entity_type' => 'node',
-          'field_name' => 'promote',
-          'field_type' => 'boolean',
-          'label' => 'Promote to front page',
-          'langcode' => 'en',
-          'required' => FALSE,
-          'settings' => [
-            'on_label' => 'On',
-            'off_label' => 'Off',
-          ],
-          'status' => TRUE,
-          'translatable' => TRUE,
-          'drupal_internal__id' => 'node.camelids.promote',
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method): string {
-    return "The 'administer node fields' permission is required.";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createAnotherEntity($key) {
-    $entity = BaseFieldOverride::create([
-      'field_name' => 'status',
-      'entity_type' => 'node',
-      'bundle' => 'camelids',
-      'label' => 'Published',
-    ]);
-    $entity->save();
-    return $entity;
-  }
+          'bundle' => 'camelids',
+          'label' => 'Published',
+        ]);
+        $entity->save();
+        return $entity;
+    }
 
 }

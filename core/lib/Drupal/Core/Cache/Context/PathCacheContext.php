@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -14,28 +16,31 @@ use Drupal\Core\Cache\CacheableMetadata;
  * @see \Symfony\Component\HttpFoundation\Request::getBasePath()
  * @see \Symfony\Component\HttpFoundation\Request::getPathInfo()
  */
-class PathCacheContext extends RequestStackCacheContextBase implements CacheContextInterface {
+class PathCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Path');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Path');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): string
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        return $request->getBasePath() . $request->getPathInfo();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext(): string {
-    $request = $this->requestStack->getCurrentRequest();
-    return $request->getBasePath() . $request->getPathInfo();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    {
+        return new CacheableMetadata();
+    }
 
 }

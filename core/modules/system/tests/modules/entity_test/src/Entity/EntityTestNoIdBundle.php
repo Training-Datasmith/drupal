@@ -15,14 +15,14 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines the entity_test_no_id bundle configuration entity.
  */
 #[ConfigEntityType(
-  id: 'entity_test_no_id_bundle',
-  label: new TranslatableMarkup('Entity Test without id bundle'),
-  config_prefix: 'entity_test_no_id_bundle',
-  entity_keys: [
+    id: 'entity_test_no_id_bundle',
+    label: new TranslatableMarkup('Entity Test without id bundle'),
+    config_prefix: 'entity_test_no_id_bundle',
+    entity_keys: [
     'id' => 'id',
     'label' => 'label',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityAccessControlHandler::class,
     'form' => [
       'default' => BundleEntityFormBase::class,
@@ -33,32 +33,32 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
       'html' => DefaultHtmlRouteProvider::class,
     ],
   ],
-  links: [
+    links: [
     'add-form' => '/admin/structure/entity_test_no_id_bundle/add',
     'edit-form' => '/admin/structure/entity_test_no_id_bundle/manage/{entity_test_no_id_bundle}',
     'collection' => '/admin/structure/entity_test_no_id_bundle',
   ],
-  admin_permission: 'administer entity_test content',
-  bundle_of: 'entity_test_no_id',
-  config_export: [
+    admin_permission: 'administer entity_test content',
+    bundle_of: 'entity_test_no_id',
+    config_export: [
     'id',
     'label',
   ],
 )]
-class EntityTestNoIdBundle extends ConfigEntityBundleBase {
+class EntityTestNoIdBundle extends ConfigEntityBundleBase
+{
+    /**
+     * The machine name.
+     *
+     * @var string
+     */
+    protected $id;
 
-  /**
-   * The machine name.
-   *
-   * @var string
-   */
-  protected $id;
-
-  /**
-   * The human-readable name.
-   *
-   * @var string
-   */
-  protected $label;
+    /**
+     * The human-readable name.
+     *
+     * @var string
+     */
+    protected $label;
 
 }

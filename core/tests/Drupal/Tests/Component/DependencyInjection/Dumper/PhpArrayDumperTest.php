@@ -14,47 +14,52 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[CoversClass(PhpArrayDumper::class)]
 #[Group('DependencyInjection')]
-class PhpArrayDumperTest extends OptimizedPhpArrayDumperTest {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->machineFormat = FALSE;
-    $this->dumperClass = '\Drupal\Component\DependencyInjection\Dumper\PhpArrayDumper';
-    parent::setUp();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function serializeDefinition(array $service_definition): string|array {
-    return $service_definition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string {
-    if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
-      return sprintf('@?%s', $id);
+class PhpArrayDumperTest extends OptimizedPhpArrayDumperTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->machineFormat = false;
+        $this->dumperClass = '\Drupal\Component\DependencyInjection\Dumper\PhpArrayDumper';
+        parent::setUp();
     }
 
-    return sprintf('@%s', $id);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected static function serializeDefinition(array $service_definition): string|array
+    {
+        return $service_definition;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static function getParameterCall($name): string {
-    return '%' . $name . '%';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected static function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string
+    {
+        if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
+            return sprintf('@?%s', $id);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static function getCollection($collection, $resolve = TRUE) {
-    return $collection;
-  }
+        return sprintf('@%s', $id);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function getParameterCall($name): string
+    {
+        return '%' . $name . '%';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function getCollection($collection, $resolve = true)
+    {
+        return $collection;
+    }
 
 }

@@ -15,62 +15,67 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class FileProcessOutputCallback implements OutputCallbackInterface {
+final readonly class FileProcessOutputCallback implements OutputCallbackInterface
+{
+    /**
+     * The file to write to.
+     *
+     * @var resource
+     */
+    private mixed $handle;
 
-  /**
-   * The file to write to.
-   *
-   * @var resource
-   */
-  private mixed $handle;
-
-  public function __construct(
-    string $path,
-    private ?OutputCallbackInterface $decorated = NULL,
-  ) {
-    $this->handle = fopen($path, 'a');
-    if (empty($this->handle)) {
-      throw new \RuntimeException("Could not open or create '$path' for writing.");
+    public function __construct(
+        string $path,
+        private ?OutputCallbackInterface $decorated = null,
+    ) {
+        $this->handle = fopen($path, 'a');
+        if (empty($this->handle)) {
+            throw new \RuntimeException("Could not open or create '$path' for writing.");
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearErrorOutput(): void {
-    $this->decorated?->clearErrorOutput();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function clearOutput(): void {
-    $this->decorated?->clearOutput();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getErrorOutput(): array {
-    return $this->decorated?->getErrorOutput() ?? [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOutput(): array {
-    return $this->decorated?->getOutput() ?? [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __invoke(OutputTypeEnum $type, string $buffer): void {
-    fwrite($this->handle, $buffer);
-
-    if ($this->decorated) {
-      ($this->decorated)($type, $buffer);
+    /**
+     * {@inheritdoc}
+     */
+    public function clearErrorOutput(): void
+    {
+        $this->decorated?->clearErrorOutput();
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearOutput(): void
+    {
+        $this->decorated?->clearOutput();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getErrorOutput(): array
+    {
+        return $this->decorated?->getErrorOutput() ?? [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOutput(): array
+    {
+        return $this->decorated?->getOutput() ?? [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __invoke(OutputTypeEnum $type, string $buffer): void
+    {
+        fwrite($this->handle, $buffer);
+
+        if ($this->decorated) {
+            ($this->decorated)($type, $buffer);
+        }
+    }
 
 }

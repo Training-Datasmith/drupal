@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Component\Utility\NestedArray;
@@ -8,121 +10,127 @@ use Drupal\Core\Plugin\DefaultLazyPluginCollection;
 /**
  * A collection of filters.
  */
-class FilterPluginCollection extends DefaultLazyPluginCollection {
+class FilterPluginCollection extends DefaultLazyPluginCollection
+{
+    /**
+     * All possible filter plugin IDs.
+     *
+     * @var array
+     */
+    protected $definitions;
 
-  /**
-   * All possible filter plugin IDs.
-   *
-   * @var array
-   */
-  protected $definitions;
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\filter\Plugin\FilterInterface
-   *   The filter plugin instance.
-   */
-  public function &get($instance_id) {
-    return parent::get($instance_id);
-  }
-
-  /**
-   * Retrieves filter definitions and creates an instance for each filter.
-   *
-   * This is exclusively used for the text format administration page, on which
-   * all available filter plugins are exposed, regardless of whether the current
-   * text format has an active instance.
-   *
-   * @todo Refactor text format administration to actually construct/create and
-   *   destruct/remove actual filter plugin instances, using a library approach
-   *   à la blocks.
-   */
-  public function getAll() {
-    // Retrieve all available filter plugin definitions.
-    if (!$this->definitions) {
-      $this->definitions = $this->manager->getDefinitions();
-      // Do not allow the null filter to be used directly, only as a fallback.
-      unset($this->definitions['filter_null']);
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\filter\Plugin\FilterInterface
+     *   The filter plugin instance.
+     */
+    public function &get($instance_id)
+    {
+        return parent::get($instance_id);
     }
 
-    // Ensure that there is an instance of all available filters.
-    // Note that getDefinitions() are keyed by $plugin_id. $instance_id is the
-    // $plugin_id for filters, since a single filter plugin can only exist once
-    // in a format.
-    foreach ($this->definitions as $plugin_id => $definition) {
-      if (!isset($this->pluginInstances[$plugin_id])) {
-        $this->initializePlugin($plugin_id);
-      }
-    }
-    return $this->pluginInstances;
-  }
+    /**
+     * Retrieves filter definitions and creates an instance for each filter.
+     *
+     * This is exclusively used for the text format administration page, on which
+     * all available filter plugins are exposed, regardless of whether the current
+     * text format has an active instance.
+     *
+     * @todo Refactor text format administration to actually construct/create and
+     *   destruct/remove actual filter plugin instances, using a library approach
+     *   à la blocks.
+     */
+    public function getAll()
+    {
+        // Retrieve all available filter plugin definitions.
+        if (!$this->definitions) {
+            $this->definitions = $this->manager->getDefinitions();
+            // Do not allow the null filter to be used directly, only as a fallback.
+            unset($this->definitions['filter_null']);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function initializePlugin($instance_id) {
-    // Filters have a 1:1 relationship to text formats and can be added and
-    // instantiated at any time.
-    // @todo $configuration is the whole filter plugin instance configuration,
-    //   as contained in the text format configuration. The default
-    //   configuration is the filter plugin definition. Configuration should not
-    //   be contained in definitions. Move into a FilterBase::init() method.
-    $configuration = $this->manager->getDefinition($instance_id);
-    // Merge the actual configuration into the default configuration.
-    if (isset($this->configurations[$instance_id])) {
-      $configuration = NestedArray::mergeDeepArray([$configuration, $this->configurations[$instance_id]], TRUE);
+        // Ensure that there is an instance of all available filters.
+        // Note that getDefinitions() are keyed by $plugin_id. $instance_id is the
+        // $plugin_id for filters, since a single filter plugin can only exist once
+        // in a format.
+        foreach ($this->definitions as $plugin_id => $definition) {
+            if (!isset($this->pluginInstances[$plugin_id])) {
+                $this->initializePlugin($plugin_id);
+            }
+        }
+        return $this->pluginInstances;
     }
-    $this->configurations[$instance_id] = $configuration;
-    parent::initializePlugin($instance_id);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function sort(): static {
-    $this->getAll();
-    return parent::sort();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializePlugin($instance_id)
+    {
+        // Filters have a 1:1 relationship to text formats and can be added and
+        // instantiated at any time.
+        // @todo $configuration is the whole filter plugin instance configuration,
+        //   as contained in the text format configuration. The default
+        //   configuration is the filter plugin definition. Configuration should not
+        //   be contained in definitions. Move into a FilterBase::init() method.
+        $configuration = $this->manager->getDefinition($instance_id);
+        // Merge the actual configuration into the default configuration.
+        if (isset($this->configurations[$instance_id])) {
+            $configuration = NestedArray::mergeDeepArray([$configuration, $this->configurations[$instance_id]], true);
+        }
+        $this->configurations[$instance_id] = $configuration;
+        parent::initializePlugin($instance_id);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function sortHelper(string $aID, string $bID): int {
-    $a = $this->get($aID);
-    $b = $this->get($bID);
-    if ($a->status != $b->status) {
-      return !empty($a->status) ? -1 : 1;
+    /**
+     * {@inheritdoc}
+     */
+    public function sort(): static
+    {
+        $this->getAll();
+        return parent::sort();
     }
-    if ($a->weight != $b->weight) {
-      return $a->weight <=> $b->weight;
-    }
-    if ($a->provider != $b->provider) {
-      return strnatcasecmp((string) $a->provider, (string) $b->provider);
-    }
-    return parent::sortHelper($aID, $bID);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration(): array {
-    $configuration = parent::getConfiguration();
-    // Remove configuration if it matches the defaults. In self::getAll(), we
-    // load all available filters, in addition to the enabled filters stored in
-    // configuration. In order to prevent those from bleeding through to the
-    // stored configuration, remove all filters that match the default values.
-    // Because filters are disabled by default, this will never remove the
-    // configuration of an enabled filter.
-    foreach ($configuration as $instance_id => $instance_config) {
-      $default_config = [];
-      $default_config['id'] = $instance_id;
-      $default_config += $this->get($instance_id)->defaultConfiguration();
-      if ($default_config === $instance_config) {
-        unset($configuration[$instance_id]);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function sortHelper(string $aID, string $bID): int
+    {
+        $a = $this->get($aID);
+        $b = $this->get($bID);
+        if ($a->status != $b->status) {
+            return !empty($a->status) ? -1 : 1;
+        }
+        if ($a->weight != $b->weight) {
+            return $a->weight <=> $b->weight;
+        }
+        if ($a->provider != $b->provider) {
+            return strnatcasecmp((string) $a->provider, (string) $b->provider);
+        }
+        return parent::sortHelper($aID, $bID);
     }
-    return $configuration;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration(): array
+    {
+        $configuration = parent::getConfiguration();
+        // Remove configuration if it matches the defaults. In self::getAll(), we
+        // load all available filters, in addition to the enabled filters stored in
+        // configuration. In order to prevent those from bleeding through to the
+        // stored configuration, remove all filters that match the default values.
+        // Because filters are disabled by default, this will never remove the
+        // configuration of an enabled filter.
+        foreach ($configuration as $instance_id => $instance_config) {
+            $default_config = [];
+            $default_config['id'] = $instance_id;
+            $default_config += $this->get($instance_id)->defaultConfiguration();
+            if ($default_config === $instance_config) {
+                unset($configuration[$instance_id]);
+            }
+        }
+        return $configuration;
+    }
 
 }

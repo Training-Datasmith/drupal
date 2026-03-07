@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Twig\Environment;
-use Twig\Node\Nodes;
-use Twig\TwigFunction;
 use Twig\Node\Expression\FilterExpression;
 use Twig\Node\Expression\FunctionExpression;
 use Twig\Node\Node;
+use Twig\Node\Nodes;
 use Twig\Node\PrintNode;
 use Twig\NodeVisitor\NodeVisitorInterface;
+use Twig\TwigFunction;
 
 /**
  * Provides a TwigNodeVisitor to change the generated parse-tree.
@@ -20,65 +22,68 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  *
  * @see twig_render
  */
-class TwigNodeVisitor implements NodeVisitorInterface {
+class TwigNodeVisitor implements NodeVisitorInterface
+{
+    /**
+     * Tracks whether there is a render array aware filter active already.
+     */
+    protected ?bool $skipRenderVarFunction = null;
 
-  /**
-   * Tracks whether there is a render array aware filter active already.
-   */
-  protected ?bool $skipRenderVarFunction = null;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function enterNode(Node $node, Environment $env): Node {
-    return $node;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function leaveNode(Node $node, Environment $env): ?Node {
-    // We use this to inject a call to render_var -> TwigExtension->renderVar()
-    // before anything is printed.
-    if ($node instanceof PrintNode) {
-        if (!empty($this->skipRenderVarFunction)) {
-          // No need to add the callback, we have escape active already.
-          unset($this->skipRenderVarFunction);
-          return $node;
-        }
-        $class = $node::class;
-        $line = $node->getTemplateLine();
-        return new $class(
-          new FunctionExpression(
-            new TwigFunction('render_var', [$env->getExtension(TwigExtension::class), 'renderVar']),
-            new Nodes([$node->getNode('expr')]),
-            $line
-          ),
-          $line
-        );
-    }
-    // Change the 'escape' filter to our own 'drupal_escape' filter.
-    if ($node instanceof FilterExpression) {
-        $name = $node->getAttribute('twig_callable')->getName();
-        if ('escape' == $name || 'e' == $name) {
-          // Use our own escape filter that is MarkupInterface aware.
-          $node->setAttribute('twig_callable', $env->getFilter('drupal_escape'));
-  
-          // Store that we have a filter active already that knows
-          // how to deal with render arrays.
-          $this->skipRenderVarFunction = TRUE;
-        }
+    /**
+     * {@inheritdoc}
+     */
+    public function enterNode(Node $node, Environment $env): Node
+    {
+        return $node;
     }
 
-    return $node;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function leaveNode(Node $node, Environment $env): ?Node
+    {
+        // We use this to inject a call to render_var -> TwigExtension->renderVar()
+        // before anything is printed.
+        if ($node instanceof PrintNode) {
+            if (!empty($this->skipRenderVarFunction)) {
+                // No need to add the callback, we have escape active already.
+                unset($this->skipRenderVarFunction);
+                return $node;
+            }
+            $class = $node::class;
+            $line = $node->getTemplateLine();
+            return new $class(
+                new FunctionExpression(
+                    new TwigFunction('render_var', [$env->getExtension(TwigExtension::class), 'renderVar']),
+                    new Nodes([$node->getNode('expr')]),
+                    $line
+                ),
+                $line
+            );
+        }
+        // Change the 'escape' filter to our own 'drupal_escape' filter.
+        if ($node instanceof FilterExpression) {
+            $name = $node->getAttribute('twig_callable')->getName();
+            if ('escape' == $name || 'e' == $name) {
+                // Use our own escape filter that is MarkupInterface aware.
+                $node->setAttribute('twig_callable', $env->getFilter('drupal_escape'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPriority(): int {
-    // Just above the Optimizer, which is the normal last one.
-    return 256;
-  }
+                // Store that we have a filter active already that knows
+                // how to deal with render arrays.
+                $this->skipRenderVarFunction = true;
+            }
+        }
+
+        return $node;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPriority(): int
+    {
+        // Just above the Optimizer, which is the normal last one.
+        return 256;
+    }
 
 }

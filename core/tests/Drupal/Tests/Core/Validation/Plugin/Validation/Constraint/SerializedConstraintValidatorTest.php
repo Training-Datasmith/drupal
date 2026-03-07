@@ -19,56 +19,57 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 #[CoversClass(SerializedConstraintValidator::class)]
 #[Group('Validation')]
-class SerializedConstraintValidatorTest extends UnitTestCase {
+class SerializedConstraintValidatorTest extends UnitTestCase
+{
+    /**
+     * Validate serializer constraint.
+     */
+    #[DataProvider('provideTestValidate')]
+    public function testValidate($value, bool $valid): void
+    {
+        $typed_data = new StringData(DataDefinition::create('string'));
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $context->expects($this->any())
+          ->method('getObject')
+          ->willReturn($typed_data);
 
-  /**
-   * Validate serializer constraint.
-   */
-  #[DataProvider('provideTestValidate')]
-  public function testValidate($value, bool $valid): void {
-    $typed_data = new StringData(DataDefinition::create('string'));
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $context->expects($this->any())
-      ->method('getObject')
-      ->willReturn($typed_data);
+        if ($valid) {
+            $context->expects($this->never())
+              ->method('addViolation');
+        } else {
+            $context->expects($this->once())
+              ->method('addViolation');
+        }
 
-    if ($valid) {
-      $context->expects($this->never())
-        ->method('addViolation');
+        $constraint = new SerializedConstraint();
+
+        $validate = new SerializedConstraintValidator();
+        $validate->initialize($context);
+        $validate->validate($value, $constraint);
     }
-    else {
-      $context->expects($this->once())
-        ->method('addViolation');
+
+    /**
+     * Provides an array with several serialized and non-serialized values.
+     *
+     * @return array
+     *   An array with test scenarios.
+     */
+    public static function provideTestValidate(): array
+    {
+        $data = [];
+
+        $data[] = [serialize(''), true];
+        $data[] = [serialize('0'), true];
+        $data[] = [serialize('false'), true];
+        $data[] = [serialize(0), true];
+        $data[] = [serialize(1), true];
+        $data[] = [serialize(true), true];
+        $data[] = [serialize(false), true];
+        $data[] = ['non serialized string', false];
+        $data[] = [true, false];
+        $data[] = [new \stdClass(), false];
+
+        return $data;
     }
-
-    $constraint = new SerializedConstraint();
-
-    $validate = new SerializedConstraintValidator();
-    $validate->initialize($context);
-    $validate->validate($value, $constraint);
-  }
-
-  /**
-   * Provides an array with several serialized and non-serialized values.
-   *
-   * @return array
-   *   An array with test scenarios.
-   */
-  public static function provideTestValidate(): array {
-    $data = [];
-
-    $data[] = [serialize(''), TRUE];
-    $data[] = [serialize('0'), TRUE];
-    $data[] = [serialize('false'), TRUE];
-    $data[] = [serialize(0), TRUE];
-    $data[] = [serialize(1), TRUE];
-    $data[] = [serialize(TRUE), TRUE];
-    $data[] = [serialize(FALSE), TRUE];
-    $data[] = ['non serialized string', FALSE];
-    $data[] = [TRUE, FALSE];
-    $data[] = [new \stdClass(), FALSE];
-
-    return $data;
-  }
 
 }

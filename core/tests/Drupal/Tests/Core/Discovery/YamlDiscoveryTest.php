@@ -17,34 +17,36 @@ use PHPUnit\Framework\TestCase;
  * YamlDiscovery component unit tests.
  */
 #[Group('Discovery')]
-class YamlDiscoveryTest extends TestCase {
+class YamlDiscoveryTest extends TestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        // Ensure that FileCacheFactory has a prefix.
+        FileCacheFactory::setPrefix('prefix');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    // Ensure that FileCacheFactory has a prefix.
-    FileCacheFactory::setPrefix('prefix');
-  }
+    /**
+     * Tests if filename is output for a broken YAML file.
+     */
+    public function testFilenameForBrokenYml(): void
+    {
+        vfsStreamWrapper::register();
+        $root = new vfsStreamDirectory('modules');
+        vfsStreamWrapper::setRoot($root);
+        $url = vfsStream::url('modules');
 
-  /**
-   * Tests if filename is output for a broken YAML file.
-   */
-  public function testFilenameForBrokenYml(): void {
-    vfsStreamWrapper::register();
-    $root = new vfsStreamDirectory('modules');
-    vfsStreamWrapper::setRoot($root);
-    $url = vfsStream::url('modules');
+        mkdir($url . '/test_broken');
+        file_put_contents($url . '/test_broken/test_broken.test.yml', "broken:\n:");
 
-    mkdir($url . '/test_broken');
-    file_put_contents($url . '/test_broken/test_broken.test.yml', "broken:\n:");
+        $this->expectException(InvalidDataTypeException::class);
+        $this->expectExceptionMessage('vfs://modules/test_broken/test_broken.test.yml');
 
-    $this->expectException(InvalidDataTypeException::class);
-    $this->expectExceptionMessage('vfs://modules/test_broken/test_broken.test.yml');
-
-    $directories = ['test_broken' => $url . '/test_broken'];
-    $discovery = new YamlDiscovery('test', $directories);
-    $discovery->findAll();
-  }
+        $directories = ['test_broken' => $url . '/test_broken'];
+        $discovery = new YamlDiscovery('test', $directories);
+        $discovery->findAll();
+    }
 
 }

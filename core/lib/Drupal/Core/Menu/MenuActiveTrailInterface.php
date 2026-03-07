@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Menu;
 
 /**
@@ -8,32 +10,32 @@ namespace Drupal\Core\Menu;
  * The active trail of a given menu is the trail from the current page to the
  * root of that menu's tree.
  */
-interface MenuActiveTrailInterface {
+interface MenuActiveTrailInterface
+{
+    /**
+     * Gets the active trail IDs of the specified menu tree.
+     *
+     * @param string|null $menu_name
+     *   (optional) The menu name of the requested tree. If omitted, all menu
+     *   trees will be searched.
+     *
+     * @return array
+     *   An array containing the active trail: a list of plugin IDs.
+     */
+    public function getActiveTrailIds($menu_name);
 
-  /**
-   * Gets the active trail IDs of the specified menu tree.
-   *
-   * @param string|null $menu_name
-   *   (optional) The menu name of the requested tree. If omitted, all menu
-   *   trees will be searched.
-   *
-   * @return array
-   *   An array containing the active trail: a list of plugin IDs.
-   */
-  public function getActiveTrailIds($menu_name);
-
-  /**
-   * Fetches a menu link that matches the currently active route.
-   *
-   * @param string|null $menu_name
-   *   (optional) The menu within which to find the active link. If omitted, all
-   *   menus will be searched.
-   *
-   * @return \Drupal\Core\Menu\MenuLinkInterface|null
-   *   The menu link for the currently active route, or NULL if there is no
-   *   matching menu link or the current user cannot access the current page
-   *   (i.e. we have a 403 response).
-   */
-  public function getActiveLink($menu_name = NULL);
+    /**
+     * Fetches a menu link that matches the currently active route.
+     *
+     * @param string|null $menu_name
+     *   (optional) The menu within which to find the active link. If omitted, all
+     *   menus will be searched.
+     *
+     * @return \Drupal\Core\Menu\MenuLinkInterface|null
+     *   The menu link for the currently active route, or NULL if there is no
+     *   matching menu link or the current user cannot access the current page
+     *   (i.e. we have a 403 response).
+     */
+    public function getActiveLink($menu_name = null);
 
 }

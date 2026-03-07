@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor;
 
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -11,14 +13,15 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\editor\Entity\Editor
  */
-class EditorAccessControlHandler extends EntityAccessControlHandler {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $editor, $operation, AccountInterface $account) {
-    /** @var \Drupal\editor\EditorInterface $editor */
-    return $editor->getFilterFormat()->access($operation, $account, TRUE);
-  }
+class EditorAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $editor, $operation, AccountInterface $account)
+    {
+        /** @var \Drupal\editor\EditorInterface $editor */
+        return $editor->getFilterFormat()->access($operation, $account, true);
+    }
 
 }

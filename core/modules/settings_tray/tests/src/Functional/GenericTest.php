@@ -13,4 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('settings_tray')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {}
+class GenericTest extends GenericModuleTestBase
+{
+}

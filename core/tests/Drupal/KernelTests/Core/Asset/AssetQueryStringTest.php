@@ -17,27 +17,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(AssetQueryString::class)]
 #[Group('Asset')]
 #[RunTestsInSeparateProcesses]
-class AssetQueryStringTest extends KernelTestBase {
+class AssetQueryStringTest extends KernelTestBase
+{
+    /**
+     * Tests reset get.
+     *
+     * @legacy-covers ::get
+     * @legacy-covers ::reset
+     */
+    public function testResetGet(): void
+    {
+        $state = $this->container->get('state');
+        // Return a fixed timestamp.
+        $time = $this->createStub(TimeInterface::class);
+        $time->method('getRequestTime')
+          ->willReturn(1683246590);
 
-  /**
-   * Tests reset get.
-   *
-   * @legacy-covers ::get
-   * @legacy-covers ::reset
-   */
-  public function testResetGet(): void {
-    $state = $this->container->get('state');
-    // Return a fixed timestamp.
-    $time = $this->createStub(TimeInterface::class);
-    $time->method('getRequestTime')
-      ->willReturn(1683246590);
+        $queryString = new AssetQueryString($state, $time);
 
-    $queryString = new AssetQueryString($state, $time);
+        $queryString->reset();
+        $value = $queryString->get();
 
-    $queryString->reset();
-    $value = $queryString->get();
-
-    $this->assertEquals('ru5tdq', $value);
-  }
+        $this->assertEquals('ru5tdq', $value);
+    }
 
 }

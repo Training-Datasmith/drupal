@@ -21,107 +21,124 @@ use Twig\TemplateWrapper;
  */
 #[CoversClass(HelpTopicTwig::class)]
 #[Group('help')]
-class HelpTopicTwigTest extends UnitTestCase {
+class HelpTopicTwigTest extends UnitTestCase
+{
+    /**
+     * The help topic instance to test.
+     *
+     * @var \Drupal\help\HelpTopicTwig
+     */
+    protected $helpTopic;
 
-  /**
-   * The help topic instance to test.
-   *
-   * @var \Drupal\help\HelpTopicTwig
-   */
-  protected $helpTopic;
+    /**
+     * The plugin information to use for setting up a test topic.
+     *
+     * @var array
+     */
+    public const PLUGIN_INFORMATION = [
+      'id' => 'test.topic',
+      'provider' => 'test',
+      'label' => 'This is the topic label',
+      'top_level' => true,
+      'related' => ['something'],
+      'body' => '<p>This is the topic body</p>',
+    ];
 
-  /**
-   * The plugin information to use for setting up a test topic.
-   *
-   * @var array
-   */
-  const PLUGIN_INFORMATION = [
-    'id' => 'test.topic',
-    'provider' => 'test',
-    'label' => 'This is the topic label',
-    'top_level' => TRUE,
-    'related' => ['something'],
-    'body' => '<p>This is the topic body</p>',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->helpTopic = new HelpTopicTwig(
+            [],
+            self::PLUGIN_INFORMATION['id'],
+            self::PLUGIN_INFORMATION,
+            $this->getTwigMock()
+        );
+    }
 
-    $this->helpTopic = new HelpTopicTwig([],
-      self::PLUGIN_INFORMATION['id'],
-      self::PLUGIN_INFORMATION,
-      $this->getTwigMock());
-  }
+    /**
+     * Tests text.
+     *
+     * @legacy-covers ::getBody
+     * @legacy-covers ::getLabel
+     */
+    public function testText(): void
+    {
+        $this->assertEquals(
+            $this->helpTopic->getBody(),
+            ['#markup' => self::PLUGIN_INFORMATION['body']]
+        );
+        $this->assertEquals(
+            $this->helpTopic->getLabel(),
+            self::PLUGIN_INFORMATION['label']
+        );
+    }
 
-  /**
-   * Tests text.
-   *
-   * @legacy-covers ::getBody
-   * @legacy-covers ::getLabel
-   */
-  public function testText(): void {
-    $this->assertEquals($this->helpTopic->getBody(),
-      ['#markup' => self::PLUGIN_INFORMATION['body']]);
-    $this->assertEquals($this->helpTopic->getLabel(),
-      self::PLUGIN_INFORMATION['label']);
-  }
+    /**
+     * Tests definition.
+     *
+     * @legacy-covers ::getProvider
+     * @legacy-covers ::isTopLevel
+     * @legacy-covers ::getRelated
+     */
+    public function testDefinition(): void
+    {
+        $this->assertEquals(
+            $this->helpTopic->getProvider(),
+            self::PLUGIN_INFORMATION['provider']
+        );
+        $this->assertEquals(
+            $this->helpTopic->isTopLevel(),
+            self::PLUGIN_INFORMATION['top_level']
+        );
+        $this->assertEquals(
+            $this->helpTopic->getRelated(),
+            self::PLUGIN_INFORMATION['related']
+        );
+    }
 
-  /**
-   * Tests definition.
-   *
-   * @legacy-covers ::getProvider
-   * @legacy-covers ::isTopLevel
-   * @legacy-covers ::getRelated
-   */
-  public function testDefinition(): void {
-    $this->assertEquals($this->helpTopic->getProvider(),
-      self::PLUGIN_INFORMATION['provider']);
-    $this->assertEquals($this->helpTopic->isTopLevel(),
-      self::PLUGIN_INFORMATION['top_level']);
-    $this->assertEquals($this->helpTopic->getRelated(),
-      self::PLUGIN_INFORMATION['related']);
-  }
+    /**
+     * Tests cache info.
+     *
+     * @legacy-covers ::getCacheContexts
+     * @legacy-covers ::getCacheTags
+     * @legacy-covers ::getCacheMaxAge
+     */
+    public function testCacheInfo(): void
+    {
+        $this->assertEquals([], $this->helpTopic->getCacheContexts());
+        $this->assertEquals(['core.extension'], $this->helpTopic->getCacheTags());
+        $this->assertEquals(Cache::PERMANENT, $this->helpTopic->getCacheMaxAge());
+    }
 
-  /**
-   * Tests cache info.
-   *
-   * @legacy-covers ::getCacheContexts
-   * @legacy-covers ::getCacheTags
-   * @legacy-covers ::getCacheMaxAge
-   */
-  public function testCacheInfo(): void {
-    $this->assertEquals([], $this->helpTopic->getCacheContexts());
-    $this->assertEquals(['core.extension'], $this->helpTopic->getCacheTags());
-    $this->assertEquals(Cache::PERMANENT, $this->helpTopic->getCacheMaxAge());
-  }
+    /**
+     * Creates a mock Twig loader class for the test.
+     */
+    protected function getTwigMock()
+    {
+        $twig = $this
+          ->getMockBuilder('Drupal\Core\Template\TwigEnvironment')
+          ->disableOriginalConstructor()
+          ->getMock();
 
-  /**
-   * Creates a mock Twig loader class for the test.
-   */
-  protected function getTwigMock() {
-    $twig = $this
-      ->getMockBuilder('Drupal\Core\Template\TwigEnvironment')
-      ->disableOriginalConstructor()
-      ->getMock();
+        $template = $this
+          ->getMockBuilder(Template::class)
+          ->onlyMethods(['render', 'getTemplateName', 'getDebugInfo', 'getSourceContext', 'doDisplay'])
+          ->setConstructorArgs([$twig])
+          ->getMock();
 
-    $template = $this
-      ->getMockBuilder(Template::class)
-      ->onlyMethods(['render', 'getTemplateName', 'getDebugInfo', 'getSourceContext', 'doDisplay'])
-      ->setConstructorArgs([$twig])
-      ->getMock();
+        $template
+          ->method('render')
+          ->willReturn(self::PLUGIN_INFORMATION['body']);
 
-    $template
-      ->method('render')
-      ->willReturn(self::PLUGIN_INFORMATION['body']);
+        $twig
+          ->method('load')
+          ->willReturn(new TemplateWrapper($twig, $template));
 
-    $twig
-      ->method('load')
-      ->willReturn(new TemplateWrapper($twig, $template));
-
-    return $twig;
-  }
+        return $twig;
+    }
 
 }

@@ -17,78 +17,81 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class StateFormatterTest extends KernelTestBase {
+class StateFormatterTest extends KernelTestBase
+{
+    use ContentModerationTestTrait;
 
-  use ContentModerationTestTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'workflows',
-    'content_moderation',
-    'entity_test',
-    'user',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->installEntitySchema('entity_test_rev');
-    $this->installEntitySchema('content_moderation_state');
-    $this->installConfig('content_moderation');
-
-    $workflow = $this->createEditorialWorkflow();
-    $workflow->getTypePlugin()->addEntityTypeAndBundle('entity_test_rev', 'entity_test_rev');
-    $workflow->save();
-  }
-
-  /**
-   * Tests the embed field.
-   */
-  #[DataProvider('formatterTestCases')]
-  public function testStateFieldFormatter($field_value, $formatter_settings, $expected_output): void {
-    $entity = EntityTestRev::create([
-      'moderation_state' => $field_value,
-    ]);
-    $entity->save();
-
-    $field_output = $this->container->get('renderer')->executeInRenderContext(new RenderContext(), function () use ($entity, $formatter_settings) {
-      return $entity->moderation_state->view($formatter_settings);
-    });
-
-    $this->assertEquals($expected_output, $field_output[0]);
-  }
-
-  /**
-   * Test cases for testStateFieldFormatter().
-   */
-  public static function formatterTestCases() {
-    return [
-      'Draft State' => [
-        'draft',
-        [
-          'type' => 'content_moderation_state',
-          'settings' => [],
-        ],
-        [
-          '#markup' => 'Draft',
-        ],
-      ],
-      'Published State' => [
-        'published',
-        [
-          'type' => 'content_moderation_state',
-          'settings' => [],
-        ],
-        [
-          '#markup' => 'Published',
-        ],
-      ],
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'workflows',
+      'content_moderation',
+      'entity_test',
+      'user',
     ];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->installEntitySchema('entity_test_rev');
+        $this->installEntitySchema('content_moderation_state');
+        $this->installConfig('content_moderation');
+
+        $workflow = $this->createEditorialWorkflow();
+        $workflow->getTypePlugin()->addEntityTypeAndBundle('entity_test_rev', 'entity_test_rev');
+        $workflow->save();
+    }
+
+    /**
+     * Tests the embed field.
+     */
+    #[DataProvider('formatterTestCases')]
+    public function testStateFieldFormatter($field_value, $formatter_settings, $expected_output): void
+    {
+        $entity = EntityTestRev::create([
+          'moderation_state' => $field_value,
+        ]);
+        $entity->save();
+
+        $field_output = $this->container->get('renderer')->executeInRenderContext(new RenderContext(), function () use ($entity, $formatter_settings) {
+            return $entity->moderation_state->view($formatter_settings);
+        });
+
+        $this->assertEquals($expected_output, $field_output[0]);
+    }
+
+    /**
+     * Test cases for testStateFieldFormatter().
+     */
+    public static function formatterTestCases()
+    {
+        return [
+          'Draft State' => [
+            'draft',
+            [
+              'type' => 'content_moderation_state',
+              'settings' => [],
+            ],
+            [
+              '#markup' => 'Draft',
+            ],
+          ],
+          'Published State' => [
+            'published',
+            [
+              'type' => 'content_moderation_state',
+              'settings' => [],
+            ],
+            [
+              '#markup' => 'Published',
+            ],
+          ],
+        ];
+    }
 
 }

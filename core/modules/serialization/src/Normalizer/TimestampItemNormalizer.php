@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\Field\Plugin\Field\FieldType\TimestampItem;
@@ -16,36 +18,39 @@ use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
  * - during denormalization, use
  *   \Drupal\serialization\Normalizer\TimestampNormalizer
  */
-class TimestampItemNormalizer extends FieldItemNormalizer {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    return parent::normalize($object, $format, $context) + [
-      // 'format' is not a property on Timestamp objects. This is present to
-      // assist consumers of this data.
-      'format' => \DateTime::RFC3339,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function constructValue($data, $context): array {
-    if (!empty($data['format'])) {
-      $context['datetime_allowed_formats'] = [$data['format']];
+class TimestampItemNormalizer extends FieldItemNormalizer
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        return parent::normalize($object, $format, $context) + [
+          // 'format' is not a property on Timestamp objects. This is present to
+          // assist consumers of this data.
+          'format' => \DateTime::RFC3339,
+        ];
     }
-    return ['value' => $this->serializer->denormalize($data['value'], Timestamp::class, NULL, $context)];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      TimestampItem::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function constructValue($data, $context): array
+    {
+        if (!empty($data['format'])) {
+            $context['datetime_allowed_formats'] = [$data['format']];
+        }
+        return ['value' => $this->serializer->denormalize($data['value'], Timestamp::class, null, $context)];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          TimestampItem::class => true,
+        ];
+    }
 
 }

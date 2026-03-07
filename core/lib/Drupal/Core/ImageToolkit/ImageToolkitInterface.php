@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ImageToolkit;
 
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
 
 /**
  * @defgroup image Image toolkits
@@ -44,130 +46,130 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  * @see \Drupal\Core\ImageToolkit\ImageToolkitManager
  * @see plugin_api
  */
-interface ImageToolkitInterface extends ContainerFactoryPluginInterface, PluginInspectionInterface, PluginFormInterface {
+interface ImageToolkitInterface extends ContainerFactoryPluginInterface, PluginInspectionInterface, PluginFormInterface
+{
+    /**
+     * Sets the source path of the image file.
+     *
+     * @param string $source
+     *   The source path of the image file.
+     *
+     * @return $this
+     *   An instance of the current toolkit object.
+     *
+     * @throws \BadMethodCallException
+     *   After being set initially, the source image cannot be changed.
+     */
+    public function setSource($source);
 
-  /**
-   * Sets the source path of the image file.
-   *
-   * @param string $source
-   *   The source path of the image file.
-   *
-   * @return $this
-   *   An instance of the current toolkit object.
-   *
-   * @throws \BadMethodCallException
-   *   After being set initially, the source image cannot be changed.
-   */
-  public function setSource($source);
+    /**
+     * Gets the source path of the image file.
+     *
+     * @return string
+     *   The source path of the image file, or an empty string if the source is
+     *   not set.
+     */
+    public function getSource();
 
-  /**
-   * Gets the source path of the image file.
-   *
-   * @return string
-   *   The source path of the image file, or an empty string if the source is
-   *   not set.
-   */
-  public function getSource();
+    /**
+     * Checks if the image is valid.
+     *
+     * @return bool
+     *   TRUE if the image toolkit is currently handling a valid image, FALSE
+     *   otherwise.
+     */
+    public function isValid();
 
-  /**
-   * Checks if the image is valid.
-   *
-   * @return bool
-   *   TRUE if the image toolkit is currently handling a valid image, FALSE
-   *   otherwise.
-   */
-  public function isValid();
+    /**
+     * Writes an image resource to a destination file.
+     *
+     * @param string $destination
+     *   A string file URI or path where the image should be saved.
+     *
+     * @return bool
+     *   TRUE on success, FALSE on failure.
+     */
+    public function save($destination);
 
-  /**
-   * Writes an image resource to a destination file.
-   *
-   * @param string $destination
-   *   A string file URI or path where the image should be saved.
-   *
-   * @return bool
-   *   TRUE on success, FALSE on failure.
-   */
-  public function save($destination);
+    /**
+     * Determines if a file contains a valid image.
+     *
+     * Drupal supports GIF, JPG and PNG file formats when used with the GD
+     * toolkit, and may support others, depending on which toolkits are
+     * installed.
+     *
+     * @return bool
+     *   TRUE if the file could be found and is an image, FALSE otherwise.
+     */
+    public function parseFile();
 
-  /**
-   * Determines if a file contains a valid image.
-   *
-   * Drupal supports GIF, JPG and PNG file formats when used with the GD
-   * toolkit, and may support others, depending on which toolkits are
-   * installed.
-   *
-   * @return bool
-   *   TRUE if the file could be found and is an image, FALSE otherwise.
-   */
-  public function parseFile();
+    /**
+     * Returns the height of the image.
+     *
+     * @return int|null
+     *   The height of the image, or NULL if the image is invalid.
+     */
+    public function getHeight();
 
-  /**
-   * Returns the height of the image.
-   *
-   * @return int|null
-   *   The height of the image, or NULL if the image is invalid.
-   */
-  public function getHeight();
+    /**
+     * Returns the width of the image.
+     *
+     * @return int|null
+     *   The width of the image, or NULL if the image is invalid.
+     */
+    public function getWidth();
 
-  /**
-   * Returns the width of the image.
-   *
-   * @return int|null
-   *   The width of the image, or NULL if the image is invalid.
-   */
-  public function getWidth();
+    /**
+     * Returns the MIME type of the image file.
+     *
+     * @return string
+     *   The MIME type of the image file, or an empty string if the image is
+     *   invalid.
+     */
+    public function getMimeType();
 
-  /**
-   * Returns the MIME type of the image file.
-   *
-   * @return string
-   *   The MIME type of the image file, or an empty string if the image is
-   *   invalid.
-   */
-  public function getMimeType();
+    /**
+     * Gets toolkit requirements in a format suitable for hook_requirements().
+     *
+     * @return array
+     *   An associative requirements array as is returned by hook_requirements().
+     *   If the toolkit claims no requirements to the system, returns an empty
+     *   array. The array can have arbitrary keys and they do not have to be
+     *   prefixed by e.g. the module name or toolkit ID, as the system will make
+     *   the keys globally unique.
+     *
+     * @see hook_requirements()
+     */
+    public function getRequirements();
 
-  /**
-   * Gets toolkit requirements in a format suitable for hook_requirements().
-   *
-   * @return array
-   *   An associative requirements array as is returned by hook_requirements().
-   *   If the toolkit claims no requirements to the system, returns an empty
-   *   array. The array can have arbitrary keys and they do not have to be
-   *   prefixed by e.g. the module name or toolkit ID, as the system will make
-   *   the keys globally unique.
-   *
-   * @see hook_requirements()
-   */
-  public function getRequirements();
+    /**
+     * Verifies that the Image Toolkit is set up correctly.
+     *
+     * @return bool
+     *   TRUE if the toolkit is available on this machine, FALSE otherwise.
+     */
+    public static function isAvailable();
 
-  /**
-   * Verifies that the Image Toolkit is set up correctly.
-   *
-   * @return bool
-   *   TRUE if the toolkit is available on this machine, FALSE otherwise.
-   */
-  public static function isAvailable();
+    /**
+     * Returns a list of image file extensions supported by the toolkit.
+     *
+     * @return array
+     *   An array of supported image file extensions (e.g. png/jpeg/gif).
+     */
+    public static function getSupportedExtensions();
 
-  /**
-   * Returns a list of image file extensions supported by the toolkit.
-   *
-   * @return array
-   *   An array of supported image file extensions (e.g. png/jpeg/gif).
-   */
-  public static function getSupportedExtensions();
-
-  /**
-   * Applies a toolkit operation to an image.
-   *
-   * @param string $operation
-   *   The toolkit operation to be processed.
-   * @param array $arguments
-   *   An associative array of arguments to be passed to the toolkit operation.
-   *   For example, ['width' => 50, 'height' => 100, 'upscale' => TRUE].
-   *
-   * @return bool
-   *   TRUE if the operation was performed successfully, FALSE otherwise.
-   */
-  public function apply($operation, array $arguments = []);
+    /**
+     * Applies a toolkit operation to an image.
+     *
+     * @param string $operation
+     *   The toolkit operation to be processed.
+     * @param array $arguments
+     *   An associative array of arguments to be passed to the toolkit operation.
+     *   For example, ['width' => 50, 'height' => 100, 'upscale' => TRUE].
+     *
+     * @return bool
+     *   TRUE if the operation was performed successfully, FALSE otherwise.
+     */
+    public function apply($operation, array $arguments = []);
 
 }

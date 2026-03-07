@@ -15,70 +15,75 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Converts an image resource to AVIF, with fallback.
  */
 #[ImageEffect(
-  id: "image_convert_avif",
-  label: new TranslatableMarkup("Convert to AVIF"),
-  description: new TranslatableMarkup("Converts an image to AVIF, with a fallback if AVIF is not supported."),
+    id: 'image_convert_avif',
+    label: new TranslatableMarkup('Convert to AVIF'),
+    description: new TranslatableMarkup('Converts an image to AVIF, with a fallback if AVIF is not supported.'),
 )]
-class AvifImageEffect extends ConvertImageEffect {
+class AvifImageEffect extends ConvertImageEffect
+{
+    /**
+     * The image toolkit manager.
+     */
+    protected ImageToolkitManager $imageToolkitManager;
 
-  /**
-   * The image toolkit manager.
-   */
-  protected ImageToolkitManager $imageToolkitManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $instance->imageToolkitManager = $container->get(ImageToolkitManager::class);
-    return $instance;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyEffect(ImageInterface $image): bool {
-    // If avif is not supported fallback to the parent.
-    if (!$this->isAvifSupported()) {
-      return parent::applyEffect($image);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
+        $instance->imageToolkitManager = $container->get(ImageToolkitManager::class);
+        return $instance;
     }
 
-    if (!$image->convert('avif')) {
-      $this->logger->error('Image convert failed using the %toolkit toolkit on %path (%mimetype)', [
-        '%toolkit' => $image->getToolkitId(),
-        '%path' => $image->getSource(),
-        '%mimetype' => $image->getMimeType(),
-      ]);
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function applyEffect(ImageInterface $image): bool
+    {
+        // If avif is not supported fallback to the parent.
+        if (!$this->isAvifSupported()) {
+            return parent::applyEffect($image);
+        }
+
+        if (!$image->convert('avif')) {
+            $this->logger->error('Image convert failed using the %toolkit toolkit on %path (%mimetype)', [
+              '%toolkit' => $image->getToolkitId(),
+              '%path' => $image->getSource(),
+              '%mimetype' => $image->getMimeType(),
+            ]);
+            return false;
+        }
+
+        return true;
     }
 
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeExtension($extension)
+    {
+        return $this->isAvifSupported() ? 'avif' : $this->configuration['extension'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeExtension($extension) {
-    return $this->isAvifSupported() ? 'avif' : $this->configuration['extension'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    {
+        $form = parent::buildConfigurationForm($form, $form_state);
+        unset($form['extension']['#options']['avif']);
+        $form['extension']['#title'] = $this->t('Fallback format');
+        $form['extension']['#description'] = $this->t('Format to use if AVIF is not available.');
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $form = parent::buildConfigurationForm($form, $form_state);
-    unset($form['extension']['#options']['avif']);
-    $form['extension']['#title'] = $this->t('Fallback format');
-    $form['extension']['#description'] = $this->t('Format to use if AVIF is not available.');
-    return $form;
-  }
-
-  /**
-   * Is AVIF supported by the image toolkit.
-   */
-  protected function isAvifSupported(): bool {
-    return in_array('avif', $this->imageToolkitManager->getDefaultToolkit()->getSupportedExtensions());
-  }
+    /**
+     * Is AVIF supported by the image toolkit.
+     */
+    protected function isAvifSupported(): bool
+    {
+        return in_array('avif', $this->imageToolkitManager->getDefaultToolkit()->getSupportedExtensions());
+    }
 
 }

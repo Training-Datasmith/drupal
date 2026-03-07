@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,28 +25,28 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class MigrateProcessPlugin extends Plugin {
+class MigrateProcessPlugin extends Plugin
+{
+    /**
+     * A unique identifier for the process plugin.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * A unique identifier for the process plugin.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * Whether the plugin handles multiples itself.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * Typically these plugins will expect an array as input and iterate over it
-   * themselves, changing the whole array. For example the 'sub_process' and the
-   * 'flatten' plugins. If the plugin only need to change a single value it
-   * can skip setting this attribute and let
-   * \Drupal\migrate\MigrateExecutable::processRow() handle the iteration.
-   *
-   * @var bool
-   */
-  public $handle_multiples = FALSE;
+    /**
+     * Whether the plugin handles multiples itself.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * Typically these plugins will expect an array as input and iterate over it
+     * themselves, changing the whole array. For example the 'sub_process' and the
+     * 'flatten' plugins. If the plugin only need to change a single value it
+     * can skip setting this attribute and let
+     * \Drupal\migrate\MigrateExecutable::processRow() handle the iteration.
+     *
+     * @var bool
+     */
+    public $handle_multiples = false;
 
 }

@@ -20,47 +20,48 @@ use Symfony\Component\HttpFoundation\Request;
 #[CoversClass(PathChangedHelper::class)]
 #[Group('Routing')]
 #[RunTestsInSeparateProcesses]
-class PathChangedHelperTest extends KernelTestBase {
+class PathChangedHelperTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['path_changed_helper_test', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['path_changed_helper_test', 'system'];
+    /**
+     * Tests creating a PathChangedHelper object and getting paths.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::oldPath
+     * @legacy-covers ::newPath
+     * @legacy-covers ::redirect
+     */
+    public function testPathChangedHelper(): void
+    {
+        $route = \Drupal::service('router.route_provider')->getRouteByName('path.changed.bc');
+        $raw_parameters = [
+          'block_type' => 'test_block_type',
+        ];
+        $query = [
+          'destination' => 'admin/structure/block',
+          'plugin_id' => 'some_block_config',
+        ];
+        $helper = new PathChangedHelper(
+            new RouteMatch('path.changed.bc', $route, [], $raw_parameters),
+            new Request($query)
+        );
 
-  /**
-   * Tests creating a PathChangedHelper object and getting paths.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::oldPath
-   * @legacy-covers ::newPath
-   * @legacy-covers ::redirect
-   */
-  public function testPathChangedHelper(): void {
-    $route = \Drupal::service('router.route_provider')->getRouteByName('path.changed.bc');
-    $raw_parameters = [
-      'block_type' => 'test_block_type',
-    ];
-    $query = [
-      'destination' => 'admin/structure/block',
-      'plugin_id' => 'some_block_config',
-    ];
-    $helper = new PathChangedHelper(
-      new RouteMatch('path.changed.bc', $route, [], $raw_parameters),
-      new Request($query)
-    );
-
-    // Assert that oldPath() returns the internal path for path.changed.bc.
-    $this->assertEquals('old/path/test_block_type', $helper->oldPath());
-    // Assert that newPath() returns the internal path for path.changed.
-    $this->assertEquals('new/path/test_block_type', $helper->newPath());
-    // Assert that redirect() returns a RedirectResponse for the absolute URL of
-    // path.changed, and the query string comes from the Request object with the
-    // destination parameter removed.
-    $redirect = $helper->redirect();
-    $this->assertInstanceOf(RedirectResponse::class, $redirect);
-    $this->assertEquals(301, $redirect->getStatusCode());
-    $base_path = Url::fromRoute('<front>', [], ['absolute' => TRUE])->toString();
-    $this->assertEquals($base_path . 'new/path/test_block_type?plugin_id=some_block_config', $redirect->getTargetUrl());
-  }
+        // Assert that oldPath() returns the internal path for path.changed.bc.
+        $this->assertEquals('old/path/test_block_type', $helper->oldPath());
+        // Assert that newPath() returns the internal path for path.changed.
+        $this->assertEquals('new/path/test_block_type', $helper->newPath());
+        // Assert that redirect() returns a RedirectResponse for the absolute URL of
+        // path.changed, and the query string comes from the Request object with the
+        // destination parameter removed.
+        $redirect = $helper->redirect();
+        $this->assertInstanceOf(RedirectResponse::class, $redirect);
+        $this->assertEquals(301, $redirect->getStatusCode());
+        $base_path = Url::fromRoute('<front>', [], ['absolute' => true])->toString();
+        $this->assertEquals($base_path . 'new/path/test_block_type?plugin_id=some_block_config', $redirect->getTargetUrl());
+    }
 
 }

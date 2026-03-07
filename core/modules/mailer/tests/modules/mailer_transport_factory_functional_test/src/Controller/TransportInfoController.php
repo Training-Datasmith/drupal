@@ -14,41 +14,43 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 /**
  * Returns responses for transport info routes.
  */
-class TransportInfoController implements ContainerInjectionInterface {
+class TransportInfoController implements ContainerInjectionInterface
+{
+    /**
+     * Constructs a new transport info controller.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     * @param \Symfony\Component\Mailer\Transport\TransportInterface $transport
+     *   The mailer transport.
+     */
+    public function __construct(
+        protected ConfigFactoryInterface $configFactory,
+        protected TransportInterface $transport,
+    ) {
+    }
 
-  /**
-   * Constructs a new transport info controller.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   * @param \Symfony\Component\Mailer\Transport\TransportInterface $transport
-   *   The mailer transport.
-   */
-  public function __construct(
-    protected ConfigFactoryInterface $configFactory,
-    protected TransportInterface $transport,
-  ) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get(ConfigFactoryInterface::class),
+            $container->get(TransportInterface::class)
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get(ConfigFactoryInterface::class),
-      $container->get(TransportInterface::class)
-    );
-  }
-
-  /**
-   * Returns info about the configured mailer dsn and the resulting transport.
-   */
-  public function transportInfo(): Response {
-    $mailerDsn = $this->configFactory->get('system.mail')->get('mailer_dsn');
-    return new JsonResponse([
-      'mailerDsn' => $mailerDsn,
-      'mailerTransportClass' => $this->transport::class,
-    ]);
-  }
+    /**
+     * Returns info about the configured mailer dsn and the resulting transport.
+     */
+    public function transportInfo(): Response
+    {
+        $mailerDsn = $this->configFactory->get('system.mail')->get('mailer_dsn');
+        return new JsonResponse([
+          'mailerDsn' => $mailerDsn,
+          'mailerTransportClass' => $this->transport::class,
+        ]);
+    }
 
 }

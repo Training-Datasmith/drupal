@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PreWarm;
 
 /**
@@ -25,11 +27,11 @@ namespace Drupal\Core\PreWarm;
  *
  * @see Drupal\Core\Prewarm\PreWarmerInterface
  */
-interface PreWarmableInterface {
-
-  /**
-   * Build any cache item or items that this service relies on.
-   */
-  public function preWarm(): void;
+interface PreWarmableInterface
+{
+    /**
+     * Build any cache item or items that this service relies on.
+     */
+    public function preWarm(): void;
 
 }

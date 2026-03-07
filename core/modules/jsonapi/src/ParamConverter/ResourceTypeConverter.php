@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\ParamConverter;
 
 use Drupal\Core\ParamConverter\ParamConverterInterface;
-use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -15,37 +16,39 @@ use Symfony\Component\Routing\Route;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class ResourceTypeConverter implements ParamConverterInterface {
+class ResourceTypeConverter implements ParamConverterInterface
+{
+    /**
+     * The route parameter type to match.
+     *
+     * @var string
+     */
+    public const PARAM_TYPE_ID = 'jsonapi_resource_type';
 
-  /**
-   * The route parameter type to match.
-   *
-   * @var string
-   */
-  const PARAM_TYPE_ID = 'jsonapi_resource_type';
+    /**
+     * ResourceTypeConverter constructor.
+     *
+     * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
+     *   The JSON:API resource type repository.
+     */
+    public function __construct(protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository)
+    {
+    }
 
-  /**
-   * ResourceTypeConverter constructor.
-   *
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
-   *   The JSON:API resource type repository.
-   */
-  public function __construct(protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        return $this->resourceTypeRepository->getByTypeName($value);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    return $this->resourceTypeRepository->getByTypeName($value);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route): bool {
-    return (!empty($definition['type']) && $definition['type'] === static::PARAM_TYPE_ID);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route): bool
+    {
+        return (!empty($definition['type']) && $definition['type'] === static::PARAM_TYPE_ID);
+    }
 
 }

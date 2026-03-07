@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -44,19 +46,20 @@ use Drupal\migrate\Attribute\MigrateDestination;
  * @see \Drupal\field\Entity\FieldConfigBase
  */
 #[MigrateDestination('entity:field_config')]
-class EntityFieldInstance extends EntityConfigBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['entity_type']['type'] = 'string';
-    $ids['bundle']['type'] = 'string';
-    $ids['field_name']['type'] = 'string';
-    if ($this->isTranslationDestination()) {
-      $ids['langcode']['type'] = 'string';
+class EntityFieldInstance extends EntityConfigBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['entity_type']['type'] = 'string';
+        $ids['bundle']['type'] = 'string';
+        $ids['field_name']['type'] = 'string';
+        if ($this->isTranslationDestination()) {
+            $ids['langcode']['type'] = 'string';
+        }
+        return $ids;
     }
-    return $ids;
-  }
 
 }

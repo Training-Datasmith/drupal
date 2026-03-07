@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ParamConverter;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -76,72 +76,74 @@ use Symfony\Component\Routing\Route;
  *
  * @see entities_revisions_translations
  */
-class EntityConverter implements ParamConverterInterface {
+class EntityConverter implements ParamConverterInterface
+{
+    use DynamicEntityTypeParamConverterTrait;
 
-  use DynamicEntityTypeParamConverterTrait;
-
-  /**
-   * Constructs a new EntityConverter.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   *
-   * @see https://www.drupal.org/node/2938929
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-
-    // If the entity type is revisionable and the parameter has the
-    // "load_latest_revision" flag, load the active variant.
-    if (!empty($definition['load_latest_revision'])) {
-      $entity = $this->entityRepository->getActive($entity_type_id, $value);
-
-      if (
-        !empty($definition['bundle']) &&
-        $entity instanceof EntityInterface &&
-        !in_array($entity->bundle(), $definition['bundle'], TRUE)
-      ) {
-        return NULL;
-      }
-      return $entity;
+    /**
+     * Constructs a new EntityConverter.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     *
+     * @see https://www.drupal.org/node/2938929
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+    {
     }
 
-    $contexts = ['operation' => 'entity_upcast'];
-    $entity = $this->entityRepository->getCanonical($entity_type_id, $value, $contexts);
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
 
-    if (
-      !empty($definition['bundle']) &&
-      $entity instanceof EntityInterface &&
-      !in_array($entity->bundle(), $definition['bundle'], TRUE)
-    ) {
-      return NULL;
+        // If the entity type is revisionable and the parameter has the
+        // "load_latest_revision" flag, load the active variant.
+        if (!empty($definition['load_latest_revision'])) {
+            $entity = $this->entityRepository->getActive($entity_type_id, $value);
+
+            if (
+                !empty($definition['bundle']) &&
+                $entity instanceof EntityInterface &&
+                !in_array($entity->bundle(), $definition['bundle'], true)
+            ) {
+                return null;
+            }
+            return $entity;
+        }
+
+        $contexts = ['operation' => 'entity_upcast'];
+        $entity = $this->entityRepository->getCanonical($entity_type_id, $value, $contexts);
+
+        if (
+            !empty($definition['bundle']) &&
+            $entity instanceof EntityInterface &&
+            !in_array($entity->bundle(), $definition['bundle'], true)
+        ) {
+            return null;
+        }
+
+        return $entity;
     }
 
-    return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route) {
-    if (!empty($definition['type']) && str_starts_with((string) $definition['type'], 'entity:')) {
-      $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
-      if (str_contains((string) $definition['type'], '{')) {
-        $entity_type_slug = substr($entity_type_id, 1, -1);
-        return $name != $entity_type_slug && in_array($entity_type_slug, $route->compile()->getVariables(), TRUE);
-      }
-      return $this->entityTypeManager->hasDefinition($entity_type_id);
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route)
+    {
+        if (!empty($definition['type']) && str_starts_with((string) $definition['type'], 'entity:')) {
+            $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
+            if (str_contains((string) $definition['type'], '{')) {
+                $entity_type_slug = substr($entity_type_id, 1, -1);
+                return $name != $entity_type_slug && in_array($entity_type_slug, $route->compile()->getVariables(), true);
+            }
+            return $this->entityTypeManager->hasDefinition($entity_type_id);
+        }
+        return false;
     }
-    return FALSE;
-  }
 
 }

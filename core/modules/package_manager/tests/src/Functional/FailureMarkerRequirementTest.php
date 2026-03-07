@@ -19,53 +19,56 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('package_manager')]
 #[RunTestsInSeparateProcesses]
-class FailureMarkerRequirementTest extends PackageManagerTestBase {
-  use StringTranslationTrait;
+class FailureMarkerRequirementTest extends PackageManagerTestBase
+{
+    use StringTranslationTrait;
 
-  use AssertPreconditionsTrait;
+    use AssertPreconditionsTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'package_manager',
-    'package_manager_bypass',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'package_manager',
+      'package_manager_bypass',
+    ];
 
-  /**
-   * Tests that error is shown if failure marker already exists.
-   */
-  public function testFailureMarkerExists(): void {
-    $account = $this->drupalCreateUser([
-      'administer site configuration',
-    ]);
-    $this->drupalLogin($account);
+    /**
+     * Tests that error is shown if failure marker already exists.
+     */
+    public function testFailureMarkerExists(): void
+    {
+        $account = $this->drupalCreateUser([
+          'administer site configuration',
+        ]);
+        $this->drupalLogin($account);
 
-    $fake_project_root = $this->root . DIRECTORY_SEPARATOR . $this->publicFilesDirectory;
-    $this->container->get(PathLocator::class)
-      ->setPaths($fake_project_root, NULL, NULL, NULL);
+        $fake_project_root = $this->root . DIRECTORY_SEPARATOR . $this->publicFilesDirectory;
+        $this->container->get(PathLocator::class)
+          ->setPaths($fake_project_root, null, null, null);
 
-    $failure_marker = $this->container->get(FailureMarker::class);
-    $message = $this->t('Package Manager is here to wreck your day.');
-    $stage = new class() extends SandboxManagerBase {
+        $failure_marker = $this->container->get(FailureMarker::class);
+        $message = $this->t('Package Manager is here to wreck your day.');
+        $stage = new class () extends SandboxManagerBase {
+            public function __construct()
+            {
+            }
 
-      public function __construct() {}
+            /**
+             * {@inheritdoc}
+             */
+            // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis.UnusedVariable
+            protected string $type = 'test';
+        };
+        $failure_marker->write($stage, $message);
+        $path = $failure_marker->getPath();
+        $this->assertFileExists($path);
+        $this->assertStringStartsWith($fake_project_root, $path);
 
-      /**
-       * {@inheritdoc}
-       */
-      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis.UnusedVariable
-      protected string $type = 'test';
-    };
-    $failure_marker->write($stage, $message);
-    $path = $failure_marker->getPath();
-    $this->assertFileExists($path);
-    $this->assertStringStartsWith($fake_project_root, $path);
-
-    $this->drupalGet('/admin/reports/status');
-    $assert_session = $this->assertSession();
-    $assert_session->pageTextContains('Failed Package Manager update detected');
-    $assert_session->pageTextContains($message->render());
-  }
+        $this->drupalGet('/admin/reports/status');
+        $assert_session = $this->assertSession();
+        $assert_session->pageTextContains('Failed Package Manager update detected');
+        $assert_session->pageTextContains($message->render());
+    }
 
 }

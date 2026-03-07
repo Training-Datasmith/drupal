@@ -21,66 +21,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderEntityViewDisplayValidationTest extends ConfigEntityValidationTestBase {
+class LayoutBuilderEntityViewDisplayValidationTest extends ConfigEntityValidationTestBase
+{
+    use ContentTypeCreationTrait;
 
-  use ContentTypeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'entity_test',
+      'field',
+      'layout_builder',
+      'node',
+      'text',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'entity_test',
-    'field',
-    'layout_builder',
-    'node',
-    'text',
-    'user',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('node');
+        $this->installConfig('node');
+        $this->createContentType(['type' => 'one']);
+        $this->createContentType(['type' => 'two']);
 
-    $this->installEntitySchema('node');
-    $this->installConfig('node');
-    $this->createContentType(['type' => 'one']);
-    $this->createContentType(['type' => 'two']);
+        EntityTestBundle::create(['id' => 'one'])->save();
+        EntityTestBundle::create(['id' => 'two'])->save();
 
-    EntityTestBundle::create(['id' => 'one'])->save();
-    EntityTestBundle::create(['id' => 'two'])->save();
+        EntityViewMode::create([
+          'id' => 'node.layout',
+          'label' => 'Layout',
+          'targetEntityType' => 'node',
+        ])->save();
 
-    EntityViewMode::create([
-      'id' => 'node.layout',
-      'label' => 'Layout',
-      'targetEntityType' => 'node',
-    ])->save();
+        $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
+          ->getViewDisplay('node', 'one', 'layout');
+        $this->assertInstanceOf(LayoutBuilderEntityViewDisplay::class, $this->entity);
+        $this->entity->save();
+    }
 
-    $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
-      ->getViewDisplay('node', 'one', 'layout');
-    $this->assertInstanceOf(LayoutBuilderEntityViewDisplay::class, $this->entity);
-    $this->entity->save();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testLabelValidation(): void
+    {
+        // @todo Remove this override in https://www.drupal.org/i/2939931. The label of Layout Builder's EntityViewDisplay override is computed dynamically, that issue will change this.
+        // @see \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::label()
+        $this->markTestSkipped();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function testLabelValidation(): void {
-    // @todo Remove this override in https://www.drupal.org/i/2939931. The label of Layout Builder's EntityViewDisplay override is computed dynamically, that issue will change this.
-    // @see \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::label()
-    $this->markTestSkipped();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testImmutableProperties(array $valid_values = []): void {
-    parent::testImmutableProperties([
-      'id' => 'entity_test_with_bundle.two.full',
-      'targetEntityType' => 'entity_test_with_bundle',
-      'bundle' => 'two',
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testImmutableProperties(array $valid_values = []): void
+    {
+        parent::testImmutableProperties([
+          'id' => 'entity_test_with_bundle.two.full',
+          'targetEntityType' => 'entity_test_with_bundle',
+          'bundle' => 'two',
+        ]);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Importer;
 
 use Drupal\Core\Config\ConfigEvents;
@@ -13,28 +15,30 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * @see \Drupal\Core\Config\ConfigImporter::processMissingContent()
  */
-class FinalMissingContentSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Handles the missing content event.
-   *
-   * @param \Drupal\Core\Config\Importer\MissingContentEvent $event
-   *   The missing content event.
-   */
-  public function onMissingContent(MissingContentEvent $event): void {
-    foreach (array_keys($event->getMissingContent()) as $uuid) {
-      $event->resolveMissingContent($uuid);
+class FinalMissingContentSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Handles the missing content event.
+     *
+     * @param \Drupal\Core\Config\Importer\MissingContentEvent $event
+     *   The missing content event.
+     */
+    public function onMissingContent(MissingContentEvent $event): void
+    {
+        foreach (array_keys($event->getMissingContent()) as $uuid) {
+            $event->resolveMissingContent($uuid);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // This should always be the final event as it will mark all content
-    // dependencies as resolved.
-    $events[ConfigEvents::IMPORT_MISSING_CONTENT][] = ['onMissingContent', -1024];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // This should always be the final event as it will mark all content
+        // dependencies as resolved.
+        $events[ConfigEvents::IMPORT_MISSING_CONTENT][] = ['onMissingContent', -1024];
+        return $events;
+    }
 
 }

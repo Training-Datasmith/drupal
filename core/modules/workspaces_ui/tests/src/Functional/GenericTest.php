@@ -13,6 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces_ui')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {
-
+class GenericTest extends GenericModuleTestBase
+{
 }

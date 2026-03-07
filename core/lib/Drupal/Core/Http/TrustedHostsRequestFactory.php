@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -17,49 +19,51 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @see \Drupal\Core\DrupalKernel::setupTrustedHosts()
  */
-class TrustedHostsRequestFactory {
+class TrustedHostsRequestFactory
+{
+    /**
+     * The host of the main request.
+     */
+    protected string $host;
 
-  /**
-   * The host of the main request.
-   */
-  protected string $host;
-
-  /**
-   * Creates a new TrustedHostsRequestFactory.
-   *
-   * @param string $host
-   *   The host of the main request.
-   */
-  public function __construct($host) {
-    $this->host = (string) $host;
-  }
-
-  /**
-   * Creates a new request object.
-   *
-   * @param array $query
-   *   (optional) The query (GET) or request (POST) parameters.
-   * @param array $request
-   *   (optional) An array of request variables.
-   * @param array $attributes
-   *   (optional) An array of attributes.
-   * @param array $cookies
-   *   (optional) The request cookies ($_COOKIE).
-   * @param array $files
-   *   (optional) The request files ($_FILES).
-   * @param array $server
-   *   (optional) The server parameters ($_SERVER).
-   * @param string $content
-   *   (optional) The raw body data.
-   *
-   * @return \Symfony\Component\HttpFoundation\Request
-   *   A new request object.
-   */
-  public function createRequest(array $query = [], array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = NULL) {
-    if (empty($server['HTTP_HOST']) || ($server['HTTP_HOST'] === 'localhost' && $this->host !== 'localhost')) {
-      $server['HTTP_HOST'] = $this->host;
+    /**
+     * Creates a new TrustedHostsRequestFactory.
+     *
+     * @param string $host
+     *   The host of the main request.
+     */
+    public function __construct($host)
+    {
+        $this->host = (string) $host;
     }
-    return new Request($query, $request, $attributes, $cookies, $files, $server, $content);
-  }
+
+    /**
+     * Creates a new request object.
+     *
+     * @param array $query
+     *   (optional) The query (GET) or request (POST) parameters.
+     * @param array $request
+     *   (optional) An array of request variables.
+     * @param array $attributes
+     *   (optional) An array of attributes.
+     * @param array $cookies
+     *   (optional) The request cookies ($_COOKIE).
+     * @param array $files
+     *   (optional) The request files ($_FILES).
+     * @param array $server
+     *   (optional) The server parameters ($_SERVER).
+     * @param string $content
+     *   (optional) The raw body data.
+     *
+     * @return \Symfony\Component\HttpFoundation\Request
+     *   A new request object.
+     */
+    public function createRequest(array $query = [], array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = null)
+    {
+        if (empty($server['HTTP_HOST']) || ($server['HTTP_HOST'] === 'localhost' && $this->host !== 'localhost')) {
+            $server['HTTP_HOST'] = $this->host;
+        }
+        return new Request($query, $request, $attributes, $cookies, $files, $server, $content);
+    }
 
 }

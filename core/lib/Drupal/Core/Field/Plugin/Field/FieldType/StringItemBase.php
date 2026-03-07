@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
@@ -10,35 +12,38 @@ use Drupal\Core\TypedData\DataDefinition;
 /**
  * Base class for string field types.
  */
-abstract class StringItemBase extends FieldItemBase {
+abstract class StringItemBase extends FieldItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultStorageSettings()
+    {
+        return [
+          'case_sensitive' => false,
+        ] + parent::defaultStorageSettings();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultStorageSettings() {
-    return [
-      'case_sensitive' => FALSE,
-    ] + parent::defaultStorageSettings();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('string')
+          ->setLabel(new TranslatableMarkup('Text value'))
+          ->setSetting('case_sensitive', $field_definition->getSetting('case_sensitive'))
+          ->setRequired(true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Text value'))
-      ->setSetting('case_sensitive', $field_definition->getSetting('case_sensitive'))
-      ->setRequired(TRUE);
+        return $properties;
+    }
 
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty() {
-    $value = $this->get('value')->getValue();
-    return $value === NULL || $value === '';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty()
+    {
+        $value = $this->get('value')->getValue();
+        return $value === null || $value === '';
+    }
 
 }

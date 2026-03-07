@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -9,17 +11,18 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
  *
  * @internal
  */
-class BlockContentDeleteForm extends ContentEntityDeleteForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    $instances = $this->entity->getInstances();
-    if (!empty($instances)) {
-      return $this->formatPlural(count($instances), 'This will also remove 1 placed block instance. This action cannot be undone.', 'This will also remove @count placed block instances. This action cannot be undone.');
+class BlockContentDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        $instances = $this->entity->getInstances();
+        if (!empty($instances)) {
+            return $this->formatPlural(count($instances), 'This will also remove 1 placed block instance. This action cannot be undone.', 'This will also remove @count placed block instances. This action cannot be undone.');
+        }
+        return parent::getDescription();
     }
-    return parent::getDescription();
-  }
 
 }

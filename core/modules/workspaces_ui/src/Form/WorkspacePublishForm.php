@@ -1,16 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces_ui\Form;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\WorkspaceSafeFormInterface;
 use Drupal\Core\Url;
 use Drupal\workspaces\WorkspaceAccessException;
 use Drupal\workspaces\WorkspaceInterface;
-use Drupal\workspaces\WorkspaceOperationFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 // cspell:ignore differring
@@ -18,129 +18,133 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides the workspace publishing form.
  */
-class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjectionInterface, WorkspaceSafeFormInterface {
+class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjectionInterface, WorkspaceSafeFormInterface
+{
+    /**
+     * The workspace that will be published.
+     *
+     * @var \Drupal\workspaces\WorkspaceInterface
+     */
+    protected $workspace;
 
-  /**
-   * The workspace that will be published.
-   *
-   * @var \Drupal\workspaces\WorkspaceInterface
-   */
-  protected $workspace;
-
-  /**
-   * Constructs a new WorkspacePublishForm.
-   *
-   * @param \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory
-   *   The workspace operation factory service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('workspaces.operation_factory'),
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'workspace_publish_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?WorkspaceInterface $workspace = NULL) {
-    $this->workspace = $workspace;
-
-    $form = parent::buildForm($form, $form_state);
-
-    $workspace_publisher = $this->workspaceOperationFactory->getPublisher($this->workspace);
-
-    $args = [
-      '%source_label' => $this->workspace->label(),
-      '%target_label' => $workspace_publisher->getTargetLabel(),
-    ];
-    $form['#title'] = $this->t('Publish %source_label workspace', $args);
-
-    // List the changes that can be pushed.
-    if ($source_rev_diff = $workspace_publisher->getDifferringRevisionIdsOnSource()) {
-      $total_count = $workspace_publisher->getNumberOfChangesOnSource();
-      $form['description'] = [
-        '#theme' => 'item_list',
-        '#title' => $this->formatPlural($total_count, 'There is @count item that can be published from %source_label to %target_label', 'There are @count items that can be published from %source_label to %target_label', $args),
-        '#items' => [],
-        '#total_count' => $total_count,
-      ];
-      foreach ($source_rev_diff as $entity_type_id => $revision_difference) {
-        $form['description']['#items'][$entity_type_id] = $this->entityTypeManager->getDefinition($entity_type_id)->getCountLabel(count($revision_difference));
-      }
-
-      $form['actions']['submit']['#value'] = $this->formatPlural($total_count, 'Publish @count item to @target', 'Publish @count items to @target', ['@target' => $workspace_publisher->getTargetLabel()]);
-    }
-    else {
-      // If there are no changes to push or pull, show an informational message.
-      $form['help'] = [
-        '#markup' => $this->t('There are no changes that can be published from %source_label to %target_label.', $args),
-      ];
-
-      // Do not allow the 'Publish' operation if there's nothing to publish.
-      $form['actions']['submit']['#value'] = $this->t('Publish');
-      $form['actions']['submit']['#disabled'] = TRUE;
+    /**
+     * Constructs a new WorkspacePublishForm.
+     *
+     * @param \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory
+     *   The workspace operation factory service.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Would you like to publish the contents of the %label workspace?', [
-      '%label' => $this->workspace->label(),
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Publish workspace contents.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return Url::fromRoute('entity.workspace.collection', [], ['query' => $this->getDestinationArray()]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $workspace = $this->workspace;
-
-    try {
-      $workspace->publish();
-      $this->messenger()->addMessage($this->t('Successful publication.'));
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('workspaces.operation_factory'),
+            $container->get('entity_type.manager')
+        );
     }
-    catch (WorkspaceAccessException $e) {
-      $this->messenger()->addMessage($e->getMessage(), 'error');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'workspace_publish_form';
     }
-    catch (\Exception $e) {
-      $this->messenger()->addMessage($this->t('Publication failed. All errors have been logged.'), 'error');
-      $this->getLogger('workspaces')->error($e->getMessage());
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?WorkspaceInterface $workspace = null)
+    {
+        $this->workspace = $workspace;
+
+        $form = parent::buildForm($form, $form_state);
+
+        $workspace_publisher = $this->workspaceOperationFactory->getPublisher($this->workspace);
+
+        $args = [
+          '%source_label' => $this->workspace->label(),
+          '%target_label' => $workspace_publisher->getTargetLabel(),
+        ];
+        $form['#title'] = $this->t('Publish %source_label workspace', $args);
+
+        // List the changes that can be pushed.
+        if ($source_rev_diff = $workspace_publisher->getDifferringRevisionIdsOnSource()) {
+            $total_count = $workspace_publisher->getNumberOfChangesOnSource();
+            $form['description'] = [
+              '#theme' => 'item_list',
+              '#title' => $this->formatPlural($total_count, 'There is @count item that can be published from %source_label to %target_label', 'There are @count items that can be published from %source_label to %target_label', $args),
+              '#items' => [],
+              '#total_count' => $total_count,
+            ];
+            foreach ($source_rev_diff as $entity_type_id => $revision_difference) {
+                $form['description']['#items'][$entity_type_id] = $this->entityTypeManager->getDefinition($entity_type_id)->getCountLabel(count($revision_difference));
+            }
+
+            $form['actions']['submit']['#value'] = $this->formatPlural($total_count, 'Publish @count item to @target', 'Publish @count items to @target', ['@target' => $workspace_publisher->getTargetLabel()]);
+        } else {
+            // If there are no changes to push or pull, show an informational message.
+            $form['help'] = [
+              '#markup' => $this->t('There are no changes that can be published from %source_label to %target_label.', $args),
+            ];
+
+            // Do not allow the 'Publish' operation if there's nothing to publish.
+            $form['actions']['submit']['#value'] = $this->t('Publish');
+            $form['actions']['submit']['#disabled'] = true;
+        }
+
+        return $form;
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Would you like to publish the contents of the %label workspace?', [
+          '%label' => $this->workspace->label(),
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Publish workspace contents.');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return Url::fromRoute('entity.workspace.collection', [], ['query' => $this->getDestinationArray()]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $workspace = $this->workspace;
+
+        try {
+            $workspace->publish();
+            $this->messenger()->addMessage($this->t('Successful publication.'));
+        } catch (WorkspaceAccessException $e) {
+            $this->messenger()->addMessage($e->getMessage(), 'error');
+        } catch (\Exception $e) {
+            $this->messenger()->addMessage($this->t('Publication failed. All errors have been logged.'), 'error');
+            $this->getLogger('workspaces')->error($e->getMessage());
+        }
+    }
 
 }

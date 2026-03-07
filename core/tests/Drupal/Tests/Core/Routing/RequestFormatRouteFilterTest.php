@@ -22,115 +22,119 @@ use Symfony\Component\Routing\RouteCollection;
  */
 #[CoversClass(RequestFormatRouteFilter::class)]
 #[Group('Routing')]
-class RequestFormatRouteFilterTest extends UnitTestCase {
+class RequestFormatRouteFilterTest extends UnitTestCase
+{
+    /**
+     * Tests filter.
+     */
+    #[DataProvider('filterProvider')]
+    public function testFilter(RouteCollection $collection, $request_format, array $expected_filtered_collection): void
+    {
+        $route_filter = new RequestFormatRouteFilter();
 
-  /**
-   * Tests filter.
-   */
-  #[DataProvider('filterProvider')]
-  public function testFilter(RouteCollection $collection, $request_format, array $expected_filtered_collection): void {
-    $route_filter = new RequestFormatRouteFilter();
+        $request = new Request();
+        $request->setRequestFormat($request_format);
+        $collection = $route_filter->filter($collection, $request);
 
-    $request = new Request();
-    $request->setRequestFormat($request_format);
-    $collection = $route_filter->filter($collection, $request);
+        $this->assertSameSize($expected_filtered_collection, $collection);
+        $this->assertSame($expected_filtered_collection, array_keys($collection->all()));
+    }
 
-    $this->assertSameSize($expected_filtered_collection, $collection);
-    $this->assertSame($expected_filtered_collection, array_keys($collection->all()));
-  }
+    public static function filterProvider(): array
+    {
+        $route_without_format = new Route('/test');
+        $route_with_format = new Route('/test');
+        $route_with_format->setRequirement('_format', 'json');
+        $route_with_multiple_formats = new Route('/test');
+        $route_with_multiple_formats->setRequirement('_format', 'json|xml');
 
-  public static function filterProvider(): array {
-    $route_without_format = new Route('/test');
-    $route_with_format = new Route('/test');
-    $route_with_format->setRequirement('_format', 'json');
-    $route_with_multiple_formats = new Route('/test');
-    $route_with_multiple_formats->setRequirement('_format', 'json|xml');
+        $collection = new RouteCollection();
+        $collection->add('test_0', $route_without_format);
+        $collection->add('test_1', $route_with_format);
+        $collection->add('test_2', $route_with_multiple_formats);
 
-    $collection = new RouteCollection();
-    $collection->add('test_0', $route_without_format);
-    $collection->add('test_1', $route_with_format);
-    $collection->add('test_2', $route_with_multiple_formats);
+        $sole_route_match_single_format = new RouteCollection();
+        $sole_route_match_single_format->add('sole_route_single_format', $route_with_format);
 
-    $sole_route_match_single_format = new RouteCollection();
-    $sole_route_match_single_format->add('sole_route_single_format', $route_with_format);
+        return [
+          'nothing requested' => [clone $collection, '', ['test_0']],
+          'xml requested' => [clone $collection, 'xml', ['test_2', 'test_0']],
+          'json requested' => [
+            clone $collection,
+            'json',
+            ['test_1', 'test_2', 'test_0'],
+          ],
+          'html format requested' => [clone $collection, 'html', ['test_0']],
+          'no format requested, defaults to html' => [
+            clone $collection,
+            null,
+            ['test_0'],
+          ],
+          'no format requested, single route match with single format, defaults to that format' => [
+            clone $sole_route_match_single_format,
+            null,
+            ['sole_route_single_format'],
+          ],
+        ];
+    }
 
-    return [
-      'nothing requested' => [clone $collection, '', ['test_0']],
-      'xml requested' => [clone $collection, 'xml', ['test_2', 'test_0']],
-      'json requested' => [
-        clone $collection,
-        'json',
-        ['test_1', 'test_2', 'test_0'],
-      ],
-      'html format requested' => [clone $collection, 'html', ['test_0']],
-      'no format requested, defaults to html' => [
-        clone $collection,
-        NULL,
-        ['test_0'],
-      ],
-      'no format requested, single route match with single format, defaults to that format' => [
-        clone $sole_route_match_single_format,
-        NULL,
-        ['sole_route_single_format'],
-      ],
-    ];
-  }
+    /**
+     * Tests no route found.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testNoRouteFound(): void
+    {
+        $url = $this->prophesize(GeneratedUrl::class);
+        $url_assembler = $this->prophesize(UnroutedUrlAssemblerInterface::class);
+        $url_assembler->assemble('http://localhost/test?_format=xml', ['query' => ['_format' => 'json'], 'external' => true], true)
+          ->willReturn($url);
+        $container = new ContainerBuilder();
+        $container->set('unrouted_url_assembler', $url_assembler->reveal());
+        \Drupal::setContainer($container);
 
-  /**
-   * Tests no route found.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testNoRouteFound(): void {
-    $url = $this->prophesize(GeneratedUrl::class);
-    $url_assembler = $this->prophesize(UnroutedUrlAssemblerInterface::class);
-    $url_assembler->assemble('http://localhost/test?_format=xml', ['query' => ['_format' => 'json'], 'external' => TRUE], TRUE)
-      ->willReturn($url);
-    $container = new ContainerBuilder();
-    $container->set('unrouted_url_assembler', $url_assembler->reveal());
-    \Drupal::setContainer($container);
+        $collection = new RouteCollection();
+        $route_with_format = new Route('/test');
+        $route_with_format->setRequirement('_format', 'json');
+        $collection->add('test_0', $route_with_format);
+        $collection->add('test_1', clone $route_with_format);
 
-    $collection = new RouteCollection();
-    $route_with_format = new Route('/test');
-    $route_with_format->setRequirement('_format', 'json');
-    $collection->add('test_0', $route_with_format);
-    $collection->add('test_1', clone $route_with_format);
+        $request = Request::create('test?_format=xml', 'GET');
+        $request->setRequestFormat('xml');
+        $route_filter = new RequestFormatRouteFilter();
+        $this->expectException(NotAcceptableHttpException::class);
+        $this->expectExceptionMessage('No route found for the specified format.');
+        $route_filter->filter($collection, $request);
+    }
 
-    $request = Request::create('test?_format=xml', 'GET');
-    $request->setRequestFormat('xml');
-    $route_filter = new RequestFormatRouteFilter();
-    $this->expectException(NotAcceptableHttpException::class);
-    $this->expectExceptionMessage('No route found for the specified format.');
-    $route_filter->filter($collection, $request);
-  }
+    /**
+     * Tests no route found when no request format and single route with multiple formats.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testNoRouteFoundWhenNoRequestFormatAndSingleRouteWithMultipleFormats(): void
+    {
+        $this->expectException(NotAcceptableHttpException::class);
+        $this->expectExceptionMessage('No route found for the specified format.');
 
-  /**
-   * Tests no route found when no request format and single route with multiple formats.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testNoRouteFoundWhenNoRequestFormatAndSingleRouteWithMultipleFormats(): void {
-    $this->expectException(NotAcceptableHttpException::class);
-    $this->expectExceptionMessage('No route found for the specified format.');
+        $url = $this->prophesize(GeneratedUrl::class);
+        $url_assembler = $this->prophesize(UnroutedUrlAssemblerInterface::class);
+        $url_assembler->assemble('http://localhost/test', ['query' => ['_format' => 'json'], 'external' => true], true)
+          ->willReturn($url);
+        $url_assembler->assemble('http://localhost/test', ['query' => ['_format' => 'xml'], 'external' => true], true)
+          ->willReturn($url);
+        $container = new ContainerBuilder();
+        $container->set('unrouted_url_assembler', $url_assembler->reveal());
+        \Drupal::setContainer($container);
 
-    $url = $this->prophesize(GeneratedUrl::class);
-    $url_assembler = $this->prophesize(UnroutedUrlAssemblerInterface::class);
-    $url_assembler->assemble('http://localhost/test', ['query' => ['_format' => 'json'], 'external' => TRUE], TRUE)
-      ->willReturn($url);
-    $url_assembler->assemble('http://localhost/test', ['query' => ['_format' => 'xml'], 'external' => TRUE], TRUE)
-      ->willReturn($url);
-    $container = new ContainerBuilder();
-    $container->set('unrouted_url_assembler', $url_assembler->reveal());
-    \Drupal::setContainer($container);
+        $collection = new RouteCollection();
+        $route_with_format = new Route('/test');
+        $route_with_format->setRequirement('_format', 'json|xml');
+        $collection->add('sole_route_multiple_formats', $route_with_format);
 
-    $collection = new RouteCollection();
-    $route_with_format = new Route('/test');
-    $route_with_format->setRequirement('_format', 'json|xml');
-    $collection->add('sole_route_multiple_formats', $route_with_format);
-
-    $request = Request::create('test', 'GET');
-    $route_filter = new RequestFormatRouteFilter();
-    $route_filter->filter($collection, $request);
-  }
+        $request = Request::create('test', 'GET');
+        $route_filter = new RequestFormatRouteFilter();
+        $route_filter->filter($collection, $request);
+    }
 
 }

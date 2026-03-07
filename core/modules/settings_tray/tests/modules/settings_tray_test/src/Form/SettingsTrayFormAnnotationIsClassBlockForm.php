@@ -11,39 +11,42 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * @see \Drupal\settings_tray_test\Plugin\Block\SettingsTrayFormAnnotationIsClassBlock
  */
-class SettingsTrayFormAnnotationIsClassBlockForm extends PluginFormBase {
+class SettingsTrayFormAnnotationIsClassBlockForm extends PluginFormBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The block plugin.
+     *
+     * @var \Drupal\Core\Block\BlockPluginInterface
+     */
+    protected $plugin;
 
-  /**
-   * The block plugin.
-   *
-   * @var \Drupal\Core\Block\BlockPluginInterface
-   */
-  protected $plugin;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form = $this->plugin->buildConfigurationForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = $this->plugin->buildConfigurationForm($form, $form_state);
+        $form['some_setting'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Some setting'),
+          '#options' => [
+            'a' => 'A',
+            'b' => 'B',
+          ],
+          '#required' => true,
+        ];
 
-    $form['some_setting'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Some setting'),
-      '#options' => [
-        'a' => 'A',
-        'b' => 'B',
-      ],
-      '#required' => TRUE,
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

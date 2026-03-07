@@ -12,35 +12,36 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class TermContextualLinksTest extends TaxonomyTestBase {
+class TermContextualLinksTest extends TaxonomyTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'contextual',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'contextual',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests contextual links.
+     */
+    public function testTermContextualLinks(): void
+    {
+        $vocabulary = $this->createVocabulary();
+        $term = $this->createTerm($vocabulary);
 
-  /**
-   * Tests contextual links.
-   */
-  public function testTermContextualLinks(): void {
-    $vocabulary = $this->createVocabulary();
-    $term = $this->createTerm($vocabulary);
+        $user = $this->drupalCreateUser([
+          'administer taxonomy',
+          'access contextual links',
+        ]);
+        $this->drupalLogin($user);
 
-    $user = $this->drupalCreateUser([
-      'administer taxonomy',
-      'access contextual links',
-    ]);
-    $this->drupalLogin($user);
-
-    $this->drupalGet('taxonomy/term/' . $term->id());
-    $this->assertSession()->elementExists('css', 'div[data-contextual-id^="taxonomy_term:taxonomy_term=' . $term->id() . ':"]');
-  }
+        $this->drupalGet('taxonomy/term/' . $term->id());
+        $this->assertSession()->elementExists('css', 'div[data-contextual-id^="taxonomy_term:taxonomy_term=' . $term->id() . ':"]');
+    }
 
 }

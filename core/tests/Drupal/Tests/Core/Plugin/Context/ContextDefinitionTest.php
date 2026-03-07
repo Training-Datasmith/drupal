@@ -19,184 +19,190 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[CoversClass(ContextDefinition::class)]
 #[Group('Plugin')]
 #[UsesClass(\Drupal::class)]
-class ContextDefinitionTest extends UnitTestCase {
-
-  /**
-   * Very simple data provider.
-   */
-  public static function providerGetDataDefinition(): array {
-    return [
-      [TRUE],
-      [FALSE],
-    ];
-  }
-
-  /**
-   * Tests get data definition.
-   */
-  #[DataProvider('providerGetDataDefinition')]
-  public function testGetDataDefinition($is_multiple): void {
-    $data_type = 'valid';
-    $mock_data_definition = $this->createMock(ContextDefinitionInterface::class);
-    $mock_data_definition->expects($this->once())
-      ->method('setLabel')
-      ->willReturnSelf();
-    $mock_data_definition->expects($this->once())
-      ->method('setDescription')
-      ->willReturnSelf();
-    $mock_data_definition->expects($this->once())
-      ->method('setRequired')
-      ->willReturnSelf();
-    $mock_data_definition->expects($this->once())
-      ->method('getConstraints')
-      ->willReturn([]);
-    $mock_data_definition->expects($this->once())
-      ->method('setConstraints')
-      ->willReturn(NULL);
-
-    // Follow code paths for both multiple and non-multiple definitions.
-    $create_definition_method = 'createDataDefinition';
-    if ($is_multiple) {
-      $create_definition_method = 'createListDataDefinition';
+class ContextDefinitionTest extends UnitTestCase
+{
+    /**
+     * Very simple data provider.
+     */
+    public static function providerGetDataDefinition(): array
+    {
+        return [
+          [true],
+          [false],
+        ];
     }
-    $mock_data_manager = $this->createMock(TypedDataManagerInterface::class);
-    // Our mocked data manager will return our mocked data definition for a
-    // valid data type.
-    $mock_data_manager->expects($this->once())
-      ->method($create_definition_method)
-      ->willReturnMap([
-        ['not_valid', NULL],
-        ['valid', $mock_data_definition],
-      ]);
 
-    // Mock a ContextDefinition object, setting up expectations for many of the
-    // methods.
-    $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
-      ->disableOriginalConstructor()
-      ->onlyMethods([
-        'isMultiple',
-        'getTypedDataManager',
-        'getDataType',
-        'getLabel',
-        'getDescription',
-        'isRequired',
-        'getConstraints',
-        'setConstraints',
-      ])
-      ->getMock();
-    $mock_context_definition->expects($this->once())
-      ->method('isMultiple')
-      ->willReturn($is_multiple);
-    $mock_context_definition->expects($this->once())
-      ->method('getTypedDataManager')
-      ->willReturn($mock_data_manager);
-    $mock_context_definition->expects($this->once())
-      ->method('getDataType')
-      ->willReturn($data_type);
-    $mock_context_definition->expects($this->once())
-      ->method('getConstraints')
-      ->willReturn([]);
+    /**
+     * Tests get data definition.
+     */
+    #[DataProvider('providerGetDataDefinition')]
+    public function testGetDataDefinition($is_multiple): void
+    {
+        $data_type = 'valid';
+        $mock_data_definition = $this->createMock(ContextDefinitionInterface::class);
+        $mock_data_definition->expects($this->once())
+          ->method('setLabel')
+          ->willReturnSelf();
+        $mock_data_definition->expects($this->once())
+          ->method('setDescription')
+          ->willReturnSelf();
+        $mock_data_definition->expects($this->once())
+          ->method('setRequired')
+          ->willReturnSelf();
+        $mock_data_definition->expects($this->once())
+          ->method('getConstraints')
+          ->willReturn([]);
+        $mock_data_definition->expects($this->once())
+          ->method('setConstraints')
+          ->willReturn(null);
 
-    $this->assertSame(
-      $mock_data_definition,
-      $mock_context_definition->getDataDefinition()
-    );
-  }
+        // Follow code paths for both multiple and non-multiple definitions.
+        $create_definition_method = 'createDataDefinition';
+        if ($is_multiple) {
+            $create_definition_method = 'createListDataDefinition';
+        }
+        $mock_data_manager = $this->createMock(TypedDataManagerInterface::class);
+        // Our mocked data manager will return our mocked data definition for a
+        // valid data type.
+        $mock_data_manager->expects($this->once())
+          ->method($create_definition_method)
+          ->willReturnMap([
+            ['not_valid', null],
+            ['valid', $mock_data_definition],
+          ]);
 
-  /**
-   * Tests get data definition invalid type.
-   */
-  #[DataProvider('providerGetDataDefinition')]
-  public function testGetDataDefinitionInvalidType($is_multiple): void {
-    // Since we're trying to make getDataDefinition() throw an exception in
-    // isolation, we use a data type which is not valid.
-    $data_type = 'not_valid';
-    $mock_data_definition = $this->createMock('\Drupal\Core\TypedData\ListDataDefinitionInterface');
+        // Mock a ContextDefinition object, setting up expectations for many of the
+        // methods.
+        $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
+          ->disableOriginalConstructor()
+          ->onlyMethods([
+            'isMultiple',
+            'getTypedDataManager',
+            'getDataType',
+            'getLabel',
+            'getDescription',
+            'isRequired',
+            'getConstraints',
+            'setConstraints',
+          ])
+          ->getMock();
+        $mock_context_definition->expects($this->once())
+          ->method('isMultiple')
+          ->willReturn($is_multiple);
+        $mock_context_definition->expects($this->once())
+          ->method('getTypedDataManager')
+          ->willReturn($mock_data_manager);
+        $mock_context_definition->expects($this->once())
+          ->method('getDataType')
+          ->willReturn($data_type);
+        $mock_context_definition->expects($this->once())
+          ->method('getConstraints')
+          ->willReturn([]);
 
-    // Follow code paths for both multiple and non-multiple definitions.
-    $create_definition_method = 'createDataDefinition';
-    if ($is_multiple) {
-      $create_definition_method = 'createListDataDefinition';
+        $this->assertSame(
+            $mock_data_definition,
+            $mock_context_definition->getDataDefinition()
+        );
     }
-    $mock_data_manager = $this->createMock(TypedDataManagerInterface::class);
-    // Our mocked data manager will return NULL for a non-valid data type. This
-    // will eventually cause getDataDefinition() to throw an exception.
-    $mock_data_manager->expects($this->once())
-      ->method($create_definition_method)
-      ->willReturnMap([
-        ['not_valid', NULL],
-        ['valid', $mock_data_definition],
-      ]);
 
-    // Mock a ContextDefinition object with expectations for only the methods
-    // that will be called before the expected exception.
-    $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
-      ->disableOriginalConstructor()
-      ->onlyMethods([
-        'isMultiple',
-        'getTypedDataManager',
-        'getDataType',
-      ])
-      ->getMock();
-    $mock_context_definition->expects($this->once())
-      ->method('isMultiple')
-      ->willReturn($is_multiple);
-    $mock_context_definition->expects($this->once())
-      ->method('getTypedDataManager')
-      ->willReturn($mock_data_manager);
-    $mock_context_definition
-      ->method('getDataType')
-      ->willReturn($data_type);
+    /**
+     * Tests get data definition invalid type.
+     */
+    #[DataProvider('providerGetDataDefinition')]
+    public function testGetDataDefinitionInvalidType($is_multiple): void
+    {
+        // Since we're trying to make getDataDefinition() throw an exception in
+        // isolation, we use a data type which is not valid.
+        $data_type = 'not_valid';
+        $mock_data_definition = $this->createMock('\Drupal\Core\TypedData\ListDataDefinitionInterface');
 
-    $this->expectException(\Exception::class);
-    $mock_context_definition->getDataDefinition();
-  }
+        // Follow code paths for both multiple and non-multiple definitions.
+        $create_definition_method = 'createDataDefinition';
+        if ($is_multiple) {
+            $create_definition_method = 'createListDataDefinition';
+        }
+        $mock_data_manager = $this->createMock(TypedDataManagerInterface::class);
+        // Our mocked data manager will return NULL for a non-valid data type. This
+        // will eventually cause getDataDefinition() to throw an exception.
+        $mock_data_manager->expects($this->once())
+          ->method($create_definition_method)
+          ->willReturnMap([
+            ['not_valid', null],
+            ['valid', $mock_data_definition],
+          ]);
 
-  /**
-   * Data provider for testGetConstraint.
-   */
-  public static function providerGetConstraint(): array {
-    return [
-      [NULL, [], 'nonexistent_constraint_name'],
-      [
-        'not_null',
-        [
-          'constraint_name' => 'not_null',
-        ],
-        'constraint_name',
-      ],
-    ];
-  }
+        // Mock a ContextDefinition object with expectations for only the methods
+        // that will be called before the expected exception.
+        $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
+          ->disableOriginalConstructor()
+          ->onlyMethods([
+            'isMultiple',
+            'getTypedDataManager',
+            'getDataType',
+          ])
+          ->getMock();
+        $mock_context_definition->expects($this->once())
+          ->method('isMultiple')
+          ->willReturn($is_multiple);
+        $mock_context_definition->expects($this->once())
+          ->method('getTypedDataManager')
+          ->willReturn($mock_data_manager);
+        $mock_context_definition
+          ->method('getDataType')
+          ->willReturn($data_type);
 
-  /**
-   * Tests get constraint.
-   */
-  #[DataProvider('providerGetConstraint')]
-  public function testGetConstraint($expected, $constraint_array, $constraint): void {
-    $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
-      ->disableOriginalConstructor()
-      ->onlyMethods([
-        'getConstraints',
-      ])
-      ->getMock();
-    $mock_context_definition->expects($this->once())
-      ->method('getConstraints')
-      ->willReturn($constraint_array);
+        $this->expectException(\Exception::class);
+        $mock_context_definition->getDataDefinition();
+    }
 
-    $this->assertEquals($expected, $mock_context_definition->getConstraint($constraint));
-  }
+    /**
+     * Data provider for testGetConstraint.
+     */
+    public static function providerGetConstraint(): array
+    {
+        return [
+          [null, [], 'nonexistent_constraint_name'],
+          [
+            'not_null',
+            [
+              'constraint_name' => 'not_null',
+            ],
+            'constraint_name',
+          ],
+        ];
+    }
 
-  /**
-   * Tests default value.
-   *
-   * @legacy-covers ::getDefaultValue
-   * @legacy-covers ::setDefaultValue
-   */
-  public function testDefaultValue(): void {
-    $context_definition = new ContextDefinition();
-    $this->assertNull($context_definition->getDefaultValue());
-    $context_definition->setDefaultValue('test');
-    $this->assertSame('test', $context_definition->getDefaultValue());
-  }
+    /**
+     * Tests get constraint.
+     */
+    #[DataProvider('providerGetConstraint')]
+    public function testGetConstraint($expected, $constraint_array, $constraint): void
+    {
+        $mock_context_definition = $this->getMockBuilder('Drupal\Core\Plugin\Context\ContextDefinition')
+          ->disableOriginalConstructor()
+          ->onlyMethods([
+            'getConstraints',
+          ])
+          ->getMock();
+        $mock_context_definition->expects($this->once())
+          ->method('getConstraints')
+          ->willReturn($constraint_array);
+
+        $this->assertEquals($expected, $mock_context_definition->getConstraint($constraint));
+    }
+
+    /**
+     * Tests default value.
+     *
+     * @legacy-covers ::getDefaultValue
+     * @legacy-covers ::setDefaultValue
+     */
+    public function testDefaultValue(): void
+    {
+        $context_definition = new ContextDefinition();
+        $this->assertNull($context_definition->getDefaultValue());
+        $context_definition->setDefaultValue('test');
+        $this->assertSame('test', $context_definition->getDefaultValue());
+    }
 
 }

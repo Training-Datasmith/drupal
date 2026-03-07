@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,18 +14,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @see https://ckeditor.com/docs/ckeditor5/latest/features/toolbar/toolbar.html
  */
 #[Constraint(
-  id: 'CKEditor5ToolbarItem',
-  label: new TranslatableMarkup('CKEditor 5 toolbar item', [], ['context' => 'Validation'])
+    id: 'CKEditor5ToolbarItem',
+    label: new TranslatableMarkup('CKEditor 5 toolbar item', [], ['context' => 'Validation'])
 )]
-class ToolbarItemConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'The provided toolbar item %toolbar_item is not valid.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class ToolbarItemConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'The provided toolbar item %toolbar_item is not valid.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

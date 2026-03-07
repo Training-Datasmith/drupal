@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\phpass\Password;
 
 use Drupal\Core\Password\PhpassHashedPasswordBase;
@@ -9,4 +11,6 @@ use Drupal\Core\Password\PhpassHashedPasswordBase;
  *
  * @see https://www.drupal.org/node/3322420
  */
-class PhpassHashedPassword extends PhpassHashedPasswordBase {}
+class PhpassHashedPassword extends PhpassHashedPasswordBase
+{
+}

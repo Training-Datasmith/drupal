@@ -10,15 +10,16 @@ use Drupal\taxonomy\VocabularyInterface;
 /**
  * A vocabulary response for testing.
  */
-class VocabularyResponse extends CacheableResponse {
+class VocabularyResponse extends CacheableResponse
+{
+    /**
+     * @var \Drupal\taxonomy\VocabularyInterface
+     */
+    protected $vocabulary;
 
-  /**
-   * @var \Drupal\taxonomy\VocabularyInterface
-   */
-  protected $vocabulary;
-
-  public function setVocabulary(VocabularyInterface $vocabulary) {
-    $this->vocabulary = $vocabulary;
-  }
+    public function setVocabulary(VocabularyInterface $vocabulary)
+    {
+        $this->vocabulary = $vocabulary;
+    }
 
 }

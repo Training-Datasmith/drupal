@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 /**
  * Exception thrown when the extension's name is already reserved.
  */
-class ExtensionNameReservedException extends \Exception {}
+class ExtensionNameReservedException extends \Exception
+{
+}

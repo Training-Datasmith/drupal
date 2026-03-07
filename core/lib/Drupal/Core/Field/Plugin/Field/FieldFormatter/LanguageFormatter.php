@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -8,99 +10,103 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Plugin implementation of the 'language' formatter.
  */
 #[FieldFormatter(
-  id: 'language',
-  label: new TranslatableMarkup('Language'),
-  field_types: [
+    id: 'language',
+    label: new TranslatableMarkup('Language'),
+    field_types: [
     'language',
   ],
 )]
-class LanguageFormatter extends StringFormatter {
-
-  /**
-   * Constructs a LanguageFormatter instance.
-   *
-   * @param string $plugin_id
-   *   The plugin ID for the formatter.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The definition of the field to which the formatter is associated.
-   * @param array $settings
-   *   The formatter settings.
-   * @param string $label
-   *   The formatter label display setting.
-   * @param string $view_mode
-   *   The view mode.
-   * @param array $third_party_settings
-   *   Any third party settings.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $entity_type_manager);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $settings = parent::defaultSettings();
-    $settings['native_language'] = FALSE;
-    return $settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-    $form['native_language'] = [
-      '#title' => $this->t('Display in native language'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->getSetting('native_language'),
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
-    if ($this->getSetting('native_language')) {
-      $summary[] = $this->t('Displayed in native language');
+class LanguageFormatter extends StringFormatter
+{
+    /**
+     * Constructs a LanguageFormatter instance.
+     *
+     * @param string $plugin_id
+     *   The plugin ID for the formatter.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+     *   The definition of the field to which the formatter is associated.
+     * @param array $settings
+     *   The formatter settings.
+     * @param string $label
+     *   The formatter label display setting.
+     * @param string $view_mode
+     *   The view mode.
+     * @param array $third_party_settings
+     *   Any third party settings.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     */
+    public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+    {
+        parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $entity_type_manager);
     }
-    return $summary;
-  }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  protected function viewValue(FieldItemInterface $item): array {
-    // The 'languages' cache context is not necessary because the language is
-    // either displayed in its configured form (loaded directly from config
-    // storage by LanguageManager::getLanguages()) or in its native language
-    // name. That only depends on formatter settings and no language condition.
-    $languages = $this->getSetting('native_language') ? $this->languageManager->getNativeLanguages(LanguageInterface::STATE_ALL) : $this->languageManager->getLanguages(LanguageInterface::STATE_ALL);
-    // \Drupal\Core\Language\LanguageInterface::LANGCODE_NOT_SPECIFIED
-    // and \Drupal\Core\Language\LanguageInterface::LANGCODE_NOT_APPLICABLE are
-    // not returned from the language manager above.
-    $value = [];
-    if (isset($item->language)) {
-      $name = isset($languages[$item->language->getId()]) ? $languages[$item->language->getId()]->getName() : $item->language->getId();
-      $value = ['#plain_text' => $name];
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        $settings = parent::defaultSettings();
+        $settings['native_language'] = false;
+        return $settings;
     }
-    return $value;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::settingsForm($form, $form_state);
+        $form['native_language'] = [
+          '#title' => $this->t('Display in native language'),
+          '#type' => 'checkbox',
+          '#default_value' => $this->getSetting('native_language'),
+        ];
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary()
+    {
+        $summary = parent::settingsSummary();
+        if ($this->getSetting('native_language')) {
+            $summary[] = $this->t('Displayed in native language');
+        }
+        return $summary;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    protected function viewValue(FieldItemInterface $item): array
+    {
+        // The 'languages' cache context is not necessary because the language is
+        // either displayed in its configured form (loaded directly from config
+        // storage by LanguageManager::getLanguages()) or in its native language
+        // name. That only depends on formatter settings and no language condition.
+        $languages = $this->getSetting('native_language') ? $this->languageManager->getNativeLanguages(LanguageInterface::STATE_ALL) : $this->languageManager->getLanguages(LanguageInterface::STATE_ALL);
+        // \Drupal\Core\Language\LanguageInterface::LANGCODE_NOT_SPECIFIED
+        // and \Drupal\Core\Language\LanguageInterface::LANGCODE_NOT_APPLICABLE are
+        // not returned from the language manager above.
+        $value = [];
+        if (isset($item->language)) {
+            $name = isset($languages[$item->language->getId()]) ? $languages[$item->language->getId()]->getName() : $item->language->getId();
+            $value = ['#plain_text' => $name];
+        }
+        return $value;
+    }
 
 }

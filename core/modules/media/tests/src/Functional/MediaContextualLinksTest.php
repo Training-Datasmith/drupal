@@ -13,49 +13,50 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('media')]
 #[RunTestsInSeparateProcesses]
-class MediaContextualLinksTest extends MediaFunctionalTestBase {
+class MediaContextualLinksTest extends MediaFunctionalTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'contextual',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'contextual',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests contextual links.
+     */
+    public function testMediaContextualLinks(): void
+    {
+        \Drupal::configFactory()
+          ->getEditable('media.settings')
+          ->set('standalone_url', true)
+          ->save(true);
 
-  /**
-   * Tests contextual links.
-   */
-  public function testMediaContextualLinks(): void {
-    \Drupal::configFactory()
-      ->getEditable('media.settings')
-      ->set('standalone_url', TRUE)
-      ->save(TRUE);
+        $this->container->get('router.builder')->rebuild();
 
-    $this->container->get('router.builder')->rebuild();
+        // Create a media type.
+        $mediaType = $this->createMediaType('test');
 
-    // Create a media type.
-    $mediaType = $this->createMediaType('test');
+        // Create a media item.
+        $media = Media::create([
+          'bundle' => $mediaType->id(),
+          'name' => 'Unnamed',
+        ]);
+        $media->save();
 
-    // Create a media item.
-    $media = Media::create([
-      'bundle' => $mediaType->id(),
-      'name' => 'Unnamed',
-    ]);
-    $media->save();
+        $user = $this->drupalCreateUser([
+          'administer media',
+          'access contextual links',
+        ]);
+        $this->drupalLogin($user);
 
-    $user = $this->drupalCreateUser([
-      'administer media',
-      'access contextual links',
-    ]);
-    $this->drupalLogin($user);
-
-    $this->drupalGet('media/' . $media->id());
-    $this->assertSession()->elementAttributeContains('css', 'div[data-contextual-id]', 'data-contextual-id', 'media:media=' . $media->id() . ':');
-  }
+        $this->drupalGet('media/' . $media->id());
+        $this->assertSession()->elementAttributeContains('css', 'div[data-contextual-id]', 'data-contextual-id', 'media:media=' . $media->id() . ':');
+    }
 
 }

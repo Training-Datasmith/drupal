@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Config\ConfigCrudEvent;
 use Drupal\Core\Config\ConfigEvents;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Render\HtmlResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -31,85 +31,90 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
  *   the expression.
  * - system.performance:fast_404.html: The html to return for simple 404 pages.
  */
-class Fast404ExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
-
-  /**
-   * Constructs a new Fast404ExceptionHtmlSubscriber.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The configuration factory.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
-   *   The cache tags invalidator.
-   */
-  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function getPriority(): int {
-    // A very high priority so that it can take precedent over anything else,
-    // and thus be fast.
-    return 200;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getHandledFormats(): array {
-    return ['html'];
-  }
-
-  /**
-   * Handles a 404 error for HTML.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The event to process.
-   */
-  public function on404(ExceptionEvent $event): void {
-    $request = $event->getRequest();
-
-    $config = $this->configFactory->get('system.performance');
-    $exclude_paths = $config->get('fast_404.exclude_paths');
-    if ($config->get('fast_404.enabled') && $exclude_paths && !preg_match($exclude_paths, (string) $request->getPathInfo())) {
-      $fast_paths = $config->get('fast_404.paths');
-      if ($fast_paths && preg_match($fast_paths, (string) $request->getPathInfo())) {
-        $fast_404_html = strtr($config->get('fast_404.html'), ['@path' => Html::escape($request->getUri())]);
-        $response = new HtmlResponse($fast_404_html, Response::HTTP_NOT_FOUND);
-        // Some routes such as system.files conditionally throw a
-        // NotFoundHttpException depending on URL parameters instead of just the
-        // route and route parameters, so add the URL cache context to account
-        // for this.
-        $cacheable_metadata = new CacheableMetadata();
-        $cacheable_metadata->setCacheContexts(['url']);
-        $cacheable_metadata->addCacheTags(['4xx-response']);
-        $response->addCacheableDependency($cacheable_metadata);
-        $event->setResponse($response);
-      }
+class Fast404ExceptionHtmlSubscriber extends HttpExceptionSubscriberBase
+{
+    /**
+     * Constructs a new Fast404ExceptionHtmlSubscriber.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The configuration factory.
+     * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
+     *   The cache tags invalidator.
+     */
+    public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator)
+    {
     }
-  }
 
-  /**
-   * Invalidates 4xx-response cache tag if fast 404 config is changed.
-   *
-   * @param \Drupal\Core\Config\ConfigCrudEvent $event
-   *   The configuration event.
-   */
-  public function onConfigSave(ConfigCrudEvent $event): void {
-    $saved_config = $event->getConfig();
-    if ($saved_config->getName() === 'system.performance' && $event->isChanged('fast_404')) {
-      $this->cacheTagsInvalidator->invalidateTags(['4xx-response']);
+    /**
+     * {@inheritdoc}
+     */
+    protected static function getPriority(): int
+    {
+        // A very high priority so that it can take precedent over anything else,
+        // and thus be fast.
+        return 200;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events = parent::getSubscribedEvents();
-    $events[ConfigEvents::SAVE] = 'onConfigSave';
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getHandledFormats(): array
+    {
+        return ['html'];
+    }
+
+    /**
+     * Handles a 404 error for HTML.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+     *   The event to process.
+     */
+    public function on404(ExceptionEvent $event): void
+    {
+        $request = $event->getRequest();
+
+        $config = $this->configFactory->get('system.performance');
+        $exclude_paths = $config->get('fast_404.exclude_paths');
+        if ($config->get('fast_404.enabled') && $exclude_paths && !preg_match($exclude_paths, (string) $request->getPathInfo())) {
+            $fast_paths = $config->get('fast_404.paths');
+            if ($fast_paths && preg_match($fast_paths, (string) $request->getPathInfo())) {
+                $fast_404_html = strtr($config->get('fast_404.html'), ['@path' => Html::escape($request->getUri())]);
+                $response = new HtmlResponse($fast_404_html, Response::HTTP_NOT_FOUND);
+                // Some routes such as system.files conditionally throw a
+                // NotFoundHttpException depending on URL parameters instead of just the
+                // route and route parameters, so add the URL cache context to account
+                // for this.
+                $cacheable_metadata = new CacheableMetadata();
+                $cacheable_metadata->setCacheContexts(['url']);
+                $cacheable_metadata->addCacheTags(['4xx-response']);
+                $response->addCacheableDependency($cacheable_metadata);
+                $event->setResponse($response);
+            }
+        }
+    }
+
+    /**
+     * Invalidates 4xx-response cache tag if fast 404 config is changed.
+     *
+     * @param \Drupal\Core\Config\ConfigCrudEvent $event
+     *   The configuration event.
+     */
+    public function onConfigSave(ConfigCrudEvent $event): void
+    {
+        $saved_config = $event->getConfig();
+        if ($saved_config->getName() === 'system.performance' && $event->isChanged('fast_404')) {
+            $this->cacheTagsInvalidator->invalidateTags(['4xx-response']);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events = parent::getSubscribedEvents();
+        $events[ConfigEvents::SAVE] = 'onConfigSave';
+        return $events;
+    }
 
 }

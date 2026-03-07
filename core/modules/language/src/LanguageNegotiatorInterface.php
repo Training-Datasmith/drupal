@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language;
 
 use Drupal\Core\Session\AccountInterface;
@@ -96,114 +98,114 @@ use Drupal\Core\Session\AccountInterface;
  * For more information, see
  * @link https://www.drupal.org/node/1497272 Language Negotiation API @endlink
  */
-interface LanguageNegotiatorInterface {
+interface LanguageNegotiatorInterface
+{
+    /**
+     * The language negotiation method id for the language negotiator itself.
+     */
+    public const METHOD_ID = 'language-default';
 
-  /**
-   * The language negotiation method id for the language negotiator itself.
-   */
-  const METHOD_ID = 'language-default';
+    /**
+     * Resets the negotiated languages and the method instances.
+     */
+    public function reset();
 
-  /**
-   * Resets the negotiated languages and the method instances.
-   */
-  public function reset();
+    /**
+     * Sets the current active user and resets all language types.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $current_user
+     *   The current active user.
+     */
+    public function setCurrentUser(AccountInterface $current_user);
 
-  /**
-   * Sets the current active user and resets all language types.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current active user.
-   */
-  public function setCurrentUser(AccountInterface $current_user);
+    /**
+     * Initializes the specified language type.
+     *
+     * @param string $type
+     *   The language type to be initialized.
+     *
+     * @return \Drupal\Core\Language\LanguageInterface[]
+     *   Returns an array containing a single language keyed by the language
+     *   negotiation method ID used to determine the language of the specified
+     *   type. If negotiation is not possible the default language is returned.
+     */
+    public function initializeType($type);
 
-  /**
-   * Initializes the specified language type.
-   *
-   * @param string $type
-   *   The language type to be initialized.
-   *
-   * @return \Drupal\Core\Language\LanguageInterface[]
-   *   Returns an array containing a single language keyed by the language
-   *   negotiation method ID used to determine the language of the specified
-   *   type. If negotiation is not possible the default language is returned.
-   */
-  public function initializeType($type);
+    /**
+     * Returns the language negotiation methods enabled for a language type.
+     *
+     * @param string $type
+     *   (optional) The language type. If no type is specified all the method
+     *   definitions are returned.
+     *
+     * @return array[]
+     *   An array of language negotiation method definitions keyed by method id.
+     */
+    public function getNegotiationMethods($type = null);
 
-  /**
-   * Returns the language negotiation methods enabled for a language type.
-   *
-   * @param string $type
-   *   (optional) The language type. If no type is specified all the method
-   *   definitions are returned.
-   *
-   * @return array[]
-   *   An array of language negotiation method definitions keyed by method id.
-   */
-  public function getNegotiationMethods($type = NULL);
+    /**
+     * Returns an instance of the specified language negotiation method.
+     *
+     * @param string $method_id
+     *   The method identifier.
+     *
+     * @return \Drupal\language\LanguageNegotiationMethodInterface
+     *   An instance of the specified language negotiation method.
+     */
+    public function getNegotiationMethodInstance($method_id);
 
-  /**
-   * Returns an instance of the specified language negotiation method.
-   *
-   * @param string $method_id
-   *   The method identifier.
-   *
-   * @return \Drupal\language\LanguageNegotiationMethodInterface
-   *   An instance of the specified language negotiation method.
-   */
-  public function getNegotiationMethodInstance($method_id);
+    /**
+     * Returns the ID of the language type's primary language negotiation method.
+     *
+     * @param string $type
+     *   The language type.
+     *
+     * @return string
+     *   The identifier of the primary language negotiation method for the given
+     *   language type, or the default method if none exists.
+     */
+    public function getPrimaryNegotiationMethod($type);
 
-  /**
-   * Returns the ID of the language type's primary language negotiation method.
-   *
-   * @param string $type
-   *   The language type.
-   *
-   * @return string
-   *   The identifier of the primary language negotiation method for the given
-   *   language type, or the default method if none exists.
-   */
-  public function getPrimaryNegotiationMethod($type);
+    /**
+     * Checks if a language negotiation method is enabled for a language type.
+     *
+     * @param string $method_id
+     *   The language negotiation method ID.
+     * @param string $type
+     *   (optional) The language type. If none is passed, all the configurable
+     *   language types will be inspected.
+     *
+     * @return bool
+     *   TRUE if the method is enabled for at least one of the given language
+     *   types, or FALSE otherwise.
+     */
+    public function isNegotiationMethodEnabled($method_id, $type = null);
 
-  /**
-   * Checks if a language negotiation method is enabled for a language type.
-   *
-   * @param string $method_id
-   *   The language negotiation method ID.
-   * @param string $type
-   *   (optional) The language type. If none is passed, all the configurable
-   *   language types will be inspected.
-   *
-   * @return bool
-   *   TRUE if the method is enabled for at least one of the given language
-   *   types, or FALSE otherwise.
-   */
-  public function isNegotiationMethodEnabled($method_id, $type = NULL);
+    /**
+     * Saves a list of language negotiation methods for a language type.
+     *
+     * @param string $type
+     *   The language type.
+     * @param int[] $enabled_methods
+     *   An array of language negotiation method weights keyed by method ID.
+     */
+    public function saveConfiguration($type, $enabled_methods);
 
-  /**
-   * Saves a list of language negotiation methods for a language type.
-   *
-   * @param string $type
-   *   The language type.
-   * @param int[] $enabled_methods
-   *   An array of language negotiation method weights keyed by method ID.
-   */
-  public function saveConfiguration($type, $enabled_methods);
+    /**
+     * Resave the configuration to purge missing negotiation methods.
+     */
+    public function purgeConfiguration();
 
-  /**
-   * Resave the configuration to purge missing negotiation methods.
-   */
-  public function purgeConfiguration();
-
-  /**
-   * Updates the configuration based on the given language types.
-   *
-   * Stores the list of the language types along with information about their
-   * configurable state. Stores the default settings if the language type is
-   * not configurable.
-   *
-   * @param string[] $types
-   *   An array of configurable language types.
-   */
-  public function updateConfiguration(array $types);
+    /**
+     * Updates the configuration based on the given language types.
+     *
+     * Stores the list of the language types along with information about their
+     * configurable state. Stores the default settings if the language type is
+     * not configurable.
+     *
+     * @param string[] $types
+     *   An array of configurable language types.
+     */
+    public function updateConfiguration(array $types);
 
 }

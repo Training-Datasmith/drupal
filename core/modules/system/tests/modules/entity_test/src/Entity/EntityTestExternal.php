@@ -12,29 +12,30 @@ use Drupal\Core\Url;
  * Test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_external',
-  label: new TranslatableMarkup('Entity test external'),
-  entity_keys: [
+    id: 'entity_test_external',
+    label: new TranslatableMarkup('Entity test external'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
   ],
-  links: [
+    links: [
     'canonical' => '/entity_test_external/{entity_test_external}',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_external',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_external',
 )]
-class EntityTestExternal extends EntityTest {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function toUrl($rel = NULL, array $options = []) {
-    if ($rel === 'canonical') {
-      return Url::fromUri('http://example.com', $options);
+class EntityTestExternal extends EntityTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function toUrl($rel = null, array $options = [])
+    {
+        if ($rel === 'canonical') {
+            return Url::fromUri('http://example.com', $options);
+        }
+        return parent::toUrl($rel, $options);
     }
-    return parent::toUrl($rel, $options);
-  }
 
 }

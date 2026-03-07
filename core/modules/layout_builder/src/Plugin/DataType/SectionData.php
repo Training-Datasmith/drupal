@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\DataType;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,30 +16,31 @@ use Drupal\layout_builder\Section;
  *   Plugin classes are internal.
  */
 #[DataType(
-  id: "layout_section",
-  label: new TranslatableMarkup("Layout Section"),
-  description: new TranslatableMarkup("A layout section"),
+    id: 'layout_section',
+    label: new TranslatableMarkup('Layout Section'),
+    description: new TranslatableMarkup('A layout section'),
 )]
-class SectionData extends TypedData {
+class SectionData extends TypedData
+{
+    /**
+     * The section object.
+     *
+     * @var \Drupal\layout_builder\Section
+     */
+    protected $value;
 
-  /**
-   * The section object.
-   *
-   * @var \Drupal\layout_builder\Section
-   */
-  protected $value;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($value, $notify = TRUE): void {
-    if (is_array($value)) {
-      $value = Section::fromArray($value);
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($value, $notify = true): void
+    {
+        if (is_array($value)) {
+            $value = Section::fromArray($value);
+        }
+        if ($value && !$value instanceof Section) {
+            throw new \InvalidArgumentException(sprintf('Value assigned to "%s" is not a valid section', $this->getName()));
+        }
+        parent::setValue($value, $notify);
     }
-    if ($value && !$value instanceof Section) {
-      throw new \InvalidArgumentException(sprintf('Value assigned to "%s" is not a valid section', $this->getName()));
-    }
-    parent::setValue($value, $notify);
-  }
 
 }

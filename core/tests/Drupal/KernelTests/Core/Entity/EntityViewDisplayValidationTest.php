@@ -21,85 +21,89 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Validation')]
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class EntityViewDisplayValidationTest extends ConfigEntityValidationTestBase {
+class EntityViewDisplayValidationTest extends ConfigEntityValidationTestBase
+{
+    use ContentTypeCreationTrait;
 
-  use ContentTypeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected bool $hasLabel = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected bool $hasLabel = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'field', 'node', 'text', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'field', 'node', 'text', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('node');
+        $this->installConfig('node');
+        $this->createContentType(['type' => 'one']);
+        $this->createContentType(['type' => 'two']);
 
-    $this->installEntitySchema('node');
-    $this->installConfig('node');
-    $this->createContentType(['type' => 'one']);
-    $this->createContentType(['type' => 'two']);
+        EntityTestBundle::create(['id' => 'one'])->save();
+        EntityTestBundle::create(['id' => 'two'])->save();
 
-    EntityTestBundle::create(['id' => 'one'])->save();
-    EntityTestBundle::create(['id' => 'two'])->save();
+        EntityViewMode::create([
+          'id' => 'node.test',
+          'label' => 'Test',
+          'targetEntityType' => 'node',
+        ])->save();
 
-    EntityViewMode::create([
-      'id' => 'node.test',
-      'label' => 'Test',
-      'targetEntityType' => 'node',
-    ])->save();
+        $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
+          ->getViewDisplay('node', 'one', 'test');
+        $this->entity->save();
+    }
 
-    $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
-      ->getViewDisplay('node', 'one', 'test');
-    $this->entity->save();
-  }
+    /**
+     * Tests that the plugin ID of a Layout Builder section is validated.
+     */
+    public function testLayoutSectionPluginIdIsValidated(): void
+    {
+        $this->enableModules(['layout_builder', 'layout_discovery']);
 
-  /**
-   * Tests that the plugin ID of a Layout Builder section is validated.
-   */
-  public function testLayoutSectionPluginIdIsValidated(): void {
-    $this->enableModules(['layout_builder', 'layout_discovery']);
+        $this->entity = $this->container->get('entity_display.repository')
+          ->getViewDisplay('user', 'user');
+        $this->assertInstanceOf(LayoutEntityDisplayInterface::class, $this->entity);
+        $this->entity->enableLayoutBuilder()->save();
+        $sections = array_map(fn (Section $section) => $section->toArray(), $this->entity->getSections());
+        $this->assertCount(1, $sections);
+        $sections[0]['layout_id'] = 'non_existent';
 
-    $this->entity = $this->container->get('entity_display.repository')
-      ->getViewDisplay('user', 'user');
-    $this->assertInstanceOf(LayoutEntityDisplayInterface::class, $this->entity);
-    $this->entity->enableLayoutBuilder()->save();
-    $sections = array_map(fn(Section $section) => $section->toArray(), $this->entity->getSections());
-    $this->assertCount(1, $sections);
-    $sections[0]['layout_id'] = 'non_existent';
+        $this->entity->setThirdPartySetting('layout_builder', 'sections', $sections);
+        $this->assertValidationErrors([
+          'third_party_settings.layout_builder.sections.0.layout_id' => "The 'non_existent' plugin does not exist.",
+        ]);
+    }
 
-    $this->entity->setThirdPartySetting('layout_builder', 'sections', $sections);
-    $this->assertValidationErrors([
-      'third_party_settings.layout_builder.sections.0.layout_id' => "The 'non_existent' plugin does not exist.",
-    ]);
-  }
+    /**
+     * Tests that the target bundle of the entity view display is checked.
+     */
+    public function testTargetBundleMustExist(): void
+    {
+        $this->entity->set('bundle', 'superhero');
+        $this->assertValidationErrors([
+          '' => "The 'bundle' property cannot be changed.",
+          'bundle' => "The 'superhero' bundle does not exist on the 'node' entity type.",
+        ]);
+    }
 
-  /**
-   * Tests that the target bundle of the entity view display is checked.
-   */
-  public function testTargetBundleMustExist(): void {
-    $this->entity->set('bundle', 'superhero');
-    $this->assertValidationErrors([
-      '' => "The 'bundle' property cannot be changed.",
-      'bundle' => "The 'superhero' bundle does not exist on the 'node' entity type.",
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testImmutableProperties(array $valid_values = []): void {
-    parent::testImmutableProperties([
-      'id' => 'entity_test_with_bundle.two.full',
-      'targetEntityType' => 'entity_test_with_bundle',
-      'bundle' => 'two',
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testImmutableProperties(array $valid_values = []): void
+    {
+        parent::testImmutableProperties([
+          'id' => 'entity_test_with_bundle.two.full',
+          'targetEntityType' => 'entity_test_with_bundle',
+          'bundle' => 'two',
+        ]);
+    }
 
 }

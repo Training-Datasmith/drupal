@@ -13,32 +13,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class TestingProfileInstallTest extends BrowserTestBase {
+class TestingProfileInstallTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'testing';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'testing';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Ensure the Update Status module is installed.
+     */
+    public function testUpdateModuleInstall(): void
+    {
+        $this->assertTrue(\Drupal::moduleHandler()->moduleExists('update'));
+    }
 
-  /**
-   * Ensure the Update Status module is installed.
-   */
-  public function testUpdateModuleInstall(): void {
-    $this->assertTrue(\Drupal::moduleHandler()->moduleExists('update'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function installParameters() {
-    $params = parent::installParameters();
-    $params['forms']['install_configure_form']['enable_update_status_module'] = TRUE;
-    return $params;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function installParameters()
+    {
+        $params = parent::installParameters();
+        $params['forms']['install_configure_form']['enable_update_status_module'] = true;
+        return $params;
+    }
 
 }

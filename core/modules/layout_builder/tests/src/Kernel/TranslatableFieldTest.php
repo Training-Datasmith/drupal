@@ -21,68 +21,70 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('layout_builder')]
 #[RunTestsInSeparateProcesses]
-class TranslatableFieldTest extends KernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'layout_discovery',
-    'layout_builder',
-    'entity_test',
-    'field',
-    'user',
-    'language',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->installEntitySchema('entity_test');
-
-    // Create a translation.
-    ConfigurableLanguage::createFromLangcode('es')->save();
-
-    LayoutBuilderEntityViewDisplay::create([
-      'targetEntityType' => 'entity_test',
-      'bundle' => 'entity_test',
-      'mode' => 'default',
-      'status' => TRUE,
-    ])
-      ->enableLayoutBuilder()
-      ->setOverridable()
-      ->save();
-
-    FieldStorageConfig::loadByName('entity_test', OverridesSectionStorage::FIELD_NAME)
-      ->setTranslatable(TRUE)
-      ->save();
-    FieldConfig::loadByName('entity_test', 'entity_test', OverridesSectionStorage::FIELD_NAME)
-      ->setTranslatable(TRUE)
-      ->save();
-  }
-
-  /**
-   * Tests that sections on cleared when creating a new translation.
-   */
-  public function testSectionsClearedOnCreateTranslation(): void {
-    $section_data = [
-      new Section('layout_onecol', [], [
-        '10000000-0000-1000-a000-000000000000' => new SectionComponent('10000000-0000-1000-a000-000000000000', 'content', ['id' => 'foo']),
-      ]),
+class TranslatableFieldTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'layout_discovery',
+      'layout_builder',
+      'entity_test',
+      'field',
+      'user',
+      'language',
     ];
-    $entity = EntityTest::create([OverridesSectionStorage::FIELD_NAME => $section_data]);
-    $entity->save();
-    $this->assertFalse($entity->get(OverridesSectionStorage::FIELD_NAME)->isEmpty());
 
-    $entity = EntityTest::load($entity->id());
-    /** @var \Drupal\entity_test\Entity\EntityTest $translation */
-    $translation = $entity->addTranslation('es', $entity->toArray());
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    // Per-language layouts are not supported.
-    $this->assertTrue($translation->get(OverridesSectionStorage::FIELD_NAME)->isEmpty());
-  }
+        $this->installEntitySchema('entity_test');
+
+        // Create a translation.
+        ConfigurableLanguage::createFromLangcode('es')->save();
+
+        LayoutBuilderEntityViewDisplay::create([
+          'targetEntityType' => 'entity_test',
+          'bundle' => 'entity_test',
+          'mode' => 'default',
+          'status' => true,
+        ])
+          ->enableLayoutBuilder()
+          ->setOverridable()
+          ->save();
+
+        FieldStorageConfig::loadByName('entity_test', OverridesSectionStorage::FIELD_NAME)
+          ->setTranslatable(true)
+          ->save();
+        FieldConfig::loadByName('entity_test', 'entity_test', OverridesSectionStorage::FIELD_NAME)
+          ->setTranslatable(true)
+          ->save();
+    }
+
+    /**
+     * Tests that sections on cleared when creating a new translation.
+     */
+    public function testSectionsClearedOnCreateTranslation(): void
+    {
+        $section_data = [
+          new Section('layout_onecol', [], [
+            '10000000-0000-1000-a000-000000000000' => new SectionComponent('10000000-0000-1000-a000-000000000000', 'content', ['id' => 'foo']),
+          ]),
+        ];
+        $entity = EntityTest::create([OverridesSectionStorage::FIELD_NAME => $section_data]);
+        $entity->save();
+        $this->assertFalse($entity->get(OverridesSectionStorage::FIELD_NAME)->isEmpty());
+
+        $entity = EntityTest::load($entity->id());
+        /** @var \Drupal\entity_test\Entity\EntityTest $translation */
+        $translation = $entity->addTranslation('es', $entity->toArray());
+
+        // Per-language layouts are not supported.
+        $this->assertTrue($translation->get(OverridesSectionStorage::FIELD_NAME)->isEmpty());
+    }
 
 }

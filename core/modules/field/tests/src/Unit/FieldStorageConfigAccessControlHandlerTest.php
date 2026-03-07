@@ -23,170 +23,173 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(FieldStorageConfigAccessControlHandler::class)]
 #[Group('field')]
-class FieldStorageConfigAccessControlHandlerTest extends UnitTestCase {
+class FieldStorageConfigAccessControlHandlerTest extends UnitTestCase
+{
+    /**
+     * The field storage config access controller to test.
+     *
+     * @var \Drupal\field\FieldStorageConfigAccessControlHandler
+     */
+    protected $accessControlHandler;
 
-  /**
-   * The field storage config access controller to test.
-   *
-   * @var \Drupal\field\FieldStorageConfigAccessControlHandler
-   */
-  protected $accessControlHandler;
+    /**
+     * The mock module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandlerInterface
+     */
+    protected $moduleHandler;
 
-  /**
-   * The mock module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
+    /**
+     * The mock account without field storage config access.
+     *
+     * @var \Drupal\Core\Session\AccountInterface
+     */
+    protected $anon;
 
-  /**
-   * The mock account without field storage config access.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $anon;
+    /**
+     * The mock account with field storage config access.
+     *
+     * @var \Drupal\Core\Session\AccountInterface
+     */
+    protected $member;
 
-  /**
-   * The mock account with field storage config access.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $member;
+    /**
+     * The FieldStorageConfig entity used for testing.
+     *
+     * @var \Drupal\field\FieldStorageConfigInterface
+     */
+    protected $entity;
 
-  /**
-   * The FieldStorageConfig entity used for testing.
-   *
-   * @var \Drupal\field\FieldStorageConfigInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->anon = $this->createMock(AccountInterface::class);
+        $this->anon
+          ->expects($this->any())
+          ->method('hasPermission')
+          ->willReturn(false);
+        $this->anon
+          ->expects($this->any())
+          ->method('id')
+          ->willReturn(0);
 
-    $this->anon = $this->createMock(AccountInterface::class);
-    $this->anon
-      ->expects($this->any())
-      ->method('hasPermission')
-      ->willReturn(FALSE);
-    $this->anon
-      ->expects($this->any())
-      ->method('id')
-      ->willReturn(0);
+        $this->member = $this->createMock(AccountInterface::class);
+        $this->member
+          ->expects($this->any())
+          ->method('hasPermission')
+          ->willReturnMap([
+            ['administer node fields', true],
+          ]);
+        $this->member
+          ->expects($this->any())
+          ->method('id')
+          ->willReturn(2);
 
-    $this->member = $this->createMock(AccountInterface::class);
-    $this->member
-      ->expects($this->any())
-      ->method('hasPermission')
-      ->willReturnMap([
-        ['administer node fields', TRUE],
-      ]);
-    $this->member
-      ->expects($this->any())
-      ->method('id')
-      ->willReturn(2);
+        $storageType = $this->createMock(ConfigEntityTypeInterface::class);
+        $storageType
+          ->expects($this->any())
+          ->method('getProvider')
+          ->willReturn('field');
+        $storageType
+          ->expects($this->any())
+          ->method('getConfigPrefix')
+          ->willReturn('field.storage');
 
-    $storageType = $this->createMock(ConfigEntityTypeInterface::class);
-    $storageType
-      ->expects($this->any())
-      ->method('getProvider')
-      ->willReturn('field');
-    $storageType
-      ->expects($this->any())
-      ->method('getConfigPrefix')
-      ->willReturn('field.storage');
+        $entityType = $this->createMock(ConfigEntityTypeInterface::class);
+        $entityType
+          ->expects($this->any())
+          ->method('getProvider')
+          ->willReturn('node');
+        $entityType
+          ->expects($this->any())
+          ->method('getConfigPrefix')
+          ->willReturn('node');
 
-    $entityType = $this->createMock(ConfigEntityTypeInterface::class);
-    $entityType
-      ->expects($this->any())
-      ->method('getProvider')
-      ->willReturn('node');
-    $entityType
-      ->expects($this->any())
-      ->method('getConfigPrefix')
-      ->willReturn('node');
+        $this->moduleHandler = $this->createMock(ModuleHandlerInterface::class);
+        $this->moduleHandler
+          ->expects($this->any())
+          ->method('invokeAll')
+          ->willReturn([]);
 
-    $this->moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $this->moduleHandler
-      ->expects($this->any())
-      ->method('invokeAll')
-      ->willReturn([]);
+        $storage_access_control_handler = new FieldStorageConfigAccessControlHandler($storageType);
+        $storage_access_control_handler->setModuleHandler($this->moduleHandler);
 
-    $storage_access_control_handler = new FieldStorageConfigAccessControlHandler($storageType);
-    $storage_access_control_handler->setModuleHandler($this->moduleHandler);
+        $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+        $entity_type_manager
+          ->expects($this->any())
+          ->method('getDefinition')
+          ->willReturnMap([
+            ['field_storage_config', true, $storageType],
+            ['node', true, $entityType],
+          ]);
+        $entity_type_manager
+          ->expects($this->any())
+          ->method('getStorage')
+          ->willReturnMap([
+            ['field_storage_config', $this->createMock(EntityStorageInterface::class)],
+          ]);
+        $entity_type_manager
+          ->expects($this->any())
+          ->method('getAccessControlHandler')
+          ->willReturnMap([
+            ['field_storage_config', $storage_access_control_handler],
+          ]);
 
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager
-      ->expects($this->any())
-      ->method('getDefinition')
-      ->willReturnMap([
-        ['field_storage_config', TRUE, $storageType],
-        ['node', TRUE, $entityType],
-      ]);
-    $entity_type_manager
-      ->expects($this->any())
-      ->method('getStorage')
-      ->willReturnMap([
-        ['field_storage_config', $this->createMock(EntityStorageInterface::class)],
-      ]);
-    $entity_type_manager
-      ->expects($this->any())
-      ->method('getAccessControlHandler')
-      ->willReturnMap([
-        ['field_storage_config', $storage_access_control_handler],
-      ]);
+        $container = new Container();
+        $container->set('entity_type.manager', $entity_type_manager);
+        $container->set('uuid', $this->createMock(UuidInterface::class));
+        $container->set('cache_contexts_manager', $this->prophesize(CacheContextsManager::class));
+        \Drupal::setContainer($container);
 
-    $container = new Container();
-    $container->set('entity_type.manager', $entity_type_manager);
-    $container->set('uuid', $this->createMock(UuidInterface::class));
-    $container->set('cache_contexts_manager', $this->prophesize(CacheContextsManager::class));
-    \Drupal::setContainer($container);
+        $this->entity = new FieldStorageConfig([
+          'field_name' => 'test_field',
+          'entity_type' => 'node',
+          'type' => 'boolean',
+          'id' => 'node.test_field',
+          'uuid' => '6f2f259a-f3c7-42ea-bdd5-111ad1f85ed1',
+        ]);
 
-    $this->entity = new FieldStorageConfig([
-      'field_name' => 'test_field',
-      'entity_type' => 'node',
-      'type' => 'boolean',
-      'id' => 'node.test_field',
-      'uuid' => '6f2f259a-f3c7-42ea-bdd5-111ad1f85ed1',
-    ]);
-
-    $this->accessControlHandler = $storage_access_control_handler;
-  }
-
-  /**
-   * Assert method to verify the access by operations.
-   *
-   * @param array $allow_operations
-   *   A list of allowed operations.
-   * @param \Drupal\Core\Session\AccountInterface $user
-   *   The account to use for get access.
-   *
-   * @internal
-   */
-  public function assertAllowOperations(array $allow_operations, AccountInterface $user): void {
-    foreach (['view', 'update', 'delete'] as $operation) {
-      $expected = in_array($operation, $allow_operations);
-      $actual = $this->accessControlHandler->access($this->entity, $operation, $user);
-      $this->assertSame($expected, $actual, "Access problem with '$operation' operation.");
+        $this->accessControlHandler = $storage_access_control_handler;
     }
-  }
 
-  /**
-   * Ensures field storage config access is working properly.
-   */
-  public function testAccess(): void {
-    $this->assertAllowOperations([], $this->anon);
-    $this->assertAllowOperations(['view', 'update', 'delete'], $this->member);
+    /**
+     * Assert method to verify the access by operations.
+     *
+     * @param array $allow_operations
+     *   A list of allowed operations.
+     * @param \Drupal\Core\Session\AccountInterface $user
+     *   The account to use for get access.
+     *
+     * @internal
+     */
+    public function assertAllowOperations(array $allow_operations, AccountInterface $user): void
+    {
+        foreach (['view', 'update', 'delete'] as $operation) {
+            $expected = in_array($operation, $allow_operations);
+            $actual = $this->accessControlHandler->access($this->entity, $operation, $user);
+            $this->assertSame($expected, $actual, "Access problem with '$operation' operation.");
+        }
+    }
 
-    $this->entity->setLocked(TRUE)->save();
-    // Unfortunately, EntityAccessControlHandler has a static cache, which we
-    // therefore must reset manually.
-    $this->accessControlHandler->resetCache();
+    /**
+     * Ensures field storage config access is working properly.
+     */
+    public function testAccess(): void
+    {
+        $this->assertAllowOperations([], $this->anon);
+        $this->assertAllowOperations(['view', 'update', 'delete'], $this->member);
 
-    $this->assertAllowOperations([], $this->anon);
-    $this->assertAllowOperations(['view', 'update'], $this->member);
-  }
+        $this->entity->setLocked(true)->save();
+        // Unfortunately, EntityAccessControlHandler has a static cache, which we
+        // therefore must reset manually.
+        $this->accessControlHandler->resetCache();
+
+        $this->assertAllowOperations([], $this->anon);
+        $this->assertAllowOperations(['view', 'update'], $this->member);
+    }
 
 }

@@ -12,8 +12,10 @@ use Drupal\Core\Validation\Attribute\Constraint;
  * A dummy constraint for testing \Drupal\Core\Validation\ConstraintFactory.
  */
 #[Constraint(
-  id: 'EntityTestDefaultPlugin',
-  label: new TranslatableMarkup('Constraint that extends PluginBase.'),
-  type: 'entity'
+    id: 'EntityTestDefaultPlugin',
+    label: new TranslatableMarkup('Constraint that extends PluginBase.'),
+    type: 'entity'
 )]
-class EntityTestDefaultPlugin extends PluginBase {}
+class EntityTestDefaultPlugin extends PluginBase
+{
+}

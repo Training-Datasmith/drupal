@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Schema;
 
 /**
  * Undefined configuration element.
  */
-class Undefined extends Element {
-
+class Undefined extends Element
+{
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Language;
 
 /**
@@ -12,43 +14,46 @@ namespace Drupal\Core\Language;
  * override this parameter in a ServiceProvider, for example,
  * \Drupal\language\LanguageServiceProvider::alter().
  */
-class LanguageDefault {
+class LanguageDefault
+{
+    /**
+     * The default language.
+     *
+     * @var \Drupal\Core\Language\LanguageInterface
+     */
+    protected $language;
 
-  /**
-   * The default language.
-   *
-   * @var \Drupal\Core\Language\LanguageInterface
-   */
-  protected $language;
+    /**
+     * Constructs the default language object.
+     *
+     * @param array $values
+     *   The properties used to construct the default language.
+     */
+    public function __construct(array $values)
+    {
+        $this->set(new Language($values));
+    }
 
-  /**
-   * Constructs the default language object.
-   *
-   * @param array $values
-   *   The properties used to construct the default language.
-   */
-  public function __construct(array $values) {
-    $this->set(new Language($values));
-  }
+    /**
+     * Gets the default language.
+     *
+     * @return \Drupal\Core\Language\LanguageInterface
+     *   The default language.
+     */
+    public function get()
+    {
+        return $this->language;
+    }
 
-  /**
-   * Gets the default language.
-   *
-   * @return \Drupal\Core\Language\LanguageInterface
-   *   The default language.
-   */
-  public function get() {
-    return $this->language;
-  }
-
-  /**
-   * Sets the default language.
-   *
-   * @param \Drupal\Core\Language\LanguageInterface $language
-   *   The default language.
-   */
-  public function set(LanguageInterface $language): void {
-    $this->language = $language;
-  }
+    /**
+     * Sets the default language.
+     *
+     * @param \Drupal\Core\Language\LanguageInterface $language
+     *   The default language.
+     */
+    public function set(LanguageInterface $language): void
+    {
+        $this->language = $language;
+    }
 
 }

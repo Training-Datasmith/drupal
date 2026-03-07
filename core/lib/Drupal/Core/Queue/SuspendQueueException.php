@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue;
 
 /**
@@ -12,46 +14,49 @@ namespace Drupal\Core\Queue;
  * that workers of subsequent items would encounter it too. For example, if a
  * remote site that the queue worker depends on appears to be inaccessible.
  */
-class SuspendQueueException extends \RuntimeException {
+class SuspendQueueException extends \RuntimeException
+{
+    /**
+     * Constructs a SuspendQueueException.
+     *
+     * @param string $message
+     *   The error message.
+     * @param int $code
+     *   The error code.
+     * @param \Throwable|null $previous
+     *   The previous throwable used for the exception chaining.
+     * @param float|null $delay
+     *   If the time for when the queue will be ready to resume processing is
+     *   known, pass an interval in seconds. Otherwise NULL if the time to resume
+     *   processing the queue is not known.
+     */
+    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, protected ?float $delay = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 
-  /**
-   * Constructs a SuspendQueueException.
-   *
-   * @param string $message
-   *   The error message.
-   * @param int $code
-   *   The error code.
-   * @param \Throwable|null $previous
-   *   The previous throwable used for the exception chaining.
-   * @param float|null $delay
-   *   If the time for when the queue will be ready to resume processing is
-   *   known, pass an interval in seconds. Otherwise NULL if the time to resume
-   *   processing the queue is not known.
-   */
-  public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = NULL, protected ?float $delay = NULL) {
-    parent::__construct($message, $code, $previous);
-  }
+    /**
+     * Get the desired delay interval for this item.
+     *
+     * @return float|null
+     *   If the time for when the queue will be ready to resume processing is
+     *   known, pass an interval in seconds. Otherwise NULL if the time to resume
+     *   processing the queue is not known.
+     */
+    public function getDelay(): ?float
+    {
+        return $this->delay;
+    }
 
-  /**
-   * Get the desired delay interval for this item.
-   *
-   * @return float|null
-   *   If the time for when the queue will be ready to resume processing is
-   *   known, pass an interval in seconds. Otherwise NULL if the time to resume
-   *   processing the queue is not known.
-   */
-  public function getDelay(): ?float {
-    return $this->delay;
-  }
-
-  /**
-   * Determine whether the next time the queue should be checked is known.
-   *
-   * @return bool
-   *   Whether the time to resume processing the queue is known.
-   */
-  public function isDelayable(): bool {
-    return isset($this->delay);
-  }
+    /**
+     * Determine whether the next time the queue should be checked is known.
+     *
+     * @return bool
+     *   Whether the time to resume processing the queue is known.
+     */
+    public function isDelayable(): bool
+    {
+        return isset($this->delay);
+    }
 
 }

@@ -12,34 +12,37 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class ViewsTestDataElementEmbedForm extends FormBase {
+class ViewsTestDataElementEmbedForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'views_test_data_element_embed_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'views_test_data_element_embed_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['view'] = [
+          '#type' => 'view',
+          '#name' => 'test_view_embed',
+          '#display_id' => 'embed_1',
+          '#arguments' => [25],
+          '#embed' => true,
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['view'] = [
-      '#type' => 'view',
-      '#name' => 'test_view_embed',
-      '#display_id' => 'embed_1',
-      '#arguments' => [25],
-      '#embed' => TRUE,
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

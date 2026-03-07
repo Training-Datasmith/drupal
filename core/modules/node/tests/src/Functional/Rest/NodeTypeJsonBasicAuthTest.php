@@ -13,33 +13,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class NodeTypeJsonBasicAuthTest extends NodeTypeResourceTestBase {
+class NodeTypeJsonBasicAuthTest extends NodeTypeResourceTestBase
+{
+    use BasicAuthResourceTestTrait;
 
-  use BasicAuthResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['basic_auth'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['basic_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'basic_auth';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'basic_auth';
 
 }

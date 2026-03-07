@@ -15,25 +15,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('big_pipe')]
 #[RunTestsInSeparateProcesses]
-class SerializeResponseTest extends KernelTestBase {
+class SerializeResponseTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['big_pipe'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['big_pipe'];
+    /**
+     * Tests that big_pipe responses can be serialized.
+     *
+     * @throws \Exception
+     */
+    public function testSerialize(): void
+    {
+        $response = new BigPipeResponse(new HtmlResponse());
+        $this->assertIsString(serialize($response));
 
-  /**
-   * Tests that big_pipe responses can be serialized.
-   *
-   * @throws \Exception
-   */
-  public function testSerialize(): void {
-    $response = new BigPipeResponse(new HtmlResponse());
-    $this->assertIsString(serialize($response));
-
-    // Checks that the response can be serialized after the big_pipe service is injected.
-    $response->setBigPipeService($this->container->get('big_pipe'));
-    $this->assertIsString(serialize($response));
-  }
+        // Checks that the response can be serialized after the big_pipe service is injected.
+        $response->setBigPipeService($this->container->get('big_pipe'));
+        $this->assertIsString(serialize($response));
+    }
 
 }

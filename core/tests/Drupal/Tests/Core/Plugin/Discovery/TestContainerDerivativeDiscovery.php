@@ -11,22 +11,24 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 /**
  * Defines container test derivative discovery.
  */
-class TestContainerDerivativeDiscovery extends TestDerivativeDiscovery implements ContainerDeriverInterface {
+class TestContainerDerivativeDiscovery extends TestDerivativeDiscovery implements ContainerDeriverInterface
+{
+    /**
+     * Constructs a TestContainerDerivativeDiscovery object.
+     *
+     * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $example_service
+     *   Some service.
+     */
+    public function __construct(EventDispatcherInterface $example_service)
+    {
+    }
 
-  /**
-   * Constructs a TestContainerDerivativeDiscovery object.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $example_service
-   *   Some service.
-   */
-  public function __construct(EventDispatcherInterface $example_service) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static($container->get('example_service'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static($container->get('example_service'));
+    }
 
 }

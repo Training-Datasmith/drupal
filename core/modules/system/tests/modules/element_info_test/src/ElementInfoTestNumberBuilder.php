@@ -11,20 +11,22 @@ use Drupal\Core\Security\TrustedCallbackInterface;
  *
  * @see element_info_test_element_info_alter()
  */
-class ElementInfoTestNumberBuilder implements TrustedCallbackInterface {
+class ElementInfoTestNumberBuilder implements TrustedCallbackInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function trustedCallbacks()
+    {
+        return ['preRender'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks() {
-    return ['preRender'];
-  }
-
-  /**
-   * Sets element_info_test - #pre_render callback.
-   */
-  public static function preRender(array $element): array {
-    return $element;
-  }
+    /**
+     * Sets element_info_test - #pre_render callback.
+     */
+    public static function preRender(array $element): array
+    {
+        return $element;
+    }
 
 }

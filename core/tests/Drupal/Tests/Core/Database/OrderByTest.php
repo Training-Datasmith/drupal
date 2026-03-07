@@ -15,42 +15,45 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests the orderBy() method of select queries.
  */
 #[Group('Database')]
-class OrderByTest extends UnitTestCase {
+class OrderByTest extends UnitTestCase
+{
+    /**
+     * The select query object to test.
+     *
+     * @var \Drupal\Core\Database\Query\Select
+     */
+    protected $query;
 
-  /**
-   * The select query object to test.
-   *
-   * @var \Drupal\Core\Database\Query\Select
-   */
-  protected $query;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $mockPdo = $this->createMock(StubPDO::class);
+        $connection = new StubConnection($mockPdo, []);
+        $this->query = new Select($connection, 'test', null);
+    }
 
-    $mockPdo = $this->createMock(StubPDO::class);
-    $connection = new StubConnection($mockPdo, []);
-    $this->query = new Select($connection, 'test', NULL);
-  }
+    /**
+     * Checks that invalid sort directions in ORDER BY get converted to ASC.
+     */
+    public function testInvalidDirection(): void
+    {
+        $this->query->orderBy('test', 'invalid direction');
+        $order_bys = $this->query->getOrderBy();
+        $this->assertEquals('ASC', $order_bys['test'], 'Invalid order by direction is converted to ASC.');
+    }
 
-  /**
-   * Checks that invalid sort directions in ORDER BY get converted to ASC.
-   */
-  public function testInvalidDirection(): void {
-    $this->query->orderBy('test', 'invalid direction');
-    $order_bys = $this->query->getOrderBy();
-    $this->assertEquals('ASC', $order_bys['test'], 'Invalid order by direction is converted to ASC.');
-  }
-
-  /**
-   * Tests that fields passed for ordering get escaped properly.
-   */
-  public function testFieldEscaping(): void {
-    $this->query->orderBy('x; DROP table node; --');
-    $sql = $this->query->__toString();
-    $this->assertStringEndsWith('ORDER BY xDROPtablenode ASC', $sql, 'Order by field is escaped correctly.');
-  }
+    /**
+     * Tests that fields passed for ordering get escaped properly.
+     */
+    public function testFieldEscaping(): void
+    {
+        $this->query->orderBy('x; DROP table node; --');
+        $sql = $this->query->__toString();
+        $this->assertStringEndsWith('ORDER BY xDROPtablenode ASC', $sql, 'Order by field is escaped correctly.');
+    }
 
 }

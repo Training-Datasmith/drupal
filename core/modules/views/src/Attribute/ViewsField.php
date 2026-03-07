@@ -14,6 +14,6 @@ use Drupal\Component\Plugin\Attribute\PluginID;
  * @ingroup views_field_handlers
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ViewsField extends PluginID {
-
+class ViewsField extends PluginID
+{
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block;
 
 use Drupal\Component\Plugin\Exception\PluginException;
@@ -9,70 +11,73 @@ use Drupal\Core\Plugin\DefaultSingleLazyPluginCollection;
 /**
  * Provides a collection of block plugins.
  */
-class BlockPluginCollection extends DefaultSingleLazyPluginCollection {
-
-  /**
-   * Constructs a new BlockPluginCollection.
-   *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
-   *   The manager to be used for instantiating plugins.
-   * @param string $instance_id
-   *   The ID of the plugin instance.
-   * @param array $configuration
-   *   An array of configuration.
-   * @param string $blockId
-   *   The unique ID of the block entity using this plugin.
-   */
-  public function __construct(PluginManagerInterface $manager, $instance_id, array $configuration, /**
+class BlockPluginCollection extends DefaultSingleLazyPluginCollection
+{
+    /**
+     * Constructs a new BlockPluginCollection.
+     *
+     * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
+     *   The manager to be used for instantiating plugins.
+     * @param string $instance_id
+     *   The ID of the plugin instance.
+     * @param array $configuration
+     *   An array of configuration.
+     * @param string $blockId
+     *   The unique ID of the block entity using this plugin.
+     */
+    public function __construct(PluginManagerInterface $manager, $instance_id, array $configuration, /**
    * The block ID this plugin collection belongs to.
    */
-  protected $blockId) {
-    parent::__construct($manager, $instance_id, $configuration);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\Core\Block\BlockPluginInterface
-   *   The block plugin instance.
-   */
-  public function &get($instance_id) {
-    return parent::get($instance_id);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return void
-   *   Returns nothing.
-   */
-  public function addInstanceId($id, $configuration = NULL): void {
-    if (!$id) {
-      throw new PluginException("The block '{$this->blockId}' did not specify a plugin.");
-    }
-    parent::addInstanceId($id, $configuration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function initializePlugin($instance_id) {
-    if (!$instance_id) {
-      throw new PluginException("The block '{$this->blockId}' did not specify a plugin.");
+        protected $blockId)
+    {
+        parent::__construct($manager, $instance_id, $configuration);
     }
 
-    try {
-      parent::initializePlugin($instance_id);
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\Core\Block\BlockPluginInterface
+     *   The block plugin instance.
+     */
+    public function &get($instance_id)
+    {
+        return parent::get($instance_id);
     }
-    catch (PluginException $e) {
-      $module = $this->configuration['provider'];
-      // Ignore blocks belonging to uninstalled modules, but re-throw valid
-      // exceptions when the module is installed and the plugin is
-      // misconfigured.
-      if (!$module || \Drupal::moduleHandler()->moduleExists($module)) {
-        throw $e;
-      }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return void
+     *   Returns nothing.
+     */
+    public function addInstanceId($id, $configuration = null): void
+    {
+        if (!$id) {
+            throw new PluginException("The block '{$this->blockId}' did not specify a plugin.");
+        }
+        parent::addInstanceId($id, $configuration);
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializePlugin($instance_id)
+    {
+        if (!$instance_id) {
+            throw new PluginException("The block '{$this->blockId}' did not specify a plugin.");
+        }
+
+        try {
+            parent::initializePlugin($instance_id);
+        } catch (PluginException $e) {
+            $module = $this->configuration['provider'];
+            // Ignore blocks belonging to uninstalled modules, but re-throw valid
+            // exceptions when the module is installed and the plugin is
+            // misconfigured.
+            if (!$module || \Drupal::moduleHandler()->moduleExists($module)) {
+                throw $e;
+            }
+        }
+    }
 
 }

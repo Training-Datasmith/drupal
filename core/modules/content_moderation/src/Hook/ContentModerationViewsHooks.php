@@ -1,32 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Hook;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\content_moderation\ModerationInformationInterface;
 use Drupal\content_moderation\ViewsData;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Hook\Attribute\Hook;
 
 /**
  * Hook implementations for content_moderation.
  */
-class ContentModerationViewsHooks {
+class ContentModerationViewsHooks
+{
+    public function __construct(
+        protected readonly EntityTypeManagerInterface $entityTypeManager,
+        protected readonly ModerationInformationInterface $moderationInformation,
+    ) {
+    }
 
-  public function __construct(
-    protected readonly EntityTypeManagerInterface $entityTypeManager,
-    protected readonly ModerationInformationInterface $moderationInformation,
-  ) {}
-
-  /**
-   * Implements hook_views_data().
-   */
-  #[Hook('views_data')]
-  public function viewsData(): array {
-    $viewsData = new ViewsData(
-      $this->entityTypeManager,
-      $this->moderationInformation
-    );
-    return $viewsData->getViewsData();
-  }
+    /**
+     * Implements hook_views_data().
+     */
+    #[Hook('views_data')]
+    public function viewsData(): array
+    {
+        $viewsData = new ViewsData(
+            $this->entityTypeManager,
+            $this->moderationInformation
+        );
+        return $viewsData->getViewsData();
+    }
 
 }

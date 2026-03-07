@@ -15,18 +15,19 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(InlineBlockUsage::class)]
 #[Group('layout_builder')]
-class InlineBlockUsageTest extends UnitTestCase {
+class InlineBlockUsageTest extends UnitTestCase
+{
+    /**
+     * Tests calling deleteUsage() with empty array.
+     *
+     * @legacy-covers ::deleteUsage
+     */
+    public function testEmptyDeleteUsageCall(): void
+    {
+        $connection = $this->prophesize(Connection::class);
+        $connection->delete('inline_block_usage')->shouldNotBeCalled();
 
-  /**
-   * Tests calling deleteUsage() with empty array.
-   *
-   * @legacy-covers ::deleteUsage
-   */
-  public function testEmptyDeleteUsageCall(): void {
-    $connection = $this->prophesize(Connection::class);
-    $connection->delete('inline_block_usage')->shouldNotBeCalled();
-
-    (new InlineBlockUsage($connection->reveal()))->deleteUsage([]);
-  }
+        (new InlineBlockUsage($connection->reveal()))->deleteUsage([]);
+    }
 
 }

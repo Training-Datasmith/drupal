@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\MainContent;
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -13,21 +15,21 @@ use Symfony\Component\HttpFoundation\Request;
  * (HTML, JSON …) and/or in a certain decorated manner (e.g. in the case of the
  * default HTML main content renderer: with a page display variant applied).
  */
-interface MainContentRendererInterface {
-
-  /**
-   * Renders the main content render array into a response.
-   *
-   * @param array $main_content
-   *   The render array representing the main content.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request object, for context.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The route match, for context.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The Response in the format that this implementation supports.
-   */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match);
+interface MainContentRendererInterface
+{
+    /**
+     * Renders the main content render array into a response.
+     *
+     * @param array $main_content
+     *   The render array representing the main content.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request object, for context.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+     *   The route match, for context.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   The Response in the format that this implementation supports.
+     */
+    public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match);
 
 }

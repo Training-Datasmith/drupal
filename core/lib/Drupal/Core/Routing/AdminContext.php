@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 use Symfony\Component\Routing\Route;
@@ -7,36 +9,37 @@ use Symfony\Component\Routing\Route;
 /**
  * Provides a helper class to determine whether the route is an admin one.
  */
-class AdminContext {
-
-  /**
-   * Construct a new admin context helper instance.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The route match.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
-  {
-  }
-
-  /**
-   * Determines whether the active route is an admin one.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   (optional) The route to determine whether it is an admin one. Per default
-   *   this falls back to the route object on the active request.
-   *
-   * @return bool
-   *   Returns TRUE if the route is an admin one, otherwise FALSE.
-   */
-  public function isAdminRoute(?Route $route = NULL) {
-    if (!$route) {
-      $route = $this->routeMatch->getRouteObject();
-      if (!$route) {
-        return FALSE;
-      }
+class AdminContext
+{
+    /**
+     * Construct a new admin context helper instance.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The route match.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    {
     }
-    return (bool) $route->getOption('_admin_route');
-  }
+
+    /**
+     * Determines whether the active route is an admin one.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   (optional) The route to determine whether it is an admin one. Per default
+     *   this falls back to the route object on the active request.
+     *
+     * @return bool
+     *   Returns TRUE if the route is an admin one, otherwise FALSE.
+     */
+    public function isAdminRoute(?Route $route = null)
+    {
+        if (!$route) {
+            $route = $this->routeMatch->getRouteObject();
+            if (!$route) {
+                return false;
+            }
+        }
+        return (bool) $route->getOption('_admin_route');
+    }
 
 }

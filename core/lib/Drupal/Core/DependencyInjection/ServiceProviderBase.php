@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection;
 
 /**
@@ -7,18 +9,20 @@ namespace Drupal\Core\DependencyInjection;
  *
  * @ingroup container
  */
-abstract class ServiceProviderBase implements ServiceProviderInterface, ServiceModifierInterface {
+abstract class ServiceProviderBase implements ServiceProviderInterface, ServiceModifierInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container)
+    {
+    }
 
 }

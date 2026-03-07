@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form;
 
 use Drupal\Component\Utility\NestedArray;
@@ -11,73 +13,80 @@ use Drupal\Component\Utility\NestedArray;
  *
  * @ingroup form_api
  */
-trait FormStateValuesTrait {
+trait FormStateValuesTrait
+{
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::getValues()
+     */
+    abstract public function &getValues();
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::getValues()
-   */
-  abstract public function &getValues();
-
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::getValue()
-   */
-  public function &getValue($key, $default = NULL) {
-    $exists = NULL;
-    $value = &NestedArray::getValue($this->getValues(), (array) $key, $exists);
-    if (!$exists) {
-      return $default;
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::getValue()
+     */
+    public function &getValue($key, $default = null)
+    {
+        $exists = null;
+        $value = &NestedArray::getValue($this->getValues(), (array) $key, $exists);
+        if (!$exists) {
+            return $default;
+        }
+        return $value;
     }
-    return $value;
-  }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::setValues()
-   */
-  public function setValues(array $values) {
-    $existing_values = &$this->getValues();
-    $existing_values = $values;
-    return $this;
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::setValues()
+     */
+    public function setValues(array $values)
+    {
+        $existing_values = &$this->getValues();
+        $existing_values = $values;
+        return $this;
+    }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::setValue()
-   */
-  public function setValue($key, $value) {
-    NestedArray::setValue($this->getValues(), (array) $key, $value, TRUE);
-    return $this;
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::setValue()
+     */
+    public function setValue($key, $value)
+    {
+        NestedArray::setValue($this->getValues(), (array) $key, $value, true);
+        return $this;
+    }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::unsetValue()
-   */
-  public function unsetValue($key) {
-    NestedArray::unsetValue($this->getValues(), (array) $key);
-    return $this;
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::unsetValue()
+     */
+    public function unsetValue($key)
+    {
+        NestedArray::unsetValue($this->getValues(), (array) $key);
+        return $this;
+    }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::hasValue()
-   */
-  public function hasValue($key): bool {
-    $exists = NULL;
-    $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
-    return $exists && isset($value);
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::hasValue()
+     */
+    public function hasValue($key): bool
+    {
+        $exists = null;
+        $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
+        return $exists && isset($value);
+    }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::isValueEmpty()
-   */
-  public function isValueEmpty($key): bool {
-    $exists = NULL;
-    $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
-    return !$exists || empty($value);
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::isValueEmpty()
+     */
+    public function isValueEmpty($key): bool
+    {
+        $exists = null;
+        $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
+        return !$exists || empty($value);
+    }
 
-  /**
-   * Implements \Drupal\Core\Form\FormStateInterface::setValueForElement()
-   */
-  public function setValueForElement(array $element, $value) {
-    return $this->setValue($element['#parents'], $value);
-  }
+    /**
+     * Implements \Drupal\Core\Form\FormStateInterface::setValueForElement()
+     */
+    public function setValueForElement(array $element, $value)
+    {
+        return $this->setValue($element['#parents'], $value);
+    }
 
 }

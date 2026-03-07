@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -12,32 +14,32 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AddCssCommand implements CommandInterface {
+class AddCssCommand implements CommandInterface
+{
+    /**
+     * Constructs an AddCssCommand.
+     *
+     * @param string[][] $styles
+     *   Arrays containing attributes of the stylesheets to be added to the page.
+     *   i.e. `['href' => 'someURL']` becomes `<link href="someURL">`.
+     */
+    public function __construct(
+        /**
+         * Arrays containing attributes of the stylesheets to be added to the page.
+         */
+        protected array $styles
+    ) {
+    }
 
-  /**
-   * Constructs an AddCssCommand.
-   *
-   * @param string[][] $styles
-   *   Arrays containing attributes of the stylesheets to be added to the page.
-   *   i.e. `['href' => 'someURL']` becomes `<link href="someURL">`.
-   */
-  public function __construct(
-      /**
-       * Arrays containing attributes of the stylesheets to be added to the page.
-       */
-      protected array $styles
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'add_css',
-      'data' => $this->styles,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'add_css',
+          'data' => $this->styles,
+        ];
+    }
 
 }

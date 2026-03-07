@@ -16,31 +16,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('node')]
 #[CoversFunction('node_post_update_add_rebuild_permission_to_roles')]
 #[RunTestsInSeparateProcesses]
-class NodeRebuildPermissionUpdateTest extends UpdatePathTestBase {
+class NodeRebuildPermissionUpdateTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
-
-  /**
-   * Tests an update path for 'rebuild node access permissions' permission.
-   */
-  public function testRunUpdates(): void {
-    // Grant auth user with 'administer nodes' permission. And check
-    // if the new permission is added after the post_update hook is executed.
-    $this->grantPermissions(
-      Role::load(Role::AUTHENTICATED_ID),
-      ['administer nodes']
-    );
-    $this->runUpdates();
-    $this->assertTrue(Role::load(Role::AUTHENTICATED_ID)->hasPermission('rebuild node access permissions'));
-  }
+    /**
+     * Tests an update path for 'rebuild node access permissions' permission.
+     */
+    public function testRunUpdates(): void
+    {
+        // Grant auth user with 'administer nodes' permission. And check
+        // if the new permission is added after the post_update hook is executed.
+        $this->grantPermissions(
+            Role::load(Role::AUTHENTICATED_ID),
+            ['administer nodes']
+        );
+        $this->runUpdates();
+        $this->assertTrue(Role::load(Role::AUTHENTICATED_ID)->hasPermission('rebuild node access permissions'));
+    }
 
 }

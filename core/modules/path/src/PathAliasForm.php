@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path;
 
 use Drupal\Core\Entity\ContentEntityForm;
@@ -10,23 +12,24 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class PathAliasForm extends ContentEntityForm {
+class PathAliasForm extends ContentEntityForm
+{
+    /**
+     * The path_alias entity.
+     *
+     * @var \Drupal\path_alias\PathAliasInterface
+     */
+    protected $entity;
 
-  /**
-   * The path_alias entity.
-   *
-   * @var \Drupal\path_alias\PathAliasInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state): void
+    {
+        parent::save($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state): void {
-    parent::save($form, $form_state);
-
-    $this->messenger()->addStatus($this->t('The alias has been saved.'));
-    $form_state->setRedirect('entity.path_alias.collection');
-  }
+        $this->messenger()->addStatus($this->t('The alias has been saved.'));
+        $form_state->setRedirect('entity.path_alias.collection');
+    }
 
 }

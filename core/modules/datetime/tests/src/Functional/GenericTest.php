@@ -13,4 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('datetime')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {}
+class GenericTest extends GenericModuleTestBase
+{
+}

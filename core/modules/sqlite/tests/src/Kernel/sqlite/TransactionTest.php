@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class TransactionTest extends DriverSpecificTransactionTestBase {
+class TransactionTest extends DriverSpecificTransactionTestBase
+{
 }

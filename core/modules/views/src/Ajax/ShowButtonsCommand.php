@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -10,32 +12,31 @@ use Drupal\Core\Ajax\CommandInterface;
  * This command is implemented in
  * Drupal.AjaxCommands.prototype.viewsShowButtons.
  */
-class ShowButtonsCommand implements CommandInterface {
+class ShowButtonsCommand implements CommandInterface
+{
+    /**
+     * Constructs a \Drupal\views\Ajax\ShowButtonsCommand object.
+     *
+     * @param bool $changed
+     *   Whether the view has been changed.
+     */
+    public function __construct(
+        /**
+         * Whether the view has been changed.
+         */
+        protected $changed
+    ) {
+    }
 
-
-  /**
-   * Constructs a \Drupal\views\Ajax\ShowButtonsCommand object.
-   *
-   * @param bool $changed
-   *   Whether the view has been changed.
-   */
-  public function __construct(
-      /**
-       * Whether the view has been changed.
-       */
-      protected $changed
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'viewsShowButtons',
-      'changed' => $this->changed,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'viewsShowButtons',
+          'changed' => $this->changed,
+        ];
+    }
 
 }

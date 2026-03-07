@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -12,62 +14,67 @@ use Drupal\Core\Render\BubbleableMetadata;
  *   links that are not generated (typically link text + route name + route
  *   parameters).
  */
-class GeneratedLink extends BubbleableMetadata implements MarkupInterface, \Countable {
+class GeneratedLink extends BubbleableMetadata implements MarkupInterface, \Countable
+{
+    /**
+     * HTML tag to use when building the link.
+     */
+    public const TAG = 'a';
 
-  /**
-   * HTML tag to use when building the link.
-   */
-  const TAG = 'a';
+    /**
+     * The HTML string value containing a link.
+     *
+     * @var string
+     */
+    protected $generatedLink = '';
 
-  /**
-   * The HTML string value containing a link.
-   *
-   * @var string
-   */
-  protected $generatedLink = '';
+    /**
+     * Gets the generated link.
+     *
+     * @return string
+     *   The generated link.
+     */
+    public function getGeneratedLink()
+    {
+        return $this->generatedLink;
+    }
 
-  /**
-   * Gets the generated link.
-   *
-   * @return string
-   *   The generated link.
-   */
-  public function getGeneratedLink() {
-    return $this->generatedLink;
-  }
+    /**
+     * Sets the generated link.
+     *
+     * @param string $generated_link
+     *   The generated link.
+     *
+     * @return $this
+     */
+    public function setGeneratedLink($generated_link): static
+    {
+        $this->generatedLink = $generated_link;
+        return $this;
+    }
 
-  /**
-   * Sets the generated link.
-   *
-   * @param string $generated_link
-   *   The generated link.
-   *
-   * @return $this
-   */
-  public function setGeneratedLink($generated_link): static {
-    $this->generatedLink = $generated_link;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return (string) $this->generatedLink;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return (string) $this->generatedLink;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize(): string
+    {
+        return $this->__toString();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function jsonSerialize(): string {
-    return $this->__toString();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function count(): int {
-    return mb_strlen($this->__toString());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return mb_strlen($this->__toString());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\navigation\Plugin\SectionStorage;
 
 use Drupal\Core\Access\AccessResult;
@@ -30,176 +32,196 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @internal
  */
-#[SectionStorage(id: "navigation",
-  context_definitions: [
-    "navigation" => new ContextDefinition(
-      data_type: "string",
-      label: new TranslatableMarkup("Navigation flag"),
+#[SectionStorage(
+    id: 'navigation',
+    context_definitions: [
+    'navigation' => new ContextDefinition(
+        data_type: 'string',
+        label: new TranslatableMarkup('Navigation flag'),
     ),
   ],
-  handles_permission_check: TRUE,
-  allow_inline_blocks: FALSE,
+    handles_permission_check: true,
+    allow_inline_blocks: false,
 )]
-final class NavigationSectionStorage extends PluginBase implements SectionStorageInterface, SectionStorageLocalTaskProviderInterface, ContainerFactoryPluginInterface, CacheableDependencyInterface, SupportAwareSectionStorageInterface {
+final class NavigationSectionStorage extends PluginBase implements SectionStorageInterface, SectionStorageLocalTaskProviderInterface, ContainerFactoryPluginInterface, CacheableDependencyInterface, SupportAwareSectionStorageInterface
+{
+    use ContextAwarePluginTrait;
+    use LayoutBuilderRoutesTrait;
+    use SectionListTrait;
 
-  const STORAGE_ID = 'navigation.block_layout';
-  use ContextAwarePluginTrait;
-  use LayoutBuilderRoutesTrait;
-  use SectionListTrait;
+    public const STORAGE_ID = 'navigation.block_layout';
 
-  /**
-   * An array of sections.
-   *
-   * @var \Drupal\layout_builder\Section[]|null
-   */
-  protected $sections;
+    /**
+     * An array of sections.
+     *
+     * @var \Drupal\layout_builder\Section[]|null
+     */
+    protected $sections;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
    * The config factory.
    */
-  protected ConfigFactoryInterface $configFactory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageType(): string {
-    return $this->getPluginId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageId(): string {
-    return self::STORAGE_ID;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label(): string {
-    return 'Navigation layout';
-  }
-
-  /**
-   * Returns the name to be used to store in the config system.
-   */
-  protected function getConfigName(): string {
-    return self::STORAGE_ID;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSections(): array {
-    if (is_null($this->sections)) {
-      $sections = $this->configFactory->get($this->getConfigName())->get('sections') ?: [];
-      $this->setSections(array_map([Section::class, 'fromArray'], $sections));
+        protected ConfigFactoryInterface $configFactory)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $this->sections;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setSections(array $sections): static {
-    $this->sections = array_values($sections);
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageType(): string
+    {
+        return $this->getPluginId();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save(): int {
-    $sections = array_map(fn(Section $section) => $section->toArray(), $this->getSections());
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageId(): string
+    {
+        return self::STORAGE_ID;
+    }
 
-    $config = $this->configFactory->getEditable($this->getConfigName());
-    $return = $config->get('sections') ? SAVED_UPDATED : SAVED_NEW;
-    $config->set('sections', $sections)->save();
-    return $return;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function label(): string
+    {
+        return 'Navigation layout';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRoutes(RouteCollection $collection): void {
-    $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), '/admin/config/user-interface/navigation-block');
-    $default_route = 'layout_builder.' . $this->getPluginDefinition()->id() . '.view';
-    $route = $collection->get($default_route);
-    // Use a form for editing the layout instead of a controller.
-    $defaults = $route->getDefaults();
-    $defaults['_form'] = LayoutForm::class;
-    unset($defaults['_controller']);
-    $route->setDefaults($defaults);
-  }
+    /**
+     * Returns the name to be used to store in the config system.
+     */
+    protected function getConfigName(): string
+    {
+        return self::STORAGE_ID;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array {
-    return ['navigation' => new Context(new ContextDefinition('string'), 'navigation')];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSections(): array
+    {
+        if (is_null($this->sections)) {
+            $sections = $this->configFactory->get($this->getConfigName())->get('sections') ?: [];
+            $this->setSections(array_map([Section::class, 'fromArray'], $sections));
+        }
+        return $this->sections;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildLocalTasks($base_plugin_definition): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setSections(array $sections): static
+    {
+        $this->sections = array_values($sections);
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLayoutBuilderUrl($rel = 'view'): Url {
-    return Url::fromRoute("layout_builder.{$this->getStorageType()}.$rel", ['id' => $this->getStorageId()]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save(): int
+    {
+        $sections = array_map(fn (Section $section) => $section->toArray(), $this->getSections());
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRedirectUrl(): Url {
-    return $this->getLayoutBuilderUrl();
-  }
+        $config = $this->configFactory->getEditable($this->getConfigName());
+        $return = $config->get('sections') ? SAVED_UPDATED : SAVED_NEW;
+        $config->set('sections', $sections)->save();
+        return $return;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE): AccessResultInterface | bool {
-    $result = AccessResult::allowedIfHasPermission($account, 'configure navigation layout');
-    return $return_as_object ? $result : $result->isAllowed();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRoutes(RouteCollection $collection): void
+    {
+        $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), '/admin/config/user-interface/navigation-block');
+        $default_route = 'layout_builder.' . $this->getPluginDefinition()->id() . '.view';
+        $route = $collection->get($default_route);
+        // Use a form for editing the layout instead of a controller.
+        $defaults = $route->getDefaults();
+        $defaults['_form'] = LayoutForm::class;
+        unset($defaults['_controller']);
+        $route->setDefaults($defaults);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextsDuringPreview(): array {
-    return $this->getContexts();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array
+    {
+        return ['navigation' => new Context(new ContextDefinition('string'), 'navigation')];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isApplicable(RefinableCacheableDependencyInterface $cacheability): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildLocalTasks($base_plugin_definition): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextMapping(): array {
-    return ['navigation' => 'navigation'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutBuilderUrl($rel = 'view'): Url
+    {
+        return Url::fromRoute("layout_builder.{$this->getStorageType()}.$rel", ['id' => $this->getStorageId()]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool {
-    // Navigation section storage does not support any entity type.
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRedirectUrl(): Url
+    {
+        return $this->getLayoutBuilderUrl();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($operation, ?AccountInterface $account = null, $return_as_object = false): AccessResultInterface | bool
+    {
+        $result = AccessResult::allowedIfHasPermission($account, 'configure navigation layout');
+        return $return_as_object ? $result : $result->isAllowed();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextsDuringPreview(): array
+    {
+        return $this->getContexts();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isApplicable(RefinableCacheableDependencyInterface $cacheability): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextMapping(): array
+    {
+        return ['navigation' => 'navigation'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool
+    {
+        // Navigation section storage does not support any entity type.
+        return false;
+    }
 
 }

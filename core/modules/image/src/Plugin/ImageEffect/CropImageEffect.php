@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Plugin\ImageEffect;
 
 use Drupal\Component\Utility\Image;
@@ -12,85 +14,90 @@ use Drupal\image\Attribute\ImageEffect;
  * Crops an image resource.
  */
 #[ImageEffect(
-  id: "image_crop",
-  label: new TranslatableMarkup("Crop"),
-  description: new TranslatableMarkup("Resizing will make images an exact set of dimensions. This may cause images to be stretched or shrunk disproportionately."),
+    id: 'image_crop',
+    label: new TranslatableMarkup('Crop'),
+    description: new TranslatableMarkup('Resizing will make images an exact set of dimensions. This may cause images to be stretched or shrunk disproportionately.'),
 )]
-class CropImageEffect extends ResizeImageEffect {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyEffect(ImageInterface $image): bool {
-    [$x, $y] = explode('-', (string) $this->configuration['anchor']);
-    $x = Image::getKeywordOffset($x, $image->getWidth(), (int) $this->configuration['width']);
-    $y = Image::getKeywordOffset($y, $image->getHeight(), (int) $this->configuration['height']);
-    if (!$image->crop($x, $y, $this->configuration['width'], $this->configuration['height'])) {
-      $this->logger->error('Image crop failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
-        '%toolkit' => $image->getToolkitId(),
-        '%path' => $image->getSource(),
-        '%mimetype' => $image->getMimeType(),
-        '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
-      ]);
-      return FALSE;
+class CropImageEffect extends ResizeImageEffect
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applyEffect(ImageInterface $image): bool
+    {
+        [$x, $y] = explode('-', (string) $this->configuration['anchor']);
+        $x = Image::getKeywordOffset($x, $image->getWidth(), (int) $this->configuration['width']);
+        $y = Image::getKeywordOffset($y, $image->getHeight(), (int) $this->configuration['height']);
+        if (!$image->crop($x, $y, $this->configuration['width'], $this->configuration['height'])) {
+            $this->logger->error('Image crop failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
+              '%toolkit' => $image->getToolkitId(),
+              '%path' => $image->getSource(),
+              '%mimetype' => $image->getMimeType(),
+              '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
+            ]);
+            return false;
+        }
+        return true;
     }
-    return TRUE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSummary() {
-    $summary = [
-      '#theme' => 'image_crop_summary',
-      '#data' => $this->configuration,
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getSummary()
+    {
+        $summary = [
+          '#theme' => 'image_crop_summary',
+          '#data' => $this->configuration,
+        ];
 
-    return $summary + parent::getSummary();
-  }
+        return $summary + parent::getSummary();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return parent::defaultConfiguration() + [
-      'anchor' => 'center-center',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return parent::defaultConfiguration() + [
+          'anchor' => 'center-center',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
-    $form['anchor'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Anchor'),
-      '#options' => [
-        'left-top' => $this->t('Top left'),
-        'center-top' => $this->t('Top center'),
-        'right-top' => $this->t('Top right'),
-        'left-center' => $this->t('Center left'),
-        'center-center' => $this->t('Center'),
-        'right-center' => $this->t('Center right'),
-        'left-bottom' => $this->t('Bottom left'),
-        'center-bottom' => $this->t('Bottom center'),
-        'right-bottom' => $this->t('Bottom right'),
-      ],
-      '#theme' => 'image_anchor',
-      '#default_value' => $this->configuration['anchor'],
-      '#description' => $this->t('The part of the image that will be retained during the crop.'),
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildConfigurationForm($form, $form_state);
+        $form['anchor'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Anchor'),
+          '#options' => [
+            'left-top' => $this->t('Top left'),
+            'center-top' => $this->t('Top center'),
+            'right-top' => $this->t('Top right'),
+            'left-center' => $this->t('Center left'),
+            'center-center' => $this->t('Center'),
+            'right-center' => $this->t('Center right'),
+            'left-bottom' => $this->t('Bottom left'),
+            'center-bottom' => $this->t('Bottom center'),
+            'right-bottom' => $this->t('Bottom right'),
+          ],
+          '#theme' => 'image_anchor',
+          '#default_value' => $this->configuration['anchor'],
+          '#description' => $this->t('The part of the image that will be retained during the crop.'),
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    parent::submitConfigurationForm($form, $form_state);
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        parent::submitConfigurationForm($form, $form_state);
 
-    $this->configuration['anchor'] = $form_state->getValue('anchor');
-  }
+        $this->configuration['anchor'] = $form_state->getValue('anchor');
+    }
 
 }

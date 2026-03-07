@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Test\Exception;
 
 /**
@@ -7,5 +9,6 @@ namespace Drupal\Core\Test\Exception;
  *
  * @see \Drupal\Core\Test\TestDiscovery::getTestClasses()
  */
-class MissingGroupException extends \LogicException {
+class MissingGroupException extends \LogicException
+{
 }

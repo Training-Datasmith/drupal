@@ -13,50 +13,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class NodeJsonBasicAuthTest extends NodeResourceTestBase {
+class NodeJsonBasicAuthTest extends NodeResourceTestBase
+{
+    use BasicAuthResourceTestTrait;
 
-  use BasicAuthResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['basic_auth'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['basic_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'basic_auth';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'basic_auth';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        parent::setUpAuthorization($method);
+        $this->grantPermissionsToTestedRole(['view camelids revisions']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    parent::setUpAuthorization($method);
-    $this->grantPermissionsToTestedRole(['view camelids revisions']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedNormalizedEntity() {
-    $entity = parent::getExpectedNormalizedEntity();
-    $entity['revision_log'] = [];
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedNormalizedEntity()
+    {
+        $entity = parent::getExpectedNormalizedEntity();
+        $entity['revision_log'] = [];
+        return $entity;
+    }
 
 }

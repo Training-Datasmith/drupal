@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -18,7 +20,8 @@ use Drupal\Component\Render\MarkupTrait;
  *
  * @see \Drupal\media\Controller\OEmbedIframeController
  */
-class IFrameMarkup implements MarkupInterface {
-  use MarkupTrait;
+class IFrameMarkup implements MarkupInterface
+{
+    use MarkupTrait;
 
 }

@@ -12,27 +12,28 @@ use Drupal\user\RoleInterface;
 /**
  * Sets up the site for testing the toolbar module.
  */
-class ToolbarTestSetup implements TestSetupInterface {
+class ToolbarTestSetup implements TestSetupInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function setup(): void
+    {
+        $module_installer = \Drupal::service('module_installer');
+        assert($module_installer instanceof ModuleInstallerInterface);
+        $module_installer->install(['toolbar']);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setup(): void {
-    $module_installer = \Drupal::service('module_installer');
-    assert($module_installer instanceof ModuleInstallerInterface);
-    $module_installer->install(['toolbar']);
-
-    $role = Role::load(RoleInterface::ANONYMOUS_ID);
-    foreach ([
-      'access toolbar',
-      'access administration pages',
-      'administer modules',
-      'administer site configuration',
-      'administer account settings',
-    ] as $permission) {
-      $role->grantPermission($permission);
+        $role = Role::load(RoleInterface::ANONYMOUS_ID);
+        foreach ([
+          'access toolbar',
+          'access administration pages',
+          'administer modules',
+          'administer site configuration',
+          'administer account settings',
+        ] as $permission) {
+            $role->grantPermission($permission);
+        }
+        $role->save();
     }
-    $role->save();
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\FileSystem;
 
 // cspell:ignore winnt
@@ -7,42 +9,42 @@ namespace Drupal\Component\FileSystem;
 /**
  * Provides file system functions.
  */
-class FileSystem {
+class FileSystem
+{
+    /**
+     * Discovers a writable system-appropriate temporary directory.
+     *
+     * @return string|false
+     *   A string containing the path to the temporary directory, or FALSE if no
+     *   suitable temporary directory can be found.
+     */
+    public static function getOsTemporaryDirectory(): string|false
+    {
+        $directories = [];
 
-  /**
-   * Discovers a writable system-appropriate temporary directory.
-   *
-   * @return string|false
-   *   A string containing the path to the temporary directory, or FALSE if no
-   *   suitable temporary directory can be found.
-   */
-  public static function getOsTemporaryDirectory(): string|false {
-    $directories = [];
+        // Has PHP been set with an upload_tmp_dir?
+        if (ini_get('upload_tmp_dir')) {
+            $directories[] = ini_get('upload_tmp_dir');
+        }
 
-    // Has PHP been set with an upload_tmp_dir?
-    if (ini_get('upload_tmp_dir')) {
-      $directories[] = ini_get('upload_tmp_dir');
-    }
+        // Operating system specific dirs.
+        if (str_starts_with(PHP_OS, 'WIN')) {
+            $directories[] = 'c:\\windows\\temp';
+            $directories[] = 'c:\\winnt\\temp';
+        } else {
+            $directories[] = '/tmp';
+        }
+        // PHP may be able to find an alternative tmp directory.
+        $directories[] = sys_get_temp_dir();
 
-    // Operating system specific dirs.
-    if (str_starts_with(PHP_OS, 'WIN')) {
-      $directories[] = 'c:\\windows\\temp';
-      $directories[] = 'c:\\winnt\\temp';
+        foreach ($directories as $directory) {
+            if (is_dir($directory) && is_writable($directory)) {
+                // Both sys_get_temp_dir() and ini_get('upload_tmp_dir') can return
+                // paths with a trailing directory separator.
+                return rtrim($directory, DIRECTORY_SEPARATOR);
+            }
+        }
+        return false;
     }
-    else {
-      $directories[] = '/tmp';
-    }
-    // PHP may be able to find an alternative tmp directory.
-    $directories[] = sys_get_temp_dir();
-
-    foreach ($directories as $directory) {
-      if (is_dir($directory) && is_writable($directory)) {
-        // Both sys_get_temp_dir() and ini_get('upload_tmp_dir') can return
-        // paths with a trailing directory separator.
-        return rtrim($directory, DIRECTORY_SEPARATOR);
-      }
-    }
-    return FALSE;
-  }
 
 }

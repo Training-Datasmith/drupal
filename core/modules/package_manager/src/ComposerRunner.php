@@ -24,31 +24,33 @@ use Symfony\Component\Process\PhpExecutableFinder;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class ComposerRunner implements ComposerProcessRunnerInterface {
+final readonly class ComposerRunner implements ComposerProcessRunnerInterface
+{
+    public function __construct(
+        private ExecutableFinderInterface $executableFinder,
+        private ProcessFactoryInterface $processFactory,
+        private FileSystemInterface $fileSystem,
+        private ConfigFactoryInterface $configFactory,
+    ) {
+    }
 
-  public function __construct(
-    private ExecutableFinderInterface $executableFinder,
-    private ProcessFactoryInterface $processFactory,
-    private FileSystemInterface $fileSystem,
-    private ConfigFactoryInterface $configFactory,
-  ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function run(array $command, ?PathInterface $cwd = null, array $env = [], ?OutputCallbackInterface $callback = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        // Run Composer through the PHP interpreter so we don't have to rely on
+        // PHP being in the PATH.
+        array_unshift($command, (new PhpExecutableFinder())->find(), $this->executableFinder->find('composer'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function run(array $command, ?PathInterface $cwd = NULL, array $env = [], ?OutputCallbackInterface $callback = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    // Run Composer through the PHP interpreter so we don't have to rely on
-    // PHP being in the PATH.
-    array_unshift($command, (new PhpExecutableFinder())->find(), $this->executableFinder->find('composer'));
+        $home = $this->fileSystem->getTempDirectory();
+        $home .= '/package_manager_composer_home-';
+        $home .= $this->configFactory->get('system.site')->get('uuid');
+        $this->fileSystem->prepareDirectory($home, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
-    $home = $this->fileSystem->getTempDirectory();
-    $home .= '/package_manager_composer_home-';
-    $home .= $this->configFactory->get('system.site')->get('uuid');
-    $this->fileSystem->prepareDirectory($home, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-
-    $process = $this->processFactory->create($command, $cwd, $env + ['COMPOSER_HOME' => $home]);
-    $process->setTimeout($timeout);
-    $process->mustRun($callback);
-  }
+        $process = $this->processFactory->create($command, $cwd, $env + ['COMPOSER_HOME' => $home]);
+        $process->setTimeout($timeout);
+        $process->mustRun($callback);
+    }
 
 }

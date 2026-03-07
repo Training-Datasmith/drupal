@@ -17,138 +17,144 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('search')]
 #[RunTestsInSeparateProcesses]
-class SearchPageTest extends ConfigEntityResourceTestBase {
+class SearchPageTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'search'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'search'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'search_page';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'search_page';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'search_page--search_page';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'search_page--search_page';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\search\SearchPageInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\search\SearchPageInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        switch ($method) {
+            case 'GET':
+                $this->grantPermissionsToTestedRole(['access content']);
+                break;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    switch ($method) {
-      case 'GET':
-        $this->grantPermissionsToTestedRole(['access content']);
-        break;
-
-      case 'POST':
-      case 'PATCH':
-      case 'DELETE':
-        $this->grantPermissionsToTestedRole(['administer search']);
-        break;
+            case 'POST':
+            case 'PATCH':
+            case 'DELETE':
+                $this->grantPermissionsToTestedRole(['administer search']);
+                break;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $search_page = SearchPage::create([
-      'id' => 'hinode_search',
-      'plugin' => 'node_search',
-      'label' => 'Search of magnetic activity of the Sun',
-      'path' => 'sun',
-    ]);
-    $search_page->save();
-    return $search_page;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $search_page = SearchPage::create([
+          'id' => 'hinode_search',
+          'plugin' => 'node_search',
+          'label' => 'Search of magnetic activity of the Sun',
+          'path' => 'sun',
+        ]);
+        $search_page->save();
+        return $search_page;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/search_page/search_page/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/search_page/search_page/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
           'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+            'self' => ['href' => $self_url],
           ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'search_page--search_page',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'configuration' => [
-            'rankings' => [],
-          ],
-          'dependencies' => [
-            'module' => [
-              'node',
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'search_page--search_page',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'configuration' => [
+                'rankings' => [],
+              ],
+              'dependencies' => [
+                'module' => [
+                  'node',
+                ],
+              ],
+              'label' => 'Search of magnetic activity of the Sun',
+              'langcode' => 'en',
+              'path' => 'sun',
+              'plugin' => 'node_search',
+              'status' => true,
+              'weight' => 0,
+              'drupal_internal__id' => 'hinode_search',
             ],
           ],
-          'label' => 'Search of magnetic activity of the Sun',
-          'langcode' => 'en',
-          'path' => 'sun',
-          'plugin' => 'node_search',
-          'status' => TRUE,
-          'weight' => 0,
-          'drupal_internal__id' => 'hinode_search',
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method) {
-    switch ($method) {
-      case 'GET':
-        return "The 'access content' permission is required.";
-
-      default:
-        return parent::getExpectedUnauthorizedAccessMessage($method);
+        ];
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessCacheability() {
-    // @see \Drupal\search\SearchPageAccessControlHandler::checkAccess()
-    return parent::getExpectedUnauthorizedAccessCacheability()
-      ->addCacheTags(['config:search.page.hinode_search']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method)
+    {
+        switch ($method) {
+            case 'GET':
+                return "The 'access content' permission is required.";
+
+            default:
+                return parent::getExpectedUnauthorizedAccessMessage($method);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessCacheability()
+    {
+        // @see \Drupal\search\SearchPageAccessControlHandler::checkAccess()
+        return parent::getExpectedUnauthorizedAccessCacheability()
+          ->addCacheTags(['config:search.page.hinode_search']);
+    }
 
 }

@@ -9,5 +9,6 @@ use Drupal\views\Plugin\views\pager\SqlBase;
 /**
  * A stub pager plugin for testing purposes.
  */
-class StubSqlBase extends SqlBase {
+class StubSqlBase extends SqlBase
+{
 }

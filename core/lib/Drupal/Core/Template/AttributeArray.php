@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Drupal\Component\Utility\Html;
@@ -25,83 +27,89 @@ use Drupal\Component\Utility\Html;
  *
  * @see \Drupal\Core\Template\Attribute
  */
-class AttributeArray extends AttributeValueBase implements \ArrayAccess, \IteratorAggregate {
+class AttributeArray extends AttributeValueBase implements \ArrayAccess, \IteratorAggregate
+{
+    /**
+     * Ensures empty array as a result of array_filter will not print '$name=""'.
+     *
+     * @see \Drupal\Core\Template\AttributeArray::__toString()
+     * @see \Drupal\Core\Template\AttributeValueBase::render()
+     */
+    public const RENDER_EMPTY_ATTRIBUTE = false;
 
-  /**
-   * Ensures empty array as a result of array_filter will not print '$name=""'.
-   *
-   * @see \Drupal\Core\Template\AttributeArray::__toString()
-   * @see \Drupal\Core\Template\AttributeValueBase::render()
-   */
-  const RENDER_EMPTY_ATTRIBUTE = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetGet($offset): mixed {
-    return $this->value[$offset];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetSet($offset, $value): void {
-    if (isset($offset)) {
-      $this->value[$offset] = $value;
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetGet($offset): mixed
+    {
+        return $this->value[$offset];
     }
-    else {
-      $this->value[] = $value;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetSet($offset, $value): void
+    {
+        if (isset($offset)) {
+            $this->value[$offset] = $value;
+        } else {
+            $this->value[] = $value;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetUnset($offset): void {
-    unset($this->value[$offset]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetUnset($offset): void
+    {
+        unset($this->value[$offset]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetExists($offset): bool {
-    return isset($this->value[$offset]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetExists($offset): bool
+    {
+        return isset($this->value[$offset]);
+    }
 
-  /**
-   * Implements the magic __toString() method.
-   */
-  public function __toString(): string {
-    // Filter out any empty values before printing.
-    $this->value = array_unique(array_filter($this->value));
-    return Html::escape(implode(' ', $this->value));
-  }
+    /**
+     * Implements the magic __toString() method.
+     */
+    public function __toString(): string
+    {
+        // Filter out any empty values before printing.
+        $this->value = array_unique(array_filter($this->value));
+        return Html::escape(implode(' ', $this->value));
+    }
 
-  /**
-   * Retrieves the iterator for the object.
-   *
-   * @return \ArrayIterator<int|string, mixed>
-   *   The iterator.
-   */
-  public function getIterator(): \ArrayIterator {
-    return new \ArrayIterator($this->value);
-  }
+    /**
+     * Retrieves the iterator for the object.
+     *
+     * @return \ArrayIterator<int|string, mixed>
+     *   The iterator.
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator($this->value);
+    }
 
-  /**
-   * Exchange the array for another one.
-   *
-   * @param array $input
-   *   The array input to replace the internal value.
-   *
-   * @return array
-   *   The old array value.
-   *
-   * @see ArrayObject::exchangeArray
-   */
-  public function exchangeArray($input) {
-    $old = $this->value;
-    $this->value = $input;
-    return $old;
-  }
+    /**
+     * Exchange the array for another one.
+     *
+     * @param array $input
+     *   The array input to replace the internal value.
+     *
+     * @return array
+     *   The old array value.
+     *
+     * @see ArrayObject::exchangeArray
+     */
+    public function exchangeArray($input)
+    {
+        $old = $this->value;
+        $this->value = $input;
+        return $old;
+    }
 
 }

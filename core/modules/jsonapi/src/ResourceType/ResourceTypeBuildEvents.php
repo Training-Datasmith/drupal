@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\ResourceType;
 
 /**
@@ -8,11 +10,11 @@ namespace Drupal\jsonapi\ResourceType;
  * @see \Drupal\jsonapi\ResourceType\ResourceTypeBuildEvent
  * @see \Drupal\jsonapi\ResourceType\ResourceTypeRepository
  */
-final class ResourceTypeBuildEvents {
-
-  /**
-   * Emitted during the resource type build process.
-   */
-  const BUILD = 'jsonapi.resource_type.build';
+final class ResourceTypeBuildEvents
+{
+    /**
+     * Emitted during the resource type build process.
+     */
+    public const BUILD = 'jsonapi.resource_type.build';
 
 }

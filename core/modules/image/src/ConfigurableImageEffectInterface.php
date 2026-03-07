@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image;
 
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -14,5 +16,6 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * @see \Drupal\image\ImageEffectManager
  * @see plugin_api
  */
-interface ConfigurableImageEffectInterface extends ImageEffectInterface, PluginFormInterface {
+interface ConfigurableImageEffectInterface extends ImageEffectInterface, PluginFormInterface
+{
 }

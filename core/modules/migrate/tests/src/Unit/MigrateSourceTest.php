@@ -25,448 +25,463 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(SourcePluginBase::class)]
 #[Group('migrate')]
-class MigrateSourceTest extends MigrateTestCase {
+class MigrateSourceTest extends MigrateTestCase
+{
+    /**
+     * Override the migration config.
+     *
+     * @var array
+     */
+    protected $defaultMigrationConfiguration = [
+      'id' => 'test_migration',
+      'source' => [],
+    ];
 
-  /**
-   * Override the migration config.
-   *
-   * @var array
-   */
-  protected $defaultMigrationConfiguration = [
-    'id' => 'test_migration',
-    'source' => [],
-  ];
+    /**
+     * Test row data.
+     *
+     * @var array
+     */
+    protected $row = ['test_sourceid1' => '1', 'timestamp' => 500];
 
-  /**
-   * Test row data.
-   *
-   * @var array
-   */
-  protected $row = ['test_sourceid1' => '1', 'timestamp' => 500];
+    /**
+     * Test source ids.
+     *
+     * @var array
+     */
+    protected $sourceIds = ['test_sourceid1' => 'test_sourceid1'];
 
-  /**
-   * Test source ids.
-   *
-   * @var array
-   */
-  protected $sourceIds = ['test_sourceid1' => 'test_sourceid1'];
+    /**
+     * The migration entity.
+     *
+     * @var \Drupal\migrate\Plugin\MigrationInterface
+     */
+    protected $migration;
 
-  /**
-   * The migration entity.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
+    /**
+     * The migrate executable.
+     *
+     * @var \Drupal\migrate\MigrateExecutable
+     */
+    protected $executable;
 
-  /**
-   * The migrate executable.
-   *
-   * @var \Drupal\migrate\MigrateExecutable
-   */
-  protected $executable;
+    /**
+     * Gets the source plugin to test.
+     *
+     * @param array $configuration
+     *   (optional) The source configuration. Defaults to an empty array.
+     * @param array $migrate_config
+     *   (optional) The migration configuration to be used in
+     *   parent::getMigration(). Defaults to an empty array.
+     * @param int $status
+     *   (optional) The default status for the new rows to be imported. Defaults
+     *   to MigrateIdMapInterface::STATUS_NEEDS_UPDATE.
+     * @param int $high_water_value
+     *   (optional) The high water mark to start from, if set.
+     *
+     * @return \Drupal\migrate\Plugin\MigrateSourceInterface
+     *   A mocked source plugin.
+     */
+    protected function getSource($configuration = [], $migrate_config = [], $status = MigrateIdMapInterface::STATUS_NEEDS_UPDATE, $high_water_value = null)
+    {
+        $container = new ContainerBuilder();
+        \Drupal::setContainer($container);
 
-  /**
-   * Gets the source plugin to test.
-   *
-   * @param array $configuration
-   *   (optional) The source configuration. Defaults to an empty array.
-   * @param array $migrate_config
-   *   (optional) The migration configuration to be used in
-   *   parent::getMigration(). Defaults to an empty array.
-   * @param int $status
-   *   (optional) The default status for the new rows to be imported. Defaults
-   *   to MigrateIdMapInterface::STATUS_NEEDS_UPDATE.
-   * @param int $high_water_value
-   *   (optional) The high water mark to start from, if set.
-   *
-   * @return \Drupal\migrate\Plugin\MigrateSourceInterface
-   *   A mocked source plugin.
-   */
-  protected function getSource($configuration = [], $migrate_config = [], $status = MigrateIdMapInterface::STATUS_NEEDS_UPDATE, $high_water_value = NULL) {
-    $container = new ContainerBuilder();
-    \Drupal::setContainer($container);
+        $key_value = $this->createMock(KeyValueStoreInterface::class);
 
-    $key_value = $this->createMock(KeyValueStoreInterface::class);
+        $key_value_factory = $this->createMock(KeyValueFactoryInterface::class);
+        $key_value_factory
+          ->method('get')
+          ->with('migrate:high_water')
+          ->willReturn($key_value);
+        $container->set('keyvalue', $key_value_factory);
 
-    $key_value_factory = $this->createMock(KeyValueFactoryInterface::class);
-    $key_value_factory
-      ->method('get')
-      ->with('migrate:high_water')
-      ->willReturn($key_value);
-    $container->set('keyvalue', $key_value_factory);
+        $container->set('cache.migrate', $this->createMock(CacheBackendInterface::class));
 
-    $container->set('cache.migrate', $this->createMock(CacheBackendInterface::class));
+        $this->migrationConfiguration = $this->defaultMigrationConfiguration + $migrate_config;
+        $this->migration = parent::getMigration();
+        $this->executable = $this->getMigrateExecutable($this->migration);
 
-    $this->migrationConfiguration = $this->defaultMigrationConfiguration + $migrate_config;
-    $this->migration = parent::getMigration();
-    $this->executable = $this->getMigrateExecutable($this->migration);
+        // Update the idMap for Source so the default is that the row has already
+        // been imported. This allows us to use the highwater mark to decide on the
+        // outcome of whether we choose to import the row.
+        $id_map_array = ['original_hash' => '', 'hash' => '', 'source_row_status' => $status];
+        $this->idMap
+          ->expects($this->any())
+          ->method('getRowBySource')
+          ->willReturn($id_map_array);
 
-    // Update the idMap for Source so the default is that the row has already
-    // been imported. This allows us to use the highwater mark to decide on the
-    // outcome of whether we choose to import the row.
-    $id_map_array = ['original_hash' => '', 'hash' => '', 'source_row_status' => $status];
-    $this->idMap
-      ->expects($this->any())
-      ->method('getRowBySource')
-      ->willReturn($id_map_array);
+        $constructor_args = [$configuration, 'd6_action', [], $this->migration];
+        $methods = ['getModuleHandler', 'fields', 'getIds', '__toString', 'prepareRow', 'initializeIterator'];
+        $source_plugin = $this->getMockBuilder(SourcePluginBase::class)
+          ->onlyMethods($methods)
+          ->setConstructorArgs($constructor_args)
+          ->getMock();
 
-    $constructor_args = [$configuration, 'd6_action', [], $this->migration];
-    $methods = ['getModuleHandler', 'fields', 'getIds', '__toString', 'prepareRow', 'initializeIterator'];
-    $source_plugin = $this->getMockBuilder(SourcePluginBase::class)
-      ->onlyMethods($methods)
-      ->setConstructorArgs($constructor_args)
-      ->getMock();
+        $source_plugin
+          ->method('fields')
+          ->willReturn([]);
+        $source_plugin
+          ->method('getIds')
+          ->willReturn([]);
+        $source_plugin
+          ->method('__toString')
+          ->willReturn('');
+        $source_plugin
+          ->method('prepareRow')
+          ->willReturn(empty($migrate_config['prepare_row_false']));
 
-    $source_plugin
-      ->method('fields')
-      ->willReturn([]);
-    $source_plugin
-      ->method('getIds')
-      ->willReturn([]);
-    $source_plugin
-      ->method('__toString')
-      ->willReturn('');
-    $source_plugin
-      ->method('prepareRow')
-      ->willReturn(empty($migrate_config['prepare_row_false']));
+        $rows = [$this->row];
+        if (isset($configuration['high_water_property']) && isset($high_water_value)) {
+            $property = $configuration['high_water_property']['name'];
+            $rows = array_filter($rows, function (array $row) use ($property, $high_water_value) {
+                return $row[$property] >= $high_water_value;
+            });
+        }
+        $iterator = new \ArrayIterator($rows);
 
-    $rows = [$this->row];
-    if (isset($configuration['high_water_property']) && isset($high_water_value)) {
-      $property = $configuration['high_water_property']['name'];
-      $rows = array_filter($rows, function (array $row) use ($property, $high_water_value) {
-        return $row[$property] >= $high_water_value;
-      });
+        $source_plugin
+          ->method('initializeIterator')
+          ->willReturn($iterator);
+
+        $module_handler = $this->createMock(ModuleHandlerInterface::class);
+        $source_plugin
+          ->method('getModuleHandler')
+          ->willReturn($module_handler);
+
+        $this->migration
+          ->method('getSourcePlugin')
+          ->willReturn($source_plugin);
+
+        return $source_plugin;
     }
-    $iterator = new \ArrayIterator($rows);
 
-    $source_plugin
-      ->method('initializeIterator')
-      ->willReturn($iterator);
+    /**
+     * Tests highwater track changes incompatible.
+     *
+     * @legacy-covers ::__construct
+     */
+    public function testHighwaterTrackChangesIncompatible(): void
+    {
+        $source_config = ['track_changes' => true, 'high_water_property' => ['name' => 'something']];
+        $this->expectException(MigrateException::class);
+        $this->getSource($source_config);
+    }
 
-    $module_handler = $this->createMock(ModuleHandlerInterface::class);
-    $source_plugin
-      ->method('getModuleHandler')
-      ->willReturn($module_handler);
+    /**
+     * Tests that the source count is correct.
+     */
+    public function testCount(): void
+    {
+        // Mock the cache to validate set() receives appropriate arguments.
+        $container = new ContainerBuilder();
+        $cache = $this->createMock(CacheBackendInterface::class);
+        $cache->expects($this->any())->method('set')
+          ->with($this->isString(), $this->isInt(), $this->isInt());
+        $container->set('cache.migrate', $cache);
+        \Drupal::setContainer($container);
 
-    $this->migration
-      ->method('getSourcePlugin')
-      ->willReturn($source_plugin);
+        // Test that the basic count works.
+        $source = $this->getSource();
+        $this->assertEquals(1, $source->count());
 
-    return $source_plugin;
-  }
+        // Test caching the count works.
+        $source = $this->getSource(['cache_counts' => true]);
+        $this->assertEquals(1, $source->count());
 
-  /**
-   * Tests highwater track changes incompatible.
-   *
-   * @legacy-covers ::__construct
-   */
-  public function testHighwaterTrackChangesIncompatible(): void {
-    $source_config = ['track_changes' => TRUE, 'high_water_property' => ['name' => 'something']];
-    $this->expectException(MigrateException::class);
-    $this->getSource($source_config);
-  }
+        // Test the skip argument.
+        $source = $this->getSource(['skip_count' => true]);
+        $this->assertEquals(MigrateSourceInterface::NOT_COUNTABLE, $source->count());
 
-  /**
-   * Tests that the source count is correct.
-   */
-  public function testCount(): void {
-    // Mock the cache to validate set() receives appropriate arguments.
-    $container = new ContainerBuilder();
-    $cache = $this->createMock(CacheBackendInterface::class);
-    $cache->expects($this->any())->method('set')
-      ->with($this->isString(), $this->isInt(), $this->isInt());
-    $container->set('cache.migrate', $cache);
-    \Drupal::setContainer($container);
+        $this->migrationConfiguration['id'] = 'test_migration';
+        $migration = $this->getMigration();
+        $source = new StubSourceGeneratorPlugin([], '', [], $migration);
 
-    // Test that the basic count works.
-    $source = $this->getSource();
-    $this->assertEquals(1, $source->count());
+        // Test the skipCount property's default value.
+        $this->assertEquals(MigrateSourceInterface::NOT_COUNTABLE, $source->count());
 
-    // Test caching the count works.
-    $source = $this->getSource(['cache_counts' => TRUE]);
-    $this->assertEquals(1, $source->count());
+        // Test the count value using a generator.
+        $source = new StubSourceGeneratorPlugin(['skip_count' => false], '', [], $migration);
+        $this->assertEquals(3, $source->count());
+    }
 
-    // Test the skip argument.
-    $source = $this->getSource(['skip_count' => TRUE]);
-    $this->assertEquals(MigrateSourceInterface::NOT_COUNTABLE, $source->count());
+    /**
+     * Tests that the key can be set for the count cache.
+     */
+    public function testCountCacheKey(): void
+    {
+        // Mock the cache to validate set() receives appropriate arguments.
+        $container = new ContainerBuilder();
+        $cache = $this->createMock(CacheBackendInterface::class);
+        $cache->expects($this->any())->method('set')
+          ->with('test_key', $this->isInt(), $this->isInt());
+        $container->set('cache.migrate', $cache);
+        \Drupal::setContainer($container);
 
-    $this->migrationConfiguration['id'] = 'test_migration';
-    $migration = $this->getMigration();
-    $source = new StubSourceGeneratorPlugin([], '', [], $migration);
+        // Test caching the count with a configured key works.
+        $source = $this->getSource(['cache_counts' => true, 'cache_key' => 'test_key']);
+        $this->assertEquals(1, $source->count());
+    }
 
-    // Test the skipCount property's default value.
-    $this->assertEquals(MigrateSourceInterface::NOT_COUNTABLE, $source->count());
+    /**
+     * Tests that we don't get a row if prepareRow() is false.
+     */
+    public function testPrepareRowFalse(): void
+    {
+        $source = $this->getSource([], ['prepare_row_false' => true]);
 
-    // Test the count value using a generator.
-    $source = new StubSourceGeneratorPlugin(['skip_count' => FALSE], '', [], $migration);
-    $this->assertEquals(3, $source->count());
-  }
+        $source->rewind();
+        $this->assertNull($source->current(), 'No row is available when prepareRow() is false.');
+    }
 
-  /**
-   * Tests that the key can be set for the count cache.
-   */
-  public function testCountCacheKey(): void {
-    // Mock the cache to validate set() receives appropriate arguments.
-    $container = new ContainerBuilder();
-    $cache = $this->createMock(CacheBackendInterface::class);
-    $cache->expects($this->any())->method('set')
-      ->with('test_key', $this->isInt(), $this->isInt());
-    $container->set('cache.migrate', $cache);
-    \Drupal::setContainer($container);
+    /**
+     * Tests that $row->needsUpdate() works as expected.
+     */
+    public function testNextNeedsUpdate(): void
+    {
+        $source = $this->getSource();
 
-    // Test caching the count with a configured key works.
-    $source = $this->getSource(['cache_counts' => TRUE, 'cache_key' => 'test_key']);
-    $this->assertEquals(1, $source->count());
-  }
+        // $row->needsUpdate() === TRUE so we get a row.
+        $source->rewind();
+        $this->assertTrue(is_a($source->current(), 'Drupal\migrate\Row'), '$row->needsUpdate() is TRUE so we got a row.');
 
-  /**
-   * Tests that we don't get a row if prepareRow() is false.
-   */
-  public function testPrepareRowFalse(): void {
-    $source = $this->getSource([], ['prepare_row_false' => TRUE]);
+        // Test that we don't get a row when the incoming row is marked as imported.
+        $source = $this->getSource([], [], MigrateIdMapInterface::STATUS_IMPORTED);
+        $source->rewind();
+        $this->assertNull($source->current(), 'Row was already imported, should be NULL');
+    }
 
-    $source->rewind();
-    $this->assertNull($source->current(), 'No row is available when prepareRow() is false.');
-  }
+    /**
+     * Tests that an outdated highwater mark does not cause a row to be imported.
+     */
+    public function testOutdatedHighwater(): void
+    {
+        $configuration = [
+          'high_water_property' => [
+            'name' => 'timestamp',
+          ],
+        ];
+        $source = $this->getSource($configuration, [], MigrateIdMapInterface::STATUS_IMPORTED, $this->row['timestamp'] + 1);
 
-  /**
-   * Tests that $row->needsUpdate() works as expected.
-   */
-  public function testNextNeedsUpdate(): void {
-    $source = $this->getSource();
+        // The current highwater mark is now higher than the row timestamp so no row
+        // is expected.
+        $source->rewind();
+        $this->assertNull($source->current(), 'Original highwater mark is higher than incoming row timestamp.');
+    }
 
-    // $row->needsUpdate() === TRUE so we get a row.
-    $source->rewind();
-    $this->assertTrue(is_a($source->current(), 'Drupal\migrate\Row'), '$row->needsUpdate() is TRUE so we got a row.');
+    /**
+     * Tests that a highwater mark newer than our saved one imports a row.
+     *
+     * @throws \Exception
+     */
+    public function testNewHighwater(): void
+    {
+        $configuration = [
+          'high_water_property' => [
+            'name' => 'timestamp',
+          ],
+        ];
+        // Set a highwater property field for source. Now we should have a row
+        // because the row timestamp is greater than the current highwater mark.
+        $source = $this->getSource($configuration, [], MigrateIdMapInterface::STATUS_IMPORTED, $this->row['timestamp'] - 1);
 
-    // Test that we don't get a row when the incoming row is marked as imported.
-    $source = $this->getSource([], [], MigrateIdMapInterface::STATUS_IMPORTED);
-    $source->rewind();
-    $this->assertNull($source->current(), 'Row was already imported, should be NULL');
-  }
+        $source->rewind();
+        $this->assertInstanceOf(Row::class, $source->current());
+    }
 
-  /**
-   * Tests that an outdated highwater mark does not cause a row to be imported.
-   */
-  public function testOutdatedHighwater(): void {
-    $configuration = [
-      'high_water_property' => [
-        'name' => 'timestamp',
-      ],
-    ];
-    $source = $this->getSource($configuration, [], MigrateIdMapInterface::STATUS_IMPORTED, $this->row['timestamp'] + 1);
+    /**
+     * Tests basic row preparation.
+     */
+    public function testPrepareRow(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
 
-    // The current highwater mark is now higher than the row timestamp so no row
-    // is expected.
-    $source->rewind();
-    $this->assertNull($source->current(), 'Original highwater mark is higher than incoming row timestamp.');
-  }
+        // Get a new migration with an id.
+        $migration = $this->getMigration();
+        $source = new StubSourcePlugin([], '', [], $migration);
+        $row = new Row();
 
-  /**
-   * Tests that a highwater mark newer than our saved one imports a row.
-   *
-   * @throws \Exception
-   */
-  public function testNewHighwater(): void {
-    $configuration = [
-      'high_water_property' => [
-        'name' => 'timestamp',
-      ],
-    ];
-    // Set a highwater property field for source. Now we should have a row
-    // because the row timestamp is greater than the current highwater mark.
-    $source = $this->getSource($configuration, [], MigrateIdMapInterface::STATUS_IMPORTED, $this->row['timestamp'] - 1);
+        $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+        $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $source->setModuleHandler($module_handler->reveal());
 
-    $source->rewind();
-    $this->assertInstanceOf(Row::class, $source->current());
-  }
+        // Ensure we don't log this to the mapping table.
+        $this->idMap->expects($this->never())
+          ->method('saveIdMapping');
 
-  /**
-   * Tests basic row preparation.
-   */
-  public function testPrepareRow(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
+        $this->assertTrue($source->prepareRow($row));
 
-    // Get a new migration with an id.
-    $migration = $this->getMigration();
-    $source = new StubSourcePlugin([], '', [], $migration);
-    $row = new Row();
+        // Track_changes...
+        $source = new StubSourcePlugin(['track_changes' => true], '', [], $migration);
+        $row2 = $this->prophesize(Row::class);
+        $row2->rehash()
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_prepare_row', [$row2, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row2, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $source->setModuleHandler($module_handler->reveal());
+        $this->assertTrue($source->prepareRow($row2->reveal()));
+    }
 
-    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
-    $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $source->setModuleHandler($module_handler->reveal());
+    /**
+     * Tests that global prepare hooks can skip rows.
+     */
+    public function testPrepareRowGlobalPrepareSkip(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
 
-    // Ensure we don't log this to the mapping table.
-    $this->idMap->expects($this->never())
-      ->method('saveIdMapping');
+        $migration = $this->getMigration();
+        $source = new StubSourcePlugin([], '', [], $migration);
+        $row = new Row();
 
-    $this->assertTrue($source->prepareRow($row));
+        $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+        // Return a failure from a prepare row hook.
+        $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, false, true])
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $source->setModuleHandler($module_handler->reveal());
 
-    // Track_changes...
-    $source = new StubSourcePlugin(['track_changes' => TRUE], '', [], $migration);
-    $row2 = $this->prophesize(Row::class);
-    $row2->rehash()
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_prepare_row', [$row2, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row2, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $source->setModuleHandler($module_handler->reveal());
-    $this->assertTrue($source->prepareRow($row2->reveal()));
-  }
+        $this->idMap->expects($this->once())
+          ->method('saveIdMapping')
+          ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
 
-  /**
-   * Tests that global prepare hooks can skip rows.
-   */
-  public function testPrepareRowGlobalPrepareSkip(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
+        $this->assertFalse($source->prepareRow($row));
+    }
 
-    $migration = $this->getMigration();
-    $source = new StubSourcePlugin([], '', [], $migration);
-    $row = new Row();
+    /**
+     * Tests that migrate specific prepare hooks can skip rows.
+     */
+    public function testPrepareRowMigratePrepareSkip(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
 
-    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
-    // Return a failure from a prepare row hook.
-    $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, FALSE, TRUE])
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $source->setModuleHandler($module_handler->reveal());
+        $migration = $this->getMigration();
+        $source = new StubSourcePlugin([], '', [], $migration);
+        $row = new Row();
 
-    $this->idMap->expects($this->once())
-      ->method('saveIdMapping')
-      ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
+        $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+        // Return a failure from a prepare row hook.
+        $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, false, true])
+          ->shouldBeCalled();
+        $source->setModuleHandler($module_handler->reveal());
 
-    $this->assertFalse($source->prepareRow($row));
-  }
+        $this->idMap->expects($this->once())
+          ->method('saveIdMapping')
+          ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
 
-  /**
-   * Tests that migrate specific prepare hooks can skip rows.
-   */
-  public function testPrepareRowMigratePrepareSkip(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
+        $this->assertFalse($source->prepareRow($row));
+    }
 
-    $migration = $this->getMigration();
-    $source = new StubSourcePlugin([], '', [], $migration);
-    $row = new Row();
+    /**
+     * Tests that a skip exception during prepare hooks correctly skips.
+     */
+    public function testPrepareRowPrepareException(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
 
-    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
-    // Return a failure from a prepare row hook.
-    $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, FALSE, TRUE])
-      ->shouldBeCalled();
-    $source->setModuleHandler($module_handler->reveal());
+        $migration = $this->getMigration();
+        $source = new StubSourcePlugin([], '', [], $migration);
+        $row = new Row();
 
-    $this->idMap->expects($this->once())
-      ->method('saveIdMapping')
-      ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
+        $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+        // Return a failure from a prepare row hook.
+        $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
+          ->willReturn([true, true])
+          ->shouldBeCalled();
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
+          ->willThrow(new MigrateSkipRowException())
+          ->shouldBeCalled();
+        $source->setModuleHandler($module_handler->reveal());
 
-    $this->assertFalse($source->prepareRow($row));
-  }
+        // This will only be called on the first prepare because the second
+        // explicitly avoids it.
+        $this->idMap->expects($this->once())
+          ->method('saveIdMapping')
+          ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
+        $this->assertFalse($source->prepareRow($row));
 
-  /**
-   * Tests that a skip exception during prepare hooks correctly skips.
-   */
-  public function testPrepareRowPrepareException(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
+        // Throw an exception the second time that avoids mapping.
+        $e = new MigrateSkipRowException('', false);
+        $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
+          ->willThrow($e)
+          ->shouldBeCalled();
+        $this->assertFalse($source->prepareRow($row));
+    }
 
-    $migration = $this->getMigration();
-    $source = new StubSourcePlugin([], '', [], $migration);
-    $row = new Row();
+    /**
+     * Tests that default values are preserved for several source methods.
+     */
+    public function testDefaultPropertiesValues(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
+        $migration = $this->getMigration();
+        $source = new StubSourceGeneratorPlugin([], '', [], $migration);
 
-    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
-    // Return a failure from a prepare row hook.
-    $module_handler->invokeAll('migrate_prepare_row', [$row, $source, $migration])
-      ->willReturn([TRUE, TRUE])
-      ->shouldBeCalled();
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
-      ->willThrow(new MigrateSkipRowException())
-      ->shouldBeCalled();
-    $source->setModuleHandler($module_handler->reveal());
+        // Test the default value of the skipCount Value.
+        $this->assertTrue($source->getSkipCount());
+        $this->assertTrue($source->getCacheCounts());
+        $this->assertTrue($source->getTrackChanges());
+    }
 
-    // This will only be called on the first prepare because the second
-    // explicitly avoids it.
-    $this->idMap->expects($this->once())
-      ->method('saveIdMapping')
-      ->with($row, [], MigrateIdMapInterface::STATUS_IGNORED);
-    $this->assertFalse($source->prepareRow($row));
+    /**
+     * Gets a mock executable for the test.
+     *
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+     *   The migration entity.
+     *
+     * @return \Drupal\migrate\MigrateExecutable
+     *   The migrate executable.
+     */
+    protected function getMigrateExecutable($migration)
+    {
+        /** @var \Drupal\migrate\MigrateMessageInterface $message */
+        $message = $this->createMock('Drupal\migrate\MigrateMessageInterface');
+        /** @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher */
+        $event_dispatcher = $this->createMock('Symfony\Contracts\EventDispatcher\EventDispatcherInterface');
+        return new MigrateExecutable($migration, $message, $event_dispatcher);
+    }
 
-    // Throw an exception the second time that avoids mapping.
-    $e = new MigrateSkipRowException('', FALSE);
-    $module_handler->invokeAll('migrate_' . $migration->id() . '_prepare_row', [$row, $source, $migration])
-      ->willThrow($e)
-      ->shouldBeCalled();
-    $this->assertFalse($source->prepareRow($row));
-  }
+    /**
+     * Tests pre rollback.
+     */
+    public function testPreRollback(): void
+    {
+        $this->migrationConfiguration['id'] = 'test_migration';
+        $plugin_id = 'test_migration';
+        $migration = $this->getMigration();
 
-  /**
-   * Tests that default values are preserved for several source methods.
-   */
-  public function testDefaultPropertiesValues(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
-    $migration = $this->getMigration();
-    $source = new StubSourceGeneratorPlugin([], '', [], $migration);
+        // Verify that preRollback() sets the high water mark to NULL.
+        $key_value = $this->createMock(KeyValueStoreInterface::class);
+        $key_value->expects($this->once())
+          ->method('set')
+          ->with($plugin_id, null);
+        $key_value_factory = $this->createMock(KeyValueFactoryInterface::class);
+        $key_value_factory->expects($this->once())
+          ->method('get')
+          ->with('migrate:high_water')
+          ->willReturn($key_value);
+        $container = new ContainerBuilder();
+        $container->set('keyvalue', $key_value_factory);
+        \Drupal::setContainer($container);
 
-    // Test the default value of the skipCount Value.
-    $this->assertTrue($source->getSkipCount());
-    $this->assertTrue($source->getCacheCounts());
-    $this->assertTrue($source->getTrackChanges());
-  }
-
-  /**
-   * Gets a mock executable for the test.
-   *
-   * @param \Drupal\migrate\Plugin\MigrationInterface $migration
-   *   The migration entity.
-   *
-   * @return \Drupal\migrate\MigrateExecutable
-   *   The migrate executable.
-   */
-  protected function getMigrateExecutable($migration) {
-    /** @var \Drupal\migrate\MigrateMessageInterface $message */
-    $message = $this->createMock('Drupal\migrate\MigrateMessageInterface');
-    /** @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher */
-    $event_dispatcher = $this->createMock('Symfony\Contracts\EventDispatcher\EventDispatcherInterface');
-    return new MigrateExecutable($migration, $message, $event_dispatcher);
-  }
-
-  /**
-   * Tests pre rollback.
-   */
-  public function testPreRollback(): void {
-    $this->migrationConfiguration['id'] = 'test_migration';
-    $plugin_id = 'test_migration';
-    $migration = $this->getMigration();
-
-    // Verify that preRollback() sets the high water mark to NULL.
-    $key_value = $this->createMock(KeyValueStoreInterface::class);
-    $key_value->expects($this->once())
-      ->method('set')
-      ->with($plugin_id, NULL);
-    $key_value_factory = $this->createMock(KeyValueFactoryInterface::class);
-    $key_value_factory->expects($this->once())
-      ->method('get')
-      ->with('migrate:high_water')
-      ->willReturn($key_value);
-    $container = new ContainerBuilder();
-    $container->set('keyvalue', $key_value_factory);
-    \Drupal::setContainer($container);
-
-    $source = new StubSourceGeneratorPlugin([], $plugin_id, [], $migration);
-    $source->preRollback(new MigrateRollbackEvent($migration));
-  }
+        $source = new StubSourceGeneratorPlugin([], $plugin_id, [], $migration);
+        $source->preRollback(new MigrateRollbackEvent($migration));
+    }
 
 }
 
@@ -476,51 +491,55 @@ class MigrateSourceTest extends MigrateTestCase {
  * This stub overwrites the $skipCount, $cacheCounts, and $trackChanges
  * properties.
  */
-class StubSourceGeneratorPlugin extends StubSourcePlugin {
+class StubSourceGeneratorPlugin extends StubSourcePlugin
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $skipCount = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $skipCount = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected $cacheCounts = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $cacheCounts = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected $trackChanges = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $trackChanges = TRUE;
+    /**
+     * Return the skipCount value.
+     */
+    public function getSkipCount()
+    {
+        return $this->skipCount;
+    }
 
-  /**
-   * Return the skipCount value.
-   */
-  public function getSkipCount() {
-    return $this->skipCount;
-  }
+    /**
+     * Return the cacheCounts value.
+     */
+    public function getCacheCounts()
+    {
+        return $this->cacheCounts;
+    }
 
-  /**
-   * Return the cacheCounts value.
-   */
-  public function getCacheCounts() {
-    return $this->cacheCounts;
-  }
+    /**
+     * Return the trackChanges value.
+     */
+    public function getTrackChanges()
+    {
+        return $this->trackChanges;
+    }
 
-  /**
-   * Return the trackChanges value.
-   */
-  public function getTrackChanges() {
-    return $this->trackChanges;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function initializeIterator(): \Generator {
-    yield 'foo';
-    yield 'bar';
-    yield 'iggy';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializeIterator(): \Generator
+    {
+        yield 'foo';
+        yield 'bar';
+        yield 'iggy';
+    }
 
 }

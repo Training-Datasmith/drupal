@@ -20,34 +20,40 @@ use Drupal\Core\Hook\Order\Order;
  *
  * @see \Drupal\KernelTests\Core\Hook\HookAlterOrderTest::testReorderAlterMissingTarget()
  */
-class XyzMissingTargetAlter {
+class XyzMissingTargetAlter
+{
+    /**
+     * Hook order attributes that target possibly non-existing alter methods.
+     *
+     * The targeted methods only exist if module B is installed.
+     */
+    #[ReorderHook('test_ab_alter', BMissingTargetAlter::class, 'testABAlterReorderedFirstByXyz', Order::First)]
+    #[RemoveHook('test_ab_alter', BMissingTargetAlter::class, 'testABAlterRemovedByXyz')]
+    public function targetABAlter(): void
+    {
+    }
 
-  /**
-   * Hook order attributes that target possibly non-existing alter methods.
-   *
-   * The targeted methods only exist if module B is installed.
-   */
-  #[ReorderHook('test_ab_alter', BMissingTargetAlter::class, 'testABAlterReorderedFirstByXyz', Order::First)]
-  #[RemoveHook('test_ab_alter', BMissingTargetAlter::class, 'testABAlterRemovedByXyz')]
-  public function targetABAlter(): void {}
+    /**
+     * Hook order attributes that target a hook with possibly no implementations.
+     *
+     * The target hook has implementations only if module B is installed.
+     */
+    #[ReorderHook('test_b_alter', BMissingTargetAlter::class, 'testBAlterReorderedFirstByXyz', Order::First)]
+    #[RemoveHook('test_b_alter', BMissingTargetAlter::class, 'testBAlterRemovedByXyz')]
+    public function targetBAlter(): void
+    {
+    }
 
-  /**
-   * Hook order attributes that target a hook with possibly no implementations.
-   *
-   * The target hook has implementations only if module B is installed.
-   */
-  #[ReorderHook('test_b_alter', BMissingTargetAlter::class, 'testBAlterReorderedFirstByXyz', Order::First)]
-  #[RemoveHook('test_b_alter', BMissingTargetAlter::class, 'testBAlterRemovedByXyz')]
-  public function targetBAlter(): void {}
-
-  /**
-   * Hook order attributes where the target method implements a different hook.
-   *
-   * This scenario is special for alter hooks, when the alter types for both
-   * hooks are passed to ->alter().
-   */
-  #[ReorderHook('test_b_subtype_alter', AMissingTargetAlter::class, 'testASupertypeAlterReorderedFirstForBSubtypeByXyz', Order::First)]
-  #[RemoveHook('test_b_subtype_alter', AMissingTargetAlter::class, 'testASupertypeAlterRemovedForBSubtypeByXyz')]
-  public function targetASupertypeAlterForBSubtypeAlter(): void {}
+    /**
+     * Hook order attributes where the target method implements a different hook.
+     *
+     * This scenario is special for alter hooks, when the alter types for both
+     * hooks are passed to ->alter().
+     */
+    #[ReorderHook('test_b_subtype_alter', AMissingTargetAlter::class, 'testASupertypeAlterReorderedFirstForBSubtypeByXyz', Order::First)]
+    #[RemoveHook('test_b_subtype_alter', AMissingTargetAlter::class, 'testASupertypeAlterRemovedForBSubtypeByXyz')]
+    public function targetASupertypeAlterForBSubtypeAlter(): void
+    {
+    }
 
 }

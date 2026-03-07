@@ -24,44 +24,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Test')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class PhpUnitApiFindAllClassFilesTest extends KernelTestBase {
+class PhpUnitApiFindAllClassFilesTest extends KernelTestBase
+{
+    /**
+     * Checks that Drupal legacy and PHPUnit API based discoveries are equal.
+     */
+    #[DataProvider('argumentsProvider')]
+    #[IgnoreDeprecations]
+    public function testEquality(?string $extension = null, ?string $directory = null): void
+    {
+        // PHPUnit discovery.
+        $configurationFilePath = $this->container->getParameter('app.root') . \DIRECTORY_SEPARATOR . 'core';
+        $phpUnitTestDiscovery = PhpUnitTestDiscovery::instance()->setConfigurationFilePath($configurationFilePath);
+        $phpUnitList = $phpUnitTestDiscovery->findAllClassFiles($extension, $directory);
 
-  /**
-   * Checks that Drupal legacy and PHPUnit API based discoveries are equal.
-   */
-  #[DataProvider('argumentsProvider')]
-  #[IgnoreDeprecations]
-  public function testEquality(?string $extension = NULL, ?string $directory = NULL): void {
-    // PHPUnit discovery.
-    $configurationFilePath = $this->container->getParameter('app.root') . \DIRECTORY_SEPARATOR . 'core';
-    $phpUnitTestDiscovery = PhpUnitTestDiscovery::instance()->setConfigurationFilePath($configurationFilePath);
-    $phpUnitList = $phpUnitTestDiscovery->findAllClassFiles($extension, $directory);
+        // Legacy TestDiscovery.
+        $testDiscovery = new TestDiscovery(
+            $this->container->getParameter('app.root'),
+            $this->container->get('class_loader')
+        );
+        $internalList = $testDiscovery->findAllClassFiles($extension, $directory);
 
-    // Legacy TestDiscovery.
-    $testDiscovery = new TestDiscovery(
-      $this->container->getParameter('app.root'),
-      $this->container->get('class_loader')
-    );
-    $internalList = $testDiscovery->findAllClassFiles($extension, $directory);
+        // Downgrade results to make them comparable, working around bugs and
+        // additions.
+        // 1. TestDiscovery discovers non-test classes that PHPUnit does not.
+        $internalList = array_intersect_key($internalList, $phpUnitList);
 
-    // Downgrade results to make them comparable, working around bugs and
-    // additions.
-    // 1. TestDiscovery discovers non-test classes that PHPUnit does not.
-    $internalList = array_intersect_key($internalList, $phpUnitList);
+        $this->assertEquals($internalList, $phpUnitList);
+    }
 
-    $this->assertEquals($internalList, $phpUnitList);
-  }
-
-  /**
-   * Provides test data to ::testEquality.
-   */
-  public static function argumentsProvider(): \Generator {
-    yield 'All tests' => [];
-    yield 'Extension: system' => ['extension' => 'system'];
-    yield 'Extension: system, directory' => [
-      'extension' => 'system',
-      'directory' => 'core/modules/system/tests/src',
-    ];
-  }
+    /**
+     * Provides test data to ::testEquality.
+     */
+    public static function argumentsProvider(): \Generator
+    {
+        yield 'All tests' => [];
+        yield 'Extension: system' => ['extension' => 'system'];
+        yield 'Extension: system, directory' => [
+          'extension' => 'system',
+          'directory' => 'core/modules/system/tests/src',
+        ];
+    }
 
 }

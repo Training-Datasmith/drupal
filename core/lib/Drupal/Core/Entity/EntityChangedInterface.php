@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 /**
@@ -16,39 +18,39 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_type_characteristics
  */
-interface EntityChangedInterface extends EntityInterface {
+interface EntityChangedInterface extends EntityInterface
+{
+    /**
+     * Gets the timestamp of the last entity change for the current translation.
+     *
+     * @return int|null
+     *   The timestamp of the last entity save operation. Some entities allow a
+     *   NULL value indicating the changed time is unknown.
+     */
+    public function getChangedTime();
 
-  /**
-   * Gets the timestamp of the last entity change for the current translation.
-   *
-   * @return int|null
-   *   The timestamp of the last entity save operation. Some entities allow a
-   *   NULL value indicating the changed time is unknown.
-   */
-  public function getChangedTime();
+    /**
+     * Sets the timestamp of the last entity change for the current translation.
+     *
+     * @param int $timestamp
+     *   The timestamp of the last entity save operation.
+     *
+     * @return $this
+     */
+    public function setChangedTime($timestamp);
 
-  /**
-   * Sets the timestamp of the last entity change for the current translation.
-   *
-   * @param int $timestamp
-   *   The timestamp of the last entity save operation.
-   *
-   * @return $this
-   */
-  public function setChangedTime($timestamp);
-
-  /**
-   * Gets the timestamp of the last entity change across all translations.
-   *
-   * This method will return the highest timestamp across all translations. To
-   * check that no translation is older than in another version of the entity
-   * (e.g. to avoid overwriting newer translations with old data), compare each
-   * translation to the other version individually.
-   *
-   * @return int
-   *   The timestamp of the last entity save operation across all
-   *   translations.
-   */
-  public function getChangedTimeAcrossTranslations();
+    /**
+     * Gets the timestamp of the last entity change across all translations.
+     *
+     * This method will return the highest timestamp across all translations. To
+     * check that no translation is older than in another version of the entity
+     * (e.g. to avoid overwriting newer translations with old data), compare each
+     * translation to the other version individually.
+     *
+     * @return int
+     *   The timestamp of the last entity save operation across all
+     *   translations.
+     */
+    public function getChangedTimeAcrossTranslations();
 
 }

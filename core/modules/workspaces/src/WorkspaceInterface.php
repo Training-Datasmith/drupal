@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -10,45 +12,45 @@ use Drupal\workspaces\Provider\WorkspaceProviderInterface;
 /**
  * Defines an interface for the workspace entity type.
  */
-interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface
+{
+    /**
+     * Publishes the contents of this workspace to the default (Live) workspace.
+     */
+    public function publish();
 
-  /**
-   * Publishes the contents of this workspace to the default (Live) workspace.
-   */
-  public function publish();
+    /**
+     * Gets the workspace creation timestamp.
+     *
+     * @return int
+     *   Creation timestamp of the workspace.
+     */
+    public function getCreatedTime();
 
-  /**
-   * Gets the workspace creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the workspace.
-   */
-  public function getCreatedTime();
+    /**
+     * Sets the workspace creation timestamp.
+     *
+     * @param int $timestamp
+     *   The workspace creation timestamp.
+     *
+     * @return $this
+     */
+    public function setCreatedTime($timestamp);
 
-  /**
-   * Sets the workspace creation timestamp.
-   *
-   * @param int $timestamp
-   *   The workspace creation timestamp.
-   *
-   * @return $this
-   */
-  public function setCreatedTime($timestamp);
+    /**
+     * Determines whether the workspace has a parent.
+     *
+     * @return bool
+     *   TRUE if the workspace has a parent, FALSE otherwise.
+     */
+    public function hasParent();
 
-  /**
-   * Determines whether the workspace has a parent.
-   *
-   * @return bool
-   *   TRUE if the workspace has a parent, FALSE otherwise.
-   */
-  public function hasParent();
-
-  /**
-   * Gets the provider of this workspace.
-   *
-   * @return \Drupal\workspaces\Provider\WorkspaceProviderInterface
-   *   The workspace provider.
-   */
-  public function getProvider(): WorkspaceProviderInterface;
+    /**
+     * Gets the provider of this workspace.
+     *
+     * @return \Drupal\workspaces\Provider\WorkspaceProviderInterface
+     *   The workspace provider.
+     */
+    public function getProvider(): WorkspaceProviderInterface;
 
 }

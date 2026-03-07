@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Type;
 
 use Drupal\Core\TypedData\PrimitiveInterface;
@@ -13,6 +15,6 @@ use Drupal\Core\TypedData\PrimitiveInterface;
  *
  * @ingroup typed_data
  */
-interface BinaryInterface extends PrimitiveInterface {
-
+interface BinaryInterface extends PrimitiveInterface
+{
 }

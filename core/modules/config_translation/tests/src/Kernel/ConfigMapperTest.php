@@ -15,38 +15,39 @@ use Symfony\Component\Routing\Route;
  */
 #[Group('config_translation')]
 #[RunTestsInSeparateProcesses]
-class ConfigMapperTest extends KernelTestBase {
+class ConfigMapperTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'config_translation',
+      'config_translation_test',
+      'language',
+      'locale',
+      'system',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'config_translation',
-    'config_translation_test',
-    'language',
-    'locale',
-    'system',
-  ];
+    /**
+     * Tests adding config names to mapper.
+     */
+    public function testAddingConfigNames(): void
+    {
+        // Get a config names mapper.
+        $mappers = \Drupal::service('plugin.manager.config_translation.mapper')->getMappers();
+        $mapper = $mappers['system.site_information_settings'];
 
-  /**
-   * Tests adding config names to mapper.
-   */
-  public function testAddingConfigNames(): void {
-    // Get a config names mapper.
-    $mappers = \Drupal::service('plugin.manager.config_translation.mapper')->getMappers();
-    $mapper = $mappers['system.site_information_settings'];
+        // Test that it doesn't contain a config name from config_translation_test.
+        $config_names = $mapper->getConfigNames();
+        $this->assertNotContains('config_translation_test.content', $config_names);
 
-    // Test that it doesn't contain a config name from config_translation_test.
-    $config_names = $mapper->getConfigNames();
-    $this->assertNotContains('config_translation_test.content', $config_names);
+        // Call populateFromRouteMatch() to dispatch the "config mapper populate"
+        // event.
+        $mapper->populateFromRouteMatch(new RouteMatch('test', new Route('/')));
 
-    // Call populateFromRouteMatch() to dispatch the "config mapper populate"
-    // event.
-    $mapper->populateFromRouteMatch(new RouteMatch('test', new Route('/')));
-
-    // Test that it contains the new config name from config_translation_test.
-    $config_names = $mapper->getConfigNames();
-    $this->assertContains('config_translation_test.content', $config_names);
-  }
+        // Test that it contains the new config name from config_translation_test.
+        $config_names = $mapper->getConfigNames();
+        $this->assertContains('config_translation_test.content', $config_names);
+    }
 
 }

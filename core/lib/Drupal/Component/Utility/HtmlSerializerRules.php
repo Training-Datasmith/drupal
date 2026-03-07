@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Component\Utility;
 
@@ -20,22 +20,23 @@ use Masterminds\HTML5\Serializer\OutputRules;
  *
  * @see core/modules/ckeditor5/js/ckeditor5_plugins/drupalHtmlEngine/src/drupalhtmlbuilder.js
  */
-class HtmlSerializerRules extends OutputRules {
+class HtmlSerializerRules extends OutputRules
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function escape($text, $attribute = false)
+    {
+        $text = parent::escape($text, $attribute);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function escape($text, $attribute = FALSE) {
-    $text = parent::escape($text, $attribute);
+        if ($attribute) {
+            return strtr($text, [
+              '<' => '&lt;',
+              '>' => '&gt;',
+            ]);
+        }
 
-    if ($attribute) {
-      return strtr($text, [
-        '<' => '&lt;',
-        '>' => '&gt;',
-      ]);
+        return $text;
     }
-
-    return $text;
-  }
 
 }

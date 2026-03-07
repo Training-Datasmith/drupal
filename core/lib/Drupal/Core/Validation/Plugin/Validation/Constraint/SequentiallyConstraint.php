@@ -14,23 +14,25 @@ use Symfony\Component\Validator\Constraints\SequentiallyValidator;
  * Checks constraints sequentially and shows the error from the first.
  */
 #[Constraint(
-  id: 'Sequentially',
-  label: new TranslatableMarkup('Sequentially validate multiple constraints', [], ['context' => 'Validation'])
+    id: 'Sequentially',
+    label: new TranslatableMarkup('Sequentially validate multiple constraints', [], ['context' => 'Validation'])
 )]
-class SequentiallyConstraint extends Sequentially implements CompositeConstraintInterface {
+class SequentiallyConstraint extends Sequentially implements CompositeConstraintInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getCompositeOptionStatic(): string
+    {
+        return 'constraints';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCompositeOptionStatic(): string {
-    return 'constraints';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validatedBy(): string {
-    return SequentiallyValidator::class;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy(): string
+    {
+        return SequentiallyValidator::class;
+    }
 
 }

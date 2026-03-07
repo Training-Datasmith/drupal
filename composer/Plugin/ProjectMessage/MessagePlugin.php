@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Plugin\ProjectMessage;
 
 use Composer\Composer;
@@ -14,64 +16,69 @@ use Composer\Script\ScriptEvents;
  *
  * @internal
  */
-class MessagePlugin implements PluginInterface, EventSubscriberInterface {
+class MessagePlugin implements PluginInterface, EventSubscriberInterface
+{
+    /**
+     * Composer object.
+     *
+     * @var \Composer\Composer
+     */
+    protected $composer;
 
-  /**
-   * Composer object.
-   *
-   * @var \Composer\Composer
-   */
-  protected $composer;
+    /**
+     * IO object.
+     *
+     * @var \Composer\IO\IOInterface
+     */
+    protected $io;
 
-  /**
-   * IO object.
-   *
-   * @var \Composer\IO\IOInterface
-   */
-  protected $io;
+    /**
+     * Configuration.
+     *
+     * @var \Drupal\Composer\Plugin\VendorHardening\Config
+     */
+    protected $config;
 
-  /**
-   * Configuration.
-   *
-   * @var \Drupal\Composer\Plugin\VendorHardening\Config
-   */
-  protected $config;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function activate(Composer $composer, IOInterface $io): void {
-    $this->composer = $composer;
-    $this->io = $io;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deactivate(Composer $composer, IOInterface $io) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function uninstall(Composer $composer, IOInterface $io) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      ScriptEvents::POST_CREATE_PROJECT_CMD => 'displayPostCreateMessage',
-      ScriptEvents::POST_INSTALL_CMD => 'displayPostCreateMessage',
-    ];
-  }
-
-  public function displayPostCreateMessage(Event $event): void {
-    $message = new Message($this->composer->getPackage(), $event->getName());
-    if ($message = $message->getText()) {
-      $this->io->write($message);
+    /**
+     * {@inheritdoc}
+     */
+    public function activate(Composer $composer, IOInterface $io): void
+    {
+        $this->composer = $composer;
+        $this->io = $io;
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          ScriptEvents::POST_CREATE_PROJECT_CMD => 'displayPostCreateMessage',
+          ScriptEvents::POST_INSTALL_CMD => 'displayPostCreateMessage',
+        ];
+    }
+
+    public function displayPostCreateMessage(Event $event): void
+    {
+        $message = new Message($this->composer->getPackage(), $event->getName());
+        if ($message = $message->getText()) {
+            $this->io->write($message);
+        }
+    }
 
 }

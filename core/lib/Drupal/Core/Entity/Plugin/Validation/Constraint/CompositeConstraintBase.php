@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Validation\Constraint;
 
 use Symfony\Component\Validator\Constraint;
@@ -12,14 +14,14 @@ use Symfony\Component\Validator\Constraint;
  *
  * @see \Drupal\Core\Entity\EntityType::addConstraint
  */
-abstract class CompositeConstraintBase extends Constraint {
-
-  /**
-   * An array of entity fields which should be passed to the validator.
-   *
-   * @return string[]
-   *   An array of field names.
-   */
-  abstract public function coversFields();
+abstract class CompositeConstraintBase extends Constraint
+{
+    /**
+     * An array of entity fields which should be passed to the validator.
+     *
+     * @return string[]
+     *   An array of field names.
+     */
+    abstract public function coversFields();
 
 }

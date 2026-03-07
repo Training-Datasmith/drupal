@@ -10,13 +10,14 @@ use Drupal\Core\DependencyInjection\ServiceProviderInterface;
 /**
  * Module test service provider.
  */
-class ModuleTestServiceProvider implements ServiceProviderInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    $container->addCompilerPass(new ModuleTestCompilerPass());
-  }
+class ModuleTestServiceProvider implements ServiceProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        $container->addCompilerPass(new ModuleTestCompilerPass());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form\EventSubscriber;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -7,139 +9,141 @@ use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 use Drupal\Core\Form\Exception\BrokenPostRequestException;
 use Drupal\Core\Form\FormAjaxException;
-use Drupal\Core\Form\FormAjaxResponseBuilderInterface;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Wraps AJAX form submissions that are triggered via an exception.
  */
-class FormAjaxSubscriber implements EventSubscriberInterface {
+class FormAjaxSubscriber implements EventSubscriberInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a new FormAjaxSubscriber.
-   *
-   * @param \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder
-   *   The form AJAX response builder.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger.
-   */
-  public function __construct(protected \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder, TranslationInterface $string_translation, protected \Drupal\Core\Messenger\MessengerInterface $messenger) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * Alters the wrapper format if this is an AJAX form request.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
-   *   The event to process.
-   */
-  public function onView(ViewEvent $event): void {
-    // To support an AJAX form submission of a form within a block, make the
-    // later VIEW subscribers process the controller result as though for
-    // HTML display (i.e., add blocks). During that block building, when the
-    // submitted form gets processed, an exception gets thrown by
-    // \Drupal\Core\Form\FormBuilderInterface::buildForm(), allowing
-    // self::onException() to return an AJAX response instead of an HTML one.
-    $request = $event->getRequest();
-    if ($request->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
-      $request->query->set(MainContentViewSubscriber::WRAPPER_FORMAT, 'html');
-    }
-  }
-
-  /**
-   * Catches a form AJAX exception and build a response from it.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The event to process.
-   */
-  public function onException(ExceptionEvent $event): void {
-    $exception = $event->getThrowable();
-    $request = $event->getRequest();
-
-    // Render a nice error message in case we have a file upload which exceeds
-    // the configured upload limit.
-    if ($exception instanceof BrokenPostRequestException && $request->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
-      $this->messenger->addError($this->t('An unrecoverable error occurred. The uploaded file likely exceeded the maximum file size (@size) that this server supports.', [
-        '@size' => ByteSizeMarkup::create($exception->getSize()),
-      ]));
-      $response = new AjaxResponse(NULL, 200);
-      $status_messages = ['#type' => 'status_messages'];
-      $response->addCommand(new PrependCommand(NULL, $status_messages));
-      $event->allowCustomResponseCode();
-      $event->setResponse($response);
-      return;
+    /**
+     * Constructs a new FormAjaxSubscriber.
+     *
+     * @param \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder
+     *   The form AJAX response builder.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation.
+     * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+     *   The messenger.
+     */
+    public function __construct(protected \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder, TranslationInterface $string_translation, protected \Drupal\Core\Messenger\MessengerInterface $messenger)
+    {
+        $this->stringTranslation = $string_translation;
     }
 
-    // Extract the form AJAX exception (it may have been passed to another
-    // exception before reaching here).
-    if ($exception = $this->getFormAjaxException($exception)) {
-      $request = $event->getRequest();
-      $form = $exception->getForm();
-      $form_state = $exception->getFormState();
-
-      // Set the build ID from the request as the old build ID on the form.
-      $form['#build_id_old'] = $request->request->get('form_build_id');
-
-      try {
-        $response = $this->formAjaxResponseBuilder->buildResponse($request, $form, $form_state, []);
-
-        // Since this response is being set in place of an exception, explicitly
-        // mark this as a 200 status.
-        $response->setStatusCode(200);
-        $event->allowCustomResponseCode();
-        $event->setResponse($response);
-      }
-      catch (\Exception $e) {
-        // Otherwise, replace the existing exception with the new one.
-        $event->setThrowable($e);
-      }
+    /**
+     * Alters the wrapper format if this is an AJAX form request.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
+     *   The event to process.
+     */
+    public function onView(ViewEvent $event): void
+    {
+        // To support an AJAX form submission of a form within a block, make the
+        // later VIEW subscribers process the controller result as though for
+        // HTML display (i.e., add blocks). During that block building, when the
+        // submitted form gets processed, an exception gets thrown by
+        // \Drupal\Core\Form\FormBuilderInterface::buildForm(), allowing
+        // self::onException() to return an AJAX response instead of an HTML one.
+        $request = $event->getRequest();
+        if ($request->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
+            $request->query->set(MainContentViewSubscriber::WRAPPER_FORMAT, 'html');
+        }
     }
-  }
 
-  /**
-   * Extracts a form AJAX exception.
-   *
-   * @param \Throwable $e
-   *   A generic exception that might contain a form AJAX exception.
-   *
-   * @return \Drupal\Core\Form\FormAjaxException|null
-   *   Either the form AJAX exception, or NULL if none could be found.
-   */
-  protected function getFormAjaxException(\Throwable $e): ?\Drupal\Core\Form\FormAjaxException {
-    $exception = NULL;
-    while ($e) {
-      if ($e instanceof FormAjaxException) {
-        $exception = $e;
-        break;
-      }
+    /**
+     * Catches a form AJAX exception and build a response from it.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+     *   The event to process.
+     */
+    public function onException(ExceptionEvent $event): void
+    {
+        $exception = $event->getThrowable();
+        $request = $event->getRequest();
 
-      $e = $e->getPrevious();
+        // Render a nice error message in case we have a file upload which exceeds
+        // the configured upload limit.
+        if ($exception instanceof BrokenPostRequestException && $request->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
+            $this->messenger->addError($this->t('An unrecoverable error occurred. The uploaded file likely exceeded the maximum file size (@size) that this server supports.', [
+              '@size' => ByteSizeMarkup::create($exception->getSize()),
+            ]));
+            $response = new AjaxResponse(null, 200);
+            $status_messages = ['#type' => 'status_messages'];
+            $response->addCommand(new PrependCommand(null, $status_messages));
+            $event->allowCustomResponseCode();
+            $event->setResponse($response);
+            return;
+        }
+
+        // Extract the form AJAX exception (it may have been passed to another
+        // exception before reaching here).
+        if ($exception = $this->getFormAjaxException($exception)) {
+            $request = $event->getRequest();
+            $form = $exception->getForm();
+            $form_state = $exception->getFormState();
+
+            // Set the build ID from the request as the old build ID on the form.
+            $form['#build_id_old'] = $request->request->get('form_build_id');
+
+            try {
+                $response = $this->formAjaxResponseBuilder->buildResponse($request, $form, $form_state, []);
+
+                // Since this response is being set in place of an exception, explicitly
+                // mark this as a 200 status.
+                $response->setStatusCode(200);
+                $event->allowCustomResponseCode();
+                $event->setResponse($response);
+            } catch (\Exception $e) {
+                // Otherwise, replace the existing exception with the new one.
+                $event->setThrowable($e);
+            }
+        }
     }
-    return $exception;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Run before exception.logger.
-    $events[KernelEvents::EXCEPTION] = ['onException', 51];
-    // Run before main_content_view_subscriber.
-    $events[KernelEvents::VIEW][] = ['onView', 1];
+    /**
+     * Extracts a form AJAX exception.
+     *
+     * @param \Throwable $e
+     *   A generic exception that might contain a form AJAX exception.
+     *
+     * @return \Drupal\Core\Form\FormAjaxException|null
+     *   Either the form AJAX exception, or NULL if none could be found.
+     */
+    protected function getFormAjaxException(\Throwable $e): ?\Drupal\Core\Form\FormAjaxException
+    {
+        $exception = null;
+        while ($e) {
+            if ($e instanceof FormAjaxException) {
+                $exception = $e;
+                break;
+            }
 
-    return $events;
-  }
+            $e = $e->getPrevious();
+        }
+        return $exception;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Run before exception.logger.
+        $events[KernelEvents::EXCEPTION] = ['onException', 51];
+        // Run before main_content_view_subscriber.
+        $events[KernelEvents::VIEW][] = ['onView', 1];
+
+        return $events;
+    }
 
 }

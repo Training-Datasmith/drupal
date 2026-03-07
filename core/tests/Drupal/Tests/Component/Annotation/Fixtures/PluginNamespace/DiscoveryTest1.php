@@ -15,4 +15,6 @@ namespace com\example\PluginNamespace;
  *   title = "Discovery test plugin"
  * )
  */
-class DiscoveryTest1 {}
+class DiscoveryTest1
+{
+}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Plugin\PluginBase;
@@ -10,50 +12,56 @@ use Drupal\Core\Plugin\PluginBase;
  * @see \Drupal\breakpoint\BreakpointManager
  * @see plugin_api
  */
-class Breakpoint extends PluginBase implements BreakpointInterface {
+class Breakpoint extends PluginBase implements BreakpointInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        // Translate the plugin label defined in the *.breakpoints.yml file.
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        return $this->t($this->pluginDefinition['label'], [], ['context' => 'breakpoint']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    // Translate the plugin label defined in the *.breakpoints.yml file.
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    return $this->t($this->pluginDefinition['label'], [], ['context' => 'breakpoint']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getWeight(): int
+    {
+        return (int) $this->pluginDefinition['weight'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight(): int {
-    return (int) $this->pluginDefinition['weight'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getMediaQuery()
+    {
+        return $this->pluginDefinition['mediaQuery'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMediaQuery() {
-    return $this->pluginDefinition['mediaQuery'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultipliers()
+    {
+        return $this->pluginDefinition['multipliers'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMultipliers() {
-    return $this->pluginDefinition['multipliers'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getProvider()
+    {
+        return $this->pluginDefinition['provider'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getProvider() {
-    return $this->pluginDefinition['provider'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getGroup() {
-    return $this->pluginDefinition['group'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getGroup()
+    {
+        return $this->pluginDefinition['group'];
+    }
 
 }

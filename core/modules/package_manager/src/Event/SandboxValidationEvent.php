@@ -11,82 +11,87 @@ use Drupal\package_manager\ValidationResult;
 /**
  * Base class for events dispatched before a stage life cycle operation.
  */
-abstract class SandboxValidationEvent extends SandboxEvent {
+abstract class SandboxValidationEvent extends SandboxEvent
+{
+    /**
+     * The validation results.
+     *
+     * @var \Drupal\package_manager\ValidationResult[]
+     */
+    protected $results = [];
 
-  /**
-   * The validation results.
-   *
-   * @var \Drupal\package_manager\ValidationResult[]
-   */
-  protected $results = [];
-
-  /**
-   * Gets the validation results.
-   *
-   * @param int|null $severity
-   *   (optional) The severity for the results to return. Should be one of the
-   *   SystemManager::REQUIREMENT_* constants.
-   *
-   * @return \Drupal\package_manager\ValidationResult[]
-   *   The validation results.
-   */
-  public function getResults(?int $severity = NULL): array {
-    if ($severity !== NULL) {
-      return array_filter($this->results, fn(\Drupal\package_manager\ValidationResult $result) => $result->severity === $severity);
+    /**
+     * Gets the validation results.
+     *
+     * @param int|null $severity
+     *   (optional) The severity for the results to return. Should be one of the
+     *   SystemManager::REQUIREMENT_* constants.
+     *
+     * @return \Drupal\package_manager\ValidationResult[]
+     *   The validation results.
+     */
+    public function getResults(?int $severity = null): array
+    {
+        if ($severity !== null) {
+            return array_filter($this->results, fn (\Drupal\package_manager\ValidationResult $result) => $result->severity === $severity);
+        }
+        return $this->results;
     }
-    return $this->results;
-  }
 
-  /**
-   * Convenience method to flag a validation error.
-   *
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup[] $messages
-   *   The error messages.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
-   *   The summary of error messages. Must be passed if there is more than one
-   *   message.
-   */
-  public function addError(array $messages, ?TranslatableMarkup $summary = NULL): void {
-    $this->addResult(ValidationResult::createError(array_values($messages), $summary));
-  }
-
-  /**
-   * Convenience method, adds an error validation result from a throwable.
-   *
-   * @param \Throwable $throwable
-   *   The throwable.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
-   *   (optional) The summary of error messages.
-   */
-  public function addErrorFromThrowable(\Throwable $throwable, ?TranslatableMarkup $summary = NULL): void {
-    $this->addResult(ValidationResult::createErrorFromThrowable($throwable, $summary));
-  }
-
-  /**
-   * Adds a validation result to the event.
-   *
-   * @param \Drupal\package_manager\ValidationResult $result
-   *   The validation result to add.
-   *
-   * @throws \InvalidArgumentException
-   *   Thrown if the validation result is not an error.
-   */
-  public function addResult(ValidationResult $result): void {
-    // Only errors are allowed for this event.
-    if ($result->severity !== RequirementSeverity::Error->value) {
-      throw new \InvalidArgumentException('Only errors are allowed.');
+    /**
+     * Convenience method to flag a validation error.
+     *
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup[] $messages
+     *   The error messages.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
+     *   The summary of error messages. Must be passed if there is more than one
+     *   message.
+     */
+    public function addError(array $messages, ?TranslatableMarkup $summary = null): void
+    {
+        $this->addResult(ValidationResult::createError(array_values($messages), $summary));
     }
-    $this->results[] = $result;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function stopPropagation(): void {
-    if (empty($this->getResults(RequirementSeverity::Error->value))) {
-      $this->addErrorFromThrowable(new \LogicException('Event propagation stopped without any errors added to the event. This bypasses the package_manager validation system.'));
+    /**
+     * Convenience method, adds an error validation result from a throwable.
+     *
+     * @param \Throwable $throwable
+     *   The throwable.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
+     *   (optional) The summary of error messages.
+     */
+    public function addErrorFromThrowable(\Throwable $throwable, ?TranslatableMarkup $summary = null): void
+    {
+        $this->addResult(ValidationResult::createErrorFromThrowable($throwable, $summary));
     }
-    parent::stopPropagation();
-  }
+
+    /**
+     * Adds a validation result to the event.
+     *
+     * @param \Drupal\package_manager\ValidationResult $result
+     *   The validation result to add.
+     *
+     * @throws \InvalidArgumentException
+     *   Thrown if the validation result is not an error.
+     */
+    public function addResult(ValidationResult $result): void
+    {
+        // Only errors are allowed for this event.
+        if ($result->severity !== RequirementSeverity::Error->value) {
+            throw new \InvalidArgumentException('Only errors are allowed.');
+        }
+        $this->results[] = $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function stopPropagation(): void
+    {
+        if (empty($this->getResults(RequirementSeverity::Error->value))) {
+            $this->addErrorFromThrowable(new \LogicException('Event propagation stopped without any errors added to the event. This bypasses the package_manager validation system.'));
+        }
+        parent::stopPropagation();
+    }
 
 }

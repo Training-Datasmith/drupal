@@ -13,30 +13,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class UpdateEmptyEmailsUpdatePathTest extends UpdatePathTestBase {
+class UpdateEmptyEmailsUpdatePathTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests update_post_update_fix_update_emails.
+     */
+    public function testRunUpdates(): void
+    {
+        // Add an empty email address, just as was previously possible.
+        $this->config('update.settings')->set('notification.emails', [''])->save();
 
-  /**
-   * Tests update_post_update_fix_update_emails.
-   */
-  public function testRunUpdates(): void {
-    // Add an empty email address, just as was previously possible.
-    $this->config('update.settings')->set('notification.emails', [''])->save();
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $this->assertEquals([], $this->config('update.settings')->get('notification.emails'));
-  }
+        $this->assertEquals([], $this->config('update.settings')->get('notification.emails'));
+    }
 
 }

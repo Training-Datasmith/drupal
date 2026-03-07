@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Drupal\Core\Site\Settings;
@@ -16,113 +18,120 @@ use Twig\Sandbox\SecurityPolicyInterface;
  * objects can do by only loading certain classes, method names, and method
  * names with an allowed prefix. All object properties may be accessed.
  */
-class TwigSandboxPolicy implements SecurityPolicyInterface {
+class TwigSandboxPolicy implements SecurityPolicyInterface
+{
+    /**
+     * An array of allowed methods in the form of methodName => TRUE.
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected array $allowed_methods;
 
-  /**
-   * An array of allowed methods in the form of methodName => TRUE.
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected array $allowed_methods;
+    /**
+     * Allowed method prefixes.
+     *
+     * Any method starting with one of these prefixes will be allowed.
+     *
+     * @var array
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected $allowed_prefixes;
 
-  /**
-   * Allowed method prefixes.
-   *
-   * Any method starting with one of these prefixes will be allowed.
-   *
-   * @var array
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $allowed_prefixes;
+    /**
+     * An array of class names for which any method calls are allowed.
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected array $allowed_classes;
 
-  /**
-   * An array of class names for which any method calls are allowed.
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected array $allowed_classes;
+    /**
+     * Constructs a new TwigSandboxPolicy object.
+     */
+    public function __construct()
+    {
+        // Allow settings.php to override our default allowed classes, methods, and
+        // prefixes.
+        $allowed_classes = Settings::get('twig_sandbox_allowed_classes', [
+          // Allow any operations on the Attribute object as it is intended to be
+          // changed from a Twig template, for example calling addClass().
+          \Drupal\Core\Template\Attribute::class,
+        ]);
+        // Flip the array so we can check using isset().
+        $this->allowed_classes = array_flip($allowed_classes);
 
-  /**
-   * Constructs a new TwigSandboxPolicy object.
-   */
-  public function __construct() {
-    // Allow settings.php to override our default allowed classes, methods, and
-    // prefixes.
-    $allowed_classes = Settings::get('twig_sandbox_allowed_classes', [
-      // Allow any operations on the Attribute object as it is intended to be
-      // changed from a Twig template, for example calling addClass().
-      \Drupal\Core\Template\Attribute::class,
-    ]);
-    // Flip the array so we can check using isset().
-    $this->allowed_classes = array_flip($allowed_classes);
+        $allowed_methods = static::getMethodsAllowedOnAllObjects();
+        // Flip the array so we can check using isset().
+        $this->allowed_methods = array_flip($allowed_methods);
 
-    $allowed_methods = static::getMethodsAllowedOnAllObjects();
-    // Flip the array so we can check using isset().
-    $this->allowed_methods = array_flip($allowed_methods);
-
-    $this->allowed_prefixes = Settings::get('twig_sandbox_allowed_prefixes', [
-      'get',
-      'has',
-      'is',
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function checkSecurity($tags, $filters, $functions): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function checkPropertyAllowed($obj, $property): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function checkMethodAllowed($obj, $method): void {
-    foreach ($this->allowed_classes as $class => $key) {
-      if ($obj instanceof $class) {
-        return;
-      }
+        $this->allowed_prefixes = Settings::get('twig_sandbox_allowed_prefixes', [
+          'get',
+          'has',
+          'is',
+        ]);
     }
 
-    // Return quickly for an exact match of the method name.
-    if (isset($this->allowed_methods[$method])) {
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function checkSecurity($tags, $filters, $functions): void
+    {
     }
 
-    // If the method name starts with an allowed prefix, allow it. Note:
-    // strpos() is between 3x and 7x faster than preg_match() in this case.
-    foreach ($this->allowed_prefixes as $prefix) {
-      if (str_starts_with((string) $method, (string) $prefix)) {
-        return;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function checkPropertyAllowed($obj, $property): void
+    {
     }
 
-    // Allow the method if it has a TwigAllowed attribute.
-    $reflectionMethod = new \ReflectionMethod($obj, $method);
-    if ($reflectionMethod->getAttributes(TwigAllowed::class)) {
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function checkMethodAllowed($obj, $method): void
+    {
+        foreach ($this->allowed_classes as $class => $key) {
+            if ($obj instanceof $class) {
+                return;
+            }
+        }
+
+        // Return quickly for an exact match of the method name.
+        if (isset($this->allowed_methods[$method])) {
+            return;
+        }
+
+        // If the method name starts with an allowed prefix, allow it. Note:
+        // strpos() is between 3x and 7x faster than preg_match() in this case.
+        foreach ($this->allowed_prefixes as $prefix) {
+            if (str_starts_with((string) $method, (string) $prefix)) {
+                return;
+            }
+        }
+
+        // Allow the method if it has a TwigAllowed attribute.
+        $reflectionMethod = new \ReflectionMethod($obj, $method);
+        if ($reflectionMethod->getAttributes(TwigAllowed::class)) {
+            return;
+        }
+
+        throw new SecurityError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $obj::class));
     }
 
-    throw new SecurityError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $obj::class));
-  }
-
-  /**
-   * Gets the list of allowed methods on all objects.
-   *
-   * @return string[]
-   *   The list of allowed methods on all objects.
-   */
-  public static function getMethodsAllowedOnAllObjects(): array {
-    return Settings::get('twig_sandbox_allowed_methods', [
-      // Only allow idempotent methods.
-      'id',
-      'label',
-      'bundle',
-      'get',
-      '__toString',
-      'toString',
-    ]);
-  }
+    /**
+     * Gets the list of allowed methods on all objects.
+     *
+     * @return string[]
+     *   The list of allowed methods on all objects.
+     */
+    public static function getMethodsAllowedOnAllObjects(): array
+    {
+        return Settings::get('twig_sandbox_allowed_methods', [
+          // Only allow idempotent methods.
+          'id',
+          'label',
+          'bundle',
+          'get',
+          '__toString',
+          'toString',
+        ]);
+    }
 
 }

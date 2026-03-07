@@ -18,28 +18,29 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(InlineBlockEntityOperations::class)]
 #[Group('layout_builder')]
-class InlineBlockEntityOperationsTest extends UnitTestCase {
+class InlineBlockEntityOperationsTest extends UnitTestCase
+{
+    /**
+     * Tests calling handlePreSave() with an entity that is syncing.
+     *
+     * @legacy-covers ::handlePreSave
+     */
+    public function testPreSaveWithSyncingEntity(): void
+    {
+        $entity = $this->prophesize(SynchronizableInterface::class);
+        $entity->isSyncing()->willReturn(true);
 
-  /**
-   * Tests calling handlePreSave() with an entity that is syncing.
-   *
-   * @legacy-covers ::handlePreSave
-   */
-  public function testPreSaveWithSyncingEntity(): void {
-    $entity = $this->prophesize(SynchronizableInterface::class);
-    $entity->isSyncing()->willReturn(TRUE);
+        $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
+        $inline_block_usage = $this->prophesize(InlineBlockUsageInterface::class);
+        $section_storage_manager = $this->prophesize(SectionStorageManagerInterface::class);
+        $section_storage_manager->findByContext()->shouldNotBeCalled();
 
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $inline_block_usage = $this->prophesize(InlineBlockUsageInterface::class);
-    $section_storage_manager = $this->prophesize(SectionStorageManagerInterface::class);
-    $section_storage_manager->findByContext()->shouldNotBeCalled();
-
-    $inline_block_entity_operations = new InlineBlockEntityOperations(
-      $entity_type_manager->reveal(),
-      $inline_block_usage->reveal(),
-      $section_storage_manager->reveal()
-    );
-    $inline_block_entity_operations->handlePreSave($entity->reveal());
-  }
+        $inline_block_entity_operations = new InlineBlockEntityOperations(
+            $entity_type_manager->reveal(),
+            $inline_block_usage->reveal(),
+            $section_storage_manager->reveal()
+        );
+        $inline_block_entity_operations->handlePreSave($entity->reveal());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Logger;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -30,79 +32,80 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @ingroup logging_severity_levels
  */
-class RfcLogLevel {
+class RfcLogLevel
+{
+    /**
+     * Log message severity -- Emergency: system is unusable.
+     */
+    public const EMERGENCY = 0;
 
-  /**
-   * Log message severity -- Emergency: system is unusable.
-   */
-  const EMERGENCY = 0;
+    /**
+     * Log message severity -- Alert: action must be taken immediately.
+     */
+    public const ALERT = 1;
 
-  /**
-   * Log message severity -- Alert: action must be taken immediately.
-   */
-  const ALERT = 1;
+    /**
+     * Log message severity -- Critical conditions.
+     */
+    public const CRITICAL = 2;
 
-  /**
-   * Log message severity -- Critical conditions.
-   */
-  const CRITICAL = 2;
+    /**
+     * Log message severity -- Error conditions.
+     */
+    public const ERROR = 3;
 
-  /**
-   * Log message severity -- Error conditions.
-   */
-  const ERROR = 3;
+    /**
+     * Log message severity -- Warning conditions.
+     */
+    public const WARNING = 4;
 
-  /**
-   * Log message severity -- Warning conditions.
-   */
-  const WARNING = 4;
+    /**
+     * Log message severity -- Normal but significant conditions.
+     */
+    public const NOTICE = 5;
 
-  /**
-   * Log message severity -- Normal but significant conditions.
-   */
-  const NOTICE = 5;
+    /**
+     * Log message severity -- Informational messages.
+     */
+    public const INFO = 6;
 
-  /**
-   * Log message severity -- Informational messages.
-   */
-  const INFO = 6;
+    /**
+     * Log message severity -- Debug-level messages.
+     */
+    public const DEBUG = 7;
 
-  /**
-   * Log message severity -- Debug-level messages.
-   */
-  const DEBUG = 7;
+    /**
+     * An array with the severity levels as keys and labels as values.
+     *
+     * @var \Drupal\Core\StringTranslation\TranslatableMarkup[]
+     */
+    protected static $levels;
 
-  /**
-   * An array with the severity levels as keys and labels as values.
-   *
-   * @var \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   */
-  protected static $levels;
+    /**
+     * Returns a list of severity levels, as defined in RFC 5424.
+     *
+     * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
+     *   Array of the possible severity levels for log messages.
+     *
+     * @see http://tools.ietf.org/html/rfc5424
+     * @ingroup logging_severity_levels
+     */
+    public static function getLevels()
+    {
+        if (!static::$levels) {
+            static::$levels = [
+              static::EMERGENCY => new TranslatableMarkup('Emergency'),
+              static::ALERT => new TranslatableMarkup('Alert'),
+              static::CRITICAL => new TranslatableMarkup('Critical'),
+              static::ERROR => new TranslatableMarkup('Error'),
+              static::WARNING => new TranslatableMarkup('Warning'),
+              static::NOTICE => new TranslatableMarkup('Notice'),
+              static::INFO => new TranslatableMarkup('Info'),
+              static::DEBUG => new TranslatableMarkup('Debug'),
+            ];
+        }
 
-  /**
-   * Returns a list of severity levels, as defined in RFC 5424.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Array of the possible severity levels for log messages.
-   *
-   * @see http://tools.ietf.org/html/rfc5424
-   * @ingroup logging_severity_levels
-   */
-  public static function getLevels() {
-    if (!static::$levels) {
-      static::$levels = [
-        static::EMERGENCY => new TranslatableMarkup('Emergency'),
-        static::ALERT => new TranslatableMarkup('Alert'),
-        static::CRITICAL => new TranslatableMarkup('Critical'),
-        static::ERROR => new TranslatableMarkup('Error'),
-        static::WARNING => new TranslatableMarkup('Warning'),
-        static::NOTICE => new TranslatableMarkup('Notice'),
-        static::INFO => new TranslatableMarkup('Info'),
-        static::DEBUG => new TranslatableMarkup('Debug'),
-      ];
+        return static::$levels;
     }
-
-    return static::$levels;
-  }
 
 }

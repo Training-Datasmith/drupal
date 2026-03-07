@@ -13,40 +13,42 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests explosion and implosion of autocomplete tags.
  */
 #[Group('Common')]
-class TagsTest extends UnitTestCase {
+class TagsTest extends UnitTestCase
+{
+    /**
+     * A list of valid tags.
+     *
+     * @var string[][]
+     */
+    protected $validTags = [
+      'Drupal' => 'Drupal',
+      'Drupal with some spaces' => 'Drupal with some spaces',
+      '"Legendary Drupal mascot of doom: ""Druplicon"""' => 'Legendary Drupal mascot of doom: "Druplicon"',
+      '"Drupal, although it rhymes with sloopal, is as awesome as a troopal!"' => 'Drupal, although it rhymes with sloopal, is as awesome as a troopal!',
+    ];
 
-  /**
-   * A list of valid tags.
-   *
-   * @var string[][]
-   */
-  protected $validTags = [
-    'Drupal' => 'Drupal',
-    'Drupal with some spaces' => 'Drupal with some spaces',
-    '"Legendary Drupal mascot of doom: ""Druplicon"""' => 'Legendary Drupal mascot of doom: "Druplicon"',
-    '"Drupal, although it rhymes with sloopal, is as awesome as a troopal!"' => 'Drupal, although it rhymes with sloopal, is as awesome as a troopal!',
-  ];
-
-  /**
-   * Explodes a series of tags.
-   */
-  public function testExplodeTags(): void {
-    $string = implode(', ', array_keys($this->validTags));
-    $tags = Tags::explode($string);
-    $this->assertEquals(array_values($this->validTags), $tags);
-  }
-
-  /**
-   * Implodes a series of tags.
-   */
-  public function testImplodeTags(): void {
-    $tags = array_values($this->validTags);
-    // Let's explode and implode to our heart's content.
-    for ($i = 0; $i < 10; $i++) {
-      $string = Tags::implode($tags);
-      $tags = Tags::explode($string);
+    /**
+     * Explodes a series of tags.
+     */
+    public function testExplodeTags(): void
+    {
+        $string = implode(', ', array_keys($this->validTags));
+        $tags = Tags::explode($string);
+        $this->assertEquals(array_values($this->validTags), $tags);
     }
-    $this->assertEquals(array_values($this->validTags), $tags);
-  }
+
+    /**
+     * Implodes a series of tags.
+     */
+    public function testImplodeTags(): void
+    {
+        $tags = array_values($this->validTags);
+        // Let's explode and implode to our heart's content.
+        for ($i = 0; $i < 10; $i++) {
+            $string = Tags::implode($tags);
+            $tags = Tags::explode($string);
+        }
+        $this->assertEquals(array_values($this->validTags), $tags);
+    }
 
 }

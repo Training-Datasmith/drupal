@@ -11,6 +11,6 @@ namespace Drupal\plugin_test_extended\Plugin\plugin_test\fruit;
  *   color = "green"
  * )
  */
-class BigApple {
-
+class BigApple
+{
 }

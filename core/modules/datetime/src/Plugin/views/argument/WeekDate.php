@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -8,13 +10,13 @@ use Drupal\views\Attribute\ViewsArgument;
  * Argument handler for a week.
  */
 #[ViewsArgument(
-  id: 'datetime_week'
+    id: 'datetime_week'
 )]
-class WeekDate extends Date {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $argFormat = 'W';
+class WeekDate extends Date
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $argFormat = 'W';
 
 }

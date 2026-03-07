@@ -7,13 +7,14 @@ namespace Drupal\workspaces\Provider;
 /**
  * Defines the default workspace provider.
  */
-class DefaultWorkspaceProvider extends WorkspaceProviderBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getId(): string {
-    return 'default';
-  }
+class DefaultWorkspaceProvider extends WorkspaceProviderBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getId(): string
+    {
+        return 'default';
+    }
 
 }

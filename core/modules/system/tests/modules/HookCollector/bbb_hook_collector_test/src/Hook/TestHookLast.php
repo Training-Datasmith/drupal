@@ -13,14 +13,15 @@ use Drupal\Core\Hook\Attribute\Hook;
  * to the alphabetical module names. Some of the implementations are reordered
  * using order attributes.
  */
-class TestHookLast {
-
-  /**
-   * This pair tests OrderLast.
-   */
-  #[Hook('custom_hook_test_hook_last')]
-  public function hookLast(): string {
-    return __METHOD__;
-  }
+class TestHookLast
+{
+    /**
+     * This pair tests OrderLast.
+     */
+    #[Hook('custom_hook_test_hook_last')]
+    public function hookLast(): string
+    {
+        return __METHOD__;
+    }
 
 }

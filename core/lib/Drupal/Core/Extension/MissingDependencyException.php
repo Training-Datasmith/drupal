@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 /**
@@ -7,4 +9,6 @@ namespace Drupal\Core\Extension;
  *
  * @see \Drupal\Core\Extension\ModuleInstaller::install()
  */
-class MissingDependencyException extends \Exception {}
+class MissingDependencyException extends \Exception
+{
+}

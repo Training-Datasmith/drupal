@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\search\Plugin\views\row;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -11,44 +13,47 @@ use Drupal\views\Plugin\views\row\RowPluginBase;
  * Row handler plugin for displaying search results.
  */
 #[ViewsRow(
-  id: "search_view",
-  title: new TranslatableMarkup("Search results"),
-  help: new TranslatableMarkup("Provides a row plugin to display search results.")
+    id: 'search_view',
+    title: new TranslatableMarkup('Search results'),
+    help: new TranslatableMarkup('Provides a row plugin to display search results.')
 )]
-class SearchRow extends RowPluginBase {
+class SearchRow extends RowPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        $options['score'] = ['default' => true];
 
-    $options['score'] = ['default' => TRUE];
+        return $options;
+    }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['score'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Display score'),
+          '#default_value' => $this->options['score'],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['score'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Display score'),
-      '#default_value' => $this->options['score'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($row): array {
-    return [
-      '#theme' => $this->themeFunctions(),
-      '#view' => $this->view,
-      '#options' => $this->options,
-      '#row' => $row,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render($row): array
+    {
+        return [
+          '#theme' => $this->themeFunctions(),
+          '#view' => $this->view,
+          '#options' => $this->options,
+          '#row' => $row,
+        ];
+    }
 
 }

@@ -9,15 +9,16 @@ use Drupal\Core\Render\RenderableInterface;
 /**
  * Provides an example implementation of the RenderableInterface.
  */
-class ExampleRenderable implements RenderableInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function toRenderable() {
-    return [
-      '#markup' => 'Example markup',
-    ];
-  }
+class ExampleRenderable implements RenderableInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function toRenderable()
+    {
+        return [
+          '#markup' => 'Example markup',
+        ];
+    }
 
 }

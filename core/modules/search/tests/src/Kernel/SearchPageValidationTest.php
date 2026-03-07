@@ -18,48 +18,51 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class SearchPageValidationTest extends ConfigEntityValidationTestBase {
+class SearchPageValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['search', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['search', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entity = SearchPage::create([
+          'id' => 'test',
+          'label' => 'Test',
+          'path' => 'test',
+          'plugin' => 'user_search',
+        ]);
+        $this->entity->save();
+    }
 
-    $this->entity = SearchPage::create([
-      'id' => 'test',
-      'label' => 'Test',
-      'path' => 'test',
-      'plugin' => 'user_search',
-    ]);
-    $this->entity->save();
-  }
+    /**
+     * Tests that the search plugin ID is validated.
+     */
+    public function testInvalidPluginId(): void
+    {
+        $this->entity->set('plugin', 'non_existent');
+        $this->assertValidationErrors([
+          'plugin' => "The 'non_existent' plugin does not exist.",
+        ]);
+    }
 
-  /**
-   * Tests that the search plugin ID is validated.
-   */
-  public function testInvalidPluginId(): void {
-    $this->entity->set('plugin', 'non_existent');
-    $this->assertValidationErrors([
-      'plugin' => "The 'non_existent' plugin does not exist.",
-    ]);
-  }
-
-  /**
-   * Test that the base route stored in definition is correct.
-   */
-  public function testBaseRouteIsValid(): void {
-    $search_page_repository = new SearchPageRepository(\Drupal::configFactory(), \Drupal::entityTypeManager());
-    $search_local_task = new SearchLocalTask($search_page_repository);
-    $definitions = $search_local_task->getDerivativeDefinitions([]);
-    $route_provider = \Drupal::service('router.route_provider');
-    $base_route = $route_provider->getRouteByName($definitions['test']['base_route']);
-    $this->assertSame($base_route, $route_provider->getRouteByName('search.view'));
-  }
+    /**
+     * Test that the base route stored in definition is correct.
+     */
+    public function testBaseRouteIsValid(): void
+    {
+        $search_page_repository = new SearchPageRepository(\Drupal::configFactory(), \Drupal::entityTypeManager());
+        $search_local_task = new SearchLocalTask($search_page_repository);
+        $definitions = $search_local_task->getDerivativeDefinitions([]);
+        $route_provider = \Drupal::service('router.route_provider');
+        $base_route = $route_provider->getRouteByName($definitions['test']['base_route']);
+        $this->assertSame($base_route, $route_provider->getRouteByName('search.view'));
+    }
 
 }

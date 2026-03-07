@@ -1,184 +1,197 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Entity\Render\EntityTranslationRenderTrait;
 use Drupal\views\ResultRow;
-use Drupal\Core\Cache\Cache;
 
 /**
  * Provides a field handler which renders an entity in a certain view mode.
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("rendered_entity")]
-class RenderedEntity extends FieldPluginBase implements CacheableDependencyInterface {
+#[ViewsField('rendered_entity')]
+class RenderedEntity extends FieldPluginBase implements CacheableDependencyInterface
+{
+    use EntityTranslationRenderTrait;
 
-  use EntityTranslationRenderTrait;
-
-  /**
-   * Constructs a new RenderedEntity object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
-   *   The entity display repository.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function usesGroupBy(): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defineOptions() {
-    $options = parent::defineOptions();
-    $options['view_mode'] = ['default' => 'default'];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-
-    $form['view_mode'] = [
-      '#type' => 'select',
-      '#options' => $this->entityDisplayRepository->getViewModeOptions($this->getEntityTypeId()),
-      '#title' => $this->t('View mode'),
-      '#default_value' => $this->options['view_mode'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values): string|array {
-    $entity = $this->getEntity($values);
-    if ($entity === NULL) {
-      return '';
-    }
-    $entity = $this->getEntityTranslationByRelationship($entity, $values);
-    $build = [];
-    $access = $entity->access('view', NULL, TRUE);
-    $build['#access'] = $access;
-    if ($access->isAllowed()) {
-      $view_builder = $this->entityTypeManager->getViewBuilder($this->getEntityTypeId());
-      $build += $view_builder->view($entity, $this->options['view_mode'], $entity->language()->getId());
-    }
-    return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags(): array {
-    // On render, tags that get invalidated on entity view display save are
-    // bubbled up, so there is no need to add view display cache tags here.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge(): int {
-    return Cache::PERMANENT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    // We purposefully do not call parent::query() because we do not want the
-    // default query behavior for Views fields. Instead, let the entity
-    // translation renderer provide the correct query behavior.
-    if ($this->languageManager->isMultilingual()) {
-      $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityTypeId() {
-    return $this->getEntityType();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityTypeManager() {
-    return $this->entityTypeManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityRepository() {
-    return $this->entityRepository;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getLanguageManager() {
-    return $this->languageManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getView() {
-    return $this->view;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $dependencies = parent::calculateDependencies();
-
-    $view_mode = $this->entityTypeManager
-      ->getStorage('entity_view_mode')
-      ->load($this->getEntityTypeId() . '.' . $this->options['view_mode']);
-    if ($view_mode) {
-      $dependencies[$view_mode->getConfigDependencyKey()][] = $view_mode->getConfigDependencyName();
+    /**
+     * Constructs a new RenderedEntity object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param array $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
+     *   The entity display repository.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    return $dependencies;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function usesGroupBy(): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['view_mode'] = ['default' => 'default'];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+
+        $form['view_mode'] = [
+          '#type' => 'select',
+          '#options' => $this->entityDisplayRepository->getViewModeOptions($this->getEntityTypeId()),
+          '#title' => $this->t('View mode'),
+          '#default_value' => $this->options['view_mode'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values): string|array
+    {
+        $entity = $this->getEntity($values);
+        if ($entity === null) {
+            return '';
+        }
+        $entity = $this->getEntityTranslationByRelationship($entity, $values);
+        $build = [];
+        $access = $entity->access('view', null, true);
+        $build['#access'] = $access;
+        if ($access->isAllowed()) {
+            $view_builder = $this->entityTypeManager->getViewBuilder($this->getEntityTypeId());
+            $build += $view_builder->view($entity, $this->options['view_mode'], $entity->language()->getId());
+        }
+        return $build;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts(): array
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags(): array
+    {
+        // On render, tags that get invalidated on entity view display save are
+        // bubbled up, so there is no need to add view display cache tags here.
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge(): int
+    {
+        return Cache::PERMANENT;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        // We purposefully do not call parent::query() because we do not want the
+        // default query behavior for Views fields. Instead, let the entity
+        // translation renderer provide the correct query behavior.
+        if ($this->languageManager->isMultilingual()) {
+            $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityTypeId()
+    {
+        return $this->getEntityType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityTypeManager()
+    {
+        return $this->entityTypeManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityRepository()
+    {
+        return $this->entityRepository;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLanguageManager()
+    {
+        return $this->languageManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getView()
+    {
+        return $this->view;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        $dependencies = parent::calculateDependencies();
+
+        $view_mode = $this->entityTypeManager
+          ->getStorage('entity_view_mode')
+          ->load($this->getEntityTypeId() . '.' . $this->options['view_mode']);
+        if ($view_mode) {
+            $dependencies[$view_mode->getConfigDependencyKey()][] = $view_mode->getConfigDependencyName();
+        }
+
+        return $dependencies;
+    }
 
 }

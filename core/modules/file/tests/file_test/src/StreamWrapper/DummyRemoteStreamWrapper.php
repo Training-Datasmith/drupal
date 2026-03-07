@@ -13,24 +13,27 @@ use Drupal\Core\StreamWrapper\PublicStream;
  *
  * Basically just the public scheme but not returning a local file for realpath.
  */
-class DummyRemoteStreamWrapper extends PublicStream {
+class DummyRemoteStreamWrapper extends PublicStream
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'Dummy files (remote)';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return 'Dummy files (remote)';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return 'Dummy wrapper for testing (remote).';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return 'Dummy wrapper for testing (remote).';
-  }
-
-  public function realpath() {
-    return FALSE;
-  }
+    public function realpath()
+    {
+        return false;
+    }
 
 }

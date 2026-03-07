@@ -10,20 +10,22 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Authentication provider for testing purposes.
  */
-class TestAuth implements AuthenticationProviderInterface {
+class TestAuth implements AuthenticationProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(Request $request)
+    {
+        return $request->headers->has('REST-test-auth');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(Request $request) {
-    return $request->headers->has('REST-test-auth');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function authenticate(Request $request) {
-    return NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function authenticate(Request $request)
+    {
+        return null;
+    }
 
 }

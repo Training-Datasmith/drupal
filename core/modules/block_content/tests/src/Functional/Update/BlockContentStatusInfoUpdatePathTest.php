@@ -15,31 +15,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block_content')]
 #[RunTestsInSeparateProcesses]
-class BlockContentStatusInfoUpdatePathTest extends UpdatePathTestBase {
+class BlockContentStatusInfoUpdatePathTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests block_content_post_update_remove_block_content_status_info_keys.
+     */
+    public function testRunUpdates(): void
+    {
+        $this->assertArrayHasKey('info', Block::load('anotherblock')->get('settings'));
+        $this->assertArrayHasKey('status', Block::load('anotherblock')->get('settings'));
 
-  /**
-   * Tests block_content_post_update_remove_block_content_status_info_keys.
-   */
-  public function testRunUpdates(): void {
-    $this->assertArrayHasKey('info', Block::load('anotherblock')->get('settings'));
-    $this->assertArrayHasKey('status', Block::load('anotherblock')->get('settings'));
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $this->assertArrayNotHasKey('info', Block::load('anotherblock')->get('settings'));
-    $this->assertArrayNotHasKey('status', Block::load('anotherblock')->get('settings'));
-  }
+        $this->assertArrayNotHasKey('info', Block::load('anotherblock')->get('settings'));
+        $this->assertArrayNotHasKey('status', Block::load('anotherblock')->get('settings'));
+    }
 
 }

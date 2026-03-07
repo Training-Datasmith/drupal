@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -23,47 +25,42 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('log')]
-class Log extends ProcessPluginBase {
+class Log extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        $is_object = is_object($value);
+        if (is_null($value) || is_bool($value)) {
+            $export = var_export($value, true);
+        } elseif (is_float($value)) {
+            $export = sprintf('%f', $value);
+        } elseif ($is_object && method_exists($value, 'toString')) {
+            $export = print_r($value->toString(), true);
+        } elseif ($is_object && method_exists($value, 'toArray')) {
+            $export = print_r($value->toArray(), true);
+        } elseif (is_string($value) || is_numeric($value) || is_array($value)) {
+            $export = print_r($value, true);
+        } elseif ($is_object && method_exists($value, '__toString')) {
+            $export = print_r((string) $value, true);
+        } else {
+            $export = null;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $is_object = is_object($value);
-    if (is_null($value) || is_bool($value)) {
-      $export = var_export($value, TRUE);
-    }
-    elseif (is_float($value)) {
-      $export = sprintf('%f', $value);
-    }
-    elseif ($is_object && method_exists($value, 'toString')) {
-      $export = print_r($value->toString(), TRUE);
-    }
-    elseif ($is_object && method_exists($value, 'toArray')) {
-      $export = print_r($value->toArray(), TRUE);
-    }
-    elseif (is_string($value) || is_numeric($value) || is_array($value)) {
-      $export = print_r($value, TRUE);
-    }
-    elseif ($is_object && method_exists($value, '__toString')) {
-      $export = print_r((string) $value, TRUE);
-    }
-    else {
-      $export = NULL;
-    }
+        $class_name = $export !== null && $is_object
+          ? $class_name = $value::class . ":\n"
+          : '';
 
-    $class_name = $export !== NULL && $is_object
-      ? $class_name = $value::class . ":\n"
-      : '';
+        $message = $export === null
+          ? "Unable to log the value for '$destination_property'"
+          : "'$destination_property' value is $class_name'$export'";
 
-    $message = $export === NULL
-      ? "Unable to log the value for '$destination_property'"
-      : "'$destination_property' value is $class_name'$export'";
-
-    // Log the value.
-    $migrate_executable->saveMessage($message);
-    // Pass through the same value we received.
-    return $value;
-  }
+        // Log the value.
+        $migrate_executable->saveMessage($message);
+        // Pass through the same value we received.
+        return $value;
+    }
 
 }

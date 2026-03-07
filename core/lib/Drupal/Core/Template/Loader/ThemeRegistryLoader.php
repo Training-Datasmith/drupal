@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template\Loader;
 
 use Drupal\Core\Theme\Registry;
@@ -11,64 +13,65 @@ use Twig\Loader\FilesystemLoader;
  *
  * Allows for template inheritance based on the currently active template.
  */
-class ThemeRegistryLoader extends FilesystemLoader {
-
-  /**
-   * Constructs a new ThemeRegistryLoader object.
-   *
-   * @param \Drupal\Core\Theme\Registry $themeRegistry
-   *   The theme registry.
-   */
-  public function __construct(protected \Drupal\Core\Theme\Registry $themeRegistry)
-  {
-  }
-
-  /**
-   * Finds the path to the requested template.
-   *
-   * @param string $name
-   *   The name of the template to load.
-   * @param bool $throw
-   *   Whether to throw an exception when an error occurs.
-   *
-   * @return string|null
-   *   The path to the template, or NULL if the template is not found.
-   *
-   * @throws \Twig\Error\LoaderError
-   *   Thrown if a template matching $name cannot be found.
-   */
-  protected function findTemplate(string $name, bool $throw = TRUE) {
-    // Allow for loading based on the Drupal theme registry.
-    $hook = str_replace('.html.twig', '', strtr($name, '-', '_'));
-    $theme_registry = $this->themeRegistry->getRuntime();
-
-    if ($theme_registry->has($hook)) {
-      $info = $theme_registry->get($hook);
-      if (isset($info['path'])) {
-        $path = $info['path'] . '/' . $name;
-      }
-      elseif (isset($info['template'])) {
-        $path = $info['template'] . '.html.twig';
-      }
-      if (isset($path) && is_file($path)) {
-        return $this->cache[$name] = $path;
-      }
+class ThemeRegistryLoader extends FilesystemLoader
+{
+    /**
+     * Constructs a new ThemeRegistryLoader object.
+     *
+     * @param \Drupal\Core\Theme\Registry $themeRegistry
+     *   The theme registry.
+     */
+    public function __construct(protected \Drupal\Core\Theme\Registry $themeRegistry)
+    {
     }
 
-    if ($throw) {
-      throw new LoaderError(sprintf('Unable to find template "%s" in the Drupal theme registry.', $name));
+    /**
+     * Finds the path to the requested template.
+     *
+     * @param string $name
+     *   The name of the template to load.
+     * @param bool $throw
+     *   Whether to throw an exception when an error occurs.
+     *
+     * @return string|null
+     *   The path to the template, or NULL if the template is not found.
+     *
+     * @throws \Twig\Error\LoaderError
+     *   Thrown if a template matching $name cannot be found.
+     */
+    protected function findTemplate(string $name, bool $throw = true)
+    {
+        // Allow for loading based on the Drupal theme registry.
+        $hook = str_replace('.html.twig', '', strtr($name, '-', '_'));
+        $theme_registry = $this->themeRegistry->getRuntime();
+
+        if ($theme_registry->has($hook)) {
+            $info = $theme_registry->get($hook);
+            if (isset($info['path'])) {
+                $path = $info['path'] . '/' . $name;
+            } elseif (isset($info['template'])) {
+                $path = $info['template'] . '.html.twig';
+            }
+            if (isset($path) && is_file($path)) {
+                return $this->cache[$name] = $path;
+            }
+        }
+
+        if ($throw) {
+            throw new LoaderError(sprintf('Unable to find template "%s" in the Drupal theme registry.', $name));
+        }
+
+        return null;
     }
 
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheKey(string $name): string {
-    // The parent implementation does unnecessary work that triggers
-    // deprecations in PHP 8.1.
-    return $this->findTemplate($name) ?: '';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheKey(string $name): string
+    {
+        // The parent implementation does unnecessary work that triggers
+        // deprecations in PHP 8.1.
+        return $this->findTemplate($name) ?: '';
+    }
 
 }

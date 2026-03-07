@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -15,100 +17,110 @@ use Drupal\layout_builder\TempStoreIdentifierInterface;
 /**
  * Provides a base class for Section Storage types.
  */
-abstract class SectionStorageBase extends PluginBase implements SectionStorageInterface, TempStoreIdentifierInterface, CacheableDependencyInterface {
+abstract class SectionStorageBase extends PluginBase implements SectionStorageInterface, TempStoreIdentifierInterface, CacheableDependencyInterface
+{
+    use ContextAwarePluginTrait;
+    use LayoutBuilderRoutesTrait;
 
-  use ContextAwarePluginTrait;
-  use LayoutBuilderRoutesTrait;
+    /**
+     * Gets the section list.
+     *
+     * @return \Drupal\layout_builder\SectionListInterface
+     *   The section list.
+     */
+    abstract protected function getSectionList();
 
-  /**
-   * Gets the section list.
-   *
-   * @return \Drupal\layout_builder\SectionListInterface
-   *   The section list.
-   */
-  abstract protected function getSectionList();
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageType() {
-    return $this->getPluginId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function count(): int {
-    return $this->getSectionList()->count();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSections() {
-    return $this->getSectionList()->getSections();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSection($delta) {
-    return $this->getSectionList()->getSection($delta);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function appendSection(Section $section) {
-    $this->getSectionList()->appendSection($section);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function insertSection($delta, Section $section) {
-    $this->getSectionList()->insertSection($delta, $section);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeSection($delta) {
-    $this->getSectionList()->removeSection($delta);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeAllSections($set_blank = FALSE) {
-    $this->getSectionList()->removeAllSections($set_blank);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextsDuringPreview() {
-    $contexts = $this->getContexts();
-
-    // view_mode is a required context, but SectionStorage plugins are not
-    // required to return it (for example, the layout_library plugin provided
-    // in the Layout Library module. In these instances, explicitly create a
-    // view_mode context with the value "default".
-    if (!isset($contexts['view_mode']) || $contexts['view_mode']->validate()->count() || !$contexts['view_mode']->getContextValue()) {
-      $contexts['view_mode'] = new Context(new ContextDefinition('string'), 'default');
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageType()
+    {
+        return $this->getPluginId();
     }
-    return $contexts;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTempstoreKey() {
-    return $this->getStorageId();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return $this->getSectionList()->count();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSections()
+    {
+        return $this->getSectionList()->getSections();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSection($delta)
+    {
+        return $this->getSectionList()->getSection($delta);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function appendSection(Section $section)
+    {
+        $this->getSectionList()->appendSection($section);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function insertSection($delta, Section $section)
+    {
+        $this->getSectionList()->insertSection($delta, $section);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeSection($delta)
+    {
+        $this->getSectionList()->removeSection($delta);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeAllSections($set_blank = false)
+    {
+        $this->getSectionList()->removeAllSections($set_blank);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextsDuringPreview()
+    {
+        $contexts = $this->getContexts();
+
+        // view_mode is a required context, but SectionStorage plugins are not
+        // required to return it (for example, the layout_library plugin provided
+        // in the Layout Library module. In these instances, explicitly create a
+        // view_mode context with the value "default".
+        if (!isset($contexts['view_mode']) || $contexts['view_mode']->validate()->count() || !$contexts['view_mode']->getContextValue()) {
+            $contexts['view_mode'] = new Context(new ContextDefinition('string'), 'default');
+        }
+        return $contexts;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTempstoreKey()
+    {
+        return $this->getStorageId();
+    }
 
 }

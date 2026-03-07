@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\area;
 
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsArea;
 use Drupal\views\Views;
@@ -13,144 +14,149 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ingroup views_area_handlers
  */
-#[ViewsArea("view")]
-class View extends AreaPluginBase {
+#[ViewsArea('view')]
+class View extends AreaPluginBase
+{
+    /**
+     * Stores whether the embedded view is actually empty.
+     *
+     * @var bool
+     */
+    protected $isEmpty;
 
-  /**
-   * Stores whether the embedded view is actually empty.
-   *
-   * @var bool
-   */
-  protected $isEmpty;
+    /**
+     * Constructs a View object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
+     *   The view storage.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * Constructs a View object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
-   *   The view storage.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $container->get('entity_type.manager')->getStorage('view')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('entity_type.manager')->getStorage('view')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        $options['view_to_insert'] = ['default' => ''];
+        $options['inherit_arguments'] = ['default' => false];
+        return $options;
+    }
 
-    $options['view_to_insert'] = ['default' => ''];
-    $options['inherit_arguments'] = ['default' => FALSE];
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
+        $view_display = $this->view->storage->id() . ':' . $this->view->current_display;
 
-    $view_display = $this->view->storage->id() . ':' . $this->view->current_display;
+        $options = ['' => $this->t('-Select-')];
+        $options += Views::getViewsAsOptions(false, 'all', $view_display, false, true);
+        $form['view_to_insert'] = [
+          '#type' => 'select',
+          '#title' => $this->t('View to insert'),
+          '#default_value' => $this->options['view_to_insert'],
+          '#description' => $this->t('The view to insert into this area.'),
+          '#options' => $options,
+        ];
 
-    $options = ['' => $this->t('-Select-')];
-    $options += Views::getViewsAsOptions(FALSE, 'all', $view_display, FALSE, TRUE);
-    $form['view_to_insert'] = [
-      '#type' => 'select',
-      '#title' => $this->t('View to insert'),
-      '#default_value' => $this->options['view_to_insert'],
-      '#description' => $this->t('The view to insert into this area.'),
-      '#options' => $options,
-    ];
+        $form['inherit_arguments'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Inherit contextual filters'),
+          '#default_value' => $this->options['inherit_arguments'],
+          '#description' => $this->t('If checked, this view will receive the same contextual filters as its parent.'),
+        ];
+    }
 
-    $form['inherit_arguments'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Inherit contextual filters'),
-      '#default_value' => $this->options['inherit_arguments'],
-      '#description' => $this->t('If checked, this view will receive the same contextual filters as its parent.'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render($empty = false)
+    {
+        if (!empty($this->options['view_to_insert'])) {
+            [$view_name, $display_id] = explode(':', (string) $this->options['view_to_insert']);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render($empty = FALSE) {
-    if (!empty($this->options['view_to_insert'])) {
-      [$view_name, $display_id] = explode(':', (string) $this->options['view_to_insert']);
+            $view = $this->viewStorage->load($view_name)->getExecutable();
 
-      $view = $this->viewStorage->load($view_name)->getExecutable();
+            if (empty($view) || !$view->access($display_id)) {
+                return [];
+            }
+            $view->setDisplay($display_id);
 
-      if (empty($view) || !$view->access($display_id)) {
+            // Avoid recursion.
+            $view->parent_views += $this->view->parent_views;
+            $view->parent_views[] = "$view_name:$display_id";
+
+            // Check if the view is part of the parent views of this view.
+            $search = "$view_name:$display_id";
+            if (in_array($search, $this->view->parent_views)) {
+                \Drupal::messenger()
+                  ->addError($this->t('Recursion detected in view @view display @display.', [
+                    '@view' => $view_name,
+                    '@display' => $display_id,
+                  ]));
+            } else {
+                if (!empty($this->options['inherit_arguments']) && !empty($this->view->args)) {
+                    $output = $view->preview($display_id, $this->view->args);
+                } else {
+                    $output = $view->preview($display_id);
+                }
+                $this->isEmpty = $view->display_handler->outputIsEmpty();
+                return $output;
+            }
+        }
         return [];
-      }
-      $view->setDisplay($display_id);
-
-      // Avoid recursion.
-      $view->parent_views += $this->view->parent_views;
-      $view->parent_views[] = "$view_name:$display_id";
-
-      // Check if the view is part of the parent views of this view.
-      $search = "$view_name:$display_id";
-      if (in_array($search, $this->view->parent_views)) {
-        \Drupal::messenger()
-          ->addError($this->t("Recursion detected in view @view display @display.", [
-            '@view' => $view_name,
-            '@display' => $display_id,
-          ]));
-      }
-      else {
-        if (!empty($this->options['inherit_arguments']) && !empty($this->view->args)) {
-          $output = $view->preview($display_id, $this->view->args);
-        }
-        else {
-          $output = $view->preview($display_id);
-        }
-        $this->isEmpty = $view->display_handler->outputIsEmpty();
-        return $output;
-      }
-    }
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty() {
-    return $this->isEmpty ?? parent::isEmpty();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $dependencies = parent::calculateDependencies();
-
-    [$view_id] = explode(':', (string) $this->options['view_to_insert'], 2);
-    // Don't call the current view, as it would result into an infinite
-    // recursion.
-    if ($view_id && $this->view->storage->id() != $view_id) {
-      $view = $this->viewStorage->load($view_id);
-      $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
     }
 
-    return $dependencies;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty()
+    {
+        return $this->isEmpty ?? parent::isEmpty();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        $dependencies = parent::calculateDependencies();
+
+        [$view_id] = explode(':', (string) $this->options['view_to_insert'], 2);
+        // Don't call the current view, as it would result into an infinite
+        // recursion.
+        if ($view_id && $this->view->storage->id() != $view_id) {
+            $view = $this->viewStorage->load($view_id);
+            $dependencies[$view->getConfigDependencyKey()][] = $view->getConfigDependencyName();
+        }
+
+        return $dependencies;
+    }
 
 }

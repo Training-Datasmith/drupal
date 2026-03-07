@@ -15,41 +15,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block_content')]
 #[RunTestsInSeparateProcesses]
-class BlockContentRevisionsTest extends KernelTestBase {
+class BlockContentRevisionsTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block_content',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block_content',
-    'user',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('block_content');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('block_content');
-  }
+    /**
+     * Tests block content revision user id doesn't throw error with null field.
+     */
+    public function testNullRevisionUser(): void
+    {
+        BlockContentType::create([
+          'id' => 'basic',
+          'label' => 'A basic block type',
+        ])->save();
 
-  /**
-   * Tests block content revision user id doesn't throw error with null field.
-   */
-  public function testNullRevisionUser(): void {
-    BlockContentType::create([
-      'id' => 'basic',
-      'label' => 'A basic block type',
-    ])->save();
-
-    $block = BlockContent::create([
-      'info' => 'Test',
-      'type' => 'basic',
-      'revision_user' => NULL,
-    ]);
-    $block->save();
-    $this->assertNull($block->getRevisionUserId());
-  }
+        $block = BlockContent::create([
+          'info' => 'Test',
+          'type' => 'basic',
+          'revision_user' => null,
+        ]);
+        $block->save();
+        $this->assertNull($block->getRevisionUserId());
+    }
 
 }

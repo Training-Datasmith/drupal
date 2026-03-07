@@ -13,39 +13,40 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class LanguageListModuleInstallTest extends BrowserTestBase {
+class LanguageListModuleInstallTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests enabling Language.
+     */
+    public function testModuleInstallLanguageList(): void
+    {
+        // Since LanguageManager::getLanguages() uses static caches we need to do
+        // this by enabling the module using the UI.
+        $admin_user = $this->drupalCreateUser([
+          'access administration pages',
+          'administer modules',
+        ]);
+        $this->drupalLogin($admin_user);
+        $edit = [];
+        $edit['modules[language][enable]'] = 'language';
+        $this->drupalGet('admin/modules');
+        $this->submitForm($edit, 'Install');
 
-  /**
-   * Tests enabling Language.
-   */
-  public function testModuleInstallLanguageList(): void {
-    // Since LanguageManager::getLanguages() uses static caches we need to do
-    // this by enabling the module using the UI.
-    $admin_user = $this->drupalCreateUser([
-      'access administration pages',
-      'administer modules',
-    ]);
-    $this->drupalLogin($admin_user);
-    $edit = [];
-    $edit['modules[language][enable]'] = 'language';
-    $this->drupalGet('admin/modules');
-    $this->submitForm($edit, 'Install');
+        $this->assertEquals(1, \Drupal::state()->get('language_test.language_count_preinstall', 0), 'Using LanguageManager::getLanguages() returns 1 language during Language installation.');
 
-    $this->assertEquals(1, \Drupal::state()->get('language_test.language_count_preinstall', 0), 'Using LanguageManager::getLanguages() returns 1 language during Language installation.');
-
-    // Get updated module list by rebuilding container.
-    $this->rebuildContainer();
-    $this->assertTrue(\Drupal::moduleHandler()->moduleExists('language'), 'Language module is enabled');
-  }
+        // Get updated module list by rebuilding container.
+        $this->rebuildContainer();
+        $this->assertTrue(\Drupal::moduleHandler()->moduleExists('language'), 'Language module is enabled');
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\toolbar\PageCache;
 
 use Drupal\Core\PageCache\RequestPolicyInterface;
@@ -11,17 +13,18 @@ use Symfony\Component\HttpFoundation\Request;
  * This policy allows caching of requests directed to /toolbar/subtrees/{hash}
  * even for authenticated users.
  */
-class AllowToolbarPath implements RequestPolicyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    // Note that this regular expression matches the end of pathinfo in order to
-    // support multilingual sites using path prefixes.
-    if (preg_match('#/toolbar/subtrees/[^/]+(/[^/]+)?$#', $request->getPathInfo())) {
-      return static::ALLOW;
+class AllowToolbarPath implements RequestPolicyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        // Note that this regular expression matches the end of pathinfo in order to
+        // support multilingual sites using path prefixes.
+        if (preg_match('#/toolbar/subtrees/[^/]+(/[^/]+)?$#', $request->getPathInfo())) {
+            return static::ALLOW;
+        }
     }
-  }
 
 }

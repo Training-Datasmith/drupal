@@ -15,79 +15,83 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('condition_test')]
 #[RunTestsInSeparateProcesses]
-class ConditionTestDualUserTest extends KernelTestBase {
+class ConditionTestDualUserTest extends KernelTestBase
+{
+    /**
+     * An anonymous user for testing purposes.
+     *
+     * @var \Drupal\user\Entity\User
+     */
+    protected $anonymous;
 
-  /**
-   * An anonymous user for testing purposes.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected $anonymous;
+    /**
+     * An authenticated user for testing purposes.
+     *
+     * @var \Drupal\user\Entity\User
+     */
+    protected $authenticated;
 
-  /**
-   * An authenticated user for testing purposes.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected $authenticated;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'user', 'condition_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'user', 'condition_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('user');
 
-    $this->installEntitySchema('user');
+        $this->anonymous = User::create(['uid' => 0]);
+        $this->authenticated = User::create(['uid' => 1]);
+    }
 
-    $this->anonymous = User::create(['uid' => 0]);
-    $this->authenticated = User::create(['uid' => 1]);
-  }
+    /**
+     * Tests the dual user condition.
+     */
+    public function testConditions(): void
+    {
+        $this->doTestIdenticalUser();
+        $this->doTestDifferentUser();
+    }
 
-  /**
-   * Tests the dual user condition.
-   */
-  public function testConditions(): void {
-    $this->doTestIdenticalUser();
-    $this->doTestDifferentUser();
-  }
+    /**
+     * Tests with both contexts mapped to the same user.
+     */
+    protected function doTestIdenticalUser(): void
+    {
+        /** @var \Drupal\Core\Condition\ConditionPluginBase $condition */
+        $condition = \Drupal::service('plugin.manager.condition')
+          ->createInstance('condition_test_dual_user')
+          // Map the anonymous user to both contexts.
+          ->setContextMapping([
+            'user1' => 'anonymous',
+            'user2' => 'anonymous',
+          ]);
+        $contexts['anonymous'] = EntityContext::fromEntity($this->anonymous);
+        \Drupal::service('context.handler')->applyContextMapping($condition, $contexts);
+        $this->assertTrue($condition->execute());
+    }
 
-  /**
-   * Tests with both contexts mapped to the same user.
-   */
-  protected function doTestIdenticalUser(): void {
-    /** @var \Drupal\Core\Condition\ConditionPluginBase $condition */
-    $condition = \Drupal::service('plugin.manager.condition')
-      ->createInstance('condition_test_dual_user')
-      // Map the anonymous user to both contexts.
-      ->setContextMapping([
-        'user1' => 'anonymous',
-        'user2' => 'anonymous',
-      ]);
-    $contexts['anonymous'] = EntityContext::fromEntity($this->anonymous);
-    \Drupal::service('context.handler')->applyContextMapping($condition, $contexts);
-    $this->assertTrue($condition->execute());
-  }
-
-  /**
-   * Tests with each context mapped to different users.
-   */
-  protected function doTestDifferentUser(): void {
-    /** @var \Drupal\Core\Condition\ConditionPluginBase $condition */
-    $condition = \Drupal::service('plugin.manager.condition')
-      ->createInstance('condition_test_dual_user')
-      ->setContextMapping([
-        'user1' => 'anonymous',
-        'user2' => 'authenticated',
-      ]);
-    $contexts['anonymous'] = EntityContext::fromEntity($this->anonymous);
-    $contexts['authenticated'] = EntityContext::fromEntity($this->authenticated);
-    \Drupal::service('context.handler')->applyContextMapping($condition, $contexts);
-    $this->assertFalse($condition->execute());
-  }
+    /**
+     * Tests with each context mapped to different users.
+     */
+    protected function doTestDifferentUser(): void
+    {
+        /** @var \Drupal\Core\Condition\ConditionPluginBase $condition */
+        $condition = \Drupal::service('plugin.manager.condition')
+          ->createInstance('condition_test_dual_user')
+          ->setContextMapping([
+            'user1' => 'anonymous',
+            'user2' => 'authenticated',
+          ]);
+        $contexts['anonymous'] = EntityContext::fromEntity($this->anonymous);
+        $contexts['authenticated'] = EntityContext::fromEntity($this->authenticated);
+        \Drupal::service('context.handler')->applyContextMapping($condition, $contexts);
+        $this->assertFalse($condition->execute());
+    }
 
 }

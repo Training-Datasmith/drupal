@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\views\Attribute\ViewsFilter;
@@ -12,14 +14,16 @@ use Drupal\views\ViewExecutable;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("broken")]
-class Broken extends FilterPluginBase {
-  use BrokenHandlerTrait;
+#[ViewsFilter('broken')]
+class Broken extends FilterPluginBase
+{
+    use BrokenHandlerTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+    }
 
 }

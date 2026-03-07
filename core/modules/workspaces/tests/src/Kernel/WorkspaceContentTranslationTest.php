@@ -16,122 +16,124 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspaceContentTranslationTest extends KernelTestBase {
+class WorkspaceContentTranslationTest extends KernelTestBase
+{
+    use UserCreationTrait;
+    use WorkspaceTestTrait;
 
-  use UserCreationTrait;
-  use WorkspaceTestTrait;
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'content_translation',
+      'entity_test',
+      'language',
+      'user',
+      'workspaces',
+      'workspaces_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'content_translation',
-    'entity_test',
-    'language',
-    'user',
-    'workspaces',
-    'workspaces_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entityTypeManager = \Drupal::entityTypeManager();
 
-    $this->entityTypeManager = \Drupal::entityTypeManager();
+        $this->installEntitySchema('entity_test_mulrevpub');
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('workspace');
 
-    $this->installEntitySchema('entity_test_mulrevpub');
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('workspace');
+        $this->installConfig(['language', 'content_translation']);
 
-    $this->installConfig(['language', 'content_translation']);
+        $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
 
-    $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
+        $language = ConfigurableLanguage::createFromLangcode('ro');
+        $language->save();
 
-    $language = ConfigurableLanguage::createFromLangcode('ro');
-    $language->save();
+        $this->container->get('content_translation.manager')
+          ->setEnabled('entity_test_mulrevpub', 'entity_test_mulrevpub', true);
 
-    $this->container->get('content_translation.manager')
-      ->setEnabled('entity_test_mulrevpub', 'entity_test_mulrevpub', TRUE);
+        Workspace::create(['id' => 'stage', 'label' => 'Stage'])->save();
+    }
 
-    Workspace::create(['id' => 'stage', 'label' => 'Stage'])->save();
-  }
+    /**
+     * Tests translations created in a workspace.
+     *
+     * @legacy-covers \Drupal\workspaces\Hook\EntityOperations::entityTranslationInsert
+     */
+    public function testTranslations(): void
+    {
+        $storage = $this->entityTypeManager->getStorage('entity_test_mulrevpub');
 
-  /**
-   * Tests translations created in a workspace.
-   *
-   * @legacy-covers \Drupal\workspaces\Hook\EntityOperations::entityTranslationInsert
-   */
-  public function testTranslations(): void {
-    $storage = $this->entityTypeManager->getStorage('entity_test_mulrevpub');
+        // Create two untranslated nodes in Live, a published and an unpublished
+        // one.
+        $entity_published = $storage->create(['name' => 'live - 1 - published', 'status' => true]);
+        $entity_published->save();
+        $entity_unpublished = $storage->create(['name' => 'live - 2 - unpublished', 'status' => false]);
+        $entity_unpublished->save();
 
-    // Create two untranslated nodes in Live, a published and an unpublished
-    // one.
-    $entity_published = $storage->create(['name' => 'live - 1 - published', 'status' => TRUE]);
-    $entity_published->save();
-    $entity_unpublished = $storage->create(['name' => 'live - 2 - unpublished', 'status' => FALSE]);
-    $entity_unpublished->save();
+        // Activate the Stage workspace and add translations.
+        $this->switchToWorkspace('stage');
 
-    // Activate the Stage workspace and add translations.
-    $this->switchToWorkspace('stage');
+        // Add a translation for each entity.
+        $entity_published->addTranslation('ro', ['name' => 'live - 1 - published - RO']);
+        $entity_published->save();
 
-    // Add a translation for each entity.
-    $entity_published->addTranslation('ro', ['name' => 'live - 1 - published - RO']);
-    $entity_published->save();
+        // Test that the default revision translation is created in a WS.
+        $this->assertTrue(\Drupal::keyValue('ws_test')->get('workspace_was_active'));
 
-    // Test that the default revision translation is created in a WS.
-    $this->assertTrue(\Drupal::keyValue('ws_test')->get('workspace_was_active'));
+        $entity_unpublished->addTranslation('ro', ['name' => 'live - 2 - unpublished - RO']);
+        $entity_unpublished->save();
 
-    $entity_unpublished->addTranslation('ro', ['name' => 'live - 2 - unpublished - RO']);
-    $entity_unpublished->save();
+        // Both 'EN' and 'RO' translations are published in Stage.
+        $entity_published = $storage->loadUnchanged($entity_published->id());
+        $this->assertTrue($entity_published->isPublished());
+        $this->assertEquals('live - 1 - published', $entity_published->get('name')->value);
 
-    // Both 'EN' and 'RO' translations are published in Stage.
-    $entity_published = $storage->loadUnchanged($entity_published->id());
-    $this->assertTrue($entity_published->isPublished());
-    $this->assertEquals('live - 1 - published', $entity_published->get('name')->value);
+        $translation = $entity_published->getTranslation('ro');
+        $this->assertTrue($translation->isPublished());
+        $this->assertEquals('live - 1 - published - RO', $translation->get('name')->value);
 
-    $translation = $entity_published->getTranslation('ro');
-    $this->assertTrue($translation->isPublished());
-    $this->assertEquals('live - 1 - published - RO', $translation->get('name')->value);
+        // Both 'EN' and 'RO' translations are unpublished in Stage.
+        $entity_unpublished = $storage->loadUnchanged($entity_unpublished->id());
+        $this->assertFalse($entity_unpublished->isPublished());
+        $this->assertEquals('live - 2 - unpublished', $entity_unpublished->get('name')->value);
 
-    // Both 'EN' and 'RO' translations are unpublished in Stage.
-    $entity_unpublished = $storage->loadUnchanged($entity_unpublished->id());
-    $this->assertFalse($entity_unpublished->isPublished());
-    $this->assertEquals('live - 2 - unpublished', $entity_unpublished->get('name')->value);
+        $translation = $entity_unpublished->getTranslation('ro');
+        $this->assertEquals('live - 2 - unpublished - RO', $translation->get('name')->value);
+        $this->assertTrue($translation->isPublished());
 
-    $translation = $entity_unpublished->getTranslation('ro');
-    $this->assertEquals('live - 2 - unpublished - RO', $translation->get('name')->value);
-    $this->assertTrue($translation->isPublished());
+        // Switch to Live and check the translations.
+        $this->switchToLive();
 
-    // Switch to Live and check the translations.
-    $this->switchToLive();
+        // The 'EN' translation is still published in Live, but the 'RO' one is
+        // unpublished.
+        $entity_published = $storage->loadUnchanged($entity_published->id());
+        $this->assertTrue($entity_published->isPublished());
+        $this->assertEquals('live - 1 - published', $entity_published->get('name')->value);
 
-    // The 'EN' translation is still published in Live, but the 'RO' one is
-    // unpublished.
-    $entity_published = $storage->loadUnchanged($entity_published->id());
-    $this->assertTrue($entity_published->isPublished());
-    $this->assertEquals('live - 1 - published', $entity_published->get('name')->value);
+        $translation = $entity_published->getTranslation('ro');
+        $this->assertFalse($translation->isPublished());
+        $this->assertEquals('live - 1 - published - RO', $translation->get('name')->value);
 
-    $translation = $entity_published->getTranslation('ro');
-    $this->assertFalse($translation->isPublished());
-    $this->assertEquals('live - 1 - published - RO', $translation->get('name')->value);
+        // Both 'EN' and 'RO' translations are unpublished in Live.
+        $entity_unpublished = $storage->loadUnchanged($entity_unpublished->id());
+        $this->assertFalse($entity_unpublished->isPublished());
+        $this->assertEquals('live - 2 - unpublished', $entity_unpublished->get('name')->value);
 
-    // Both 'EN' and 'RO' translations are unpublished in Live.
-    $entity_unpublished = $storage->loadUnchanged($entity_unpublished->id());
-    $this->assertFalse($entity_unpublished->isPublished());
-    $this->assertEquals('live - 2 - unpublished', $entity_unpublished->get('name')->value);
-
-    $translation = $entity_unpublished->getTranslation('ro');
-    $this->assertFalse($translation->isPublished());
-    $this->assertEquals('live - 2 - unpublished - RO', $translation->get('name')->value);
-  }
+        $translation = $entity_unpublished->getTranslation('ro');
+        $this->assertFalse($translation->isPublished());
+        $this->assertEquals('live - 2 - unpublished - RO', $translation->get('name')->value);
+    }
 
 }

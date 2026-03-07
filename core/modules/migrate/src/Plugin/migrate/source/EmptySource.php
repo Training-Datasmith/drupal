@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\source;
 
 use Drupal\migrate\Attribute\MigrateSource;
@@ -25,44 +27,49 @@ use Drupal\migrate\Attribute\MigrateSource;
  * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
  */
 #[MigrateSource('empty')]
-class EmptySource extends SourcePluginBase {
+class EmptySource extends SourcePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): array
+    {
+        return [
+          'id' => $this->t('ID'),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): array {
-    return [
-      'id' => $this->t('ID'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function initializeIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator([['id' => '']]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function initializeIterator(): \ArrayIterator {
-    return new \ArrayIterator([['id' => '']]);
-  }
+    /**
+     * Allows class to decide how it will react when it is treated like a string.
+     */
+    public function __toString(): string
+    {
+        return '';
+    }
 
-  /**
-   * Allows class to decide how it will react when it is treated like a string.
-   */
-  public function __toString(): string {
-    return '';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['id']['type'] = 'string';
+        return $ids;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['id']['type'] = 'string';
-    return $ids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function doCount(): int {
-    return 1;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function doCount(): int
+    {
+        return 1;
+    }
 
 }

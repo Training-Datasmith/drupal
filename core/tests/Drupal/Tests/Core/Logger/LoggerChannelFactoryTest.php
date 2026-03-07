@@ -16,29 +16,32 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(LoggerChannelFactory::class)]
 #[Group('Logger')]
-class LoggerChannelFactoryTest extends UnitTestCase {
+class LoggerChannelFactoryTest extends UnitTestCase
+{
+    /**
+     * Tests LoggerChannelFactory::get().
+     */
+    public function testGet(): void
+    {
+        $factory = new LoggerChannelFactory(
+            $this->createMock(RequestStack::class),
+            $this->createMock(AccountInterface::class),
+        );
 
-  /**
-   * Tests LoggerChannelFactory::get().
-   */
-  public function testGet(): void {
-    $factory = new LoggerChannelFactory(
-      $this->createMock(RequestStack::class),
-      $this->createMock(AccountInterface::class),
-    );
-
-    // Ensure that when called with the same argument, always the same instance
-    // will be returned.
-    $this->assertSame($factory->get('test'), $factory->get('test'));
-  }
+        // Ensure that when called with the same argument, always the same instance
+        // will be returned.
+        $this->assertSame($factory->get('test'), $factory->get('test'));
+    }
 
 }
 
 /**
  * Call to test a logger channel class with no constructor.
  */
-class LoggerChannelWithoutConstructor extends LoggerChannelFactory {
-
-  public function __construct() {}
+class LoggerChannelWithoutConstructor extends LoggerChannelFactory
+{
+    public function __construct()
+    {
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\row;
 
 use Drupal\views\Attribute\ViewsRow;
@@ -12,18 +14,19 @@ use Drupal\views\Plugin\views\row\EntityRow;
  *
  * @ingroup views_row_plugins
  */
-#[ViewsRow("entity:node")]
-class NodeRow extends EntityRow {
+#[ViewsRow('entity:node')]
+class NodeRow extends EntityRow
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        $options['view_mode']['default'] = 'teaser';
 
-    $options['view_mode']['default'] = 'teaser';
-
-    return $options;
-  }
+        return $options;
+    }
 
 }

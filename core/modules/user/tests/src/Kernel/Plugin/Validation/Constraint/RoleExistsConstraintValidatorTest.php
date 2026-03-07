@@ -22,50 +22,52 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 #[CoversClass(RoleExistsConstraint::class)]
 #[CoversClass(RoleExistsConstraintValidator::class)]
 #[RunTestsInSeparateProcesses]
-class RoleExistsConstraintValidatorTest extends KernelTestBase {
+class RoleExistsConstraintValidatorTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'user'];
+    /**
+     * Tests that the constraint validator will only work with strings.
+     */
+    public function testValueMustBeAString(): void
+    {
+        $definition = DataDefinition::create('any')
+          ->addConstraint('RoleExists');
 
-  /**
-   * Tests that the constraint validator will only work with strings.
-   */
-  public function testValueMustBeAString(): void {
-    $definition = DataDefinition::create('any')
-      ->addConstraint('RoleExists');
+        $this->expectException(UnexpectedTypeException::class);
+        $this->expectExceptionMessage('Expected argument of type "string", "int" given');
+        $this->container->get('typed_data_manager')
+          ->create($definition, 39)
+          ->validate();
+    }
 
-    $this->expectException(UnexpectedTypeException::class);
-    $this->expectExceptionMessage('Expected argument of type "string", "int" given');
-    $this->container->get('typed_data_manager')
-      ->create($definition, 39)
-      ->validate();
-  }
+    /**
+     * Tests when the constraint's entityTypeId value is not valid.
+     */
+    public function testRoleExists(): void
+    {
+        // Validation error when role does not exist.
+        $definition = DataDefinition::create('string')
+          ->addConstraint('RoleExists');
 
-  /**
-   * Tests when the constraint's entityTypeId value is not valid.
-   */
-  public function testRoleExists(): void {
-    // Validation error when role does not exist.
-    $definition = DataDefinition::create('string')
-      ->addConstraint('RoleExists');
+        $violations = $this->container->get('typed_data_manager')
+          ->create($definition, 'test_role')
+          ->validate();
+        $this->assertEquals('The role with id \'test_role\' does not exist.', $violations->get(0)->getMessage());
+        $this->assertCount(1, $violations);
 
-    $violations = $this->container->get('typed_data_manager')
-      ->create($definition, 'test_role')
-      ->validate();
-    $this->assertEquals('The role with id \'test_role\' does not exist.', $violations->get(0)->getMessage());
-    $this->assertCount(1, $violations);
+        // Validation success when role exists.
+        Role::create(['id' => 'test_role', 'label' => 'Test role'])->save();
+        $definition = DataDefinition::create('string')
+          ->addConstraint('RoleExists');
 
-    // Validation success when role exists.
-    Role::create(['id' => 'test_role', 'label' => 'Test role'])->save();
-    $definition = DataDefinition::create('string')
-      ->addConstraint('RoleExists');
-
-    $violations = $this->container->get('typed_data_manager')
-      ->create($definition, 'test_role')
-      ->validate();
-    $this->assertCount(0, $violations);
-  }
+        $violations = $this->container->get('typed_data_manager')
+          ->create($definition, 'test_role')
+          ->validate();
+        $this->assertCount(0, $violations);
+    }
 
 }

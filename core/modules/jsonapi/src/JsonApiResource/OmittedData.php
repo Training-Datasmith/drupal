@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 use Drupal\Component\Assertion\Inspector;
@@ -14,19 +16,20 @@ use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class OmittedData extends ResourceObjectData {
-
-  /**
-   * OmittedData constructor.
-   *
-   * @param \Drupal\jsonapi\Exception\EntityAccessDeniedHttpException[] $data
-   *   Resource objects that are the primary data for the response.
-   *
-   * @see \Drupal\jsonapi\JsonApiResource\Data::__construct
-   */
-  public function __construct(array $data) {
-    assert(Inspector::assertAllObjects($data, EntityAccessDeniedHttpException::class));
-    parent::__construct($data);
-  }
+class OmittedData extends ResourceObjectData
+{
+    /**
+     * OmittedData constructor.
+     *
+     * @param \Drupal\jsonapi\Exception\EntityAccessDeniedHttpException[] $data
+     *   Resource objects that are the primary data for the response.
+     *
+     * @see \Drupal\jsonapi\JsonApiResource\Data::__construct
+     */
+    public function __construct(array $data)
+    {
+        assert(Inspector::assertAllObjects($data, EntityAccessDeniedHttpException::class));
+        parent::__construct($data);
+    }
 
 }

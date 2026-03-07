@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\menu_ui\Form;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\Core\Form\ConfirmFormBase;
-use Drupal\Core\Menu\MenuLinkManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Menu\MenuLinkInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,99 +16,108 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class MenuLinkResetForm extends ConfirmFormBase {
+class MenuLinkResetForm extends ConfirmFormBase
+{
+    /**
+     * The menu link.
+     *
+     * @var \Drupal\Core\Menu\MenuLinkInterface
+     */
+    protected $link;
 
-  /**
-   * The menu link.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkInterface
-   */
-  protected $link;
+    /**
+     * Constructs a MenuLinkResetForm object.
+     *
+     * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
+     *   The menu link manager.
+     */
+    public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
+    {
+    }
 
-  /**
-   * Constructs a MenuLinkResetForm object.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
-   *   The menu link manager.
-   */
-  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('plugin.manager.menu.link')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('plugin.manager.menu.link')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'menu_link_reset_confirm';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'menu_link_reset_confirm';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Are you sure you want to reset the link %item to its default values?', ['%item' => $this->link->getTitle()]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Are you sure you want to reset the link %item to its default values?', ['%item' => $this->link->getTitle()]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return new Url('entity.menu.edit_form', [
+          'menu' => $this->link->getMenuName(),
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return new Url('entity.menu.edit_form', [
-      'menu' => $this->link->getMenuName(),
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Any customizations will be lost. This action cannot be undone.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Any customizations will be lost. This action cannot be undone.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Reset');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Reset');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = null)
+    {
+        $this->link = $menu_link_plugin;
+        return parent::buildForm($form, $form_state);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = NULL) {
-    $this->link = $menu_link_plugin;
-    return parent::buildForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->link = $this->menuLinkManager->resetLink($this->link->getPluginId());
+        $this->messenger()->addStatus($this->t('The menu link was reset to its default settings.'));
+        $form_state->setRedirectUrl($this->getCancelUrl());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->link = $this->menuLinkManager->resetLink($this->link->getPluginId());
-    $this->messenger()->addStatus($this->t('The menu link was reset to its default settings.'));
-    $form_state->setRedirectUrl($this->getCancelUrl());
-  }
-
-  /**
-   * Checks access based on whether the link can be reset.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkInterface $menu_link_plugin
-   *   The menu link plugin being checked.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function linkIsResettable(MenuLinkInterface $menu_link_plugin) {
-    return AccessResult::allowedIf($menu_link_plugin->isResettable())->setCacheMaxAge(0);
-  }
+    /**
+     * Checks access based on whether the link can be reset.
+     *
+     * @param \Drupal\Core\Menu\MenuLinkInterface $menu_link_plugin
+     *   The menu link plugin being checked.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function linkIsResettable(MenuLinkInterface $menu_link_plugin)
+    {
+        return AccessResult::allowedIf($menu_link_plugin->isResettable())->setCacheMaxAge(0);
+    }
 
 }

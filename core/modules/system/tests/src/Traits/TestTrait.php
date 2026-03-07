@@ -12,23 +12,24 @@ namespace Drupal\Tests\system\Traits;
  *
  * @see \Drupal\Tests\system\Unit\TraitAccessTest
  */
-trait TestTrait {
+trait TestTrait
+{
+    /**
+     * Random string for a not very interesting trait.
+     *
+     * @var string
+     */
+    protected $stuff = 'stuff';
 
-  /**
-   * Random string for a not very interesting trait.
-   *
-   * @var string
-   */
-  protected $stuff = 'stuff';
-
-  /**
-   * Return a test string to a trait user.
-   *
-   * @return string
-   *   Just a random sort of string.
-   */
-  protected function getStuff() {
-    return $this->stuff;
-  }
+    /**
+     * Return a test string to a trait user.
+     *
+     * @return string
+     *   Just a random sort of string.
+     */
+    protected function getStuff()
+    {
+        return $this->stuff;
+    }
 
 }

@@ -12,17 +12,17 @@ use Drupal\Core\TypedData\TypedData;
  * Provides a test data type.
  */
 #[DataType(
-  id: "test_data_type",
-  label: new TranslatableMarkup("Test data type"),
-  deriver: TestDataTypeDeriver::class,
+    id: 'test_data_type',
+    label: new TranslatableMarkup('Test data type'),
+    deriver: TestDataTypeDeriver::class,
 )]
-class TestDataType extends TypedData {
-
-  /**
-   * Required by the parent class.
-   *
-   * @var mixed
-   */
-  protected $value;
+class TestDataType extends TypedData
+{
+    /**
+     * Required by the parent class.
+     *
+     * @var mixed
+     */
+    protected $value;
 
 }

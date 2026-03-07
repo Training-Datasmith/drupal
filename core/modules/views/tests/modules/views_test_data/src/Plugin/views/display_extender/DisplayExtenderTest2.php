@@ -14,6 +14,6 @@ use Drupal\views\Attribute\ViewsDisplayExtender;
     id: 'display_extender_test_2',
     title: new TranslatableMarkup('Display extender test number two'),
 )]
-class DisplayExtenderTest2 extends DisplayExtenderTest {
-
+class DisplayExtenderTest2 extends DisplayExtenderTest
+{
 }

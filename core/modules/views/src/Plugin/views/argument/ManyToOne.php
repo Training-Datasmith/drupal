@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsArgument;
-use Drupal\views\ViewExecutable;
-use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ManyToOneHelper;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\ViewExecutable;
 
 /**
  * Argument handler for many to one relationships.
@@ -24,196 +26,200 @@ use Drupal\views\ManyToOneHelper;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'many_to_one',
+    id: 'many_to_one',
 )]
-class ManyToOne extends ArgumentPluginBase {
+class ManyToOne extends ArgumentPluginBase
+{
+    /**
+     * The many-to-one helper.
+     */
+    public ManyToOneHelper $helper;
 
-  /**
-   * The many-to-one helper.
-   */
-  public ManyToOneHelper $helper;
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
+        $this->helper = new ManyToOneHelper($this);
 
-    $this->helper = new ManyToOneHelper($this);
-
-    // Ensure defaults for these, during summaries and stuff:
-    $this->operator = 'or';
-    $this->value = [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-
-    $options['break_phrase'] = ['default' => FALSE];
-
-    $options['add_table'] = ['default' => FALSE];
-    $options['require_value'] = ['default' => FALSE];
-
-    if (isset($this->helper)) {
-      $this->helper->defineOptions($options);
-    }
-    else {
-      $helper = new ManyToOneHelper($this);
-      $helper->defineOptions($options);
+        // Ensure defaults for these, during summaries and stuff:
+        $this->operator = 'or';
+        $this->value = [];
     }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
+        $options['break_phrase'] = ['default' => false];
 
-    // Allow '+' for "or". Allow ',' for "and".
-    $form['break_phrase'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Allow multiple values'),
-      '#description' => $this->t('If selected, users can enter multiple values in the form of 1+2+3 (for OR) or 1,2,3 (for AND).'),
-      '#default_value' => !empty($this->options['break_phrase']),
-      '#group' => 'options][more',
-    ];
+        $options['add_table'] = ['default' => false];
+        $options['require_value'] = ['default' => false];
 
-    $form['add_table'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Allow multiple filter values to work together'),
-      '#description' => $this->t('If selected, multiple instances of this filter can work together, as though multiple values were supplied to the same filter. This setting is not compatible with the "Reduce duplicates" setting.'),
-      '#default_value' => !empty($this->options['add_table']),
-      '#group' => 'options][more',
-    ];
+        if (isset($this->helper)) {
+            $this->helper->defineOptions($options);
+        } else {
+            $helper = new ManyToOneHelper($this);
+            $helper->defineOptions($options);
+        }
 
-    $form['require_value'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Do not display items with no value in summary'),
-      '#default_value' => !empty($this->options['require_value']),
-      '#group' => 'options][more',
-    ];
-
-    $this->helper->buildOptionsForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function ensureMyTable(): void {
-    $this->helper->ensureMyTable();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query($group_by = FALSE): void {
-    $empty = FALSE;
-    if (isset($this->definition['zero is null']) && $this->definition['zero is null']) {
-      if (empty($this->argument)) {
-        $empty = TRUE;
-      }
-    }
-    else {
-      if (!isset($this->argument)) {
-        $empty = TRUE;
-      }
-    }
-    if ($empty) {
-      parent::ensureMyTable();
-      $this->query->addWhere(0, "$this->tableAlias.$this->realField", NULL, 'IS NULL');
-      return;
+        return $options;
     }
 
-    if (!empty($this->options['break_phrase'])) {
-      $force_int = !empty($this->definition['numeric']);
-      $this->unpackArgumentValue($force_int);
-    }
-    else {
-      $this->value = [$this->argument];
-      $this->operator = 'or';
-    }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
 
-    $this->helper->addFilter();
-  }
+        // Allow '+' for "or". Allow ',' for "and".
+        $form['break_phrase'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Allow multiple values'),
+          '#description' => $this->t('If selected, users can enter multiple values in the form of 1+2+3 (for OR) or 1,2,3 (for AND).'),
+          '#default_value' => !empty($this->options['break_phrase']),
+          '#group' => 'options][more',
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function title() {
-    if (!$this->argument) {
-      return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
-    }
+        $form['add_table'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Allow multiple filter values to work together'),
+          '#description' => $this->t('If selected, multiple instances of this filter can work together, as though multiple values were supplied to the same filter. This setting is not compatible with the "Reduce duplicates" setting.'),
+          '#default_value' => !empty($this->options['add_table']),
+          '#group' => 'options][more',
+        ];
 
-    if (!empty($this->options['break_phrase'])) {
-      $force_int = !empty($this->definition['numeric']);
-      $this->unpackArgumentValue($force_int);
-    }
-    else {
-      $this->value = [$this->argument];
-      $this->operator = 'or';
-    }
+        $form['require_value'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Do not display items with no value in summary'),
+          '#default_value' => !empty($this->options['require_value']),
+          '#group' => 'options][more',
+        ];
 
-    // @todo Both of these should check definition for alternate keywords.
-
-    if (empty($this->value)) {
-      return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
-    }
-
-    if ($this->value === [-1]) {
-      return !empty($this->definition['invalid input']) ? $this->definition['invalid input'] : $this->t('Invalid input');
+        $this->helper->buildOptionsForm($form, $form_state);
     }
 
-    return implode($this->operator == 'or' ? ' + ' : ', ', $this->titleQuery());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function summaryQuery() {
-    $field = $this->table . '.' . $this->field;
-    $join = $this->getJoin();
-
-    if (!empty($this->options['require_value'])) {
-      $join->type = 'INNER';
+    /**
+     * {@inheritdoc}
+     */
+    public function ensureMyTable(): void
+    {
+        $this->helper->ensureMyTable();
     }
 
-    if (empty($this->options['add_table']) || empty($this->view->many_to_one_tables[$field])) {
-      $this->tableAlias = $this->query->ensureTable($this->table, $this->relationship, $join);
+    /**
+     * {@inheritdoc}
+     */
+    public function query($group_by = false): void
+    {
+        $empty = false;
+        if (isset($this->definition['zero is null']) && $this->definition['zero is null']) {
+            if (empty($this->argument)) {
+                $empty = true;
+            }
+        } else {
+            if (!isset($this->argument)) {
+                $empty = true;
+            }
+        }
+        if ($empty) {
+            parent::ensureMyTable();
+            $this->query->addWhere(0, "$this->tableAlias.$this->realField", null, 'IS NULL');
+            return;
+        }
+
+        if (!empty($this->options['break_phrase'])) {
+            $force_int = !empty($this->definition['numeric']);
+            $this->unpackArgumentValue($force_int);
+        } else {
+            $this->value = [$this->argument];
+            $this->operator = 'or';
+        }
+
+        $this->helper->addFilter();
     }
-    else {
-      $this->tableAlias = $this->helper->summaryJoin();
+
+    /**
+     * {@inheritdoc}
+     */
+    public function title()
+    {
+        if (!$this->argument) {
+            return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
+        }
+
+        if (!empty($this->options['break_phrase'])) {
+            $force_int = !empty($this->definition['numeric']);
+            $this->unpackArgumentValue($force_int);
+        } else {
+            $this->value = [$this->argument];
+            $this->operator = 'or';
+        }
+
+        // @todo Both of these should check definition for alternate keywords.
+
+        if (empty($this->value)) {
+            return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
+        }
+
+        if ($this->value === [-1]) {
+            return !empty($this->definition['invalid input']) ? $this->definition['invalid input'] : $this->t('Invalid input');
+        }
+
+        return implode($this->operator == 'or' ? ' + ' : ', ', $this->titleQuery());
     }
 
-    // Add the field.
-    $this->base_alias = $this->query->addField($this->tableAlias, $this->realField);
+    /**
+     * {@inheritdoc}
+     */
+    protected function summaryQuery()
+    {
+        $field = $this->table . '.' . $this->field;
+        $join = $this->getJoin();
 
-    $this->summaryNameField();
+        if (!empty($this->options['require_value'])) {
+            $join->type = 'INNER';
+        }
 
-    return $this->summaryBasics();
-  }
+        if (empty($this->options['add_table']) || empty($this->view->many_to_one_tables[$field])) {
+            $this->tableAlias = $this->query->ensureTable($this->table, $this->relationship, $join);
+        } else {
+            $this->tableAlias = $this->helper->summaryJoin();
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryArgument($data) {
-    $value = $data->{$this->base_alias};
-    if (empty($value)) {
-      return 0;
+        // Add the field.
+        $this->base_alias = $this->query->addField($this->tableAlias, $this->realField);
+
+        $this->summaryNameField();
+
+        return $this->summaryBasics();
     }
 
-    return $value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryArgument($data)
+    {
+        $value = $data->{$this->base_alias};
+        if (empty($value)) {
+            return 0;
+        }
 
-  /**
-   * Override for specific title lookups.
-   */
-  public function titleQuery() {
-    return $this->value;
-  }
+        return $value;
+    }
+
+    /**
+     * Override for specific title lookups.
+     */
+    public function titleQuery()
+    {
+        return $this->value;
+    }
 
 }

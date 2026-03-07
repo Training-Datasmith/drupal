@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -8,13 +10,13 @@ use Drupal\views\Attribute\ViewsArgument;
  * Argument handler for a full date (CCYYMMDD).
  */
 #[ViewsArgument(
-  id: 'datetime_full_date',
+    id: 'datetime_full_date',
 )]
-class FullDate extends Date {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $argFormat = 'Ymd';
+class FullDate extends Date
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $argFormat = 'Ymd';
 
 }

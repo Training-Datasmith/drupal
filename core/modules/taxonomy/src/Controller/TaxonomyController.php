@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Controller;
 
 use Drupal\Component\Utility\Xss;
@@ -10,33 +12,35 @@ use Drupal\taxonomy\VocabularyInterface;
 /**
  * Provides route responses for taxonomy.module.
  */
-class TaxonomyController extends ControllerBase {
+class TaxonomyController extends ControllerBase
+{
+    /**
+     * Returns a form to add a new term to a vocabulary.
+     *
+     * @param \Drupal\taxonomy\VocabularyInterface $taxonomy_vocabulary
+     *   The vocabulary this term will be added to.
+     *
+     * @return array
+     *   The taxonomy term add form.
+     */
+    public function addForm(VocabularyInterface $taxonomy_vocabulary)
+    {
+        $term = $this->entityTypeManager()->getStorage('taxonomy_term')->create(['vid' => $taxonomy_vocabulary->id()]);
+        return $this->entityFormBuilder()->getForm($term);
+    }
 
-  /**
-   * Returns a form to add a new term to a vocabulary.
-   *
-   * @param \Drupal\taxonomy\VocabularyInterface $taxonomy_vocabulary
-   *   The vocabulary this term will be added to.
-   *
-   * @return array
-   *   The taxonomy term add form.
-   */
-  public function addForm(VocabularyInterface $taxonomy_vocabulary) {
-    $term = $this->entityTypeManager()->getStorage('taxonomy_term')->create(['vid' => $taxonomy_vocabulary->id()]);
-    return $this->entityFormBuilder()->getForm($term);
-  }
-
-  /**
-   * Route title callback.
-   *
-   * @param \Drupal\taxonomy\TermInterface $taxonomy_term
-   *   The taxonomy term.
-   *
-   * @return array
-   *   The term label as a render array.
-   */
-  public function termTitle(TermInterface $taxonomy_term): array {
-    return ['#markup' => $taxonomy_term->getName(), '#allowed_tags' => Xss::getHtmlTagList()];
-  }
+    /**
+     * Route title callback.
+     *
+     * @param \Drupal\taxonomy\TermInterface $taxonomy_term
+     *   The taxonomy term.
+     *
+     * @return array
+     *   The term label as a render array.
+     */
+    public function termTitle(TermInterface $taxonomy_term): array
+    {
+        return ['#markup' => $taxonomy_term->getName(), '#allowed_tags' => Xss::getHtmlTagList()];
+    }
 
 }

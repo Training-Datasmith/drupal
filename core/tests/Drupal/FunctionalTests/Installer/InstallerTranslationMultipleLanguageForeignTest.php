@@ -12,26 +12,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerTranslationMultipleLanguageForeignTest extends InstallerTranslationMultipleLanguageTest {
+class InstallerTranslationMultipleLanguageForeignTest extends InstallerTranslationMultipleLanguageTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Overrides the language code in which to install Drupal.
+     *
+     * @var string
+     */
+    protected $langcode = 'de';
 
-  /**
-   * Overrides the language code in which to install Drupal.
-   *
-   * @var string
-   */
-  protected $langcode = 'de';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpLanguage(): void {
-    parent::setUpLanguage();
-    $this->translations['Save and continue'] = 'Save and continue de';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpLanguage(): void
+    {
+        parent::setUpLanguage();
+        $this->translations['Save and continue'] = 'Save and continue de';
+    }
 
 }

@@ -12,13 +12,14 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-class EntityTestDeleteForm extends ContentEntityDeleteForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl() {
-    return new Url('<front>');
-  }
+class EntityTestDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl()
+    {
+        return new Url('<front>');
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Attribute\EntityReferenceSelection;
@@ -19,38 +21,39 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\media\Entity\MediaLinkTarget
  */
 #[EntityReferenceSelection(
-  id: "default:media_link_target",
-  label: new TranslatableMarkup("Media with link target selection"),
-  group: "default",
-  weight: 0,
-  entity_types: ["media"]
+    id: 'default:media_link_target',
+    label: new TranslatableMarkup('Media with link target selection'),
+    group: 'default',
+    weight: 0,
+    entity_types: ['media']
 )]
-class MediaWithLinkTargetSelection extends MediaSelection {
+class MediaWithLinkTargetSelection extends MediaSelection
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildEntityQuery($match = null, $match_operator = 'CONTAINS')
+    {
+        $query = parent::buildEntityQuery($match, $match_operator);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
-    $query = parent::buildEntityQuery($match, $match_operator);
+        // phpcs:disable
+        // @see \Drupal\media\MediaSourceBase::getMetadata()
+        if (!\Drupal::config('media.settings')->get('standalone_url')) {
+            // @todo fix in  https://www.drupal.org/project/drupal/issues/3524300.
+            // The logic for finding media entities (which are used to provide entity link suggestions in CKEditor)
+            // should be at the API level for bundles. From the core, we enable node bundle selection only
+            // @see \Drupal\ckeditor5\Hook\Ckeditor5Hooks::entityBundleInfoAlter().
 
-    // phpcs:disable
-    // @see \Drupal\media\MediaSourceBase::getMetadata()
-    if (!\Drupal::config('media.settings')->get('standalone_url')) {
-      // @todo fix in  https://www.drupal.org/project/drupal/issues/3524300.
-      // The logic for finding media entities (which are used to provide entity link suggestions in CKEditor)
-      // should be at the API level for bundles. From the core, we enable node bundle selection only
-      // @see \Drupal\ckeditor5\Hook\Ckeditor5Hooks::entityBundleInfoAlter().
+            // To generates entity link suggestions for use by an autocomplete in CKEditor 5, an equivalent entity selection
+            // plugin is selected, @see \Drupal\ckeditor5\Controller\EntityLinkSuggestionsController::getSuggestions.
 
-      // To generates entity link suggestions for use by an autocomplete in CKEditor 5, an equivalent entity selection
-      // plugin is selected, @see \Drupal\ckeditor5\Controller\EntityLinkSuggestionsController::getSuggestions.
+            // This is an example to build and add logic to avoid finding media entities that are not linkable:
+            // any media bundle whose media source does not compute a link target should be omitted.
+            // $query->condition('bundle', 'document', '<>');
+        }
+        // phpcs:enable
 
-      // This is an example to build and add logic to avoid finding media entities that are not linkable:
-      // any media bundle whose media source does not compute a link target should be omitted.
-      // $query->condition('bundle', 'document', '<>');
+        return $query;
     }
-    // phpcs:enable
-
-    return $query;
-  }
 
 }

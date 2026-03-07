@@ -11,15 +11,16 @@ use Psr\Log\LoggerInterface;
 /**
  * A test class that implements LoggerAwareInterface.
  */
-class LoggerAwareStub implements LoggerAwareInterface {
+class LoggerAwareStub implements LoggerAwareInterface
+{
+    use LoggerAwareTrait;
 
-  use LoggerAwareTrait;
-
-  /**
-   * Gets the logger.
-   */
-  public function getLogger(): LoggerInterface {
-    return $this->logger;
-  }
+    /**
+     * Gets the logger.
+     */
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
 
 }

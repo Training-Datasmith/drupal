@@ -25,51 +25,52 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 #[CoversClass(BigPipe::class)]
 #[Group('big_pipe')]
-class ManyPlaceholderTest extends UnitTestCase {
+class ManyPlaceholderTest extends UnitTestCase
+{
+    /**
+     * Tests many no js place holders.
+     *
+     * @legacy-covers \Drupal\big_pipe\Render\BigPipe::sendNoJsPlaceholders
+     */
+    public function testManyNoJsPlaceHolders(): void
+    {
+        $session = $this->prophesize(SessionInterface::class);
+        $session->start()->willReturn(true);
+        $session->save()->shouldBeCalled();
+        $bigpipe = new BigPipe(
+            $this->prophesize(RendererInterface::class)->reveal(),
+            $session->reveal(),
+            $this->prophesize(RequestStack::class)->reveal(),
+            $this->prophesize(HttpKernelInterface::class)->reveal(),
+            $this->prophesize(EventDispatcherInterface::class)->reveal(),
+            $this->prophesize(ConfigFactoryInterface::class)->reveal(),
+            $this->prophesize(MessengerInterface::class)->reveal(),
+            $this->prophesize(RequestContext::class)->reveal(),
+            $this->prophesize(LoggerInterface::class)->reveal(),
+        );
+        $response = new BigPipeResponse(new HtmlResponse());
 
-  /**
-   * Tests many no js place holders.
-   *
-   * @legacy-covers \Drupal\big_pipe\Render\BigPipe::sendNoJsPlaceholders
-   */
-  public function testManyNoJsPlaceHolders(): void {
-    $session = $this->prophesize(SessionInterface::class);
-    $session->start()->willReturn(TRUE);
-    $session->save()->shouldBeCalled();
-    $bigpipe = new BigPipe(
-      $this->prophesize(RendererInterface::class)->reveal(),
-      $session->reveal(),
-      $this->prophesize(RequestStack::class)->reveal(),
-      $this->prophesize(HttpKernelInterface::class)->reveal(),
-      $this->prophesize(EventDispatcherInterface::class)->reveal(),
-      $this->prophesize(ConfigFactoryInterface::class)->reveal(),
-      $this->prophesize(MessengerInterface::class)->reveal(),
-      $this->prophesize(RequestContext::class)->reveal(),
-      $this->prophesize(LoggerInterface::class)->reveal(),
-    );
-    $response = new BigPipeResponse(new HtmlResponse());
+        // Add many placeholders.
+        $many_placeholders = [];
+        for ($i = 0; $i < 400; $i++) {
+            $many_placeholders[$this->randomMachineName(80)] = $this->randomMachineName(80);
+        }
+        $attachments = [
+          'library' => [],
+          'big_pipe_nojs_placeholders' => $many_placeholders,
+        ];
+        $response->setAttachments($attachments);
 
-    // Add many placeholders.
-    $many_placeholders = [];
-    for ($i = 0; $i < 400; $i++) {
-      $many_placeholders[$this->randomMachineName(80)] = $this->randomMachineName(80);
+        // Construct minimal HTML response.
+        $content = '<html><body>content<drupal-big-pipe-scripts-bottom-marker>script-bottom<drupal-big-pipe-scripts-bottom-marker></body></html>';
+        $response->setContent($content);
+
+        // Capture the result to avoid PHPUnit complaining.
+        ob_start();
+        $bigpipe->sendContent($response);
+        $result = ob_get_clean();
+
+        $this->assertNotEmpty($result);
     }
-    $attachments = [
-      'library' => [],
-      'big_pipe_nojs_placeholders' => $many_placeholders,
-    ];
-    $response->setAttachments($attachments);
-
-    // Construct minimal HTML response.
-    $content = '<html><body>content<drupal-big-pipe-scripts-bottom-marker>script-bottom<drupal-big-pipe-scripts-bottom-marker></body></html>';
-    $response->setContent($content);
-
-    // Capture the result to avoid PHPUnit complaining.
-    ob_start();
-    $bigpipe->sendContent($response);
-    $result = ob_get_clean();
-
-    $this->assertNotEmpty($result);
-  }
 
 }

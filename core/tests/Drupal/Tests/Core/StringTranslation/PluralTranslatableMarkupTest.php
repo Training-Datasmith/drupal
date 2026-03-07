@@ -16,40 +16,43 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PluralTranslatableMarkup::class)]
 #[Group('StringTranslation')]
-class PluralTranslatableMarkupTest extends UnitTestCase {
+class PluralTranslatableMarkupTest extends UnitTestCase
+{
+    /**
+     * Tests serialization of PluralTranslatableMarkup().
+     */
+    #[DataProvider('providerPluralTranslatableMarkupSerialization')]
+    public function testPluralTranslatableMarkupSerialization($count, $expected_text): void
+    {
+        // Add a mock string translation service to the container.
+        $container = new ContainerBuilder();
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
 
-  /**
-   * Tests serialization of PluralTranslatableMarkup().
-   */
-  #[DataProvider('providerPluralTranslatableMarkupSerialization')]
-  public function testPluralTranslatableMarkupSerialization($count, $expected_text): void {
-    // Add a mock string translation service to the container.
-    $container = new ContainerBuilder();
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
+        // Create an object to serialize and unserialize.
+        $markup = new PluralTranslatableMarkup($count, 'singular @count', 'plural @count');
+        $serialized_markup = unserialize(serialize($markup));
+        $this->assertEquals($expected_text, $serialized_markup->render());
+    }
 
-    // Create an object to serialize and unserialize.
-    $markup = new PluralTranslatableMarkup($count, 'singular @count', 'plural @count');
-    $serialized_markup = unserialize(serialize($markup));
-    $this->assertEquals($expected_text, $serialized_markup->render());
-  }
+    /**
+     * Data provider for ::testPluralTranslatableMarkupSerialization().
+     */
+    public static function providerPluralTranslatableMarkupSerialization(): array
+    {
+        return [
+          [1, 'singular 1'],
+          [2, 'plural 2'],
+        ];
+    }
 
-  /**
-   * Data provider for ::testPluralTranslatableMarkupSerialization().
-   */
-  public static function providerPluralTranslatableMarkupSerialization(): array {
-    return [
-      [1, 'singular 1'],
-      [2, 'plural 2'],
-    ];
-  }
-
-  /**
-   * Tests when the plural translation is missing.
-   */
-  public function testMissingPluralTranslation(): void {
-    $markup = PluralTranslatableMarkup::createFromTranslatedString(2, 'There is no plural delimiter @count');
-    $this->assertEquals('There is no plural delimiter 2', $markup->render());
-  }
+    /**
+     * Tests when the plural translation is missing.
+     */
+    public function testMissingPluralTranslation(): void
+    {
+        $markup = PluralTranslatableMarkup::createFromTranslatedString(2, 'There is no plural delimiter @count');
+        $this->assertEquals('There is no plural delimiter 2', $markup->render());
+    }
 
 }

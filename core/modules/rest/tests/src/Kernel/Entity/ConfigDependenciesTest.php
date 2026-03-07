@@ -19,198 +19,204 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ConfigDependencies::class)]
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class ConfigDependenciesTest extends KernelTestBase {
+class ConfigDependenciesTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['rest', 'entity_test', 'serialization', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['rest', 'entity_test', 'serialization', 'user'];
+    /**
+     * Tests calculate dependencies.
+     */
+    #[DataProvider('providerBasicDependencies')]
+    public function testCalculateDependencies(array $configuration): void
+    {
+        $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
 
-  /**
-   * Tests calculate dependencies.
-   */
-  #[DataProvider('providerBasicDependencies')]
-  public function testCalculateDependencies(array $configuration): void {
-    $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
+        $rest_config = RestResourceConfig::create($configuration);
 
-    $rest_config = RestResourceConfig::create($configuration);
+        $result = $config_dependencies->calculateDependencies($rest_config);
+        $this->assertEquals([
+          'module' => ['basic_auth', 'serialization'],
+        ], $result);
+    }
 
-    $result = $config_dependencies->calculateDependencies($rest_config);
-    $this->assertEquals([
-      'module' => ['basic_auth', 'serialization'],
-    ], $result);
-  }
+    /**
+     * Tests on dependency removal remove unrelated dependency.
+     *
+     * @legacy-covers ::onDependencyRemoval
+     * @legacy-covers ::onDependencyRemovalForMethodGranularity
+     * @legacy-covers ::onDependencyRemovalForResourceGranularity
+     */
+    #[DataProvider('providerBasicDependencies')]
+    public function testOnDependencyRemovalRemoveUnrelatedDependency(array $configuration): void
+    {
+        $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
 
-  /**
-   * Tests on dependency removal remove unrelated dependency.
-   *
-   * @legacy-covers ::onDependencyRemoval
-   * @legacy-covers ::onDependencyRemovalForMethodGranularity
-   * @legacy-covers ::onDependencyRemovalForResourceGranularity
-   */
-  #[DataProvider('providerBasicDependencies')]
-  public function testOnDependencyRemovalRemoveUnrelatedDependency(array $configuration): void {
-    $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
+        $rest_config = RestResourceConfig::create($configuration);
 
-    $rest_config = RestResourceConfig::create($configuration);
+        $this->assertFalse($config_dependencies->onDependencyRemoval($rest_config, ['module' => ['node']]));
+        $this->assertEquals($configuration['configuration'], $rest_config->get('configuration'));
+    }
 
-    $this->assertFalse($config_dependencies->onDependencyRemoval($rest_config, ['module' => ['node']]));
-    $this->assertEquals($configuration['configuration'], $rest_config->get('configuration'));
-  }
+    /**
+     * @return array
+     *   An array with numerical keys:
+     *   0. The original REST resource configuration.
+     */
+    public static function providerBasicDependencies()
+    {
+        return [
+          'method' => [
+            [
+              'plugin_id' => 'entity:entity_test',
+              'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
+              'configuration' => [
+                'GET' => [
+                  'supported_auth' => ['basic_auth'],
+                  'supported_formats' => ['json'],
+                ],
+                'POST' => [
+                  'supported_auth' => ['cookie'],
+                  'supported_formats' => ['xml'],
+                ],
+              ],
+            ],
+          ],
+          'resource' => [
+            [
+              'plugin_id' => 'entity:entity_test',
+              'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+              'configuration' => [
+                'methods' => ['GET', 'POST'],
+                'formats' => ['json'],
+                'authentication' => ['cookie', 'basic_auth'],
+              ],
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * @return array
-   *   An array with numerical keys:
-   *   0. The original REST resource configuration.
-   */
-  public static function providerBasicDependencies() {
-    return [
-      'method' => [
-        [
+    /**
+     * Tests on dependency removal remove auth.
+     *
+     * @legacy-covers ::onDependencyRemoval
+     * @legacy-covers ::onDependencyRemovalForMethodGranularity
+     */
+    public function testOnDependencyRemovalRemoveAuth(): void
+    {
+        $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
+
+        $rest_config = RestResourceConfig::create([
           'plugin_id' => 'entity:entity_test',
           'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
           'configuration' => [
             'GET' => [
-              'supported_auth' => ['basic_auth'],
+              'supported_auth' => ['cookie'],
               'supported_formats' => ['json'],
             ],
             'POST' => [
-              'supported_auth' => ['cookie'],
-              'supported_formats' => ['xml'],
+              'supported_auth' => ['basic_auth'],
+              'supported_formats' => ['json'],
             ],
           ],
-        ],
-      ],
-      'resource' => [
-        [
-          'plugin_id' => 'entity:entity_test',
-          'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-          'configuration' => [
-            'methods' => ['GET', 'POST'],
-            'formats' => ['json'],
-            'authentication' => ['cookie', 'basic_auth'],
+        ]);
+
+        $this->assertTrue($config_dependencies->onDependencyRemoval($rest_config, ['module' => ['basic_auth']]));
+        $this->assertEquals(['cookie'], $rest_config->getAuthenticationProviders('GET'));
+        $this->assertEquals([], $rest_config->getAuthenticationProviders('POST'));
+        $this->assertEquals([
+          'GET' => [
+            'supported_auth' => ['cookie'],
+            'supported_formats' => ['json'],
           ],
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * Tests on dependency removal remove auth.
-   *
-   * @legacy-covers ::onDependencyRemoval
-   * @legacy-covers ::onDependencyRemovalForMethodGranularity
-   */
-  public function testOnDependencyRemovalRemoveAuth(): void {
-    $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
-
-    $rest_config = RestResourceConfig::create([
-      'plugin_id' => 'entity:entity_test',
-      'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
-      'configuration' => [
-        'GET' => [
-          'supported_auth' => ['cookie'],
-          'supported_formats' => ['json'],
-        ],
-        'POST' => [
-          'supported_auth' => ['basic_auth'],
-          'supported_formats' => ['json'],
-        ],
-      ],
-    ]);
-
-    $this->assertTrue($config_dependencies->onDependencyRemoval($rest_config, ['module' => ['basic_auth']]));
-    $this->assertEquals(['cookie'], $rest_config->getAuthenticationProviders('GET'));
-    $this->assertEquals([], $rest_config->getAuthenticationProviders('POST'));
-    $this->assertEquals([
-      'GET' => [
-        'supported_auth' => ['cookie'],
-        'supported_formats' => ['json'],
-      ],
-      'POST' => [
-        'supported_formats' => ['json'],
-      ],
-    ], $rest_config->get('configuration'));
-  }
-
-  /**
-   * Tests on dependency removal for resource granularity.
-   *
-   * @legacy-covers ::onDependencyRemoval
-   * @legacy-covers ::onDependencyRemovalForResourceGranularity
-   */
-  #[DataProvider('providerOnDependencyRemovalForResourceGranularity')]
-  public function testOnDependencyRemovalForResourceGranularity(array $configuration, $module, $expected_configuration): void {
-    assert(is_string($module));
-    assert($expected_configuration === FALSE || is_array($expected_configuration));
-
-    $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
-
-    $rest_config = RestResourceConfig::create($configuration);
-
-    $this->assertSame(!empty($expected_configuration), $config_dependencies->onDependencyRemoval($rest_config, ['module' => [$module]]));
-    if (!empty($expected_configuration)) {
-      $this->assertEquals($expected_configuration, $rest_config->get('configuration'));
+          'POST' => [
+            'supported_formats' => ['json'],
+          ],
+        ], $rest_config->get('configuration'));
     }
-  }
 
-  /**
-   * @return array
-   *   An array with numerical keys:
-   *   0. The original REST resource configuration.
-   *   1. The module to uninstall (the dependency that is about to be removed).
-   *   2. The expected configuration after uninstalling this module.
-   */
-  public static function providerOnDependencyRemovalForResourceGranularity() {
-    return [
-      'resource with multiple formats' => [
-        [
-          'plugin_id' => 'entity:entity_test',
-          'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-          'configuration' => [
-            'methods' => ['GET', 'POST'],
-            'formats' => ['xml', 'json'],
-            'authentication' => ['cookie', 'basic_auth'],
+    /**
+     * Tests on dependency removal for resource granularity.
+     *
+     * @legacy-covers ::onDependencyRemoval
+     * @legacy-covers ::onDependencyRemovalForResourceGranularity
+     */
+    #[DataProvider('providerOnDependencyRemovalForResourceGranularity')]
+    public function testOnDependencyRemovalForResourceGranularity(array $configuration, $module, $expected_configuration): void
+    {
+        assert(is_string($module));
+        assert($expected_configuration === false || is_array($expected_configuration));
+
+        $config_dependencies = new ConfigDependencies(['json' => 'serialization'], ['basic_auth' => 'basic_auth']);
+
+        $rest_config = RestResourceConfig::create($configuration);
+
+        $this->assertSame(!empty($expected_configuration), $config_dependencies->onDependencyRemoval($rest_config, ['module' => [$module]]));
+        if (!empty($expected_configuration)) {
+            $this->assertEquals($expected_configuration, $rest_config->get('configuration'));
+        }
+    }
+
+    /**
+     * @return array
+     *   An array with numerical keys:
+     *   0. The original REST resource configuration.
+     *   1. The module to uninstall (the dependency that is about to be removed).
+     *   2. The expected configuration after uninstalling this module.
+     */
+    public static function providerOnDependencyRemovalForResourceGranularity()
+    {
+        return [
+          'resource with multiple formats' => [
+            [
+              'plugin_id' => 'entity:entity_test',
+              'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+              'configuration' => [
+                'methods' => ['GET', 'POST'],
+                'formats' => ['xml', 'json'],
+                'authentication' => ['cookie', 'basic_auth'],
+              ],
+            ],
+            'serialization',
+            [
+              'methods' => ['GET', 'POST'],
+              'formats' => ['xml'],
+              'authentication' => ['cookie', 'basic_auth'],
+            ],
           ],
-        ],
-        'serialization',
-        [
-          'methods' => ['GET', 'POST'],
-          'formats' => ['xml'],
-          'authentication' => ['cookie', 'basic_auth'],
-        ],
-      ],
-      'resource with multiple authentication providers' => [
-        [
-          'plugin_id' => 'entity:entity_test',
-          'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-          'configuration' => [
-            'methods' => ['GET', 'POST'],
-            'formats' => ['json', 'xml'],
-            'authentication' => ['cookie', 'basic_auth'],
+          'resource with multiple authentication providers' => [
+            [
+              'plugin_id' => 'entity:entity_test',
+              'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+              'configuration' => [
+                'methods' => ['GET', 'POST'],
+                'formats' => ['json', 'xml'],
+                'authentication' => ['cookie', 'basic_auth'],
+              ],
+            ],
+            'basic_auth',
+            [
+              'methods' => ['GET', 'POST'],
+              'formats' => ['json', 'xml'],
+              'authentication' => ['cookie'],
+            ],
           ],
-        ],
-        'basic_auth',
-        [
-          'methods' => ['GET', 'POST'],
-          'formats' => ['json', 'xml'],
-          'authentication' => ['cookie'],
-        ],
-      ],
-      'resource with only basic_auth authentication' => [
-        [
-          'plugin_id' => 'entity:entity_test',
-          'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-          'configuration' => [
-            'methods' => ['GET', 'POST'],
-            'formats' => ['json', 'xml'],
-            'authentication' => ['basic_auth'],
+          'resource with only basic_auth authentication' => [
+            [
+              'plugin_id' => 'entity:entity_test',
+              'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+              'configuration' => [
+                'methods' => ['GET', 'POST'],
+                'formats' => ['json', 'xml'],
+                'authentication' => ['basic_auth'],
+              ],
+            ],
+            'basic_auth',
+            false,
           ],
-        ],
-        'basic_auth',
-        FALSE,
-      ],
-    ];
-  }
+        ];
+    }
 
 }

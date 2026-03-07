@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,33 +25,33 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class MigrateDestination extends Plugin {
+class MigrateDestination extends Plugin
+{
+    /**
+     * A unique identifier for the process plugin.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * A unique identifier for the process plugin.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * Whether requirements are met.
+     *
+     * If TRUE and a 'provider' key is present in the annotation then the
+     * default destination plugin manager will set this to FALSE if the
+     * provider (module/theme) doesn't exist.
+     *
+     * @var bool
+     */
+    public $requirements_met = true;
 
-  /**
-   * Whether requirements are met.
-   *
-   * If TRUE and a 'provider' key is present in the annotation then the
-   * default destination plugin manager will set this to FALSE if the
-   * provider (module/theme) doesn't exist.
-   *
-   * @var bool
-   */
-  public $requirements_met = TRUE;
-
-  /**
-   * Identifies the system handling the data the destination plugin will write.
-   *
-   * The destination plugin itself determines how the value is used.
-   *
-   * @var string
-   */
-  public $destination_module;
+    /**
+     * Identifies the system handling the data the destination plugin will write.
+     *
+     * The destination plugin itself determines how the value is used.
+     *
+     * @var string
+     */
+    public $destination_module;
 
 }

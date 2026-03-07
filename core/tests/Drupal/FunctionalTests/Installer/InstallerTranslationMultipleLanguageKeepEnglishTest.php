@@ -12,18 +12,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerTranslationMultipleLanguageKeepEnglishTest extends InstallerTranslationMultipleLanguageForeignTest {
+class InstallerTranslationMultipleLanguageKeepEnglishTest extends InstallerTranslationMultipleLanguageForeignTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Switch to the multilingual testing profile with English kept.
-   *
-   * @var string
-   */
-  protected $profile = 'testing_multilingual_with_english';
+    /**
+     * Switch to the multilingual testing profile with English kept.
+     *
+     * @var string
+     */
+    protected $profile = 'testing_multilingual_with_english';
 
 }

@@ -14,44 +14,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config_translation')]
 #[RunTestsInSeparateProcesses]
-class ConfigTranslationInstallTest extends InstallerTestBase {
+class ConfigTranslationInstallTest extends InstallerTestBase
+{
+    use ContentTypeCreationTrait;
 
-  use ContentTypeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected $langcode = 'eo';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $langcode = 'eo';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpLanguage(): void
+    {
+        // Place custom local translations in the translations directory.
+        mkdir(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations', 0777, true);
+        file_put_contents(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.eo.po', $this->getPo('eo'));
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpLanguage(): void {
-    // Place custom local translations in the translations directory.
-    mkdir(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations', 0777, TRUE);
-    file_put_contents(DRUPAL_ROOT . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.eo.po', $this->getPo('eo'));
+        parent::setUpLanguage();
 
-    parent::setUpLanguage();
+        $this->translations['Save and continue'] = 'Save and continue eo';
+    }
 
-    $this->translations['Save and continue'] = 'Save and continue eo';
-  }
-
-  /**
-   * Returns the string for the test .po file.
-   *
-   * @param string $langcode
-   *   The language code.
-   *
-   * @return string
-   *   Contents for the test .po file.
-   */
-  protected function getPo($langcode): string {
-    return <<<PO
+    /**
+     * Returns the string for the test .po file.
+     *
+     * @param string $langcode
+     *   The language code.
+     *
+     * @return string
+     *   Contents for the test .po file.
+     */
+    protected function getPo($langcode): string
+    {
+        return <<<PO
 msgid ""
 msgstr ""
 
@@ -64,28 +66,29 @@ msgstr "Anonymous $langcode"
 msgid "Language"
 msgstr "Language $langcode"
 PO;
-  }
+    }
 
-  /**
-   * Tests install of Configuration Translation module.
-   */
-  public function testConfigTranslation(): void {
-    \Drupal::service('module_installer')->install(['node', 'field_ui']);
-    $this->createContentType(['type' => 'article']);
+    /**
+     * Tests install of Configuration Translation module.
+     */
+    public function testConfigTranslation(): void
+    {
+        \Drupal::service('module_installer')->install(['node', 'field_ui']);
+        $this->createContentType(['type' => 'article']);
 
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'en'], 'Add custom language');
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'fr'], 'Add custom language');
+        $this->drupalGet('admin/config/regional/language/add');
+        $this->submitForm(['predefined_langcode' => 'en'], 'Add custom language');
+        $this->drupalGet('admin/config/regional/language/add');
+        $this->submitForm(['predefined_langcode' => 'fr'], 'Add custom language');
 
-    $edit = [
-      'modules[config_translation][enable]' => TRUE,
-    ];
-    $this->drupalGet('admin/modules');
-    $this->submitForm($edit, 'Install');
+        $edit = [
+          'modules[config_translation][enable]' => true,
+        ];
+        $this->drupalGet('admin/modules');
+        $this->submitForm($edit, 'Install');
 
-    $this->drupalGet('/admin/structure/types/manage/article/fields');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+        $this->drupalGet('/admin/structure/types/manage/article/fields');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

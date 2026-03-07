@@ -24,30 +24,30 @@ use Drupal\Component\Plugin\Attribute\Plugin;
  * @ingroup migration
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class MigrateDestination extends Plugin {
-
-  /**
-   * Constructs a migrate destination plugin attribute object.
-   *
-   * @param string $id
-   *   A unique identifier for the destination plugin.
-   * @param bool $requirements_met
-   *   (optional) Whether requirements are met.
-   * @param string|null $destination_module
-   *   (optional) Identifies the system handling the data the destination plugin
-   *   will write. The destination plugin itself determines how the value is
-   *   used. For example, Migrate's destination plugins expect
-   *   destination_module to be the name of a module that must be installed on
-   *   the destination.
-   * @param class-string|null $deriver
-   *   (optional) The deriver class.
-   */
-  public function __construct(
-    public readonly string $id,
-    public bool $requirements_met = TRUE,
-    public readonly ?string $destination_module = NULL,
-    public readonly ?string $deriver = NULL,
-  ) {
-  }
+class MigrateDestination extends Plugin
+{
+    /**
+     * Constructs a migrate destination plugin attribute object.
+     *
+     * @param string $id
+     *   A unique identifier for the destination plugin.
+     * @param bool $requirements_met
+     *   (optional) Whether requirements are met.
+     * @param string|null $destination_module
+     *   (optional) Identifies the system handling the data the destination plugin
+     *   will write. The destination plugin itself determines how the value is
+     *   used. For example, Migrate's destination plugins expect
+     *   destination_module to be the name of a module that must be installed on
+     *   the destination.
+     * @param class-string|null $deriver
+     *   (optional) The deriver class.
+     */
+    public function __construct(
+        public readonly string $id,
+        public bool $requirements_met = true,
+        public readonly ?string $destination_module = null,
+        public readonly ?string $deriver = null,
+    ) {
+    }
 
 }

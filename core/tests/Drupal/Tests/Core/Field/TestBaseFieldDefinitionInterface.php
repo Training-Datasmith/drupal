@@ -10,5 +10,6 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 /**
  * Defines a test interface to mock entity base field definitions.
  */
-interface TestBaseFieldDefinitionInterface extends FieldDefinitionInterface, FieldStorageDefinitionInterface {
+interface TestBaseFieldDefinitionInterface extends FieldDefinitionInterface, FieldStorageDefinitionInterface
+{
 }

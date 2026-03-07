@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Component\Utility\Html as HtmlUtility;
@@ -43,64 +45,67 @@ use Drupal\Core\Render\Element;
  * @endcode
  */
 #[RenderElement('container')]
-class Container extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#optional' => FALSE,
-      '#process' => [
-        [static::class, 'processGroup'],
-        [static::class, 'processContainer'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderGroup'],
-        [static::class, 'preRenderContainer'],
-      ],
-      '#theme_wrappers' => ['container'],
-    ];
-  }
-
-  /**
-   * Processes a container element.
-   *
-   * @param array $element
-   *   An associative array containing the properties and children of the
-   *   container.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param array $complete_form
-   *   The complete form structure.
-   *
-   * @return array
-   *   The processed element.
-   */
-  public static function processContainer(array &$element, FormStateInterface $form_state, &$complete_form): array {
-    // Generate the ID of the element if it's not explicitly given.
-    if (!isset($element['#id'])) {
-      $element['#id'] = HtmlUtility::getUniqueId(implode('-', $element['#parents']) . '-wrapper');
+class Container extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#optional' => false,
+          '#process' => [
+            [static::class, 'processGroup'],
+            [static::class, 'processContainer'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderGroup'],
+            [static::class, 'preRenderContainer'],
+          ],
+          '#theme_wrappers' => ['container'],
+        ];
     }
-    return $element;
-  }
 
-  /**
-   * Prevents optional containers from rendering if they have no children.
-   *
-   * @param array $element
-   *   An associative array containing the properties and children of the
-   *   container.
-   *
-   * @return array
-   *   The modified element.
-   */
-  public static function preRenderContainer(array $element): array {
-    // Do not render optional container elements if there are no children.
-    if (empty($element['#printed']) && !empty($element['#optional']) && !Element::getVisibleChildren($element)) {
-      $element['#printed'] = TRUE;
+    /**
+     * Processes a container element.
+     *
+     * @param array $element
+     *   An associative array containing the properties and children of the
+     *   container.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param array $complete_form
+     *   The complete form structure.
+     *
+     * @return array
+     *   The processed element.
+     */
+    public static function processContainer(array &$element, FormStateInterface $form_state, &$complete_form): array
+    {
+        // Generate the ID of the element if it's not explicitly given.
+        if (!isset($element['#id'])) {
+            $element['#id'] = HtmlUtility::getUniqueId(implode('-', $element['#parents']) . '-wrapper');
+        }
+        return $element;
     }
-    return $element;
-  }
+
+    /**
+     * Prevents optional containers from rendering if they have no children.
+     *
+     * @param array $element
+     *   An associative array containing the properties and children of the
+     *   container.
+     *
+     * @return array
+     *   The modified element.
+     */
+    public static function preRenderContainer(array $element): array
+    {
+        // Do not render optional container elements if there are no children.
+        if (empty($element['#printed']) && !empty($element['#optional']) && !Element::getVisibleChildren($element)) {
+            $element['#printed'] = true;
+        }
+        return $element;
+    }
 
 }

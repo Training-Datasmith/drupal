@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -14,18 +16,20 @@ use Drupal\Core\Form\FormStateInterface;
  * @see \Drupal\image\ImageEffectManager
  * @see plugin_api
  */
-abstract class ConfigurableImageEffectBase extends ImageEffectBase implements ConfigurableImageEffectInterface {
+abstract class ConfigurableImageEffectBase extends ImageEffectBase implements ConfigurableImageEffectInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

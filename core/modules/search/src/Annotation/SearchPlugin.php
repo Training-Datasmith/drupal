@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\search\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -16,32 +18,32 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class SearchPlugin extends Plugin {
+class SearchPlugin extends Plugin
+{
+    /**
+     * A unique identifier for the search plugin.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * A unique identifier for the search plugin.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The title for the search page tab.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @todo This will potentially be translated twice or cached with the wrong
+     *   translation until the search tabs are converted to local task plugins.
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title;
 
-  /**
-   * The title for the search page tab.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @todo This will potentially be translated twice or cached with the wrong
-   *   translation until the search tabs are converted to local task plugins.
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title;
-
-  /**
-   * Whether or not search results should be displayed in admin theme.
-   *
-   * @var bool
-   */
-  public $use_admin_theme = FALSE;
+    /**
+     * Whether or not search results should be displayed in admin theme.
+     *
+     * @var bool
+     */
+    public $use_admin_theme = false;
 
 }

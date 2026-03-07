@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\cache;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -11,34 +13,37 @@ use Drupal\views\Attribute\ViewsCache;
  * @ingroup views_cache_plugins
  */
 #[ViewsCache(
-  id: 'none',
-  title: new TranslatableMarkup('None'),
-  help: new TranslatableMarkup('No caching of Views data.'),
+    id: 'none',
+    title: new TranslatableMarkup('None'),
+    help: new TranslatableMarkup('No caching of Views data.'),
 )]
-class None extends CachePluginBase {
+class None extends CachePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('None');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('None');
-  }
+    /**
+     * Overrides \Drupal\views\Plugin\views\cache\CachePluginBase::cacheGet().
+     *
+     * Replace the cache get logic so it does not return a cache item at all.
+     */
+    public function cacheGet($type): bool
+    {
+        return false;
+    }
 
-  /**
-   * Overrides \Drupal\views\Plugin\views\cache\CachePluginBase::cacheGet().
-   *
-   * Replace the cache get logic so it does not return a cache item at all.
-   */
-  public function cacheGet($type): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Replace the cache set logic so it does not set a cache item at all.
-   */
-  public function cacheSet($type) {
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * Replace the cache set logic so it does not set a cache item at all.
+     */
+    public function cacheSet($type)
+    {
+    }
 
 }

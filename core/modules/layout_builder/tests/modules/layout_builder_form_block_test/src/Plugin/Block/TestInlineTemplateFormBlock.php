@@ -14,22 +14,23 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * For use in Layout Builder tests.
  */
 #[Block(
-  id: "layout_builder_form_block_test_inline_template_form_block",
-  admin_label: new TranslatableMarkup("Layout Builder form block test inline template form block"),
-  category: new TranslatableMarkup("Layout Builder form block test")
+    id: 'layout_builder_form_block_test_inline_template_form_block',
+    admin_label: new TranslatableMarkup('Layout Builder form block test inline template form block'),
+    category: new TranslatableMarkup('Layout Builder form block test')
 )]
-class TestInlineTemplateFormBlock extends BlockBase {
+class TestInlineTemplateFormBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        $build['form'] = [
+          '#type' => 'inline_template',
+          '#template' => '<form method="POST"><label>{{ "Keywords"|t }}<input name="keyword" type="text" required /></label><input name="submit" type="submit" value="{{ "Submit"|t }}" /></form>',
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    $build['form'] = [
-      '#type' => 'inline_template',
-      '#template' => '<form method="POST"><label>{{ "Keywords"|t }}<input name="keyword" type="text" required /></label><input name="submit" type="submit" value="{{ "Submit"|t }}" /></form>',
-    ];
-
-    return $build;
-  }
+        return $build;
+    }
 
 }

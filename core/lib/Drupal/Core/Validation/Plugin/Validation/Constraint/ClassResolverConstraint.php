@@ -22,42 +22,43 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  *  values will be considered as invalid.
  */
 #[Constraint(
-  id: 'ClassResolver',
-  label: new TranslatableMarkup('Call a method on a service', [], ['context' => 'Validation']),
-  type: FALSE,
+    id: 'ClassResolver',
+    label: new TranslatableMarkup('Call a method on a service', [], ['context' => 'Validation']),
+    type: false,
 )]
-class ClassResolverConstraint extends SymfonyConstraint {
+class ClassResolverConstraint extends SymfonyConstraint
+{
+    /**
+     * Class or service.
+     *
+     * @var array
+     */
+    public string $classOrService;
 
-  /**
-   * Class or service.
-   *
-   * @var array
-   */
-  public string $classOrService;
+    /**
+     * Method to call.
+     */
+    public string $method;
 
-  /**
-   * Method to call.
-   */
-  public string $method;
+    public function __construct(
+        mixed $options = null,
+        ?string $classOrService = null,
+        ?string $method = null,
+        public string $message = "Calling '@method' method with value '@value' on '@classOrService' evaluated as invalid.",
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->classOrService = $classOrService ?? $this->classOrService;
+        $this->method = $method ?? $this->method;
+    }
 
-  public function __construct(
-    mixed $options = NULL,
-    ?string $classOrService = NULL,
-    ?string $method = NULL,
-    public string $message = "Calling '@method' method with value '@value' on '@classOrService' evaluated as invalid.",
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->classOrService = $classOrService ?? $this->classOrService;
-    $this->method = $method ?? $this->method;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequiredOptions(): array {
-    return ['classOrService', 'method'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredOptions(): array
+    {
+        return ['classOrService', 'method'];
+    }
 
 }

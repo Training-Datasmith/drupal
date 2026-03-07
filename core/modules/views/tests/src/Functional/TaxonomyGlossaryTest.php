@@ -14,85 +14,87 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class TaxonomyGlossaryTest extends ViewTestBase {
+class TaxonomyGlossaryTest extends ViewTestBase
+{
+    use TaxonomyTestTrait;
 
-  use TaxonomyTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['taxonomy'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['taxonomy'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_taxonomy_glossary'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_taxonomy_glossary'];
+    /**
+     * Taxonomy terms used by this test.
+     *
+     * @var \Drupal\taxonomy\Entity\Term[]
+     */
+    protected $taxonomyTerms;
 
-  /**
-   * Taxonomy terms used by this test.
-   *
-   * @var \Drupal\taxonomy\Entity\Term[]
-   */
-  protected $taxonomyTerms;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->enableViewsTestModule();
 
-    $this->enableViewsTestModule();
-
-    /** @var \Drupal\taxonomy\Entity\Vocabulary $vocabulary */
-    $vocabulary = $this->createVocabulary();
-    for ($i = 0; $i < 10; $i++) {
-      $this->taxonomyTerms[] = $this->createTerm($vocabulary);
-    }
-    $this->taxonomyTerms[] = $this->createTerm($vocabulary, ['name' => '0' . $this->randomMachineName()]);
-  }
-
-  /**
-   * Tests a taxonomy glossary view.
-   */
-  public function testTaxonomyGlossaryView(): void {
-    $initials = [];
-    foreach ($this->taxonomyTerms as $term) {
-      $char = mb_strtolower(substr($term->label(), 0, 1));
-      $initials += [$char => 0];
-      $initials[$char]++;
+        /** @var \Drupal\taxonomy\Entity\Vocabulary $vocabulary */
+        $vocabulary = $this->createVocabulary();
+        for ($i = 0; $i < 10; $i++) {
+            $this->taxonomyTerms[] = $this->createTerm($vocabulary);
+        }
+        $this->taxonomyTerms[] = $this->createTerm($vocabulary, ['name' => '0' . $this->randomMachineName()]);
     }
 
-    $this->drupalGet('test_taxonomy_glossary');
-    $assert_session = $this->assertSession();
+    /**
+     * Tests a taxonomy glossary view.
+     */
+    public function testTaxonomyGlossaryView(): void
+    {
+        $initials = [];
+        foreach ($this->taxonomyTerms as $term) {
+            $char = mb_strtolower(substr($term->label(), 0, 1));
+            $initials += [$char => 0];
+            $initials[$char]++;
+        }
 
-    foreach ($initials as $char => $count) {
-      $href = Url::fromUserInput('/test_taxonomy_glossary/' . $char)->toString();
+        $this->drupalGet('test_taxonomy_glossary');
+        $assert_session = $this->assertSession();
 
-      $xpath = $assert_session->buildXPathQuery('//a[@href=:href and normalize-space(text())=:label]', [
-        ':href' => $href,
-        ':label' => $char,
-      ]);
-      $link = $assert_session->elementExists('xpath', $xpath);
+        foreach ($initials as $char => $count) {
+            $href = Url::fromUserInput('/test_taxonomy_glossary/' . $char)->toString();
 
-      // Assert that the expected number of results is indicated in the link.
-      preg_match("/{$char} \(([0-9]+)\)/", $link->getParent()->getText(), $matches);
-      $this->assertEquals($count, $matches[1]);
+            $xpath = $assert_session->buildXPathQuery('//a[@href=:href and normalize-space(text())=:label]', [
+              ':href' => $href,
+              ':label' => $char,
+            ]);
+            $link = $assert_session->elementExists('xpath', $xpath);
+
+            // Assert that the expected number of results is indicated in the link.
+            preg_match("/{$char} \(([0-9]+)\)/", $link->getParent()->getText(), $matches);
+            $this->assertEquals($count, $matches[1]);
+        }
+
+        // Check that no other glossary links but the expected ones have been
+        // rendered.
+        $assert_session->elementsCount('xpath', '/ancestor::ul//a', count($initials), $link);
+
+        // Go the taxonomy glossary page for the first term.
+        $this->drupalGet('test_taxonomy_glossary/' . substr($this->taxonomyTerms[0]->getName(), 0, 1));
+        $assert_session->pageTextContains($this->taxonomyTerms[0]->getName());
     }
-
-    // Check that no other glossary links but the expected ones have been
-    // rendered.
-    $assert_session->elementsCount('xpath', '/ancestor::ul//a', count($initials), $link);
-
-    // Go the taxonomy glossary page for the first term.
-    $this->drupalGet('test_taxonomy_glossary/' . substr($this->taxonomyTerms[0]->getName(), 0, 1));
-    $assert_session->pageTextContains($this->taxonomyTerms[0]->getName());
-  }
 
 }

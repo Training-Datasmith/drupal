@@ -12,54 +12,59 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 /**
  * Test controllers that are intended to be wrapped in a main controller.
  */
-class TestContent extends ControllerBase {
+class TestContent extends ControllerBase
+{
+    /**
+     * The HTTP kernel.
+     *
+     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    protected $httpKernel;
 
-  /**
-   * The HTTP kernel.
-   *
-   * @var \Symfony\Component\HttpKernel\HttpKernelInterface
-   */
-  protected $httpKernel;
+    /**
+     * Constructs a TestContent instance.
+     */
+    public function __construct(HttpKernelInterface $http_kernel)
+    {
+        $this->httpKernel = $http_kernel;
+    }
 
-  /**
-   * Constructs a TestContent instance.
-   */
-  public function __construct(HttpKernelInterface $http_kernel) {
-    $this->httpKernel = $http_kernel;
-  }
+    /**
+     * Provides example content for testing route enhancers.
+     */
+    public function test1()
+    {
+        return ['#markup' => 'abcde'];
+    }
 
-  /**
-   * Provides example content for testing route enhancers.
-   */
-  public function test1() {
-    return ['#markup' => 'abcde'];
-  }
+    /**
+     * Provides example content for route specific authentication.
+     *
+     * @return string
+     *   The user name of the current logged in user.
+     */
+    public function test11()
+    {
+        $account = $this->currentUser();
+        return ['#markup' => $account->getAccountName()];
+    }
 
-  /**
-   * Provides example content for route specific authentication.
-   *
-   * @return string
-   *   The user name of the current logged in user.
-   */
-  public function test11() {
-    $account = $this->currentUser();
-    return ['#markup' => $account->getAccountName()];
-  }
+    public function testAccount(UserInterface $user)
+    {
+        $current_user_name = $this->currentUser()->getAccountName();
+        $this->currentUser()->setAccount($user);
+        return ['#markup' => $current_user_name . ':' . $user->getAccountName()];
+    }
 
-  public function testAccount(UserInterface $user) {
-    $current_user_name = $this->currentUser()->getAccountName();
-    $this->currentUser()->setAccount($user);
-    return ['#markup' => $current_user_name . ':' . $user->getAccountName()];
-  }
+    /**
+     * Uses a subrequest to determine the content.
+     */
+    public function subrequestTest(UserInterface $user)
+    {
+        $request = \Drupal::request();
+        $request = Request::create('/router_test/test13/' . $user->id(), 'GET', $request->query->all(), $request->cookies->all(), [], $request->server->all());
 
-  /**
-   * Uses a subrequest to determine the content.
-   */
-  public function subrequestTest(UserInterface $user) {
-    $request = \Drupal::request();
-    $request = Request::create('/router_test/test13/' . $user->id(), 'GET', $request->query->all(), $request->cookies->all(), [], $request->server->all());
-
-    return $this->httpKernel->handle($request, HttpKernelInterface::SUB_REQUEST);
-  }
+        return $this->httpKernel->handle($request, HttpKernelInterface::SUB_REQUEST);
+    }
 
 }

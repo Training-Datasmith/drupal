@@ -24,95 +24,100 @@ use Symfony\Contracts\EventDispatcher\Event;
  * exported, but a subscriber could flag a computed field as exportable if
  * circumstances require it.
  */
-final class PreExportEvent extends Event {
+final class PreExportEvent extends Event
+{
+    /**
+     * An array of export callbacks, keyed by field type.
+     *
+     * @var array<string, callable>
+     */
+    private array $callbacks = [];
 
-  /**
-   * An array of export callbacks, keyed by field type.
-   *
-   * @var array<string, callable>
-   */
-  private array $callbacks = [];
+    /**
+     * Whether specific fields (keyed by name) should be exported or not.
+     *
+     * @var array<string, bool>
+     */
+    private array $allowList = [];
 
-  /**
-   * Whether specific fields (keyed by name) should be exported or not.
-   *
-   * @var array<string, bool>
-   */
-  private array $allowList = [];
-
-  public function __construct(
-    public readonly ContentEntityInterface $entity,
-    public readonly ExportMetadata $metadata,
-  ) {}
-
-  /**
-   * Toggles whether a specific entity key should be exported.
-   *
-   * @param string $key
-   *   An entity key, e.g. `uuid` or `langcode`. Can be a regular entity key, or
-   *   a revision metadata key.
-   * @param bool $export
-   *   Whether to export the entity key, even if it is computed.
-   */
-  public function setEntityKeyExportable(string $key, bool $export = TRUE): void {
-    $entity_type = $this->entity->getEntityType();
-    assert($entity_type instanceof ContentEntityTypeInterface);
-
-    if ($entity_type->hasKey($key)) {
-      $this->setExportable($entity_type->getKey($key), $export);
+    public function __construct(
+        public readonly ContentEntityInterface $entity,
+        public readonly ExportMetadata $metadata,
+    ) {
     }
-    elseif ($entity_type->hasRevisionMetadataKey($key)) {
-      $this->setExportable($entity_type->getRevisionMetadataKey($key), $export);
+
+    /**
+     * Toggles whether a specific entity key should be exported.
+     *
+     * @param string $key
+     *   An entity key, e.g. `uuid` or `langcode`. Can be a regular entity key, or
+     *   a revision metadata key.
+     * @param bool $export
+     *   Whether to export the entity key, even if it is computed.
+     */
+    public function setEntityKeyExportable(string $key, bool $export = true): void
+    {
+        $entity_type = $this->entity->getEntityType();
+        assert($entity_type instanceof ContentEntityTypeInterface);
+
+        if ($entity_type->hasKey($key)) {
+            $this->setExportable($entity_type->getKey($key), $export);
+        } elseif ($entity_type->hasRevisionMetadataKey($key)) {
+            $this->setExportable($entity_type->getRevisionMetadataKey($key), $export);
+        }
     }
-  }
 
-  /**
-   * Toggles whether a specific field should be exported.
-   *
-   * @param string $name
-   *   The name of the field.
-   * @param bool $export
-   *   Whether to export the field, even if it is computed.
-   */
-  public function setExportable(string $name, bool $export = TRUE): void {
-    $this->allowList[$name] = $export;
-  }
+    /**
+     * Toggles whether a specific field should be exported.
+     *
+     * @param string $name
+     *   The name of the field.
+     * @param bool $export
+     *   Whether to export the field, even if it is computed.
+     */
+    public function setExportable(string $name, bool $export = true): void
+    {
+        $this->allowList[$name] = $export;
+    }
 
-  /**
-   * Returns a map of which fields should be exported.
-   *
-   * @return bool[]
-   *   An array whose keys are field names, and the values are booleans
-   *   indicating whether the field should be exported, even if it is computed.
-   */
-  public function getAllowList(): array {
-    return $this->allowList;
-  }
+    /**
+     * Returns a map of which fields should be exported.
+     *
+     * @return bool[]
+     *   An array whose keys are field names, and the values are booleans
+     *   indicating whether the field should be exported, even if it is computed.
+     */
+    public function getAllowList(): array
+    {
+        return $this->allowList;
+    }
 
-  /**
-   * Sets the export callback for a specific field name or data type.
-   *
-   * @param string $name_or_data_type
-   *   A field name or field item data type, like `field_item:image`. If the
-   *   callback should run for every field a given type, this should be prefixed
-   *   with `field_item:`, which is the Typed Data prefix for field items. If
-   *   there is no prefix, this is treated as a field name.
-   * @param callable $callback
-   *   The callback which should export items of the specified field type. See
-   *   the class documentation for details.
-   */
-  public function setCallback(string $name_or_data_type, callable $callback): void {
-    $this->callbacks[$name_or_data_type] = $callback;
-  }
+    /**
+     * Sets the export callback for a specific field name or data type.
+     *
+     * @param string $name_or_data_type
+     *   A field name or field item data type, like `field_item:image`. If the
+     *   callback should run for every field a given type, this should be prefixed
+     *   with `field_item:`, which is the Typed Data prefix for field items. If
+     *   there is no prefix, this is treated as a field name.
+     * @param callable $callback
+     *   The callback which should export items of the specified field type. See
+     *   the class documentation for details.
+     */
+    public function setCallback(string $name_or_data_type, callable $callback): void
+    {
+        $this->callbacks[$name_or_data_type] = $callback;
+    }
 
-  /**
-   * Returns the field export callbacks collected by this event.
-   *
-   * @return callable[]
-   *   The export callbacks, keyed by field type.
-   */
-  public function getCallbacks(): array {
-    return $this->callbacks;
-  }
+    /**
+     * Returns the field export callbacks collected by this event.
+     *
+     * @return callable[]
+     *   The export callbacks, keyed by field type.
+     */
+    public function getCallbacks(): array
+    {
+        return $this->callbacks;
+    }
 
 }

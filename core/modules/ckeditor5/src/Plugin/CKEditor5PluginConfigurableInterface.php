@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin;
 
@@ -21,6 +21,6 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * @see \Drupal\ckeditor5\Annotation\CKEditor5Plugin
  * @see plugin_api
  */
-interface CKEditor5PluginConfigurableInterface extends CKEditor5PluginInterface, ConfigurableInterface, PluginFormInterface {
-
+interface CKEditor5PluginConfigurableInterface extends CKEditor5PluginInterface, ConfigurableInterface, PluginFormInterface
+{
 }

@@ -22,41 +22,43 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(UrlResolver::class)]
 #[Group('media')]
-class UrlResolverTest extends UnitTestCase {
+class UrlResolverTest extends UnitTestCase
+{
+    /**
+     * Creates a UrlResolver with exposed protected methods for testing.
+     *
+     * @param \GuzzleHttp\Client $client
+     *   The HTTP client.
+     *
+     * @return \Drupal\media\OEmbed\UrlResolver
+     *   A UrlResolver instance with a public discoverResourceUrl method.
+     */
+    protected function createTestableUrlResolver(Client $client): UrlResolver
+    {
+        return new class (
+            $this->createMock(ProviderRepositoryInterface::class),
+            $this->createMock(ResourceFetcherInterface::class),
+            $client,
+            $this->createMock(ModuleHandlerInterface::class),
+            new NullBackend('default'),
+        ) extends UrlResolver {
+            /**
+             * {@inheritdoc}
+             */
+            public function discoverResourceUrl($url): string|false
+            {
+                return parent::discoverResourceUrl($url);
+            }
 
-  /**
-   * Creates a UrlResolver with exposed protected methods for testing.
-   *
-   * @param \GuzzleHttp\Client $client
-   *   The HTTP client.
-   *
-   * @return \Drupal\media\OEmbed\UrlResolver
-   *   A UrlResolver instance with a public discoverResourceUrl method.
-   */
-  protected function createTestableUrlResolver(Client $client): UrlResolver {
-    return new class (
-      $this->createMock(ProviderRepositoryInterface::class),
-      $this->createMock(ResourceFetcherInterface::class),
-      $client,
-      $this->createMock(ModuleHandlerInterface::class),
-      new NullBackend('default'),
-    ) extends UrlResolver {
+        };
+    }
 
-      /**
-       * {@inheritdoc}
-       */
-      public function discoverResourceUrl($url): string|false {
-        return parent::discoverResourceUrl($url);
-      }
-
-    };
-  }
-
-  /**
-   * Tests that discoverResourceUrl parses HTML responses.
-   */
-  public function testDiscoverResourceUrlParsesHtml(): void {
-    $html_with_oembed = <<<HTML
+    /**
+     * Tests that discoverResourceUrl parses HTML responses.
+     */
+    public function testDiscoverResourceUrlParsesHtml(): void
+    {
+        $html_with_oembed = <<<HTML
 <!DOCTYPE html>
 <html>
 <head>
@@ -66,28 +68,29 @@ class UrlResolverTest extends UnitTestCase {
 </html>
 HTML;
 
-    $response = new Response(200, ['Content-Type' => 'text/html'], $html_with_oembed);
-    $mock_handler = new MockHandler([$response]);
-    $client = new Client(['handler' => HandlerStack::create($mock_handler)]);
+        $response = new Response(200, ['Content-Type' => 'text/html'], $html_with_oembed);
+        $mock_handler = new MockHandler([$response]);
+        $client = new Client(['handler' => HandlerStack::create($mock_handler)]);
 
-    $url_resolver = $this->createTestableUrlResolver($client);
-    $result = $url_resolver->discoverResourceUrl('https://example.com/some-page');
+        $url_resolver = $this->createTestableUrlResolver($client);
+        $result = $url_resolver->discoverResourceUrl('https://example.com/some-page');
 
-    $this->assertSame('https://example.com/oembed?url=test', $result);
-  }
+        $this->assertSame('https://example.com/oembed?url=test', $result);
+    }
 
-  /**
-   * Tests that discoverResourceUrl skips non-HTML responses.
-   */
-  public function testDiscoverResourceUrlSkipsNonHtml(): void {
-    $response = new Response(200, ['Content-Type' => 'application/json'], '');
-    $mock_handler = new MockHandler([$response]);
-    $client = new Client(['handler' => HandlerStack::create($mock_handler)]);
+    /**
+     * Tests that discoverResourceUrl skips non-HTML responses.
+     */
+    public function testDiscoverResourceUrlSkipsNonHtml(): void
+    {
+        $response = new Response(200, ['Content-Type' => 'application/json'], '');
+        $mock_handler = new MockHandler([$response]);
+        $client = new Client(['handler' => HandlerStack::create($mock_handler)]);
 
-    $url_resolver = $this->createTestableUrlResolver($client);
-    $result = $url_resolver->discoverResourceUrl('https://example.com/some-page');
+        $url_resolver = $this->createTestableUrlResolver($client);
+        $result = $url_resolver->discoverResourceUrl('https://example.com/some-page');
 
-    $this->assertFalse($result);
-  }
+        $this->assertFalse($result);
+    }
 
 }

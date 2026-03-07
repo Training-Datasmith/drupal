@@ -12,32 +12,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerExistingInstallationTest extends InstallerTestBase {
+class InstallerExistingInstallationTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests that Drupal fails to install when there is an existing installation.
+     */
+    public function testInstaller(): void
+    {
+        // Verify that Drupal can't be immediately reinstalled.
+        $this->visitInstaller();
+        $this->assertSession()->pageTextContains('Drupal already installed');
 
-  /**
-   * Tests that Drupal fails to install when there is an existing installation.
-   */
-  public function testInstaller(): void {
-    // Verify that Drupal can't be immediately reinstalled.
-    $this->visitInstaller();
-    $this->assertSession()->pageTextContains('Drupal already installed');
+        // Verify that Drupal version is not displayed.
+        $this->assertSession()->pageTextNotContains(\Drupal::VERSION);
 
-    // Verify that Drupal version is not displayed.
-    $this->assertSession()->pageTextNotContains(\Drupal::VERSION);
-
-    // Delete settings.php and attempt to reinstall again.
-    unlink($this->siteDirectory . '/settings.php');
-    $this->visitInstaller();
-    $this->setUpLanguage();
-    $this->setUpProfile();
-    $this->setUpRequirementsProblem();
-    $this->setUpSettings();
-    $this->assertSession()->pageTextContains('Drupal already installed');
-  }
+        // Delete settings.php and attempt to reinstall again.
+        unlink($this->siteDirectory . '/settings.php');
+        $this->visitInstaller();
+        $this->setUpLanguage();
+        $this->setUpProfile();
+        $this->setUpRequirementsProblem();
+        $this->setUpSettings();
+        $this->assertSession()->pageTextContains('Drupal already installed');
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Uuid;
 
 /**
@@ -7,14 +9,15 @@ namespace Drupal\Component\Uuid;
  *
  * @see http://php.net/com_create_guid
  */
-class Com implements UuidInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function generate(): string {
-    // Remove {} wrapper and make lower case to keep result consistent.
-    return strtolower(trim(com_create_guid(), '{}'));
-  }
+class Com implements UuidInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function generate(): string
+    {
+        // Remove {} wrapper and make lower case to keep result consistent.
+        return strtolower(trim(com_create_guid(), '{}'));
+    }
 
 }

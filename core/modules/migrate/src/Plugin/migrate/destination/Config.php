@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\DependencyTrait;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Attribute\MigrateDestination;
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -66,165 +67,173 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * "d6_variable_translation" source plugin.
  */
 #[MigrateDestination('config')]
-class Config extends DestinationBase implements ContainerFactoryPluginInterface, DependentPluginInterface {
+class Config extends DestinationBase implements ContainerFactoryPluginInterface, DependentPluginInterface
+{
+    use DependencyTrait;
 
-  use DependencyTrait;
+    /**
+     * The config object.
+     *
+     * @var \Drupal\Core\Config\Config
+     */
+    protected $config;
 
-  /**
-   * The config object.
-   *
-   * @var \Drupal\Core\Config\Config
-   */
-  protected $config;
-
-  /**
-   * Constructs a Config destination object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\migrate\Plugin\MigrationInterface $migration
-   *   The migration entity.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The configuration factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
-   *   The typed config manager.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    MigrationInterface $migration,
-    ConfigFactoryInterface $config_factory,
-    protected \Drupal\Core\Language\LanguageManagerInterface $language_manager,
-    protected TypedConfigManagerInterface $typedConfigManager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
-    $this->config = $config_factory->getEditable($configuration['config_name']);
-    if ($this->isTranslationDestination()) {
-      $this->supportsRollback = TRUE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('config.factory'),
-      $container->get('language_manager'),
-      $container->get(TypedConfigManagerInterface::class)
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []) {
-    if ($this->isTranslationDestination()) {
-      $this->config = $this->language_manager->getLanguageConfigOverride($row->getDestinationProperty('langcode'), $this->config->getName());
-    }
-
-    foreach ($row->getRawDestination() as $key => $value) {
-      if (isset($value) || !empty($this->configuration['store null'])) {
-        $this->config->set(str_replace(Row::PROPERTY_SEPARATOR, '.', $key), $value);
-      }
-    }
-
-    $name = $this->config->getName();
-    // Ensure that translatable config has `langcode` specified.
-    // @see \Drupal\Core\Config\Plugin\Validation\Constraint\LangcodeRequiredIfTranslatableValuesConstraint
-    if ($this->typedConfigManager->hasConfigSchema($name)
-      && $this->typedConfigManager->createFromNameAndData($name, $this->config->getRawData())->hasTranslatableElements()
-      && !$this->config->get('langcode')
+    /**
+     * Constructs a Config destination object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+     *   The migration entity.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The configuration factory.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+     *   The language manager.
+     * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+     *   The typed config manager.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        MigrationInterface $migration,
+        ConfigFactoryInterface $config_factory,
+        protected \Drupal\Core\Language\LanguageManagerInterface $language_manager,
+        protected TypedConfigManagerInterface $typedConfigManager,
     ) {
-      $this->config->set('langcode', $this->language_manager->getDefaultLanguage()->getId());
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+        $this->config = $config_factory->getEditable($configuration['config_name']);
+        if ($this->isTranslationDestination()) {
+            $this->supportsRollback = true;
+        }
     }
-    $this->config->save();
-    $ids[] = $this->config->getName();
-    if ($this->isTranslationDestination()) {
-      $ids[] = $row->getDestinationProperty('langcode');
-    }
-    return $ids;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): void {
-    // @todo Dynamically fetch fields using Config Schema API.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['config_name']['type'] = 'string';
-    if ($this->isTranslationDestination()) {
-      $ids['langcode']['type'] = 'string';
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('config.factory'),
+            $container->get('language_manager'),
+            $container->get(TypedConfigManagerInterface::class)
+        );
     }
-    return $ids;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $provider = explode('.', $this->config->getName(), 2)[0];
-    $this->addDependency('module', $provider);
-    return $this->dependencies;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = [])
+    {
+        if ($this->isTranslationDestination()) {
+            $this->config = $this->language_manager->getLanguageConfigOverride($row->getDestinationProperty('langcode'), $this->config->getName());
+        }
 
-  /**
-   * Get whether this destination is for translations.
-   *
-   * @return bool
-   *   Whether this destination is for translations.
-   */
-  protected function isTranslationDestination(): bool {
-    return !empty($this->configuration['translations']);
-  }
+        foreach ($row->getRawDestination() as $key => $value) {
+            if (isset($value) || !empty($this->configuration['store null'])) {
+                $this->config->set(str_replace(Row::PROPERTY_SEPARATOR, '.', $key), $value);
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function rollback(array $destination_identifier): void {
-    if ($this->isTranslationDestination()) {
-      $language = $destination_identifier['langcode'];
-      $config = $this->language_manager->getLanguageConfigOverride($language, $this->config->getName());
-      $config->delete();
+        $name = $this->config->getName();
+        // Ensure that translatable config has `langcode` specified.
+        // @see \Drupal\Core\Config\Plugin\Validation\Constraint\LangcodeRequiredIfTranslatableValuesConstraint
+        if ($this->typedConfigManager->hasConfigSchema($name)
+          && $this->typedConfigManager->createFromNameAndData($name, $this->config->getRawData())->hasTranslatableElements()
+          && !$this->config->get('langcode')
+        ) {
+            $this->config->set('langcode', $this->language_manager->getDefaultLanguage()->getId());
+        }
+        $this->config->save();
+        $ids[] = $this->config->getName();
+        if ($this->isTranslationDestination()) {
+            $ids[] = $row->getDestinationProperty('langcode');
+        }
+        return $ids;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDestinationModule() {
-    if (!empty($this->configuration['destination_module'])) {
-      return $this->configuration['destination_module'];
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): void
+    {
+        // @todo Dynamically fetch fields using Config Schema API.
     }
-    if (!empty($this->pluginDefinition['destination_module'])) {
-      return $this->pluginDefinition['destination_module'];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['config_name']['type'] = 'string';
+        if ($this->isTranslationDestination()) {
+            $ids['langcode']['type'] = 'string';
+        }
+        return $ids;
     }
-    // Config translations require the config_translation module so set the
-    // migration provider to 'config_translation'. The corresponding non
-    // translated configuration is expected to be handled in a separate
-    // migration.
-    if (isset($this->configuration['translations'])) {
-      return 'config_translation';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        $provider = explode('.', $this->config->getName(), 2)[0];
+        $this->addDependency('module', $provider);
+        return $this->dependencies;
     }
-    // Get the module handling this configuration object from the config_name,
-    // which is of the form "<module_name>.<configuration object name>".
-    return !empty($this->configuration['config_name']) ? explode('.', (string) $this->configuration['config_name'], 2)[0] : NULL;
-  }
+
+    /**
+     * Get whether this destination is for translations.
+     *
+     * @return bool
+     *   Whether this destination is for translations.
+     */
+    protected function isTranslationDestination(): bool
+    {
+        return !empty($this->configuration['translations']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rollback(array $destination_identifier): void
+    {
+        if ($this->isTranslationDestination()) {
+            $language = $destination_identifier['langcode'];
+            $config = $this->language_manager->getLanguageConfigOverride($language, $this->config->getName());
+            $config->delete();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDestinationModule()
+    {
+        if (!empty($this->configuration['destination_module'])) {
+            return $this->configuration['destination_module'];
+        }
+        if (!empty($this->pluginDefinition['destination_module'])) {
+            return $this->pluginDefinition['destination_module'];
+        }
+        // Config translations require the config_translation module so set the
+        // migration provider to 'config_translation'. The corresponding non
+        // translated configuration is expected to be handled in a separate
+        // migration.
+        if (isset($this->configuration['translations'])) {
+            return 'config_translation';
+        }
+        // Get the module handling this configuration object from the config_name,
+        // which is of the form "<module_name>.<configuration object name>".
+        return !empty($this->configuration['config_name']) ? explode('.', (string) $this->configuration['config_name'], 2)[0] : null;
+    }
 
 }

@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Drupal\entity_test_revlog\Entity;
 
 use Drupal\Core\Entity\Attribute\ContentEntityType;
-use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
-use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
-use Drupal\Core\Entity\Form\RevisionRevertForm;
-use Drupal\Core\Entity\Form\RevisionDeleteForm;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\entity_test_revlog\EntityTestRevlogAccessControlHandler;
+use Drupal\Core\Entity\Form\RevisionDeleteForm;
+use Drupal\Core\Entity\Form\RevisionRevertForm;
+use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
+use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\entity_test_revlog\EntityTestRevlogAccessControlHandler;
 
 /**
  * Defines the test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_mul_revlog',
-  label: new TranslatableMarkup('Test entity - data table, revisions log'),
-  entity_keys: [
+    id: 'entity_test_mul_revlog',
+    label: new TranslatableMarkup('Test entity - data table, revisions log'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'revision' => 'revision_id',
@@ -27,7 +27,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestRevlogAccessControlHandler::class,
     'form' => [
       'default' => ContentEntityForm::class,
@@ -39,7 +39,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
       'revision' => RevisionHtmlRouteProvider::class,
     ],
   ],
-  links: [
+    links: [
     'add-form' => '/entity_test_mul_revlog/add',
     'canonical' => '/entity_test_mul_revlog/manage/{entity_test_mul_revlog}',
     'delete-form' => '/entity_test/delete/entity_test_mul_revlog/{entity_test_mul_revlog}',
@@ -49,17 +49,17 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
     'revision-revert-form' => '/entity_test_mul_revlog/{entity_test_mul_revlog}/revision/{entity_test_mul_revlog_revision}/revert',
     'version-history' => '/entity_test_mul_revlog/{entity_test_mul_revlog}/revisions',
   ],
-  base_table: 'entity_test_mul_revlog',
-  data_table: 'entity_test_mul_revlog_field_data',
-  revision_table: 'entity_test_mul_revlog_revision',
-  revision_data_table: 'entity_test_mul_revlog_field_revision',
-  translatable: TRUE,
-  revision_metadata_keys: [
+    base_table: 'entity_test_mul_revlog',
+    data_table: 'entity_test_mul_revlog_field_data',
+    revision_table: 'entity_test_mul_revlog_revision',
+    revision_data_table: 'entity_test_mul_revlog_field_revision',
+    translatable: true,
+    revision_metadata_keys: [
     'revision_user' => 'revision_user',
     'revision_created' => 'revision_created',
     'revision_log_message' => 'revision_log_message',
   ],
 )]
-class EntityTestMulWithRevisionLog extends EntityTestWithRevisionLog {
-
+class EntityTestMulWithRevisionLog extends EntityTestWithRevisionLog
+{
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\LanguageNegotiation;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -11,35 +13,36 @@ use Symfony\Component\HttpFoundation\Request;
  * Class for identifying language from the user preferences.
  */
 #[LanguageNegotiation(
-  id: LanguageNegotiationUser::METHOD_ID,
-  name: new TranslatableMarkup('User'),
-  weight: -4,
-  description: new TranslatableMarkup("Follow the user's language preference.")
+    id: LanguageNegotiationUser::METHOD_ID,
+    name: new TranslatableMarkup('User'),
+    weight: -4,
+    description: new TranslatableMarkup("Follow the user's language preference.")
 )]
-class LanguageNegotiationUser extends LanguageNegotiationMethodBase {
+class LanguageNegotiationUser extends LanguageNegotiationMethodBase
+{
+    /**
+     * The language negotiation method id.
+     */
+    public const METHOD_ID = 'language-user';
 
-  /**
-   * The language negotiation method id.
-   */
-  const METHOD_ID = 'language-user';
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcode(?Request $request = null)
+    {
+        $langcode = null;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcode(?Request $request = NULL) {
-    $langcode = NULL;
+        // User preference (only for authenticated users).
+        if ($this->languageManager && $this->currentUser->isAuthenticated()) {
+            $preferred_langcode = $this->currentUser->getPreferredLangcode(false);
+            $languages = $this->languageManager->getLanguages();
+            if (!empty($preferred_langcode) && isset($languages[$preferred_langcode])) {
+                $langcode = $preferred_langcode;
+            }
+        }
 
-    // User preference (only for authenticated users).
-    if ($this->languageManager && $this->currentUser->isAuthenticated()) {
-      $preferred_langcode = $this->currentUser->getPreferredLangcode(FALSE);
-      $languages = $this->languageManager->getLanguages();
-      if (!empty($preferred_langcode) && isset($languages[$preferred_langcode])) {
-        $langcode = $preferred_langcode;
-      }
+        // No language preference from the user.
+        return $langcode;
     }
-
-    // No language preference from the user.
-    return $langcode;
-  }
 
 }

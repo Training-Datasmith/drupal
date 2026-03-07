@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -14,7 +16,6 @@ namespace Drupal\Core\ProxyClass\Menu {
      */
     class MenuActiveTrail implements \Drupal\Core\Cache\CacheCollectorInterface, \Drupal\Core\DestructableInterface, \Drupal\Core\Menu\MenuActiveTrailInterface
     {
-
         use \Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
         /**
@@ -42,7 +43,7 @@ namespace Drupal\Core\ProxyClass\Menu {
         public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, /**
          * The id of the original proxied service.
          */
-        protected $drupalProxyOriginalServiceId)
+            protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
         }
@@ -73,7 +74,7 @@ namespace Drupal\Core\ProxyClass\Menu {
         /**
          * {@inheritdoc}
          */
-        public function getActiveLink($menu_name = NULL)
+        public function getActiveLink($menu_name = null)
         {
             return $this->lazyLoadItself()->getActiveLink($menu_name);
         }

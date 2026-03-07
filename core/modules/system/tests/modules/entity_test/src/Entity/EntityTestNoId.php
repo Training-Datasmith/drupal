@@ -12,22 +12,22 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_no_id',
-  label: new TranslatableMarkup('Entity Test without id'),
-  entity_keys: [
+    id: 'entity_test_no_id',
+    label: new TranslatableMarkup('Entity Test without id'),
+    entity_keys: [
     'bundle' => 'type',
   ],
-  handlers: [
+    handlers: [
     'storage' => ContentEntityNullStorage::class,
   ],
-  links: [
+    links: [
     'add-form' => '/entity_test_no_id/add/{type}',
     'add-page' => '/entity_test_no_id/add',
   ],
-  admin_permission: 'administer entity_test content',
-  bundle_entity_type: 'entity_test_no_id_bundle',
-  field_ui_base_route: 'entity.entity_test_no_id.admin_form',
+    admin_permission: 'administer entity_test content',
+    bundle_entity_type: 'entity_test_no_id_bundle',
+    field_ui_base_route: 'entity.entity_test_no_id.admin_form',
 )]
-class EntityTestNoId extends EntityTest {
-
+class EntityTestNoId extends EntityTest
+{
 }

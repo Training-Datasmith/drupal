@@ -14,66 +14,69 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class BatchTestMultiStepForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'batch_test_multistep_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $step = $form_state->get('step');
-    if (empty($step)) {
-      $step = 1;
-      $form_state->set('step', $step);
+class BatchTestMultiStepForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'batch_test_multistep_form';
     }
 
-    $form['step_display'] = [
-      '#markup' => 'step ' . $step . '<br/>',
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Submit',
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $step = $form_state->get('step');
+        if (empty($step)) {
+            $step = 1;
+            $form_state->set('step', $step);
+        }
 
-    // This is a POST form with multiple steps that does not transition from one
-    // step to the next via POST requests, but via GET requests, because it uses
-    // Batch API to advance through the steps.
-    $form['#cache']['max-age'] = 0;
+        $form['step_display'] = [
+          '#markup' => 'step ' . $step . '<br/>',
+        ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Submit',
+        ];
 
-    return $form;
-  }
+        // This is a POST form with multiple steps that does not transition from one
+        // step to the next via POST requests, but via GET requests, because it uses
+        // Batch API to advance through the steps.
+        $form['#cache']['max-age'] = 0;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $batch_test_definitions = new BatchTestDefinitions();
-    $batch_test_helper = new BatchTestHelper();
-    $batch_test_helper->stack(NULL, TRUE);
-
-    $step = $form_state->get('step');
-    switch ($step) {
-      case 1:
-        batch_set($batch_test_definitions->batch1());
-        break;
-
-      case 2:
-        batch_set($batch_test_definitions->batch2());
-        break;
+        return $form;
     }
 
-    if ($step < 2) {
-      $form_state->set('step', ++$step);
-      $form_state->setRebuild();
-    }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $batch_test_definitions = new BatchTestDefinitions();
+        $batch_test_helper = new BatchTestHelper();
+        $batch_test_helper->stack(null, true);
 
-    $form_state->setRedirect('batch_test.redirect');
-  }
+        $step = $form_state->get('step');
+        switch ($step) {
+            case 1:
+                batch_set($batch_test_definitions->batch1());
+                break;
+
+            case 2:
+                batch_set($batch_test_definitions->batch2());
+                break;
+        }
+
+        if ($step < 2) {
+            $form_state->set('step', ++$step);
+            $form_state->setRebuild();
+        }
+
+        $form_state->setRedirect('batch_test.redirect');
+    }
 
 }

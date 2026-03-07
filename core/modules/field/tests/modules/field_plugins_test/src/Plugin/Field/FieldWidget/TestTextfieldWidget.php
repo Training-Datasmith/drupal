@@ -12,12 +12,13 @@ use Drupal\text\Plugin\Field\FieldWidget\TextfieldWidget;
  * Plugin implementation of the 'field_plugins_test_text_widget' widget.
  */
 #[FieldWidget(
-  id: 'field_plugins_test_text_widget',
-  label: new TranslatableMarkup('Test Text field'),
-  field_types: [
+    id: 'field_plugins_test_text_widget',
+    label: new TranslatableMarkup('Test Text field'),
+    field_types: [
     'text',
     'string',
   ],
 )]
-class TestTextfieldWidget extends TextfieldWidget {
+class TestTextfieldWidget extends TextfieldWidget
+{
 }

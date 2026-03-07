@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Menu;
 
 /**
@@ -22,87 +24,89 @@ namespace Drupal\Core\Menu;
  *
  * @see \Drupal\Core\Menu\MenuTreeStorage::loadTreeData()
  */
-class MenuLinkTreeElement {
+class MenuLinkTreeElement
+{
+    /**
+     * The menu link for this element in a menu link tree.
+     *
+     * @var \Drupal\Core\Menu\MenuLinkInterface
+     */
+    public $link;
 
-  /**
-   * The menu link for this element in a menu link tree.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkInterface
-   */
-  public $link;
+    /**
+     * The subtree of this element in the menu link tree (this link's children).
+     *
+     * (Children of a link are only loaded if a link is marked as "expanded" by
+     * the query.)
+     *
+     * @var \Drupal\Core\Menu\MenuLinkTreeElement[]
+     */
+    public $subtree;
 
-  /**
-   * The subtree of this element in the menu link tree (this link's children).
-   *
-   * (Children of a link are only loaded if a link is marked as "expanded" by
-   * the query.)
-   *
-   * @var \Drupal\Core\Menu\MenuLinkTreeElement[]
-   */
-  public $subtree;
+    /**
+     * Whether this link is accessible by the current user.
+     *
+     * If the value is NULL the access was not determined yet, if an access result
+     * object, it was determined already.
+     *
+     * @var \Drupal\Core\Access\AccessResultInterface|null
+     */
+    public $access;
 
-  /**
-   * Whether this link is accessible by the current user.
-   *
-   * If the value is NULL the access was not determined yet, if an access result
-   * object, it was determined already.
-   *
-   * @var \Drupal\Core\Access\AccessResultInterface|null
-   */
-  public $access;
+    /**
+     * Additional options for this link.
+     *
+     * This is merged (\Drupal\Component\Utility\NestedArray::mergeDeep()) with
+     * \Drupal\Core\Menu\MenuLinkInterface::getOptions(), to allow menu link tree
+     * manipulators to add or override link options.
+     *
+     * @var string[]
+     */
+    public $options = [];
 
-  /**
-   * Additional options for this link.
-   *
-   * This is merged (\Drupal\Component\Utility\NestedArray::mergeDeep()) with
-   * \Drupal\Core\Menu\MenuLinkInterface::getOptions(), to allow menu link tree
-   * manipulators to add or override link options.
-   *
-   * @var string[]
-   */
-  public $options = [];
-
-  /**
-   * Constructs a new \Drupal\Core\Menu\MenuLinkTreeElement.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkInterface $link
-   *   The menu link for this element in the menu link tree.
-   * @param bool $hasChildren
-   *   A flag as to whether this element has children even if they are not
-   *   included in the tree (i.e. this may be TRUE even if $subtree is empty).
-   * @param int $depth
-   *   The depth of this element relative to the tree root.
-   * @param bool $inActiveTrail
-   *   A flag as to whether this link was included in the list of active trail
-   *   IDs used to build the tree.
-   * @param \Drupal\Core\Menu\MenuLinkTreeElement[] $subtree
-   *   The children of this element in the menu link tree.
-   */
-  public function __construct(MenuLinkInterface $link, /**
+    /**
+     * Constructs a new \Drupal\Core\Menu\MenuLinkTreeElement.
+     *
+     * @param \Drupal\Core\Menu\MenuLinkInterface $link
+     *   The menu link for this element in the menu link tree.
+     * @param bool $hasChildren
+     *   A flag as to whether this element has children even if they are not
+     *   included in the tree (i.e. this may be TRUE even if $subtree is empty).
+     * @param int $depth
+     *   The depth of this element relative to the tree root.
+     * @param bool $inActiveTrail
+     *   A flag as to whether this link was included in the list of active trail
+     *   IDs used to build the tree.
+     * @param \Drupal\Core\Menu\MenuLinkTreeElement[] $subtree
+     *   The children of this element in the menu link tree.
+     */
+    public function __construct(MenuLinkInterface $link, /**
    * Whether this link has any children at all.
    */
-  public $hasChildren, /**
+        public $hasChildren, /**
    * The depth of this link relative to the root of the tree.
    */
-  public $depth, /**
+        public $depth, /**
    * Whether this link is in the active trail.
    */
-  public $inActiveTrail, array $subtree) {
-    // Essential properties.
-    $this->link = $link;
-    $this->subtree = $subtree;
-  }
+        public $inActiveTrail, array $subtree)
+    {
+        // Essential properties.
+        $this->link = $link;
+        $this->subtree = $subtree;
+    }
 
-  /**
-   * Counts all menu links in the current subtree.
-   *
-   * @return int
-   *   The number of menu links in this subtree (one plus the number of menu
-   *   links in all descendants).
-   */
-  public function count(): int|float {
-    $sum = (fn($carry, MenuLinkTreeElement $element) => $carry + $element->count());
-    return 1 + array_reduce($this->subtree, $sum);
-  }
+    /**
+     * Counts all menu links in the current subtree.
+     *
+     * @return int
+     *   The number of menu links in this subtree (one plus the number of menu
+     *   links in all descendants).
+     */
+    public function count(): int|float
+    {
+        $sum = (fn ($carry, MenuLinkTreeElement $element) => $carry + $element->count());
+        return 1 + array_reduce($this->subtree, $sum);
+    }
 
 }

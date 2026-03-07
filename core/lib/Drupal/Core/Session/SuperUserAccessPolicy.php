@@ -9,26 +9,28 @@ use Drupal\Core\Cache\CacheOptionalInterface;
 /**
  * Grants user 1 an all access pass.
  */
-final class SuperUserAccessPolicy extends AccessPolicyBase implements CacheOptionalInterface {
+final class SuperUserAccessPolicy extends AccessPolicyBase implements CacheOptionalInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function calculatePermissions(AccountInterface $account, string $scope): RefinableCalculatedPermissionsInterface
+    {
+        $calculated_permissions = parent::calculatePermissions($account, $scope);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculatePermissions(AccountInterface $account, string $scope): RefinableCalculatedPermissionsInterface {
-    $calculated_permissions = parent::calculatePermissions($account, $scope);
+        if (((int) $account->id()) !== 1) {
+            return $calculated_permissions;
+        }
 
-    if (((int) $account->id()) !== 1) {
-      return $calculated_permissions;
+        return $calculated_permissions->addItem(new CalculatedPermissionsItem([], true));
     }
 
-    return $calculated_permissions->addItem(new CalculatedPermissionsItem([], TRUE));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPersistentCacheContexts(): array {
-    return ['user.is_super_user'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPersistentCacheContexts(): array
+    {
+        return ['user.is_super_user'];
+    }
 
 }

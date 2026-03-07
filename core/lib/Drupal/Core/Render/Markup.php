@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -19,7 +21,8 @@ use Drupal\Component\Render\MarkupTrait;
  * @see \Drupal\Core\Template\TwigExtension::escapeFilter
  * @see \Twig\Markup
  */
-final class Markup implements MarkupInterface, \Countable {
-  use MarkupTrait;
+final class Markup implements MarkupInterface, \Countable
+{
+    use MarkupTrait;
 
 }

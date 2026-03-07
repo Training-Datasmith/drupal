@@ -15,54 +15,56 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserViewsFieldAccessTest extends FieldFieldAccessTestBase {
+class UserViewsFieldAccessTest extends FieldFieldAccessTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user', 'entity_test', 'language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user', 'entity_test', 'language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installEntitySchema('user');
+    }
 
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests the user fields.
+     */
+    public function testUserFields(): void
+    {
+        ConfigurableLanguage::createFromLangcode('es')->save();
+        ConfigurableLanguage::createFromLangcode('fr')->save();
 
-  /**
-   * Tests the user fields.
-   */
-  public function testUserFields(): void {
-    ConfigurableLanguage::createFromLangcode('es')->save();
-    ConfigurableLanguage::createFromLangcode('fr')->save();
+        $user = User::create([
+          'name' => 'test user',
+          'mail' => 'druplicon@drop.org',
+          'status' => 1,
+          'preferred_langcode' => 'es',
+          'preferred_admin_langcode' => 'fr',
+          'timezone' => 'ut1',
+          'created' => 123456,
+        ]);
 
-    $user = User::create([
-      'name' => 'test user',
-      'mail' => 'druplicon@drop.org',
-      'status' => 1,
-      'preferred_langcode' => 'es',
-      'preferred_admin_langcode' => 'fr',
-      'timezone' => 'ut1',
-      'created' => 123456,
-    ]);
+        $user->save();
 
-    $user->save();
+        // @todo Expand the test coverage in https://www.drupal.org/node/2464635
 
-    // @todo Expand the test coverage in https://www.drupal.org/node/2464635
-
-    $this->assertFieldAccess('user', 'uid', $user->id());
-    $this->assertFieldAccess('user', 'uuid', $user->uuid());
-    $this->assertFieldAccess('user', 'langcode', $user->language()->getName());
-    $this->assertFieldAccess('user', 'preferred_langcode', 'Spanish');
-    $this->assertFieldAccess('user', 'preferred_admin_langcode', 'French');
-    $this->assertFieldAccess('user', 'name', 'test user');
-    // $this->assertFieldAccess('user', 'mail', 'druplicon@drop.org');
-    $this->assertFieldAccess('user', 'timezone', 'ut1');
-    $this->assertFieldAccess('user', 'status', 'On');
-    // $this->assertFieldAccess('user', 'created', \Drupal::service('date.formatter')->format(123456));
-    // $this->assertFieldAccess('user', 'changed', \Drupal::service('date.formatter')->format(\Drupal::time()->getRequestTime()));
-  }
+        $this->assertFieldAccess('user', 'uid', $user->id());
+        $this->assertFieldAccess('user', 'uuid', $user->uuid());
+        $this->assertFieldAccess('user', 'langcode', $user->language()->getName());
+        $this->assertFieldAccess('user', 'preferred_langcode', 'Spanish');
+        $this->assertFieldAccess('user', 'preferred_admin_langcode', 'French');
+        $this->assertFieldAccess('user', 'name', 'test user');
+        // $this->assertFieldAccess('user', 'mail', 'druplicon@drop.org');
+        $this->assertFieldAccess('user', 'timezone', 'ut1');
+        $this->assertFieldAccess('user', 'status', 'On');
+        // $this->assertFieldAccess('user', 'created', \Drupal::service('date.formatter')->format(123456));
+        // $this->assertFieldAccess('user', 'changed', \Drupal::service('date.formatter')->format(\Drupal::time()->getRequestTime()));
+    }
 
 }

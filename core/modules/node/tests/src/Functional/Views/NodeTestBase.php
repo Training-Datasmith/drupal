@@ -9,18 +9,19 @@ use Drupal\Tests\views\Functional\ViewTestBase;
 /**
  * Base class for all node Views tests.
  */
-abstract class NodeTestBase extends ViewTestBase {
+abstract class NodeTestBase extends ViewTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node_test_views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node_test_views'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['node_test_views']): void {
-    parent::setUp($import_test_views, $modules);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['node_test_views']): void
+    {
+        parent::setUp($import_test_views, $modules);
+    }
 
 }

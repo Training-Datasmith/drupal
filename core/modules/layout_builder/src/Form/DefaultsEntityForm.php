@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
-use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,118 +17,124 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Form classes are internal.
  */
-class DefaultsEntityForm extends EntityForm {
+class DefaultsEntityForm extends EntityForm
+{
+    use PreviewToggleTrait;
+    use LayoutBuilderEntityFormTrait;
 
-  use PreviewToggleTrait;
-  use LayoutBuilderEntityFormTrait;
+    /**
+     * The section storage.
+     *
+     * @var \Drupal\layout_builder\SectionStorageInterface
+     */
+    protected $sectionStorage;
 
-  /**
-   * The section storage.
-   *
-   * @var \Drupal\layout_builder\SectionStorageInterface
-   */
-  protected $sectionStorage;
-
-  /**
-   * Constructs a new DefaultsEntityForm.
-   *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
-   *   The layout tempstore repository.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
-   *   The entity type bundle info service.
-   */
-  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('layout_builder.tempstore_repository'),
-      $container->get('entity_type.bundle.info')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL) {
-    $form['#attributes']['class'][] = 'layout-builder-form';
-    $form['layout_builder'] = [
-      '#type' => 'layout_builder',
-      '#section_storage' => $section_storage,
-    ];
-    $form['layout_builder_message'] = $this->buildMessage($section_storage->getContextValue('display'));
-
-    $this->sectionStorage = $section_storage;
-    return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * Renders a message to display at the top of the layout builder.
-   *
-   * @param \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $entity
-   *   The entity view display being edited.
-   *
-   * @return array
-   *   A renderable array containing the message.
-   */
-  protected function buildMessage(LayoutEntityDisplayInterface $entity): array {
-    $entity_type_id = $entity->getTargetEntityTypeId();
-    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
-
-    $args = [
-      '@bundle' => $bundle_info[$entity->getTargetBundle()]['label'],
-      '@plural_label' => $entity_type->getPluralLabel(),
-    ];
-    if ($entity_type->hasKey('bundle')) {
-      $message = $this->t('You are editing the layout template for all @bundle @plural_label.', $args);
+    /**
+     * Constructs a new DefaultsEntityForm.
+     *
+     * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
+     *   The layout tempstore repository.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+     *   The entity type bundle info service.
+     */
+    public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
+    {
     }
-    else {
-      $message = $this->t('You are editing the layout template for all @plural_label.', $args);
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('layout_builder.tempstore_repository'),
+            $container->get('entity_type.bundle.info')
+        );
     }
-    return $this->buildMessageContainer($message, 'defaults');
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildEntity(array $form, FormStateInterface $form_state): object {
-    // \Drupal\Core\Entity\EntityForm::buildEntity() clones the entity object.
-    // Keep it in sync with the one used by the section storage.
-    $this->setEntity($this->sectionStorage->getContextValue('display'));
-    $entity = parent::buildEntity($form, $form_state);
-    $this->sectionStorage->setContextValue('display', $entity);
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = null)
+    {
+        $form['#attributes']['class'][] = 'layout-builder-form';
+        $form['layout_builder'] = [
+          '#type' => 'layout_builder',
+          '#section_storage' => $section_storage,
+        ];
+        $form['layout_builder_message'] = $this->buildMessage($section_storage->getContextValue('display'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
-    $route_parameters = $route_match->getParameters()->all();
+        $this->sectionStorage = $section_storage;
+        return parent::buildForm($form, $form_state);
+    }
 
-    return $this->entityTypeManager->getStorage('entity_view_display')->load($route_parameters['entity_type_id'] . '.' . $route_parameters['bundle'] . '.' . $route_parameters['view_mode_name']);
-  }
+    /**
+     * Renders a message to display at the top of the layout builder.
+     *
+     * @param \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $entity
+     *   The entity view display being edited.
+     *
+     * @return array
+     *   A renderable array containing the message.
+     */
+    protected function buildMessage(LayoutEntityDisplayInterface $entity): array
+    {
+        $entity_type_id = $entity->getTargetEntityTypeId();
+        $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+        $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function actions(array $form, FormStateInterface $form_state): array {
-    $actions = parent::actions($form, $form_state);
-    return $this->buildActions($actions);
-  }
+        $args = [
+          '@bundle' => $bundle_info[$entity->getTargetBundle()]['label'],
+          '@plural_label' => $entity_type->getPluralLabel(),
+        ];
+        if ($entity_type->hasKey('bundle')) {
+            $message = $this->t('You are editing the layout template for all @bundle @plural_label.', $args);
+        } else {
+            $message = $this->t('You are editing the layout template for all @plural_label.', $args);
+        }
+        return $this->buildMessageContainer($message, 'defaults');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state) {
-    $return = $this->sectionStorage->save();
-    $this->saveTasks($form_state, $this->t('The layout has been saved.'));
-    return $return;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildEntity(array $form, FormStateInterface $form_state): object
+    {
+        // \Drupal\Core\Entity\EntityForm::buildEntity() clones the entity object.
+        // Keep it in sync with the one used by the section storage.
+        $this->setEntity($this->sectionStorage->getContextValue('display'));
+        $entity = parent::buildEntity($form, $form_state);
+        $this->sectionStorage->setContextValue('display', $entity);
+        return $entity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id)
+    {
+        $route_parameters = $route_match->getParameters()->all();
+
+        return $this->entityTypeManager->getStorage('entity_view_display')->load($route_parameters['entity_type_id'] . '.' . $route_parameters['bundle'] . '.' . $route_parameters['view_mode_name']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function actions(array $form, FormStateInterface $form_state): array
+    {
+        $actions = parent::actions($form, $form_state);
+        return $this->buildActions($actions);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state)
+    {
+        $return = $this->sectionStorage->save();
+        $this->saveTasks($form_state, $this->t('The layout has been saved.'));
+        return $return;
+    }
 
 }

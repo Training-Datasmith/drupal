@@ -16,47 +16,49 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('search')]
 #[RunTestsInSeparateProcesses]
-class SearchPageOverrideTest extends BrowserTestBase {
+class SearchPageOverrideTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['search', 'search_extra_type'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['search', 'search_extra_type'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * A user with permission to administer search.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    public $searchUser;
 
-  /**
-   * A user with permission to administer search.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  public $searchUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Log in as a user that can create and search content.
+        $this->searchUser = $this->drupalCreateUser([
+          'search content',
+          'administer search',
+        ]);
+        $this->drupalLogin($this->searchUser);
+    }
 
-    // Log in as a user that can create and search content.
-    $this->searchUser = $this->drupalCreateUser([
-      'search content',
-      'administer search',
-    ]);
-    $this->drupalLogin($this->searchUser);
-  }
-
-  /**
-   * Tests that the search results page can be overridden by a custom plugin.
-   */
-  public function testSearchPageHook(): void {
-    $keys = 'bike shed ' . $this->randomMachineName();
-    $this->drupalGet("search/dummy_path", ['query' => ['keys' => $keys]]);
-    $this->assertSession()->pageTextContains('Dummy search snippet');
-    $this->assertSession()->pageTextContains('Test page text is here');
-  }
+    /**
+     * Tests that the search results page can be overridden by a custom plugin.
+     */
+    public function testSearchPageHook(): void
+    {
+        $keys = 'bike shed ' . $this->randomMachineName();
+        $this->drupalGet('search/dummy_path', ['query' => ['keys' => $keys]]);
+        $this->assertSession()->pageTextContains('Dummy search snippet');
+        $this->assertSession()->pageTextContains('Test page text is here');
+    }
 
 }

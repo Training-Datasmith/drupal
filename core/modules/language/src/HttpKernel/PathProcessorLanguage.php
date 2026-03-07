@@ -1,139 +1,143 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\HttpKernel;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\PathProcessor\InboundPathProcessorInterface;
 use Drupal\Core\PathProcessor\OutboundPathProcessorInterface;
 use Drupal\Core\Render\BubbleableMetadata;
-use Drupal\language\ConfigurableLanguageManagerInterface;
-use Drupal\language\EventSubscriber\ConfigSubscriber;
-use Drupal\language\LanguageNegotiatorInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Session\AccountInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Processes the inbound path using path alias lookups.
  */
-class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPathProcessorInterface {
+class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPathProcessorInterface
+{
+    /**
+     * Local cache for language path processors.
+     *
+     * @var array
+     */
+    protected $processors;
 
-  /**
-   * Local cache for language path processors.
-   *
-   * @var array
-   */
-  protected $processors;
+    /**
+     * Flag indicating whether the site is multilingual.
+     *
+     * @var bool
+     */
+    protected $multilingual;
 
-  /**
-   * Flag indicating whether the site is multilingual.
-   *
-   * @var bool
-   */
-  protected $multilingual;
-
-  /**
-   * Constructs a PathProcessorLanguage object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   A config factory object for retrieving configuration settings.
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
-   *   The configurable language manager.
-   * @param \Drupal\language\LanguageNegotiatorInterface $negotiator
-   *   The language negotiator.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current active user.
-   * @param \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber
-   *   The language configuration event subscriber.
-   */
-  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $config, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\language\LanguageNegotiatorInterface $negotiator, AccountInterface $current_user, protected \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber) {
-    $this->negotiator->setCurrentUser($current_user);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request) {
-    if (!empty($path)) {
-      $scope = 'inbound';
-      if (!isset($this->processors[$scope])) {
-        $this->initProcessors($scope);
-      }
-      foreach ($this->processors[$scope] as $instance) {
-        $path = $instance->processInbound($path, $request);
-      }
-    }
-    return $path;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processOutbound($path, &$options = [], ?Request $request = NULL, ?BubbleableMetadata $bubbleable_metadata = NULL) {
-    if (!isset($this->multilingual)) {
-      $this->multilingual = $this->languageManager->isMultilingual();
-    }
-    if ($this->multilingual) {
-      $this->negotiator->reset();
-      $scope = 'outbound';
-      if (!isset($this->processors[$scope])) {
-        $this->initProcessors($scope);
-      }
-      foreach ($this->processors[$scope] as $instance) {
-        $path = $instance->processOutbound($path, $options, $request, $bubbleable_metadata);
-      }
-      // No language dependent path allowed in this mode.
-      if (empty($this->processors[$scope])) {
-        unset($options['language']);
-      }
-    }
-    return $path;
-  }
-
-  /**
-   * Initializes the local cache for language path processors.
-   *
-   * @param string $scope
-   *   The scope of the processors: "inbound" or "outbound".
-   */
-  protected function initProcessors($scope) {
-    $interface = 'Drupal\Core\PathProcessor\\' . Unicode::ucfirst($scope) . 'PathProcessorInterface';
-    $this->processors[$scope] = [];
-    $weights = [];
-    foreach ($this->languageManager->getLanguageTypes() as $type) {
-      foreach ($this->negotiator->getNegotiationMethods($type) as $method_id => $method) {
-          if (isset($this->processors[$scope][$method_id])) {
-              continue;
-          }
-          if (!is_subclass_of($method['class'], $interface)) {
-              continue;
-          }
-          $this->processors[$scope][$method_id] = $this->negotiator->getNegotiationMethodInstance($method_id);
-          $weights[$method_id] = $method['weight'];
-      }
+    /**
+     * Constructs a PathProcessorLanguage object.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+     *   A config factory object for retrieving configuration settings.
+     * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
+     *   The configurable language manager.
+     * @param \Drupal\language\LanguageNegotiatorInterface $negotiator
+     *   The language negotiator.
+     * @param \Drupal\Core\Session\AccountInterface $current_user
+     *   The current active user.
+     * @param \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber
+     *   The language configuration event subscriber.
+     */
+    public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $config, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\language\LanguageNegotiatorInterface $negotiator, AccountInterface $current_user, protected \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber)
+    {
+        $this->negotiator->setCurrentUser($current_user);
     }
 
-    // Sort the processors list, so that their functions are called in the
-    // order specified by the weight of the methods.
-    uksort($this->processors[$scope], fn($method_id_a, $method_id_b) => $weights[$method_id_a] <=> $weights[$method_id_b]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request)
+    {
+        if (!empty($path)) {
+            $scope = 'inbound';
+            if (!isset($this->processors[$scope])) {
+                $this->initProcessors($scope);
+            }
+            foreach ($this->processors[$scope] as $instance) {
+                $path = $instance->processInbound($path, $request);
+            }
+        }
+        return $path;
+    }
 
-  /**
-   * Initializes the injected event subscriber with the language path processor.
-   *
-   * The language path processor service is registered only on multilingual
-   * site configuration, thus we inject it in the event subscriber only when
-   * it is initialized.
-   */
-  public function initConfigSubscriber(): void {
-    $this->configSubscriber->setPathProcessorLanguage($this);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function processOutbound($path, &$options = [], ?Request $request = null, ?BubbleableMetadata $bubbleable_metadata = null)
+    {
+        if (!isset($this->multilingual)) {
+            $this->multilingual = $this->languageManager->isMultilingual();
+        }
+        if ($this->multilingual) {
+            $this->negotiator->reset();
+            $scope = 'outbound';
+            if (!isset($this->processors[$scope])) {
+                $this->initProcessors($scope);
+            }
+            foreach ($this->processors[$scope] as $instance) {
+                $path = $instance->processOutbound($path, $options, $request, $bubbleable_metadata);
+            }
+            // No language dependent path allowed in this mode.
+            if (empty($this->processors[$scope])) {
+                unset($options['language']);
+            }
+        }
+        return $path;
+    }
 
-  /**
-   * Resets the collected processors instances.
-   */
-  public function reset(): void {
-    $this->processors = [];
-  }
+    /**
+     * Initializes the local cache for language path processors.
+     *
+     * @param string $scope
+     *   The scope of the processors: "inbound" or "outbound".
+     */
+    protected function initProcessors($scope)
+    {
+        $interface = 'Drupal\Core\PathProcessor\\' . Unicode::ucfirst($scope) . 'PathProcessorInterface';
+        $this->processors[$scope] = [];
+        $weights = [];
+        foreach ($this->languageManager->getLanguageTypes() as $type) {
+            foreach ($this->negotiator->getNegotiationMethods($type) as $method_id => $method) {
+                if (isset($this->processors[$scope][$method_id])) {
+                    continue;
+                }
+                if (!is_subclass_of($method['class'], $interface)) {
+                    continue;
+                }
+                $this->processors[$scope][$method_id] = $this->negotiator->getNegotiationMethodInstance($method_id);
+                $weights[$method_id] = $method['weight'];
+            }
+        }
+
+        // Sort the processors list, so that their functions are called in the
+        // order specified by the weight of the methods.
+        uksort($this->processors[$scope], fn ($method_id_a, $method_id_b) => $weights[$method_id_a] <=> $weights[$method_id_b]);
+    }
+
+    /**
+     * Initializes the injected event subscriber with the language path processor.
+     *
+     * The language path processor service is registered only on multilingual
+     * site configuration, thus we inject it in the event subscriber only when
+     * it is initialized.
+     */
+    public function initConfigSubscriber(): void
+    {
+        $this->configSubscriber->setPathProcessorLanguage($this);
+    }
+
+    /**
+     * Resets the collected processors instances.
+     */
+    public function reset(): void
+    {
+        $this->processors = [];
+    }
 
 }

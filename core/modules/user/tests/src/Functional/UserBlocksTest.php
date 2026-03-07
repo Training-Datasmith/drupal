@@ -16,136 +16,138 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserBlocksTest extends BrowserTestBase {
+class UserBlocksTest extends BrowserTestBase
+{
+    use NodeCreationTrait;
 
-  use NodeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block', 'node', 'views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block', 'node', 'views'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * A user with the 'administer blocks' permission.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $adminUser;
 
-  /**
-   * A user with the 'administer blocks' permission.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $adminUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->adminUser = $this->drupalCreateUser(['administer blocks']);
-    $this->drupalLogin($this->adminUser);
-    $this->drupalPlaceBlock('user_login_block', ['id' => 'user_blocks_test_user_login_block']);
-    $this->drupalLogout();
-  }
-
-  /**
-   * Tests that user login block is hidden from user/login.
-   */
-  public function testUserLoginBlockVisibility(): void {
-    // Array keyed list where key being the URL address and value being expected
-    // visibility as boolean type.
-    $paths = [
-      'node' => TRUE,
-      'user/login' => FALSE,
-      'user/register' => TRUE,
-      'user/password' => TRUE,
-    ];
-    foreach ($paths as $path => $expected_visibility) {
-      $this->drupalGet($path);
-      if ($expected_visibility) {
-        $this->assertSession()->elementExists('xpath', '//div[@id="block-user-blocks-test-user-login-block" and @role="form"]');
-      }
-      else {
-        $this->assertSession()->elementNotExists('xpath', '//div[@id="block-user-blocks-test-user-login-block" and @role="form"]');
-      }
+        $this->adminUser = $this->drupalCreateUser(['administer blocks']);
+        $this->drupalLogin($this->adminUser);
+        $this->drupalPlaceBlock('user_login_block', ['id' => 'user_blocks_test_user_login_block']);
+        $this->drupalLogout();
     }
-  }
 
-  /**
-   * Tests the user login block.
-   */
-  public function testUserLoginBlock(): void {
-    $this->drupalCreateContentType(['type' => 'page']);
-    $node = $this->drupalCreateNode();
+    /**
+     * Tests that user login block is hidden from user/login.
+     */
+    public function testUserLoginBlockVisibility(): void
+    {
+        // Array keyed list where key being the URL address and value being expected
+        // visibility as boolean type.
+        $paths = [
+          'node' => true,
+          'user/login' => false,
+          'user/register' => true,
+          'user/password' => true,
+        ];
+        foreach ($paths as $path => $expected_visibility) {
+            $this->drupalGet($path);
+            if ($expected_visibility) {
+                $this->assertSession()->elementExists('xpath', '//div[@id="block-user-blocks-test-user-login-block" and @role="form"]');
+            } else {
+                $this->assertSession()->elementNotExists('xpath', '//div[@id="block-user-blocks-test-user-login-block" and @role="form"]');
+            }
+        }
+    }
 
-    // Create a user with some permission that anonymous users lack.
-    $user = $this->drupalCreateUser(['administer permissions']);
+    /**
+     * Tests the user login block.
+     */
+    public function testUserLoginBlock(): void
+    {
+        $this->drupalCreateContentType(['type' => 'page']);
+        $node = $this->drupalCreateNode();
 
-    // Log in using the block.
-    $edit = [];
-    $edit['name'] = $user->getAccountName();
-    $edit['pass'] = $user->passRaw;
-    $this->drupalGet('admin/people/permissions');
-    $this->submitForm($edit, 'Log in');
-    $this->assertSession()->pageTextNotContains('User login');
+        // Create a user with some permission that anonymous users lack.
+        $user = $this->drupalCreateUser(['administer permissions']);
 
-    // Check that we are still on the same page.
-    $this->assertSession()->addressEquals(Url::fromRoute('user.admin_permissions'));
+        // Log in using the block.
+        $edit = [];
+        $edit['name'] = $user->getAccountName();
+        $edit['pass'] = $user->passRaw;
+        $this->drupalGet('admin/people/permissions');
+        $this->submitForm($edit, 'Log in');
+        $this->assertSession()->pageTextNotContains('User login');
 
-    // Now, log out and repeat with a non-403 page.
-    $this->drupalLogout();
-    $this->drupalGet('node/1');
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
-    $this->submitForm($edit, 'Log in');
-    $this->assertSession()->pageTextNotContains('User login');
-    // Verify that we are still on the same page after login for allowed page.
-    $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
+        // Check that we are still on the same page.
+        $this->assertSession()->addressEquals(Url::fromRoute('user.admin_permissions'));
 
-    // Log out again and repeat with a non-403 page including query arguments.
-    $this->drupalLogout();
-    // @todo This test should not check for cache hits. Because it does and the
-    // cache has some clever redirect logic internally, we need to request the
-    // page twice to see the cache HIT in the headers.
-    // @see https://www.drupal.org/project/drupal/issues/2551419 #154
-    $this->drupalGet('node/1', ['query' => ['cat' => 'dog']]);
-    $this->drupalGet('node/1', ['query' => ['foo' => 'bar']]);
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
-    $this->submitForm($edit, 'Log in');
-    $this->assertSession()->pageTextNotContains('User login');
-    // Verify that we are still on the same page after login for allowed page.
-    $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
-    $this->assertStringContainsString('/node/1?foo=bar', $this->getUrl(), 'Correct query arguments are displayed after login');
+        // Now, log out and repeat with a non-403 page.
+        $this->drupalLogout();
+        $this->drupalGet('node/1');
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
+        $this->submitForm($edit, 'Log in');
+        $this->assertSession()->pageTextNotContains('User login');
+        // Verify that we are still on the same page after login for allowed page.
+        $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
 
-    // Repeat with different query arguments.
-    $this->drupalLogout();
-    $this->drupalGet('node/1', ['query' => ['foo' => 'baz']]);
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
-    $this->submitForm($edit, 'Log in');
-    $this->assertSession()->pageTextNotContains('User login');
-    // Verify that we are still on the same page after login for allowed page.
-    $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
-    $this->assertStringContainsString('/node/1?foo=baz', $this->getUrl(), 'Correct query arguments are displayed after login');
+        // Log out again and repeat with a non-403 page including query arguments.
+        $this->drupalLogout();
+        // @todo This test should not check for cache hits. Because it does and the
+        // cache has some clever redirect logic internally, we need to request the
+        // page twice to see the cache HIT in the headers.
+        // @see https://www.drupal.org/project/drupal/issues/2551419 #154
+        $this->drupalGet('node/1', ['query' => ['cat' => 'dog']]);
+        $this->drupalGet('node/1', ['query' => ['foo' => 'bar']]);
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
+        $this->submitForm($edit, 'Log in');
+        $this->assertSession()->pageTextNotContains('User login');
+        // Verify that we are still on the same page after login for allowed page.
+        $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
+        $this->assertStringContainsString('/node/1?foo=bar', $this->getUrl(), 'Correct query arguments are displayed after login');
 
-    // Check that the user login block is not vulnerable to information
-    // disclosure to third party sites.
-    $this->drupalLogout();
-    $this->drupalGet('http://example.com/', ['external' => FALSE]);
-    $this->submitForm($edit, 'Log in');
-    // Check that we remain on the site after login.
-    $this->assertSession()->addressEquals($user->toUrl('canonical'));
+        // Repeat with different query arguments.
+        $this->drupalLogout();
+        $this->drupalGet('node/1', ['query' => ['foo' => 'baz']]);
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
+        $this->submitForm($edit, 'Log in');
+        $this->assertSession()->pageTextNotContains('User login');
+        // Verify that we are still on the same page after login for allowed page.
+        $this->assertSession()->titleEquals($node->getTitle() . ' | Drupal');
+        $this->assertStringContainsString('/node/1?foo=baz', $this->getUrl(), 'Correct query arguments are displayed after login');
 
-    // Verify that form validation errors are displayed immediately for forms
-    // in blocks and not on subsequent page requests.
-    $this->drupalLogout();
-    $edit = [];
-    $edit['name'] = 'foo';
-    $edit['pass'] = 'invalid password';
-    $this->drupalGet('node/1');
-    $this->submitForm($edit, 'Log in');
-    $this->assertSession()->pageTextContains('Unrecognized username or password. Forgot your password?');
-    $this->drupalGet('node/1');
-    $this->assertSession()->pageTextNotContains('Unrecognized username or password. Forgot your password?');
-  }
+        // Check that the user login block is not vulnerable to information
+        // disclosure to third party sites.
+        $this->drupalLogout();
+        $this->drupalGet('http://example.com/', ['external' => false]);
+        $this->submitForm($edit, 'Log in');
+        // Check that we remain on the site after login.
+        $this->assertSession()->addressEquals($user->toUrl('canonical'));
+
+        // Verify that form validation errors are displayed immediately for forms
+        // in blocks and not on subsequent page requests.
+        $this->drupalLogout();
+        $edit = [];
+        $edit['name'] = 'foo';
+        $edit['pass'] = 'invalid password';
+        $this->drupalGet('node/1');
+        $this->submitForm($edit, 'Log in');
+        $this->assertSession()->pageTextContains('Unrecognized username or password. Forgot your password?');
+        $this->drupalGet('node/1');
+        $this->assertSession()->pageTextNotContains('Unrecognized username or password. Forgot your password?');
+    }
 
 }

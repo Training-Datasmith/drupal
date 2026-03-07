@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file;
 
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
@@ -7,19 +9,20 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 /**
  * File storage for files.
  */
-class FileStorage extends SqlContentEntityStorage implements FileStorageInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function spaceUsed($uid = NULL, $status = FileInterface::STATUS_PERMANENT) {
-    $query = $this->database->select($this->entityType->getBaseTable(), 'f')
-      ->condition('f.status', $status);
-    $query->addExpression('SUM([f].[filesize])', 'filesize');
-    if (isset($uid)) {
-      $query->condition('f.uid', $uid);
+class FileStorage extends SqlContentEntityStorage implements FileStorageInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function spaceUsed($uid = null, $status = FileInterface::STATUS_PERMANENT)
+    {
+        $query = $this->database->select($this->entityType->getBaseTable(), 'f')
+          ->condition('f.status', $status);
+        $query->addExpression('SUM([f].[filesize])', 'filesize');
+        if (isset($uid)) {
+            $query->condition('f.uid', $uid);
+        }
+        return $query->execute()->fetchField();
     }
-    return $query->execute()->fetchField();
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\filter;
 
 use Drupal\node\Plugin\views\UidRevisionTrait;
@@ -11,16 +13,17 @@ use Drupal\views\Attribute\ViewsFilter;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("node_uid_revision")]
-class UidRevision extends Name {
+#[ViewsFilter('node_uid_revision')]
+class UidRevision extends Name
+{
+    use UidRevisionTrait;
 
-  use UidRevisionTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query($group_by = FALSE): void {
-    $this->uidRevisionQuery($this->value, $this->options['group']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query($group_by = false): void
+    {
+        $this->uidRevisionQuery($this->value, $this->options['group']);
+    }
 
 }

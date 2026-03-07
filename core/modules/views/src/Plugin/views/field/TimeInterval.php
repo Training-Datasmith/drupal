@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\ResultRow;
@@ -12,59 +13,63 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("time_interval")]
-class TimeInterval extends FieldPluginBase {
-
-  /**
-   * Constructs a TimeInterval plugin object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-
-    $options['granularity'] = ['default' => 2];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-
-    $form['granularity'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Granularity'),
-      '#description' => $this->t('How many different units to display in the string.'),
-      '#default_value' => $this->options['granularity'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $values->{$this->field_alias};
-    if ($value != NULL) {
-      return $this->dateFormatter->formatInterval((int) $value, $this->options['granularity'] ?? 2);
+#[ViewsField('time_interval')]
+class TimeInterval extends FieldPluginBase
+{
+    /**
+     * Constructs a TimeInterval plugin object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+     *   The date formatter service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return '';
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+
+        $options['granularity'] = ['default' => 2];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+
+        $form['granularity'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Granularity'),
+          '#description' => $this->t('How many different units to display in the string.'),
+          '#default_value' => $this->options['granularity'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $values->{$this->field_alias};
+        if ($value != null) {
+            return $this->dateFormatter->formatInterval((int) $value, $this->options['granularity'] ?? 2);
+        }
+        return '';
+    }
 
 }

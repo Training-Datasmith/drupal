@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 use Drupal\Core\Plugin\PluginBase;
@@ -9,41 +11,46 @@ use Drupal\Core\Plugin\PluginBase;
  *
  * @see \Drupal\Core\Field\FieldTypeCategoryManager
  */
-class FieldTypeCategory extends PluginBase implements FieldTypeCategoryInterface {
+class FieldTypeCategory extends PluginBase implements FieldTypeCategoryInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLabel(): string|\Stringable
+    {
+        return $this->pluginDefinition['label'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel(): string|\Stringable {
-    return $this->pluginDefinition['label'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): string|\Stringable
+    {
+        return $this->pluginDefinition['description'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): string|\Stringable {
-    return $this->pluginDefinition['description'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSummary(): string|\Stringable
+    {
+        return $this->pluginDefinition['summary'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSummary(): string|\Stringable {
-    return $this->pluginDefinition['summary'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getWeight(): int
+    {
+        return $this->pluginDefinition['weight'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight(): int {
-    return $this->pluginDefinition['weight'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLibraries(): array {
-    return $this->pluginDefinition['libraries'] ?? [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLibraries(): array
+    {
+        return $this->pluginDefinition['libraries'] ?? [];
+    }
 
 }

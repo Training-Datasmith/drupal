@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks related to the Navigation module.
@@ -18,21 +20,22 @@
  *
  * @see hook_navigation_content_top_alter()
  */
-function hook_navigation_content_top(): array {
-  return [
-    'navigation_foo' => [
-      '#markup' => \Drupal::config('system.site')->get('name'),
-      '#cache' => [
-        'tags' => ['config:system.site'],
+function hook_navigation_content_top(): array
+{
+    return [
+      'navigation_foo' => [
+        '#markup' => \Drupal::config('system.site')->get('name'),
+        '#cache' => [
+          'tags' => ['config:system.site'],
+        ],
       ],
-    ],
-    'navigation_bar' => [
-      '#markup' => 'bar',
-    ],
-    'navigation_baz' => [
-      '#markup' => 'baz',
-    ],
-  ];
+      'navigation_bar' => [
+        '#markup' => 'bar',
+      ],
+      'navigation_baz' => [
+        '#markup' => 'baz',
+      ],
+    ];
 }
 
 /**
@@ -43,13 +46,14 @@ function hook_navigation_content_top(): array {
  *
  * @see hook_navigation_content_top()
  */
-function hook_navigation_content_top_alter(array &$content_top): void {
-  // Remove a specific element.
-  unset($content_top['navigation_foo']);
-  // Modify an element.
-  $content_top['navigation_bar']['#markup'] = 'new bar';
-  // Change weight.
-  $content_top['navigation_baz']['#weight'] = '-100';
+function hook_navigation_content_top_alter(array &$content_top): void
+{
+    // Remove a specific element.
+    unset($content_top['navigation_foo']);
+    // Modify an element.
+    $content_top['navigation_bar']['#markup'] = 'new bar';
+    // Change weight.
+    $content_top['navigation_baz']['#weight'] = '-100';
 }
 
 /**
@@ -70,22 +74,23 @@ function hook_navigation_content_top_alter(array &$content_top): void {
  *      - provider: The module that provides the block. In general, the module
  *        that defines the Navigation block.
  */
-function hook_navigation_defaults(): array {
-  $blocks = [];
+function hook_navigation_defaults(): array
+{
+    $blocks = [];
 
-  $blocks[] = [
-    'delta' => 1,
-    'configuration' => [
-      'id' => 'navigation_test',
-      'label' => 'My test block',
-      'label_display' => 'visible',
-      'provider' => 'navigation_test_block',
-      'test_block_setting_foo' => 'Foo',
-      'test_block_setting_bar' => 1,
-    ],
-  ];
+    $blocks[] = [
+      'delta' => 1,
+      'configuration' => [
+        'id' => 'navigation_test',
+        'label' => 'My test block',
+        'label_display' => 'visible',
+        'provider' => 'navigation_test_block',
+        'test_block_setting_foo' => 'Foo',
+        'test_block_setting_bar' => 1,
+      ],
+    ];
 
-  return $blocks;
+    return $blocks;
 }
 
 /**
@@ -96,20 +101,21 @@ function hook_navigation_defaults(): array {
  *
  * @see \Drupal\navigation\Menu\NavigationMenuLinkTree::transform()
  */
-function hook_navigation_menu_link_tree_alter(array &$tree): void {
-  foreach ($tree as $key => $item) {
-    // Skip elements where menu is not the 'admin' one.
-    $menu_name = $item->link->getMenuName();
-    if ($menu_name != 'admin') {
-      continue;
-    }
+function hook_navigation_menu_link_tree_alter(array &$tree): void
+{
+    foreach ($tree as $key => $item) {
+        // Skip elements where menu is not the 'admin' one.
+        $menu_name = $item->link->getMenuName();
+        if ($menu_name != 'admin') {
+            continue;
+        }
 
-    // Remove unwanted Help menu link.
-    $plugin_id = $item->link->getPluginId();
-    if ($plugin_id == 'help.main') {
-      unset($tree[$key]);
+        // Remove unwanted Help menu link.
+        $plugin_id = $item->link->getPluginId();
+        if ($plugin_id == 'help.main') {
+            unset($tree[$key]);
+        }
     }
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\DatabaseException;
@@ -10,4 +12,6 @@ use Drupal\Core\Database\DatabaseException;
  * There are many ways that a merge query could be malformed.  They should all
  * throw this exception and set an appropriately descriptive message.
  */
-class InvalidMergeQueryException extends \InvalidArgumentException implements DatabaseException {}
+class InvalidMergeQueryException extends \InvalidArgumentException implements DatabaseException
+{
+}

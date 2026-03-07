@@ -13,25 +13,27 @@ use Drupal\media\MediaSourceFieldConstraintsInterface;
  * Provides generic media type.
  */
 #[MediaSource(
-  id: "test_constraints",
-  label: new TranslatableMarkup("Test source with constraints"),
-  description: new TranslatableMarkup("Test media source that provides constraints."),
-  allowed_field_types: ["string_long"],
+    id: 'test_constraints',
+    label: new TranslatableMarkup('Test source with constraints'),
+    description: new TranslatableMarkup('Test media source that provides constraints.'),
+    allowed_field_types: ['string_long'],
 )]
-class TestWithConstraints extends Test implements MediaSourceEntityConstraintsInterface, MediaSourceFieldConstraintsInterface {
+class TestWithConstraints extends Test implements MediaSourceEntityConstraintsInterface, MediaSourceFieldConstraintsInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityConstraints()
+    {
+        return \Drupal::state()->get('media_source_test_entity_constraints', []);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityConstraints() {
-    return \Drupal::state()->get('media_source_test_entity_constraints', []);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSourceFieldConstraints() {
-    return \Drupal::state()->get('media_source_test_field_constraints', []);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSourceFieldConstraints()
+    {
+        return \Drupal::state()->get('media_source_test_field_constraints', []);
+    }
 
 }

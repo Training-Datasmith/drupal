@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Test fixture.
  */
 
-use Drupal\Core\Database\Database;
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Database\Database;
 
 $connection = Database::getConnection();
 

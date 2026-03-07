@@ -1,12 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
-use Drupal\Core\Access\AccessManagerInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Routing\RedirectDestinationTrait;
 use Drupal\views\Entity\Render\EntityTranslationRenderTrait;
@@ -17,212 +15,228 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-abstract class LinkBase extends FieldPluginBase {
+abstract class LinkBase extends FieldPluginBase
+{
+    use RedirectDestinationTrait;
+    use EntityTranslationRenderTrait;
 
-  use RedirectDestinationTrait;
-  use EntityTranslationRenderTrait;
+    /**
+     * Current user object.
+     *
+     * @var \Drupal\Core\Session\AccountInterface
+     */
+    protected $currentUser;
 
-  /**
-   * Current user object.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * Constructs a LinkBase object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
-   *   The access manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * Gets the current active user.
-   *
-   * @todo https://www.drupal.org/node/2105123 put this method in
-   *   \Drupal\Core\Plugin\PluginBase instead.
-   *
-   * @return \Drupal\Core\Session\AccountInterface
-   *   The current user.
-   */
-  protected function currentUser() {
-    if (!$this->currentUser) {
-      $this->currentUser = \Drupal::currentUser();
+    /**
+     * Constructs a LinkBase object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
+     *   The access manager.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $this->currentUser;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['text'] = ['default' => $this->getDefaultLabel()];
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Text to display'),
-      '#default_value' => $this->options['text'],
-    ];
-    parent::buildOptionsForm($form, $form_state);
-
-    // The path is set by ::renderLink() so we do not allow to set it.
-    $form['alter'] += ['path' => [], 'query' => [], 'external' => []];
-    $form['alter']['path'] += ['#access' => FALSE];
-    $form['alter']['query'] += ['#access' => FALSE];
-    $form['alter']['external'] += ['#access' => FALSE];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function usesGroupBy() {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    if ($this->languageManager->isMultilingual()) {
-      $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
+    /**
+     * Gets the current active user.
+     *
+     * @todo https://www.drupal.org/node/2105123 put this method in
+     *   \Drupal\Core\Plugin\PluginBase instead.
+     *
+     * @return \Drupal\Core\Session\AccountInterface
+     *   The current user.
+     */
+    protected function currentUser()
+    {
+        if (!$this->currentUser) {
+            $this->currentUser = \Drupal::currentUser();
+        }
+        return $this->currentUser;
     }
-    $this->addAdditionalFields();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $row) {
-    $access = $this->checkUrlAccess($row);
-    if ($access) {
-      $build = ['#markup' => $access->isAllowed() ? $this->renderLink($row) : ''];
-      BubbleableMetadata::createFromObject($access)->applyTo($build);
-      return $build;
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['text'] = ['default' => $this->getDefaultLabel()];
+        return $options;
     }
-    return '';
-  }
 
-  /**
-   * Checks access to the link route.
-   *
-   * @param \Drupal\views\ResultRow $row
-   *   A view result row.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface|null
-   *   The access result, or NULL if the URI elements of the link doesn't exist.
-   */
-  protected function checkUrlAccess(ResultRow $row) {
-    if ($url = $this->getUrlInfo($row)) {
-      return $this->accessManager->checkNamedRoute($url->getRouteName(), $url->getRouteParameters(), $this->currentUser(), TRUE);
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['text'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Text to display'),
+          '#default_value' => $this->options['text'],
+        ];
+        parent::buildOptionsForm($form, $form_state);
+
+        // The path is set by ::renderLink() so we do not allow to set it.
+        $form['alter'] += ['path' => [], 'query' => [], 'external' => []];
+        $form['alter']['path'] += ['#access' => false];
+        $form['alter']['query'] += ['#access' => false];
+        $form['alter']['external'] += ['#access' => false];
     }
-  }
 
-  /**
-   * Returns the URI elements of the link.
-   *
-   * @param \Drupal\views\ResultRow $row
-   *   A view result row.
-   *
-   * @return \Drupal\Core\Url|null
-   *   The URI elements of the link.
-   */
-  abstract protected function getUrlInfo(ResultRow $row);
-
-  /**
-   * Prepares the link to view an entity.
-   *
-   * @param \Drupal\views\ResultRow $row
-   *   A view result row.
-   *
-   * @return string
-   *   Returns a string for the link text.
-   */
-  protected function renderLink(ResultRow $row) {
-    $this->options['alter']['make_link'] = TRUE;
-    $this->options['alter']['url'] = $this->getUrlInfo($row);
-    $text = !empty($this->options['text']) ? $this->sanitizeValue($this->options['text']) : $this->getDefaultLabel();
-    $this->addLangcode($row);
-    return $text;
-  }
-
-  /**
-   * Adds language information to the options.
-   *
-   * @param \Drupal\views\ResultRow $row
-   *   A view result row.
-   */
-  protected function addLangcode(ResultRow $row) {
-    $entity = $this->getEntity($row);
-    if ($entity && $this->languageManager->isMultilingual()) {
-      $this->options['alter']['language'] = $this->getEntityTranslationByRelationship($entity, $row)->language();
+    /**
+     * {@inheritdoc}
+     */
+    public function usesGroupBy()
+    {
+        return false;
     }
-  }
 
-  /**
-   * Returns the default label for this link.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   The default link label.
-   */
-  protected function getDefaultLabel() {
-    return $this->t('link');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        if ($this->languageManager->isMultilingual()) {
+            $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
+        }
+        $this->addAdditionalFields();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityTypeId() {
-    return $this->getEntityType();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $row)
+    {
+        $access = $this->checkUrlAccess($row);
+        if ($access) {
+            $build = ['#markup' => $access->isAllowed() ? $this->renderLink($row) : ''];
+            BubbleableMetadata::createFromObject($access)->applyTo($build);
+            return $build;
+        }
+        return '';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityTypeManager() {
-    return $this->entityTypeManager;
-  }
+    /**
+     * Checks access to the link route.
+     *
+     * @param \Drupal\views\ResultRow $row
+     *   A view result row.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface|null
+     *   The access result, or NULL if the URI elements of the link doesn't exist.
+     */
+    protected function checkUrlAccess(ResultRow $row)
+    {
+        if ($url = $this->getUrlInfo($row)) {
+            return $this->accessManager->checkNamedRoute($url->getRouteName(), $url->getRouteParameters(), $this->currentUser(), true);
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityRepository() {
-    return $this->entityRepository;
-  }
+    /**
+     * Returns the URI elements of the link.
+     *
+     * @param \Drupal\views\ResultRow $row
+     *   A view result row.
+     *
+     * @return \Drupal\Core\Url|null
+     *   The URI elements of the link.
+     */
+    abstract protected function getUrlInfo(ResultRow $row);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getLanguageManager() {
-    return $this->languageManager;
-  }
+    /**
+     * Prepares the link to view an entity.
+     *
+     * @param \Drupal\views\ResultRow $row
+     *   A view result row.
+     *
+     * @return string
+     *   Returns a string for the link text.
+     */
+    protected function renderLink(ResultRow $row)
+    {
+        $this->options['alter']['make_link'] = true;
+        $this->options['alter']['url'] = $this->getUrlInfo($row);
+        $text = !empty($this->options['text']) ? $this->sanitizeValue($this->options['text']) : $this->getDefaultLabel();
+        $this->addLangcode($row);
+        return $text;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getView() {
-    return $this->view;
-  }
+    /**
+     * Adds language information to the options.
+     *
+     * @param \Drupal\views\ResultRow $row
+     *   A view result row.
+     */
+    protected function addLangcode(ResultRow $row)
+    {
+        $entity = $this->getEntity($row);
+        if ($entity && $this->languageManager->isMultilingual()) {
+            $this->options['alter']['language'] = $this->getEntityTranslationByRelationship($entity, $row)->language();
+        }
+    }
+
+    /**
+     * Returns the default label for this link.
+     *
+     * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+     *   The default link label.
+     */
+    protected function getDefaultLabel()
+    {
+        return $this->t('link');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityTypeId()
+    {
+        return $this->getEntityType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityTypeManager()
+    {
+        return $this->entityTypeManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityRepository()
+    {
+        return $this->entityRepository;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLanguageManager()
+    {
+        return $this->languageManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getView()
+    {
+        return $this->view;
+    }
 
 }

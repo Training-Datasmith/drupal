@@ -13,14 +13,15 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Session')]
 #[RunTestsInSeparateProcesses]
-class SessionManagerDestroyNoCliCheckTest extends KernelTestBase {
-
-  /**
-   * Tests starting and destroying a session from the CLI.
-   */
-  public function testCallSessionManagerStartAndDestroy(): void {
-    $this->assertFalse(\Drupal::service('session_manager')->start());
-    $this->assertNull(\Drupal::service('session_manager')->destroy());
-  }
+class SessionManagerDestroyNoCliCheckTest extends KernelTestBase
+{
+    /**
+     * Tests starting and destroying a session from the CLI.
+     */
+    public function testCallSessionManagerStartAndDestroy(): void
+    {
+        $this->assertFalse(\Drupal::service('session_manager')->start());
+        $this->assertNull(\Drupal::service('session_manager')->destroy());
+    }
 
 }

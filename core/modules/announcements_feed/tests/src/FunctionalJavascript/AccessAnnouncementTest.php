@@ -14,74 +14,77 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('announcements_feed')]
 #[RunTestsInSeparateProcesses]
-class AccessAnnouncementTest extends OffCanvasTestBase {
+class AccessAnnouncementTest extends OffCanvasTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'user',
+      'toolbar',
+      'announcements_feed',
+      'announce_feed_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'user',
-    'toolbar',
-    'announcements_feed',
-    'announce_feed_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        AnnounceTestHttpClientMiddleware::setAnnounceTestEndpoint('/announce-feed-json/community-feeds');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setUp():void {
-    parent::setUp();
-    AnnounceTestHttpClientMiddleware::setAnnounceTestEndpoint('/announce-feed-json/community-feeds');
-  }
-
-  /**
-   * Test of viewing announcements by a user with appropriate permission.
-   */
-  public function testAnnounceFirstLogin(): void {
-    $this->drupalLogin(
-      $this->drupalCreateUser(
-        [
+    /**
+     * Test of viewing announcements by a user with appropriate permission.
+     */
+    public function testAnnounceFirstLogin(): void
+    {
+        $this->drupalLogin(
+            $this->drupalCreateUser(
+                [
           'access toolbar',
           'access announcements',
         ]
-      )
-    );
+            )
+        );
 
-    $this->drupalGet('<front>');
+        $this->drupalGet('<front>');
 
-    // Check that the user can see the toolbar.
-    $this->assertSession()->elementExists('css', '#toolbar-bar');
+        // Check that the user can see the toolbar.
+        $this->assertSession()->elementExists('css', '#toolbar-bar');
 
-    // And the announcements.
-    $this->assertSession()->elementExists('css', '.toolbar-icon-announce');
-  }
+        // And the announcements.
+        $this->assertSession()->elementExists('css', '.toolbar-icon-announce');
+    }
 
-  /**
-   * Testing announce icon without announce permission.
-   */
-  public function testAnnounceWithoutPermission(): void {
-    // User without "access announcements" permission.
-    $account = $this->drupalCreateUser(
-      [
-        'access toolbar',
+    /**
+     * Testing announce icon without announce permission.
+     */
+    public function testAnnounceWithoutPermission(): void
+    {
+        // User without "access announcements" permission.
+        $account = $this->drupalCreateUser(
+            [
+            'access toolbar',
       ]
-    );
-    $this->drupalLogin($account);
-    $this->drupalGet('<front>');
+        );
+        $this->drupalLogin($account);
+        $this->drupalGet('<front>');
 
-    // Check that the user can see the toolbar.
-    $this->assertSession()->elementExists('css', '#toolbar-bar');
+        // Check that the user can see the toolbar.
+        $this->assertSession()->elementExists('css', '#toolbar-bar');
 
-    // But not the announcements.
-    $this->assertSession()->elementNotExists('css', '.toolbar-icon-announce');
+        // But not the announcements.
+        $this->assertSession()->elementNotExists('css', '.toolbar-icon-announce');
 
-    $this->drupalGet('admin/announcements_feed');
-    $this->assertSession()->responseContains('You are not authorized to access this page.');
-  }
+        $this->drupalGet('admin/announcements_feed');
+        $this->assertSession()->responseContains('You are not authorized to access this page.');
+    }
 
 }

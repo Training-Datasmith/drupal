@@ -13,15 +13,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class DatabaseExceptionWrapperTest extends DriverSpecificKernelTestBase {
-
-  /**
-   * Tests Connection::prepareStatement exception on execution.
-   */
-  public function testPrepareStatementFailOnExecution(): void {
-    $this->expectException(\PDOException::class);
-    $stmt = $this->connection->prepareStatement('bananas', []);
-    $stmt->execute();
-  }
+class DatabaseExceptionWrapperTest extends DriverSpecificKernelTestBase
+{
+    /**
+     * Tests Connection::prepareStatement exception on execution.
+     */
+    public function testPrepareStatementFailOnExecution(): void
+    {
+        $this->expectException(\PDOException::class);
+        $stmt = $this->connection->prepareStatement('bananas', []);
+        $stmt->execute();
+    }
 
 }

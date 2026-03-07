@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Database to mimic the installation of the update_test_semver_update_n module.

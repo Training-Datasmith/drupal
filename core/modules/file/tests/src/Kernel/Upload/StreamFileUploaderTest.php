@@ -17,47 +17,49 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(InputStreamFileWriter::class)]
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class StreamFileUploaderTest extends KernelTestBase {
+class StreamFileUploaderTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['file'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['file'];
+    /**
+     * Tests write stream to file success.
+     */
+    public function testWriteStreamToFileSuccess(): void
+    {
+        vfsStream::newFile('foo.txt')
+          ->at($this->vfsRoot)
+          ->withContent('bar');
 
-  /**
-   * Tests write stream to file success.
-   */
-  public function testWriteStreamToFileSuccess(): void {
-    vfsStream::newFile('foo.txt')
-      ->at($this->vfsRoot)
-      ->withContent('bar');
+        $fileWriter = $this->container->get('file.input_stream_file_writer');
 
-    $fileWriter = $this->container->get('file.input_stream_file_writer');
+        $filename = $fileWriter->writeStreamToFile(vfsStream::url('root/foo.txt'));
 
-    $filename = $fileWriter->writeStreamToFile(vfsStream::url('root/foo.txt'));
+        $this->assertStringStartsWith('temporary://', $filename);
+        $this->assertStringEqualsFile($filename, 'bar');
+    }
 
-    $this->assertStringStartsWith('temporary://', $filename);
-    $this->assertStringEqualsFile($filename, 'bar');
-  }
+    /**
+     * Tests write stream to file with smaller bytes.
+     */
+    public function testWriteStreamToFileWithSmallerBytes(): void
+    {
+        $content = $this->randomString(2048);
+        vfsStream::newFile('foo.txt')
+          ->at($this->vfsRoot)
+          ->withContent($content);
 
-  /**
-   * Tests write stream to file with smaller bytes.
-   */
-  public function testWriteStreamToFileWithSmallerBytes(): void {
-    $content = $this->randomString(2048);
-    vfsStream::newFile('foo.txt')
-      ->at($this->vfsRoot)
-      ->withContent($content);
+        $fileWriter = $this->container->get('file.input_stream_file_writer');
 
-    $fileWriter = $this->container->get('file.input_stream_file_writer');
+        $filename = $fileWriter->writeStreamToFile(
+            stream: vfsStream::url('root/foo.txt'),
+            bytesToRead: 1024,
+        );
 
-    $filename = $fileWriter->writeStreamToFile(
-      stream: vfsStream::url('root/foo.txt'),
-      bytesToRead: 1024,
-    );
-
-    $this->assertStringStartsWith('temporary://', $filename);
-    $this->assertStringEqualsFile($filename, $content);
-  }
+        $this->assertStringStartsWith('temporary://', $filename);
+        $this->assertStringEqualsFile($filename, $content);
+    }
 
 }

@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class SyntaxTest extends DriverSpecificSyntaxTestBase {
+class SyntaxTest extends DriverSpecificSyntaxTestBase
+{
 }

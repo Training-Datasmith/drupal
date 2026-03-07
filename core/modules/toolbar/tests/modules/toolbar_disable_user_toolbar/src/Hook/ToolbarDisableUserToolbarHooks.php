@@ -9,14 +9,15 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Hook implementations for toolbar_disable_user_toolbar.
  */
-class ToolbarDisableUserToolbarHooks {
-
-  /**
-   * Implements hook_toolbar_alter().
-   */
-  #[Hook('toolbar_alter')]
-  public function toolbarAlter(&$items): void {
-    unset($items['user']);
-  }
+class ToolbarDisableUserToolbarHooks
+{
+    /**
+     * Implements hook_toolbar_alter().
+     */
+    #[Hook('toolbar_alter')]
+    public function toolbarAlter(&$items): void
+    {
+        unset($items['user']);
+    }
 
 }

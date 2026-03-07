@@ -14,4 +14,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('core_standard_recipe')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericRecipeTestBase {}
+class GenericTest extends GenericRecipeTestBase
+{
+}

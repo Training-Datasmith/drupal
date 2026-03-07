@@ -1,69 +1,72 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides dynamic permissions of the filter module.
  */
-class FilterPermissions implements ContainerInjectionInterface {
+class FilterPermissions implements ContainerInjectionInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a new FilterPermissions instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static($container->get('entity_type.manager'));
-  }
-
-  /**
-   * Returns an array of filter permissions.
-   *
-   * @return array
-   *   An array of filter permissions keyed by permission name.
-   */
-  public function permissions(): array {
-    $permissions = [];
-    // Generate permissions for each text format. Warn the administrator that
-    // any of them are potentially unsafe.
-    /** @var \Drupal\filter\FilterFormatInterface[] $formats */
-    $formats = $this->entityTypeManager->getStorage('filter_format')->loadByProperties(['status' => TRUE]);
-    uasort($formats, Drupal\Core\Config\Entity\ConfigEntityBase::sort(...));
-    foreach ($formats as $format) {
-      if ($permission = $format->getPermissionName()) {
-        $permissions[$permission] = [
-          'title' => $this->t('Use the <a href=":url">@label</a> text format', [':url' => $format->toUrl()->toString(), '@label' => $format->label()]),
-          'description' => [
-            '#prefix' => '<em>',
-            '#markup' => $this->t('Warning: This permission may have security implications depending on how the text format is configured.'),
-            '#suffix' => '</em>',
-          ],
-          // This permission is generated on behalf of $format text format,
-          // therefore add this text format as a config dependency.
-          'dependencies' => [
-            $format->getConfigDependencyKey() => [
-              $format->getConfigDependencyName(),
-            ],
-          ],
-        ];
-      }
+    /**
+     * Constructs a new FilterPermissions instance.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
-    return $permissions;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static($container->get('entity_type.manager'));
+    }
+
+    /**
+     * Returns an array of filter permissions.
+     *
+     * @return array
+     *   An array of filter permissions keyed by permission name.
+     */
+    public function permissions(): array
+    {
+        $permissions = [];
+        // Generate permissions for each text format. Warn the administrator that
+        // any of them are potentially unsafe.
+        /** @var \Drupal\filter\FilterFormatInterface[] $formats */
+        $formats = $this->entityTypeManager->getStorage('filter_format')->loadByProperties(['status' => true]);
+        uasort($formats, Drupal\Core\Config\Entity\ConfigEntityBase::sort(...));
+        foreach ($formats as $format) {
+            if ($permission = $format->getPermissionName()) {
+                $permissions[$permission] = [
+                  'title' => $this->t('Use the <a href=":url">@label</a> text format', [':url' => $format->toUrl()->toString(), '@label' => $format->label()]),
+                  'description' => [
+                    '#prefix' => '<em>',
+                    '#markup' => $this->t('Warning: This permission may have security implications depending on how the text format is configured.'),
+                    '#suffix' => '</em>',
+                  ],
+                  // This permission is generated on behalf of $format text format,
+                  // therefore add this text format as a config dependency.
+                  'dependencies' => [
+                    $format->getConfigDependencyKey() => [
+                      $format->getConfigDependencyName(),
+                    ],
+                  ],
+                ];
+            }
+        }
+        return $permissions;
+    }
 
 }

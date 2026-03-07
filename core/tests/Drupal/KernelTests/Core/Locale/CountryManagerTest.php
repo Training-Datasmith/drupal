@@ -16,22 +16,23 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('CountryManager')]
 #[CoversClass(CountryManager::class)]
 #[RunTestsInSeparateProcesses]
-class CountryManagerTest extends KernelTestBase {
+class CountryManagerTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'locale_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'locale_test',
-  ];
-
-  /**
-   * Tests that hook_countries_alters() works as expected.
-   */
-  public function testHookCountriesAlter(): void {
-    $countries = $this->container->get('country_manager')->getList();
-    self::assertArrayHasKey('EB', $countries);
-    self::assertSame('Elbonia', $countries['EB']);
-  }
+    /**
+     * Tests that hook_countries_alters() works as expected.
+     */
+    public function testHookCountriesAlter(): void
+    {
+        $countries = $this->container->get('country_manager')->getList();
+        self::assertArrayHasKey('EB', $countries);
+        self::assertSame('Elbonia', $countries['EB']);
+    }
 
 }

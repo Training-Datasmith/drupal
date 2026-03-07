@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Post-update functions for Locale module.
@@ -8,8 +10,9 @@
 /**
  * Implements hook_removed_post_updates().
  */
-function locale_removed_post_updates(): array {
-  return [
-    'locale_post_update_clear_cache_for_old_translations' => '9.0.0',
-  ];
+function locale_removed_post_updates(): array
+{
+    return [
+      'locale_post_update_clear_cache_for_old_translations' => '9.0.0',
+    ];
 }

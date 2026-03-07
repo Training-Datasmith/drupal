@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -20,187 +22,201 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterface {
+class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterface
+{
+    /**
+     * Ordered list of CacheBackendInterface instances.
+     *
+     * @var array
+     */
+    protected $backends = [];
 
-  /**
-   * Ordered list of CacheBackendInterface instances.
-   *
-   * @var array
-   */
-  protected $backends = [];
+    /**
+     * Appends a cache backend to the cache chain.
+     *
+     * @param CacheBackendInterface $backend
+     *   The cache backend to be appended to the cache chain.
+     *
+     * @return $this
+     *   The called object.
+     */
+    public function appendBackend(CacheBackendInterface $backend): static
+    {
+        $this->backends[] = $backend;
 
-  /**
-   * Appends a cache backend to the cache chain.
-   *
-   * @param CacheBackendInterface $backend
-   *   The cache backend to be appended to the cache chain.
-   *
-   * @return $this
-   *   The called object.
-   */
-  public function appendBackend(CacheBackendInterface $backend): static {
-    $this->backends[] = $backend;
+        return $this;
+    }
 
-    return $this;
-  }
+    /**
+     * Prepends a cache backend to the cache chain.
+     *
+     * @param CacheBackendInterface $backend
+     *   The backend to be prepended to the cache chain.
+     *
+     * @return $this
+     *   The called object.
+     */
+    public function prependBackend(CacheBackendInterface $backend): static
+    {
+        array_unshift($this->backends, $backend);
 
-  /**
-   * Prepends a cache backend to the cache chain.
-   *
-   * @param CacheBackendInterface $backend
-   *   The backend to be prepended to the cache chain.
-   *
-   * @return $this
-   *   The called object.
-   */
-  public function prependBackend(CacheBackendInterface $backend): static {
-    array_unshift($this->backends, $backend);
+        return $this;
+    }
 
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get($cid, $allow_invalid = false)
+    {
+        foreach ($this->backends as $index => $backend) {
+            if (($return = $backend->get($cid, $allow_invalid)) !== false) {
+                // We found a result, propagate it to all missed backends.
+                if ($index > 0) {
+                    for ($i = ($index - 1); 0 <= $i; --$i) {
+                        $this->backends[$i]->set($cid, $return->data, $return->expire, $return->tags);
+                    }
+                }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($cid, $allow_invalid = FALSE) {
-    foreach ($this->backends as $index => $backend) {
-      if (($return = $backend->get($cid, $allow_invalid)) !== FALSE) {
-        // We found a result, propagate it to all missed backends.
-        if ($index > 0) {
-          for ($i = ($index - 1); 0 <= $i; --$i) {
-            $this->backends[$i]->set($cid, $return->data, $return->expire, $return->tags);
-          }
+                return $return;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getMultiple(&$cids, $allow_invalid = false): array
+    {
+        $return = [];
+
+        foreach ($this->backends as $index => $backend) {
+            $items = $backend->getMultiple($cids, $allow_invalid);
+
+            // Propagate the values that could be retrieved from the current cache
+            // backend to all missed backends.
+            if ($index > 0 && !empty($items)) {
+                for ($i = ($index - 1); 0 <= $i; --$i) {
+                    foreach ($items as $cached) {
+                        $this->backends[$i]->set($cached->cid, $cached->data, $cached->expire, $cached->tags);
+                    }
+                }
+            }
+
+            // Append the values to the previously retrieved ones.
+            $return += $items;
+
+            if (empty($cids)) {
+                // No need to go further if we don't have any cid to fetch left.
+                break;
+            }
         }
 
         return $return;
-      }
     }
 
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
-    $return = [];
-
-    foreach ($this->backends as $index => $backend) {
-      $items = $backend->getMultiple($cids, $allow_invalid);
-
-      // Propagate the values that could be retrieved from the current cache
-      // backend to all missed backends.
-      if ($index > 0 && !empty($items)) {
-        for ($i = ($index - 1); 0 <= $i; --$i) {
-          foreach ($items as $cached) {
-            $this->backends[$i]->set($cached->cid, $cached->data, $cached->expire, $cached->tags);
-          }
+    /**
+     * {@inheritdoc}
+     */
+    public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->set($cid, $data, $expire, $tags);
         }
-      }
-
-      // Append the values to the previously retrieved ones.
-      $return += $items;
-
-      if (empty($cids)) {
-        // No need to go further if we don't have any cid to fetch left.
-        break;
-      }
     }
 
-    return $return;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
-    foreach ($this->backends as $backend) {
-      $backend->set($cid, $data, $expire, $tags);
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $items): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->setMultiple($items);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $items): void {
-    foreach ($this->backends as $backend) {
-      $backend->setMultiple($items);
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->delete($cid);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid): void {
-    foreach ($this->backends as $backend) {
-      $backend->delete($cid);
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $cids): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->deleteMultiple($cids);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $cids): void {
-    foreach ($this->backends as $backend) {
-      $backend->deleteMultiple($cids);
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll(): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->deleteAll();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll(): void {
-    foreach ($this->backends as $backend) {
-      $backend->deleteAll();
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidate($cid): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->invalidate($cid);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidate($cid): void {
-    foreach ($this->backends as $backend) {
-      $backend->invalidate($cid);
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateMultiple(array $cids): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->invalidateMultiple($cids);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateMultiple(array $cids): void {
-    foreach ($this->backends as $backend) {
-      $backend->invalidateMultiple($cids);
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags): void
+    {
+        foreach ($this->backends as $backend) {
+            if ($backend instanceof CacheTagsInvalidatorInterface) {
+                $backend->invalidateTags($tags);
+            }
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateTags(array $tags): void {
-    foreach ($this->backends as $backend) {
-      if ($backend instanceof CacheTagsInvalidatorInterface) {
-        $backend->invalidateTags($tags);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection(): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->garbageCollection();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection(): void {
-    foreach ($this->backends as $backend) {
-      $backend->garbageCollection();
+    /**
+     * {@inheritdoc}
+     */
+    public function removeBin(): void
+    {
+        foreach ($this->backends as $backend) {
+            $backend->removeBin();
+        }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeBin(): void {
-    foreach ($this->backends as $backend) {
-      $backend->removeBin();
-    }
-  }
 
 }

@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Form;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\content_moderation\ModerationInformationInterface;
-use Drupal\content_moderation\StateTransitionValidationInterface;
 use Drupal\workflows\Transition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,132 +16,136 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class EntityModerationForm extends FormBase {
-
-  /**
-   * EntityModerationForm constructor.
-   *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
-   *   The moderation information service.
-   * @param \Drupal\content_moderation\StateTransitionValidationInterface $validation
-   *   The moderation state transition validation service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\content_moderation\StateTransitionValidationInterface $validation, protected \Drupal\Component\Datetime\TimeInterface $time)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('content_moderation.moderation_information'),
-      $container->get('content_moderation.state_transition_validation'),
-      $container->get('datetime.time')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'content_moderation_entity_moderation_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ContentEntityInterface $entity = NULL): array {
-    $current_state = $entity->moderation_state->value;
-    $workflow = $this->moderationInfo->getWorkflowForEntity($entity);
-
-    /** @var \Drupal\workflows\Transition[] $transitions */
-    $transitions = $this->validation->getValidTransitions($entity, $this->currentUser());
-
-    // Exclude self-transitions.
-    $transitions = array_filter($transitions, fn(Transition $transition) => $transition->to()->id() != $current_state);
-
-    $target_states = [];
-
-    foreach ($transitions as $transition) {
-      $target_states[$transition->to()->id()] = $transition->to()->label();
+class EntityModerationForm extends FormBase
+{
+    /**
+     * EntityModerationForm constructor.
+     *
+     * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
+     *   The moderation information service.
+     * @param \Drupal\content_moderation\StateTransitionValidationInterface $validation
+     *   The moderation state transition validation service.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\content_moderation\StateTransitionValidationInterface $validation, protected \Drupal\Component\Datetime\TimeInterface $time)
+    {
     }
 
-    if (!count($target_states)) {
-      return $form;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('content_moderation.moderation_information'),
+            $container->get('content_moderation.state_transition_validation'),
+            $container->get('datetime.time')
+        );
     }
 
-    if ($current_state) {
-      $form['current'] = [
-        '#type' => 'item',
-        '#title' => $this->t('Moderation state'),
-        '#markup' => $workflow->getTypePlugin()->getState($current_state)->label(),
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'content_moderation_entity_moderation_form';
     }
 
-    // Persist the entity so we can access it in the submit handler.
-    $form_state->set('entity', $entity);
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?ContentEntityInterface $entity = null): array
+    {
+        $current_state = $entity->moderation_state->value;
+        $workflow = $this->moderationInfo->getWorkflowForEntity($entity);
 
-    $form['new_state'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Change to'),
-      '#options' => $target_states,
-    ];
+        /** @var \Drupal\workflows\Transition[] $transitions */
+        $transitions = $this->validation->getValidTransitions($entity, $this->currentUser());
 
-    $form['revision_log'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Log message'),
-      '#size' => 30,
-    ];
+        // Exclude self-transitions.
+        $transitions = array_filter($transitions, fn (Transition $transition) => $transition->to()->id() != $current_state);
 
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Apply'),
-    ];
+        $target_states = [];
 
-    $form['#theme'] = ['entity_moderation_form'];
-    $form['#attached']['library'][] = 'content_moderation/content_moderation';
+        foreach ($transitions as $transition) {
+            $target_states[$transition->to()->id()] = $transition->to()->label();
+        }
 
-    // Moderating an entity is allowed in a workspace.
-    $form_state->set('workspace_safe', TRUE);
+        if (!count($target_states)) {
+            return $form;
+        }
 
-    return $form;
-  }
+        if ($current_state) {
+            $form['current'] = [
+              '#type' => 'item',
+              '#title' => $this->t('Moderation state'),
+              '#markup' => $workflow->getTypePlugin()->getState($current_state)->label(),
+            ];
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $entity = $form_state->get('entity');
-    /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
-    $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
-    $entity = $storage->createRevision($entity, $entity->isDefaultRevision());
+        // Persist the entity so we can access it in the submit handler.
+        $form_state->set('entity', $entity);
 
-    $new_state = $form_state->getValue('new_state');
+        $form['new_state'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Change to'),
+          '#options' => $target_states,
+        ];
 
-    $entity->set('moderation_state', $new_state);
+        $form['revision_log'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Log message'),
+          '#size' => 30,
+        ];
 
-    if ($entity instanceof RevisionLogInterface) {
-      $entity->setRevisionCreationTime($this->time->getRequestTime());
-      $entity->setRevisionLogMessage($form_state->getValue('revision_log'));
-      $entity->setRevisionUserId($this->currentUser()->id());
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Apply'),
+        ];
+
+        $form['#theme'] = ['entity_moderation_form'];
+        $form['#attached']['library'][] = 'content_moderation/content_moderation';
+
+        // Moderating an entity is allowed in a workspace.
+        $form_state->set('workspace_safe', true);
+
+        return $form;
     }
-    $entity->save();
 
-    $this->messenger()->addStatus($this->t('The moderation state has been updated.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+        $entity = $form_state->get('entity');
+        /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
+        $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
+        $entity = $storage->createRevision($entity, $entity->isDefaultRevision());
 
-    $new_state = $this->moderationInfo->getWorkflowForEntity($entity)->getTypePlugin()->getState($new_state);
-    // The page we're on likely won't be visible if we just set the entity to
-    // the default state, as we hide that latest-revision tab if there is no
-    // pending revision. Redirect to the canonical URL instead, since that will
-    // still exist.
-    if ($new_state->isDefaultRevisionState()) {
-      $form_state->setRedirectUrl($entity->toUrl('canonical'));
+        $new_state = $form_state->getValue('new_state');
+
+        $entity->set('moderation_state', $new_state);
+
+        if ($entity instanceof RevisionLogInterface) {
+            $entity->setRevisionCreationTime($this->time->getRequestTime());
+            $entity->setRevisionLogMessage($form_state->getValue('revision_log'));
+            $entity->setRevisionUserId($this->currentUser()->id());
+        }
+        $entity->save();
+
+        $this->messenger()->addStatus($this->t('The moderation state has been updated.'));
+
+        $new_state = $this->moderationInfo->getWorkflowForEntity($entity)->getTypePlugin()->getState($new_state);
+        // The page we're on likely won't be visible if we just set the entity to
+        // the default state, as we hide that latest-revision tab if there is no
+        // pending revision. Redirect to the canonical URL instead, since that will
+        // still exist.
+        if ($new_state->isDefaultRevisionState()) {
+            $form_state->setRedirectUrl($entity->toUrl('canonical'));
+        }
     }
-  }
 
 }

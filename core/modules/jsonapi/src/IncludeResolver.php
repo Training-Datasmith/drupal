@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\DataReferenceDefinitionInterface;
-use Drupal\jsonapi\Access\EntityAccessChecker;
 use Drupal\jsonapi\Context\FieldResolver;
 use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
 use Drupal\jsonapi\JsonApiResource\Data;
@@ -27,226 +27,230 @@ use Drupal\jsonapi\ResourceType\ResourceType;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class IncludeResolver {
-
-  /**
-   * IncludeResolver constructor.
-   */
-  public function __construct(
-      /**
-       * The entity type manager.
-       */
-      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
-      /**
-       * The JSON:API entity access checker.
-       */
-      protected \Drupal\jsonapi\Access\EntityAccessChecker $entityAccessChecker
-  )
-  {
-  }
-
-  /**
-   * Resolves included resources.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface|\Drupal\jsonapi\JsonApiResource\ResourceObjectData $data
-   *   The resource(s) for which to resolve includes.
-   * @param string $include_parameter
-   *   The include query parameter to resolve.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\IncludedData
-   *   An IncludedData object of resolved resources to be included.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   *   Thrown if an included entity type doesn't exist.
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   *   Thrown if a storage handler couldn't be loaded.
-   */
-  public function resolve($data, $include_parameter) {
-    assert($data instanceof ResourceObject || $data instanceof ResourceObjectData);
-    $data = $data instanceof ResourceObjectData ? $data : new ResourceObjectData([$data], 1);
-    $include_tree = static::toIncludeTree($data, $include_parameter);
-    return IncludedData::deduplicate($this->resolveIncludeTree($include_tree, $data));
-  }
-
-  /**
-   * Receives a tree of include field names and resolves resources for it.
-   *
-   * This method takes a tree of relationship field names and JSON:API Data
-   * object. For the top-level of the tree and for each entity in the
-   * collection, it gets the target entity type and IDs for each relationship
-   * field. The method then loads all of those targets and calls itself
-   * recursively with the next level of the tree and those loaded resources.
-   *
-   * @param array $include_tree
-   *   The include paths, represented as a tree.
-   * @param \Drupal\jsonapi\JsonApiResource\Data $data
-   *   The entity collection from which includes should be resolved.
-   * @param \Drupal\jsonapi\JsonApiResource\Data|null $includes
-   *   (Internal use only) Any prior resolved includes.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\Data
-   *   A JSON:API Data of included items.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   *   Thrown if an included entity type doesn't exist.
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   *   Thrown if a storage handler couldn't be loaded.
-   */
-  protected function resolveIncludeTree(array $include_tree, Data $data, ?Data $includes = NULL) {
-    $includes = is_null($includes) ? new IncludedData([]) : $includes;
-    foreach ($include_tree as $field_name => $children) {
-      $references = [];
-      foreach ($data as $resource_object) {
-        // Some objects in the collection may be LabelOnlyResourceObjects or
-        // EntityAccessDeniedHttpException objects.
-        assert($resource_object instanceof ResourceIdentifierInterface);
-        $public_field_name = $resource_object->getResourceType()->getPublicName($field_name);
-        if ($resource_object instanceof LabelOnlyResourceObject) {
-            $message = "The current user is not allowed to view this relationship.";
-            $exception = new EntityAccessDeniedHttpException($resource_object->getEntity(), AccessResult::forbidden("The user only has authorization for the 'view label' operation."), '', $message, $public_field_name);
-            $includes = IncludedData::merge($includes, new IncludedData([$exception]));
-            continue;
-        }
-
-        if (!$resource_object instanceof ResourceObject) {
-            continue;
-        }
-
-        // Not all entities in $entity_collection will be of the same bundle and
-        // may not have all of the same fields. Therefore, calling
-        // $resource_object->get($a_missing_field_name) will result in an
-        // exception.
-        if (!$resource_object->hasField($public_field_name)) {
-          continue;
-        }
-        $field_list = $resource_object->getField($public_field_name);
-        // Config entities don't have real fields and can't have relationships.
-        if (!$field_list instanceof FieldItemListInterface) {
-          continue;
-        }
-        $field_access = $field_list->access('view', NULL, TRUE);
-        if (!$field_access->isAllowed()) {
-          $message = 'The current user is not allowed to view this relationship.';
-          $exception = new EntityAccessDeniedHttpException($field_list->getEntity(), $field_access, '', $message, $public_field_name);
-          $includes = IncludedData::merge($includes, new IncludedData([$exception]));
-          continue;
-        }
-        foreach ($field_list as $field_item) {
-          if (!($field_item->getDataDefinition()->getPropertyDefinition('entity') instanceof DataReferenceDefinitionInterface)) {
-            continue;
-          }
-
-          if (!($field_item->entity instanceof EntityInterface)) {
-            continue;
-          }
-
-          // Support entity reference fields that don't have the referenced
-          // target type stored in settings.
-          $references[$field_item->entity->getEntityTypeId()][] = $field_item->get($field_item::mainPropertyName())->getValue();
-        }
-      }
-      foreach ($references as $target_type => $ids) {
-        $entity_storage = $this->entityTypeManager->getStorage($target_type);
-        $targeted_entities = $entity_storage->loadMultiple(array_unique($ids));
-        $access_checked_entities = array_map(fn(EntityInterface $entity) => $this->entityAccessChecker->getAccessCheckedResourceObject($entity), $targeted_entities);
-        $targeted_collection = new IncludedData(array_filter($access_checked_entities, fn(ResourceIdentifierInterface $resource_object) => !$resource_object->getResourceType()->isInternal()));
-        $includes = static::resolveIncludeTree($children, $targeted_collection, IncludedData::merge($includes, $targeted_collection));
-      }
+class IncludeResolver
+{
+    /**
+     * IncludeResolver constructor.
+     */
+    public function __construct(
+        /**
+         * The entity type manager.
+         */
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+        /**
+         * The JSON:API entity access checker.
+         */
+        protected \Drupal\jsonapi\Access\EntityAccessChecker $entityAccessChecker
+    ) {
     }
-    return $includes;
-  }
 
-  /**
-   * Returns a tree of field names to include from an include parameter.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceObjectData $data
-   *   The base resources for which includes should be resolved.
-   * @param string $include_parameter
-   *   The raw include parameter value.
-   *
-   * @return array
-   *   A multi-dimensional array representing a tree of field names to be
-   *   included. Array keys are the field names. Leaves are empty arrays.
-   */
-  protected static function toIncludeTree(ResourceObjectData $data, $include_parameter) {
-    // $include_parameter: 'one.two.three, one.two.four'.
-    $include_paths = array_map(trim(...), explode(',', $include_parameter));
-    // $exploded_paths: [['one', 'two', 'three'], ['one', 'two', 'four']].
-    $exploded_paths = array_map(fn($include_path) => array_map(trim(...), explode('.', $include_path)), $include_paths);
-    $resolved_paths_per_resource_type = [];
-    /** @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface $resource_object */
-    foreach ($data as $resource_object) {
-      $resource_type = $resource_object->getResourceType();
-      $resource_type_name = $resource_type->getTypeName();
-      if (isset($resolved_paths_per_resource_type[$resource_type_name])) {
-        continue;
-      }
-      $resolved_paths_per_resource_type[$resource_type_name] = static::resolveInternalIncludePaths($resource_type, $exploded_paths);
+    /**
+     * Resolves included resources.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface|\Drupal\jsonapi\JsonApiResource\ResourceObjectData $data
+     *   The resource(s) for which to resolve includes.
+     * @param string $include_parameter
+     *   The include query parameter to resolve.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\IncludedData
+     *   An IncludedData object of resolved resources to be included.
+     *
+     * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+     *   Thrown if an included entity type doesn't exist.
+     * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+     *   Thrown if a storage handler couldn't be loaded.
+     */
+    public function resolve($data, $include_parameter)
+    {
+        assert($data instanceof ResourceObject || $data instanceof ResourceObjectData);
+        $data = $data instanceof ResourceObjectData ? $data : new ResourceObjectData([$data], 1);
+        $include_tree = static::toIncludeTree($data, $include_parameter);
+        return IncludedData::deduplicate($this->resolveIncludeTree($include_tree, $data));
     }
-    $resolved_paths = array_reduce($resolved_paths_per_resource_type, array_merge(...), []);
-    return static::buildTree($resolved_paths);
-  }
 
-  /**
-   * Resolves an array of public field paths.
-   *
-   * @param \Drupal\jsonapi\ResourceType\ResourceType $base_resource_type
-   *   The base resource type from which to resolve an internal include path.
-   * @param array $paths
-   *   An array of exploded include paths.
-   *
-   * @return array
-   *   An array of all possible internal include paths derived from the given
-   *   public include paths.
-   *
-   * @see self::buildTree
-   */
-  protected static function resolveInternalIncludePaths(ResourceType $base_resource_type, array $paths): array {
-    $internal_paths = array_map(function ($exploded_path) use ($base_resource_type) {
-      if (empty($exploded_path)) {
-        return [];
-      }
-      return FieldResolver::resolveInternalIncludePath($base_resource_type, $exploded_path);
-    }, $paths);
-    return array_reduce($internal_paths, array_merge(...), []);
-  }
+    /**
+     * Receives a tree of include field names and resolves resources for it.
+     *
+     * This method takes a tree of relationship field names and JSON:API Data
+     * object. For the top-level of the tree and for each entity in the
+     * collection, it gets the target entity type and IDs for each relationship
+     * field. The method then loads all of those targets and calls itself
+     * recursively with the next level of the tree and those loaded resources.
+     *
+     * @param array $include_tree
+     *   The include paths, represented as a tree.
+     * @param \Drupal\jsonapi\JsonApiResource\Data $data
+     *   The entity collection from which includes should be resolved.
+     * @param \Drupal\jsonapi\JsonApiResource\Data|null $includes
+     *   (Internal use only) Any prior resolved includes.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\Data
+     *   A JSON:API Data of included items.
+     *
+     * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+     *   Thrown if an included entity type doesn't exist.
+     * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+     *   Thrown if a storage handler couldn't be loaded.
+     */
+    protected function resolveIncludeTree(array $include_tree, Data $data, ?Data $includes = null)
+    {
+        $includes = is_null($includes) ? new IncludedData([]) : $includes;
+        foreach ($include_tree as $field_name => $children) {
+            $references = [];
+            foreach ($data as $resource_object) {
+                // Some objects in the collection may be LabelOnlyResourceObjects or
+                // EntityAccessDeniedHttpException objects.
+                assert($resource_object instanceof ResourceIdentifierInterface);
+                $public_field_name = $resource_object->getResourceType()->getPublicName($field_name);
+                if ($resource_object instanceof LabelOnlyResourceObject) {
+                    $message = 'The current user is not allowed to view this relationship.';
+                    $exception = new EntityAccessDeniedHttpException($resource_object->getEntity(), AccessResult::forbidden("The user only has authorization for the 'view label' operation."), '', $message, $public_field_name);
+                    $includes = IncludedData::merge($includes, new IncludedData([$exception]));
+                    continue;
+                }
 
-  /**
-   * Takes an array of exploded paths and builds a tree of field names.
-   *
-   * Input example: [
-   *   ['one', 'two', 'three'],
-   *   ['one', 'two', 'four'],
-   *   ['one', 'two', 'internal'],
-   * ]
-   *
-   * Output example: [
-   *   'one' => [
-   *     'two' [
-   *       'three' => [],
-   *       'four' => [],
-   *       'internal' => [],
-   *     ],
-   *   ],
-   * ]
-   *
-   * @param array $paths
-   *   An array of exploded include paths.
-   *
-   * @return array
-   *   A multi-dimensional array representing a tree of field names to be
-   *   included. Array keys are the field names. Leaves are empty arrays.
-   */
-  protected static function buildTree(array $paths): array {
-    $merged = [];
-    foreach ($paths as $parts) {
-      if (!$field_name = array_shift($parts)) {
-        continue;
-      }
-      $previous = $merged[$field_name] ?? [];
-      $merged[$field_name] = array_merge($previous, [$parts]);
+                if (!$resource_object instanceof ResourceObject) {
+                    continue;
+                }
+
+                // Not all entities in $entity_collection will be of the same bundle and
+                // may not have all of the same fields. Therefore, calling
+                // $resource_object->get($a_missing_field_name) will result in an
+                // exception.
+                if (!$resource_object->hasField($public_field_name)) {
+                    continue;
+                }
+                $field_list = $resource_object->getField($public_field_name);
+                // Config entities don't have real fields and can't have relationships.
+                if (!$field_list instanceof FieldItemListInterface) {
+                    continue;
+                }
+                $field_access = $field_list->access('view', null, true);
+                if (!$field_access->isAllowed()) {
+                    $message = 'The current user is not allowed to view this relationship.';
+                    $exception = new EntityAccessDeniedHttpException($field_list->getEntity(), $field_access, '', $message, $public_field_name);
+                    $includes = IncludedData::merge($includes, new IncludedData([$exception]));
+                    continue;
+                }
+                foreach ($field_list as $field_item) {
+                    if (!($field_item->getDataDefinition()->getPropertyDefinition('entity') instanceof DataReferenceDefinitionInterface)) {
+                        continue;
+                    }
+
+                    if (!($field_item->entity instanceof EntityInterface)) {
+                        continue;
+                    }
+
+                    // Support entity reference fields that don't have the referenced
+                    // target type stored in settings.
+                    $references[$field_item->entity->getEntityTypeId()][] = $field_item->get($field_item::mainPropertyName())->getValue();
+                }
+            }
+            foreach ($references as $target_type => $ids) {
+                $entity_storage = $this->entityTypeManager->getStorage($target_type);
+                $targeted_entities = $entity_storage->loadMultiple(array_unique($ids));
+                $access_checked_entities = array_map(fn (EntityInterface $entity) => $this->entityAccessChecker->getAccessCheckedResourceObject($entity), $targeted_entities);
+                $targeted_collection = new IncludedData(array_filter($access_checked_entities, fn (ResourceIdentifierInterface $resource_object) => !$resource_object->getResourceType()->isInternal()));
+                $includes = static::resolveIncludeTree($children, $targeted_collection, IncludedData::merge($includes, $targeted_collection));
+            }
+        }
+        return $includes;
     }
-    return !empty($merged) ? array_map([static::class, __FUNCTION__], $merged) : $merged;
-  }
+
+    /**
+     * Returns a tree of field names to include from an include parameter.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceObjectData $data
+     *   The base resources for which includes should be resolved.
+     * @param string $include_parameter
+     *   The raw include parameter value.
+     *
+     * @return array
+     *   A multi-dimensional array representing a tree of field names to be
+     *   included. Array keys are the field names. Leaves are empty arrays.
+     */
+    protected static function toIncludeTree(ResourceObjectData $data, $include_parameter)
+    {
+        // $include_parameter: 'one.two.three, one.two.four'.
+        $include_paths = array_map(trim(...), explode(',', $include_parameter));
+        // $exploded_paths: [['one', 'two', 'three'], ['one', 'two', 'four']].
+        $exploded_paths = array_map(fn ($include_path) => array_map(trim(...), explode('.', $include_path)), $include_paths);
+        $resolved_paths_per_resource_type = [];
+        /** @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface $resource_object */
+        foreach ($data as $resource_object) {
+            $resource_type = $resource_object->getResourceType();
+            $resource_type_name = $resource_type->getTypeName();
+            if (isset($resolved_paths_per_resource_type[$resource_type_name])) {
+                continue;
+            }
+            $resolved_paths_per_resource_type[$resource_type_name] = static::resolveInternalIncludePaths($resource_type, $exploded_paths);
+        }
+        $resolved_paths = array_reduce($resolved_paths_per_resource_type, array_merge(...), []);
+        return static::buildTree($resolved_paths);
+    }
+
+    /**
+     * Resolves an array of public field paths.
+     *
+     * @param \Drupal\jsonapi\ResourceType\ResourceType $base_resource_type
+     *   The base resource type from which to resolve an internal include path.
+     * @param array $paths
+     *   An array of exploded include paths.
+     *
+     * @return array
+     *   An array of all possible internal include paths derived from the given
+     *   public include paths.
+     *
+     * @see self::buildTree
+     */
+    protected static function resolveInternalIncludePaths(ResourceType $base_resource_type, array $paths): array
+    {
+        $internal_paths = array_map(function ($exploded_path) use ($base_resource_type) {
+            if (empty($exploded_path)) {
+                return [];
+            }
+            return FieldResolver::resolveInternalIncludePath($base_resource_type, $exploded_path);
+        }, $paths);
+        return array_reduce($internal_paths, array_merge(...), []);
+    }
+
+    /**
+     * Takes an array of exploded paths and builds a tree of field names.
+     *
+     * Input example: [
+     *   ['one', 'two', 'three'],
+     *   ['one', 'two', 'four'],
+     *   ['one', 'two', 'internal'],
+     * ]
+     *
+     * Output example: [
+     *   'one' => [
+     *     'two' [
+     *       'three' => [],
+     *       'four' => [],
+     *       'internal' => [],
+     *     ],
+     *   ],
+     * ]
+     *
+     * @param array $paths
+     *   An array of exploded include paths.
+     *
+     * @return array
+     *   A multi-dimensional array representing a tree of field names to be
+     *   included. Array keys are the field names. Leaves are empty arrays.
+     */
+    protected static function buildTree(array $paths): array
+    {
+        $merged = [];
+        foreach ($paths as $parts) {
+            if (!$field_name = array_shift($parts)) {
+                continue;
+            }
+            $previous = $merged[$field_name] ?? [];
+            $merged[$field_name] = array_merge($previous, [$parts]);
+        }
+        return !empty($merged) ? array_map([static::class, __FUNCTION__], $merged) : $merged;
+    }
 
 }

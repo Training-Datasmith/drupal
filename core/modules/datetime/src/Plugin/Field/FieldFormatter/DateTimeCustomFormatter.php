@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Datetime\DrupalDateTime;
@@ -13,81 +15,86 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  * Plugin implementation of the 'Custom' formatter for 'datetime' fields.
  */
 #[FieldFormatter(
-  id: 'datetime_custom',
-  label: new TranslatableMarkup('Custom'),
-  field_types: [
+    id: 'datetime_custom',
+    label: new TranslatableMarkup('Custom'),
+    field_types: [
     'datetime',
   ],
 )]
-class DateTimeCustomFormatter extends DateTimeFormatterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'date_format' => DateTimeItemInterface::DATETIME_STORAGE_FORMAT,
-    ] + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode): array {
-    // @todo Evaluate removing this method in
-    // https://www.drupal.org/node/2793143 to determine if the behavior and
-    // markup in the base class implementation can be used instead.
-    $elements = [];
-
-    foreach ($items as $delta => $item) {
-      if (!empty($item->date)) {
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $date */
-        $date = $item->date;
-
-        $elements[$delta] = $this->buildDate($date);
-      }
+class DateTimeCustomFormatter extends DateTimeFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+          'date_format' => DateTimeItemInterface::DATETIME_STORAGE_FORMAT,
+        ] + parent::defaultSettings();
     }
 
-    return $elements;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode): array
+    {
+        // @todo Evaluate removing this method in
+        // https://www.drupal.org/node/2793143 to determine if the behavior and
+        // markup in the base class implementation can be used instead.
+        $elements = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function formatDate($date) {
-    $format = $this->getSetting('date_format');
-    $timezone = $this->getSetting('timezone_override') ?: $date->getTimezone()->getName();
-    return $this->dateFormatter->format($date->getTimestamp(), 'custom', $format, $timezone != '' ? $timezone : NULL);
-  }
+        foreach ($items as $delta => $item) {
+            if (!empty($item->date)) {
+                /** @var \Drupal\Core\Datetime\DrupalDateTime $date */
+                $date = $item->date;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
+                $elements[$delta] = $this->buildDate($date);
+            }
+        }
 
-    $form['date_format'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Date/time format'),
-      '#description' => $this->t('See <a href="https://www.php.net/manual/datetime.format.php#refsect1-datetime.format-parameters" target="_blank">the documentation for PHP date formats</a>.'),
-      '#default_value' => $this->getSetting('date_format'),
-    ];
+        return $elements;
+    }
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatDate($date)
+    {
+        $format = $this->getSetting('date_format');
+        $timezone = $this->getSetting('timezone_override') ?: $date->getTimezone()->getName();
+        return $this->dateFormatter->format($date->getTimestamp(), 'custom', $format, $timezone != '' ? $timezone : null);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::settingsForm($form, $form_state);
 
-    $date = new DrupalDateTime();
-    $this->setTimeZone($date);
-    $summary[] = $date->format($this->getSetting('date_format'), $this->getFormatSettings());
+        $form['date_format'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Date/time format'),
+          '#description' => $this->t('See <a href="https://www.php.net/manual/datetime.format.php#refsect1-datetime.format-parameters" target="_blank">the documentation for PHP date formats</a>.'),
+          '#default_value' => $this->getSetting('date_format'),
+        ];
 
-    return $summary;
-  }
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary()
+    {
+        $summary = parent::settingsSummary();
+
+        $date = new DrupalDateTime();
+        $this->setTimeZone($date);
+        $summary[] = $date->format($this->getSetting('date_format'), $this->getFormatSettings());
+
+        return $summary;
+    }
 
 }

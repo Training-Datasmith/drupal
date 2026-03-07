@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Exception;
 
 /**
@@ -9,17 +11,18 @@ namespace Drupal\Core\Entity\Exception;
  *
  * @see \Drupal\Core\Entity\EntityTypeRepositoryInterface::getEntityTypeFromClass()
  */
-class NoCorrespondingEntityClassException extends \Exception {
-
-  /**
-   * Constructs a NoCorrespondingEntityClassException.
-   *
-   * @param string $class
-   *   The class which does not correspond to an entity type.
-   */
-  public function __construct($class) {
-    $message = sprintf('The %s class does not correspond to an entity type.', $class);
-    parent::__construct($message);
-  }
+class NoCorrespondingEntityClassException extends \Exception
+{
+    /**
+     * Constructs a NoCorrespondingEntityClassException.
+     *
+     * @param string $class
+     *   The class which does not correspond to an entity type.
+     */
+    public function __construct($class)
+    {
+        $message = sprintf('The %s class does not correspond to an entity type.', $class);
+        parent::__construct($message);
+    }
 
 }

@@ -16,24 +16,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class ImageStyleValidationTest extends ConfigEntityValidationTestBase {
+class ImageStyleValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['image'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['image'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = ImageStyle::create([
-      'name' => 'test',
-      'label' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = ImageStyle::create([
+          'name' => 'test',
+          'label' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

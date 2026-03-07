@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Render;
 
 /**
@@ -29,14 +31,14 @@ namespace Drupal\Component\Render;
  * @see sanitization
  * @see theme_render
  */
-interface MarkupInterface extends \JsonSerializable, \Stringable {
-
-  /**
-   * Returns markup.
-   *
-   * @return string
-   *   The markup.
-   */
-  public function __toString();
+interface MarkupInterface extends \JsonSerializable, \Stringable
+{
+    /**
+     * Returns markup.
+     *
+     * @return string
+     *   The markup.
+     */
+    public function __toString();
 
 }

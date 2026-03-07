@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\Negotiator;
 
 use Drupal\Core\Session\AccountInterface;
@@ -10,40 +12,45 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 /**
  * Defines the session workspace negotiator.
  */
-class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface, WorkspaceIdNegotiatorInterface {
+class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface, WorkspaceIdNegotiatorInterface
+{
+    public function __construct(
+        protected readonly AccountInterface $currentUser,
+        protected readonly SessionInterface $session,
+    ) {
+    }
 
-  public function __construct(
-    protected readonly AccountInterface $currentUser,
-    protected readonly SessionInterface $session,
-  ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(Request $request)
+    {
+        // This negotiator only applies if the current user is authenticated.
+        return $this->currentUser->isAuthenticated();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(Request $request) {
-    // This negotiator only applies if the current user is authenticated.
-    return $this->currentUser->isAuthenticated();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getActiveWorkspaceId(Request $request): ?string
+    {
+        return $this->session->get('active_workspace_id');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getActiveWorkspaceId(Request $request): ?string {
-    return $this->session->get('active_workspace_id');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setActiveWorkspace(WorkspaceInterface $workspace): void
+    {
+        $this->session->set('active_workspace_id', $workspace->id());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setActiveWorkspace(WorkspaceInterface $workspace): void {
-    $this->session->set('active_workspace_id', $workspace->id());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function unsetActiveWorkspace(): void {
-    $this->session->remove('active_workspace_id');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function unsetActiveWorkspace(): void
+    {
+        $this->session->remove('active_workspace_id');
+    }
 
 }

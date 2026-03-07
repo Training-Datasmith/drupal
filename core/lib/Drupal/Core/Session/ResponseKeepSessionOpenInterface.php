@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Session;
 
 /**
@@ -13,4 +15,6 @@ namespace Drupal\Core\Session;
  * @see Drupal\big_pipe\src\Render\BigPipeResponse
  * @internal
  */
-interface ResponseKeepSessionOpenInterface {}
+interface ResponseKeepSessionOpenInterface
+{
+}

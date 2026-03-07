@@ -15,77 +15,81 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class EntityListBuilderTest extends BrowserTestBase {
+class EntityListBuilderTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Create and log in user.
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer entity_test content',
-    ]));
-  }
-
-  /**
-   * Tests paging.
-   */
-  public function testPager(): void {
-    // Create 51 test entities.
-    for ($i = 1; $i < 52; $i++) {
-      EntityTest::create(['name' => 'Test entity ' . $i])->save();
+        // Create and log in user.
+        $this->drupalLogin($this->drupalCreateUser([
+          'administer entity_test content',
+        ]));
     }
 
-    // Load the listing page.
-    $this->drupalGet('entity_test/list');
+    /**
+     * Tests paging.
+     */
+    public function testPager(): void
+    {
+        // Create 51 test entities.
+        for ($i = 1; $i < 52; $i++) {
+            EntityTest::create(['name' => 'Test entity ' . $i])->save();
+        }
 
-    // Item 51 should not be present.
-    $this->assertSession()->pageTextContains('Test entity 50');
-    $this->assertSession()->responseNotContains('Test entity 51');
+        // Load the listing page.
+        $this->drupalGet('entity_test/list');
 
-    // Browse to the next page, test entity 51 is shown.
-    $this->clickLink('Page 2');
-    $this->assertSession()->responseNotContains('Test entity 50');
-    $this->assertSession()->pageTextContains('Test entity 51');
-  }
+        // Item 51 should not be present.
+        $this->assertSession()->pageTextContains('Test entity 50');
+        $this->assertSession()->responseNotContains('Test entity 51');
 
-  /**
-   * Tests that the correct cache contexts are set.
-   */
-  public function testCacheContexts(): void {
-    /** @var \Drupal\Core\Entity\EntityListBuilderInterface $list_builder */
-    $list_builder = $this->container->get('entity_type.manager')->getListBuilder('entity_test');
+        // Browse to the next page, test entity 51 is shown.
+        $this->clickLink('Page 2');
+        $this->assertSession()->responseNotContains('Test entity 50');
+        $this->assertSession()->pageTextContains('Test entity 51');
+    }
 
-    $build = $list_builder->render();
-    $this->container->get('renderer')->renderRoot($build);
+    /**
+     * Tests that the correct cache contexts are set.
+     */
+    public function testCacheContexts(): void
+    {
+        /** @var \Drupal\Core\Entity\EntityListBuilderInterface $list_builder */
+        $list_builder = $this->container->get('entity_type.manager')->getListBuilder('entity_test');
 
-    $this->assertEqualsCanonicalizing([
-      'entity_test_view_grants',
-      'languages:' . LanguageInterface::TYPE_INTERFACE,
-      'theme',
-      'url.query_args.pagers:0',
-      'user.permissions',
-    ], $build['#cache']['contexts']);
-  }
+        $build = $list_builder->render();
+        $this->container->get('renderer')->renderRoot($build);
 
-  /**
-   * Tests if the list cache tags are set.
-   */
-  public function testCacheTags(): void {
-    $this->drupalGet('entity_test/list');
-    $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'entity_test_list');
-  }
+        $this->assertEqualsCanonicalizing([
+          'entity_test_view_grants',
+          'languages:' . LanguageInterface::TYPE_INTERFACE,
+          'theme',
+          'url.query_args.pagers:0',
+          'user.permissions',
+        ], $build['#cache']['contexts']);
+    }
+
+    /**
+     * Tests if the list cache tags are set.
+     */
+    public function testCacheTags(): void
+    {
+        $this->drupalGet('entity_test/list');
+        $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'entity_test_list');
+    }
 
 }

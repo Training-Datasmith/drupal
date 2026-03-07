@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor\Entity;
 
-use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\StreamWrapper\StreamWrapperInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\editor\EditorAccessControlHandler;
 use Drupal\editor\EditorInterface;
 
@@ -19,217 +21,229 @@ use Drupal\editor\EditorInterface;
  * the editor plugin was selected.
  */
 #[ConfigEntityType(
-  id: 'editor',
-  label: new TranslatableMarkup('Text editor'),
-  label_collection: new TranslatableMarkup('Text editors'),
-  label_singular: new TranslatableMarkup('text editor'),
-  label_plural: new TranslatableMarkup('text editors'),
-  entity_keys: [
+    id: 'editor',
+    label: new TranslatableMarkup('Text editor'),
+    label_collection: new TranslatableMarkup('Text editors'),
+    label_singular: new TranslatableMarkup('text editor'),
+    label_plural: new TranslatableMarkup('text editors'),
+    entity_keys: [
     'id' => 'format',
   ],
-  handlers: [
+    handlers: [
     'access' => EditorAccessControlHandler::class,
   ],
-  label_count: [
+    label_count: [
     'singular' => '@count text editor',
     'plural' => '@count text editors',
   ],
-  constraints: [
+    constraints: [
     'RequiredConfigDependencies' => [
       'entityTypes' => ['filter_format'],
     ],
   ],
-  config_export: [
+    config_export: [
     'format',
     'editor',
     'settings',
     'image_upload',
   ],
 )]
-class Editor extends ConfigEntityBase implements EditorInterface {
+class Editor extends ConfigEntityBase implements EditorInterface
+{
+    /**
+     * Machine name of the text format for this configured text editor.
+     *
+     * @var string
+     *
+     * @see getFilterFormat()
+     */
+    protected $format;
 
-  /**
-   * Machine name of the text format for this configured text editor.
-   *
-   * @var string
-   *
-   * @see getFilterFormat()
-   */
-  protected $format;
+    /**
+     * The name (plugin ID) of the text editor.
+     *
+     * @var string
+     */
+    protected $editor;
 
-  /**
-   * The name (plugin ID) of the text editor.
-   *
-   * @var string
-   */
-  protected $editor;
+    /**
+     * The structured array of text editor plugin-specific settings.
+     *
+     * @var array
+     */
+    protected $settings = [];
 
-  /**
-   * The structured array of text editor plugin-specific settings.
-   *
-   * @var array
-   */
-  protected $settings = [];
+    /**
+     * The structured array of image upload settings.
+     *
+     * @var array
+     */
+    protected $image_upload = [];
 
-  /**
-   * The structured array of image upload settings.
-   *
-   * @var array
-   */
-  protected $image_upload = [];
+    /**
+     * The filter format this text editor is associated with.
+     *
+     * @var \Drupal\filter\FilterFormatInterface
+     */
+    protected $filterFormat;
 
-  /**
-   * The filter format this text editor is associated with.
-   *
-   * @var \Drupal\filter\FilterFormatInterface
-   */
-  protected $filterFormat;
+    /**
+     * @var \Drupal\Component\Plugin\PluginManagerInterface
+     */
+    protected $editorPluginManager;
 
-  /**
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $editorPluginManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function id() {
-    return $this->format;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $values, $entity_type) {
-    parent::__construct($values, $entity_type);
-
-    try {
-      $plugin = $this->editorPluginManager()->createInstance($this->editor);
-      $this->settings += $plugin->getDefaultSettings();
-    }
-    catch (PluginNotFoundException) {
-      // When a Text Editor plugin has gone missing, still allow the Editor
-      // config entity to be constructed. The only difference is that default
-      // settings are not added.
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getFilterFormat()->label();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies(): static {
-    parent::calculateDependencies();
-    // Create a dependency on the associated FilterFormat.
-    $text_format = $this->getFilterFormat();
-    if ($text_format) {
-      $this->addDependency('config', $text_format->getConfigDependencyName());
-    }
-    else {
-      trigger_error("The editor {$this->id()} is configured for text format {$this->id()} which does not exist. Review whether it is still needed and delete if not.", E_USER_WARNING);
+    /**
+     * {@inheritdoc}
+     */
+    public function id()
+    {
+        return $this->format;
     }
 
-    // @todo use EntityWithPluginCollectionInterface so configuration between
-    //   config entity and dependency on provider is managed automatically.
-    $definition = $this->editorPluginManager()->createInstance($this->editor)->getPluginDefinition();
-    $this->addDependency('module', $definition['provider']);
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $values, $entity_type)
+    {
+        parent::__construct($values, $entity_type);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasAssociatedFilterFormat(): bool {
-    return $this->format !== NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFilterFormat() {
-    if (!$this->filterFormat) {
-      $this->filterFormat = \Drupal::entityTypeManager()->getStorage('filter_format')->load($this->format);
-    }
-    return $this->filterFormat;
-  }
-
-  /**
-   * Returns the editor plugin manager.
-   *
-   * @return \Drupal\Component\Plugin\PluginManagerInterface
-   *   The editor plugin manager instance.
-   */
-  protected function editorPluginManager() {
-    if (!$this->editorPluginManager) {
-      $this->editorPluginManager = \Drupal::service('plugin.manager.editor');
+        try {
+            $plugin = $this->editorPluginManager()->createInstance($this->editor);
+            $this->settings += $plugin->getDefaultSettings();
+        } catch (PluginNotFoundException) {
+            // When a Text Editor plugin has gone missing, still allow the Editor
+            // config entity to be constructed. The only difference is that default
+            // settings are not added.
+        }
     }
 
-    return $this->editorPluginManager;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getFilterFormat()->label();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEditor() {
-    return $this->editor;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies(): static
+    {
+        parent::calculateDependencies();
+        // Create a dependency on the associated FilterFormat.
+        $text_format = $this->getFilterFormat();
+        if ($text_format) {
+            $this->addDependency('config', $text_format->getConfigDependencyName());
+        } else {
+            trigger_error("The editor {$this->id()} is configured for text format {$this->id()} which does not exist. Review whether it is still needed and delete if not.", E_USER_WARNING);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setEditor($editor): static {
-    $this->editor = $editor;
-    return $this;
-  }
+        // @todo use EntityWithPluginCollectionInterface so configuration between
+        //   config entity and dependency on provider is managed automatically.
+        $definition = $this->editorPluginManager()->createInstance($this->editor)->getPluginDefinition();
+        $this->addDependency('module', $definition['provider']);
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSettings() {
-    return $this->settings;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function hasAssociatedFilterFormat(): bool
+    {
+        return $this->format !== null;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setSettings(array $settings): static {
-    $this->settings = $settings;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFilterFormat()
+    {
+        if (!$this->filterFormat) {
+            $this->filterFormat = \Drupal::entityTypeManager()->getStorage('filter_format')->load($this->format);
+        }
+        return $this->filterFormat;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getImageUploadSettings() {
-    return $this->image_upload;
-  }
+    /**
+     * Returns the editor plugin manager.
+     *
+     * @return \Drupal\Component\Plugin\PluginManagerInterface
+     *   The editor plugin manager instance.
+     */
+    protected function editorPluginManager()
+    {
+        if (!$this->editorPluginManager) {
+            $this->editorPluginManager = \Drupal::service('plugin.manager.editor');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setImageUploadSettings(array $image_upload_settings): static {
-    $this->image_upload = $image_upload_settings;
-    return $this;
-  }
+        return $this->editorPluginManager;
+    }
 
-  /**
-   * Computes all valid choices for the "image_upload.scheme" setting.
-   *
-   * @see editor.schema.yml
-   *
-   * @return string[]
-   *   All valid choices.
-   *
-   * @internal
-   */
-  public static function getValidStreamWrappers(): array {
-    return array_keys(\Drupal::service('stream_wrapper_manager')->getNames(StreamWrapperInterface::WRITE_VISIBLE));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getEditor()
+    {
+        return $this->editor;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setEditor($editor): static
+    {
+        $this->editor = $editor;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettings()
+    {
+        return $this->settings;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setSettings(array $settings): static
+    {
+        $this->settings = $settings;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getImageUploadSettings()
+    {
+        return $this->image_upload;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setImageUploadSettings(array $image_upload_settings): static
+    {
+        $this->image_upload = $image_upload_settings;
+        return $this;
+    }
+
+    /**
+     * Computes all valid choices for the "image_upload.scheme" setting.
+     *
+     * @see editor.schema.yml
+     *
+     * @return string[]
+     *   All valid choices.
+     *
+     * @internal
+     */
+    public static function getValidStreamWrappers(): array
+    {
+        return array_keys(\Drupal::service('stream_wrapper_manager')->getNames(StreamWrapperInterface::WRITE_VISIBLE));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 use Drupal\Core\Render\BubbleableMetadata;
@@ -10,56 +12,61 @@ use Symfony\Component\Routing\Route;
 /**
  * No-op implementation of a URL Generator, needed for backward compatibility.
  */
-class NullGenerator extends UrlGenerator {
-
-  /**
-   * Override the parent constructor.
-   *
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack.
-   */
-  public function __construct(RequestStack $request_stack) {
-    $this->requestStack = $request_stack;
-    $this->context = new RequestContext();
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Methods generate(), generateFromRoute() and getPathFromRoute() all call
-   * this protected method.
-   */
-  protected function getRoute($name) {
-    if ($name === '<front>') {
-        return new Route('/');
+class NullGenerator extends UrlGenerator
+{
+    /**
+     * Override the parent constructor.
+     *
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack.
+     */
+    public function __construct(RequestStack $request_stack)
+    {
+        $this->requestStack = $request_stack;
+        $this->context = new RequestContext();
     }
-    if ($name === '<current>') {
-        return new Route($this->requestStack->getCurrentRequest()->getPathInfo());
+
+    /**
+     * {@inheritdoc}
+     *
+     * Methods generate(), generateFromRoute() and getPathFromRoute() all call
+     * this protected method.
+     */
+    protected function getRoute($name)
+    {
+        if ($name === '<front>') {
+            return new Route('/');
+        }
+        if ($name === '<current>') {
+            return new Route($this->requestStack->getCurrentRequest()->getPathInfo());
+        }
+        if ($name === '<none>') {
+            return new Route('');
+        }
+        throw new RouteNotFoundException();
     }
-    if ($name === '<none>') {
-        return new Route('');
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function processRoute($name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = null)
+    {
     }
-    throw new RouteNotFoundException();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function processRoute($name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getInternalPathFromRoute($name, Route $route, $parameters = [], &$query_params = [])
+    {
+        return $route->getPath();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getInternalPathFromRoute($name, Route $route, $parameters = [], &$query_params = []) {
-    return $route->getPath();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function processPath($path, &$options = [], ?BubbleableMetadata $bubbleable_metadata = NULL) {
-    return $path;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function processPath($path, &$options = [], ?BubbleableMetadata $bubbleable_metadata = null)
+    {
+        return $path;
+    }
 
 }

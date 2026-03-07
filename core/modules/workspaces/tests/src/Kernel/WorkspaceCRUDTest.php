@@ -18,304 +18,308 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspaceCRUDTest extends KernelTestBase {
+class WorkspaceCRUDTest extends KernelTestBase
+{
+    use UserCreationTrait;
+    use NodeCreationTrait;
+    use ContentTypeCreationTrait;
+    use WorkspaceTestTrait;
 
-  use UserCreationTrait;
-  use NodeCreationTrait;
-  use ContentTypeCreationTrait;
-  use WorkspaceTestTrait;
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+    /**
+     * The state service.
+     *
+     * @var \Drupal\Core\State\StateInterface
+     */
+    protected $state;
 
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+    /**
+     * The workspace replication manager.
+     *
+     * @var \Drupal\workspaces\WorkspaceManagerInterface
+     */
+    protected $workspaceManager;
 
-  /**
-   * The workspace replication manager.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'user',
+      'system',
+      'workspaces',
+      'field',
+      'filter',
+      'node',
+      'text',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'user',
-    'system',
-    'workspaces',
-    'field',
-    'filter',
-    'node',
-    'text',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->setUpCurrentUser();
 
-    $this->setUpCurrentUser();
+        $this->installSchema('node', ['node_access']);
 
-    $this->installSchema('node', ['node_access']);
+        $this->installEntitySchema('workspace');
+        $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
+        $this->installEntitySchema('node');
 
-    $this->installEntitySchema('workspace');
-    $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
-    $this->installEntitySchema('node');
+        $this->installConfig(['filter', 'node', 'system']);
 
-    $this->installConfig(['filter', 'node', 'system']);
+        $this->createContentType(['type' => 'page']);
 
-    $this->createContentType(['type' => 'page']);
-
-    $this->entityTypeManager = \Drupal::entityTypeManager();
-    $this->state = \Drupal::state();
-    $this->workspaceManager = \Drupal::service('workspaces.manager');
-  }
-
-  /**
-   * Tests the deletion of workspaces.
-   */
-  public function testDeletingWorkspaces(): void {
-    $admin = $this->createUser([
-      'administer nodes',
-      'create workspace',
-      'view any workspace',
-      'edit any workspace',
-      'delete any workspace',
-    ]);
-    $this->setCurrentUser($admin);
-
-    /** @var \Drupal\workspaces\WorkspaceTrackerInterface $workspace_tracker */
-    $workspace_tracker = \Drupal::service('workspaces.tracker');
-
-    // Create a workspace with a very small number of associated node revisions.
-    $workspace_1 = Workspace::create([
-      'id' => 'gibbon',
-      'label' => 'Gibbon',
-    ]);
-    $workspace_1->save();
-    $this->workspaceManager->setActiveWorkspace($workspace_1);
-
-    $workspace_1_node_1 = $this->createNode(['status' => FALSE]);
-    $workspace_1_node_2 = $this->createNode(['status' => FALSE]);
-
-    // Check that the workspace tracks the initial revisions for both nodes.
-    $initial_revisions = $workspace_tracker->getTrackedInitialRevisions($workspace_1->id(), 'node');
-    $this->assertCount(2, $initial_revisions);
-
-    for ($i = 0; $i < 4; $i++) {
-      $workspace_1_node_1->setNewRevision(TRUE);
-      $workspace_1_node_1->save();
-
-      $workspace_1_node_2->setNewRevision(TRUE);
-      $workspace_1_node_2->save();
+        $this->entityTypeManager = \Drupal::entityTypeManager();
+        $this->state = \Drupal::state();
+        $this->workspaceManager = \Drupal::service('workspaces.manager');
     }
 
-    // The workspace should now track 2 nodes.
-    $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_1->id());
-    $this->assertCount(2, $tracked_entities['node']);
+    /**
+     * Tests the deletion of workspaces.
+     */
+    public function testDeletingWorkspaces(): void
+    {
+        $admin = $this->createUser([
+          'administer nodes',
+          'create workspace',
+          'view any workspace',
+          'edit any workspace',
+          'delete any workspace',
+        ]);
+        $this->setCurrentUser($admin);
 
-    // Since all the revisions were created inside a workspace, including the
-    // default one, 'workspace_1' should be tracking all 10 revisions.
-    $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_1->id(), 'node');
-    $this->assertCount(10, $associated_revisions);
+        /** @var \Drupal\workspaces\WorkspaceTrackerInterface $workspace_tracker */
+        $workspace_tracker = \Drupal::service('workspaces.tracker');
 
-    // Check that we are allowed to delete the workspace.
-    $this->assertTrue($workspace_1->access('delete', $admin));
+        // Create a workspace with a very small number of associated node revisions.
+        $workspace_1 = Workspace::create([
+          'id' => 'gibbon',
+          'label' => 'Gibbon',
+        ]);
+        $workspace_1->save();
+        $this->workspaceManager->setActiveWorkspace($workspace_1);
 
-    // Delete the workspace and check that all the workspace_association
-    // entities and all the node revisions have been deleted as well.
-    $workspace_1->delete();
+        $workspace_1_node_1 = $this->createNode(['status' => false]);
+        $workspace_1_node_2 = $this->createNode(['status' => false]);
 
-    // There are no more tracked entities in 'workspace_1'.
-    $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_1->id());
-    $this->assertEmpty($tracked_entities);
+        // Check that the workspace tracks the initial revisions for both nodes.
+        $initial_revisions = $workspace_tracker->getTrackedInitialRevisions($workspace_1->id(), 'node');
+        $this->assertCount(2, $initial_revisions);
 
-    // There are no more revisions associated with 'workspace_1'.
-    $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_1->id(), 'node');
-    $this->assertCount(0, $associated_revisions);
+        for ($i = 0; $i < 4; $i++) {
+            $workspace_1_node_1->setNewRevision(true);
+            $workspace_1_node_1->save();
 
-    // Create another workspace, this time with a larger number of associated
-    // node revisions so we can test the batch purge process.
-    $workspace_2 = Workspace::create([
-      'id' => 'baboon',
-      'label' => 'Baboon',
-    ]);
-    $workspace_2->save();
-    $this->workspaceManager->setActiveWorkspace($workspace_2);
+            $workspace_1_node_2->setNewRevision(true);
+            $workspace_1_node_2->save();
+        }
 
-    $workspace_2_node_1 = $this->createNode(['status' => FALSE]);
-    for ($i = 0; $i < 59; $i++) {
-      $workspace_2_node_1->setNewRevision(TRUE);
-      $workspace_2_node_1->save();
+        // The workspace should now track 2 nodes.
+        $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_1->id());
+        $this->assertCount(2, $tracked_entities['node']);
+
+        // Since all the revisions were created inside a workspace, including the
+        // default one, 'workspace_1' should be tracking all 10 revisions.
+        $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_1->id(), 'node');
+        $this->assertCount(10, $associated_revisions);
+
+        // Check that we are allowed to delete the workspace.
+        $this->assertTrue($workspace_1->access('delete', $admin));
+
+        // Delete the workspace and check that all the workspace_association
+        // entities and all the node revisions have been deleted as well.
+        $workspace_1->delete();
+
+        // There are no more tracked entities in 'workspace_1'.
+        $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_1->id());
+        $this->assertEmpty($tracked_entities);
+
+        // There are no more revisions associated with 'workspace_1'.
+        $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_1->id(), 'node');
+        $this->assertCount(0, $associated_revisions);
+
+        // Create another workspace, this time with a larger number of associated
+        // node revisions so we can test the batch purge process.
+        $workspace_2 = Workspace::create([
+          'id' => 'baboon',
+          'label' => 'Baboon',
+        ]);
+        $workspace_2->save();
+        $this->workspaceManager->setActiveWorkspace($workspace_2);
+
+        $workspace_2_node_1 = $this->createNode(['status' => false]);
+        for ($i = 0; $i < 59; $i++) {
+            $workspace_2_node_1->setNewRevision(true);
+            $workspace_2_node_1->save();
+        }
+
+        // Now there is one entity tracked in 'workspace_2'.
+        $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_2->id());
+        $this->assertCount(1, $tracked_entities['node']);
+
+        // All 60 are associated with 'workspace_2'.
+        $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
+        $this->assertCount(60, $associated_revisions);
+
+        // Delete the workspace and check that we still have 10 revision left to
+        // delete.
+        $workspace_2->delete();
+        $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
+        $this->assertCount(10, $associated_revisions);
+
+        $workspace_deleted = \Drupal::state()->get('workspace.deleted');
+        $this->assertCount(1, $workspace_deleted);
+
+        // Check that we can not create another workspace with the same ID while its
+        // data purging is not finished.
+        $workspace_3 = Workspace::create([
+          'id' => 'baboon',
+          'label' => 'Baboon',
+        ]);
+        $violations = $workspace_3->validate();
+        $this->assertCount(1, $violations);
+        $this->assertEquals('A workspace with this ID has been deleted but data still exists for it.', $violations[0]->getMessage());
+
+        // Running cron should delete the remaining data as well as the workspace ID
+        // from the "workspace.delete" state entry.
+        \Drupal::service('cron')->run();
+
+        // Check that the actual node revisions were deleted as well.
+        $node_storage = $this->entityTypeManager->getStorage('node');
+        $this->assertEmpty($node_storage->loadMultipleRevisions(array_keys($associated_revisions)));
+
+        // 'workspace_2 'is empty now.
+        $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
+        $this->assertCount(0, $associated_revisions);
+        $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_2->id());
+        $this->assertCount(0, $tracked_entities);
+
+        $workspace_deleted = \Drupal::state()->get('workspace.deleted');
+        $this->assertCount(0, $workspace_deleted);
+
+        // Check that the deleted workspace is no longer active.
+        $this->assertFalse($this->workspaceManager->hasActiveWorkspace());
     }
 
-    // Now there is one entity tracked in 'workspace_2'.
-    $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_2->id());
-    $this->assertCount(1, $tracked_entities['node']);
+    /**
+     * Tests that deleting a workspace keeps its already published content.
+     */
+    public function testDeletingPublishedWorkspace(): void
+    {
+        $admin = $this->createUser([
+          'administer nodes',
+          'create workspace',
+          'view own workspace',
+          'edit own workspace',
+          'delete own workspace',
+        ]);
+        $this->setCurrentUser($admin);
 
-    // All 60 are associated with 'workspace_2'.
-    $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
-    $this->assertCount(60, $associated_revisions);
+        $live_workspace = Workspace::create([
+          'id' => 'live',
+          'label' => 'Live',
+        ]);
+        $live_workspace->save();
+        $workspace = Workspace::create([
+          'id' => 'stage',
+          'label' => 'Stage',
+        ]);
+        $workspace->save();
+        $this->workspaceManager->setActiveWorkspace($workspace);
 
-    // Delete the workspace and check that we still have 10 revision left to
-    // delete.
-    $workspace_2->delete();
-    $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
-    $this->assertCount(10, $associated_revisions);
+        // Create a new node in the 'stage' workspace.
+        $node = $this->createNode(['status' => true]);
 
-    $workspace_deleted = \Drupal::state()->get('workspace.deleted');
-    $this->assertCount(1, $workspace_deleted);
+        // Create an additional workspace-specific revision for the node.
+        $node->setNewRevision(true);
+        $node->save();
 
-    // Check that we can not create another workspace with the same ID while its
-    // data purging is not finished.
-    $workspace_3 = Workspace::create([
-      'id' => 'baboon',
-      'label' => 'Baboon',
-    ]);
-    $violations = $workspace_3->validate();
-    $this->assertCount(1, $violations);
-    $this->assertEquals('A workspace with this ID has been deleted but data still exists for it.', $violations[0]->getMessage());
+        // The node should have 3 revisions now: a default and 2 pending ones.
+        $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3]);
+        $this->assertCount(3, $revisions);
+        $this->assertTrue($revisions[1]->isDefaultRevision());
+        $this->assertFalse($revisions[2]->isDefaultRevision());
+        $this->assertFalse($revisions[3]->isDefaultRevision());
 
-    // Running cron should delete the remaining data as well as the workspace ID
-    // from the "workspace.delete" state entry.
-    \Drupal::service('cron')->run();
+        // Publish the workspace, which should mark revision 3 as the default one
+        // and keep revision 2 as a 'source' draft revision.
+        $workspace->publish();
+        $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3]);
+        $this->assertFalse($revisions[1]->isDefaultRevision());
+        $this->assertFalse($revisions[2]->isDefaultRevision());
+        $this->assertTrue($revisions[3]->isDefaultRevision());
 
-    // Check that the actual node revisions were deleted as well.
-    $node_storage = $this->entityTypeManager->getStorage('node');
-    $this->assertEmpty($node_storage->loadMultipleRevisions(array_keys($associated_revisions)));
+        // Create two new workspace-revisions for the node.
+        $node->setNewRevision(true);
+        $node->save();
+        $node->setNewRevision(true);
+        $node->save();
 
-    // 'workspace_2 'is empty now.
-    $associated_revisions = $workspace_tracker->getAllTrackedRevisions($workspace_2->id(), 'node', [$workspace_2_node_1->id()]);
-    $this->assertCount(0, $associated_revisions);
-    $tracked_entities = $workspace_tracker->getTrackedEntities($workspace_2->id());
-    $this->assertCount(0, $tracked_entities);
+        // The node should now have 5 revisions.
+        $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3, 4, 5]);
+        $this->assertFalse($revisions[1]->isDefaultRevision());
+        $this->assertFalse($revisions[2]->isDefaultRevision());
+        $this->assertTrue($revisions[3]->isDefaultRevision());
+        $this->assertFalse($revisions[4]->isDefaultRevision());
+        $this->assertFalse($revisions[5]->isDefaultRevision());
 
-    $workspace_deleted = \Drupal::state()->get('workspace.deleted');
-    $this->assertCount(0, $workspace_deleted);
+        // Delete the workspace and check that only the two new pending revisions
+        // were deleted by the workspace purging process.
+        $workspace->delete();
 
-    // Check that the deleted workspace is no longer active.
-    $this->assertFalse($this->workspaceManager->hasActiveWorkspace());
-  }
-
-  /**
-   * Tests that deleting a workspace keeps its already published content.
-   */
-  public function testDeletingPublishedWorkspace(): void {
-    $admin = $this->createUser([
-      'administer nodes',
-      'create workspace',
-      'view own workspace',
-      'edit own workspace',
-      'delete own workspace',
-    ]);
-    $this->setCurrentUser($admin);
-
-    $live_workspace = Workspace::create([
-      'id' => 'live',
-      'label' => 'Live',
-    ]);
-    $live_workspace->save();
-    $workspace = Workspace::create([
-      'id' => 'stage',
-      'label' => 'Stage',
-    ]);
-    $workspace->save();
-    $this->workspaceManager->setActiveWorkspace($workspace);
-
-    // Create a new node in the 'stage' workspace.
-    $node = $this->createNode(['status' => TRUE]);
-
-    // Create an additional workspace-specific revision for the node.
-    $node->setNewRevision(TRUE);
-    $node->save();
-
-    // The node should have 3 revisions now: a default and 2 pending ones.
-    $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3]);
-    $this->assertCount(3, $revisions);
-    $this->assertTrue($revisions[1]->isDefaultRevision());
-    $this->assertFalse($revisions[2]->isDefaultRevision());
-    $this->assertFalse($revisions[3]->isDefaultRevision());
-
-    // Publish the workspace, which should mark revision 3 as the default one
-    // and keep revision 2 as a 'source' draft revision.
-    $workspace->publish();
-    $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3]);
-    $this->assertFalse($revisions[1]->isDefaultRevision());
-    $this->assertFalse($revisions[2]->isDefaultRevision());
-    $this->assertTrue($revisions[3]->isDefaultRevision());
-
-    // Create two new workspace-revisions for the node.
-    $node->setNewRevision(TRUE);
-    $node->save();
-    $node->setNewRevision(TRUE);
-    $node->save();
-
-    // The node should now have 5 revisions.
-    $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3, 4, 5]);
-    $this->assertFalse($revisions[1]->isDefaultRevision());
-    $this->assertFalse($revisions[2]->isDefaultRevision());
-    $this->assertTrue($revisions[3]->isDefaultRevision());
-    $this->assertFalse($revisions[4]->isDefaultRevision());
-    $this->assertFalse($revisions[5]->isDefaultRevision());
-
-    // Delete the workspace and check that only the two new pending revisions
-    // were deleted by the workspace purging process.
-    $workspace->delete();
-
-    $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3, 4, 5]);
-    $this->assertCount(3, $revisions);
-    $this->assertFalse($revisions[1]->isDefaultRevision());
-    $this->assertFalse($revisions[2]->isDefaultRevision());
-    $this->assertTrue($revisions[3]->isDefaultRevision());
-    $this->assertFalse(isset($revisions[4]));
-    $this->assertFalse(isset($revisions[5]));
-  }
-
-  /**
-   * Tests that a workspace with children can not be deleted.
-   */
-  public function testDeletingWorkspaceWithChildren(): void {
-    $stage = Workspace::create(['id' => 'stage', 'label' => 'Stage']);
-    $stage->save();
-
-    $dev = Workspace::create(['id' => 'dev', 'label' => 'Dev', 'parent' => 'stage']);
-    $dev->save();
-
-    // Check that a workspace which has children can not be deleted.
-    try {
-      $stage->delete();
-      $this->fail('The Stage workspace has children and should not be deletable.');
-    }
-    catch (EntityStorageException $e) {
-      $this->assertEquals('The Stage workspace can not be deleted because it has child workspaces.', $e->getMessage());
-      $this->assertNotNull(Workspace::load('stage'));
+        $revisions = $this->entityTypeManager->getStorage('node')->loadMultipleRevisions([1, 2, 3, 4, 5]);
+        $this->assertCount(3, $revisions);
+        $this->assertFalse($revisions[1]->isDefaultRevision());
+        $this->assertFalse($revisions[2]->isDefaultRevision());
+        $this->assertTrue($revisions[3]->isDefaultRevision());
+        $this->assertFalse(isset($revisions[4]));
+        $this->assertFalse(isset($revisions[5]));
     }
 
-    // Check that if we delete its child first, the parent workspace can also be
-    // deleted.
-    $dev->delete();
-    $stage->delete();
-    $this->assertNull(Workspace::load('dev'));
-    $this->assertNull(Workspace::load('stage'));
-  }
+    /**
+     * Tests that a workspace with children can not be deleted.
+     */
+    public function testDeletingWorkspaceWithChildren(): void
+    {
+        $stage = Workspace::create(['id' => 'stage', 'label' => 'Stage']);
+        $stage->save();
 
-  /**
-   * Tests loading the workspace tree when there are no workspaces available.
-   */
-  public function testEmptyWorkspaceTree(): void {
-    $tree = \Drupal::service('workspaces.repository')->loadTree();
-    $this->assertSame([], $tree);
-  }
+        $dev = Workspace::create(['id' => 'dev', 'label' => 'Dev', 'parent' => 'stage']);
+        $dev->save();
+
+        // Check that a workspace which has children can not be deleted.
+        try {
+            $stage->delete();
+            $this->fail('The Stage workspace has children and should not be deletable.');
+        } catch (EntityStorageException $e) {
+            $this->assertEquals('The Stage workspace can not be deleted because it has child workspaces.', $e->getMessage());
+            $this->assertNotNull(Workspace::load('stage'));
+        }
+
+        // Check that if we delete its child first, the parent workspace can also be
+        // deleted.
+        $dev->delete();
+        $stage->delete();
+        $this->assertNull(Workspace::load('dev'));
+        $this->assertNull(Workspace::load('stage'));
+    }
+
+    /**
+     * Tests loading the workspace tree when there are no workspaces available.
+     */
+    public function testEmptyWorkspaceTree(): void
+    {
+        $tree = \Drupal::service('workspaces.repository')->loadTree();
+        $this->assertSame([], $tree);
+    }
 
 }

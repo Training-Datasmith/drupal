@@ -1,48 +1,53 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form;
 
 /**
  * Custom exception to break out of AJAX form processing.
  */
-class FormAjaxException extends \Exception {
+class FormAjaxException extends \Exception
+{
+    /**
+     * Constructs a FormAjaxException object.
+     *
+     * @param array $form
+     *   The form definition.
+     * @param \Drupal\Core\Form\FormStateInterface $formState
+     *   The form state.
+     * @param string $message
+     *   (optional) The exception message.
+     * @param int $code
+     *   (optional) A user defined exception code.
+     * @param \Throwable $previous
+     *   (optional) The previous exception for nested exceptions.
+     */
+    public function __construct(protected array $form, protected \Drupal\Core\Form\FormStateInterface $formState, $message = '', $code = 0, ?\Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 
-  /**
-   * Constructs a FormAjaxException object.
-   *
-   * @param array $form
-   *   The form definition.
-   * @param \Drupal\Core\Form\FormStateInterface $formState
-   *   The form state.
-   * @param string $message
-   *   (optional) The exception message.
-   * @param int $code
-   *   (optional) A user defined exception code.
-   * @param \Throwable $previous
-   *   (optional) The previous exception for nested exceptions.
-   */
-  public function __construct(protected array $form, protected \Drupal\Core\Form\FormStateInterface $formState, $message = "", $code = 0, ?\Throwable $previous = NULL) {
-    parent::__construct($message, $code, $previous);
-  }
+    /**
+     * Gets the form definition.
+     *
+     * @return array
+     *   The form structure.
+     */
+    public function getForm()
+    {
+        return $this->form;
+    }
 
-  /**
-   * Gets the form definition.
-   *
-   * @return array
-   *   The form structure.
-   */
-  public function getForm() {
-    return $this->form;
-  }
-
-  /**
-   * Gets the form state.
-   *
-   * @return \Drupal\Core\Form\FormStateInterface
-   *   The current state of the form.
-   */
-  public function getFormState() {
-    return $this->formState;
-  }
+    /**
+     * Gets the form state.
+     *
+     * @return \Drupal\Core\Form\FormStateInterface
+     *   The current state of the form.
+     */
+    public function getFormState()
+    {
+        return $this->formState;
+    }
 
 }

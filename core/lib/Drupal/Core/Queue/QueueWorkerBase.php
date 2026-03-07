@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue;
 
 use Drupal\Component\Plugin\PluginBase;
@@ -14,6 +16,6 @@ use Drupal\Component\Plugin\PluginBase;
  *
  * @ingroup queue
  */
-abstract class QueueWorkerBase extends PluginBase implements QueueWorkerInterface {
-
+abstract class QueueWorkerBase extends PluginBase implements QueueWorkerInterface
+{
 }

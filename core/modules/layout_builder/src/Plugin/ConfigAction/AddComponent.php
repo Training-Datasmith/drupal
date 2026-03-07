@@ -8,10 +8,10 @@ use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\Action\Attribute\ConfigAction;
 use Drupal\Core\Config\Action\ConfigActionException;
 use Drupal\Core\Config\Action\ConfigActionPluginInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\layout_builder\Plugin\ConfigAction\Deriver\AddComponentDeriver;
 use Drupal\Core\Config\ConfigManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\layout_builder\Plugin\ConfigAction\Deriver\AddComponentDeriver;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -57,100 +57,103 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   This API is experimental.
  */
 #[ConfigAction(
-  id: 'add_layout_component',
-  admin_label: new TranslatableMarkup('Add component(s) to layout'),
-  deriver: AddComponentDeriver::class,
+    id: 'add_layout_component',
+    admin_label: new TranslatableMarkup('Add component(s) to layout'),
+    deriver: AddComponentDeriver::class,
 )]
-final readonly class AddComponent implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
-
-  public function __construct(
-    private ConfigManagerInterface $configManager,
-    private UuidInterface $uuidGenerator,
-    private string $pluginId,
-    private bool $multiple,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    assert(is_array($plugin_definition));
-    return new static(
-      $container->get(ConfigManagerInterface::class),
-      $container->get(UuidInterface::class),
-      $plugin_id,
-      $plugin_definition['multiple'],
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function apply(string $configName, mixed $values): void {
-    assert(is_array($values));
-
-    if ($this->multiple) {
-      assert(array_is_list($values));
-    }
-    else {
-      $values = [$values];
+final readonly class AddComponent implements ConfigActionPluginInterface, ContainerFactoryPluginInterface
+{
+    public function __construct(
+        private ConfigManagerInterface $configManager,
+        private UuidInterface $uuidGenerator,
+        private string $pluginId,
+        private bool $multiple,
+    ) {
     }
 
-    $entity = $this->configManager->loadConfigEntityByName($configName);
-    if (!$entity instanceof SectionListInterface) {
-      throw new ConfigActionException("No entity found for applying the addComponentToLayout action.");
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        assert(is_array($plugin_definition));
+        return new static(
+            $container->get(ConfigManagerInterface::class),
+            $container->get(UuidInterface::class),
+            $plugin_id,
+            $plugin_definition['multiple'],
+        );
     }
-    foreach ($values as $value) {
-      $this->applySingle($entity, $value);
-    }
-    $entity->save();
-  }
 
-  /**
-   * Adds a single component to the layout.
-   *
-   * @param \Drupal\layout_builder\SectionListInterface $entity
-   *   The entity with a layout.
-   * @param array $value
-   *   The data for the config action.
-   */
-  private function applySingle(SectionListInterface $entity, array $value): void {
-    $section_delta = $value['section'];
-    $position = $value['position'];
+    /**
+     * {@inheritdoc}
+     */
+    public function apply(string $configName, mixed $values): void
+    {
+        assert(is_array($values));
 
-    assert(is_int($section_delta));
-    assert(is_int($position));
+        if ($this->multiple) {
+            assert(array_is_list($values));
+        } else {
+            $values = [$values];
+        }
 
-    $section = $entity->getSection($section_delta);
-    $component = $value['component'];
-    $region = $component['default_region'] ?? NULL;
-    if (array_key_exists('region', $component) && is_array($component['region'])) {
-      // Since the recipe author might not know ahead of time what layout the
-      // section is using, they should supply a map whose keys are layout IDs
-      // and values are region names, so we know where to place this component.
-      // If the section layout ID is not in the map, they should supply the
-      // name of a fallback region. If all that fails, give up with an
-      // exception.
-      $region = $component['region'][$section->getLayoutId()] ??
-        $component['default_region'] ??
-        throw new ConfigActionException("Cannot determine which region of the section to place this component into, because no default region was provided.");
+        $entity = $this->configManager->loadConfigEntityByName($configName);
+        if (!$entity instanceof SectionListInterface) {
+            throw new ConfigActionException('No entity found for applying the addComponentToLayout action.');
+        }
+        foreach ($values as $value) {
+            $this->applySingle($entity, $value);
+        }
+        $entity->save();
     }
-    if ($region === NULL) {
-      throw new ConfigActionException("Cannot determine which region of the section to place this component into, because no region was provided.");
+
+    /**
+     * Adds a single component to the layout.
+     *
+     * @param \Drupal\layout_builder\SectionListInterface $entity
+     *   The entity with a layout.
+     * @param array $value
+     *   The data for the config action.
+     */
+    private function applySingle(SectionListInterface $entity, array $value): void
+    {
+        $section_delta = $value['section'];
+        $position = $value['position'];
+
+        assert(is_int($section_delta));
+        assert(is_int($position));
+
+        $section = $entity->getSection($section_delta);
+        $component = $value['component'];
+        $region = $component['default_region'] ?? null;
+        if (array_key_exists('region', $component) && is_array($component['region'])) {
+            // Since the recipe author might not know ahead of time what layout the
+            // section is using, they should supply a map whose keys are layout IDs
+            // and values are region names, so we know where to place this component.
+            // If the section layout ID is not in the map, they should supply the
+            // name of a fallback region. If all that fails, give up with an
+            // exception.
+            $region = $component['region'][$section->getLayoutId()] ??
+              $component['default_region'] ??
+              throw new ConfigActionException('Cannot determine which region of the section to place this component into, because no default region was provided.');
+        }
+        if ($region === null) {
+            throw new ConfigActionException('Cannot determine which region of the section to place this component into, because no region was provided.');
+        }
+        if (!isset($value['component']['configuration']) || !isset($value['component']['configuration']['id'])) {
+            throw new ConfigActionException('Cannot determine the component configuration, or misses a plugin ID.');
+        }
+        // If no weight were set, there would be a warning. So we set a
+        // default, which will be overridden in insertComponent anyway.
+        // We also need to generate the UUID here, or it could be null.
+        $uuid = $component['uuid'] ?? $this->uuidGenerator->generate();
+        $component = new SectionComponent($uuid, $region, $component['configuration'], $component['additional'] ?? []);
+        // If the position is higher than the number of components, just put it last
+        // instead of failing.
+        $position = min($position, count($section->getComponentsByRegion($region)));
+        $section->insertComponent($position, $component);
+        $entity->setSection($section_delta, $section);
     }
-    if (!isset($value['component']['configuration']) || !isset($value['component']['configuration']['id'])) {
-      throw new ConfigActionException("Cannot determine the component configuration, or misses a plugin ID.");
-    }
-    // If no weight were set, there would be a warning. So we set a
-    // default, which will be overridden in insertComponent anyway.
-    // We also need to generate the UUID here, or it could be null.
-    $uuid = $component['uuid'] ?? $this->uuidGenerator->generate();
-    $component = new SectionComponent($uuid, $region, $component['configuration'], $component['additional'] ?? []);
-    // If the position is higher than the number of components, just put it last
-    // instead of failing.
-    $position = min($position, count($section->getComponentsByRegion($region)));
-    $section->insertComponent($position, $component);
-    $entity->setSection($section_delta, $section);
-  }
 
 }

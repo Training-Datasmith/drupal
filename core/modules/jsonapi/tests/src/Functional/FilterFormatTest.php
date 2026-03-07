@@ -15,117 +15,121 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class FilterFormatTest extends ConfigEntityResourceTestBase {
+class FilterFormatTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['filter'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'filter_format';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'filter_format';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'filter_format--filter_format';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'filter_format--filter_format';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\filter\FilterFormatInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\filter\FilterFormatInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer filters']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer filters']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $pablo_format = FilterFormat::create([
-      'name' => 'Pablo Picasso',
-      'format' => 'pablo',
-      'langcode' => 'es',
-      'filters' => [
-        'filter_html' => [
-          'status' => TRUE,
-          'settings' => [
-            'allowed_html' => '<p> <a> <b> <lo>',
-          ],
-        ],
-      ],
-    ]);
-    $pablo_format->save();
-    return $pablo_format;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/filter_format/filter_format/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'filter_format--filter_format',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'dependencies' => [],
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $pablo_format = FilterFormat::create([
+          'name' => 'Pablo Picasso',
+          'format' => 'pablo',
+          'langcode' => 'es',
           'filters' => [
             'filter_html' => [
-              'id' => 'filter_html',
-              'provider' => 'filter',
-              'status' => TRUE,
-              'weight' => -10,
+              'status' => true,
               'settings' => [
                 'allowed_html' => '<p> <a> <b> <lo>',
-                'filter_html_help' => TRUE,
-                'filter_html_nofollow' => FALSE,
               ],
             ],
           ],
-          'langcode' => 'es',
-          'name' => 'Pablo Picasso',
-          'status' => TRUE,
-          'weight' => 0,
-          'drupal_internal__format' => 'pablo',
-        ],
-      ],
-    ];
-  }
+        ]);
+        $pablo_format->save();
+        return $pablo_format;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/filter_format/filter_format/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'filter_format--filter_format',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'dependencies' => [],
+              'filters' => [
+                'filter_html' => [
+                  'id' => 'filter_html',
+                  'provider' => 'filter',
+                  'status' => true,
+                  'weight' => -10,
+                  'settings' => [
+                    'allowed_html' => '<p> <a> <b> <lo>',
+                    'filter_html_help' => true,
+                    'filter_html_nofollow' => false,
+                  ],
+                ],
+              ],
+              'langcode' => 'es',
+              'name' => 'Pablo Picasso',
+              'status' => true,
+              'weight' => 0,
+              'drupal_internal__format' => 'pablo',
+            ],
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
 }

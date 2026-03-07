@@ -14,45 +14,45 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class CommentXmlAnonTest extends CommentResourceTestBase {
+class CommentXmlAnonTest extends CommentResourceTestBase
+{
+    use AnonResourceTestTrait;
+    use XmlEntityNormalizationQuirksTrait;
 
-  use AnonResourceTestTrait;
-  use XmlEntityNormalizationQuirksTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'xml';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'xml';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'text/xml; charset=utf-8';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'text/xml; charset=utf-8';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   *
-   * Anonymous users cannot edit their own comments.
-   *
-   * @see \Drupal\comment\CommentAccessControlHandler::checkAccess
-   *
-   * Therefore we grant them the 'administer comments' permission for the
-   * purpose of this test.
-   *
-   * @see ::setUpAuthorization
-   */
-  protected static $patchProtectedFieldNames = [
-    'pid',
-    'entity_id',
-    'changed',
-    'thread',
-    'entity_type',
-    'field_name',
-  ];
+    /**
+     * {@inheritdoc}
+     *
+     * Anonymous users cannot edit their own comments.
+     *
+     * @see \Drupal\comment\CommentAccessControlHandler::checkAccess
+     *
+     * Therefore we grant them the 'administer comments' permission for the
+     * purpose of this test.
+     *
+     * @see ::setUpAuthorization
+     */
+    protected static $patchProtectedFieldNames = [
+      'pid',
+      'entity_id',
+      'changed',
+      'thread',
+      'entity_type',
+      'field_name',
+    ];
 
 }

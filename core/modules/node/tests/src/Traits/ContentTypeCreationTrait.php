@@ -14,51 +14,50 @@ use PHPUnit\Framework\TestCase;
  *
  * This trait is meant to be used only by test classes.
  */
-trait ContentTypeCreationTrait {
+trait ContentTypeCreationTrait
+{
+    use BodyFieldCreationTrait;
 
-  use BodyFieldCreationTrait;
+    /**
+     * Creates a custom content type based on default settings.
+     *
+     * @param array $values
+     *   An array of settings to change from the defaults.
+     *   Example: 'type' => 'foo'.
+     * @param bool $create_body
+     *   Whether to create the body field.
+     *
+     * @return \Drupal\node\Entity\NodeType
+     *   Created content type.
+     */
+    protected function createContentType(array $values = [], bool $create_body = true)
+    {
+        // Find a non-existent random type name.
+        if (!isset($values['type'])) {
+            do {
+                $id = $this->randomMachineName(8);
+            } while (NodeType::load($id));
+        } else {
+            $id = $values['type'];
+        }
+        $values += [
+          'type' => $id,
+          'name' => $id,
+        ];
+        $type = NodeType::create($values);
+        $status = $type->save();
 
-  /**
-   * Creates a custom content type based on default settings.
-   *
-   * @param array $values
-   *   An array of settings to change from the defaults.
-   *   Example: 'type' => 'foo'.
-   * @param bool $create_body
-   *   Whether to create the body field.
-   *
-   * @return \Drupal\node\Entity\NodeType
-   *   Created content type.
-   */
-  protected function createContentType(array $values = [], bool $create_body = TRUE) {
-    // Find a non-existent random type name.
-    if (!isset($values['type'])) {
-      do {
-        $id = $this->randomMachineName(8);
-      } while (NodeType::load($id));
-    }
-    else {
-      $id = $values['type'];
-    }
-    $values += [
-      'type' => $id,
-      'name' => $id,
-    ];
-    $type = NodeType::create($values);
-    $status = $type->save();
+        if ($create_body) {
+            $this->createBodyField('node', $type->id());
+        }
 
-    if ($create_body) {
-      $this->createBodyField('node', $type->id());
-    }
+        if ($this instanceof TestCase) {
+            $this->assertSame($status, SAVED_NEW, (new FormattableMarkup('Created content type %type.', ['%type' => $type->id()]))->__toString());
+        } else {
+            $this->assertEquals(SAVED_NEW, $status, (new FormattableMarkup('Created content type %type.', ['%type' => $type->id()]))->__toString());
+        }
 
-    if ($this instanceof TestCase) {
-      $this->assertSame($status, SAVED_NEW, (new FormattableMarkup('Created content type %type.', ['%type' => $type->id()]))->__toString());
+        return $type;
     }
-    else {
-      $this->assertEquals(SAVED_NEW, $status, (new FormattableMarkup('Created content type %type.', ['%type' => $type->id()]))->__toString());
-    }
-
-    return $type;
-  }
 
 }

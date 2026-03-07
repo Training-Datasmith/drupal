@@ -10,5 +10,6 @@ namespace Drupal\Core\Config\Action;
  * @internal
  *   This API is experimental.
  */
-class DuplicateConfigActionIdException extends \RuntimeException {
+class DuplicateConfigActionIdException extends \RuntimeException
+{
 }

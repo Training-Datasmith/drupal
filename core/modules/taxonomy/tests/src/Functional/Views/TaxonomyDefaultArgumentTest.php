@@ -12,27 +12,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class TaxonomyDefaultArgumentTest extends TaxonomyTestBase {
+class TaxonomyDefaultArgumentTest extends TaxonomyTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['taxonomy_default_argument_test'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['taxonomy_default_argument_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests escaping of page title when the taxonomy plugin provides it.
-   */
-  public function testTermTitleEscaping(): void {
-    $this->term1->setName('<em>Markup</em>')->save();
-    $this->drupalGet('taxonomy_default_argument_test/' . $this->term1->id());
-    $this->assertSession()->assertEscaped($this->term1->label());
-  }
+    /**
+     * Tests escaping of page title when the taxonomy plugin provides it.
+     */
+    public function testTermTitleEscaping(): void
+    {
+        $this->term1->setName('<em>Markup</em>')->save();
+        $this->drupalGet('taxonomy_default_argument_test/' . $this->term1->id());
+        $this->assertSession()->assertEscaped($this->term1->label());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin;
 
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
@@ -25,5 +27,6 @@ use Drupal\Component\Plugin\Mapper\MapperInterface;
  *
  * @ingroup plugin_api
  */
-interface PluginManagerInterface extends DiscoveryInterface, FactoryInterface, MapperInterface {
+interface PluginManagerInterface extends DiscoveryInterface, FactoryInterface, MapperInterface
+{
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
@@ -30,72 +32,72 @@ use Drupal\Core\Entity\RevisionableEntityBundleInterface;
  *
  * @see \Drupal\media\MediaSourceInterface
  */
-interface MediaTypeInterface extends ConfigEntityInterface, EntityDescriptionInterface, RevisionableEntityBundleInterface {
+interface MediaTypeInterface extends ConfigEntityInterface, EntityDescriptionInterface, RevisionableEntityBundleInterface
+{
+    /**
+     * Returns whether thumbnail downloads are queued.
+     *
+     * When using remote media sources, the thumbnail generation could be a slow
+     * process. Using a queue allows for this process to be handled in the
+     * background.
+     *
+     * @return bool
+     *   TRUE if thumbnails are queued for download later, FALSE if they should be
+     *   downloaded now.
+     */
+    public function thumbnailDownloadsAreQueued();
 
-  /**
-   * Returns whether thumbnail downloads are queued.
-   *
-   * When using remote media sources, the thumbnail generation could be a slow
-   * process. Using a queue allows for this process to be handled in the
-   * background.
-   *
-   * @return bool
-   *   TRUE if thumbnails are queued for download later, FALSE if they should be
-   *   downloaded now.
-   */
-  public function thumbnailDownloadsAreQueued();
+    /**
+     * Sets a flag to indicate that thumbnails should be downloaded via a queue.
+     *
+     * @param bool $queue_thumbnail_downloads
+     *   The queue downloads flag.
+     *
+     * @return $this
+     */
+    public function setQueueThumbnailDownloadsStatus($queue_thumbnail_downloads);
 
-  /**
-   * Sets a flag to indicate that thumbnails should be downloaded via a queue.
-   *
-   * @param bool $queue_thumbnail_downloads
-   *   The queue downloads flag.
-   *
-   * @return $this
-   */
-  public function setQueueThumbnailDownloadsStatus($queue_thumbnail_downloads);
+    /**
+     * Returns the media source plugin.
+     *
+     * @return \Drupal\media\MediaSourceInterface
+     *   The media source.
+     */
+    public function getSource();
 
-  /**
-   * Returns the media source plugin.
-   *
-   * @return \Drupal\media\MediaSourceInterface
-   *   The media source.
-   */
-  public function getSource();
+    /**
+     * Sets whether new revisions should be created by default.
+     *
+     * @param bool $new_revision
+     *   TRUE if media items of this type should create new revisions by default.
+     *
+     * @return $this
+     */
+    public function setNewRevision($new_revision);
 
-  /**
-   * Sets whether new revisions should be created by default.
-   *
-   * @param bool $new_revision
-   *   TRUE if media items of this type should create new revisions by default.
-   *
-   * @return $this
-   */
-  public function setNewRevision($new_revision);
+    /**
+     * Returns the metadata field map.
+     *
+     * Field mapping allows site builders to map media item-related metadata to
+     * entity fields. This information will be used when saving a given media item
+     * and if metadata values will be available they are going to be automatically
+     * copied to the corresponding entity fields.
+     *
+     * @return array
+     *   Field mapping array provided by media source with metadata attribute
+     *   names as keys and entity field names as values.
+     */
+    public function getFieldMap();
 
-  /**
-   * Returns the metadata field map.
-   *
-   * Field mapping allows site builders to map media item-related metadata to
-   * entity fields. This information will be used when saving a given media item
-   * and if metadata values will be available they are going to be automatically
-   * copied to the corresponding entity fields.
-   *
-   * @return array
-   *   Field mapping array provided by media source with metadata attribute
-   *   names as keys and entity field names as values.
-   */
-  public function getFieldMap();
-
-  /**
-   * Sets the metadata field map.
-   *
-   * @param array $map
-   *   Field mapping array with metadata attribute names as keys and entity
-   *   field names as values.
-   *
-   * @return $this
-   */
-  public function setFieldMap(array $map);
+    /**
+     * Sets the metadata field map.
+     *
+     * @param array $map
+     *   Field mapping array with metadata attribute names as keys and entity
+     *   field names as values.
+     *
+     * @return $this
+     */
+    public function setFieldMap(array $map);
 
 }

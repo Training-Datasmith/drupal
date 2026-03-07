@@ -14,28 +14,29 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'shape_only_color_editable_widget' widget.
  */
 #[FieldWidget(
-  id: 'shape_only_color_editable_widget',
-  label: new TranslatableMarkup('Shape widget with only color editable property'),
-  field_types: ['shape'],
+    id: 'shape_only_color_editable_widget',
+    label: new TranslatableMarkup('Shape widget with only color editable property'),
+    field_types: ['shape'],
 )]
-class ShapeOnlyColorEditableWidget extends WidgetBase {
+class ShapeOnlyColorEditableWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)
+    {
+        $element['shape'] = [
+          '#type' => 'hidden',
+          '#value' => $items[$delta]->shape,
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $element['shape'] = [
-      '#type' => 'hidden',
-      '#value' => $items[$delta]->shape,
-    ];
+        $element['color'] = [
+          '#type' => 'textfield',
+          '#default_value' => $items[$delta]->color ?? null,
+          '#size' => 255,
+        ];
 
-    $element['color'] = [
-      '#type' => 'textfield',
-      '#default_value' => $items[$delta]->color ?? NULL,
-      '#size' => 255,
-    ];
-
-    return $element;
-  }
+        return $element;
+    }
 
 }

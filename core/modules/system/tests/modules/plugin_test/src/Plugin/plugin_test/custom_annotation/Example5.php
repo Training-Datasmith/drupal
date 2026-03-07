@@ -16,7 +16,9 @@ use Drupal\plugin_test\Plugin\Attribute\PluginExample;
  */
 #[\Attribute]
 #[PluginExample(
-  id: "example_5",
-  custom: "Example 5"
+    id: 'example_5',
+    custom: 'Example 5'
 )]
-class Example5 {}
+class Example5
+{
+}

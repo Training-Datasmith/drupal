@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Hook\Order;
 
@@ -24,19 +24,19 @@ use Drupal\Core\Hook\OrderOperation\OrderOperation;
  *   #[Hook('custom_hook', order: new OrderBefore(['other_module']))]
  *   @endcode
  */
-interface OrderInterface {
-
-  /**
-   * Gets order operations specified by this object.
-   *
-   * @param string $identifier
-   *   Identifier of the implementation to move to a new position. The format
-   *   is the class followed by "::" then the method name. For example,
-   *   "Drupal\my_module\Hook\MyModuleHooks::methodName".
-   *
-   * @return \Drupal\Core\Hook\OrderOperation\OrderOperation
-   *   Order operation to apply to a hook implementation list.
-   */
-  public function getOperation(string $identifier): OrderOperation;
+interface OrderInterface
+{
+    /**
+     * Gets order operations specified by this object.
+     *
+     * @param string $identifier
+     *   Identifier of the implementation to move to a new position. The format
+     *   is the class followed by "::" then the method name. For example,
+     *   "Drupal\my_module\Hook\MyModuleHooks::methodName".
+     *
+     * @return \Drupal\Core\Hook\OrderOperation\OrderOperation
+     *   Order operation to apply to a hook implementation list.
+     */
+    public function getOperation(string $identifier): OrderOperation;
 
 }

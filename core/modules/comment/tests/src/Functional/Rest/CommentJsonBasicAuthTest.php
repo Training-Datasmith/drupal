@@ -14,33 +14,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('rest')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class CommentJsonBasicAuthTest extends CommentResourceTestBase {
+class CommentJsonBasicAuthTest extends CommentResourceTestBase
+{
+    use BasicAuthResourceTestTrait;
 
-  use BasicAuthResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['basic_auth'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['basic_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'basic_auth';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'basic_auth';
 
 }

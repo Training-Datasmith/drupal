@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Cacheable response used for testing.
  */
-class CacheableTestResponse extends Response implements CacheableResponseInterface {
-
-  use CacheableResponseTrait;
+class CacheableTestResponse extends Response implements CacheableResponseInterface
+{
+    use CacheableResponseTrait;
 
 }

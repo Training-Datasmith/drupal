@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -40,15 +42,16 @@ use Drupal\migrate\Attribute\MigrateDestination;
  * entity type with options defined by the "options" constant.
  */
 #[MigrateDestination('component_entity_form_display')]
-class PerComponentEntityFormDisplay extends ComponentEntityDisplayBase {
+class PerComponentEntityFormDisplay extends ComponentEntityDisplayBase
+{
+    public const MODE_NAME = 'form_mode';
 
-  const MODE_NAME = 'form_mode';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntity($entity_type, $bundle, $form_mode) {
-    return $this->entityDisplayRepository->getFormDisplay($entity_type, $bundle, $form_mode);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntity($entity_type, $bundle, $form_mode)
+    {
+        return $this->entityDisplayRepository->getFormDisplay($entity_type, $bundle, $form_mode);
+    }
 
 }

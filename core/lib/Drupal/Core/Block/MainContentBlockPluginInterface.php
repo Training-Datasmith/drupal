@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Block;
 
 /**
@@ -9,14 +11,14 @@ namespace Drupal\Core\Block;
  *
  * @ingroup block_api
  */
-interface MainContentBlockPluginInterface extends BlockPluginInterface {
-
-  /**
-   * Sets the main content render array.
-   *
-   * @param array $main_content
-   *   The render array representing the main content.
-   */
-  public function setMainContent(array $main_content);
+interface MainContentBlockPluginInterface extends BlockPluginInterface
+{
+    /**
+     * Sets the main content render array.
+     *
+     * @param array $main_content
+     *   The render array representing the main content.
+     */
+    public function setMainContent(array $main_content);
 
 }

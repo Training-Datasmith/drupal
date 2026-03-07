@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -25,14 +27,13 @@
 
 namespace Drupal\Component\Annotation\Doctrine\Annotation;
 
+use function array_keys;
+
+use function implode;
+
 use InvalidArgumentException;
 
-use function array_keys;
-use function get_class;
-use function gettype;
-use function implode;
 use function is_array;
-use function is_object;
 use function is_string;
 use function sprintf;
 

@@ -14,39 +14,40 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('announcements_feed')]
 #[RunTestsInSeparateProcesses]
-final class AnnouncementsCacheTest extends BrowserTestBase {
+final class AnnouncementsCacheTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'announcements_feed',
+      'dynamic_page_cache',
+      'node',
+      'toolbar',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'announcements_feed',
-    'dynamic_page_cache',
-    'node',
-    'toolbar',
-  ];
-
-  /**
-   * Tests dynamic page cache.
-   */
-  public function testDynamicPageCache(): void {
-    $node_type = $this->drupalCreateContentType();
-    $node = $this->drupalCreateNode(['type' => $node_type->id()]);
-    $this->drupalLogin($this->drupalCreateUser([
-      'access toolbar',
-      'access announcements',
-    ]));
-    $this->drupalGet($node->toUrl());
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
-    // Reload the page, it should be cached now.
-    $this->drupalGet($node->toUrl());
-    $this->assertSession()->elementExists('css', '[data-drupal-announce-trigger]');
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
-  }
+    /**
+     * Tests dynamic page cache.
+     */
+    public function testDynamicPageCache(): void
+    {
+        $node_type = $this->drupalCreateContentType();
+        $node = $this->drupalCreateNode(['type' => $node_type->id()]);
+        $this->drupalLogin($this->drupalCreateUser([
+          'access toolbar',
+          'access announcements',
+        ]));
+        $this->drupalGet($node->toUrl());
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
+        // Reload the page, it should be cached now.
+        $this->drupalGet($node->toUrl());
+        $this->assertSession()->elementExists('css', '[data-drupal-announce-trigger]');
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
+    }
 
 }

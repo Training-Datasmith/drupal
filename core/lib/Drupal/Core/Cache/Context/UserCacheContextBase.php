@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Core\Cache\Context;
+declare(strict_types=1);
 
-use Drupal\Core\Session\AccountInterface;
+namespace Drupal\Core\Cache\Context;
 
 /**
  * Base class for user-based cache contexts.
@@ -11,16 +11,16 @@ use Drupal\Core\Session\AccountInterface;
  * \Drupal\Core\Cache\Context\CacheContextInterface or
  * \Drupal\Core\Cache\Context\CalculatedCacheContextInterface.
  */
-abstract class UserCacheContextBase {
-
-  /**
-   * Constructs a new UserCacheContextBase class.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $user
-   *   The current user.
-   */
-  public function __construct(protected \Drupal\Core\Session\AccountInterface $user)
-  {
-  }
+abstract class UserCacheContextBase
+{
+    /**
+     * Constructs a new UserCacheContextBase class.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $user
+     *   The current user.
+     */
+    public function __construct(protected \Drupal\Core\Session\AccountInterface $user)
+    {
+    }
 
 }

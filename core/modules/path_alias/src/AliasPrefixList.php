@@ -1,126 +1,134 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path_alias;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheCollector;
 use Drupal\Core\Lock\LockBackendInterface;
-use Drupal\Core\State\StateInterface;
 
 /**
  * Cache a list of valid alias prefixes.
  */
-class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface {
-
-  /**
-   * Constructs an AliasPrefixList object.
-   *
-   * @param string $cid
-   *   The cache id to use.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache backend.
-   * @param \Drupal\Core\Lock\LockBackendInterface $lock
-   *   The lock backend.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state keyvalue store.
-   * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
-   *   The path alias repository.
-   */
-  public function __construct($cid, CacheBackendInterface $cache, LockBackendInterface $lock, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository) {
-    parent::__construct($cid, $cache, $lock);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function lazyLoadCache() {
-    parent::lazyLoadCache();
-
-    // On a cold start $this->storage will be empty and the prefix list will
-    // need to be rebuilt from scratch. The prefix list is initialized from the
-    // list of all valid path roots stored in the 'router.path_roots' state,
-    // with values initialized to NULL. During the request, each path requested
-    // that matches one of these keys will be looked up and the array value set
-    // to either TRUE or FALSE. This ensures that paths which do not exist in
-    // the router are not looked up, and that paths that do exist in the router
-    // are only looked up once.
-    if (empty($this->storage)) {
-      $this->loadMenuPathRoots();
+class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface
+{
+    /**
+     * Constructs an AliasPrefixList object.
+     *
+     * @param string $cid
+     *   The cache id to use.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+     *   The cache backend.
+     * @param \Drupal\Core\Lock\LockBackendInterface $lock
+     *   The lock backend.
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state keyvalue store.
+     * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
+     *   The path alias repository.
+     */
+    public function __construct($cid, CacheBackendInterface $cache, LockBackendInterface $lock, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository)
+    {
+        parent::__construct($cid, $cache, $lock);
     }
-  }
 
-  /**
-   * Loads menu path roots to prepopulate cache.
-   */
-  protected function loadMenuPathRoots() {
-    if ($roots = $this->state->get('router.path_roots')) {
-      foreach ($roots as $root) {
+    /**
+     * {@inheritdoc}
+     */
+    protected function lazyLoadCache()
+    {
+        parent::lazyLoadCache();
+
+        // On a cold start $this->storage will be empty and the prefix list will
+        // need to be rebuilt from scratch. The prefix list is initialized from the
+        // list of all valid path roots stored in the 'router.path_roots' state,
+        // with values initialized to NULL. During the request, each path requested
+        // that matches one of these keys will be looked up and the array value set
+        // to either TRUE or FALSE. This ensures that paths which do not exist in
+        // the router are not looked up, and that paths that do exist in the router
+        // are only looked up once.
+        if (empty($this->storage)) {
+            $this->loadMenuPathRoots();
+        }
+    }
+
+    /**
+     * Loads menu path roots to prepopulate cache.
+     */
+    protected function loadMenuPathRoots()
+    {
+        if ($roots = $this->state->get('router.path_roots')) {
+            foreach ($roots as $root) {
+                // Paths in Drupal are case-insensitive.
+                $root = mb_strtolower((string) $root);
+                $this->storage[$root] = null;
+                $this->persist($root);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($offset)
+    {
+        $this->lazyLoadCache();
         // Paths in Drupal are case-insensitive.
-        $root = mb_strtolower((string) $root);
-        $this->storage[$root] = NULL;
+        $offset = mb_strtolower($offset);
+        // This may be called with paths that are not represented by menu router
+        // items such as paths that will be rewritten by hook_url_outbound_alter().
+        // Therefore internally TRUE is used to indicate valid paths. FALSE is
+        // used to indicate paths that have already been checked but are not
+        // valid, and NULL indicates paths that have not been checked yet.
+        if (isset($this->storage[$offset])) {
+            if ($this->storage[$offset]) {
+                return true;
+            }
+        } elseif (array_key_exists($offset, $this->storage)) {
+            return $this->resolveCacheMiss($offset);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has($key)
+    {
+        // Paths in Drupal are case-insensitive.
+        return parent::has(mb_strtolower($key));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value): void
+    {
+        // Paths in Drupal are case-insensitive.
+        parent::set(mb_strtolower($key), $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function resolveCacheMiss($root)
+    {
+        // Paths in Drupal are case-insensitive.
+        $root = mb_strtolower($root);
+        $exists = $this->pathAliasRepository->pathHasMatchingAlias('/' . $root);
+        $this->storage[$root] = $exists;
         $this->persist($root);
-      }
+        if ($exists) {
+            return true;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($offset) {
-    $this->lazyLoadCache();
-    // Paths in Drupal are case-insensitive.
-    $offset = mb_strtolower($offset);
-    // This may be called with paths that are not represented by menu router
-    // items such as paths that will be rewritten by hook_url_outbound_alter().
-    // Therefore internally TRUE is used to indicate valid paths. FALSE is
-    // used to indicate paths that have already been checked but are not
-    // valid, and NULL indicates paths that have not been checked yet.
-    if (isset($this->storage[$offset])) {
-      if ($this->storage[$offset]) {
-        return TRUE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(): void
+    {
+        parent::clear();
+        $this->loadMenuPathRoots();
     }
-    elseif (array_key_exists($offset, $this->storage)) {
-      return $this->resolveCacheMiss($offset);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function has($key) {
-    // Paths in Drupal are case-insensitive.
-    return parent::has(mb_strtolower($key));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($key, $value): void {
-    // Paths in Drupal are case-insensitive.
-    parent::set(mb_strtolower($key), $value);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function resolveCacheMiss($root) {
-    // Paths in Drupal are case-insensitive.
-    $root = mb_strtolower($root);
-    $exists = $this->pathAliasRepository->pathHasMatchingAlias('/' . $root);
-    $this->storage[$root] = $exists;
-    $this->persist($root);
-    if ($exists) {
-      return TRUE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function clear(): void {
-    parent::clear();
-    $this->loadMenuPathRoots();
-  }
 
 }

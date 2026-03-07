@@ -11,6 +11,6 @@ namespace Drupal\Core\Extension;
  *
  * @internal
  */
-final class ProceduralCall {
-
+final class ProceduralCall
+{
 }

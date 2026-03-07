@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\TypedData\ComplexDataInterface;
@@ -13,19 +15,20 @@ use Symfony\Component\Validator\Constraints\IsNullValidator;
  *
  * Overrides the symfony validator to handle empty Typed Data structures.
  */
-class IsNullConstraintValidator extends IsNullValidator {
+class IsNullConstraintValidator extends IsNullValidator
+{
+    use TypedDataAwareValidatorTrait;
 
-  use TypedDataAwareValidatorTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    $typed_data = $this->getTypedData();
-    if (($typed_data instanceof ListInterface || $typed_data instanceof ComplexDataInterface) && $typed_data->isEmpty()) {
-      $value = NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        $typed_data = $this->getTypedData();
+        if (($typed_data instanceof ListInterface || $typed_data instanceof ComplexDataInterface) && $typed_data->isEmpty()) {
+            $value = null;
+        }
+        parent::validate($value, $constraint);
     }
-    parent::validate($value, $constraint);
-  }
 
 }

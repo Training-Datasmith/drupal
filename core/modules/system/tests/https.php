@@ -20,14 +20,14 @@ $autoloader = require_once 'autoload.php';
 // Change to HTTPS.
 $_SERVER['HTTPS'] = 'on';
 foreach ($_SERVER as &$value) {
-  if (!is_string($value)) {
-    continue;
-  }
-  $value = str_replace('core/modules/system/tests/https.php', 'index.php', $value);
-  $value = str_replace('http://', 'https://', $value);
+    if (!is_string($value)) {
+        continue;
+    }
+    $value = str_replace('core/modules/system/tests/https.php', 'index.php', $value);
+    $value = str_replace('http://', 'https://', $value);
 }
 
-$kernel = new TestKernel('testing', $autoloader, TRUE);
+$kernel = new TestKernel('testing', $autoloader, true);
 
 $request = Request::createFromGlobals();
 $response = $kernel->handle($request);

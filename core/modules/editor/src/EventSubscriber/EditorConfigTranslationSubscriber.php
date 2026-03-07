@@ -1,55 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor\EventSubscriber;
 
 use Drupal\config_translation\ConfigEntityMapperInterface;
 use Drupal\config_translation\Event\ConfigMapperPopulateEvent;
 use Drupal\config_translation\Event\ConfigTranslationEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
  * Adds configuration names to configuration mapper on POPULATE_MAPPER event.
  */
-class EditorConfigTranslationSubscriber implements EventSubscriberInterface {
-
-  /**
-   * EditorConfigTranslationSubscriber constructor.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The factory for configuration objects.
-   */
-  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events = [];
-    if (class_exists(\Drupal\config_translation\Event\ConfigTranslationEvents::class)) {
-      $events[ConfigTranslationEvents::POPULATE_MAPPER][] = ['addConfigNames'];
+class EditorConfigTranslationSubscriber implements EventSubscriberInterface
+{
+    /**
+     * EditorConfigTranslationSubscriber constructor.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The factory for configuration objects.
+     */
+    public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
+    {
     }
-    return $events;
-  }
 
-  /**
-   * Reacts to the populating of a configuration mapper.
-   *
-   * @param \Drupal\config_translation\Event\ConfigMapperPopulateEvent $event
-   *   The configuration mapper event.
-   */
-  public function addConfigNames(ConfigMapperPopulateEvent $event): void {
-    $mapper = $event->getMapper();
-    if ($mapper instanceof ConfigEntityMapperInterface && $mapper->getType() == 'filter_format') {
-      $editor_config_name = 'editor.editor.' . $mapper->getEntity()->id();
-      // Only add the text editor config if it exists, otherwise we assume no
-      // editor has been set for this text format.
-      if (!$this->configFactory->get($editor_config_name)->isNew()) {
-        $mapper->addConfigName($editor_config_name);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events = [];
+        if (class_exists(\Drupal\config_translation\Event\ConfigTranslationEvents::class)) {
+            $events[ConfigTranslationEvents::POPULATE_MAPPER][] = ['addConfigNames'];
+        }
+        return $events;
     }
-  }
+
+    /**
+     * Reacts to the populating of a configuration mapper.
+     *
+     * @param \Drupal\config_translation\Event\ConfigMapperPopulateEvent $event
+     *   The configuration mapper event.
+     */
+    public function addConfigNames(ConfigMapperPopulateEvent $event): void
+    {
+        $mapper = $event->getMapper();
+        if ($mapper instanceof ConfigEntityMapperInterface && $mapper->getType() == 'filter_format') {
+            $editor_config_name = 'editor.editor.' . $mapper->getEntity()->id();
+            // Only add the text editor config if it exists, otherwise we assume no
+            // editor has been set for this text format.
+            if (!$this->configFactory->get($editor_config_name)->isNew()) {
+                $mapper->addConfigName($editor_config_name);
+            }
+        }
+    }
 
 }

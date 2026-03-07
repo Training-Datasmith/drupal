@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -10,107 +12,112 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'file_video' formatter.
  */
 #[FieldFormatter(
-  id: 'file_video',
-  label: new TranslatableMarkup('Video'),
-  description: new TranslatableMarkup('Display the file using an HTML5 video tag.'),
-  field_types: [
+    id: 'file_video',
+    label: new TranslatableMarkup('Video'),
+    description: new TranslatableMarkup('Display the file using an HTML5 video tag.'),
+    field_types: [
     'file',
   ],
 )]
-class FileVideoFormatter extends FileMediaFormatterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getMediaType(): string {
-    return 'video';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'muted' => FALSE,
-      'playsinline' => FALSE,
-      'width' => 640,
-      'height' => 480,
-    ] + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    return parent::settingsForm($form, $form_state) + [
-      'muted' => [
-        '#title' => $this->t('Muted'),
-        '#type' => 'checkbox',
-        '#default_value' => $this->getSetting('muted'),
-      ],
-      'playsinline' => [
-        '#title' => $this->t('Plays Inline'),
-        '#type' => 'checkbox',
-        '#default_value' => $this->getSetting('playsinline'),
-      ],
-      'width' => [
-        '#type' => 'number',
-        '#title' => $this->t('Width'),
-        '#default_value' => $this->getSetting('width'),
-        '#size' => 5,
-        '#maxlength' => 5,
-        '#field_suffix' => $this->t('pixels'),
-        // A width of zero pixels would make this video invisible.
-        '#min' => 1,
-      ],
-      'height' => [
-        '#type' => 'number',
-        '#title' => $this->t('Height'),
-        '#default_value' => $this->getSetting('height'),
-        '#size' => 5,
-        '#maxlength' => 5,
-        '#field_suffix' => $this->t('pixels'),
-        // A height of zero pixels would make this video invisible.
-        '#min' => 1,
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
-    $summary[] = $this->t('Muted: %muted', ['%muted' => $this->getSetting('muted') ? $this->t('yes') : $this->t('no')]);
-    $summary[] = $this->t('Plays Inline: %playsinline', ['%playsinline' => $this->getSetting('playsinline') ? $this->t('yes') : $this->t('no')]);
-
-    if ($width = $this->getSetting('width')) {
-      $summary[] = $this->t('Width: %width pixels', [
-        '%width' => $width,
-      ]);
+class FileVideoFormatter extends FileMediaFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getMediaType(): string
+    {
+        return 'video';
     }
 
-    if ($height = $this->getSetting('height')) {
-      $summary[] = $this->t('Height: %height pixels', [
-        '%height' => $height,
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+          'muted' => false,
+          'playsinline' => false,
+          'width' => 640,
+          'height' => 480,
+        ] + parent::defaultSettings();
     }
 
-    return $summary;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        return parent::settingsForm($form, $form_state) + [
+          'muted' => [
+            '#title' => $this->t('Muted'),
+            '#type' => 'checkbox',
+            '#default_value' => $this->getSetting('muted'),
+          ],
+          'playsinline' => [
+            '#title' => $this->t('Plays Inline'),
+            '#type' => 'checkbox',
+            '#default_value' => $this->getSetting('playsinline'),
+          ],
+          'width' => [
+            '#type' => 'number',
+            '#title' => $this->t('Width'),
+            '#default_value' => $this->getSetting('width'),
+            '#size' => 5,
+            '#maxlength' => 5,
+            '#field_suffix' => $this->t('pixels'),
+            // A width of zero pixels would make this video invisible.
+            '#min' => 1,
+          ],
+          'height' => [
+            '#type' => 'number',
+            '#title' => $this->t('Height'),
+            '#default_value' => $this->getSetting('height'),
+            '#size' => 5,
+            '#maxlength' => 5,
+            '#field_suffix' => $this->t('pixels'),
+            // A height of zero pixels would make this video invisible.
+            '#min' => 1,
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareAttributes(array $additional_attributes = []) {
-    $attributes = parent::prepareAttributes(['muted', 'playsinline']);
-    if (($width = $this->getSetting('width'))) {
-      $attributes->setAttribute('width', $width);
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary()
+    {
+        $summary = parent::settingsSummary();
+        $summary[] = $this->t('Muted: %muted', ['%muted' => $this->getSetting('muted') ? $this->t('yes') : $this->t('no')]);
+        $summary[] = $this->t('Plays Inline: %playsinline', ['%playsinline' => $this->getSetting('playsinline') ? $this->t('yes') : $this->t('no')]);
+
+        if ($width = $this->getSetting('width')) {
+            $summary[] = $this->t('Width: %width pixels', [
+              '%width' => $width,
+            ]);
+        }
+
+        if ($height = $this->getSetting('height')) {
+            $summary[] = $this->t('Height: %height pixels', [
+              '%height' => $height,
+            ]);
+        }
+
+        return $summary;
     }
-    if (($height = $this->getSetting('height'))) {
-      $attributes->setAttribute('height', $height);
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareAttributes(array $additional_attributes = [])
+    {
+        $attributes = parent::prepareAttributes(['muted', 'playsinline']);
+        if (($width = $this->getSetting('width'))) {
+            $attributes->setAttribute('width', $width);
+        }
+        if (($height = $this->getSetting('height'))) {
+            $attributes->setAttribute('height', $height);
+        }
+        return $attributes;
     }
-    return $attributes;
-  }
 
 }

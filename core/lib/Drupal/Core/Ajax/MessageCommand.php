@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -39,7 +41,7 @@ use Drupal\Core\Asset\AttachedAssets;
  *   $response->addCommand(new MessageCommand('Hey look over here.', NULL, ['type' => 'error'], FALSE));
  * @endcode
  *
- * Developers should take care when using MessageCommand and AnnounceCommand 
+ * Developers should take care when using MessageCommand and AnnounceCommand
  * together in the same AJAX response. Unless the "announce" option is set to
  * an empty string (''), this command will result in the message being
  * announced to screen readers. When combined with AnnounceCommand, this may
@@ -55,7 +57,7 @@ use Drupal\Core\Asset\AttachedAssets;
  * @endcode
  *
  * If you wish to set the announcement priority to assertive, you can do that
- * this way: 
+ * this way:
  * @code
  *   $response->addCommand(new MessageCommand('You added 3 cat pics.', '.js-media-library-messages', [
  *     'priority' => 'assertive',
@@ -67,62 +69,63 @@ use Drupal\Core\Asset\AttachedAssets;
  *
  * @ingroup ajax
  */
-class MessageCommand implements CommandInterface, CommandWithAttachedAssetsInterface {
+class MessageCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+{
+    /**
+     * Constructs a MessageCommand object.
+     *
+     * @param string|\Drupal\Component\Render\MarkupInterface $message
+     *   The text of the message.
+     * @param string|null $wrapperQuerySelector
+     *   The query selector of the element to display messages in when they
+     *   should be displayed somewhere other than the default.
+     *   @see Drupal.Message.defaultWrapper()
+     * @param array $options
+     *   The options passed to Drupal.message().add().
+     * @param bool $clearPrevious
+     *   If TRUE, previous messages will be cleared first.
+     */
+    public function __construct(
+        /**
+         * The message text.
+         */
+        protected $message,
+        /**
+         * The query selector for the element the message will appear in.
+         */
+        protected $wrapperQuerySelector = null,
+        protected array $options = [],
+        /**
+         * Whether to clear previous messages.
+         */
+        protected $clearPrevious = true
+    ) {
+    }
 
-  /**
-   * Constructs a MessageCommand object.
-   *
-   * @param string|\Drupal\Component\Render\MarkupInterface $message
-   *   The text of the message.
-   * @param string|null $wrapperQuerySelector
-   *   The query selector of the element to display messages in when they
-   *   should be displayed somewhere other than the default.
-   *   @see Drupal.Message.defaultWrapper()
-   * @param array $options
-   *   The options passed to Drupal.message().add().
-   * @param bool $clearPrevious
-   *   If TRUE, previous messages will be cleared first.
-   */
-  public function __construct(
-      /**
-       * The message text.
-       */
-      protected $message,
-      /**
-       * The query selector for the element the message will appear in.
-       */
-      protected $wrapperQuerySelector = NULL,
-      protected array $options = [],
-      /**
-       * Whether to clear previous messages.
-       */
-      protected $clearPrevious = TRUE
-  )
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'message',
+          'message' => $this->message instanceof MarkupInterface
+            ? (string) $this->message
+            : Xss::filterAdmin($this->message),
+          'messageWrapperQuerySelector' => $this->wrapperQuerySelector,
+          'messageOptions' => $this->options,
+          'clearPrevious' => $this->clearPrevious,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'message',
-      'message' => $this->message instanceof MarkupInterface
-        ? (string) $this->message
-        : Xss::filterAdmin($this->message),
-      'messageWrapperQuerySelector' => $this->wrapperQuerySelector,
-      'messageOptions' => $this->options,
-      'clearPrevious' => $this->clearPrevious,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets {
-    $assets = new AttachedAssets();
-    $assets->setLibraries(['core/drupal.message']);
-    return $assets;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets
+    {
+        $assets = new AttachedAssets();
+        $assets->setLibraries(['core/drupal.message']);
+        return $assets;
+    }
 
 }

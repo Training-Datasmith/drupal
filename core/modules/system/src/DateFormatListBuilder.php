@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -16,59 +18,62 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\system\Entity\DateFormat
  */
-class DateFormatListBuilder extends ConfigEntityListBuilder {
+class DateFormatListBuilder extends ConfigEntityListBuilder
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Constructs a new DateFormatListBuilder object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+     *   The entity storage class.
+     * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+     *   The date formatter service.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(
+        EntityTypeInterface $entity_type,
+        EntityStorageInterface $storage,
+        protected DateFormatterInterface $dateFormatter,
+        protected TimeInterface $time,
+    ) {
+        parent::__construct($entity_type, $storage);
+    }
 
-  /**
-   * Constructs a new DateFormatListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(
-    EntityTypeInterface $entity_type,
-    EntityStorageInterface $storage,
-    protected DateFormatterInterface $dateFormatter,
-    protected TimeInterface $time,
-  ) {
-    parent::__construct($entity_type, $storage);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager')->getStorage($entity_type->id()),
+            $container->get('date.formatter'),
+            $container->get('datetime.time'),
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter'),
-      $container->get('datetime.time'),
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['label'] = $this->t('Name');
+        $header['pattern'] = $this->t('Pattern');
+        return $header + parent::buildHeader();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['label'] = $this->t('Name');
-    $header['pattern'] = $this->t('Pattern');
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
-    $row['pattern'] = $this->dateFormatter->format($this->time->getRequestTime(), $entity->id());
-    return $row + parent::buildRow($entity);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['label'] = $entity->label();
+        $row['pattern'] = $this->dateFormatter->format($this->time->getRequestTime(), $entity->id());
+        return $row + parent::buildRow($entity);
+    }
 
 }

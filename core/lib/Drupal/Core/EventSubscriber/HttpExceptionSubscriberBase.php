@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -52,77 +54,79 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * All other core-provided exception handlers have negative priorities so most
  * module-provided listeners will naturally take precedence over them.
  */
-abstract class HttpExceptionSubscriberBase implements EventSubscriberInterface {
+abstract class HttpExceptionSubscriberBase implements EventSubscriberInterface
+{
+    /**
+     * Specifies the request formats this subscriber will respond to.
+     *
+     * @return array
+     *   An indexed array of the format machine names that this subscriber will
+     *   attempt to process, such as "html" or "json". Returning an empty array
+     *   will apply to all formats.
+     *
+     * @see \Symfony\Component\HttpFoundation\Request
+     */
+    abstract protected function getHandledFormats();
 
-  /**
-   * Specifies the request formats this subscriber will respond to.
-   *
-   * @return array
-   *   An indexed array of the format machine names that this subscriber will
-   *   attempt to process, such as "html" or "json". Returning an empty array
-   *   will apply to all formats.
-   *
-   * @see \Symfony\Component\HttpFoundation\Request
-   */
-  abstract protected function getHandledFormats();
-
-  /**
-   * Specifies the priority of all listeners in this class.
-   *
-   * The default priority is 1, which is very low. To have listeners that have
-   * a "first attempt" at handling exceptions return a higher priority.
-   *
-   * @return int
-   *   The event priority of this subscriber.
-   */
-  protected static function getPriority() {
-    return 0;
-  }
-
-  /**
-   * Handles errors for this subscriber.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The event to process.
-   */
-  public function onException(ExceptionEvent $event): void {
-    $exception = $event->getThrowable();
-
-    // Make the exception available for example when rendering a block.
-    $request = $event->getRequest();
-    $request->attributes->set('exception', $exception);
-
-    $handled_formats = $this->getHandledFormats();
-
-    $format = $request->query->get(MainContentViewSubscriber::WRAPPER_FORMAT, $request->getRequestFormat());
-
-    if ($exception instanceof HttpExceptionInterface && (empty($handled_formats) || in_array($format, $handled_formats))) {
-      $method = 'on' . $exception->getStatusCode();
-      // Keep just the leading number of the status code to produce either a
-      // 400 or a 500 method callback.
-      $method_fallback = 'on' . substr((string) $exception->getStatusCode(), 0, 1) . 'xx';
-      // We want to allow the method to be called and still not set a response
-      // if it has additional filtering logic to determine when it will apply.
-      // It is therefore the method's responsibility to set the response on the
-      // event if appropriate.
-      if (method_exists($this, $method)) {
-        $this->$method($event);
-      }
-      elseif (method_exists($this, $method_fallback)) {
-        $this->$method_fallback($event);
-      }
+    /**
+     * Specifies the priority of all listeners in this class.
+     *
+     * The default priority is 1, which is very low. To have listeners that have
+     * a "first attempt" at handling exceptions return a higher priority.
+     *
+     * @return int
+     *   The event priority of this subscriber.
+     */
+    protected static function getPriority()
+    {
+        return 0;
     }
-  }
 
-  /**
-   * Registers the methods in this class that should be listeners.
-   *
-   * @return array
-   *   An array of event listener definitions.
-   */
-  public static function getSubscribedEvents(): array {
-    $events[KernelEvents::EXCEPTION][] = ['onException', static::getPriority()];
-    return $events;
-  }
+    /**
+     * Handles errors for this subscriber.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+     *   The event to process.
+     */
+    public function onException(ExceptionEvent $event): void
+    {
+        $exception = $event->getThrowable();
+
+        // Make the exception available for example when rendering a block.
+        $request = $event->getRequest();
+        $request->attributes->set('exception', $exception);
+
+        $handled_formats = $this->getHandledFormats();
+
+        $format = $request->query->get(MainContentViewSubscriber::WRAPPER_FORMAT, $request->getRequestFormat());
+
+        if ($exception instanceof HttpExceptionInterface && (empty($handled_formats) || in_array($format, $handled_formats))) {
+            $method = 'on' . $exception->getStatusCode();
+            // Keep just the leading number of the status code to produce either a
+            // 400 or a 500 method callback.
+            $method_fallback = 'on' . substr((string) $exception->getStatusCode(), 0, 1) . 'xx';
+            // We want to allow the method to be called and still not set a response
+            // if it has additional filtering logic to determine when it will apply.
+            // It is therefore the method's responsibility to set the response on the
+            // event if appropriate.
+            if (method_exists($this, $method)) {
+                $this->$method($event);
+            } elseif (method_exists($this, $method_fallback)) {
+                $this->$method_fallback($event);
+            }
+        }
+    }
+
+    /**
+     * Registers the methods in this class that should be listeners.
+     *
+     * @return array
+     *   An array of event listener definitions.
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[KernelEvents::EXCEPTION][] = ['onException', static::getPriority()];
+        return $events;
+    }
 
 }

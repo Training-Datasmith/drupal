@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  */
 
-use Drupal\Core\Field\FormatterInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Field\FormatterInterface;
 use Drupal\Core\Field\WidgetInterface;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * @file
@@ -38,18 +40,19 @@ use Drupal\Core\Field\WidgetInterface;
  *
  * @see \Drupal\field_ui\Form\EntityViewDisplayEditForm::thirdPartySettingsForm()
  */
-function hook_field_formatter_third_party_settings_form(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, $view_mode, array $form, FormStateInterface $form_state): array {
-  $element = [];
-  // Add a 'my_setting' checkbox to the settings form for 'foo_formatter' field
-  // formatters.
-  if ($plugin->getPluginId() == 'foo_formatter') {
-    $element['my_setting'] = [
-      '#type' => 'checkbox',
-      '#title' => t('My setting'),
-      '#default_value' => $plugin->getThirdPartySetting('my_module', 'my_setting'),
-    ];
-  }
-  return $element;
+function hook_field_formatter_third_party_settings_form(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, $view_mode, array $form, FormStateInterface $form_state): array
+{
+    $element = [];
+    // Add a 'my_setting' checkbox to the settings form for 'foo_formatter' field
+    // formatters.
+    if ($plugin->getPluginId() == 'foo_formatter') {
+        $element['my_setting'] = [
+          '#type' => 'checkbox',
+          '#title' => t('My setting'),
+          '#default_value' => $plugin->getThirdPartySetting('my_module', 'my_setting'),
+        ];
+    }
+    return $element;
 }
 
 /**
@@ -71,18 +74,19 @@ function hook_field_formatter_third_party_settings_form(FormatterInterface $plug
  *
  * @see \Drupal\field_ui\Form\EntityFormDisplayEditForm::thirdPartySettingsForm()
  */
-function hook_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, array $form, FormStateInterface $form_state): array {
-  $element = [];
-  // Add a 'my_setting' checkbox to the settings form for 'foo_widget' field
-  // widgets.
-  if ($plugin->getPluginId() == 'foo_widget') {
-    $element['my_setting'] = [
-      '#type' => 'checkbox',
-      '#title' => t('My setting'),
-      '#default_value' => $plugin->getThirdPartySetting('my_module', 'my_setting'),
-    ];
-  }
-  return $element;
+function hook_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, array $form, FormStateInterface $form_state): array
+{
+    $element = [];
+    // Add a 'my_setting' checkbox to the settings form for 'foo_widget' field
+    // widgets.
+    if ($plugin->getPluginId() == 'foo_widget') {
+        $element['my_setting'] = [
+          '#type' => 'checkbox',
+          '#title' => t('My setting'),
+          '#default_value' => $plugin->getThirdPartySetting('my_module', 'my_setting'),
+        ];
+    }
+    return $element;
 }
 
 /**
@@ -98,14 +102,15 @@ function hook_field_widget_third_party_settings_form(WidgetInterface $plugin, Fi
  *
  * @see \Drupal\field_ui\Form\EntityViewDisplayEditForm::alterSettingsSummary()
  */
-function hook_field_formatter_settings_summary_alter(array &$summary, array $context): void {
-  // Append a message to the summary when an instance of foo_formatter has
-  // my_setting set to TRUE for the current view mode.
-  if ($context['formatter']->getPluginId() == 'foo_formatter') {
-    if ($context['formatter']->getThirdPartySetting('my_module', 'my_setting')) {
-      $summary[] = t('My setting enabled.');
+function hook_field_formatter_settings_summary_alter(array &$summary, array $context): void
+{
+    // Append a message to the summary when an instance of foo_formatter has
+    // my_setting set to TRUE for the current view mode.
+    if ($context['formatter']->getPluginId() == 'foo_formatter') {
+        if ($context['formatter']->getThirdPartySetting('my_module', 'my_setting')) {
+            $summary[] = t('My setting enabled.');
+        }
     }
-  }
 }
 
 /**
@@ -121,14 +126,15 @@ function hook_field_formatter_settings_summary_alter(array &$summary, array $con
  *
  * @see \Drupal\field_ui\Form\EntityFormDisplayEditForm::alterSettingsSummary()
  */
-function hook_field_widget_settings_summary_alter(array &$summary, array $context): void {
-  // Append a message to the summary when an instance of foo_widget has
-  // my_setting set to TRUE for the current view mode.
-  if ($context['widget']->getPluginId() == 'foo_widget') {
-    if ($context['widget']->getThirdPartySetting('my_module', 'my_setting')) {
-      $summary[] = t('My setting enabled.');
+function hook_field_widget_settings_summary_alter(array &$summary, array $context): void
+{
+    // Append a message to the summary when an instance of foo_widget has
+    // my_setting set to TRUE for the current view mode.
+    if ($context['widget']->getPluginId() == 'foo_widget') {
+        if ($context['widget']->getThirdPartySetting('my_module', 'my_setting')) {
+            $summary[] = t('My setting enabled.');
+        }
     }
-  }
 }
 
 /**

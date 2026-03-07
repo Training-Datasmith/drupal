@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\PrivateKey;
-use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Site\Settings;
 
 /**
@@ -14,56 +14,58 @@ use Drupal\Core\Site\Settings;
  *   This is an internal part of the oEmbed system and should only be used by
  *   oEmbed-related code in Drupal core.
  */
-class IFrameUrlHelper {
-
-  /**
-   * IFrameUrlHelper constructor.
-   *
-   * @param \Drupal\Core\Routing\RequestContext $requestContext
-   *   The request context service.
-   * @param \Drupal\Core\PrivateKey $privateKey
-   *   The private key service.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RequestContext $requestContext, protected \Drupal\Core\PrivateKey $privateKey)
-  {
-  }
-
-  /**
-   * Hashes an oEmbed resource URL.
-   *
-   * @param string $url
-   *   The resource URL.
-   * @param int $max_width
-   *   (optional) The maximum width of the resource.
-   * @param int $max_height
-   *   (optional) The maximum height of the resource.
-   *
-   * @return string
-   *   The hashed URL.
-   */
-  public function getHash($url, $max_width = NULL, $max_height = NULL): string {
-    return Crypt::hmacBase64("$url:$max_width:$max_height", $this->privateKey->get() . Settings::getHashSalt());
-  }
-
-  /**
-   * Checks if an oEmbed URL can be securely displayed in an frame.
-   *
-   * @param string $url
-   *   The URL to check.
-   *
-   * @return bool
-   *   TRUE if the URL is considered secure, otherwise FALSE.
-   */
-  public function isSecure($url) {
-    if (!$url) {
-      return FALSE;
+class IFrameUrlHelper
+{
+    /**
+     * IFrameUrlHelper constructor.
+     *
+     * @param \Drupal\Core\Routing\RequestContext $requestContext
+     *   The request context service.
+     * @param \Drupal\Core\PrivateKey $privateKey
+     *   The private key service.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RequestContext $requestContext, protected \Drupal\Core\PrivateKey $privateKey)
+    {
     }
-    $url_host = parse_url($url, PHP_URL_HOST);
-    $system_host = parse_url((string) $this->requestContext->getCompleteBaseUrl(), PHP_URL_HOST);
 
-    // The URL is secure if its domain is not the same as the domain of the base
-    // URL of the current request.
-    return $url_host && $system_host && $url_host !== $system_host;
-  }
+    /**
+     * Hashes an oEmbed resource URL.
+     *
+     * @param string $url
+     *   The resource URL.
+     * @param int $max_width
+     *   (optional) The maximum width of the resource.
+     * @param int $max_height
+     *   (optional) The maximum height of the resource.
+     *
+     * @return string
+     *   The hashed URL.
+     */
+    public function getHash($url, $max_width = null, $max_height = null): string
+    {
+        return Crypt::hmacBase64("$url:$max_width:$max_height", $this->privateKey->get() . Settings::getHashSalt());
+    }
+
+    /**
+     * Checks if an oEmbed URL can be securely displayed in an frame.
+     *
+     * @param string $url
+     *   The URL to check.
+     *
+     * @return bool
+     *   TRUE if the URL is considered secure, otherwise FALSE.
+     */
+    public function isSecure($url)
+    {
+        if (!$url) {
+            return false;
+        }
+        $url_host = parse_url($url, PHP_URL_HOST);
+        $system_host = parse_url((string) $this->requestContext->getCompleteBaseUrl(), PHP_URL_HOST);
+
+        // The URL is secure if its domain is not the same as the domain of the base
+        // URL of the current request.
+        return $url_host && $system_host && $url_host !== $system_host;
+    }
 
 }

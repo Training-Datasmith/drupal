@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Component\Annotation\Doctrine;
 
-use Drupal\Component\Annotation\Doctrine\DocParser;
 use Drupal\Component\Annotation\Doctrine\Annotation\Target;
+use Drupal\Component\Annotation\Doctrine\DocParser;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\Annotation\Autoload;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants;
@@ -54,7 +54,7 @@ class DocParserTest extends TestCase
         $parser = $this->createTestParser();
 
         // Marker annotation
-        $result = $parser->parse("@Name");
+        $result = $parser->parse('@Name');
         $annot = $result[0];
         $this->assertInstanceOf(Name::class, $annot);
         $this->assertNull($annot->value);
@@ -111,9 +111,9 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot = $result[0];
         $this->assertInstanceOf(Name::class, $annot);
-        $this->assertEquals("bar", $annot->foo);
+        $this->assertEquals('bar', $annot->foo);
         $this->assertNull($annot->value);
-   }
+    }
 
     public function testDefaultValueAnnotations(): void
     {
@@ -139,7 +139,7 @@ DOCBLOCK;
 
     public function testNamespacedAnnotations(): void
     {
-        $parser = new DocParser;
+        $parser = new DocParser();
         $parser->setIgnoreNotImportedAnnotations(true);
 
         $docblock = <<<DOCBLOCK
@@ -158,7 +158,7 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot = $result[0];
         $this->assertInstanceOf(Name::class, $annot);
-        $this->assertEquals("bar", $annot->foo);
+        $this->assertEquals('bar', $annot->foo);
     }
 
     /**
@@ -189,16 +189,14 @@ DOCBLOCK;
         $this->assertTrue(isset($result[1]));
         $annot = $result[0];
         $this->assertInstanceOf(Name::class, $annot);
-        $this->assertEquals("bar", $annot->foo);
+        $this->assertEquals('bar', $annot->foo);
         $marker = $result[1];
         $this->assertInstanceOf(Marker::class, $marker);
     }
 
-
     public function testAnnotationWithoutConstructor(): void
     {
         $parser = $this->createTestParser();
-
 
         $docblock = <<<DOCBLOCK
 /**
@@ -215,17 +213,13 @@ DOCBLOCK;
 
         $this->assertNull($annot->name);
         $this->assertNotNull($annot->data);
-        $this->assertEquals("Some data", $annot->data);
+        $this->assertEquals('Some data', $annot->data);
 
-
-
-
-$docblock = <<<DOCBLOCK
+        $docblock = <<<DOCBLOCK
 /**
  * @SomeAnnotationClassNameWithoutConstructor(name="Some Name", data = "Some data")
  */
 DOCBLOCK;
-
 
         $result     = $parser->parse($docblock);
         $this->assertCount(1, $result);
@@ -234,13 +228,10 @@ DOCBLOCK;
         $this->assertNotNull($annot);
         $this->assertInstanceOf(SomeAnnotationClassNameWithoutConstructor::class, $annot);
 
-        $this->assertEquals("Some Name", $annot->name);
-        $this->assertEquals("Some data", $annot->data);
+        $this->assertEquals('Some Name', $annot->name);
+        $this->assertEquals('Some data', $annot->data);
 
-
-
-
-$docblock = <<<DOCBLOCK
+        $docblock = <<<DOCBLOCK
 /**
  * @SomeAnnotationClassNameWithoutConstructor(data = "Some data")
  */
@@ -250,9 +241,8 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot      = $result[0];
 
-        $this->assertEquals("Some data", $annot->data);
+        $this->assertEquals('Some data', $annot->data);
         $this->assertNull($annot->name);
-
 
         $docblock = <<<DOCBLOCK
 /**
@@ -264,7 +254,7 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot      = $result[0];
 
-        $this->assertEquals("Some name", $annot->name);
+        $this->assertEquals('Some name', $annot->name);
         $this->assertNull($annot->data);
 
         $docblock = <<<DOCBLOCK
@@ -277,10 +267,8 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot      = $result[0];
 
-        $this->assertEquals("Some data", $annot->data);
+        $this->assertEquals('Some data', $annot->data);
         $this->assertNull($annot->name);
-
-
 
         $docblock = <<<DOCBLOCK
 /**
@@ -292,9 +280,8 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot      = $result[0];
 
-        $this->assertEquals("Some name", $annot->name);
-        $this->assertEquals("Some data", $annot->data);
-
+        $this->assertEquals('Some name', $annot->name);
+        $this->assertEquals('Some data', $annot->data);
 
         $docblock = <<<DOCBLOCK
 /**
@@ -306,8 +293,8 @@ DOCBLOCK;
         $this->assertCount(1, $result);
         $annot      = $result[0];
 
-        $this->assertEquals("Some name", $annot->name);
-        $this->assertEquals("Some data", $annot->data);
+        $this->assertEquals('Some name', $annot->name);
+        $this->assertEquals('Some data', $annot->data);
 
         $docblock = <<<DOCBLOCK
 /**
@@ -323,36 +310,31 @@ DOCBLOCK;
     public function testAnnotationTarget(): void
     {
 
-        $parser = new DocParser;
-        $parser->setImports(array(
+        $parser = new DocParser();
+        $parser->setImports([
             '__NAMESPACE__' => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures',
-        ));
+        ]);
         $class  = new \ReflectionClass('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithValidAnnotationTarget');
-
 
         $context    = 'class ' . $class->getName();
         $docComment = $class->getDocComment();
 
         $parser->setTarget(Target::TARGET_CLASS);
-        $this->assertNotNull($parser->parse($docComment,$context));
-
+        $this->assertNotNull($parser->parse($docComment, $context));
 
         $property   = $class->getProperty('foo');
         $docComment = $property->getDocComment();
-        $context    = 'property ' . $class->getName() . "::\$" . $property->getName();
+        $context    = 'property ' . $class->getName() . '::$' . $property->getName();
 
         $parser->setTarget(Target::TARGET_PROPERTY);
-        $this->assertNotNull($parser->parse($docComment,$context));
-
-
+        $this->assertNotNull($parser->parse($docComment, $context));
 
         $method     = $class->getMethod('someFunction');
         $docComment = $property->getDocComment();
         $context    = 'method ' . $class->getName() . '::' . $method->getName() . '()';
 
         $parser->setTarget(Target::TARGET_METHOD);
-        $this->assertNotNull($parser->parse($docComment,$context));
-
+        $this->assertNotNull($parser->parse($docComment, $context));
 
         try {
             $class      = new \ReflectionClass('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithInvalidAnnotationTargetAtClass');
@@ -366,7 +348,6 @@ DOCBLOCK;
         } catch (\Drupal\Component\Annotation\Doctrine\AnnotationException $exc) {
             $this->assertNotNull($exc->getMessage());
         }
-
 
         try {
 
@@ -383,12 +364,11 @@ DOCBLOCK;
             $this->assertNotNull($exc->getMessage());
         }
 
-
         try {
             $class      = new \ReflectionClass('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithInvalidAnnotationTargetAtProperty');
             $property   = $class->getProperty('foo');
             $docComment = $property->getDocComment();
-            $context    = 'property ' . $class->getName() . "::\$" . $property->getName();
+            $context    = 'property ' . $class->getName() . '::$' . $property->getName();
 
             $parser->setTarget(Target::TARGET_PROPERTY);
             $parser->parse($docComment, $context);
@@ -406,54 +386,54 @@ DOCBLOCK;
     public static function getAnnotationVarTypeProviderValid()
     {
         //({attribute name}, {attribute value})
-         return array(
-            // mixed type
-            array('mixed', '"String Value"'),
-            array('mixed', 'true'),
-            array('mixed', 'false'),
-            array('mixed', '1'),
-            array('mixed', '1.2'),
-            array('mixed', '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll'),
+        return [
+           // mixed type
+           ['mixed', '"String Value"'],
+           ['mixed', 'true'],
+           ['mixed', 'false'],
+           ['mixed', '1'],
+           ['mixed', '1.2'],
+           ['mixed', '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll'],
 
-            // boolean type
-            array('boolean', 'true'),
-            array('boolean', 'false'),
+           // boolean type
+           ['boolean', 'true'],
+           ['boolean', 'false'],
 
-            // alias for internal type boolean
-            array('bool', 'true'),
-            array('bool', 'false'),
+           // alias for internal type boolean
+           ['bool', 'true'],
+           ['bool', 'false'],
 
-            // integer type
-            array('integer', '0'),
-            array('integer', '1'),
-            array('integer', '123456789'),
-            array('integer', '9223372036854775807'),
+           // integer type
+           ['integer', '0'],
+           ['integer', '1'],
+           ['integer', '123456789'],
+           ['integer', '9223372036854775807'],
 
-            // alias for internal type double
-            array('float', '0.1'),
-            array('float', '1.2'),
-            array('float', '123.456'),
+           // alias for internal type double
+           ['float', '0.1'],
+           ['float', '1.2'],
+           ['float', '123.456'],
 
-            // string type
-            array('string', '"String Value"'),
-            array('string', '"true"'),
-            array('string', '"123"'),
+           // string type
+           ['string', '"String Value"'],
+           ['string', '"true"'],
+           ['string', '"123"'],
 
-              // array type
-            array('array', '{@AnnotationExtendsAnnotationTargetAll}'),
-            array('array', '{@AnnotationExtendsAnnotationTargetAll,@AnnotationExtendsAnnotationTargetAll}'),
+             // array type
+           ['array', '{@AnnotationExtendsAnnotationTargetAll}'],
+           ['array', '{@AnnotationExtendsAnnotationTargetAll,@AnnotationExtendsAnnotationTargetAll}'],
 
-            array('arrayOfIntegers', '1'),
-            array('arrayOfIntegers', '{1}'),
-            array('arrayOfIntegers', '{1,2,3,4}'),
-            array('arrayOfAnnotations', '@AnnotationExtendsAnnotationTargetAll'),
-            array('arrayOfAnnotations', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll}'),
-            array('arrayOfAnnotations', '{@AnnotationExtendsAnnotationTargetAll, @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll}'),
+           ['arrayOfIntegers', '1'],
+           ['arrayOfIntegers', '{1}'],
+           ['arrayOfIntegers', '{1,2,3,4}'],
+           ['arrayOfAnnotations', '@AnnotationExtendsAnnotationTargetAll'],
+           ['arrayOfAnnotations', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll}'],
+           ['arrayOfAnnotations', '{@AnnotationExtendsAnnotationTargetAll, @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll}'],
 
-            // annotation instance
-            array('annotation', '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll'),
-            array('annotation', '@AnnotationExtendsAnnotationTargetAll'),
-        );
+           // annotation instance
+           ['annotation', '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll'],
+           ['annotation', '@AnnotationExtendsAnnotationTargetAll'],
+        ];
     }
 
     /**
@@ -461,55 +441,55 @@ DOCBLOCK;
      */
     public static function getAnnotationVarTypeProviderInvalid()
     {
-         //({attribute name}, {type declared type}, {attribute value} , {given type or class})
-         return array(
-            // boolean type
-            array('boolean','boolean','1','integer'),
-            array('boolean','boolean','1.2','double'),
-            array('boolean','boolean','"str"','string'),
-            array('boolean','boolean','{1,2,3}','array'),
-            array('boolean','boolean','@Name', 'an instance of Drupal\Tests\Component\Annotation\Doctrine\Name'),
+        //({attribute name}, {type declared type}, {attribute value} , {given type or class})
+        return [
+           // boolean type
+           ['boolean','boolean','1','integer'],
+           ['boolean','boolean','1.2','double'],
+           ['boolean','boolean','"str"','string'],
+           ['boolean','boolean','{1,2,3}','array'],
+           ['boolean','boolean','@Name', 'an instance of Drupal\Tests\Component\Annotation\Doctrine\Name'],
 
-            // alias for internal type boolean
-            array('bool','bool', '1','integer'),
-            array('bool','bool', '1.2','double'),
-            array('bool','bool', '"str"','string'),
-            array('bool','bool', '{"str"}','array'),
+           // alias for internal type boolean
+           ['bool','bool', '1','integer'],
+           ['bool','bool', '1.2','double'],
+           ['bool','bool', '"str"','string'],
+           ['bool','bool', '{"str"}','array'],
 
-            // integer type
-            array('integer','integer', 'true','boolean'),
-            array('integer','integer', 'false','boolean'),
-            array('integer','integer', '1.2','double'),
-            array('integer','integer', '"str"','string'),
-            array('integer','integer', '{"str"}','array'),
-            array('integer','integer', '{1,2,3,4}','array'),
+           // integer type
+           ['integer','integer', 'true','boolean'],
+           ['integer','integer', 'false','boolean'],
+           ['integer','integer', '1.2','double'],
+           ['integer','integer', '"str"','string'],
+           ['integer','integer', '{"str"}','array'],
+           ['integer','integer', '{1,2,3,4}','array'],
 
-            // alias for internal type double
-            array('float','float', 'true','boolean'),
-            array('float','float', 'false','boolean'),
-            array('float','float', '123','integer'),
-            array('float','float', '"str"','string'),
-            array('float','float', '{"str"}','array'),
-            array('float','float', '{12.34}','array'),
-            array('float','float', '{1,2,3}','array'),
+           // alias for internal type double
+           ['float','float', 'true','boolean'],
+           ['float','float', 'false','boolean'],
+           ['float','float', '123','integer'],
+           ['float','float', '"str"','string'],
+           ['float','float', '{"str"}','array'],
+           ['float','float', '{12.34}','array'],
+           ['float','float', '{1,2,3}','array'],
 
-            // string type
-            array('string','string', 'true','boolean'),
-            array('string','string', 'false','boolean'),
-            array('string','string', '12','integer'),
-            array('string','string', '1.2','double'),
-            array('string','string', '{"str"}','array'),
-            array('string','string', '{1,2,3,4}','array'),
+           // string type
+           ['string','string', 'true','boolean'],
+           ['string','string', 'false','boolean'],
+           ['string','string', '12','integer'],
+           ['string','string', '1.2','double'],
+           ['string','string', '{"str"}','array'],
+           ['string','string', '{1,2,3,4}','array'],
 
-             // annotation instance
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'true','boolean'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'false','boolean'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '12','integer'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '1.2','double'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{"str"}','array'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{1,2,3,4}','array'),
-            array('annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '@Name','an instance of Drupal\Tests\Component\Annotation\Doctrine\Name'),
-        );
+            // annotation instance
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'true','boolean'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'false','boolean'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '12','integer'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '1.2','double'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{"str"}','array'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{1,2,3,4}','array'],
+           ['annotation','Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '@Name','an instance of Drupal\Tests\Component\Annotation\Doctrine\Name'],
+        ];
     }
 
     /**
@@ -517,29 +497,29 @@ DOCBLOCK;
      */
     public static function getAnnotationVarTypeArrayProviderInvalid()
     {
-         //({attribute name}, {type declared type}, {attribute value} , {given type or class})
-         return array(
-            array('arrayOfIntegers', 'integer', 'true', 'boolean'),
-            array('arrayOfIntegers', 'integer', 'false', 'boolean'),
-            array('arrayOfIntegers', 'integer', '{true,true}', 'boolean'),
-            array('arrayOfIntegers', 'integer', '{1,true}', 'boolean'),
-            array('arrayOfIntegers', 'integer', '{1,2,1.2}', 'double'),
-            array('arrayOfIntegers', 'integer', '{1,2,"str"}', 'string'),
+        //({attribute name}, {type declared type}, {attribute value} , {given type or class})
+        return [
+           ['arrayOfIntegers', 'integer', 'true', 'boolean'],
+           ['arrayOfIntegers', 'integer', 'false', 'boolean'],
+           ['arrayOfIntegers', 'integer', '{true,true}', 'boolean'],
+           ['arrayOfIntegers', 'integer', '{1,true}', 'boolean'],
+           ['arrayOfIntegers', 'integer', '{1,2,1.2}', 'double'],
+           ['arrayOfIntegers', 'integer', '{1,2,"str"}', 'string'],
 
-            array('arrayOfStrings', 'string', 'true', 'boolean'),
-            array('arrayOfStrings', 'string', 'false', 'boolean'),
-            array('arrayOfStrings', 'string', '{true,true}', 'boolean'),
-            array('arrayOfStrings', 'string', '{"foo",true}', 'boolean'),
-            array('arrayOfStrings', 'string', '{"foo","bar",1.2}', 'double'),
-            array('arrayOfStrings', 'string', '1', 'integer'),
+           ['arrayOfStrings', 'string', 'true', 'boolean'],
+           ['arrayOfStrings', 'string', 'false', 'boolean'],
+           ['arrayOfStrings', 'string', '{true,true}', 'boolean'],
+           ['arrayOfStrings', 'string', '{"foo",true}', 'boolean'],
+           ['arrayOfStrings', 'string', '{"foo","bar",1.2}', 'double'],
+           ['arrayOfStrings', 'string', '1', 'integer'],
 
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'true', 'boolean'),
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'false', 'boolean'),
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,true}', 'boolean'),
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,true}', 'boolean'),
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,1.2}', 'double'),
-            array('arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,@AnnotationExtendsAnnotationTargetAll,"str"}', 'string'),
-        );
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'true', 'boolean'],
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', 'false', 'boolean'],
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,true}', 'boolean'],
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,true}', 'boolean'],
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,1.2}', 'double'],
+           ['arrayOfAnnotations', 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll', '{@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll,@AnnotationExtendsAnnotationTargetAll,"str"}', 'string'],
+        ];
     }
 
     /**
@@ -550,7 +530,7 @@ DOCBLOCK;
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::$invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         $result = $parser->parse($docblock, $context);
@@ -564,11 +544,11 @@ DOCBLOCK;
      * Tests annotation with var type error.
      */
     #[DataProvider('getAnnotationVarTypeProviderInvalid')]
-    public function testAnnotationWithVarTypeError($attribute,$type,$value,$given): void
+    public function testAnnotationWithVarTypeError($attribute, $type, $value, $given): void
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         try {
@@ -579,16 +559,15 @@ DOCBLOCK;
         }
     }
 
-
     /**
      * Tests annotation with var type array error.
      */
     #[DataProvider('getAnnotationVarTypeArrayProviderInvalid')]
-    public function testAnnotationWithVarTypeArrayError($attribute,$type,$value,$given): void
+    public function testAnnotationWithVarTypeArrayError($attribute, $type, $value, $given): void
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithVarType(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         try {
@@ -607,14 +586,14 @@ DOCBLOCK;
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::$invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         $result = $parser->parse($docblock, $context);
 
         $this->assertCount(1, $result);
         $this->assertInstanceOf('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes', $result[0]);
-        $getter = "get".ucfirst($attribute);
+        $getter = 'get'.ucfirst($attribute);
         $this->assertNotNull($result[0]->$getter());
     }
 
@@ -622,11 +601,11 @@ DOCBLOCK;
      * Tests annotation with attributes error.
      */
     #[DataProvider('getAnnotationVarTypeProviderInvalid')]
-    public function testAnnotationWithAttributesError($attribute,$type,$value,$given): void
+    public function testAnnotationWithAttributesError($attribute, $type, $value, $given): void
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         try {
@@ -637,16 +616,15 @@ DOCBLOCK;
         }
     }
 
-
     /**
      * Tests annotation with attributes with var type array error.
      */
     #[DataProvider('getAnnotationVarTypeArrayProviderInvalid')]
-    public function testAnnotationWithAttributesWithVarTypeArrayError($attribute,$type,$value,$given): void
+    public function testAnnotationWithAttributesWithVarTypeArrayError($attribute, $type, $value, $given): void
     {
         $parser     = $this->createTestParser();
         $context    = 'property SomeClassName::invalidProperty.';
-        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)',$attribute, $value);
+        $docblock   = sprintf('@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithAttributes(%s = %s)', $attribute, $value);
         $parser->setTarget(Target::TARGET_PROPERTY);
 
         try {
@@ -663,19 +641,17 @@ DOCBLOCK;
         $context    = 'property SomeClassName::invalidProperty.';
         $parser->setTarget(Target::TARGET_PROPERTY);
 
-
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes("Some Value", annot = @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation)';
         $result     = $parser->parse($docblock);
 
         $this->assertCount(1, $result);
         $this->assertInstanceOf('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes', $result[0]);
-        $this->assertEquals("Some Value",$result[0]->getValue());
+        $this->assertEquals('Some Value', $result[0]->getValue());
         $this->assertInstanceOf('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation', $result[0]->getAnnot());
-
 
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes("Some Value")';
         try {
-            $result = $parser->parse($docblock,$context);
+            $result = $parser->parse($docblock, $context);
             $this->fail();
         } catch (\Drupal\Component\Annotation\Doctrine\AnnotationException $exc) {
             $this->assertStringContainsString('Attribute "annot" of @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes declared on property SomeClassName::invalidProperty. expects a(n) Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation. This value should not be null.', $exc->getMessage());
@@ -683,7 +659,7 @@ DOCBLOCK;
 
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes(annot = @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation)';
         try {
-            $result = $parser->parse($docblock,$context);
+            $result = $parser->parse($docblock, $context);
             $this->fail();
         } catch (\Drupal\Component\Annotation\Doctrine\AnnotationException $exc) {
             $this->assertStringContainsString('Attribute "value" of @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributes declared on property SomeClassName::invalidProperty. expects a(n) string. This value should not be null.', $exc->getMessage());
@@ -697,19 +673,17 @@ DOCBLOCK;
         $context    = 'property SomeClassName::invalidProperty.';
         $parser->setTarget(Target::TARGET_PROPERTY);
 
-
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor("Some Value", annot = @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation)';
         $result     = $parser->parse($docblock);
 
         $this->assertCount(1, $result);
         $this->assertInstanceOf('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor', $result[0]);
-        $this->assertEquals("Some Value", $result[0]->value);
+        $this->assertEquals('Some Value', $result[0]->value);
         $this->assertInstanceOf('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation', $result[0]->annot);
-
 
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor("Some Value")';
         try {
-            $result = $parser->parse($docblock,$context);
+            $result = $parser->parse($docblock, $context);
             $this->fail();
         } catch (\Drupal\Component\Annotation\Doctrine\AnnotationException $exc) {
             $this->assertStringContainsString('Attribute "annot" of @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor declared on property SomeClassName::invalidProperty. expects a(n) Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation. This value should not be null.', $exc->getMessage());
@@ -717,7 +691,7 @@ DOCBLOCK;
 
         $docblock   = '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor(annot = @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAnnotation)';
         try {
-            $result = $parser->parse($docblock,$context);
+            $result = $parser->parse($docblock, $context);
             $this->fail();
         } catch (\Drupal\Component\Annotation\Doctrine\AnnotationException $exc) {
             $this->assertStringContainsString('Attribute "value" of @Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithRequiredAttributesWithoutContructor declared on property SomeClassName::invalidProperty. expects a(n) string. This value should not be null.', $exc->getMessage());
@@ -782,104 +756,104 @@ DOCBLOCK;
      */
     public static function getConstantsProvider()
     {
-        $provider[] = array(
+        $provider[] = [
             '@AnnotationWithConstants(PHP_EOL)',
-            PHP_EOL
-        );
-        $provider[] = array(
+            PHP_EOL,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(\SimpleXMLElement::class)',
-            \SimpleXMLElement::class
-        );
-        $provider[] = array(
+            \SimpleXMLElement::class,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(AnnotationWithConstants::INTEGER)',
-            AnnotationWithConstants::INTEGER
-        );
-        $provider[] = array(
+            AnnotationWithConstants::INTEGER,
+        ];
+        $provider[] = [
             '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants(AnnotationWithConstants::STRING)',
-            AnnotationWithConstants::STRING
-        );
-        $provider[] = array(
+            AnnotationWithConstants::STRING,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants::FLOAT)',
-            AnnotationWithConstants::FLOAT
-        );
-        $provider[] = array(
+            AnnotationWithConstants::FLOAT,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(ClassWithConstants::SOME_VALUE)',
-            ClassWithConstants::SOME_VALUE
-        );
-        $provider[] = array(
+            ClassWithConstants::SOME_VALUE,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(ClassWithConstants::OTHER_KEY_)',
-            ClassWithConstants::OTHER_KEY_
-        );
-        $provider[] = array(
+            ClassWithConstants::OTHER_KEY_,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(ClassWithConstants::OTHER_KEY_2)',
-            ClassWithConstants::OTHER_KEY_2
-        );
-        $provider[] = array(
+            ClassWithConstants::OTHER_KEY_2,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants::SOME_VALUE)',
-            ClassWithConstants::SOME_VALUE
-        );
-        $provider[] = array(
+            ClassWithConstants::SOME_VALUE,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(IntefaceWithConstants::SOME_VALUE)',
-            IntefaceWithConstants::SOME_VALUE
-        );
-        $provider[] = array(
+            IntefaceWithConstants::SOME_VALUE,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(\Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants::SOME_VALUE)',
-            IntefaceWithConstants::SOME_VALUE
-        );
-        $provider[] = array(
+            IntefaceWithConstants::SOME_VALUE,
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({AnnotationWithConstants::STRING, AnnotationWithConstants::INTEGER, AnnotationWithConstants::FLOAT})',
-            array(AnnotationWithConstants::STRING, AnnotationWithConstants::INTEGER, AnnotationWithConstants::FLOAT)
-        );
-        $provider[] = array(
+            [AnnotationWithConstants::STRING, AnnotationWithConstants::INTEGER, AnnotationWithConstants::FLOAT],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({
                 AnnotationWithConstants::STRING = AnnotationWithConstants::INTEGER
              })',
-            array(AnnotationWithConstants::STRING => AnnotationWithConstants::INTEGER)
-        );
-        $provider[] = array(
+            [AnnotationWithConstants::STRING => AnnotationWithConstants::INTEGER],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({
                 Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants::SOME_KEY = AnnotationWithConstants::INTEGER
              })',
-            array(IntefaceWithConstants::SOME_KEY => AnnotationWithConstants::INTEGER)
-        );
-        $provider[] = array(
+            [IntefaceWithConstants::SOME_KEY => AnnotationWithConstants::INTEGER],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({
                 \Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants::SOME_KEY = AnnotationWithConstants::INTEGER
              })',
-            array(IntefaceWithConstants::SOME_KEY => AnnotationWithConstants::INTEGER)
-        );
-        $provider[] = array(
+            [IntefaceWithConstants::SOME_KEY => AnnotationWithConstants::INTEGER],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({
                 AnnotationWithConstants::STRING = AnnotationWithConstants::INTEGER,
                 ClassWithConstants::SOME_KEY = ClassWithConstants::SOME_VALUE,
                 Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants::SOME_KEY = IntefaceWithConstants::SOME_VALUE
              })',
-            array(
+            [
                 AnnotationWithConstants::STRING => AnnotationWithConstants::INTEGER,
                 // Since this class is a near-copy of
                 // Doctrine\Tests\Common\Annotations\DocParserTest, we don't fix
                 // PHPStan errors here.
                 // @phpstan-ignore array.duplicateKey
                 ClassWithConstants::SOME_KEY    => ClassWithConstants::SOME_VALUE,
-                ClassWithConstants::SOME_KEY    => IntefaceWithConstants::SOME_VALUE
-            )
-        );
-        $provider[] = array(
+                ClassWithConstants::SOME_KEY    => IntefaceWithConstants::SOME_VALUE,
+            ],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(AnnotationWithConstants::class)',
-            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants'
-        );
-        $provider[] = array(
+            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants',
+        ];
+        $provider[] = [
             '@AnnotationWithConstants({AnnotationWithConstants::class = AnnotationWithConstants::class})',
-            array('Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants' => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants')
-        );
-        $provider[] = array(
+            ['Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants' => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants'],
+        ];
+        $provider[] = [
             '@AnnotationWithConstants(Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants::class)',
-            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants'
-        );
-        $provider[] = array(
+            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants',
+        ];
+        $provider[] = [
             '@Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants(Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants::class)',
-            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants'
-        );
+            'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants',
+        ];
         return $provider;
     }
 
@@ -890,11 +864,11 @@ DOCBLOCK;
     public function testSupportClassConstants($docblock, $expected): void
     {
         $parser = $this->createTestParser();
-        $parser->setImports(array(
+        $parser->setImports([
             'classwithconstants'        => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants',
             'intefacewithconstants'     => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants',
-            'annotationwithconstants'   => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants'
-        ));
+            'annotationwithconstants'   => 'Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants',
+        ]);
 
         $result = $parser->parse($docblock);
         $this->assertInstanceOf('\Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants', $annotation = $result[0]);
@@ -912,7 +886,6 @@ DOCBLOCK;
  * @SomeAnnotationClassNameWithoutConstructorAndProperties("Foo")
  */
 DOCBLOCK;
-
 
         $parser->setTarget(Target::TARGET_CLASS);
         $parser->parse($docblock);
@@ -948,7 +921,7 @@ DOCBLOCK;
 DOCBLOCK;
 
         $parser->setTarget(Target::TARGET_CLASS);
-        $parser->parse($docblock,$context);
+        $parser->parse($docblock, $context);
     }
 
     public function testAnnotationWithInvalidTargetDeclarationError(): void
@@ -965,7 +938,7 @@ DOCBLOCK;
 DOCBLOCK;
 
         $parser->setTarget(Target::TARGET_CLASS);
-        $parser->parse($docblock,$context);
+        $parser->parse($docblock, $context);
     }
 
     public function testAnnotationWithTargetEmptyError(): void
@@ -982,7 +955,7 @@ DOCBLOCK;
 DOCBLOCK;
 
         $parser->setTarget(Target::TARGET_CLASS);
-        $parser->parse($docblock,$context);
+        $parser->parse($docblock, $context);
     }
 
     /**
@@ -1027,7 +1000,7 @@ DOCBLOCK;
     {
         $parser = new DocParser();
         $parser->setIgnoreNotImportedAnnotations(true);
-        $result = $parser->parse("@param");
+        $result = $parser->parse('@param');
 
         $this->assertCount(0, $result);
     }
@@ -1040,7 +1013,7 @@ DOCBLOCK;
     {
         $parser = new DocParser();
         $parser->setIgnoreNotImportedAnnotations(true);
-        $parser->setIgnoredAnnotationNames(array('PHPUnit_Framework_TestCase' => true));
+        $parser->setIgnoredAnnotationNames(['PHPUnit_Framework_TestCase' => true]);
         $result = $parser->parse('@PHPUnit_Framework_TestCase');
 
         $this->assertCount(0, $result);
@@ -1086,8 +1059,8 @@ DOCBLOCK;
     public function testAutoloadAnnotation(): void
     {
         self::assertFalse(
-          class_exists('Drupal\Tests\Component\Annotation\Doctrine\Fixture\Annotation\Autoload', false),
-          'Pre-condition: Drupal\Tests\Component\Annotation\Doctrine\Fixture\Annotation\Autoload not allowed to be loaded.'
+            class_exists('Drupal\Tests\Component\Annotation\Doctrine\Fixture\Annotation\Autoload', false),
+            'Pre-condition: Drupal\Tests\Component\Annotation\Doctrine\Fixture\Annotation\Autoload not allowed to be loaded.'
         );
 
         $parser = new DocParser();
@@ -1108,10 +1081,10 @@ DOCBLOCK;
     {
         $parser = new DocParser();
         $parser->setIgnoreNotImportedAnnotations(true);
-        $parser->setImports(array(
+        $parser->setImports([
             'name' => 'Drupal\Tests\Component\Annotation\Doctrine\Name',
             '__NAMESPACE__' => 'Drupal\Tests\Component\Annotation\Doctrine',
-        ));
+        ]);
 
         return $parser;
     }
@@ -1133,7 +1106,7 @@ DOCBLOCK;
      * Tests syntax error with unknown characters.
      */
     #[Group('DDC-183')]
-    public function   testSyntaxErrorWithUnknownCharacters(): void
+    public function testSyntaxErrorWithUnknownCharacters(): void
     {
         $docblock = <<<DOCBLOCK
 /**
@@ -1189,7 +1162,7 @@ DOCBLOCK;
     {
         $parser = $this->createTestParser();
 
-        $result = $parser->parse("@Name(foo=1234)");
+        $result = $parser->parse('@Name(foo=1234)');
         $annot = $result[0];
         $this->assertIsInt($annot->foo);
     }
@@ -1202,7 +1175,7 @@ DOCBLOCK;
     {
         $parser = $this->createTestParser();
 
-        $result = $parser->parse("@Name(foo=-1234)");
+        $result = $parser->parse('@Name(foo=-1234)');
         $annot = $result[0];
         $this->assertIsInt($annot->foo);
     }
@@ -1215,7 +1188,7 @@ DOCBLOCK;
     {
         $parser = $this->createTestParser();
 
-        $result = $parser->parse("@Name(foo=1234.345)");
+        $result = $parser->parse('@Name(foo=1234.345)');
         $annot = $result[0];
         $this->assertIsFloat($annot->foo);
     }
@@ -1228,11 +1201,11 @@ DOCBLOCK;
     {
         $parser = $this->createTestParser();
 
-        $result = $parser->parse("@Name(foo=-1234.345)");
+        $result = $parser->parse('@Name(foo=-1234.345)');
         $annot = $result[0];
         $this->assertIsFloat($annot->foo);
 
-        $result = $parser->parse("@Marker(-1234.345)");
+        $result = $parser->parse('@Marker(-1234.345)');
         $annot = $result[0];
         $this->assertIsFloat($annot->value);
     }
@@ -1269,7 +1242,7 @@ DOCBLOCK;
             "Bar",
         })');
         $this->assertCount(1, $annots);
-        $this->assertEquals(array('Foo', 'Bar'), $annots[0]->value);
+        $this->assertEquals(['Foo', 'Bar'], $annots[0]->value);
     }
 
     public function testDefaultAnnotationValueIsNotOverwritten(): void
@@ -1287,7 +1260,7 @@ DOCBLOCK;
 
         $annots = $parser->parse('@Name({"foo": "bar"})');
         $this->assertCount(1, $annots);
-        $this->assertEquals(array('foo' => 'bar'), $annots[0]->value);
+        $this->assertEquals(['foo' => 'bar'], $annots[0]->value);
     }
 
     public function testInvalidContantName(): void
@@ -1308,7 +1281,7 @@ DOCBLOCK;
 
         $annots = $parser->parse('@Name({"foo": {}})');
         $this->assertCount(1, $annots);
-        $this->assertEquals(array('foo' => array()), $annots[0]->value);
+        $this->assertEquals(['foo' => []], $annots[0]->value);
     }
 
     public function testKeyHasNumber(): void
@@ -1317,7 +1290,7 @@ DOCBLOCK;
         $annots = $parser->parse('@SettingsAnnotation(foo="test", bar2="test")');
 
         $this->assertCount(1, $annots);
-        $this->assertEquals(array('foo' => 'test', 'bar2' => 'test'), $annots[0]->settings);
+        $this->assertEquals(['foo' => 'test', 'bar2' => 'test'], $annots[0]->settings);
     }
 
     /**
@@ -1356,28 +1329,34 @@ class SomeAnnotationClassNameWithoutConstructor
 /** @Annotation */
 class SomeAnnotationWithConstructorWithoutParams
 {
-    function __construct()
+    public function __construct()
     {
-        $this->data = "Some data";
+        $this->data = 'Some data';
     }
     public $data;
     public $name;
 }
 
 /** @Annotation */
-class SomeAnnotationClassNameWithoutConstructorAndProperties{}
+class SomeAnnotationClassNameWithoutConstructorAndProperties
+{
+}
 
 /**
  * @Annotation
  * @Target("Foo")
  */
-class AnnotationWithInvalidTargetDeclaration{}
+class AnnotationWithInvalidTargetDeclaration
+{
+}
 
 /**
  * @Annotation
  * @Target
  */
-class AnnotationWithTargetEmpty{}
+class AnnotationWithTargetEmpty
+{
+}
 
 /** @Annotation */
 class AnnotationExtendsAnnotationTargetAll extends \Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationTargetAll
@@ -1385,17 +1364,20 @@ class AnnotationExtendsAnnotationTargetAll extends \Drupal\Tests\Component\Annot
 }
 
 /** @Annotation */
-class Name extends \Drupal\Component\Annotation\Doctrine\Annotation {
+class Name extends \Drupal\Component\Annotation\Doctrine\Annotation
+{
     public $foo;
 }
 
 /** @Annotation */
-class Marker {
+class Marker
+{
     public $value;
 }
 
 namespace Drupal\Tests\Component\Annotation\Doctrine\FooBar;
 
 /** @Annotation */
-class Name extends \Drupal\Component\Annotation\Doctrine\Annotation {
+class Name extends \Drupal\Component\Annotation\Doctrine\Annotation
+{
 }

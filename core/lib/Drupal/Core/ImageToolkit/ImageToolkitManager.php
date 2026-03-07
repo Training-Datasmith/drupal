@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ImageToolkit;
 
 use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\ImageToolkit\Attribute\ImageToolkit;
 use Drupal\Core\Plugin\DefaultPluginManager;
@@ -16,105 +17,109 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * @see \Drupal\Core\ImageToolkit\ImageToolkitBase
  * @see plugin_api
  */
-class ImageToolkitManager extends DefaultPluginManager {
+class ImageToolkitManager extends DefaultPluginManager
+{
+    /**
+     * Constructs the ImageToolkitManager object.
+     *
+     * @param \Traversable $namespaces
+     *   An object that implements \Traversable which contains the root paths
+     *   keyed by the corresponding namespace to look for plugin implementations.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   Cache backend instance to use.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     */
+    public function __construct(
+        \Traversable $namespaces,
+        CacheBackendInterface $cache_backend,
+        ModuleHandlerInterface $module_handler,
+        protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
+    ) {
+        parent::__construct(
+            'Plugin/ImageToolkit',
+            $namespaces,
+            $module_handler,
+            ImageToolkitInterface::class,
+            ImageToolkit::class,
+            \Drupal\Core\ImageToolkit\Annotation\ImageToolkit::class,
+        );
 
-  /**
-   * Constructs the ImageToolkitManager object.
-   *
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   */
-  public function __construct(
-    \Traversable $namespaces,
-    CacheBackendInterface $cache_backend,
-    ModuleHandlerInterface $module_handler,
-    protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
-  ) {
-    parent::__construct(
-      'Plugin/ImageToolkit',
-      $namespaces,
-      $module_handler,
-      ImageToolkitInterface::class,
-      ImageToolkit::class,
-      \Drupal\Core\ImageToolkit\Annotation\ImageToolkit::class,
-    );
-
-    $this->setCacheBackend($cache_backend, 'image_toolkit_plugins');
-  }
-
-  /**
-   * Gets the default image toolkit ID.
-   *
-   * @return string|false
-   *   ID of the default toolkit, or FALSE on error.
-   */
-  public function getDefaultToolkitId() {
-    $toolkit_id = $this->configFactory->get('system.image')->get('toolkit');
-    $toolkits = $this->getAvailableToolkits();
-
-    if (!isset($toolkits[$toolkit_id]) || !class_exists($toolkits[$toolkit_id]['class'])) {
-      // The selected toolkit isn't available so return the first one found. If
-      // none are available this will return FALSE.
-      return array_key_first($toolkits);
+        $this->setCacheBackend($cache_backend, 'image_toolkit_plugins');
     }
 
-    return $toolkit_id;
-  }
+    /**
+     * Gets the default image toolkit ID.
+     *
+     * @return string|false
+     *   ID of the default toolkit, or FALSE on error.
+     */
+    public function getDefaultToolkitId()
+    {
+        $toolkit_id = $this->configFactory->get('system.image')->get('toolkit');
+        $toolkits = $this->getAvailableToolkits();
 
-  /**
-   * Gets the default image toolkit.
-   *
-   * @return \Drupal\Core\ImageToolkit\ImageToolkitInterface
-   *   Object of the default toolkit, or FALSE on error.
-   */
-  public function getDefaultToolkit() {
-    if ($toolkit_id = $this->getDefaultToolkitId()) {
-      return $this->createInstance($toolkit_id);
-    }
-    return FALSE;
-  }
+        if (!isset($toolkits[$toolkit_id]) || !class_exists($toolkits[$toolkit_id]['class'])) {
+            // The selected toolkit isn't available so return the first one found. If
+            // none are available this will return FALSE.
+            return array_key_first($toolkits);
+        }
 
-  /**
-   * Gets a list of available toolkits.
-   *
-   * @return array
-   *   An array with the toolkit names as keys and the descriptions as values.
-   */
-  public function getAvailableToolkits(): array {
-    // Use plugin system to get list of available toolkits.
-    $toolkits = $this->getDefinitions();
-
-    $output = [];
-    foreach ($toolkits as $id => $definition) {
-      // Only allow modules that aren't marked as unavailable.
-      if (call_user_func($definition['class'] . '::isAvailable')) {
-        $output[$id] = $definition;
-      }
+        return $toolkit_id;
     }
 
-    return $output;
-  }
+    /**
+     * Gets the default image toolkit.
+     *
+     * @return \Drupal\Core\ImageToolkit\ImageToolkitInterface
+     *   Object of the default toolkit, or FALSE on error.
+     */
+    public function getDefaultToolkit()
+    {
+        if ($toolkit_id = $this->getDefaultToolkitId()) {
+            return $this->createInstance($toolkit_id);
+        }
+        return false;
+    }
 
-  /**
-   * Returns all valid extensions.
-   *
-   * @return string[]
-   *   All possible valid extensions.
-   *
-   * @see \Drupal\image\Plugin\ImageEffect\ConvertImageEffect::buildConfigurationForm()
-   *
-   * @internal
-   * @todo Revisit in https://www.drupal.org/node/3446364
-   */
-  public static function getAllValidExtensions(): array {
-    return \Drupal::service('image.toolkit.manager')->getDefaultToolkit()->getSupportedExtensions();
-  }
+    /**
+     * Gets a list of available toolkits.
+     *
+     * @return array
+     *   An array with the toolkit names as keys and the descriptions as values.
+     */
+    public function getAvailableToolkits(): array
+    {
+        // Use plugin system to get list of available toolkits.
+        $toolkits = $this->getDefinitions();
+
+        $output = [];
+        foreach ($toolkits as $id => $definition) {
+            // Only allow modules that aren't marked as unavailable.
+            if (call_user_func($definition['class'] . '::isAvailable')) {
+                $output[$id] = $definition;
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Returns all valid extensions.
+     *
+     * @return string[]
+     *   All possible valid extensions.
+     *
+     * @see \Drupal\image\Plugin\ImageEffect\ConvertImageEffect::buildConfigurationForm()
+     *
+     * @internal
+     * @todo Revisit in https://www.drupal.org/node/3446364
+     */
+    public static function getAllValidExtensions(): array
+    {
+        return \Drupal::service('image.toolkit.manager')->getDefaultToolkit()->getSupportedExtensions();
+    }
 
 }

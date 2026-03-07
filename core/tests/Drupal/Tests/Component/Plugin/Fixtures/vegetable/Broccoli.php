@@ -11,4 +11,6 @@ namespace Drupal\Tests\Component\Plugin\Fixtures\vegetable;
  *   color = "green"
  * )
  */
-class Broccoli {}
+class Broccoli
+{
+}

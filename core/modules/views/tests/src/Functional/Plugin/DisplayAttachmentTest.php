@@ -16,94 +16,97 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class DisplayAttachmentTest extends ViewTestBase {
+class DisplayAttachmentTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_display_attachment', 'test_attached_disabled'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_display_attachment', 'test_attached_disabled'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'views'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'starterkit_theme';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'starterkit_theme';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->enableViewsTestModule();
 
-    $this->enableViewsTestModule();
+        $admin_user = $this->drupalCreateUser(['administer site configuration']);
+        $this->drupalLogin($admin_user);
+    }
 
-    $admin_user = $this->drupalCreateUser(['administer site configuration']);
-    $this->drupalLogin($admin_user);
-  }
+    /**
+     * Tests the attachment plugin.
+     */
+    public function testAttachment(): void
+    {
+        $this->drupalGet('test-display-attachment');
+        // Verify that both actual view and the attachment are rendered.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 2);
+        // Verify that the attachment is not rendered after the actual view.
+        $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-after")]');
+        // Verify that the attachment is rendered before the actual view.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-before")]', 1);
+    }
 
-  /**
-   * Tests the attachment plugin.
-   */
-  public function testAttachment(): void {
-    $this->drupalGet('test-display-attachment');
-    // Verify that both actual view and the attachment are rendered.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 2);
-    // Verify that the attachment is not rendered after the actual view.
-    $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-after")]');
-    // Verify that the attachment is rendered before the actual view.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-before")]', 1);
-  }
+    /**
+     * Tests that nothing is output when the attachment displays are disabled.
+     */
+    public function testDisabledAttachments(): void
+    {
+        $this->drupalCreateContentType(['type' => 'page']);
+        $this->drupalCreateNode();
 
-  /**
-   * Tests that nothing is output when the attachment displays are disabled.
-   */
-  public function testDisabledAttachments(): void {
-    $this->drupalCreateContentType(['type' => 'page']);
-    $this->drupalCreateNode();
+        // Ensure that the feed_1 display is attached to the page_1 display.
+        $view = Views::getView('test_attached_disabled');
+        $view->setDisplay('page_1');
+        $attached_displays = $view->display_handler->getAttachedDisplays();
+        $this->assertContains('attachment_1', $attached_displays, 'The attachment_1 display is attached to the page display.');
+        $this->assertContains('attachment_2', $attached_displays, 'The attachment_2 display is attached to the page display.');
 
-    // Ensure that the feed_1 display is attached to the page_1 display.
-    $view = Views::getView('test_attached_disabled');
-    $view->setDisplay('page_1');
-    $attached_displays = $view->display_handler->getAttachedDisplays();
-    $this->assertContains('attachment_1', $attached_displays, 'The attachment_1 display is attached to the page display.');
-    $this->assertContains('attachment_2', $attached_displays, 'The attachment_2 display is attached to the page display.');
+        // Check that the attachments are output on the page display.
+        $this->drupalGet('test-attached-disabled');
+        // Verify that the page view and the attachments are rendered.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 3);
+        // Verify that the attachment is rendered before the page view.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-before")]', 1);
+        // Verify that the attachment is rendered after the page view.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-after")]', 1);
 
-    // Check that the attachments are output on the page display.
-    $this->drupalGet('test-attached-disabled');
-    // Verify that the page view and the attachments are rendered.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 3);
-    // Verify that the attachment is rendered before the page view.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-before")]', 1);
-    // Verify that the attachment is rendered after the page view.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "attachment-after")]', 1);
+        // Disable the attachment_1 display.
+        $view->displayHandlers->get('attachment_1')->setOption('enabled', false);
+        $view->save();
 
-    // Disable the attachment_1 display.
-    $view->displayHandlers->get('attachment_1')->setOption('enabled', FALSE);
-    $view->save();
+        // Test that the before attachment is not displayed.
+        $this->drupalGet('/test-attached-disabled');
+        // Verify that the page view and only one attachment are rendered.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 2);
+        // Verify that the attachment_1 is not rendered.
+        $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-before")]');
 
-    // Test that the before attachment is not displayed.
-    $this->drupalGet('/test-attached-disabled');
-    // Verify that the page view and only one attachment are rendered.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 2);
-    // Verify that the attachment_1 is not rendered.
-    $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-before")]');
+        // Disable the attachment_2 display.
+        $view->displayHandlers->get('attachment_2')->setOption('enabled', false);
+        $view->save();
 
-    // Disable the attachment_2 display.
-    $view->displayHandlers->get('attachment_2')->setOption('enabled', FALSE);
-    $view->save();
-
-    // Test that the after attachment is not displayed.
-    $this->drupalGet('/test-attached-disabled');
-    // Verify that the page view is rendered without attachments.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 1);
-    // Verify that the attachment_2 is not rendered.
-    $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-after")]');
-  }
+        // Test that the after attachment is not displayed.
+        $this->drupalGet('/test-attached-disabled');
+        // Verify that the page view is rendered without attachments.
+        $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "view-content")]', 1);
+        // Verify that the attachment_2 is not rendered.
+        $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "attachment-after")]');
+    }
 
 }

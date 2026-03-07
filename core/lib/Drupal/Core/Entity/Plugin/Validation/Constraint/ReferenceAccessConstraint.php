@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,18 +14,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Verifies that referenced entities are valid.
  */
 #[Constraint(
-  id: 'ReferenceAccess',
-  label: new TranslatableMarkup('Entity Reference reference access', [], ['context' => 'Validation'])
+    id: 'ReferenceAccess',
+    label: new TranslatableMarkup('Entity Reference reference access', [], ['context' => 'Validation'])
 )]
-class ReferenceAccessConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'You do not have access to the referenced entity (%type: %id).',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class ReferenceAccessConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'You do not have access to the referenced entity (%type: %id).',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

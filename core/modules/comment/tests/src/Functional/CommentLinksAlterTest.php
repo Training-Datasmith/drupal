@@ -12,40 +12,42 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('comment')]
 #[RunTestsInSeparateProcesses]
-class CommentLinksAlterTest extends CommentTestBase {
+class CommentLinksAlterTest extends CommentTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['comment_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['comment_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Enable comment_test.module's hook_comment_links_alter() implementation.
+        $this->container->get('state')->set('comment_test_links_alter_enabled', true);
+    }
 
-    // Enable comment_test.module's hook_comment_links_alter() implementation.
-    $this->container->get('state')->set('comment_test_links_alter_enabled', TRUE);
-  }
+    /**
+     * Tests comment links altering.
+     */
+    public function testCommentLinksAlter(): void
+    {
+        $this->drupalLogin($this->webUser);
+        $comment_text = $this->randomMachineName();
+        $subject = $this->randomMachineName();
+        $this->postComment($this->node, $comment_text, $subject);
 
-  /**
-   * Tests comment links altering.
-   */
-  public function testCommentLinksAlter(): void {
-    $this->drupalLogin($this->webUser);
-    $comment_text = $this->randomMachineName();
-    $subject = $this->randomMachineName();
-    $this->postComment($this->node, $comment_text, $subject);
+        $this->drupalGet('node/' . $this->node->id());
 
-    $this->drupalGet('node/' . $this->node->id());
-
-    $this->assertSession()->linkExists('Report');
-  }
+        $this->assertSession()->linkExists('Report');
+    }
 
 }

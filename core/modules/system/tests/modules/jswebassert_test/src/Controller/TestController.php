@@ -9,10 +9,11 @@ use Drupal\Core\Render\Markup;
 /**
  * Provides a test page for JavaScript assertions.
  */
-class TestController {
-
-  public function page() {
-    $markup = <<<JS
+class TestController
+{
+    public function page()
+    {
+        $markup = <<<JS
 <script>
 var timesRun = 0;
 var interval = setInterval(function() {
@@ -35,11 +36,11 @@ var interval = setInterval(function() {
   <p id="test_text"></p>
 </div>
 JS;
-    return [
-      // Javascript should not be injected into a page this way unless in test
-      // code.
-      '#markup' => Markup::create($markup),
-    ];
-  }
+        return [
+          // Javascript should not be injected into a page this way unless in test
+          // code.
+          '#markup' => Markup::create($markup),
+        ];
+    }
 
 }

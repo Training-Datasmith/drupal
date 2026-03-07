@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -16,93 +18,99 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\user\Entity\Role
  */
-class RoleListBuilder extends DraggableListBuilder {
+class RoleListBuilder extends DraggableListBuilder
+{
+    /**
+     * The messenger.
+     *
+     * @var \Drupal\Core\Messenger\MessengerInterface
+     */
+    protected $messenger;
 
-  /**
-   * The messenger.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * RoleListBuilder constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger.
-   */
-  public function __construct(
-    EntityTypeInterface $entityType,
-    EntityStorageInterface $storage,
-    MessengerInterface $messenger,
-  ) {
-    parent::__construct($entityType, $storage);
-    $this->messenger = $messenger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('messenger')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'user_admin_roles_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['label'] = $this->t('Name');
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
-    return $row + parent::buildRow($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $operations = parent::getDefaultOperations($entity, $cacheability);
-
-    if ($entity->hasLinkTemplate('edit-permissions-form')) {
-      $operations['permissions'] = [
-        'title' => $this->t('Edit permissions'),
-        'weight' => 20,
-        'url' => $entity->toUrl('edit-permissions-form'),
-      ];
+    /**
+     * RoleListBuilder constructor.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
+     *   The entity type definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+     *   The entity storage class.
+     * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+     *   The messenger.
+     */
+    public function __construct(
+        EntityTypeInterface $entityType,
+        EntityStorageInterface $storage,
+        MessengerInterface $messenger,
+    ) {
+        parent::__construct($entityType, $storage);
+        $this->messenger = $messenger;
     }
-    return $operations;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    parent::submitForm($form, $form_state);
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager')->getStorage($entity_type->id()),
+            $container->get('messenger')
+        );
+    }
 
-    $this->messenger->addStatus($this->t('The role settings have been updated.'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'user_admin_roles_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['label'] = $this->t('Name');
+        return $header + parent::buildHeader();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['label'] = $entity->label();
+        return $row + parent::buildRow($entity);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $operations = parent::getDefaultOperations($entity, $cacheability);
+
+        if ($entity->hasLinkTemplate('edit-permissions-form')) {
+            $operations['permissions'] = [
+              'title' => $this->t('Edit permissions'),
+              'weight' => 20,
+              'url' => $entity->toUrl('edit-permissions-form'),
+            ];
+        }
+        return $operations;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        parent::submitForm($form, $form_state);
+
+        $this->messenger->addStatus($this->t('The role settings have been updated.'));
+    }
 
 }

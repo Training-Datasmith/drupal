@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor\Plugin;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -22,54 +24,54 @@ use Drupal\editor\Entity\Editor;
  * @see \Drupal\editor\Plugin\EditorManager
  * @see plugin_api
  */
-interface EditorPluginInterface extends PluginInspectionInterface, PluginFormInterface {
+interface EditorPluginInterface extends PluginInspectionInterface, PluginFormInterface
+{
+    /**
+     * Returns the default settings for this configurable text editor.
+     *
+     * @return array
+     *   An array of settings as they would be stored by a configured text editor
+     *   entity (\Drupal\editor\Entity\Editor).
+     */
+    public function getDefaultSettings();
 
-  /**
-   * Returns the default settings for this configurable text editor.
-   *
-   * @return array
-   *   An array of settings as they would be stored by a configured text editor
-   *   entity (\Drupal\editor\Entity\Editor).
-   */
-  public function getDefaultSettings();
+    /**
+     * Returns JavaScript settings to be attached.
+     *
+     * Most text editors use JavaScript to provide a WYSIWYG or toolbar on the
+     * client-side interface. This method can be used to convert internal settings
+     * of the text editor into JavaScript variables that will be accessible when
+     * the text editor is loaded.
+     *
+     * @param \Drupal\editor\Entity\Editor $editor
+     *   A configured text editor object.
+     *
+     * @return array
+     *   An array of settings that will be added to the page for use by this text
+     *   editor's JavaScript integration.
+     *
+     * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
+     * @see EditorManager::getAttachments()
+     */
+    public function getJSSettings(Editor $editor);
 
-  /**
-   * Returns JavaScript settings to be attached.
-   *
-   * Most text editors use JavaScript to provide a WYSIWYG or toolbar on the
-   * client-side interface. This method can be used to convert internal settings
-   * of the text editor into JavaScript variables that will be accessible when
-   * the text editor is loaded.
-   *
-   * @param \Drupal\editor\Entity\Editor $editor
-   *   A configured text editor object.
-   *
-   * @return array
-   *   An array of settings that will be added to the page for use by this text
-   *   editor's JavaScript integration.
-   *
-   * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
-   * @see EditorManager::getAttachments()
-   */
-  public function getJSSettings(Editor $editor);
-
-  /**
-   * Returns libraries to be attached.
-   *
-   * Because this is a method, plugins can dynamically choose to attach a
-   * different library for different configurations, instead of being forced to
-   * always use the same method.
-   *
-   * @param \Drupal\editor\Entity\Editor $editor
-   *   A configured text editor object.
-   *
-   * @return array
-   *   An array of libraries that will be added to the page for use by this text
-   *   editor.
-   *
-   * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
-   * @see EditorManager::getAttachments()
-   */
-  public function getLibraries(Editor $editor);
+    /**
+     * Returns libraries to be attached.
+     *
+     * Because this is a method, plugins can dynamically choose to attach a
+     * different library for different configurations, instead of being forced to
+     * always use the same method.
+     *
+     * @param \Drupal\editor\Entity\Editor $editor
+     *   A configured text editor object.
+     *
+     * @return array
+     *   An array of libraries that will be added to the page for use by this text
+     *   editor.
+     *
+     * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
+     * @see EditorManager::getAttachments()
+     */
+    public function getLibraries(Editor $editor);
 
 }

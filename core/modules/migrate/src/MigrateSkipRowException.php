@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate;
 
 /**
@@ -9,31 +11,33 @@ namespace Drupal\migrate;
  * source plugin may cause unexpected results in the count of rows processed.
  * And throwing it in a destination plugin causes an error.
  */
-class MigrateSkipRowException extends \Exception {
-
-  /**
-   * Constructs a MigrateSkipRowException object.
-   *
-   * @param string $message
-   *   The message for the exception.
-   * @param bool $saveToMap
-   *   TRUE to record as STATUS_IGNORED in the map, FALSE to skip silently.
-   */
-  public function __construct($message = '', /**
+class MigrateSkipRowException extends \Exception
+{
+    /**
+     * Constructs a MigrateSkipRowException object.
+     *
+     * @param string $message
+     *   The message for the exception.
+     * @param bool $saveToMap
+     *   TRUE to record as STATUS_IGNORED in the map, FALSE to skip silently.
+     */
+    public function __construct($message = '', /**
    * Whether to record the skip in the map table, or skip silently.
    */
-  protected $saveToMap = TRUE) {
-    parent::__construct($message);
-  }
+        protected $saveToMap = true)
+    {
+        parent::__construct($message);
+    }
 
-  /**
-   * Whether the thrower wants to record this skip in the map table.
-   *
-   * @return bool
-   *   TRUE to record as STATUS_IGNORED in the map, FALSE to skip silently.
-   */
-  public function getSaveToMap() {
-    return $this->saveToMap;
-  }
+    /**
+     * Whether the thrower wants to record this skip in the map table.
+     *
+     * @return bool
+     *   TRUE to record as STATUS_IGNORED in the map, FALSE to skip silently.
+     */
+    public function getSaveToMap()
+    {
+        return $this->saveToMap;
+    }
 
 }

@@ -13,13 +13,14 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class ConnectionUnitTest extends BaseMySqlTest {
-
-  /**
-   * Tests pdo options override.
-   */
-  public function testConnectionOpen(): void {
-    $this->markTestSkipped('mysqli is not a pdo driver.');
-  }
+class ConnectionUnitTest extends BaseMySqlTest
+{
+    /**
+     * Tests pdo options override.
+     */
+    public function testConnectionOpen(): void
+    {
+        $this->markTestSkipped('mysqli is not a pdo driver.');
+    }
 
 }

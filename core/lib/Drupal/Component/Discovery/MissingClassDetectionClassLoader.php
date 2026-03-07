@@ -19,63 +19,67 @@ namespace Drupal\Component\Discovery;
  * @see https://github.com/php/php-src/issues/17959
  * @internal
  */
-final class MissingClassDetectionClassLoader {
+final class MissingClassDetectionClassLoader
+{
+    /**
+     * An array of detected missing traits.
+     */
+    protected array $missingTraits = [];
 
-  /**
-   * An array of detected missing traits.
-   */
-  protected array $missingTraits = [];
+    /**
+     * Flag indicating whether there was an attempt to load a missing class.
+     */
+    protected bool $missingClass = false;
 
-  /**
-   * Flag indicating whether there was an attempt to load a missing class.
-   */
-  protected bool $missingClass = FALSE;
-
-  /**
-   * Records missing classes and aliases missing traits.
-   *
-   * This method is registered as a class loader during attribute discovery and
-   * runs last. Any call to this method means that the requested class is
-   * missing. If that class is a trait, it is aliased to a stub trait to avoid
-   * an uncaught PHP fatal error.
-   *
-   * @param string $class
-   *   The class name to load.
-   */
-  public function loadClass(string $class): void {
-    $this->missingClass = TRUE;
-    if (str_ends_with($class, 'Trait')) {
-      $this->missingTraits[] = $class;
-      class_alias(StubTrait::class, $class);
+    /**
+     * Records missing classes and aliases missing traits.
+     *
+     * This method is registered as a class loader during attribute discovery and
+     * runs last. Any call to this method means that the requested class is
+     * missing. If that class is a trait, it is aliased to a stub trait to avoid
+     * an uncaught PHP fatal error.
+     *
+     * @param string $class
+     *   The class name to load.
+     */
+    public function loadClass(string $class): void
+    {
+        $this->missingClass = true;
+        if (str_ends_with($class, 'Trait')) {
+            $this->missingTraits[] = $class;
+            class_alias(StubTrait::class, $class);
+        }
     }
-  }
 
-  /**
-   * Returns whether there was an attempt to load a missing class.
-   *
-   * @return bool
-   *   TRUE if there was an attempt to load a missing class, otherwise FALSE.
-   */
-  public function hasMissingClass(): bool {
-    return $this->missingClass;
-  }
+    /**
+     * Returns whether there was an attempt to load a missing class.
+     *
+     * @return bool
+     *   TRUE if there was an attempt to load a missing class, otherwise FALSE.
+     */
+    public function hasMissingClass(): bool
+    {
+        return $this->missingClass;
+    }
 
-  /**
-   * Returns all recorded missing traits since the last reset.
-   *
-   * @return string[]
-   *   An array of traits recorded as missing.
-   */
-  public function getMissingTraits(): array {
-    return $this->missingTraits;
-  }
+    /**
+     * Returns all recorded missing traits since the last reset.
+     *
+     * @return string[]
+     *   An array of traits recorded as missing.
+     */
+    public function getMissingTraits(): array
+    {
+        return $this->missingTraits;
+    }
 
-  /**
-   * Resets class variables.
-   */
-  public function reset(): void {
-    $this->missingClass = FALSE;
-    $this->missingTraits = [];
-  }
+    /**
+     * Resets class variables.
+     */
+    public function reset(): void
+    {
+        $this->missingClass = false;
+        $this->missingTraits = [];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Form;
 
 use Drupal\Core\Form\FormBase;
@@ -10,33 +12,36 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class ClearCacheForm extends FormBase {
+class ClearCacheForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'system_clear_cache';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'system_clear_cache';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $form['clear'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Clear all caches'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $form['clear'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Clear all caches'),
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * Clears the caches.
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    drupal_flush_all_caches();
-    $this->messenger()->addStatus($this->t('Caches cleared.'));
-  }
+    /**
+     * Clears the caches.
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        drupal_flush_all_caches();
+        $this->messenger()->addStatus($this->t('Caches cleared.'));
+    }
 
 }

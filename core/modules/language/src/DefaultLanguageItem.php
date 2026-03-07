@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language;
 
 use Drupal\Core\Entity\EntityInterface;
@@ -17,33 +19,35 @@ use Drupal\Core\Language\Language;
  *
  * @see language_field_info_alter().
  */
-class DefaultLanguageItem extends LanguageItem {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyDefaultValue($notify = TRUE): static {
-    // Default to LANGCODE_NOT_SPECIFIED.
-    $langcode = Language::LANGCODE_NOT_SPECIFIED;
-    if ($entity = $this->getEntity()) {
-      $langcode = $this->getDefaultLangcode($entity);
+class DefaultLanguageItem extends LanguageItem
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applyDefaultValue($notify = true): static
+    {
+        // Default to LANGCODE_NOT_SPECIFIED.
+        $langcode = Language::LANGCODE_NOT_SPECIFIED;
+        if ($entity = $this->getEntity()) {
+            $langcode = $this->getDefaultLangcode($entity);
+        }
+        // Always notify otherwise default langcode will not be set correctly.
+        $this->setValue(['value' => $langcode], true);
+        return $this;
     }
-    // Always notify otherwise default langcode will not be set correctly.
-    $this->setValue(['value' => $langcode], TRUE);
-    return $this;
-  }
 
-  /**
-   * Provides default language code of given entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity whose language code to be loaded.
-   *
-   * @return string
-   *   A string language code.
-   */
-  public function getDefaultLangcode(EntityInterface $entity) {
-    return language_get_default_langcode($entity->getEntityTypeId(), $entity->bundle());
-  }
+    /**
+     * Provides default language code of given entity.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface $entity
+     *   The entity whose language code to be loaded.
+     *
+     * @return string
+     *   A string language code.
+     */
+    public function getDefaultLangcode(EntityInterface $entity)
+    {
+        return language_get_default_langcode($entity->getEntityTypeId(), $entity->bundle());
+    }
 
 }

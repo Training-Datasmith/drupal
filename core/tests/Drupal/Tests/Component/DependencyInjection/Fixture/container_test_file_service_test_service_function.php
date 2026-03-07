@@ -13,6 +13,7 @@ declare(strict_types=1);
  * @return string
  *   A string just for testing.
  */
-function container_test_file_service_test_service_function(): string {
-  return 'Hello Container';
+function container_test_file_service_test_service_function(): string
+{
+    return 'Hello Container';
 }

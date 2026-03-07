@@ -19,34 +19,38 @@ use Drupal\migrate\Plugin\migrate\source\SourcePluginBase;
  *   source_module = "migrate"
  * )
  */
-class MigrateSourceWithAnnotations extends SourcePluginBase {
+class MigrateSourceWithAnnotations extends SourcePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function fields()
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
+    {
+        return 'Annotated';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString() {
-    return 'Annotated';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function initializeIterator() {
-    return new \ArrayIterator();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializeIterator()
+    {
+        return new \ArrayIterator();
+    }
 
 }

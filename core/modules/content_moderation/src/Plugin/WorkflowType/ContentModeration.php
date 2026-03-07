@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Plugin\WorkflowType;
 
-use Drupal\content_moderation\ModerationInformationInterface;
+use Drupal\content_moderation\ContentModerationState;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\content_moderation\ContentModerationState;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\workflows\Attribute\WorkflowType;
 use Drupal\workflows\Plugin\WorkflowTypeBase;
@@ -20,258 +19,271 @@ use Drupal\workflows\WorkflowInterface;
  * Attaches workflows to content entity types and their bundles.
  */
 #[WorkflowType(
-  id: 'content_moderation',
-  label: new TranslatableMarkup('Content moderation'),
-  forms: [
+    id: 'content_moderation',
+    label: new TranslatableMarkup('Content moderation'),
+    forms: [
     'configure' => \Drupal\content_moderation\Form\ContentModerationConfigureForm::class,
     'state' => \Drupal\content_moderation\Form\ContentModerationStateForm::class,
   ],
-  required_states: [
+    required_states: [
     'draft',
     'published',
   ]
 )]
-class ContentModeration extends WorkflowTypeBase implements ContentModerationInterface, ContainerFactoryPluginInterface {
+class ContentModeration extends WorkflowTypeBase implements ContentModerationInterface, ContainerFactoryPluginInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a ContentModeration object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
-   *   The entity type bundle info.
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
-   *   Moderation information service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getState($state_id): \Drupal\content_moderation\ContentModerationState {
-    $state = parent::getState($state_id);
-    if (isset($this->configuration['states'][$state->id()]['published']) && isset($this->configuration['states'][$state->id()]['default_revision'])) {
-      return new ContentModerationState($state, $this->configuration['states'][$state->id()]['published'], $this->configuration['states'][$state->id()]['default_revision']);
-    }
-    return new ContentModerationState($state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function workflowHasData(WorkflowInterface $workflow): bool {
-    return (bool) $this->entityTypeManager
-      ->getStorage('content_moderation_state')
-      ->getQuery()
-      ->condition('workflow', $workflow->id())
-      ->count()
-      ->accessCheck(FALSE)
-      ->range(0, 1)
-      ->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function workflowStateHasData(WorkflowInterface $workflow, StateInterface $state): bool {
-    return (bool) $this->entityTypeManager
-      ->getStorage('content_moderation_state')
-      ->getQuery()
-      ->condition('workflow', $workflow->id())
-      ->condition('moderation_state', $state->id())
-      ->count()
-      ->accessCheck(FALSE)
-      ->range(0, 1)
-      ->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityTypes(): array {
-    return array_keys($this->configuration['entity_types']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBundlesForEntityType($entity_type_id) {
-    return $this->configuration['entity_types'][$entity_type_id] ?? [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function appliesToEntityTypeAndBundle($entity_type_id, $bundle_id): bool {
-    return in_array($bundle_id, $this->getBundlesForEntityType($entity_type_id), TRUE);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeEntityTypeAndBundle($entity_type_id, $bundle_id): void {
-    if (!isset($this->configuration['entity_types'][$entity_type_id])) {
-      return;
-    }
-    $key = array_search($bundle_id, $this->configuration['entity_types'][$entity_type_id], TRUE);
-    if ($key !== FALSE) {
-      unset($this->configuration['entity_types'][$entity_type_id][$key]);
-      if (empty($this->configuration['entity_types'][$entity_type_id])) {
-        unset($this->configuration['entity_types'][$entity_type_id]);
-      }
-      else {
-        $this->configuration['entity_types'][$entity_type_id] = array_values($this->configuration['entity_types'][$entity_type_id]);
-      }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addEntityTypeAndBundle($entity_type_id, $bundle_id): void {
-    if (!$this->appliesToEntityTypeAndBundle($entity_type_id, $bundle_id)) {
-      $this->configuration['entity_types'][$entity_type_id][] = $bundle_id;
-      sort($this->configuration['entity_types'][$entity_type_id]);
-      ksort($this->configuration['entity_types']);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'states' => [
-        'draft' => [
-          'label' => 'Draft',
-          'published' => FALSE,
-          'default_revision' => FALSE,
-          'weight' => 0,
-        ],
-        'published' => [
-          'label' => 'Published',
-          'published' => TRUE,
-          'default_revision' => TRUE,
-          'weight' => 1,
-        ],
-      ],
-      'transitions' => [
-        'create_new_draft' => [
-          'label' => 'Create New Draft',
-          'to' => 'draft',
-          'weight' => 0,
-          'from' => [
-            'draft',
-            'published',
-          ],
-        ],
-        'publish' => [
-          'label' => 'Publish',
-          'to' => 'published',
-          'weight' => 1,
-          'from' => [
-            'draft',
-            'published',
-          ],
-        ],
-      ],
-      'entity_types' => [],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $dependencies = parent::calculateDependencies();
-    foreach ($this->getEntityTypes() as $entity_type_id) {
-      $entity_definition = $this->entityTypeManager->getDefinition($entity_type_id);
-      foreach ($this->getBundlesForEntityType($entity_type_id) as $bundle) {
-        $dependency = $entity_definition->getBundleConfigDependency($bundle);
-        $dependencies[$dependency['type']][] = $dependency['name'];
-      }
-    }
-    return $dependencies;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onDependencyRemoval(array $dependencies) {
-    $changed = parent::onDependencyRemoval($dependencies);
-
-    // When bundle config entities are removed, ensure they are cleaned up from
-    // the workflow.
-    foreach ($dependencies['config'] as $removed_config) {
-      if ($entity_type_id = $removed_config->getEntityType()->getBundleOf()) {
-        $bundle_id = $removed_config->id();
-        $this->removeEntityTypeAndBundle($entity_type_id, $bundle_id);
-        $changed = TRUE;
-      }
+    /**
+     * Constructs a ContentModeration object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+     *   The entity type bundle info.
+     * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
+     *   Moderation information service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    // When modules that provide entity types are removed, ensure they are also
-    // removed from the workflow.
-    if (!empty($dependencies['module'])) {
-      // Gather all entity definitions provided by the dependent modules which
-      // are being removed.
-      $module_entity_definitions = [];
-      foreach ($this->entityTypeManager->getDefinitions() as $entity_definition) {
-        if (in_array($entity_definition->getProvider(), $dependencies['module'])) {
-          $module_entity_definitions[] = $entity_definition;
+    /**
+     * {@inheritdoc}
+     */
+    public function getState($state_id): \Drupal\content_moderation\ContentModerationState
+    {
+        $state = parent::getState($state_id);
+        if (isset($this->configuration['states'][$state->id()]['published']) && isset($this->configuration['states'][$state->id()]['default_revision'])) {
+            return new ContentModerationState($state, $this->configuration['states'][$state->id()]['published'], $this->configuration['states'][$state->id()]['default_revision']);
         }
-      }
+        return new ContentModerationState($state);
+    }
 
-      // For all entity types provided by the uninstalled modules, remove any
-      // configuration for those types.
-      foreach ($module_entity_definitions as $module_entity_definition) {
-        foreach ($this->getBundlesForEntityType($module_entity_definition->id()) as $bundle) {
-          $this->removeEntityTypeAndBundle($module_entity_definition->id(), $bundle);
-          $changed = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function workflowHasData(WorkflowInterface $workflow): bool
+    {
+        return (bool) $this->entityTypeManager
+          ->getStorage('content_moderation_state')
+          ->getQuery()
+          ->condition('workflow', $workflow->id())
+          ->count()
+          ->accessCheck(false)
+          ->range(0, 1)
+          ->execute();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function workflowStateHasData(WorkflowInterface $workflow, StateInterface $state): bool
+    {
+        return (bool) $this->entityTypeManager
+          ->getStorage('content_moderation_state')
+          ->getQuery()
+          ->condition('workflow', $workflow->id())
+          ->condition('moderation_state', $state->id())
+          ->count()
+          ->accessCheck(false)
+          ->range(0, 1)
+          ->execute();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityTypes(): array
+    {
+        return array_keys($this->configuration['entity_types']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBundlesForEntityType($entity_type_id)
+    {
+        return $this->configuration['entity_types'][$entity_type_id] ?? [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function appliesToEntityTypeAndBundle($entity_type_id, $bundle_id): bool
+    {
+        return in_array($bundle_id, $this->getBundlesForEntityType($entity_type_id), true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeEntityTypeAndBundle($entity_type_id, $bundle_id): void
+    {
+        if (!isset($this->configuration['entity_types'][$entity_type_id])) {
+            return;
         }
-      }
+        $key = array_search($bundle_id, $this->configuration['entity_types'][$entity_type_id], true);
+        if ($key !== false) {
+            unset($this->configuration['entity_types'][$entity_type_id][$key]);
+            if (empty($this->configuration['entity_types'][$entity_type_id])) {
+                unset($this->configuration['entity_types'][$entity_type_id]);
+            } else {
+                $this->configuration['entity_types'][$entity_type_id] = array_values($this->configuration['entity_types'][$entity_type_id]);
+            }
+        }
     }
 
-    return $changed;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration() {
-    $configuration = parent::getConfiguration();
-    // Ensure that states and entity types are ordered consistently.
-    ksort($configuration['states']);
-    ksort($configuration['entity_types']);
-    return $configuration;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInitialState($entity = NULL) {
-    // Workflows are not tied to entities, but Content Moderation adds the
-    // relationship between Workflows and entities. Content Moderation needs the
-    // entity object to be able to determine the initial state based on
-    // publishing status.
-    if (!($entity instanceof ContentEntityInterface)) {
-      throw new \InvalidArgumentException('A content entity object must be supplied.');
-    }
-    if ($entity instanceof EntityPublishedInterface && !$entity->isNew()) {
-      return $this->getState($entity->isPublished() ? 'published' : 'draft');
+    /**
+     * {@inheritdoc}
+     */
+    public function addEntityTypeAndBundle($entity_type_id, $bundle_id): void
+    {
+        if (!$this->appliesToEntityTypeAndBundle($entity_type_id, $bundle_id)) {
+            $this->configuration['entity_types'][$entity_type_id][] = $bundle_id;
+            sort($this->configuration['entity_types'][$entity_type_id]);
+            ksort($this->configuration['entity_types']);
+        }
     }
 
-    return $this->getState(!empty($this->configuration['default_moderation_state']) ? $this->configuration['default_moderation_state'] : 'draft');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'states' => [
+            'draft' => [
+              'label' => 'Draft',
+              'published' => false,
+              'default_revision' => false,
+              'weight' => 0,
+            ],
+            'published' => [
+              'label' => 'Published',
+              'published' => true,
+              'default_revision' => true,
+              'weight' => 1,
+            ],
+          ],
+          'transitions' => [
+            'create_new_draft' => [
+              'label' => 'Create New Draft',
+              'to' => 'draft',
+              'weight' => 0,
+              'from' => [
+                'draft',
+                'published',
+              ],
+            ],
+            'publish' => [
+              'label' => 'Publish',
+              'to' => 'published',
+              'weight' => 1,
+              'from' => [
+                'draft',
+                'published',
+              ],
+            ],
+          ],
+          'entity_types' => [],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        $dependencies = parent::calculateDependencies();
+        foreach ($this->getEntityTypes() as $entity_type_id) {
+            $entity_definition = $this->entityTypeManager->getDefinition($entity_type_id);
+            foreach ($this->getBundlesForEntityType($entity_type_id) as $bundle) {
+                $dependency = $entity_definition->getBundleConfigDependency($bundle);
+                $dependencies[$dependency['type']][] = $dependency['name'];
+            }
+        }
+        return $dependencies;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onDependencyRemoval(array $dependencies)
+    {
+        $changed = parent::onDependencyRemoval($dependencies);
+
+        // When bundle config entities are removed, ensure they are cleaned up from
+        // the workflow.
+        foreach ($dependencies['config'] as $removed_config) {
+            if ($entity_type_id = $removed_config->getEntityType()->getBundleOf()) {
+                $bundle_id = $removed_config->id();
+                $this->removeEntityTypeAndBundle($entity_type_id, $bundle_id);
+                $changed = true;
+            }
+        }
+
+        // When modules that provide entity types are removed, ensure they are also
+        // removed from the workflow.
+        if (!empty($dependencies['module'])) {
+            // Gather all entity definitions provided by the dependent modules which
+            // are being removed.
+            $module_entity_definitions = [];
+            foreach ($this->entityTypeManager->getDefinitions() as $entity_definition) {
+                if (in_array($entity_definition->getProvider(), $dependencies['module'])) {
+                    $module_entity_definitions[] = $entity_definition;
+                }
+            }
+
+            // For all entity types provided by the uninstalled modules, remove any
+            // configuration for those types.
+            foreach ($module_entity_definitions as $module_entity_definition) {
+                foreach ($this->getBundlesForEntityType($module_entity_definition->id()) as $bundle) {
+                    $this->removeEntityTypeAndBundle($module_entity_definition->id(), $bundle);
+                    $changed = true;
+                }
+            }
+        }
+
+        return $changed;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration()
+    {
+        $configuration = parent::getConfiguration();
+        // Ensure that states and entity types are ordered consistently.
+        ksort($configuration['states']);
+        ksort($configuration['entity_types']);
+        return $configuration;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInitialState($entity = null)
+    {
+        // Workflows are not tied to entities, but Content Moderation adds the
+        // relationship between Workflows and entities. Content Moderation needs the
+        // entity object to be able to determine the initial state based on
+        // publishing status.
+        if (!($entity instanceof ContentEntityInterface)) {
+            throw new \InvalidArgumentException('A content entity object must be supplied.');
+        }
+        if ($entity instanceof EntityPublishedInterface && !$entity->isNew()) {
+            return $this->getState($entity->isPublished() ? 'published' : 'draft');
+        }
+
+        return $this->getState(!empty($this->configuration['default_moderation_state']) ? $this->configuration['default_moderation_state'] : 'draft');
+    }
 
 }

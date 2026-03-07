@@ -7,6 +7,6 @@ namespace Drupal\Core\Render\Component\Exception;
 /**
  * Raised when a component is rendering with invalid data.
  */
-class InvalidComponentDataException extends \Exception {
-
+class InvalidComponentDataException extends \Exception
+{
 }

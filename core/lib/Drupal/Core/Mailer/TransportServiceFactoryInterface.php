@@ -18,11 +18,11 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
  * service factory in order to provide a mailer transport instance which
  * requires more complex setup.
  */
-interface TransportServiceFactoryInterface {
-
-  /**
-   * Creates and returns a configured mailer transport class.
-   */
-  public function createTransport(): TransportInterface;
+interface TransportServiceFactoryInterface
+{
+    /**
+     * Creates and returns a configured mailer transport class.
+     */
+    public function createTransport(): TransportInterface;
 
 }

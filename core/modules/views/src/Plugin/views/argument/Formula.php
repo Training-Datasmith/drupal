@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -17,62 +19,66 @@ use Drupal\views\ViewExecutable;
  * @ingroup views_argument_handlers
   */
 #[ViewsArgument(
-  id: 'formula',
+    id: 'formula',
 )]
-class Formula extends ArgumentPluginBase {
+class Formula extends ArgumentPluginBase
+{
+    /**
+     * An appropriate SQL string for the DB type and field type.
+     *
+     * @var string|null
+     */
+    public $formula;
 
-  /**
-   * An appropriate SQL string for the DB type and field type.
-   *
-   * @var string|null
-   */
-  public $formula;
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    if (!empty($this->definition['formula'])) {
-      $this->formula = $this->definition['formula'];
+        if (!empty($this->definition['formula'])) {
+            $this->formula = $this->definition['formula'];
+        }
     }
-  }
 
-  /**
-   * Gets the prepared formula.
-   */
-  public function getFormula(): string {
-    return str_replace('***table***', $this->tableAlias, $this->formula);
-  }
+    /**
+     * Gets the prepared formula.
+     */
+    public function getFormula(): string
+    {
+        return str_replace('***table***', $this->tableAlias, $this->formula);
+    }
 
-  /**
-   * Build the summary query based on a formula.
-   */
-  protected function summaryQuery() {
-    $this->ensureMyTable();
-    // Now that our table is secure, get our formula.
-    $formula = $this->getFormula();
+    /**
+     * Build the summary query based on a formula.
+     */
+    protected function summaryQuery()
+    {
+        $this->ensureMyTable();
+        // Now that our table is secure, get our formula.
+        $formula = $this->getFormula();
 
-    // Add the field.
-    $this->base_alias = $this->name_alias = $this->query->addField(NULL, $formula, $this->field);
-    $this->query->setCountField(NULL, $formula, $this->field);
+        // Add the field.
+        $this->base_alias = $this->name_alias = $this->query->addField(null, $formula, $this->field);
+        $this->query->setCountField(null, $formula, $this->field);
 
-    return $this->summaryBasics(FALSE);
-  }
+        return $this->summaryBasics(false);
+    }
 
-  /**
-   * Build the query based upon the formula.
-   */
-  public function query($group_by = FALSE): void {
-    $this->ensureMyTable();
-    // Now that our table is secure, get our formula.
-    $placeholder = $this->placeholder();
-    $formula = $this->getFormula() . ' = ' . $placeholder;
-    $placeholders = [
-      $placeholder => $this->argument,
-    ];
-    $this->query->addWhere(0, $formula, $placeholders, 'formula');
-  }
+    /**
+     * Build the query based upon the formula.
+     */
+    public function query($group_by = false): void
+    {
+        $this->ensureMyTable();
+        // Now that our table is secure, get our formula.
+        $placeholder = $this->placeholder();
+        $formula = $this->getFormula() . ' = ' . $placeholder;
+        $placeholders = [
+          $placeholder => $this->argument,
+        ];
+        $this->query->addWhere(0, $formula, $placeholders, 'formula');
+    }
 
 }

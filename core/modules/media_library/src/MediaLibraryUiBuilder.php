@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\views\ViewExecutableFactory;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -20,289 +19,296 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *   This service is an internal part of the modal media library dialog and
  *   does not provide any extension points.
  */
-class MediaLibraryUiBuilder {
+class MediaLibraryUiBuilder
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The currently active request object.
+     *
+     * @var \Symfony\Component\HttpFoundation\Request
+     */
+    protected $request;
 
-  /**
-   * The currently active request object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $request;
-
-  /**
-   * Constructs a MediaLibraryUiBuilder instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack.
-   * @param \Drupal\views\ViewExecutableFactory $viewsExecutableFactory
-   *   The views executable factory.
-   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
-   *   The currently active request object.
-   * @param \Drupal\media_library\OpenerResolverInterface $openerResolver
-   *   The opener resolver.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, RequestStack $request_stack, protected \Drupal\views\ViewExecutableFactory $viewsExecutableFactory, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\media_library\OpenerResolverInterface $openerResolver) {
-    $this->request = $request_stack->getCurrentRequest();
-  }
-
-  /**
-   * Get media library dialog options.
-   *
-   * @return array
-   *   The media library dialog options.
-   */
-  public static function dialogOptions(): array {
-    return [
-      'classes' => [
-        'ui-dialog' => 'media-library-widget-modal',
-      ],
-      'title' => t('Add or select media'),
-      'height' => '75%',
-      'width' => '75%',
-    ];
-  }
-
-  /**
-   * Build the media library UI.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   (optional) The current state of the media library, derived from the
-   *   current request.
-   *
-   * @return array
-   *   The render array for the media library.
-   */
-  public function buildUi(?MediaLibraryState $state = NULL) {
-    if (!$state) {
-      $state = MediaLibraryState::fromRequest($this->request);
+    /**
+     * Constructs a MediaLibraryUiBuilder instance.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack.
+     * @param \Drupal\views\ViewExecutableFactory $viewsExecutableFactory
+     *   The views executable factory.
+     * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
+     *   The currently active request object.
+     * @param \Drupal\media_library\OpenerResolverInterface $openerResolver
+     *   The opener resolver.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, RequestStack $request_stack, protected \Drupal\views\ViewExecutableFactory $viewsExecutableFactory, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\media_library\OpenerResolverInterface $openerResolver)
+    {
+        $this->request = $request_stack->getCurrentRequest();
     }
-    // When navigating to a media type through the vertical tabs, we only want
-    // to load the changed library content. This is not only more efficient, but
-    // also provides a more accessible user experience for screen readers.
-    if ($state->get('media_library_content') === '1') {
-      return $this->buildLibraryContent($state);
-    }
-    return [
-      '#theme' => 'media_library_wrapper',
-      '#attributes' => [
-        'id' => 'media-library-wrapper',
-      ],
-      'menu' => $this->buildMediaTypeMenu($state),
-      'content' => $this->buildLibraryContent($state),
-      // Attach the JavaScript for the media library UI. The number of
-      // available slots needs to be added to make sure users can't select
-      // more items than allowed.
-      '#attached' => [
-        'library' => ['media_library/ui'],
-        'drupalSettings' => [
-          'media_library' => [
-            'selection_remaining' => $state->getAvailableSlots(),
+
+    /**
+     * Get media library dialog options.
+     *
+     * @return array
+     *   The media library dialog options.
+     */
+    public static function dialogOptions(): array
+    {
+        return [
+          'classes' => [
+            'ui-dialog' => 'media-library-widget-modal',
           ],
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * Build the media library content area.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   The current state of the media library, derived from the current request.
-   *
-   * @return array
-   *   The render array for the media library.
-   */
-  protected function buildLibraryContent(MediaLibraryState $state): array {
-    return [
-      '#type' => 'container',
-      '#theme_wrappers' => [
-        'container__media_library_content',
-      ],
-      '#attributes' => [
-        'id' => 'media-library-content',
-      ],
-      'form' => $this->buildMediaTypeAddForm($state),
-      'view' => $this->buildMediaLibraryView($state),
-    ];
-  }
-
-  /**
-   * Check access to the media library.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   Run access checks for this account.
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   (optional) The current state of the media library, derived from the
-   *   current request.
-   *
-   * @return \Drupal\Core\Access\AccessResult
-   *   The access result.
-   */
-  public function checkAccess(AccountInterface $account, ?MediaLibraryState $state = NULL) {
-    if (!$state) {
-      try {
-        $state = MediaLibraryState::fromRequest($this->request);
-      }
-      catch (BadRequestHttpException|\InvalidArgumentException $e) {
-        return AccessResult::forbidden($e->getMessage());
-      }
-    }
-    // Deny access if the view or display are removed.
-    $view = $this->entityTypeManager->getStorage('view')->load('media_library');
-    if (!$view) {
-      return AccessResult::forbidden('The media library view does not exist.')
-        ->setCacheMaxAge(0);
-    }
-    if (!$view->getDisplay('widget')) {
-      return AccessResult::forbidden('The media library widget display does not exist.')
-        ->addCacheableDependency($view);
+          'title' => t('Add or select media'),
+          'height' => '75%',
+          'width' => '75%',
+        ];
     }
 
-    // The user must at least be able to view media in order to access the media
-    // library.
-    $can_view_media = AccessResult::allowedIfHasPermission($account, 'view media')
-      ->addCacheableDependency($view);
-
-    // Delegate any further access checking to the opener service nominated by
-    // the media library state.
-    return $this->openerResolver->get($state)->checkAccess($state, $account)
-      ->andIf($can_view_media);
-  }
-
-  /**
-   * Get the media type menu for the media library.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   The current state of the media library, derived from the current request.
-   *
-   * @return array
-   *   The render array for the media type menu.
-   */
-  protected function buildMediaTypeMenu(MediaLibraryState $state): array {
-    // Add the menu for each type if we have more than 1 media type enabled for
-    // the field.
-    $allowed_type_ids = $state->getAllowedTypeIds();
-    if (count($allowed_type_ids) <= 1) {
-      return [];
+    /**
+     * Build the media library UI.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   (optional) The current state of the media library, derived from the
+     *   current request.
+     *
+     * @return array
+     *   The render array for the media library.
+     */
+    public function buildUi(?MediaLibraryState $state = null)
+    {
+        if (!$state) {
+            $state = MediaLibraryState::fromRequest($this->request);
+        }
+        // When navigating to a media type through the vertical tabs, we only want
+        // to load the changed library content. This is not only more efficient, but
+        // also provides a more accessible user experience for screen readers.
+        if ($state->get('media_library_content') === '1') {
+            return $this->buildLibraryContent($state);
+        }
+        return [
+          '#theme' => 'media_library_wrapper',
+          '#attributes' => [
+            'id' => 'media-library-wrapper',
+          ],
+          'menu' => $this->buildMediaTypeMenu($state),
+          'content' => $this->buildLibraryContent($state),
+          // Attach the JavaScript for the media library UI. The number of
+          // available slots needs to be added to make sure users can't select
+          // more items than allowed.
+          '#attached' => [
+            'library' => ['media_library/ui'],
+            'drupalSettings' => [
+              'media_library' => [
+                'selection_remaining' => $state->getAvailableSlots(),
+              ],
+            ],
+          ],
+        ];
     }
 
-    // @todo Add a class to the li element.
-    //   https://www.drupal.org/project/drupal/issues/3029227
-    $menu = [
-      '#theme' => 'links__media_library_menu',
-      '#links' => [],
-      '#attributes' => [
-        'class' => ['js-media-library-menu'],
-      ],
-    ];
-
-    $allowed_types = $this->entityTypeManager->getStorage('media_type')->loadMultiple($allowed_type_ids);
-
-    $selected_type_id = $state->getSelectedTypeId();
-    foreach ($allowed_types as $allowed_type_id => $allowed_type) {
-      $link_state = MediaLibraryState::create($state->getOpenerId(), $state->getAllowedTypeIds(), $allowed_type_id, $state->getAvailableSlots(), $state->getOpenerParameters());
-      // Add the 'media_library_content' parameter so the response will contain
-      // only the updated content for the tab.
-      // @see self::buildUi()
-      $link_state->set('media_library_content', 1);
-
-      $title = $allowed_type->label();
-      $display_title = $this->t('<span class="visually-hidden">Show </span>@title<span class="visually-hidden"> media</span>', ['@title' => $title]);
-      if ($allowed_type_id === $selected_type_id) {
-        $display_title = $this->t('<span class="visually-hidden">Show </span>@title<span class="visually-hidden"> media</span><span class="active-tab visually-hidden"> (selected)</span>', ['@title' => $title]);
-      }
-
-      $menu['#links']['media-library-menu-' . $allowed_type_id] = [
-        'title' => $display_title,
-        'url' => Url::fromRoute('media_library.ui', [], [
-          'query' => $link_state->all(),
-        ]),
-        'attributes' => [
-          'role' => 'button',
-          'data-title' => $title,
-        ],
-      ];
+    /**
+     * Build the media library content area.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   The current state of the media library, derived from the current request.
+     *
+     * @return array
+     *   The render array for the media library.
+     */
+    protected function buildLibraryContent(MediaLibraryState $state): array
+    {
+        return [
+          '#type' => 'container',
+          '#theme_wrappers' => [
+            'container__media_library_content',
+          ],
+          '#attributes' => [
+            'id' => 'media-library-content',
+          ],
+          'form' => $this->buildMediaTypeAddForm($state),
+          'view' => $this->buildMediaLibraryView($state),
+        ];
     }
 
-    // Set the active menu item.
-    $menu['#links']['media-library-menu-' . $selected_type_id]['attributes']['class'][] = 'active';
+    /**
+     * Check access to the media library.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   Run access checks for this account.
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   (optional) The current state of the media library, derived from the
+     *   current request.
+     *
+     * @return \Drupal\Core\Access\AccessResult
+     *   The access result.
+     */
+    public function checkAccess(AccountInterface $account, ?MediaLibraryState $state = null)
+    {
+        if (!$state) {
+            try {
+                $state = MediaLibraryState::fromRequest($this->request);
+            } catch (BadRequestHttpException|\InvalidArgumentException $e) {
+                return AccessResult::forbidden($e->getMessage());
+            }
+        }
+        // Deny access if the view or display are removed.
+        $view = $this->entityTypeManager->getStorage('view')->load('media_library');
+        if (!$view) {
+            return AccessResult::forbidden('The media library view does not exist.')
+              ->setCacheMaxAge(0);
+        }
+        if (!$view->getDisplay('widget')) {
+            return AccessResult::forbidden('The media library widget display does not exist.')
+              ->addCacheableDependency($view);
+        }
 
-    return $menu;
-  }
+        // The user must at least be able to view media in order to access the media
+        // library.
+        $can_view_media = AccessResult::allowedIfHasPermission($account, 'view media')
+          ->addCacheableDependency($view);
 
-  /**
-   * Get the add form for the selected media type.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   The current state of the media library, derived from the current request.
-   *
-   * @return array
-   *   The render array for the media type add form.
-   */
-  protected function buildMediaTypeAddForm(MediaLibraryState $state) {
-    $selected_type_id = $state->getSelectedTypeId();
-
-    $access_handler = $this->entityTypeManager->getAccessControlHandler('media');
-    $context = [
-      'media_library_state' => $state,
-    ];
-    if (!$access_handler->createAccess($selected_type_id, NULL, $context)) {
-      return [];
+        // Delegate any further access checking to the opener service nominated by
+        // the media library state.
+        return $this->openerResolver->get($state)->checkAccess($state, $account)
+          ->andIf($can_view_media);
     }
 
-    $selected_type = $this->entityTypeManager->getStorage('media_type')->load($selected_type_id);
-    $plugin_definition = $selected_type->getSource()->getPluginDefinition();
+    /**
+     * Get the media type menu for the media library.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   The current state of the media library, derived from the current request.
+     *
+     * @return array
+     *   The render array for the media type menu.
+     */
+    protected function buildMediaTypeMenu(MediaLibraryState $state): array
+    {
+        // Add the menu for each type if we have more than 1 media type enabled for
+        // the field.
+        $allowed_type_ids = $state->getAllowedTypeIds();
+        if (count($allowed_type_ids) <= 1) {
+            return [];
+        }
 
-    if (empty($plugin_definition['forms']['media_library_add'])) {
-      return [];
+        // @todo Add a class to the li element.
+        //   https://www.drupal.org/project/drupal/issues/3029227
+        $menu = [
+          '#theme' => 'links__media_library_menu',
+          '#links' => [],
+          '#attributes' => [
+            'class' => ['js-media-library-menu'],
+          ],
+        ];
+
+        $allowed_types = $this->entityTypeManager->getStorage('media_type')->loadMultiple($allowed_type_ids);
+
+        $selected_type_id = $state->getSelectedTypeId();
+        foreach ($allowed_types as $allowed_type_id => $allowed_type) {
+            $link_state = MediaLibraryState::create($state->getOpenerId(), $state->getAllowedTypeIds(), $allowed_type_id, $state->getAvailableSlots(), $state->getOpenerParameters());
+            // Add the 'media_library_content' parameter so the response will contain
+            // only the updated content for the tab.
+            // @see self::buildUi()
+            $link_state->set('media_library_content', 1);
+
+            $title = $allowed_type->label();
+            $display_title = $this->t('<span class="visually-hidden">Show </span>@title<span class="visually-hidden"> media</span>', ['@title' => $title]);
+            if ($allowed_type_id === $selected_type_id) {
+                $display_title = $this->t('<span class="visually-hidden">Show </span>@title<span class="visually-hidden"> media</span><span class="active-tab visually-hidden"> (selected)</span>', ['@title' => $title]);
+            }
+
+            $menu['#links']['media-library-menu-' . $allowed_type_id] = [
+              'title' => $display_title,
+              'url' => Url::fromRoute('media_library.ui', [], [
+                'query' => $link_state->all(),
+              ]),
+              'attributes' => [
+                'role' => 'button',
+                'data-title' => $title,
+              ],
+            ];
+        }
+
+        // Set the active menu item.
+        $menu['#links']['media-library-menu-' . $selected_type_id]['attributes']['class'][] = 'active';
+
+        return $menu;
     }
 
-    // After the form to add new media is submitted, we need to rebuild the
-    // media library with a new instance of the media add form. The form API
-    // allows us to do that by forcing empty user input.
-    // @see \Drupal\Core\Form\FormBuilder::doBuildForm()
-    $form_state = new FormState();
-    if ($state->get('_media_library_form_rebuild')) {
-      $form_state->setUserInput([]);
-      $state->remove('_media_library_form_rebuild');
+    /**
+     * Get the add form for the selected media type.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   The current state of the media library, derived from the current request.
+     *
+     * @return array
+     *   The render array for the media type add form.
+     */
+    protected function buildMediaTypeAddForm(MediaLibraryState $state)
+    {
+        $selected_type_id = $state->getSelectedTypeId();
+
+        $access_handler = $this->entityTypeManager->getAccessControlHandler('media');
+        $context = [
+          'media_library_state' => $state,
+        ];
+        if (!$access_handler->createAccess($selected_type_id, null, $context)) {
+            return [];
+        }
+
+        $selected_type = $this->entityTypeManager->getStorage('media_type')->load($selected_type_id);
+        $plugin_definition = $selected_type->getSource()->getPluginDefinition();
+
+        if (empty($plugin_definition['forms']['media_library_add'])) {
+            return [];
+        }
+
+        // After the form to add new media is submitted, we need to rebuild the
+        // media library with a new instance of the media add form. The form API
+        // allows us to do that by forcing empty user input.
+        // @see \Drupal\Core\Form\FormBuilder::doBuildForm()
+        $form_state = new FormState();
+        if ($state->get('_media_library_form_rebuild')) {
+            $form_state->setUserInput([]);
+            $state->remove('_media_library_form_rebuild');
+        }
+        $form_state->set('media_library_state', $state);
+        return $this->formBuilder->buildForm($plugin_definition['forms']['media_library_add'], $form_state);
     }
-    $form_state->set('media_library_state', $state);
-    return $this->formBuilder->buildForm($plugin_definition['forms']['media_library_add'], $form_state);
-  }
 
-  /**
-   * Get the media library view.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   The current state of the media library, derived from the current request.
-   *
-   * @return array
-   *   The render array for the media library view.
-   */
-  protected function buildMediaLibraryView(MediaLibraryState $state) {
-    // @todo Make the view configurable in
-    //   https://www.drupal.org/project/drupal/issues/2971209
-    $view = $this->entityTypeManager->getStorage('view')->load('media_library');
-    $view_executable = $this->viewsExecutableFactory->get($view);
-    $display_id = $state->get('views_display_id', 'widget');
+    /**
+     * Get the media library view.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   The current state of the media library, derived from the current request.
+     *
+     * @return array
+     *   The render array for the media library view.
+     */
+    protected function buildMediaLibraryView(MediaLibraryState $state)
+    {
+        // @todo Make the view configurable in
+        //   https://www.drupal.org/project/drupal/issues/2971209
+        $view = $this->entityTypeManager->getStorage('view')->load('media_library');
+        $view_executable = $this->viewsExecutableFactory->get($view);
+        $display_id = $state->get('views_display_id', 'widget');
 
-    // Make sure the state parameters are set in the request so the view can
-    // pass the parameters along in the pager, filters etc.
-    $view_request = $view_executable->getRequest();
-    $view_request->query->add($state->all());
-    $view_executable->setRequest($view_request);
+        // Make sure the state parameters are set in the request so the view can
+        // pass the parameters along in the pager, filters etc.
+        $view_request = $view_executable->getRequest();
+        $view_request->query->add($state->all());
+        $view_executable->setRequest($view_request);
 
-    $args = [$state->getSelectedTypeId()];
+        $args = [$state->getSelectedTypeId()];
 
-    $view_executable->setDisplay($display_id);
-    $view_executable->preExecute($args);
-    $view_executable->execute($display_id);
+        $view_executable->setDisplay($display_id);
+        $view_executable->preExecute($args);
+        $view_executable->execute($display_id);
 
-    return $view_executable->buildRenderable($display_id, [], FALSE);
-  }
+        return $view_executable->buildRenderable($display_id, [], false);
+    }
 
 }

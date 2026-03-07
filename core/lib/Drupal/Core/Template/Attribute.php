@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
-use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Serialization\Attribute\JsonSchema;
 
@@ -70,336 +72,352 @@ use Drupal\Core\Serialization\Attribute\JsonSchema;
  * @see \Drupal\Component\Render\PlainTextOutput::renderFromHtml()
  * @see \Drupal\Component\Utility\UrlHelper::stripDangerousProtocols()
  */
-class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
+class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface
+{
+    /**
+     * Stores the attribute data.
+     *
+     * @var array<string, \Drupal\Core\Template\AttributeValueBase>
+     */
+    protected $storage = [];
 
-  /**
-   * Stores the attribute data.
-   *
-   * @var array<string, \Drupal\Core\Template\AttributeValueBase>
-   */
-  protected $storage = [];
-
-  /**
-   * Constructs a \Drupal\Core\Template\Attribute object.
-   *
-   * @param array $attributes
-   *   An associative array of key-value pairs to be converted to attributes.
-   */
-  public function __construct($attributes = []) {
-    foreach ($attributes as $name => $value) {
-      $this->offsetSet($name, $value);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetGet($name): mixed {
-    if (isset($this->storage[$name])) {
-      return $this->storage[$name];
-    }
-    // The 'class' array key is expected to be itself an array, and therefore
-    // can be accessed using array append syntax before it has been initialized.
-    if ($name === 'class') {
-      // Initialize the class attribute as an empty array if not set.
-      $this->offsetSet('class', []);
-      return $this->storage['class'];
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetSet($name, $value): void {
-    $this->storage[$name] = $this->createAttributeValue($name, $value);
-  }
-
-  /**
-   * Creates the different types of attribute values.
-   *
-   * @param string $name
-   *   The attribute name.
-   * @param mixed $value
-   *   The attribute value.
-   *
-   * @return \Drupal\Core\Template\AttributeValueBase
-   *   An AttributeValueBase representation of the attribute's value.
-   */
-  protected function createAttributeValue($name, $value) {
-    // If the value is already an AttributeValueBase object,
-    // return a new instance of the same class, but with the new name.
-    if ($value instanceof AttributeValueBase) {
-      $class = $value::class;
-      return new $class($name, $value->value());
-    }
-    // An array value or 'class' attribute name are forced to always be an
-    // AttributeArray value for consistency.
-    if ($name == 'class' && !is_array($value)) {
-      // Cast the value to string in case it implements MarkupInterface.
-      $value = [(string) $value];
-    }
-    if (is_array($value)) {
-      // Cast the value to an array if the value was passed in as a string.
-      // @todo Decide to fix all the broken instances of class as a string
-      // in core or cast them.
-      $value = new AttributeArray($name, $value);
-    }
-    elseif (is_bool($value)) {
-      $value = new AttributeBoolean($name, $value);
-    }
-    // As a development aid, we allow the value to be any Stringable object.
-    elseif ($value instanceof \Stringable) {
-      // Attributes are not supposed to display HTML markup, so we just convert
-      // the value to plain text.
-      $value = PlainTextOutput::renderFromHtml($value);
-      $value = new AttributeString($name, $value);
-    }
-    elseif (!is_object($value)) {
-      $value = new AttributeString($name, $value);
-    }
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetUnset($name): void {
-    unset($this->storage[$name]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function offsetExists($name): bool {
-    return isset($this->storage[$name]);
-  }
-
-  /**
-   * Adds classes or merges them on to array of existing CSS classes.
-   *
-   * @param string|array ...$args
-   *   CSS classes to add to the class attribute array.
-   *
-   * @return $this
-   */
-  public function addClass(...$args): static {
-    if ($args) {
-      $classes = [];
-      foreach ($args as $arg) {
-        // Merge the values passed in from the classes array.
-        // The argument is cast to an array to support comma separated single
-        // values or one or more array arguments.
-        $classes[] = (array) $arg;
-      }
-      $classes = array_merge(...$classes);
-
-      // Merge if there are values, just add them otherwise.
-      if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
-        // Merge the values passed in from the class value array.
-        $classes = array_merge($this->storage['class']->value(), $classes);
-        $this->storage['class']->exchangeArray($classes);
-      }
-      else {
-        $this->offsetSet('class', $classes);
-      }
-    }
-
-    return $this;
-  }
-
-  /**
-   * Sets values for an attribute key.
-   *
-   * @param string $attribute
-   *   Name of the attribute.
-   * @param string|array $value
-   *   Value(s) to set for the given attribute key.
-   *
-   * @return $this
-   */
-  public function setAttribute($attribute, $value): static {
-    $this->offsetSet($attribute, $value);
-
-    return $this;
-  }
-
-  /**
-   * Checks if the storage has an attribute with the given name.
-   *
-   * @param string $name
-   *   The name of the attribute to check for.
-   *
-   * @return bool
-   *   Returns TRUE if the attribute exists, or FALSE otherwise.
-   */
-  public function hasAttribute($name): bool {
-    return array_key_exists($name, $this->storage);
-  }
-
-  /**
-   * Removes an attribute from an Attribute object.
-   *
-   * @param string|array ...$args
-   *   Attributes to remove from the attribute array.
-   *
-   * @return $this
-   */
-  public function removeAttribute(...$args): static {
-    foreach ($args as $arg) {
-      // Support arrays or multiple arguments.
-      if (is_array($arg)) {
-        foreach ($arg as $value) {
-          unset($this->storage[$value]);
+    /**
+     * Constructs a \Drupal\Core\Template\Attribute object.
+     *
+     * @param array $attributes
+     *   An associative array of key-value pairs to be converted to attributes.
+     */
+    public function __construct($attributes = [])
+    {
+        foreach ($attributes as $name => $value) {
+            $this->offsetSet($name, $value);
         }
-      }
-      else {
-        unset($this->storage[$arg]);
-      }
     }
 
-    return $this;
-  }
-
-  /**
-   * Removes argument values from array of existing CSS classes.
-   *
-   * @param string|array ...$args
-   *   CSS classes to remove from the class attribute array.
-   *
-   * @return $this
-   */
-  public function removeClass(...$args): static {
-    // With no class attribute, there is no need to remove.
-    if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
-      $classes = [];
-      foreach ($args as $arg) {
-        // Merge the values passed in from the classes array.
-        // The argument is cast to an array to support comma separated single
-        // values or one or more array arguments.
-        $classes[] = (array) $arg;
-      }
-      $classes = array_merge(...$classes);
-
-      // Remove the values passed in from the value array. Use array_values() to
-      // ensure that the array index remains sequential.
-      $classes = array_values(array_diff($this->storage['class']->value(), $classes));
-      $this->storage['class']->exchangeArray($classes);
-    }
-    return $this;
-  }
-
-  /**
-   * Gets the class attribute value if set.
-   *
-   * This method is implemented to take precedence over hasClass() for Twig 2.0.
-   *
-   * @return \Drupal\Core\Template\AttributeValueBase
-   *   The class attribute value if set.
-   *
-   * @see twig_get_attribute()
-   */
-  public function getClass(): mixed {
-    return $this->offsetGet('class');
-  }
-
-  /**
-   * Checks if the class array has the given CSS class.
-   *
-   * @param string $class
-   *   The CSS class to check for.
-   *
-   * @return bool
-   *   Returns TRUE if the class exists, or FALSE otherwise.
-   */
-  public function hasClass($class) {
-    if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
-      return in_array($class, $this->storage['class']->value());
-    }
-    return FALSE;
-  }
-
-  /**
-   * Implements the magic __toString() method.
-   */
-  #[JsonSchema(['type' => 'string', 'description' => 'Rendered HTML element attributes'])]
-  public function __toString(): string {
-    $return = '';
-    /** @var \Drupal\Core\Template\AttributeValueBase $value */
-    foreach ($this->storage as $value) {
-      $rendered = $value->render();
-      if ($rendered) {
-        $return .= ' ' . $rendered;
-      }
-    }
-    return $return;
-  }
-
-  /**
-   * Returns all storage elements as an array.
-   *
-   * @return array
-   *   An associative array of attributes.
-   */
-  public function toArray(): array {
-    $return = [];
-    foreach ($this->storage as $name => $value) {
-      $return[$name] = $value->value();
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetGet($name): mixed
+    {
+        if (isset($this->storage[$name])) {
+            return $this->storage[$name];
+        }
+        // The 'class' array key is expected to be itself an array, and therefore
+        // can be accessed using array append syntax before it has been initialized.
+        if ($name === 'class') {
+            // Initialize the class attribute as an empty array if not set.
+            $this->offsetSet('class', []);
+            return $this->storage['class'];
+        }
+        return null;
     }
 
-    return $return;
-  }
-
-  /**
-   * Implements the magic __clone() method.
-   */
-  public function __clone() {
-    foreach ($this->storage as $name => $value) {
-      $this->storage[$name] = clone $value;
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetSet($name, $value): void
+    {
+        $this->storage[$name] = $this->createAttributeValue($name, $value);
     }
-  }
 
-  /**
-   * Retrieves the iterator for the object.
-   *
-   * @return \ArrayIterator<string, \Drupal\Core\Template\AttributeValueBase>
-   *   The iterator.
-   */
-  public function getIterator(): \ArrayIterator {
-    return new \ArrayIterator($this->storage);
-  }
-
-  /**
-   * Returns the whole array.
-   */
-  public function storage() {
-    return $this->storage;
-  }
-
-  /**
-   * Returns a representation of the object for use in JSON serialization.
-   *
-   * @return string
-   *   The safe string content.
-   */
-  public function jsonSerialize(): string {
-    return (string) $this;
-  }
-
-  /**
-   * Merges an Attribute object into the current storage.
-   *
-   * @param \Drupal\Core\Template\Attribute $collection
-   *   The Attribute object to merge.
-   *
-   * @return $this
-   */
-  public function merge(Attribute $collection): static {
-    $merged_attributes = NestedArray::mergeDeep($this->toArray(), $collection->toArray());
-    foreach ($merged_attributes as $name => $value) {
-      $this->storage[$name] = $this->createAttributeValue($name, $value);
+    /**
+     * Creates the different types of attribute values.
+     *
+     * @param string $name
+     *   The attribute name.
+     * @param mixed $value
+     *   The attribute value.
+     *
+     * @return \Drupal\Core\Template\AttributeValueBase
+     *   An AttributeValueBase representation of the attribute's value.
+     */
+    protected function createAttributeValue($name, $value)
+    {
+        // If the value is already an AttributeValueBase object,
+        // return a new instance of the same class, but with the new name.
+        if ($value instanceof AttributeValueBase) {
+            $class = $value::class;
+            return new $class($name, $value->value());
+        }
+        // An array value or 'class' attribute name are forced to always be an
+        // AttributeArray value for consistency.
+        if ($name == 'class' && !is_array($value)) {
+            // Cast the value to string in case it implements MarkupInterface.
+            $value = [(string) $value];
+        }
+        if (is_array($value)) {
+            // Cast the value to an array if the value was passed in as a string.
+            // @todo Decide to fix all the broken instances of class as a string
+            // in core or cast them.
+            $value = new AttributeArray($name, $value);
+        } elseif (is_bool($value)) {
+            $value = new AttributeBoolean($name, $value);
+        }
+        // As a development aid, we allow the value to be any Stringable object.
+        elseif ($value instanceof \Stringable) {
+            // Attributes are not supposed to display HTML markup, so we just convert
+            // the value to plain text.
+            $value = PlainTextOutput::renderFromHtml($value);
+            $value = new AttributeString($name, $value);
+        } elseif (!is_object($value)) {
+            $value = new AttributeString($name, $value);
+        }
+        return $value;
     }
-    return $this;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetUnset($name): void
+    {
+        unset($this->storage[$name]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetExists($name): bool
+    {
+        return isset($this->storage[$name]);
+    }
+
+    /**
+     * Adds classes or merges them on to array of existing CSS classes.
+     *
+     * @param string|array ...$args
+     *   CSS classes to add to the class attribute array.
+     *
+     * @return $this
+     */
+    public function addClass(...$args): static
+    {
+        if ($args) {
+            $classes = [];
+            foreach ($args as $arg) {
+                // Merge the values passed in from the classes array.
+                // The argument is cast to an array to support comma separated single
+                // values or one or more array arguments.
+                $classes[] = (array) $arg;
+            }
+            $classes = array_merge(...$classes);
+
+            // Merge if there are values, just add them otherwise.
+            if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
+                // Merge the values passed in from the class value array.
+                $classes = array_merge($this->storage['class']->value(), $classes);
+                $this->storage['class']->exchangeArray($classes);
+            } else {
+                $this->offsetSet('class', $classes);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sets values for an attribute key.
+     *
+     * @param string $attribute
+     *   Name of the attribute.
+     * @param string|array $value
+     *   Value(s) to set for the given attribute key.
+     *
+     * @return $this
+     */
+    public function setAttribute($attribute, $value): static
+    {
+        $this->offsetSet($attribute, $value);
+
+        return $this;
+    }
+
+    /**
+     * Checks if the storage has an attribute with the given name.
+     *
+     * @param string $name
+     *   The name of the attribute to check for.
+     *
+     * @return bool
+     *   Returns TRUE if the attribute exists, or FALSE otherwise.
+     */
+    public function hasAttribute($name): bool
+    {
+        return array_key_exists($name, $this->storage);
+    }
+
+    /**
+     * Removes an attribute from an Attribute object.
+     *
+     * @param string|array ...$args
+     *   Attributes to remove from the attribute array.
+     *
+     * @return $this
+     */
+    public function removeAttribute(...$args): static
+    {
+        foreach ($args as $arg) {
+            // Support arrays or multiple arguments.
+            if (is_array($arg)) {
+                foreach ($arg as $value) {
+                    unset($this->storage[$value]);
+                }
+            } else {
+                unset($this->storage[$arg]);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Removes argument values from array of existing CSS classes.
+     *
+     * @param string|array ...$args
+     *   CSS classes to remove from the class attribute array.
+     *
+     * @return $this
+     */
+    public function removeClass(...$args): static
+    {
+        // With no class attribute, there is no need to remove.
+        if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
+            $classes = [];
+            foreach ($args as $arg) {
+                // Merge the values passed in from the classes array.
+                // The argument is cast to an array to support comma separated single
+                // values or one or more array arguments.
+                $classes[] = (array) $arg;
+            }
+            $classes = array_merge(...$classes);
+
+            // Remove the values passed in from the value array. Use array_values() to
+            // ensure that the array index remains sequential.
+            $classes = array_values(array_diff($this->storage['class']->value(), $classes));
+            $this->storage['class']->exchangeArray($classes);
+        }
+        return $this;
+    }
+
+    /**
+     * Gets the class attribute value if set.
+     *
+     * This method is implemented to take precedence over hasClass() for Twig 2.0.
+     *
+     * @return \Drupal\Core\Template\AttributeValueBase
+     *   The class attribute value if set.
+     *
+     * @see twig_get_attribute()
+     */
+    public function getClass(): mixed
+    {
+        return $this->offsetGet('class');
+    }
+
+    /**
+     * Checks if the class array has the given CSS class.
+     *
+     * @param string $class
+     *   The CSS class to check for.
+     *
+     * @return bool
+     *   Returns TRUE if the class exists, or FALSE otherwise.
+     */
+    public function hasClass($class)
+    {
+        if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
+            return in_array($class, $this->storage['class']->value());
+        }
+        return false;
+    }
+
+    /**
+     * Implements the magic __toString() method.
+     */
+    #[JsonSchema(['type' => 'string', 'description' => 'Rendered HTML element attributes'])]
+    public function __toString(): string
+    {
+        $return = '';
+        /** @var \Drupal\Core\Template\AttributeValueBase $value */
+        foreach ($this->storage as $value) {
+            $rendered = $value->render();
+            if ($rendered) {
+                $return .= ' ' . $rendered;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * Returns all storage elements as an array.
+     *
+     * @return array
+     *   An associative array of attributes.
+     */
+    public function toArray(): array
+    {
+        $return = [];
+        foreach ($this->storage as $name => $value) {
+            $return[$name] = $value->value();
+        }
+
+        return $return;
+    }
+
+    /**
+     * Implements the magic __clone() method.
+     */
+    public function __clone()
+    {
+        foreach ($this->storage as $name => $value) {
+            $this->storage[$name] = clone $value;
+        }
+    }
+
+    /**
+     * Retrieves the iterator for the object.
+     *
+     * @return \ArrayIterator<string, \Drupal\Core\Template\AttributeValueBase>
+     *   The iterator.
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator($this->storage);
+    }
+
+    /**
+     * Returns the whole array.
+     */
+    public function storage()
+    {
+        return $this->storage;
+    }
+
+    /**
+     * Returns a representation of the object for use in JSON serialization.
+     *
+     * @return string
+     *   The safe string content.
+     */
+    public function jsonSerialize(): string
+    {
+        return (string) $this;
+    }
+
+    /**
+     * Merges an Attribute object into the current storage.
+     *
+     * @param \Drupal\Core\Template\Attribute $collection
+     *   The Attribute object to merge.
+     *
+     * @return $this
+     */
+    public function merge(Attribute $collection): static
+    {
+        $merged_attributes = NestedArray::mergeDeep($this->toArray(), $collection->toArray());
+        foreach ($merged_attributes as $name => $value) {
+            $this->storage[$name] = $this->createAttributeValue($name, $value);
+        }
+        return $this;
+    }
 
 }

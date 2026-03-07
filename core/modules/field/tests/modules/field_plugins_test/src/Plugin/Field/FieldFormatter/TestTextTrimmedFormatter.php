@@ -12,12 +12,13 @@ use Drupal\text\Plugin\Field\FieldFormatter\TextTrimmedFormatter;
  * Plugin implementation of the 'field_plugins_test_text_formatter' formatter.
  */
 #[FieldFormatter(
-  id: 'field_plugins_test_text_formatter',
-  label: new TranslatableMarkup('Test Trimmed'),
-  field_types: [
+    id: 'field_plugins_test_text_formatter',
+    label: new TranslatableMarkup('Test Trimmed'),
+    field_types: [
     'text',
     'text_long',
   ],
 )]
-class TestTextTrimmedFormatter extends TextTrimmedFormatter {
+class TestTextTrimmedFormatter extends TextTrimmedFormatter
+{
 }

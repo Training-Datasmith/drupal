@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -13,42 +15,42 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class ChangedCommand implements CommandInterface {
+class ChangedCommand implements CommandInterface
+{
+    /**
+     * Constructs a ChangedCommand object.
+     *
+     * @param string $selector
+     *   CSS selector for elements to be marked as changed.
+     * @param string $asterisk
+     *   CSS selector for elements to which an asterisk will be appended.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string.
+         *
+         * If the command is a response to a request from an #ajax form element then
+         * this value can be NULL.
+         */
+        protected $selector,
+        /**
+         * An optional CSS selector for elements to which asterisks will be appended.
+         */
+        protected $asterisk = ''
+    ) {
+    }
 
-  /**
-   * Constructs a ChangedCommand object.
-   *
-   * @param string $selector
-   *   CSS selector for elements to be marked as changed.
-   * @param string $asterisk
-   *   CSS selector for elements to which an asterisk will be appended.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string.
-       *
-       * If the command is a response to a request from an #ajax form element then
-       * this value can be NULL.
-       */
-      protected $selector,
-      /**
-       * An optional CSS selector for elements to which asterisks will be appended.
-       */
-      protected $asterisk = ''
-  )
-  {
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'changed',
-      'selector' => $this->selector,
-      'asterisk' => $this->asterisk,
-    ];
-  }
+        return [
+          'command' => 'changed',
+          'selector' => $this->selector,
+          'asterisk' => $this->asterisk,
+        ];
+    }
 
 }

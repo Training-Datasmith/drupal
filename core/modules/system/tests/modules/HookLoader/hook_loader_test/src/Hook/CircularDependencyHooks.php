@@ -13,17 +13,19 @@ use Drupal\Core\Hook\Attribute\Hook;
  * This would cause a circular dependency problem, if the hook implementations
  * in ModuleHandler were not lazy-loaded.
  */
-class CircularDependencyHooks {
+class CircularDependencyHooks
+{
+    public function __construct(
+        public readonly ModuleHandlerInterface $moduleHandler,
+    ) {
+    }
 
-  public function __construct(
-    public readonly ModuleHandlerInterface $moduleHandler,
-  ) {}
-
-  #[Hook('test_hook')]
-  public function testHook(): string {
-    // The hook method does not need to actually use the module handler.
-    // It is enough to require it in the constructor.
-    return __METHOD__;
-  }
+    #[Hook('test_hook')]
+    public function testHook(): string
+    {
+        // The hook method does not need to actually use the module handler.
+        // It is enough to require it in the constructor.
+        return __METHOD__;
+    }
 
 }

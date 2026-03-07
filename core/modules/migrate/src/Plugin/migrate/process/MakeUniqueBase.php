@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\migrate\ProcessPluginBase;
-use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\Row;
 use Drupal\migrate\MigrateException;
+use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
+use Drupal\migrate\Row;
 
 /**
  * This plugin ensures the source value is unique.
@@ -23,55 +25,56 @@ use Drupal\migrate\MigrateException;
  *
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
-abstract class MakeUniqueBase extends ProcessPluginBase {
+abstract class MakeUniqueBase extends ProcessPluginBase
+{
+    /**
+     * Creates a unique value based on the source value.
+     *
+     * @param string $value
+     *   The input string.
+     * @param \Drupal\migrate\MigrateExecutableInterface $migrate_executable
+     *   The migration in which this process is being executed.
+     * @param \Drupal\migrate\Row $row
+     *   The row from the source to process.
+     * @param string $destination_property
+     *   The destination property currently worked on. This is only used together
+     *   with the $row above.
+     *
+     * @return string
+     *   The unique version of the input value.
+     *
+     * @throws \Drupal\migrate\MigrateException
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        $i = 1;
+        $postfix = $this->configuration['postfix'] ?? '';
+        $start = $this->configuration['start'] ?? 0;
+        if (!is_int($start)) {
+            throw new MigrateException('The start position configuration key should be an integer. Omit this key to capture from the beginning of the string.');
+        }
+        $length = $this->configuration['length'] ?? null;
+        if (!is_null($length) && !is_int($length)) {
+            throw new MigrateException('The character length configuration key should be an integer. Omit this key to capture the entire string.');
+        }
+        // Use optional start or length to return a portion of the unique value.
+        $value = mb_substr($value, $start, $length);
+        $new_value = $value;
+        while ($this->exists($new_value)) {
+            $new_value = $value . $postfix . $i++;
+        }
+        return $new_value;
+    }
 
-  /**
-   * Creates a unique value based on the source value.
-   *
-   * @param string $value
-   *   The input string.
-   * @param \Drupal\migrate\MigrateExecutableInterface $migrate_executable
-   *   The migration in which this process is being executed.
-   * @param \Drupal\migrate\Row $row
-   *   The row from the source to process.
-   * @param string $destination_property
-   *   The destination property currently worked on. This is only used together
-   *   with the $row above.
-   *
-   * @return string
-   *   The unique version of the input value.
-   *
-   * @throws \Drupal\migrate\MigrateException
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $i = 1;
-    $postfix = $this->configuration['postfix'] ?? '';
-    $start = $this->configuration['start'] ?? 0;
-    if (!is_int($start)) {
-      throw new MigrateException('The start position configuration key should be an integer. Omit this key to capture from the beginning of the string.');
-    }
-    $length = $this->configuration['length'] ?? NULL;
-    if (!is_null($length) && !is_int($length)) {
-      throw new MigrateException('The character length configuration key should be an integer. Omit this key to capture the entire string.');
-    }
-    // Use optional start or length to return a portion of the unique value.
-    $value = mb_substr($value, $start, $length);
-    $new_value = $value;
-    while ($this->exists($new_value)) {
-      $new_value = $value . $postfix . $i++;
-    }
-    return $new_value;
-  }
-
-  /**
-   * This is a query checking the existence of some value.
-   *
-   * @param mixed $value
-   *   The value to check.
-   *
-   * @return bool
-   *   TRUE if the value exists.
-   */
-  abstract protected function exists($value);
+    /**
+     * This is a query checking the existence of some value.
+     *
+     * @param mixed $value
+     *   The value to check.
+     *
+     * @return bool
+     *   TRUE if the value exists.
+     */
+    abstract protected function exists($value);
 
 }

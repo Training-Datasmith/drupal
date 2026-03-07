@@ -13,23 +13,23 @@ use Drupal\entity_test\EntityTestViewBuilderOverriddenView;
  * Test entity class for testing a view builder.
  */
 #[ContentEntityType(
-  id: 'entity_test_view_builder',
-  label: new TranslatableMarkup('Entity Test view builder'),
-  render_cache: FALSE,
-  entity_keys: [
+    id: 'entity_test_view_builder',
+    label: new TranslatableMarkup('Entity Test view builder'),
+    render_cache: false,
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'label' => 'name',
     'bundle' => 'type',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
     'view_builder' => EntityTestViewBuilderOverriddenView::class,
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_view_builder',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_view_builder',
 )]
-class EntityTestViewBuilder extends EntityTest {
-
+class EntityTestViewBuilder extends EntityTest
+{
 }

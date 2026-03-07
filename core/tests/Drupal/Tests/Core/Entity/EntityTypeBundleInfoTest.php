@@ -27,333 +27,340 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[CoversClass(EntityTypeBundleInfo::class)]
 #[Group('Entity')]
-class EntityTypeBundleInfoTest extends UnitTestCase {
+class EntityTypeBundleInfoTest extends UnitTestCase
+{
+    /**
+     * The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ProphecyInterface
+     */
+    protected $moduleHandler;
 
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ProphecyInterface
-   */
-  protected $moduleHandler;
+    /**
+     * The cache backend to use.
+     *
+     * @var \Drupal\Core\Cache\CacheBackendInterface|\Prophecy\Prophecy\ProphecyInterface
+     */
+    protected $cacheBackend;
 
-  /**
-   * The cache backend to use.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface|\Prophecy\Prophecy\ProphecyInterface
-   */
-  protected $cacheBackend;
+    /**
+     * The cache tags invalidator.
+     *
+     * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface|\Prophecy\Prophecy\ProphecyInterface
+     */
+    protected $cacheTagsInvalidator;
 
-  /**
-   * The cache tags invalidator.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface|\Prophecy\Prophecy\ProphecyInterface
-   */
-  protected $cacheTagsInvalidator;
+    /**
+     * The typed data manager.
+     *
+     * @var \Drupal\Core\TypedData\TypedDataManagerInterface|\Prophecy\Prophecy\ProphecyInterface
+     */
+    protected $typedDataManager;
 
-  /**
-   * The typed data manager.
-   *
-   * @var \Drupal\Core\TypedData\TypedDataManagerInterface|\Prophecy\Prophecy\ProphecyInterface
-   */
-  protected $typedDataManager;
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\Prophecy\Prophecy\ProphecyInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\Prophecy\Prophecy\ProphecyInterface
-   */
-  protected $entityTypeManager;
+    /**
+     * The language manager.
+     *
+     * @var \Drupal\Core\Language\LanguageManagerInterface
+     */
+    protected $languageManager;
 
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
+    /**
+     * The entity type bundle info under test.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeBundleInfo
+     */
+    protected $entityTypeBundleInfo;
 
-  /**
-   * The entity type bundle info under test.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
-   */
-  protected $entityTypeBundleInfo;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->moduleHandler = $this->prophesize(ModuleHandlerInterface::class);
+        $this->moduleHandler->alter('entity_type', Argument::type('array'))->willReturn(null);
 
-    $this->moduleHandler = $this->prophesize(ModuleHandlerInterface::class);
-    $this->moduleHandler->alter('entity_type', Argument::type('array'))->willReturn(NULL);
+        $this->cacheBackend = $this->prophesize(CacheBackendInterface::class);
 
-    $this->cacheBackend = $this->prophesize(CacheBackendInterface::class);
+        $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
 
-    $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
+        $this->cacheTagsInvalidator = $this->prophesize(CacheTagsInvalidatorInterface::class);
 
-    $this->cacheTagsInvalidator = $this->prophesize(CacheTagsInvalidatorInterface::class);
+        $language = new Language(['id' => 'en']);
+        $this->languageManager = $this->prophesize(LanguageManagerInterface::class);
+        $this->languageManager->getCurrentLanguage()->willReturn($language);
+        $this->languageManager->getLanguages()->willReturn(['en' => (object) ['id' => 'en']]);
 
-    $language = new Language(['id' => 'en']);
-    $this->languageManager = $this->prophesize(LanguageManagerInterface::class);
-    $this->languageManager->getCurrentLanguage()->willReturn($language);
-    $this->languageManager->getLanguages()->willReturn(['en' => (object) ['id' => 'en']]);
+        $this->typedDataManager = $this->prophesize(TypedDataManagerInterface::class);
 
-    $this->typedDataManager = $this->prophesize(TypedDataManagerInterface::class);
+        $this->cacheBackend = $this->prophesize(CacheBackendInterface::class);
 
-    $this->cacheBackend = $this->prophesize(CacheBackendInterface::class);
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('cache_tags.invalidator')->willReturn($this->cacheTagsInvalidator->reveal());
+        // $container->get('typed_data_manager')->willReturn($this->typedDataManager->reveal());
+        \Drupal::setContainer($container->reveal());
 
-    $container = $this->prophesize(ContainerInterface::class);
-    $container->get('cache_tags.invalidator')->willReturn($this->cacheTagsInvalidator->reveal());
-    // $container->get('typed_data_manager')->willReturn($this->typedDataManager->reveal());
-    \Drupal::setContainer($container->reveal());
-
-    $this->entityTypeBundleInfo = new EntityTypeBundleInfo($this->entityTypeManager->reveal(), $this->languageManager->reveal(), $this->moduleHandler->reveal(), $this->typedDataManager->reveal(), $this->cacheBackend->reveal());
-  }
-
-  /**
-   * Sets up the entity type manager to be tested.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface[]|\Prophecy\Prophecy\ProphecyInterface[] $definitions
-   *   (optional) An array of entity type definitions.
-   */
-  protected function setUpEntityTypeDefinitions($definitions = []): void {
-    foreach ($definitions as $key => $entity_type) {
-      // \Drupal\Core\Entity\EntityTypeInterface::getLinkTemplates() is called
-      // by \Drupal\Core\Entity\EntityTypeManager::processDefinition() so it
-      // must always be mocked.
-      $entity_type->getLinkTemplates()->willReturn([]);
-
-      $definitions[$key] = $entity_type->reveal();
+        $this->entityTypeBundleInfo = new EntityTypeBundleInfo($this->entityTypeManager->reveal(), $this->languageManager->reveal(), $this->moduleHandler->reveal(), $this->typedDataManager->reveal(), $this->cacheBackend->reveal());
     }
 
-    $this->entityTypeManager->getDefinition(Argument::cetera())
-      ->will(function ($args) use ($definitions) {
-        $entity_type_id = $args[0];
-        $exception_on_invalid = $args[1];
-        if (isset($definitions[$entity_type_id])) {
-          return $definitions[$entity_type_id];
+    /**
+     * Sets up the entity type manager to be tested.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface[]|\Prophecy\Prophecy\ProphecyInterface[] $definitions
+     *   (optional) An array of entity type definitions.
+     */
+    protected function setUpEntityTypeDefinitions($definitions = []): void
+    {
+        foreach ($definitions as $key => $entity_type) {
+            // \Drupal\Core\Entity\EntityTypeInterface::getLinkTemplates() is called
+            // by \Drupal\Core\Entity\EntityTypeManager::processDefinition() so it
+            // must always be mocked.
+            $entity_type->getLinkTemplates()->willReturn([]);
+
+            $definitions[$key] = $entity_type->reveal();
         }
-        elseif (!$exception_on_invalid) {
-          return NULL;
-        }
-        else {
-          throw new PluginNotFoundException($entity_type_id);
-        }
-      });
-    $this->entityTypeManager->getDefinitions()->willReturn($definitions);
 
-  }
+        $this->entityTypeManager->getDefinition(Argument::cetera())
+          ->will(function ($args) use ($definitions) {
+              $entity_type_id = $args[0];
+              $exception_on_invalid = $args[1];
+              if (isset($definitions[$entity_type_id])) {
+                  return $definitions[$entity_type_id];
+              } elseif (!$exception_on_invalid) {
+                  return null;
+              } else {
+                  throw new PluginNotFoundException($entity_type_id);
+              }
+          });
+        $this->entityTypeManager->getDefinitions()->willReturn($definitions);
 
-  /**
-   * Tests the clearCachedBundles() method.
-   */
-  public function testClearCachedBundles(): void {
-    $this->setUpEntityTypeDefinitions();
+    }
 
-    $this->typedDataManager->clearCachedDefinitions()->shouldBeCalled();
+    /**
+     * Tests the clearCachedBundles() method.
+     */
+    public function testClearCachedBundles(): void
+    {
+        $this->setUpEntityTypeDefinitions();
 
-    $this->cacheTagsInvalidator->invalidateTags(['entity_bundles'])->shouldBeCalled();
+        $this->typedDataManager->clearCachedDefinitions()->shouldBeCalled();
 
-    $this->entityTypeBundleInfo->clearCachedBundles();
-  }
+        $this->cacheTagsInvalidator->invalidateTags(['entity_bundles'])->shouldBeCalled();
 
-  /**
-   * Tests the getBundleInfo() method.
-   */
-  #[DataProvider('providerTestGetBundleInfo')]
-  public function testGetBundleInfo($entity_type_id, $expected): void {
-    $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
-    $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(NULL);
+        $this->entityTypeBundleInfo->clearCachedBundles();
+    }
 
-    $apple = $this->prophesize(EntityTypeInterface::class);
-    $apple->getLabel()->willReturn('Apple');
-    $apple->getBundleEntityType()->willReturn(NULL);
+    /**
+     * Tests the getBundleInfo() method.
+     */
+    #[DataProvider('providerTestGetBundleInfo')]
+    public function testGetBundleInfo($entity_type_id, $expected): void
+    {
+        $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
+        $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(null);
 
-    $banana = $this->prophesize(EntityTypeInterface::class);
-    $banana->getLabel()->willReturn('Banana');
-    $banana->getBundleEntityType()->willReturn(NULL);
+        $apple = $this->prophesize(EntityTypeInterface::class);
+        $apple->getLabel()->willReturn('Apple');
+        $apple->getBundleEntityType()->willReturn(null);
 
-    $this->setUpEntityTypeDefinitions([
-      'apple' => $apple,
-      'banana' => $banana,
-    ]);
+        $banana = $this->prophesize(EntityTypeInterface::class);
+        $banana->getLabel()->willReturn('Banana');
+        $banana->getBundleEntityType()->willReturn(null);
 
-    $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
-    $this->assertSame($expected, $bundle_info);
-  }
+        $this->setUpEntityTypeDefinitions([
+          'apple' => $apple,
+          'banana' => $banana,
+        ]);
 
-  /**
-   * Provides test data for testGetBundleInfo().
-   *
-   * @return array
-   *   Test data.
-   */
-  public static function providerTestGetBundleInfo(): array {
-    return [
-      [
-        'apple',
-        [
-          'apple' => ['label' => 'Apple'],
-        ],
-      ],
-      [
-        'banana',
-        [
-          'banana' => ['label' => 'Banana'],
-        ],
-      ],
-      ['pear', []],
-    ];
-  }
+        $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
+        $this->assertSame($expected, $bundle_info);
+    }
 
-  /**
-   * Tests the getAllBundleInfo() method.
-   */
-  public function testGetAllBundleInfo(): void {
-    $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
-    $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(NULL);
+    /**
+     * Provides test data for testGetBundleInfo().
+     *
+     * @return array
+     *   Test data.
+     */
+    public static function providerTestGetBundleInfo(): array
+    {
+        return [
+          [
+            'apple',
+            [
+              'apple' => ['label' => 'Apple'],
+            ],
+          ],
+          [
+            'banana',
+            [
+              'banana' => ['label' => 'Banana'],
+            ],
+          ],
+          ['pear', []],
+        ];
+    }
 
-    $apple = $this->prophesize(EntityTypeInterface::class);
-    $apple->getLabel()->willReturn('Apple');
-    $apple->getBundleEntityType()->willReturn(NULL);
+    /**
+     * Tests the getAllBundleInfo() method.
+     */
+    public function testGetAllBundleInfo(): void
+    {
+        $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
+        $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(null);
 
-    $banana = $this->prophesize(EntityTypeInterface::class);
-    $banana->getLabel()->willReturn('Banana');
-    $banana->getBundleEntityType()->willReturn(NULL);
+        $apple = $this->prophesize(EntityTypeInterface::class);
+        $apple->getLabel()->willReturn('Apple');
+        $apple->getBundleEntityType()->willReturn(null);
 
-    $this->setUpEntityTypeDefinitions([
-      'apple' => $apple,
-      'banana' => $banana,
-    ]);
+        $banana = $this->prophesize(EntityTypeInterface::class);
+        $banana->getLabel()->willReturn('Banana');
+        $banana->getBundleEntityType()->willReturn(null);
 
-    $cacheBackend = $this->cacheBackend;
-    $this->cacheBackend->get('entity_bundle_info:en')->willReturn(FALSE);
-    $this->cacheBackend->set('entity_bundle_info:en', Argument::any(), Cache::PERMANENT, [
-      'entity_types',
-      'entity_bundles',
-    ])
-      ->will(function () use ($cacheBackend): void {
-        $cacheBackend->get('entity_bundle_info:en')
-          ->willReturn((object) ['data' => 'cached data'])
+        $this->setUpEntityTypeDefinitions([
+          'apple' => $apple,
+          'banana' => $banana,
+        ]);
+
+        $cacheBackend = $this->cacheBackend;
+        $this->cacheBackend->get('entity_bundle_info:en')->willReturn(false);
+        $this->cacheBackend->set('entity_bundle_info:en', Argument::any(), Cache::PERMANENT, [
+          'entity_types',
+          'entity_bundles',
+        ])
+          ->will(function () use ($cacheBackend): void {
+              $cacheBackend->get('entity_bundle_info:en')
+                ->willReturn((object) ['data' => 'cached data'])
+                ->shouldBeCalled();
+          })
           ->shouldBeCalled();
-      })
-      ->shouldBeCalled();
 
-    $this->cacheTagsInvalidator->invalidateTags(['entity_bundles'])->shouldBeCalled();
+        $this->cacheTagsInvalidator->invalidateTags(['entity_bundles'])->shouldBeCalled();
 
-    $this->typedDataManager->clearCachedDefinitions()->shouldBeCalled();
+        $this->typedDataManager->clearCachedDefinitions()->shouldBeCalled();
 
-    $expected = [
-      'apple' => [
-        'apple' => [
-          'label' => 'Apple',
-        ],
-      ],
-      'banana' => [
-        'banana' => [
-          'label' => 'Banana',
-        ],
-      ],
-    ];
-    $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
-    $this->assertSame($expected, $bundle_info);
+        $expected = [
+          'apple' => [
+            'apple' => [
+              'label' => 'Apple',
+            ],
+          ],
+          'banana' => [
+            'banana' => [
+              'label' => 'Banana',
+            ],
+          ],
+        ];
+        $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
+        $this->assertSame($expected, $bundle_info);
 
-    $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
-    $this->assertSame($expected, $bundle_info);
+        $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
+        $this->assertSame($expected, $bundle_info);
 
-    $this->entityTypeBundleInfo->clearCachedBundles();
+        $this->entityTypeBundleInfo->clearCachedBundles();
 
-    $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
-    $this->assertSame('cached data', $bundle_info);
-  }
+        $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
+        $this->assertSame('cached data', $bundle_info);
+    }
 
-  /**
-   * Tests get all bundle info with entity bundle info.
-   */
-  public function testGetAllBundleInfoWithEntityBundleInfo(): void {
-    // Ensure that EntityTypeBundleInfo::getAllBundleInfo() does not add
-    // additional bundles if hook_entity_bundle_info() defines some and the
-    // entity_type does not define a bundle entity type.
-    $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([
-      'banana' => [
-        'fig' => [
-          'label' => 'Fig banana',
-        ],
-      ],
-    ]);
-    $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(NULL);
+    /**
+     * Tests get all bundle info with entity bundle info.
+     */
+    public function testGetAllBundleInfoWithEntityBundleInfo(): void
+    {
+        // Ensure that EntityTypeBundleInfo::getAllBundleInfo() does not add
+        // additional bundles if hook_entity_bundle_info() defines some and the
+        // entity_type does not define a bundle entity type.
+        $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([
+          'banana' => [
+            'fig' => [
+              'label' => 'Fig banana',
+            ],
+          ],
+        ]);
+        $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(null);
 
-    $apple = $this->prophesize(EntityTypeInterface::class);
-    $apple->getLabel()->willReturn('Apple');
-    $apple->getBundleEntityType()->willReturn(NULL);
+        $apple = $this->prophesize(EntityTypeInterface::class);
+        $apple->getLabel()->willReturn('Apple');
+        $apple->getBundleEntityType()->willReturn(null);
 
-    $banana = $this->prophesize(EntityTypeInterface::class);
-    $banana->getLabel()->willReturn('Banana');
-    $banana->getBundleEntityType()->willReturn(NULL);
+        $banana = $this->prophesize(EntityTypeInterface::class);
+        $banana->getLabel()->willReturn('Banana');
+        $banana->getBundleEntityType()->willReturn(null);
 
-    $this->setUpEntityTypeDefinitions([
-      'apple' => $apple,
-      'banana' => $banana,
-    ]);
+        $this->setUpEntityTypeDefinitions([
+          'apple' => $apple,
+          'banana' => $banana,
+        ]);
 
-    $expected = [
-      'banana' => [
-        'fig' => [
-          'label' => 'Fig banana',
-        ],
-      ],
-      'apple' => [
-        'apple' => [
-          'label' => 'Apple',
-        ],
-      ],
-    ];
-    $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
-    $this->assertSame($expected, $bundle_info);
-  }
+        $expected = [
+          'banana' => [
+            'fig' => [
+              'label' => 'Fig banana',
+            ],
+          ],
+          'apple' => [
+            'apple' => [
+              'label' => 'Apple',
+            ],
+          ],
+        ];
+        $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
+        $this->assertSame($expected, $bundle_info);
+    }
 
-  /**
-   * Tests the getBundleLabels() method.
-   */
-  #[DataProvider('providerTestGetBundleLabels')]
-  public function testGetBundleLabels(string $entity_type_id, array $expected): void {
-    $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
-    $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(NULL);
+    /**
+     * Tests the getBundleLabels() method.
+     */
+    #[DataProvider('providerTestGetBundleLabels')]
+    public function testGetBundleLabels(string $entity_type_id, array $expected): void
+    {
+        $this->moduleHandler->invokeAll('entity_bundle_info')->willReturn([]);
+        $this->moduleHandler->alter('entity_bundle_info', Argument::type('array'))->willReturn(null);
 
-    $apple = $this->prophesize(EntityTypeInterface::class);
-    $apple->getLabel()->willReturn('Apple');
-    $apple->getBundleEntityType()->willReturn(NULL);
+        $apple = $this->prophesize(EntityTypeInterface::class);
+        $apple->getLabel()->willReturn('Apple');
+        $apple->getBundleEntityType()->willReturn(null);
 
-    $banana = $this->prophesize(EntityTypeInterface::class);
-    $banana->getLabel()->willReturn('Banana');
-    $banana->getBundleEntityType()->willReturn(NULL);
+        $banana = $this->prophesize(EntityTypeInterface::class);
+        $banana->getLabel()->willReturn('Banana');
+        $banana->getBundleEntityType()->willReturn(null);
 
-    $this->setUpEntityTypeDefinitions([
-      'apple' => $apple,
-      'banana' => $banana,
-    ]);
+        $this->setUpEntityTypeDefinitions([
+          'apple' => $apple,
+          'banana' => $banana,
+        ]);
 
-    $this->assertSame($expected, $this->entityTypeBundleInfo->getBundleLabels($entity_type_id));
-  }
+        $this->assertSame($expected, $this->entityTypeBundleInfo->getBundleLabels($entity_type_id));
+    }
 
-  /**
-   * Provides test data for testGetBundleLabels().
-   *
-   * @return array
-   *   Test data.
-   */
-  public static function providerTestGetBundleLabels(): array {
-    return [
-      [
-        'apple',
-        ['apple' => 'Apple'],
-      ],
-      [
-        'banana',
-        ['banana' => 'Banana'],
-      ],
-      ['pear', []],
-    ];
-  }
+    /**
+     * Provides test data for testGetBundleLabels().
+     *
+     * @return array
+     *   Test data.
+     */
+    public static function providerTestGetBundleLabels(): array
+    {
+        return [
+          [
+            'apple',
+            ['apple' => 'Apple'],
+          ],
+          [
+            'banana',
+            ['banana' => 'Banana'],
+          ],
+          ['pear', []],
+        ];
+    }
 
 }

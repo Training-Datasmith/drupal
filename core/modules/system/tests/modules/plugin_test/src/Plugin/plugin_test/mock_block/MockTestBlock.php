@@ -11,6 +11,6 @@ use Drupal\Component\Plugin\PluginBase;
  *
  * @see \Drupal\plugin_test\Plugin\DefaultsTestPluginManager
  */
-class MockTestBlock extends PluginBase {
-
+class MockTestBlock extends PluginBase
+{
 }

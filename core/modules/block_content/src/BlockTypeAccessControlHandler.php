@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,22 +14,23 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\block_content\Entity\BlockContentType
  */
-class BlockTypeAccessControlHandler extends EntityAccessControlHandler {
+class BlockTypeAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $viewLabelOperation = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $viewLabelOperation = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    if ($operation === 'view label') {
-      return AccessResult::allowedIfHasPermission($account, 'access block library')
-        ->orIf(parent::checkAccess($entity, $operation, $account));
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        if ($operation === 'view label') {
+            return AccessResult::allowedIfHasPermission($account, 'access block library')
+              ->orIf(parent::checkAccess($entity, $operation, $account));
+        }
+        return parent::checkAccess($entity, $operation, $account);
     }
-    return parent::checkAccess($entity, $operation, $account);
-  }
 
 }

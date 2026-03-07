@@ -17,47 +17,49 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ConfigurableLanguageManager::class)]
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class ConfigurableLanguageManagerTest extends LanguageTestBase {
+class ConfigurableLanguageManagerTest extends LanguageTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * The language negotiator.
+     *
+     * @var \Drupal\language\LanguageNegotiatorInterface
+     */
+    protected $languageNegotiator;
 
-  /**
-   * The language negotiator.
-   *
-   * @var \Drupal\language\LanguageNegotiatorInterface
-   */
-  protected $languageNegotiator;
+    /**
+     * The language manager.
+     *
+     * @var \Drupal\language\ConfigurableLanguageManagerInterface
+     */
+    protected $languageManager;
 
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('user');
 
-    $this->installEntitySchema('user');
+        $this->languageNegotiator = $this->container->get('language_negotiator');
+        $this->languageManager = $this->container->get('language_manager');
+    }
 
-    $this->languageNegotiator = $this->container->get('language_negotiator');
-    $this->languageManager = $this->container->get('language_manager');
-  }
-
-  /**
-   * Tests language switch links.
-   *
-   * @legacy-covers ::getLanguageSwitchLinks
-   */
-  public function testLanguageSwitchLinks(): void {
-    $this->languageNegotiator->setCurrentUser($this->prophesize('Drupal\Core\Session\AccountInterface')->reveal());
-    $this->languageManager->getLanguageSwitchLinks(LanguageInterface::TYPE_INTERFACE, new Url('<current>'));
-  }
+    /**
+     * Tests language switch links.
+     *
+     * @legacy-covers ::getLanguageSwitchLinks
+     */
+    public function testLanguageSwitchLinks(): void
+    {
+        $this->languageNegotiator->setCurrentUser($this->prophesize('Drupal\Core\Session\AccountInterface')->reveal());
+        $this->languageManager->getLanguageSwitchLinks(LanguageInterface::TYPE_INTERFACE, new Url('<current>'));
+    }
 
 }

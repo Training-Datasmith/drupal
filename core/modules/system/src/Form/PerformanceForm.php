@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Form;
 
-use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
-use Drupal\Core\Config\TypedConfigManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,123 +16,129 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class PerformanceForm extends ConfigFormBase {
-
-  /**
-   * Constructs a PerformanceForm object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
-   *   The typed config manager.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
-   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer
-   *   The CSS asset collection optimizer service.
-   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer
-   *   The JavaScript asset collection optimizer service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
-    parent::__construct($config_factory, $typedConfigManager);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('config.typed'),
-      $container->get('date.formatter'),
-      $container->get('asset.css.collection_optimizer'),
-      $container->get('asset.js.collection_optimizer'),
-      $container->get('module_handler')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'system_performance_settings';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames(): array {
-    return ['system.performance'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['#attached']['library'][] = 'system/drupal.system';
-
-    $form['caching'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Caching'),
-      '#open' => TRUE,
-    ];
-    // Identical options to the ones for block caching.
-    // @see \Drupal\Core\Block\BlockBase::buildConfigurationForm()
-    $period = [0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400];
-    $period = array_map($this->dateFormatter->formatInterval(...), array_combine($period, $period));
-    $period[0] = '<' . $this->t('no caching') . '>';
-    $form['caching']['page_cache_maximum_age'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Browser and proxy cache maximum age'),
-      '#config_target' => 'system.performance:cache.page.max_age',
-      '#options' => $period,
-      '#description' => $this->t('This is used as the value for max-age in Cache-Control headers.'),
-    ];
-    $form['caching']['internal_page_cache'] = [
-      '#markup' => $this->t('Drupal provides an <a href=":module_enable">Internal Page Cache module</a> that is recommended for small to medium-sized websites.', [':module_enable' => Url::fromRoute('system.modules_list')->toString()]),
-      '#access' => !$this->moduleHandler->moduleExists('page_cache'),
-    ];
-
-    $directory = 'assets://';
-    $is_writable = is_dir($directory) && is_writable($directory);
-    $disabled = !$is_writable;
-    $disabled_message = '';
-    if (!$is_writable) {
-      $disabled_message = ' ' . $this->t('<strong class="error">Set up the <a href=":file-system">optimized assets file system path</a> to make these optimizations available.</strong>', [':file-system' => Url::fromRoute('system.file_system_settings')->toString()]);
+class PerformanceForm extends ConfigFormBase
+{
+    /**
+     * Constructs a PerformanceForm object.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The factory for configuration objects.
+     * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+     *   The typed config manager.
+     * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+     *   The date formatter service.
+     * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer
+     *   The CSS asset collection optimizer service.
+     * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer
+     *   The JavaScript asset collection optimizer service.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     */
+    public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+    {
+        parent::__construct($config_factory, $typedConfigManager);
     }
 
-    $form['bandwidth_optimization'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Bandwidth optimization'),
-      '#open' => TRUE,
-      '#description' => $this->t('External resources can be optimized automatically, which can reduce both the size and number of requests made to your website.') . $disabled_message,
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('config.factory'),
+            $container->get('config.typed'),
+            $container->get('date.formatter'),
+            $container->get('asset.css.collection_optimizer'),
+            $container->get('asset.js.collection_optimizer'),
+            $container->get('module_handler')
+        );
+    }
 
-    $form['bandwidth_optimization']['preprocess_css'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Aggregate CSS files'),
-      '#config_target' => 'system.performance:css.preprocess',
-      '#disabled' => $disabled,
-    ];
-    $form['bandwidth_optimization']['preprocess_js'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Aggregate JavaScript files'),
-      '#config_target' => 'system.performance:js.preprocess',
-      '#disabled' => $disabled,
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'system_performance_settings';
+    }
 
-    return parent::buildForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames(): array
+    {
+        return ['system.performance'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->cssCollectionOptimizer->deleteAll();
-    $this->jsCollectionOptimizer->deleteAll();
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['#attached']['library'][] = 'system/drupal.system';
 
-    parent::submitForm($form, $form_state);
-  }
+        $form['caching'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Caching'),
+          '#open' => true,
+        ];
+        // Identical options to the ones for block caching.
+        // @see \Drupal\Core\Block\BlockBase::buildConfigurationForm()
+        $period = [0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400];
+        $period = array_map($this->dateFormatter->formatInterval(...), array_combine($period, $period));
+        $period[0] = '<' . $this->t('no caching') . '>';
+        $form['caching']['page_cache_maximum_age'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Browser and proxy cache maximum age'),
+          '#config_target' => 'system.performance:cache.page.max_age',
+          '#options' => $period,
+          '#description' => $this->t('This is used as the value for max-age in Cache-Control headers.'),
+        ];
+        $form['caching']['internal_page_cache'] = [
+          '#markup' => $this->t('Drupal provides an <a href=":module_enable">Internal Page Cache module</a> that is recommended for small to medium-sized websites.', [':module_enable' => Url::fromRoute('system.modules_list')->toString()]),
+          '#access' => !$this->moduleHandler->moduleExists('page_cache'),
+        ];
+
+        $directory = 'assets://';
+        $is_writable = is_dir($directory) && is_writable($directory);
+        $disabled = !$is_writable;
+        $disabled_message = '';
+        if (!$is_writable) {
+            $disabled_message = ' ' . $this->t('<strong class="error">Set up the <a href=":file-system">optimized assets file system path</a> to make these optimizations available.</strong>', [':file-system' => Url::fromRoute('system.file_system_settings')->toString()]);
+        }
+
+        $form['bandwidth_optimization'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Bandwidth optimization'),
+          '#open' => true,
+          '#description' => $this->t('External resources can be optimized automatically, which can reduce both the size and number of requests made to your website.') . $disabled_message,
+        ];
+
+        $form['bandwidth_optimization']['preprocess_css'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Aggregate CSS files'),
+          '#config_target' => 'system.performance:css.preprocess',
+          '#disabled' => $disabled,
+        ];
+        $form['bandwidth_optimization']['preprocess_js'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Aggregate JavaScript files'),
+          '#config_target' => 'system.performance:js.preprocess',
+          '#disabled' => $disabled,
+        ];
+
+        return parent::buildForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->cssCollectionOptimizer->deleteAll();
+        $this->jsCollectionOptimizer->deleteAll();
+
+        parent::submitForm($form, $form_state);
+    }
 
 }

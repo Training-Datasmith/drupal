@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Encoder;
 
 use Drupal\serialization\Encoder\JsonEncoder as SerializationJsonEncoder;
@@ -13,13 +15,13 @@ use Drupal\serialization\Encoder\JsonEncoder as SerializationJsonEncoder;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class JsonEncoder extends SerializationJsonEncoder {
-
-  /**
-   * The formats that this Encoder supports.
-   *
-   * @var string
-   */
-  protected static $format = ['api_json'];
+class JsonEncoder extends SerializationJsonEncoder
+{
+    /**
+     * The formats that this Encoder supports.
+     *
+     * @var string
+     */
+    protected static $format = ['api_json'];
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http\Exception;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -9,16 +11,17 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 /**
  * A cacheable MethodNotAllowedHttpException.
  */
-class CacheableMethodNotAllowedHttpException extends MethodNotAllowedHttpException implements CacheableDependencyInterface {
+class CacheableMethodNotAllowedHttpException extends MethodNotAllowedHttpException implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
 
-  use CacheableDependencyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(CacheableDependencyInterface $cacheability, array $allow, $message = '', ?\Throwable $previous = NULL, $code = 0) {
-    $this->setCacheability($cacheability);
-    parent::__construct($allow, $message, $previous, $code);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(CacheableDependencyInterface $cacheability, array $allow, $message = '', ?\Throwable $previous = null, $code = 0)
+    {
+        $this->setCacheability($cacheability);
+        parent::__construct($allow, $message, $previous, $code);
+    }
 
 }

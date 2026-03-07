@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Annotation\Reflection;
 
 use Drupal\Component\ClassFinder\ClassFinderInterface;
@@ -12,29 +14,31 @@ use Drupal\Component\ClassFinder\ClassFinderInterface;
  * is known and inheritance is not a concern (for example, if only the class
  * annotation is needed).
  */
-class MockFileFinder implements ClassFinderInterface {
+class MockFileFinder implements ClassFinderInterface
+{
+    /**
+     * The only filename this finder ever returns.
+     *
+     * @var string
+     */
+    protected $filename;
 
-  /**
-   * The only filename this finder ever returns.
-   *
-   * @var string
-   */
-  protected $filename;
+    /**
+     * {@inheritdoc}
+     */
+    public function findFile($class)
+    {
+        return $this->filename;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function findFile($class) {
-    return $this->filename;
-  }
-
-  /**
-   * Creates new mock file finder objects.
-   */
-  public static function create($filename): static {
-    $object = new static();
-    $object->filename = $filename;
-    return $object;
-  }
+    /**
+     * Creates new mock file finder objects.
+     */
+    public static function create($filename): static
+    {
+        $object = new static();
+        $object->filename = $filename;
+        return $object;
+    }
 
 }

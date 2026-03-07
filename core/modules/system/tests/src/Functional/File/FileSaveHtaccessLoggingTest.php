@@ -14,40 +14,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('File')]
 #[RunTestsInSeparateProcesses]
-class FileSaveHtaccessLoggingTest extends BrowserTestBase {
+class FileSaveHtaccessLoggingTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['dblog'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['dblog'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests the HtaccessWriter service write functionality.
+     */
+    public function testHtaccessSave(): void
+    {
+        // Prepare test directories.
+        $private = $this->publicFilesDirectory . '/test/private';
 
-  /**
-   * Tests the HtaccessWriter service write functionality.
-   */
-  public function testHtaccessSave(): void {
-    // Prepare test directories.
-    $private = $this->publicFilesDirectory . '/test/private';
+        // Verify that HtaccessWriter service returns FALSE if .htaccess cannot be
+        // written and writes a correctly formatted message to the error log.
+        // Set $private to TRUE so all possible .htaccess lines are written.
+        /** @var \Drupal\Core\File\HtaccessWriterInterface $htaccess */
+        $htaccess = \Drupal::service('file.htaccess_writer');
+        $this->assertFalse($htaccess->write($private, true));
+        $this->drupalLogin($this->drupalCreateUser(['access site reports']));
 
-    // Verify that HtaccessWriter service returns FALSE if .htaccess cannot be
-    // written and writes a correctly formatted message to the error log.
-    // Set $private to TRUE so all possible .htaccess lines are written.
-    /** @var \Drupal\Core\File\HtaccessWriterInterface $htaccess */
-    $htaccess = \Drupal::service('file.htaccess_writer');
-    $this->assertFalse($htaccess->write($private, TRUE));
-    $this->drupalLogin($this->drupalCreateUser(['access site reports']));
+        $this->drupalGet('admin/reports/dblog');
+        $this->clickLink("Security warning: Couldn't write .htaccess file.");
 
-    $this->drupalGet('admin/reports/dblog');
-    $this->clickLink("Security warning: Couldn't write .htaccess file.");
-
-    $lines = FileSecurity::htaccessLines(TRUE);
-    foreach (array_filter(explode("\n", $lines)) as $line) {
-      $this->assertSession()->assertEscaped($line);
+        $lines = FileSecurity::htaccessLines(true);
+        foreach (array_filter(explode("\n", $lines)) as $line) {
+            $this->assertSession()->assertEscaped($line);
+        }
     }
-  }
 
 }

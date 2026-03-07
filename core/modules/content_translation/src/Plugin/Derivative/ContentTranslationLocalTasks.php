@@ -1,66 +1,73 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_translation\Plugin\Derivative;
 
-use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides dynamic local tasks for content translation.
  */
-class ContentTranslationLocalTasks extends DeriverBase implements ContainerDeriverInterface {
-  use StringTranslationTrait;
+class ContentTranslationLocalTasks extends DeriverBase implements ContainerDeriverInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * Constructs a new ContentTranslationLocalTasks.
-   *
-   * @param string $basePluginId
-   *   The base plugin ID.
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
-   *   The content translation manager.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The translation manager.
-   */
-  public function __construct(/**
+    /**
+     * Constructs a new ContentTranslationLocalTasks.
+     *
+     * @param string $basePluginId
+     *   The base plugin ID.
+     * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
+     *   The content translation manager.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The translation manager.
+     */
+    public function __construct(/**
    * The base plugin ID.
    */
-  protected $basePluginId, protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager, TranslationInterface $string_translation) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $base_plugin_id,
-      $container->get('content_translation.manager'),
-      $container->get('string_translation')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    // Create tabs for all possible entity types.
-    foreach ($this->contentTranslationManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
-      // Find the route name for the translation overview.
-      $translation_route_name = "entity.$entity_type_id.content_translation_overview";
-
-      $base_route_name = "entity.$entity_type_id.canonical";
-      $this->derivatives[$translation_route_name] = [
-        'entity_type' => $entity_type_id,
-        'title' => $this->t('Translate'),
-        'route_name' => $translation_route_name,
-        'base_route' => $base_route_name,
-      ] + $base_plugin_definition;
+        protected $basePluginId,
+        protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager,
+        TranslationInterface $string_translation
+    ) {
+        $this->stringTranslation = $string_translation;
     }
-    return parent::getDerivativeDefinitions($base_plugin_definition);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $base_plugin_id,
+            $container->get('content_translation.manager'),
+            $container->get('string_translation')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        // Create tabs for all possible entity types.
+        foreach ($this->contentTranslationManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
+            // Find the route name for the translation overview.
+            $translation_route_name = "entity.$entity_type_id.content_translation_overview";
+
+            $base_route_name = "entity.$entity_type_id.canonical";
+            $this->derivatives[$translation_route_name] = [
+              'entity_type' => $entity_type_id,
+              'title' => $this->t('Translate'),
+              'route_name' => $translation_route_name,
+              'base_route' => $base_route_name,
+            ] + $base_plugin_definition;
+        }
+        return parent::getDerivativeDefinitions($base_plugin_definition);
+    }
 
 }

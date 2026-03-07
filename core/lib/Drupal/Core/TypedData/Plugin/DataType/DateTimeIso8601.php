@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Datetime\DrupalDateTime;
@@ -13,34 +15,36 @@ use Drupal\Core\TypedData\Type\DateTimeInterface;
  * The plain value of this data type is a date string in ISO 8601 format.
  */
 #[DataType(
-  id: "datetime_iso8601",
-  label: new TranslatableMarkup("Date")
+    id: 'datetime_iso8601',
+    label: new TranslatableMarkup('Date')
 )]
-class DateTimeIso8601 extends StringData implements DateTimeInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDateTime() {
-    if ($this->value) {
-      if (is_array($this->value)) {
-        // Data of this type must always be stored in UTC.
-        return DrupalDateTime::createFromArray($this->value, 'UTC');
-      }
-      // Data of this type must always be stored in UTC.
-      return new DrupalDateTime($this->value, 'UTC');
+class DateTimeIso8601 extends StringData implements DateTimeInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDateTime()
+    {
+        if ($this->value) {
+            if (is_array($this->value)) {
+                // Data of this type must always be stored in UTC.
+                return DrupalDateTime::createFromArray($this->value, 'UTC');
+            }
+            // Data of this type must always be stored in UTC.
+            return new DrupalDateTime($this->value, 'UTC');
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setDateTime(DrupalDateTime $dateTime, $notify = TRUE): void {
-    $this->value = $dateTime->format('c');
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
+    /**
+     * {@inheritdoc}
+     */
+    public function setDateTime(DrupalDateTime $dateTime, $notify = true): void
+    {
+        $this->value = $dateTime->format('c');
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 /**
@@ -7,30 +9,30 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_type_characteristics
  */
-interface EntityPublishedInterface extends EntityInterface {
+interface EntityPublishedInterface extends EntityInterface
+{
+    /**
+     * Returns whether or not the entity is published.
+     *
+     * @return bool
+     *   TRUE if the entity is published, FALSE otherwise.
+     */
+    public function isPublished();
 
-  /**
-   * Returns whether or not the entity is published.
-   *
-   * @return bool
-   *   TRUE if the entity is published, FALSE otherwise.
-   */
-  public function isPublished();
+    /**
+     * Sets the entity as published.
+     *
+     * @return $this
+     *
+     * @see \Drupal\Core\Entity\EntityPublishedInterface::setUnpublished()
+     */
+    public function setPublished();
 
-  /**
-   * Sets the entity as published.
-   *
-   * @return $this
-   *
-   * @see \Drupal\Core\Entity\EntityPublishedInterface::setUnpublished()
-   */
-  public function setPublished();
-
-  /**
-   * Sets the entity as unpublished.
-   *
-   * @return $this
-   */
-  public function setUnpublished();
+    /**
+     * Sets the entity as unpublished.
+     *
+     * @return $this
+     */
+    public function setUnpublished();
 
 }

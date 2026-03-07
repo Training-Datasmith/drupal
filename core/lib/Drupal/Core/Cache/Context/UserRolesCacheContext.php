@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -14,31 +16,34 @@ use Drupal\Core\Cache\CacheableMetadata;
  * Calculated cache context ID: 'user.roles:%role', e.g. 'user.roles:anonymous'
  * (to vary by the presence/absence of a specific role).
  */
-class UserRolesCacheContext extends UserCacheContextBase implements CalculatedCacheContextInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t("User's roles");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext($role = NULL): string {
-    if ($role === NULL) {
-      return implode(',', $this->user->getRoles());
+class UserRolesCacheContext extends UserCacheContextBase implements CalculatedCacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t("User's roles");
     }
 
-    return in_array($role, $this->user->getRoles(), TRUE) ? 'true' : 'false';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext($role = null): string
+    {
+        if ($role === null) {
+            return implode(',', $this->user->getRoles());
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($role = NULL) {
-    return (new CacheableMetadata())->setCacheTags(['user:' . $this->user->id()]);
-  }
+        return in_array($role, $this->user->getRoles(), true) ? 'true' : 'false';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($role = null)
+    {
+        return (new CacheableMetadata())->setCacheTags(['user:' . $this->user->id()]);
+    }
 
 }

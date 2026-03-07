@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\filter;
 
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
@@ -11,21 +13,22 @@ use Drupal\views\Plugin\views\filter\InOperator;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("node_comment")]
-class NodeComment extends InOperator {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValueOptions() {
-    if (!isset($this->valueOptions)) {
-      $this->valueOptions = [
-        CommentItemInterface::HIDDEN => $this->t('Hidden'),
-        CommentItemInterface::CLOSED => $this->t('Closed'),
-        CommentItemInterface::OPEN => $this->t('Open'),
-      ];
+#[ViewsFilter('node_comment')]
+class NodeComment extends InOperator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getValueOptions()
+    {
+        if (!isset($this->valueOptions)) {
+            $this->valueOptions = [
+              CommentItemInterface::HIDDEN => $this->t('Hidden'),
+              CommentItemInterface::CLOSED => $this->t('Closed'),
+              CommentItemInterface::OPEN => $this->t('Open'),
+            ];
+        }
+        return $this->valueOptions;
     }
-    return $this->valueOptions;
-  }
 
 }

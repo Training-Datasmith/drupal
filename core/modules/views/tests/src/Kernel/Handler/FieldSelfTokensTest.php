@@ -17,53 +17,55 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldSelfTokensTest extends ViewsKernelTestBase {
+class FieldSelfTokensTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_field_self_tokens'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_field_self_tokens'];
+    /**
+     * This method is called before each test.
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp();
 
-  /**
-   * This method is called before each test.
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp();
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('node');
 
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('node');
+        NodeType::create(['type' => 'article', 'name' => 'Article'])->save();
 
-    NodeType::create(['type' => 'article', 'name' => 'Article'])->save();
+        Node::create([
+          'title' => 'Questions & Answers',
+          'type' => 'article',
+        ])->save();
+    }
 
-    Node::create([
-      'title' => 'Questions & Answers',
-      'type' => 'article',
-    ])->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testSelfTokenEscaping(): void {
-    $view = Views::getView('test_field_self_tokens');
-    $view->initHandlers();
-    $this->executeView($view);
-    $row = $view->result[0];
-    $view->row_index = 0;
-    $title_field = $view->field['title'];
-    $title_field->options['alter']['text'] = '<p>{{ title__value }}</p>';
-    $title_field->options['alter']['alter_text'] = TRUE;
-    $output = \Drupal::service('renderer')->executeInRenderContext(new RenderContext(), function () use ($title_field, $row) {
-      return $title_field->theme($row);
-    });
-    $this->assertSame('<p>Questions &amp; Answers</p>', (string) $output);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testSelfTokenEscaping(): void
+    {
+        $view = Views::getView('test_field_self_tokens');
+        $view->initHandlers();
+        $this->executeView($view);
+        $row = $view->result[0];
+        $view->row_index = 0;
+        $title_field = $view->field['title'];
+        $title_field->options['alter']['text'] = '<p>{{ title__value }}</p>';
+        $title_field->options['alter']['alter_text'] = true;
+        $output = \Drupal::service('renderer')->executeInRenderContext(new RenderContext(), function () use ($title_field, $row) {
+            return $title_field->theme($row);
+        });
+        $this->assertSame('<p>Questions &amp; Answers</p>', (string) $output);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\big_pipe\Render;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -18,7 +20,8 @@ use Drupal\Component\Render\MarkupTrait;
  *
  * @see \Drupal\Core\Render\Markup
  */
-final class BigPipeMarkup implements MarkupInterface, \Countable {
-  use MarkupTrait;
+final class BigPipeMarkup implements MarkupInterface, \Countable
+{
+    use MarkupTrait;
 
 }

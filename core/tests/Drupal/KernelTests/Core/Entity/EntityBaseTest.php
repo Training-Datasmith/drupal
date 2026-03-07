@@ -19,34 +19,36 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(EntityBase::class)]
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class EntityBaseTest extends EntityKernelTestBase {
+class EntityBaseTest extends EntityKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('entity_test_with_bundle');
+    }
 
-    $this->installEntitySchema('entity_test_with_bundle');
-  }
+    /**
+     * Tests that the correct entity adapter is returned.
+     */
+    public function testGetTypedData(): void
+    {
+        $bundle = EntityTestBundle::create([
+          'id' => $this->randomMachineName(),
+        ]);
+        $bundle->save();
 
-  /**
-   * Tests that the correct entity adapter is returned.
-   */
-  public function testGetTypedData(): void {
-    $bundle = EntityTestBundle::create([
-      'id' => $this->randomMachineName(),
-    ]);
-    $bundle->save();
+        $entity = EntityTestWithBundle::create([
+          'type' => $bundle->id(),
+          'name' => $this->randomString(),
+        ]);
+        $entity->save();
 
-    $entity = EntityTestWithBundle::create([
-      'type' => $bundle->id(),
-      'name' => $this->randomString(),
-    ]);
-    $entity->save();
-
-    $this->assertInstanceOf(ConfigEntityAdapter::class, $bundle->getTypedData());
-    $this->assertInstanceOf(EntityAdapter::class, $entity->getTypedData());
-  }
+        $this->assertInstanceOf(ConfigEntityAdapter::class, $bundle->getTypedData());
+        $this->assertInstanceOf(EntityAdapter::class, $entity->getTypedData());
+    }
 
 }

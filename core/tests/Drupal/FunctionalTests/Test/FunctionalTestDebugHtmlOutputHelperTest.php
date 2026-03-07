@@ -15,19 +15,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('browsertestbase')]
 #[RunTestsInSeparateProcesses]
-class FunctionalTestDebugHtmlOutputHelperTest extends BrowserTestBase {
+class FunctionalTestDebugHtmlOutputHelperTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Creates one page of debug HTML output.
-   */
-  public function testCreateFunctionalTestDebugHtmlOutput(): void {
-    $this->drupalGet('<front>');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Creates one page of debug HTML output.
+     */
+    public function testCreateFunctionalTestDebugHtmlOutput(): void
+    {
+        $this->drupalGet('<front>');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

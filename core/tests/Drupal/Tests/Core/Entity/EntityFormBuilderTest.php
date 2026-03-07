@@ -14,64 +14,66 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(EntityFormBuilder::class)]
 #[Group('Entity')]
-class EntityFormBuilderTest extends UnitTestCase {
+class EntityFormBuilderTest extends UnitTestCase
+{
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $entityTypeManager;
+    /**
+     * The form builder.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $formBuilder;
 
-  /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $formBuilder;
+    /**
+     * The entity form builder.
+     *
+     * @var \Drupal\Core\Entity\EntityFormBuilderInterface
+     */
+    protected $entityFormBuilder;
 
-  /**
-   * The entity form builder.
-   *
-   * @var \Drupal\Core\Entity\EntityFormBuilderInterface
-   */
-  protected $entityFormBuilder;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->formBuilder = $this->createMock('Drupal\Core\Form\FormBuilderInterface');
+        $this->entityTypeManager = $this->createMock('Drupal\Core\Entity\EntityTypeManagerInterface');
+        $this->entityFormBuilder = new EntityFormBuilder($this->entityTypeManager, $this->formBuilder);
+    }
 
-    $this->formBuilder = $this->createMock('Drupal\Core\Form\FormBuilderInterface');
-    $this->entityTypeManager = $this->createMock('Drupal\Core\Entity\EntityTypeManagerInterface');
-    $this->entityFormBuilder = new EntityFormBuilder($this->entityTypeManager, $this->formBuilder);
-  }
+    /**
+     * Tests the getForm() method.
+     */
+    public function testGetForm(): void
+    {
+        $form_controller = $this->createMock('Drupal\Core\Entity\EntityFormInterface');
+        $form_controller->expects($this->any())
+          ->method('getFormId')
+          ->willReturn('the_form_id');
+        $this->entityTypeManager->expects($this->any())
+          ->method('getFormObject')
+          ->with('the_entity_type', 'default')
+          ->willReturn($form_controller);
 
-  /**
-   * Tests the getForm() method.
-   */
-  public function testGetForm(): void {
-    $form_controller = $this->createMock('Drupal\Core\Entity\EntityFormInterface');
-    $form_controller->expects($this->any())
-      ->method('getFormId')
-      ->willReturn('the_form_id');
-    $this->entityTypeManager->expects($this->any())
-      ->method('getFormObject')
-      ->with('the_entity_type', 'default')
-      ->willReturn($form_controller);
+        $this->formBuilder->expects($this->once())
+          ->method('buildForm')
+          ->with($form_controller, $this->isInstanceOf('Drupal\Core\Form\FormStateInterface'))
+          ->willReturn('the form contents');
 
-    $this->formBuilder->expects($this->once())
-      ->method('buildForm')
-      ->with($form_controller, $this->isInstanceOf('Drupal\Core\Form\FormStateInterface'))
-      ->willReturn('the form contents');
+        $entity = $this->createMock('Drupal\Core\Entity\EntityInterface');
+        $entity->expects($this->once())
+          ->method('getEntityTypeId')
+          ->willReturn('the_entity_type');
 
-    $entity = $this->createMock('Drupal\Core\Entity\EntityInterface');
-    $entity->expects($this->once())
-      ->method('getEntityTypeId')
-      ->willReturn('the_entity_type');
-
-    $this->assertSame('the form contents', $this->entityFormBuilder->getForm($entity));
-  }
+        $this->assertSame('the form contents', $this->entityFormBuilder->getForm($entity));
+    }
 
 }

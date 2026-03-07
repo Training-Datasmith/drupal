@@ -7,6 +7,6 @@ namespace Drupal\decorated_service_test;
 /**
  * A service class for handling test functionality.
  */
-class TestService {
-
+class TestService
+{
 }

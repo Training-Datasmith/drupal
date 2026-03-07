@@ -13,58 +13,60 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('field')]
 #[RunTestsInSeparateProcesses]
-class FieldHelpTest extends BrowserTestBase {
+class FieldHelpTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'help'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'help'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The admin user that will be created.
+     *
+     * @var \Drupal\user\Entity\User|false
+     */
+    protected $adminUser;
 
-  /**
-   * The admin user that will be created.
-   *
-   * @var \Drupal\user\Entity\User|false
-   */
-  protected $adminUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Create the admin user.
+        $this->adminUser = $this->drupalCreateUser([
+          'access help pages',
+          'view the administration theme',
+        ]);
+    }
 
-    // Create the admin user.
-    $this->adminUser = $this->drupalCreateUser([
-      'access help pages',
-      'view the administration theme',
-    ]);
-  }
+    /**
+     * Tests the Field module's help page.
+     */
+    public function testFieldHelp(): void
+    {
+        // Log in the admin user.
+        $this->drupalLogin($this->adminUser);
 
-  /**
-   * Tests the Field module's help page.
-   */
-  public function testFieldHelp(): void {
-    // Log in the admin user.
-    $this->drupalLogin($this->adminUser);
+        // Visit the Help page and make sure no warnings or notices are thrown.
+        $this->drupalGet('admin/help/field');
 
-    // Visit the Help page and make sure no warnings or notices are thrown.
-    $this->drupalGet('admin/help/field');
+        // Enable the Options, Email and Field API Test modules.
+        \Drupal::service('module_installer')->install(['options', 'field_test']);
 
-    // Enable the Options, Email and Field API Test modules.
-    \Drupal::service('module_installer')->install(['options', 'field_test']);
-
-    $this->drupalGet('admin/help/field');
-    $this->assertSession()->linkExists('Options', 0, 'Options module is listed on the Field help page.');
-    // Verify that modules with field types that do not implement hook_help are
-    // listed.
-    $this->assertSession()->pageTextContains('Field API Test');
-    $this->assertSession()->linkNotExists('Field API Test', 'Modules with field types that do not implement hook_help are not linked.');
-    $this->assertSession()->linkNotExists('Link', 'Modules that have not been installed, are not listed.');
-  }
+        $this->drupalGet('admin/help/field');
+        $this->assertSession()->linkExists('Options', 0, 'Options module is listed on the Field help page.');
+        // Verify that modules with field types that do not implement hook_help are
+        // listed.
+        $this->assertSession()->pageTextContains('Field API Test');
+        $this->assertSession()->linkNotExists('Field API Test', 'Modules with field types that do not implement hook_help are not linked.');
+        $this->assertSession()->linkNotExists('Link', 'Modules that have not been installed, are not listed.');
+    }
 
 }

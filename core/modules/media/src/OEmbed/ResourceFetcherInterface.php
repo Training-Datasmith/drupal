@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\OEmbed;
 
 /**
@@ -10,23 +12,23 @@ namespace Drupal\media\OEmbed;
  * \Drupal\media\OEmbed\UrlResolverInterface::getResourceUrl()) and return a
  * \Drupal\media\OEmbed\Resource value object.
  */
-interface ResourceFetcherInterface {
-
-  /**
-   * Fetches an oEmbed resource.
-   *
-   * @param string $url
-   *   Endpoint-specific URL of the oEmbed resource.
-   *
-   * @return \Drupal\media\OEmbed\Resource
-   *   A resource object built from the oEmbed resource data.
-   *
-   * @see https://oembed.com/#section2
-   *
-   * @throws \Drupal\media\OEmbed\ResourceException
-   *   If the oEmbed endpoint is not reachable or the response returns an
-   *   unexpected Content-Type header.
-   */
-  public function fetchResource($url);
+interface ResourceFetcherInterface
+{
+    /**
+     * Fetches an oEmbed resource.
+     *
+     * @param string $url
+     *   Endpoint-specific URL of the oEmbed resource.
+     *
+     * @return \Drupal\media\OEmbed\Resource
+     *   A resource object built from the oEmbed resource data.
+     *
+     * @see https://oembed.com/#section2
+     *
+     * @throws \Drupal\media\OEmbed\ResourceException
+     *   If the oEmbed endpoint is not reachable or the response returns an
+     *   unexpected Content-Type header.
+     */
+    public function fetchResource($url);
 
 }

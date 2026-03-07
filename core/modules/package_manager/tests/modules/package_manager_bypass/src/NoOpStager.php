@@ -25,49 +25,52 @@ use PhpTuf\ComposerStager\API\Process\Service\ProcessInterface;
  *
  * @internal
  */
-final class NoOpStager implements StagerInterface {
+final class NoOpStager implements StagerInterface
+{
+    use ComposerStagerExceptionTrait;
+    use LoggingDecoratorTrait;
 
-  use ComposerStagerExceptionTrait;
-  use LoggingDecoratorTrait;
-
-  /**
-   * Constructs a Stager object.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service.
-   */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function stage(array $composerCommand, PathInterface $activeDir, PathInterface $stagingDir, ?OutputCallbackInterface $callback = NULL, ?int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    $this->saveInvocationArguments($composerCommand, $stagingDir, $timeout);
-    $this->throwExceptionIfSet();
-
-    // If desired, simulate a change to the lock file (e.g., as a result of
-    // running `composer update`).
-    $lockFile = new JsonFile($stagingDir->absolute() . '/composer.lock');
-    $changeLockFile = $this->state->get(static::class . ' lock', TRUE);
-
-    if ($changeLockFile && $lockFile->exists()) {
-      $data = $lockFile->read();
-      $data['_time'] = microtime();
-      $lockFile->write($data);
+    /**
+     * Constructs a Stager object.
+     *
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state service.
+     */
+    public function __construct(StateInterface $state)
+    {
+        $this->state = $state;
     }
-  }
 
-  /**
-   * Sets whether ::stage() should simulate a change in the lock file.
-   *
-   * @param bool $value
-   *   (optional) Whether to simulate a change in the lock file when
-   *   ::stage() is called. Defaults to TRUE.
-   */
-  public static function setLockFileShouldChange(bool $value = TRUE): void {
-    \Drupal::state()->set(static::class . ' lock', $value);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function stage(array $composerCommand, PathInterface $activeDir, PathInterface $stagingDir, ?OutputCallbackInterface $callback = null, ?int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        $this->saveInvocationArguments($composerCommand, $stagingDir, $timeout);
+        $this->throwExceptionIfSet();
+
+        // If desired, simulate a change to the lock file (e.g., as a result of
+        // running `composer update`).
+        $lockFile = new JsonFile($stagingDir->absolute() . '/composer.lock');
+        $changeLockFile = $this->state->get(static::class . ' lock', true);
+
+        if ($changeLockFile && $lockFile->exists()) {
+            $data = $lockFile->read();
+            $data['_time'] = microtime();
+            $lockFile->write($data);
+        }
+    }
+
+    /**
+     * Sets whether ::stage() should simulate a change in the lock file.
+     *
+     * @param bool $value
+     *   (optional) Whether to simulate a change in the lock file when
+     *   ::stage() is called. Defaults to TRUE.
+     */
+    public static function setLockFileShouldChange(bool $value = true): void
+    {
+        \Drupal::state()->set(static::class . ' lock', $value);
+    }
 
 }

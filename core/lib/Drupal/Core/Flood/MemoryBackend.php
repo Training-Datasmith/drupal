@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Flood;
 
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -7,94 +9,100 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Defines the memory flood backend. This is used for testing.
  */
-class MemoryBackend implements FloodInterface, PrefixFloodInterface {
+class MemoryBackend implements FloodInterface, PrefixFloodInterface
+{
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
+    /**
+     * An array holding flood events, keyed by event name and identifier.
+     *
+     * @var array
+     */
+    protected $events = [];
 
-  /**
-   * An array holding flood events, keyed by event name and identifier.
-   *
-   * @var array
-   */
-  protected $events = [];
-
-  /**
-   * Construct the MemoryBackend.
-   *
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack used to retrieve the current request.
-   */
-  public function __construct(RequestStack $request_stack) {
-    $this->requestStack = $request_stack;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function register($name, $window = 3600, $identifier = NULL): void {
-    if (!isset($identifier)) {
-      $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+    /**
+     * Construct the MemoryBackend.
+     *
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack used to retrieve the current request.
+     */
+    public function __construct(RequestStack $request_stack)
+    {
+        $this->requestStack = $request_stack;
     }
-    // We can't use REQUEST_TIME here, because that would not guarantee
-    // uniqueness.
-    $time = microtime(TRUE);
-    $this->events[$name][$identifier][] = ['expire' => $time + $window, 'time' => $time];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clear($name, $identifier = NULL): void {
-    if (!isset($identifier)) {
-      $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+    /**
+     * {@inheritdoc}
+     */
+    public function register($name, $window = 3600, $identifier = null): void
+    {
+        if (!isset($identifier)) {
+            $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+        }
+        // We can't use REQUEST_TIME here, because that would not guarantee
+        // uniqueness.
+        $time = microtime(true);
+        $this->events[$name][$identifier][] = ['expire' => $time + $window, 'time' => $time];
     }
-    unset($this->events[$name][$identifier]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearByPrefix(string $name, string $prefix): void {
-    foreach ($this->events as $event_name => $identifier) {
-      $identifier_key = key($identifier);
-      $identifier_parts = explode("-", (string) $identifier_key);
-      $identifier_prefix = reset($identifier_parts);
-      if ($prefix == $identifier_prefix && $name == $event_name) {
-        unset($this->events[$event_name][$identifier_key]);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function clear($name, $identifier = null): void
+    {
+        if (!isset($identifier)) {
+            $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+        }
+        unset($this->events[$name][$identifier]);
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL): bool {
-    if (!isset($identifier)) {
-      $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+    /**
+     * {@inheritdoc}
+     */
+    public function clearByPrefix(string $name, string $prefix): void
+    {
+        foreach ($this->events as $event_name => $identifier) {
+            $identifier_key = key($identifier);
+            $identifier_parts = explode('-', (string) $identifier_key);
+            $identifier_prefix = reset($identifier_parts);
+            if ($prefix == $identifier_prefix && $name == $event_name) {
+                unset($this->events[$event_name][$identifier_key]);
+            }
+        }
     }
-    if (!isset($this->events[$name][$identifier])) {
-      return $threshold > 0;
-    }
-    $limit = microtime(TRUE) - $window;
-    $number = count(array_filter($this->events[$name][$identifier], fn(array $entry) => $entry['time'] > $limit));
-    return ($number < $threshold);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection(): void {
-    foreach ($this->events as $name => $identifiers) {
-      foreach ($this->events[$name] as $identifier => $entries) {
-        // Remove expired entries.
-        $this->events[$name][$identifier] = array_filter($entries, fn(array $entry) => $entry['expire'] > microtime(TRUE));
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function isAllowed($name, $threshold, $window = 3600, $identifier = null): bool
+    {
+        if (!isset($identifier)) {
+            $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+        }
+        if (!isset($this->events[$name][$identifier])) {
+            return $threshold > 0;
+        }
+        $limit = microtime(true) - $window;
+        $number = count(array_filter($this->events[$name][$identifier], fn (array $entry) => $entry['time'] > $limit));
+        return ($number < $threshold);
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection(): void
+    {
+        foreach ($this->events as $name => $identifiers) {
+            foreach ($this->events[$name] as $identifier => $entries) {
+                // Remove expired entries.
+                $this->events[$name][$identifier] = array_filter($entries, fn (array $entry) => $entry['expire'] > microtime(true));
+            }
+        }
+    }
 
 }

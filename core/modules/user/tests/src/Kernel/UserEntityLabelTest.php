@@ -15,45 +15,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserEntityLabelTest extends KernelTestBase {
+class UserEntityLabelTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'user',
+      'user_hooks_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'user',
-    'user_hooks_test',
-  ];
+    /**
+     * Tests label callback.
+     */
+    public function testLabelCallback(): void
+    {
+        $this->installEntitySchema('user');
+        $this->installConfig(['user']);
 
-  /**
-   * Tests label callback.
-   */
-  public function testLabelCallback(): void {
-    $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+        $account = $this->createUser();
+        $anonymous = User::create(['uid' => 0]);
 
-    $account = $this->createUser();
-    $anonymous = User::create(['uid' => 0]);
+        $this->assertEquals($account->getAccountName(), $account->label());
 
-    $this->assertEquals($account->getAccountName(), $account->label());
+        // Setup a random anonymous name to be sure the name is used.
+        $name = $this->randomMachineName();
+        $this->config('user.settings')->set('anonymous', $name)->save();
+        $this->assertEquals($name, $anonymous->label());
+        $this->assertEquals($name, $anonymous->getDisplayName());
+        $this->assertEmpty($anonymous->getAccountName());
 
-    // Setup a random anonymous name to be sure the name is used.
-    $name = $this->randomMachineName();
-    $this->config('user.settings')->set('anonymous', $name)->save();
-    $this->assertEquals($name, $anonymous->label());
-    $this->assertEquals($name, $anonymous->getDisplayName());
-    $this->assertEmpty($anonymous->getAccountName());
+        // Set to test the altered username.
+        \Drupal::keyValue('user_hooks_test')->set('user_format_name_alter', true);
 
-    // Set to test the altered username.
-    \Drupal::keyValue('user_hooks_test')->set('user_format_name_alter', TRUE);
-
-    // The user display name should be altered.
-    $this->assertEquals('<em>' . $account->id() . '</em>', $account->getDisplayName());
-    // The user login name should not be altered.
-    $this->assertEquals($account->name->value, $account->getAccountName());
-  }
+        // The user display name should be altered.
+        $this->assertEquals('<em>' . $account->id() . '</em>', $account->getDisplayName());
+        // The user login name should not be altered.
+        $this->assertEquals($account->name->value, $account->getAccountName());
+    }
 
 }

@@ -11,38 +11,41 @@ use PHPUnit\Framework\TestCase;
  * Tests that the dictionary.txt file is properly sorted.
  */
 #[Group('cspell')]
-class SortTest extends TestCase {
+class SortTest extends TestCase
+{
+    /**
+     * The path to the dictionary file.
+     */
+    private string $filePath;
 
-  /**
-   * The path to the dictionary file.
-   */
-  private string $filePath;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->filePath = dirname(__DIR__, 5) . '/core/misc/cspell/dictionary.txt';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->filePath = dirname(__DIR__, 5) . '/core/misc/cspell/dictionary.txt';
-  }
+    /**
+     * Tests that the file exists.
+     */
+    public function testFileExists(): void
+    {
+        $this->assertFileExists($this->filePath);
+    }
 
-  /**
-   * Tests that the file exists.
-   */
-  public function testFileExists(): void {
-    $this->assertFileExists($this->filePath);
-  }
-
-  /**
-   * Tests that the file is properly sorted.
-   */
-  public function testSorted(): void {
-    $content = file_get_contents($this->filePath);
-    $this->assertIsString($content);
-    $current_dictionary = explode("\n", rtrim($content));
-    $this->assertIsArray($current_dictionary);
-    $sorted_dictionary = $current_dictionary;
-    sort($current_dictionary);
-    $this->assertSame($current_dictionary, $sorted_dictionary);
-  }
+    /**
+     * Tests that the file is properly sorted.
+     */
+    public function testSorted(): void
+    {
+        $content = file_get_contents($this->filePath);
+        $this->assertIsString($content);
+        $current_dictionary = explode("\n", rtrim($content));
+        $this->assertIsArray($current_dictionary);
+        $sorted_dictionary = $current_dictionary;
+        sort($current_dictionary);
+        $this->assertSame($current_dictionary, $sorted_dictionary);
+    }
 
 }

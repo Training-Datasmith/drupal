@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -39,22 +41,23 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "flatten",
-  handle_multiples: TRUE,
+    id: 'flatten',
+    handle_multiples: true,
 )]
-class Flatten extends ProcessPluginBase {
-
-  /**
-   * Flatten nested array values to single array values.
-   *
-   * For example, [[1, 2, [3, 4]]] becomes [1, 2, 3, 4].
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
-    if (!is_array($value) && !is_object($value)) {
-      $type = gettype($value);
-      throw new MigrateException(sprintf("Input should be an array or an object, instead it was of type '%s'", $type));
+class Flatten extends ProcessPluginBase
+{
+    /**
+     * Flatten nested array values to single array values.
+     *
+     * For example, [[1, 2, [3, 4]]] becomes [1, 2, 3, 4].
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array
+    {
+        if (!is_array($value) && !is_object($value)) {
+            $type = gettype($value);
+            throw new MigrateException(sprintf("Input should be an array or an object, instead it was of type '%s'", $type));
+        }
+        return iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator((array) $value)), false);
     }
-    return iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator((array) $value)), FALSE);
-  }
 
 }

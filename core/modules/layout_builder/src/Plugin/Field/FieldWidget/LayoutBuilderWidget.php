@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
@@ -15,48 +17,51 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   Plugin classes are internal.
  */
 #[FieldWidget(
-  id: 'layout_builder_widget',
-  label: new TranslatableMarkup('Layout Builder Widget'),
-  description: new TranslatableMarkup('A field widget for Layout Builder.'),
-  field_types: ['layout_section'],
-  multiple_values: TRUE,
+    id: 'layout_builder_widget',
+    label: new TranslatableMarkup('Layout Builder Widget'),
+    description: new TranslatableMarkup('A field widget for Layout Builder.'),
+    field_types: ['layout_section'],
+    multiple_values: true,
 )]
-class LayoutBuilderWidget extends WidgetBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    return $element + [
-      '#type' => 'layout_builder',
-      '#section_storage' => $this->getSectionStorage($form_state),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void {
-    // @todo This isn't resilient to being set twice, during validation and
-    //   save https://www.drupal.org/project/drupal/issues/2833682.
-    if (!$form_state->isValidationComplete()) {
-      return;
+class LayoutBuilderWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)
+    {
+        return $element + [
+          '#type' => 'layout_builder',
+          '#section_storage' => $this->getSectionStorage($form_state),
+        ];
     }
 
-    $items->setValue($this->getSectionStorage($form_state)->getSections());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void
+    {
+        // @todo This isn't resilient to being set twice, during validation and
+        //   save https://www.drupal.org/project/drupal/issues/2833682.
+        if (!$form_state->isValidationComplete()) {
+            return;
+        }
 
-  /**
-   * Gets the section storage.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return \Drupal\layout_builder\SectionStorageInterface
-   *   The section storage loaded from the tempstore.
-   */
-  private function getSectionStorage(FormStateInterface $form_state) {
-    return $form_state->getFormObject()->getSectionStorage();
-  }
+        $items->setValue($this->getSectionStorage($form_state)->getSections());
+    }
+
+    /**
+     * Gets the section storage.
+     *
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     *
+     * @return \Drupal\layout_builder\SectionStorageInterface
+     *   The section storage loaded from the tempstore.
+     */
+    private function getSectionStorage(FormStateInterface $form_state)
+    {
+        return $form_state->getFormObject()->getSectionStorage();
+    }
 
 }

@@ -17,37 +17,37 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Image')]
 #[RequiresPhpExtension('gd')]
 #[RunTestsInSeparateProcesses]
-class GdToolkitNoTransparencyGifImageManipulationTest extends GdToolkitImageManipulationTestBase {
+class GdToolkitNoTransparencyGifImageManipulationTest extends GdToolkitImageManipulationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected string $sourceTestImage = 'image-test-no-transparency.gif';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected string $sourceTestImage = 'image-test-no-transparency.gif';
+    /**
+     * {@inheritdoc}
+     */
+    public static function providerOperationTestCases(): array
+    {
+        $ret = parent::providerOperationTestCases();
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function providerOperationTestCases(): array {
-    $ret = parent::providerOperationTestCases();
-
-    // The test gif that does not have transparency color set is a special
-    // case.
-    foreach ($ret as $test_case => &$data) {
-      foreach ($data[3]['corners'] as &$expected_color) {
-        if ($test_case == 'desaturate') {
-          // For desaturating, keep the expected color from the test data, but
-          // set alpha channel to fully opaque.
-          $expected_color[3] = 0;
+        // The test gif that does not have transparency color set is a special
+        // case.
+        foreach ($ret as $test_case => &$data) {
+            foreach ($data[3]['corners'] as &$expected_color) {
+                if ($test_case == 'desaturate') {
+                    // For desaturating, keep the expected color from the test data, but
+                    // set alpha channel to fully opaque.
+                    $expected_color[3] = 0;
+                } elseif ($expected_color === static::TRANSPARENT) {
+                    // Set expected pixel to yellow where the others have
+                    // transparent.
+                    $expected_color = static::YELLOW;
+                }
+            }
         }
-        elseif ($expected_color === static::TRANSPARENT) {
-          // Set expected pixel to yellow where the others have
-          // transparent.
-          $expected_color = static::YELLOW;
-        }
-      }
+
+        return $ret;
     }
-
-    return $ret;
-  }
 
 }

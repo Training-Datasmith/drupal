@@ -25,249 +25,258 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  */
 #[CoversClass(FormAjaxSubscriber::class)]
 #[Group('EventSubscriber')]
-class FormAjaxSubscriberTest extends UnitTestCase {
+class FormAjaxSubscriberTest extends UnitTestCase
+{
+    /**
+     * @var \Drupal\Core\Form\EventSubscriber\FormAjaxSubscriber
+     */
+    protected $subscriber;
 
-  /**
-   * @var \Drupal\Core\Form\EventSubscriber\FormAjaxSubscriber
-   */
-  protected $subscriber;
+    /**
+     * @var \Drupal\Core\Form\FormAjaxResponseBuilderInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $formAjaxResponseBuilder;
 
-  /**
-   * @var \Drupal\Core\Form\FormAjaxResponseBuilderInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $formAjaxResponseBuilder;
+    /**
+     * @var \Symfony\Component\HttpKernel\HttpKernelInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $httpKernel;
 
-  /**
-   * @var \Symfony\Component\HttpKernel\HttpKernelInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $httpKernel;
+    /**
+     * The mocked string translation.
+     *
+     * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $stringTranslation;
 
-  /**
-   * The mocked string translation.
-   *
-   * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $stringTranslation;
+    /**
+     * The mocked messenger.
+     *
+     * @var \Drupal\Core\Messenger\MessengerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $messenger;
 
-  /**
-   * The mocked messenger.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $messenger;
+    /**
+     * The event used to derive the response.
+     *
+     * @var \Symfony\Component\HttpKernel\Event\ExceptionEvent
+     */
+    protected $event = null;
 
-  /**
-   * The event used to derive the response.
-   *
-   * @var \Symfony\Component\HttpKernel\Event\ExceptionEvent
-   */
-  protected $event = NULL;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->httpKernel = $this->createMock('Symfony\Component\HttpKernel\HttpKernelInterface');
+        $this->formAjaxResponseBuilder = $this->createMock('Drupal\Core\Form\FormAjaxResponseBuilderInterface');
+        $this->stringTranslation = $this->getStringTranslationStub();
+        $this->messenger = $this->createMock(MessengerInterface::class);
+        $this->subscriber = new FormAjaxSubscriber($this->formAjaxResponseBuilder, $this->stringTranslation, $this->messenger);
+    }
 
-    $this->httpKernel = $this->createMock('Symfony\Component\HttpKernel\HttpKernelInterface');
-    $this->formAjaxResponseBuilder = $this->createMock('Drupal\Core\Form\FormAjaxResponseBuilderInterface');
-    $this->stringTranslation = $this->getStringTranslationStub();
-    $this->messenger = $this->createMock(MessengerInterface::class);
-    $this->subscriber = new FormAjaxSubscriber($this->formAjaxResponseBuilder, $this->stringTranslation, $this->messenger);
-  }
+    /**
+     * Tests on exception.
+     */
+    public function testOnException(): void
+    {
+        $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
+        $expected_form = $form + [
+          '#build_id_old' => 'the_build_id',
+        ];
+        $form_state = new FormState();
+        $exception = new FormAjaxException($form, $form_state);
 
-  /**
-   * Tests on exception.
-   */
-  public function testOnException(): void {
-    $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
-    $expected_form = $form + [
-      '#build_id_old' => 'the_build_id',
-    ];
-    $form_state = new FormState();
-    $exception = new FormAjaxException($form, $form_state);
+        $request = new Request([], ['form_build_id' => 'the_build_id']);
+        $commands = [];
+        $response = new Response('');
 
-    $request = new Request([], ['form_build_id' => 'the_build_id']);
-    $commands = [];
-    $response = new Response('');
+        $this->formAjaxResponseBuilder->expects($this->once())
+          ->method('buildResponse')
+          ->with($request, $expected_form, $form_state, $commands)
+          ->willReturn($response);
 
-    $this->formAjaxResponseBuilder->expects($this->once())
-      ->method('buildResponse')
-      ->with($request, $expected_form, $form_state, $commands)
-      ->willReturn($response);
+        $this->assertResponseFromException($request, $exception, $response);
+        $this->assertTrue($this->event->isAllowingCustomResponseCode());
+        $this->assertSame(200, $this->event->getResponse()->getStatusCode());
+    }
 
-    $this->assertResponseFromException($request, $exception, $response);
-    $this->assertTrue($this->event->isAllowingCustomResponseCode());
-    $this->assertSame(200, $this->event->getResponse()->getStatusCode());
-  }
+    /**
+     * Tests on exception new build id.
+     */
+    public function testOnExceptionNewBuildId(): void
+    {
+        $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
+        $expected_form = $form + [
+          '#build_id_old' => 'a_new_build_id',
+        ];
+        $form_state = new FormState();
+        $exception = new FormAjaxException($form, $form_state);
 
-  /**
-   * Tests on exception new build id.
-   */
-  public function testOnExceptionNewBuildId(): void {
-    $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
-    $expected_form = $form + [
-      '#build_id_old' => 'a_new_build_id',
-    ];
-    $form_state = new FormState();
-    $exception = new FormAjaxException($form, $form_state);
+        $request = new Request([], ['form_build_id' => 'a_new_build_id']);
+        $commands = [];
+        $response = new Response('');
 
-    $request = new Request([], ['form_build_id' => 'a_new_build_id']);
-    $commands = [];
-    $response = new Response('');
+        $this->formAjaxResponseBuilder->expects($this->once())
+          ->method('buildResponse')
+          ->with($request, $expected_form, $form_state, $commands)
+          ->willReturn($response);
 
-    $this->formAjaxResponseBuilder->expects($this->once())
-      ->method('buildResponse')
-      ->with($request, $expected_form, $form_state, $commands)
-      ->willReturn($response);
+        $this->assertResponseFromException($request, $exception, $response);
+        $this->assertTrue($this->event->isAllowingCustomResponseCode());
+        $this->assertSame(200, $this->event->getResponse()->getStatusCode());
+    }
 
-    $this->assertResponseFromException($request, $exception, $response);
-    $this->assertTrue($this->event->isAllowingCustomResponseCode());
-    $this->assertSame(200, $this->event->getResponse()->getStatusCode());
-  }
+    /**
+     * Tests on exception other class.
+     */
+    public function testOnExceptionOtherClass(): void
+    {
+        $request = new Request();
+        $exception = new \Exception();
 
-  /**
-   * Tests on exception other class.
-   */
-  public function testOnExceptionOtherClass(): void {
-    $request = new Request();
-    $exception = new \Exception();
+        $this->formAjaxResponseBuilder->expects($this->never())
+          ->method('buildResponse');
 
-    $this->formAjaxResponseBuilder->expects($this->never())
-      ->method('buildResponse');
+        $this->assertResponseFromException($request, $exception, null);
+    }
 
-    $this->assertResponseFromException($request, $exception, NULL);
-  }
+    /**
+     * Tests on exception response builder exception.
+     */
+    public function testOnExceptionResponseBuilderException(): void
+    {
+        $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
+        $expected_form = $form + [
+          '#build_id_old' => 'the_build_id',
+        ];
+        $form_state = new FormState();
+        $exception = new FormAjaxException($form, $form_state);
+        $request = new Request([], ['form_build_id' => 'the_build_id']);
+        $commands = [];
 
-  /**
-   * Tests on exception response builder exception.
-   */
-  public function testOnExceptionResponseBuilderException(): void {
-    $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
-    $expected_form = $form + [
-      '#build_id_old' => 'the_build_id',
-    ];
-    $form_state = new FormState();
-    $exception = new FormAjaxException($form, $form_state);
-    $request = new Request([], ['form_build_id' => 'the_build_id']);
-    $commands = [];
+        $expected_exception = new HttpException(500, 'The specified #ajax callback is empty or not callable.');
+        $this->formAjaxResponseBuilder->expects($this->once())
+          ->method('buildResponse')
+          ->with($request, $expected_form, $form_state, $commands)
+          ->willThrowException($expected_exception);
 
-    $expected_exception = new HttpException(500, 'The specified #ajax callback is empty or not callable.');
-    $this->formAjaxResponseBuilder->expects($this->once())
-      ->method('buildResponse')
-      ->with($request, $expected_form, $form_state, $commands)
-      ->willThrowException($expected_exception);
+        $this->assertResponseFromException($request, $exception, null);
+        $this->assertSame($expected_exception, $this->event->getThrowable());
+    }
 
-    $this->assertResponseFromException($request, $exception, NULL);
-    $this->assertSame($expected_exception, $this->event->getThrowable());
-  }
+    /**
+     * Tests on exception broken post request.
+     */
+    public function testOnExceptionBrokenPostRequest(): void
+    {
+        $this->formAjaxResponseBuilder->expects($this->never())
+          ->method('buildResponse');
 
-  /**
-   * Tests on exception broken post request.
-   */
-  public function testOnExceptionBrokenPostRequest(): void {
-    $this->formAjaxResponseBuilder->expects($this->never())
-      ->method('buildResponse');
+        $this->messenger->expects($this->once())
+          ->method('addError');
 
-    $this->messenger->expects($this->once())
-      ->method('addError');
+        $this->subscriber = new FormAjaxSubscriber($this->formAjaxResponseBuilder, $this->getStringTranslationStub(), $this->messenger);
 
-    $this->subscriber = new FormAjaxSubscriber($this->formAjaxResponseBuilder, $this->getStringTranslationStub(), $this->messenger);
+        $rendered_output = 'the rendered output';
+        // CommandWithAttachedAssetsTrait::getRenderedContent() will call the
+        // renderer service via the container.
+        $renderer = $this->createMock('Drupal\Core\Render\RendererInterface');
+        $renderer->expects($this->once())
+          ->method('renderRoot')
+          ->with()
+          ->willReturnCallback(function (&$elements) use ($rendered_output) {
+              $elements['#attached'] = [];
+              return $rendered_output;
+          });
+        $container = new ContainerBuilder();
+        $container->set('renderer', $renderer);
+        \Drupal::setContainer($container);
 
-    $rendered_output = 'the rendered output';
-    // CommandWithAttachedAssetsTrait::getRenderedContent() will call the
-    // renderer service via the container.
-    $renderer = $this->createMock('Drupal\Core\Render\RendererInterface');
-    $renderer->expects($this->once())
-      ->method('renderRoot')
-      ->with()
-      ->willReturnCallback(function (&$elements) use ($rendered_output) {
-        $elements['#attached'] = [];
-        return $rendered_output;
-      });
-    $container = new ContainerBuilder();
-    $container->set('renderer', $renderer);
-    \Drupal::setContainer($container);
+        $exception = new BrokenPostRequestException((int) (32 * 1e6));
+        $request = new Request([FormBuilderInterface::AJAX_FORM_REQUEST => true]);
 
-    $exception = new BrokenPostRequestException((int) (32 * 1e6));
-    $request = new Request([FormBuilderInterface::AJAX_FORM_REQUEST => TRUE]);
+        $event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MAIN_REQUEST, $exception);
+        $this->subscriber->onException($event);
+        $this->assertTrue($event->isAllowingCustomResponseCode());
+        $actual_response = $event->getResponse();
+        $this->assertInstanceOf('\Drupal\Core\Ajax\AjaxResponse', $actual_response);
+        $this->assertSame(200, $actual_response->getStatusCode());
+        $expected_commands[] = [
+          'command' => 'insert',
+          'method' => 'prepend',
+          'selector' => null,
+          'data' => $rendered_output,
+          'settings' => null,
+        ];
+        $this->assertSame($expected_commands, $actual_response->getCommands());
+    }
 
-    $event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MAIN_REQUEST, $exception);
-    $this->subscriber->onException($event);
-    $this->assertTrue($event->isAllowingCustomResponseCode());
-    $actual_response = $event->getResponse();
-    $this->assertInstanceOf('\Drupal\Core\Ajax\AjaxResponse', $actual_response);
-    $this->assertSame(200, $actual_response->getStatusCode());
-    $expected_commands[] = [
-      'command' => 'insert',
-      'method' => 'prepend',
-      'selector' => NULL,
-      'data' => $rendered_output,
-      'settings' => NULL,
-    ];
-    $this->assertSame($expected_commands, $actual_response->getCommands());
-  }
+    /**
+     * Tests on exception nested exception.
+     *
+     * @legacy-covers ::onException
+     * @legacy-covers ::getFormAjaxException
+     */
+    public function testOnExceptionNestedException(): void
+    {
+        $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
+        $expected_form = $form + [
+          '#build_id_old' => 'the_build_id',
+        ];
+        $form_state = new FormState();
+        $form_exception = new FormAjaxException($form, $form_state);
+        $exception = new \Exception('', 0, $form_exception);
 
-  /**
-   * Tests on exception nested exception.
-   *
-   * @legacy-covers ::onException
-   * @legacy-covers ::getFormAjaxException
-   */
-  public function testOnExceptionNestedException(): void {
-    $form = ['#type' => 'form', '#build_id' => 'the_build_id'];
-    $expected_form = $form + [
-      '#build_id_old' => 'the_build_id',
-    ];
-    $form_state = new FormState();
-    $form_exception = new FormAjaxException($form, $form_state);
-    $exception = new \Exception('', 0, $form_exception);
+        $request = new Request([], ['form_build_id' => 'the_build_id']);
+        $commands = [];
+        $response = new Response('');
 
-    $request = new Request([], ['form_build_id' => 'the_build_id']);
-    $commands = [];
-    $response = new Response('');
+        $this->formAjaxResponseBuilder->expects($this->once())
+          ->method('buildResponse')
+          ->with($request, $expected_form, $form_state, $commands)
+          ->willReturn($response);
 
-    $this->formAjaxResponseBuilder->expects($this->once())
-      ->method('buildResponse')
-      ->with($request, $expected_form, $form_state, $commands)
-      ->willReturn($response);
+        $this->assertResponseFromException($request, $exception, $response);
+    }
 
-    $this->assertResponseFromException($request, $exception, $response);
-  }
+    /**
+     * Tests on exception nested wrong exception.
+     *
+     * @legacy-covers ::getFormAjaxException
+     */
+    public function testOnExceptionNestedWrongException(): void
+    {
+        $nested_exception = new \Exception();
+        $exception = new \Exception('', 0, $nested_exception);
+        $request = new Request();
 
-  /**
-   * Tests on exception nested wrong exception.
-   *
-   * @legacy-covers ::getFormAjaxException
-   */
-  public function testOnExceptionNestedWrongException(): void {
-    $nested_exception = new \Exception();
-    $exception = new \Exception('', 0, $nested_exception);
-    $request = new Request();
+        $this->formAjaxResponseBuilder->expects($this->never())
+          ->method('buildResponse');
 
-    $this->formAjaxResponseBuilder->expects($this->never())
-      ->method('buildResponse');
+        $this->assertResponseFromException($request, $exception, null);
+    }
 
-    $this->assertResponseFromException($request, $exception, NULL);
-  }
+    /**
+     * Asserts that the expected response is derived from the given exception.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request.
+     * @param \Exception $exception
+     *   The exception to pass to the event.
+     * @param \Symfony\Component\HttpFoundation\Response|null $expected_response
+     *   The response expected to be set on the event.
+     *
+     * @internal
+     */
+    protected function assertResponseFromException(Request $request, \Exception $exception, ?Response $expected_response): void
+    {
+        $this->event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MAIN_REQUEST, $exception);
+        $this->subscriber->onException($this->event);
 
-  /**
-   * Asserts that the expected response is derived from the given exception.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   * @param \Exception $exception
-   *   The exception to pass to the event.
-   * @param \Symfony\Component\HttpFoundation\Response|null $expected_response
-   *   The response expected to be set on the event.
-   *
-   * @internal
-   */
-  protected function assertResponseFromException(Request $request, \Exception $exception, ?Response $expected_response): void {
-    $this->event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MAIN_REQUEST, $exception);
-    $this->subscriber->onException($this->event);
-
-    $this->assertSame($expected_response, $this->event->getResponse());
-  }
+        $this->assertSame($expected_response, $this->event->getResponse());
+    }
 
 }

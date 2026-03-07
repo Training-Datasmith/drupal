@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -14,7 +16,6 @@ namespace Drupal\Core\ProxyClass\File\MimeType {
      */
     class ExtensionMimeTypeGuesser implements \Symfony\Component\Mime\MimeTypeGuesserInterface
     {
-
         use \Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
         /**
@@ -42,7 +43,7 @@ namespace Drupal\Core\ProxyClass\File\MimeType {
         public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, /**
          * The id of the original proxied service.
          */
-        protected $drupalProxyOriginalServiceId)
+            protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
         }
@@ -73,7 +74,7 @@ namespace Drupal\Core\ProxyClass\File\MimeType {
         /**
          * {@inheritdoc}
          */
-        public function setMapping(?array $mapping = NULL): void
+        public function setMapping(?array $mapping = null): void
         {
             $this->lazyLoadItself()->setMapping($mapping);
         }

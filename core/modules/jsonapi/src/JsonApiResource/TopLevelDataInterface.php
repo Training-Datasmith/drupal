@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 /**
@@ -11,44 +13,44 @@ namespace Drupal\jsonapi\JsonApiResource;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-interface TopLevelDataInterface {
+interface TopLevelDataInterface
+{
+    /**
+     * Returns the data for the top-level data member of a JSON:API document.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\Data
+     *   The top-level data.
+     */
+    public function getData();
 
-  /**
-   * Returns the data for the top-level data member of a JSON:API document.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\Data
-   *   The top-level data.
-   */
-  public function getData();
+    /**
+     * Returns the data that was omitted from the JSON:API document.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\OmittedData
+     *   The omitted data.
+     */
+    public function getOmissions();
 
-  /**
-   * Returns the data that was omitted from the JSON:API document.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\OmittedData
-   *   The omitted data.
-   */
-  public function getOmissions();
+    /**
+     * Merges the object's links with the top-level links.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $top_level_links
+     *   The top-level links to merge.
+     *
+     * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
+     *   The merged links.
+     */
+    public function getMergedLinks(LinkCollection $top_level_links);
 
-  /**
-   * Merges the object's links with the top-level links.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\LinkCollection $top_level_links
-   *   The top-level links to merge.
-   *
-   * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
-   *   The merged links.
-   */
-  public function getMergedLinks(LinkCollection $top_level_links);
-
-  /**
-   * Merges the object's meta member with the top-level meta member.
-   *
-   * @param array $top_level_meta
-   *   The top-level links to merge.
-   *
-   * @return array
-   *   The merged meta member.
-   */
-  public function getMergedMeta(array $top_level_meta);
+    /**
+     * Merges the object's meta member with the top-level meta member.
+     *
+     * @param array $top_level_meta
+     *   The top-level links to merge.
+     *
+     * @return array
+     *   The merged meta member.
+     */
+    public function getMergedMeta(array $top_level_meta);
 
 }

@@ -10,75 +10,79 @@ use Drupal\Tests\rest\Functional\EntityResource\ConfigEntityResourceTestBase;
 /**
  * Resource test base for the MediaType entity.
  */
-abstract class MediaTypeResourceTestBase extends ConfigEntityResourceTestBase {
+abstract class MediaTypeResourceTestBase extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['media'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['media'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'media_type';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'media_type';
+    /**
+     * @var \Drupal\media\MediaTypeInterface
+     */
+    protected $entity;
 
-  /**
-   * @var \Drupal\media\MediaTypeInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method)
+    {
+        $this->grantPermissionsToTestedRole(['administer media types']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method) {
-    $this->grantPermissionsToTestedRole(['administer media types']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Camelids" media type.
+        $camelids = MediaType::create([
+          'label' => 'Camelids',
+          'id' => 'camelids',
+          'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
+          'source' => 'file',
+        ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Camelids" media type.
-    $camelids = MediaType::create([
-      'label' => 'Camelids',
-      'id' => 'camelids',
-      'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
-      'source' => 'file',
-    ]);
+        $camelids->save();
 
-    $camelids->save();
+        return $camelids;
+    }
 
-    return $camelids;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedNormalizedEntity()
+    {
+        return [
+          'dependencies' => [],
+          'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
+          'field_map' => [],
+          'id' => 'camelids',
+          'label' => 'Camelids',
+          'langcode' => 'en',
+          'source' => 'file',
+          'queue_thumbnail_downloads' => false,
+          'new_revision' => false,
+          'source_configuration' => [
+            'source_field' => '',
+          ],
+          'status' => true,
+          'uuid' => $this->entity->uuid(),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedNormalizedEntity() {
-    return [
-      'dependencies' => [],
-      'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
-      'field_map' => [],
-      'id' => 'camelids',
-      'label' => 'Camelids',
-      'langcode' => 'en',
-      'source' => 'file',
-      'queue_thumbnail_downloads' => FALSE,
-      'new_revision' => FALSE,
-      'source_configuration' => [
-        'source_field' => '',
-      ],
-      'status' => TRUE,
-      'uuid' => $this->entity->uuid(),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getNormalizedPostEntity() {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNormalizedPostEntity()
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
 }

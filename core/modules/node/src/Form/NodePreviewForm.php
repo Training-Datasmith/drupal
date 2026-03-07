@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -15,123 +16,128 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class NodePreviewForm extends FormBase {
+class NodePreviewForm extends FormBase
+{
+    /**
+     * The config factory.
+     *
+     * @var \Drupal\Core\Config\ConfigFactoryInterface
+     */
+    protected $configFactory;
 
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity_display.repository'),
-      $container->get('config.factory')
-    );
-  }
-
-  /**
-   * Constructs a new NodePreviewForm.
-   *
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
-   *   The entity display repository.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The configuration factory.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'node_preview_form_select';
-  }
-
-  /**
-   * Form constructor.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\Core\Entity\EntityInterface $node
-   *   The node being previews.
-   *
-   * @return array
-   *   The form structure.
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?EntityInterface $node = NULL): array {
-    $view_mode = $node->preview_view_mode;
-
-    $query_options = ['query' => ['uuid' => $node->uuid()]];
-    $query = $this->getRequest()->query;
-    if ($query->has('destination')) {
-      $query_options['query']['destination'] = $query->get('destination');
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity_display.repository'),
+            $container->get('config.factory')
+        );
     }
 
-    $form['backlink'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Back to content editing'),
-      '#url' => $node->isNew() ? Url::fromRoute('entity.node.add_form', ['node_type' => $node->bundle()]) : $node->toUrl('edit-form'),
-      '#options' => ['attributes' => ['class' => ['node-preview-backlink']]] + $query_options,
-    ];
-
-    // Always show full as an option, even if the display is not enabled.
-    $view_mode_options = ['full' => $this->t('Full')] + $this->entityDisplayRepository->getViewModeOptionsByBundle('node', $node->bundle());
-
-    // Unset view modes that are not used in the front end.
-    unset($view_mode_options['default']);
-    unset($view_mode_options['rss']);
-    unset($view_mode_options['search_index']);
-
-    $form['uuid'] = [
-      '#type' => 'value',
-      '#value' => $node->uuid(),
-    ];
-
-    $form['view_mode'] = [
-      '#type' => 'select',
-      '#title' => $this->t('View mode'),
-      '#options' => $view_mode_options,
-      '#default_value' => $view_mode,
-      '#attributes' => [
-        'data-drupal-autosubmit' => TRUE,
-      ],
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Switch'),
-      '#attributes' => [
-        'class' => ['js-hide'],
-      ],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $route_parameters = [
-      'node_preview' => $form_state->getValue('uuid'),
-      'view_mode_id' => $form_state->getValue('view_mode'),
-    ];
-
-    $options = [];
-    $query = $this->getRequest()->query;
-    if ($query->has('destination')) {
-      $options['query']['destination'] = $query->get('destination');
-      $query->remove('destination');
+    /**
+     * Constructs a new NodePreviewForm.
+     *
+     * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
+     *   The entity display repository.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The configuration factory.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, ConfigFactoryInterface $config_factory)
+    {
+        $this->configFactory = $config_factory;
     }
-    $form_state->setRedirect('entity.node.preview', $route_parameters, $options);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'node_preview_form_select';
+    }
+
+    /**
+     * Form constructor.
+     *
+     * @param array $form
+     *   An associative array containing the structure of the form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param \Drupal\Core\Entity\EntityInterface $node
+     *   The node being previews.
+     *
+     * @return array
+     *   The form structure.
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?EntityInterface $node = null): array
+    {
+        $view_mode = $node->preview_view_mode;
+
+        $query_options = ['query' => ['uuid' => $node->uuid()]];
+        $query = $this->getRequest()->query;
+        if ($query->has('destination')) {
+            $query_options['query']['destination'] = $query->get('destination');
+        }
+
+        $form['backlink'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Back to content editing'),
+          '#url' => $node->isNew() ? Url::fromRoute('entity.node.add_form', ['node_type' => $node->bundle()]) : $node->toUrl('edit-form'),
+          '#options' => ['attributes' => ['class' => ['node-preview-backlink']]] + $query_options,
+        ];
+
+        // Always show full as an option, even if the display is not enabled.
+        $view_mode_options = ['full' => $this->t('Full')] + $this->entityDisplayRepository->getViewModeOptionsByBundle('node', $node->bundle());
+
+        // Unset view modes that are not used in the front end.
+        unset($view_mode_options['default']);
+        unset($view_mode_options['rss']);
+        unset($view_mode_options['search_index']);
+
+        $form['uuid'] = [
+          '#type' => 'value',
+          '#value' => $node->uuid(),
+        ];
+
+        $form['view_mode'] = [
+          '#type' => 'select',
+          '#title' => $this->t('View mode'),
+          '#options' => $view_mode_options,
+          '#default_value' => $view_mode,
+          '#attributes' => [
+            'data-drupal-autosubmit' => true,
+          ],
+        ];
+
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Switch'),
+          '#attributes' => [
+            'class' => ['js-hide'],
+          ],
+        ];
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $route_parameters = [
+          'node_preview' => $form_state->getValue('uuid'),
+          'view_mode_id' => $form_state->getValue('view_mode'),
+        ];
+
+        $options = [];
+        $query = $this->getRequest()->query;
+        if ($query->has('destination')) {
+            $options['query']['destination'] = $query->get('destination');
+            $query->remove('destination');
+        }
+        $form_state->setRedirect('entity.node.preview', $route_parameters, $options);
+    }
 
 }

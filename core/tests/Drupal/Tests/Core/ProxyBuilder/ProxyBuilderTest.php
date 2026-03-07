@@ -14,38 +14,40 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ProxyBuilder::class)]
 #[Group('proxy_builder')]
-class ProxyBuilderTest extends UnitTestCase {
+class ProxyBuilderTest extends UnitTestCase
+{
+    /**
+     * The tested proxy builder.
+     *
+     * @var \Drupal\Core\ProxyBuilder\ProxyBuilder
+     */
+    protected $proxyBuilder;
 
-  /**
-   * The tested proxy builder.
-   *
-   * @var \Drupal\Core\ProxyBuilder\ProxyBuilder
-   */
-  protected $proxyBuilder;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->proxyBuilder = new ProxyBuilder();
+    }
 
-    $this->proxyBuilder = new ProxyBuilder();
-  }
+    /**
+     * Tests build complex method.
+     *
+     * @legacy-covers ::buildMethod
+     * @legacy-covers ::buildParameter
+     * @legacy-covers ::buildMethodBody
+     */
+    public function testBuildComplexMethod(): void
+    {
+        $class = 'Drupal\Tests\Core\ProxyBuilder\TestServiceComplexMethod';
 
-  /**
-   * Tests build complex method.
-   *
-   * @legacy-covers ::buildMethod
-   * @legacy-covers ::buildParameter
-   * @legacy-covers ::buildMethodBody
-   */
-  public function testBuildComplexMethod(): void {
-    $class = 'Drupal\Tests\Core\ProxyBuilder\TestServiceComplexMethod';
+        $result = $this->proxyBuilder->build($class);
 
-    $result = $this->proxyBuilder->build($class);
-
-    // @todo Solve the silly linebreak for an empty array.
-    $method_body = <<<'EOS'
+        // @todo Solve the silly linebreak for an empty array.
+        $method_body = <<<'EOS'
 
 /**
  * {@inheritdoc}
@@ -58,27 +60,28 @@ public function complexMethod($parameter, callable $function, ?\Drupal\Tests\Cor
 
 EOS;
 
-    $this->assertEquals($this->buildExpectedClass($class, $method_body), $result);
-  }
+        $this->assertEquals($this->buildExpectedClass($class, $method_body), $result);
+    }
 
-  /**
-   * Constructs the expected class output.
-   *
-   * @param string $class
-   *   The class name that is being built.
-   * @param string $expected_methods_body
-   *   The expected body of decorated methods.
-   * @param string $interface_string
-   *   (optional) The expected "implements" clause of the class definition.
-   *
-   * @return string
-   *   The code of the entire proxy.
-   */
-  protected function buildExpectedClass($class, $expected_methods_body, $interface_string = ''): string {
-    $reflection = new \ReflectionClass($class);
-    $namespace = ProxyBuilder::buildProxyNamespace($class);
-    $proxy_class = $reflection->getShortName();
-    $expected_string = <<<'EOS'
+    /**
+     * Constructs the expected class output.
+     *
+     * @param string $class
+     *   The class name that is being built.
+     * @param string $expected_methods_body
+     *   The expected body of decorated methods.
+     * @param string $interface_string
+     *   (optional) The expected "implements" clause of the class definition.
+     *
+     * @return string
+     *   The code of the entire proxy.
+     */
+    protected function buildExpectedClass($class, $expected_methods_body, $interface_string = ''): string
+    {
+        $reflection = new \ReflectionClass($class);
+        $namespace = ProxyBuilder::buildProxyNamespace($class);
+        $proxy_class = $reflection->getShortName();
+        $expected_string = <<<'EOS'
 
 namespace {{ namespace }} {
 
@@ -148,38 +151,39 @@ namespace {{ namespace }} {
 
 EOS;
 
-    $expected_methods_body = implode("\n", array_map(function ($value) {
-      if ($value === '') {
-        return $value;
-      }
-      return "        $value";
-    }, explode("\n", $expected_methods_body)));
+        $expected_methods_body = implode("\n", array_map(function ($value) {
+            if ($value === '') {
+                return $value;
+            }
+            return "        $value";
+        }, explode("\n", $expected_methods_body)));
 
-    $expected_string = str_replace('{{ proxy_class }}', $proxy_class, $expected_string);
-    $expected_string = str_replace('{{ namespace }}', $namespace, $expected_string);
-    $expected_string = str_replace('{{ class }}', $class, $expected_string);
-    $expected_string = str_replace('{{ expected_methods_body }}', $expected_methods_body, $expected_string);
-    $expected_string = str_replace('{{ interface_string }}', $interface_string, $expected_string);
+        $expected_string = str_replace('{{ proxy_class }}', $proxy_class, $expected_string);
+        $expected_string = str_replace('{{ namespace }}', $namespace, $expected_string);
+        $expected_string = str_replace('{{ class }}', $class, $expected_string);
+        $expected_string = str_replace('{{ expected_methods_body }}', $expected_methods_body, $expected_string);
+        $expected_string = str_replace('{{ interface_string }}', $interface_string, $expected_string);
 
-    return $expected_string;
-  }
+        return $expected_string;
+    }
 
 }
 
 /**
  * Class used to test a service that has no methods.
  */
-class TestServiceNoMethod {
-
+class TestServiceNoMethod
+{
 }
 
 /**
  * Call used to test a service with a complex method.
  */
-class TestServiceComplexMethod {
+class TestServiceComplexMethod
+{
+    public function complexMethod($parameter, callable $function, ?TestServiceNoMethod $test_service = null, array &$elements = [])
+    {
 
-  public function complexMethod($parameter, callable $function, ?TestServiceNoMethod $test_service = NULL, array &$elements = []) {
-
-  }
+    }
 
 }

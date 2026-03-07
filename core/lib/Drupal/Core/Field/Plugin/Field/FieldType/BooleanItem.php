@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -16,108 +18,117 @@ use Drupal\Core\TypedData\OptionsProviderInterface;
  * Defines the 'boolean' entity field type.
  */
 #[FieldType(
-  id: "boolean",
-  label: new TranslatableMarkup("Boolean"),
-  description: new TranslatableMarkup("True or false value"),
-  default_widget: "boolean_checkbox",
-  default_formatter: "boolean",
+    id: 'boolean',
+    label: new TranslatableMarkup('Boolean'),
+    description: new TranslatableMarkup('True or false value'),
+    default_widget: 'boolean_checkbox',
+    default_formatter: 'boolean',
 )]
-class BooleanItem extends FieldItemBase implements OptionsProviderInterface {
+class BooleanItem extends FieldItemBase implements OptionsProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultFieldSettings()
+    {
+        return [
+          'on_label' => new TranslatableMarkup('On'),
+          'off_label' => new TranslatableMarkup('Off'),
+        ] + parent::defaultFieldSettings();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultFieldSettings() {
-    return [
-      'on_label' => new TranslatableMarkup('On'),
-      'off_label' => new TranslatableMarkup('Off'),
-    ] + parent::defaultFieldSettings();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('boolean')
+          ->setLabel(t('Boolean value'))
+          ->setRequired(true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('boolean')
-      ->setLabel(t('Boolean value'))
-      ->setRequired(TRUE);
+        return $properties;
+    }
 
-    return $properties;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'type' => 'int',
+              'size' => 'tiny',
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => 'int',
-          'size' => 'tiny',
-        ],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fieldSettingsForm(array $form, FormStateInterface $form_state): array
+    {
+        $element = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
-    $element = [];
+        $element['on_label'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('"On" label'),
+          '#default_value' => $this->getSetting('on_label'),
+          '#required' => true,
+        ];
+        $element['off_label'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('"Off" label'),
+          '#default_value' => $this->getSetting('off_label'),
+          '#required' => true,
+        ];
 
-    $element['on_label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('"On" label'),
-      '#default_value' => $this->getSetting('on_label'),
-      '#required' => TRUE,
-    ];
-    $element['off_label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('"Off" label'),
-      '#default_value' => $this->getSetting('off_label'),
-      '#required' => TRUE,
-    ];
+        return $element;
+    }
 
-    return $element;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPossibleValues(?AccountInterface $account = null): array
+    {
+        return [0, 1];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPossibleValues(?AccountInterface $account = NULL): array {
-    return [0, 1];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPossibleOptions(?AccountInterface $account = null): array
+    {
+        return [
+          0 => $this->getSetting('off_label'),
+          1 => $this->getSetting('on_label'),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPossibleOptions(?AccountInterface $account = NULL): array {
-    return [
-      0 => $this->getSetting('off_label'),
-      1 => $this->getSetting('on_label'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettableValues(?AccountInterface $account = null): array
+    {
+        return [0, 1];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSettableValues(?AccountInterface $account = NULL): array {
-    return [0, 1];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettableOptions(?AccountInterface $account = null)
+    {
+        return $this->getPossibleOptions($account);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSettableOptions(?AccountInterface $account = NULL) {
-    return $this->getPossibleOptions($account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values['value'] = mt_rand(0, 1);
-    return $values;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateSampleValue(FieldDefinitionInterface $field_definition)
+    {
+        $values['value'] = mt_rand(0, 1);
+        return $values;
+    }
 
 }

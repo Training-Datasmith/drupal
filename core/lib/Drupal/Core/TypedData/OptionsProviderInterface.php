@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 use Drupal\Core\Session\AccountInterface;
@@ -26,74 +28,74 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsWidgetBase
  */
-interface OptionsProviderInterface {
+interface OptionsProviderInterface
+{
+    /**
+     * Returns an array of possible values.
+     *
+     * If the optional $account parameter is passed, then the array is filtered to
+     * values viewable by the account.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   (optional) The user account for which to filter the possible values. If
+     *   omitted, all possible values are returned.
+     *
+     * @return array
+     *   An array of possible values.
+     */
+    public function getPossibleValues(?AccountInterface $account = null);
 
-  /**
-   * Returns an array of possible values.
-   *
-   * If the optional $account parameter is passed, then the array is filtered to
-   * values viewable by the account.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) The user account for which to filter the possible values. If
-   *   omitted, all possible values are returned.
-   *
-   * @return array
-   *   An array of possible values.
-   */
-  public function getPossibleValues(?AccountInterface $account = NULL);
+    /**
+     * Returns an array of possible values with labels for display.
+     *
+     * If the optional $account parameter is passed, then the array is filtered to
+     * values viewable by the account.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   (optional) The user account for which to filter the possible options.
+     *   If omitted, all possible options are returned.
+     *
+     * @return array
+     *   An array of possible options for the object that may be used in an
+     *   Options widget, for example when existing data should be filtered. It may
+     *   either be a flat array of option labels keyed by values, or a
+     *   two-dimensional array of option groups (array of flat option arrays,
+     *   keyed by option group label). Note that labels should NOT be sanitized.
+     */
+    public function getPossibleOptions(?AccountInterface $account = null);
 
-  /**
-   * Returns an array of possible values with labels for display.
-   *
-   * If the optional $account parameter is passed, then the array is filtered to
-   * values viewable by the account.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) The user account for which to filter the possible options.
-   *   If omitted, all possible options are returned.
-   *
-   * @return array
-   *   An array of possible options for the object that may be used in an
-   *   Options widget, for example when existing data should be filtered. It may
-   *   either be a flat array of option labels keyed by values, or a
-   *   two-dimensional array of option groups (array of flat option arrays,
-   *   keyed by option group label). Note that labels should NOT be sanitized.
-   */
-  public function getPossibleOptions(?AccountInterface $account = NULL);
+    /**
+     * Returns an array of settable values.
+     *
+     * If the optional $account parameter is passed, then the array is filtered to
+     * values settable by the account.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   (optional) The user account for which to filter the settable values. If
+     *   omitted, all settable values are returned.
+     *
+     * @return array
+     *   An array of settable values.
+     */
+    public function getSettableValues(?AccountInterface $account = null);
 
-  /**
-   * Returns an array of settable values.
-   *
-   * If the optional $account parameter is passed, then the array is filtered to
-   * values settable by the account.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) The user account for which to filter the settable values. If
-   *   omitted, all settable values are returned.
-   *
-   * @return array
-   *   An array of settable values.
-   */
-  public function getSettableValues(?AccountInterface $account = NULL);
-
-  /**
-   * Returns an array of settable values with labels for display.
-   *
-   * If the optional $account parameter is passed, then the array is filtered to
-   * values settable by the account.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) The user account for which to filter the settable options. If
-   *   omitted, all settable options are returned.
-   *
-   * @return array
-   *   An array of settable options for the object that may be used in an
-   *   Options widget, usually when new data should be entered. It may either be
-   *   a flat array of option labels keyed by values, or a two-dimensional array
-   *   of option groups (array of flat option arrays, keyed by option group
-   *   label). Note that labels should NOT be sanitized.
-   */
-  public function getSettableOptions(?AccountInterface $account = NULL);
+    /**
+     * Returns an array of settable values with labels for display.
+     *
+     * If the optional $account parameter is passed, then the array is filtered to
+     * values settable by the account.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   (optional) The user account for which to filter the settable options. If
+     *   omitted, all settable options are returned.
+     *
+     * @return array
+     *   An array of settable options for the object that may be used in an
+     *   Options widget, usually when new data should be entered. It may either be
+     *   a flat array of option labels keyed by values, or a two-dimensional array
+     *   of option groups (array of flat option arrays, keyed by option group
+     *   label). Note that labels should NOT be sanitized.
+     */
+    public function getSettableOptions(?AccountInterface $account = null);
 
 }

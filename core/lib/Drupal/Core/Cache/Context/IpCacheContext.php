@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -9,27 +11,30 @@ use Drupal\Core\Cache\CacheableMetadata;
  *
  * Cache context ID: 'ip'.
  */
-class IpCacheContext extends RequestStackCacheContextBase implements CacheContextInterface {
+class IpCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('IP address');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('IP address');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext()
+    {
+        return $this->requestStack->getCurrentRequest()->getClientIp();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext() {
-    return $this->requestStack->getCurrentRequest()->getClientIp();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    {
+        return new CacheableMetadata();
+    }
 
 }

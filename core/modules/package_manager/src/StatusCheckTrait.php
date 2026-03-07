@@ -17,37 +17,37 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  *   at any time without warning. External code should not use or interact with
  *   this trait.
  */
-trait StatusCheckTrait {
-
-  /**
-   * Runs a status check for a stage and returns the results, if any.
-   *
-   * @param \Drupal\package_manager\SandboxManagerBase $sandbox_manager
-   *   The stage to run the status check for.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface|null $event_dispatcher
-   *   (optional) The event dispatcher service.
-   * @param \Drupal\package_manager\PathLocator|null $path_locator
-   *   (optional) The path locator service.
-   * @param \PhpTuf\ComposerStager\API\Path\Factory\PathFactoryInterface|null $path_factory
-   *   (optional) The path factory service.
-   *
-   * @return \Drupal\package_manager\ValidationResult[]
-   *   The results of the status check. If a readiness check was also done,
-   *   its results will be included.
-   */
-  protected function runStatusCheck(SandboxManagerBase $sandbox_manager, ?EventDispatcherInterface $event_dispatcher = NULL, ?PathLocator $path_locator = NULL, ?PathFactoryInterface $path_factory = NULL): array {
-    $event_dispatcher ??= \Drupal::service('event_dispatcher');
-    $path_locator ??= \Drupal::service(PathLocator::class);
-    $path_factory ??= \Drupal::service(PathFactoryInterface::class);
-    try {
-      $paths_to_exclude_event = new CollectPathsToExcludeEvent($sandbox_manager, $path_locator, $path_factory);
-      $event_dispatcher->dispatch($paths_to_exclude_event);
+trait StatusCheckTrait
+{
+    /**
+     * Runs a status check for a stage and returns the results, if any.
+     *
+     * @param \Drupal\package_manager\SandboxManagerBase $sandbox_manager
+     *   The stage to run the status check for.
+     * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface|null $event_dispatcher
+     *   (optional) The event dispatcher service.
+     * @param \Drupal\package_manager\PathLocator|null $path_locator
+     *   (optional) The path locator service.
+     * @param \PhpTuf\ComposerStager\API\Path\Factory\PathFactoryInterface|null $path_factory
+     *   (optional) The path factory service.
+     *
+     * @return \Drupal\package_manager\ValidationResult[]
+     *   The results of the status check. If a readiness check was also done,
+     *   its results will be included.
+     */
+    protected function runStatusCheck(SandboxManagerBase $sandbox_manager, ?EventDispatcherInterface $event_dispatcher = null, ?PathLocator $path_locator = null, ?PathFactoryInterface $path_factory = null): array
+    {
+        $event_dispatcher ??= \Drupal::service('event_dispatcher');
+        $path_locator ??= \Drupal::service(PathLocator::class);
+        $path_factory ??= \Drupal::service(PathFactoryInterface::class);
+        try {
+            $paths_to_exclude_event = new CollectPathsToExcludeEvent($sandbox_manager, $path_locator, $path_factory);
+            $event_dispatcher->dispatch($paths_to_exclude_event);
+        } catch (\Throwable $throwable) {
+            $paths_to_exclude_event = $throwable;
+        }
+        $event = new StatusCheckEvent($sandbox_manager, $paths_to_exclude_event);
+        return $event_dispatcher->dispatch($event)->getResults();
     }
-    catch (\Throwable $throwable) {
-      $paths_to_exclude_event = $throwable;
-    }
-    $event = new StatusCheckEvent($sandbox_manager, $paths_to_exclude_event);
-    return $event_dispatcher->dispatch($event)->getResults();
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -11,6 +13,8 @@ use Drupal\views\Plugin\views\argument\EntityArgument;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'file_fid',
+    id: 'file_fid',
 )]
-class Fid extends EntityArgument {}
+class Fid extends EntityArgument
+{
+}

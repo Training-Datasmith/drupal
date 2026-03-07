@@ -17,51 +17,54 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(StreamWrapperManager::class)]
 #[Group('File')]
 #[RunTestsInSeparateProcesses]
-class StreamWrapperManagerTest extends KernelTestBase {
+class StreamWrapperManagerTest extends KernelTestBase
+{
+    /**
+     * The stream wrapper manager.
+     *
+     * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
+     */
+    protected $streamWrapperManager;
 
-  /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->streamWrapperManager = \Drupal::service('stream_wrapper_manager');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->streamWrapperManager = \Drupal::service('stream_wrapper_manager');
-  }
+    /**
+     * Tests uri scheme.
+     *
+     * @legacy-covers ::getScheme
+     */
+    #[DataProvider('providerTestUriScheme')]
+    public function testUriScheme($uri, $expected): void
+    {
+        $this->assertSame($expected, StreamWrapperManager::getScheme($uri));
+    }
 
-  /**
-   * Tests uri scheme.
-   *
-   * @legacy-covers ::getScheme
-   */
-  #[DataProvider('providerTestUriScheme')]
-  public function testUriScheme($uri, $expected): void {
-    $this->assertSame($expected, StreamWrapperManager::getScheme($uri));
-  }
-
-  /**
-   * Data provider.
-   */
-  public static function providerTestUriScheme(): array {
-    $data = [];
-    $data[] = [
-      'public://filename',
-      'public',
-    ];
-    $data[] = [
-      'public://extra://',
-      'public',
-    ];
-    $data[] = [
-      'invalid',
-      FALSE,
-    ];
-    return $data;
-  }
+    /**
+     * Data provider.
+     */
+    public static function providerTestUriScheme(): array
+    {
+        $data = [];
+        $data[] = [
+          'public://filename',
+          'public',
+        ];
+        $data[] = [
+          'public://extra://',
+          'public',
+        ];
+        $data[] = [
+          'invalid',
+          false,
+        ];
+        return $data;
+    }
 
 }

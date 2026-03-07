@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Partial database to mimic the installation of the update_test_schema module.
@@ -14,12 +16,12 @@ $connection->schema()->createTable('update_test_schema_table', [
   'fields' => [
     'a' => [
       'type' => 'int',
-      'not null' => TRUE,
+      'not null' => true,
       'size' => 'normal',
     ],
     'b' => [
       'type' => 'blob',
-      'not null' => FALSE,
+      'not null' => false,
       'size' => 'normal',
     ],
   ],

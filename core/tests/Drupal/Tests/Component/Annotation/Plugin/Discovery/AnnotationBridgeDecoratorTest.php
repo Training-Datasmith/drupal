@@ -18,60 +18,63 @@ use Prophecy\PhpUnit\ProphecyTrait;
  */
 #[CoversClass(AnnotationBridgeDecorator::class)]
 #[Group('Plugin')]
-class AnnotationBridgeDecoratorTest extends TestCase {
+class AnnotationBridgeDecoratorTest extends TestCase
+{
+    use ProphecyTrait;
 
-  use ProphecyTrait;
+    /**
+     * Tests get definitions.
+     */
+    public function testGetDefinitions(): void
+    {
+        $definitions = [];
+        $definitions['object'] = new ObjectDefinition(['id' => 'foo']);
+        $definitions['array'] = ['id' => 'bar'];
+        $discovery = $this->prophesize(DiscoveryInterface::class);
+        $discovery->getDefinitions()->willReturn($definitions);
 
-  /**
-   * Tests get definitions.
-   */
-  public function testGetDefinitions(): void {
-    $definitions = [];
-    $definitions['object'] = new ObjectDefinition(['id' => 'foo']);
-    $definitions['array'] = ['id' => 'bar'];
-    $discovery = $this->prophesize(DiscoveryInterface::class);
-    $discovery->getDefinitions()->willReturn($definitions);
+        $decorator = new AnnotationBridgeDecorator($discovery->reveal(), TestAnnotation::class);
 
-    $decorator = new AnnotationBridgeDecorator($discovery->reveal(), TestAnnotation::class);
-
-    $expected = [
-      'object' => new ObjectDefinition(['id' => 'foo']),
-      'array' => new ObjectDefinition(['id' => 'bar']),
-    ];
-    $this->assertEquals($expected, $decorator->getDefinitions());
-  }
-
-}
-
-/**
- * {@inheritdoc}
- */
-class TestAnnotation extends Plugin {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get(): ObjectDefinition {
-    return new ObjectDefinition($this->definition);
-  }
-
-}
-
-/**
- * {@inheritdoc}
- */
-class ObjectDefinition extends PluginDefinition {
-
-  /**
-   * ObjectDefinition constructor.
-   *
-   * @param array $definition
-   *   An array of definition values.
-   */
-  public function __construct(array $definition) {
-    foreach ($definition as $property => $value) {
-      $this->{$property} = $value;
+        $expected = [
+          'object' => new ObjectDefinition(['id' => 'foo']),
+          'array' => new ObjectDefinition(['id' => 'bar']),
+        ];
+        $this->assertEquals($expected, $decorator->getDefinitions());
     }
-  }
+
+}
+
+/**
+ * {@inheritdoc}
+ */
+class TestAnnotation extends Plugin
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function get(): ObjectDefinition
+    {
+        return new ObjectDefinition($this->definition);
+    }
+
+}
+
+/**
+ * {@inheritdoc}
+ */
+class ObjectDefinition extends PluginDefinition
+{
+    /**
+     * ObjectDefinition constructor.
+     *
+     * @param array $definition
+     *   An array of definition values.
+     */
+    public function __construct(array $definition)
+    {
+        foreach ($definition as $property => $value) {
+            $this->{$property} = $value;
+        }
+    }
 
 }

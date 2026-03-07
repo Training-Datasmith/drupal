@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\ResourceType;
 
 /**
@@ -13,61 +15,65 @@ namespace Drupal\jsonapi\ResourceType;
  *
  * @see \Drupal\jsonapi\ResourceType\ResourceTypeRepository
  */
-class ResourceTypeRelationship extends ResourceTypeField {
+class ResourceTypeRelationship extends ResourceTypeField
+{
+    /**
+     * The resource type to which this relationships can relate.
+     *
+     * @var \Drupal\jsonapi\ResourceType\ResourceType[]
+     */
+    protected $relatableResourceTypes;
 
-  /**
-   * The resource type to which this relationships can relate.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceType[]
-   */
-  protected $relatableResourceTypes;
-
-  /**
-   * Establishes the relatable resource types of this field.
-   *
-   * @param array $resource_types
-   *   The array of relatable resource types.
-   *
-   * @return static
-   *   A new instance of the field with the given relatable resource types.
-   */
-  public function withRelatableResourceTypes(array $resource_types): static {
-    $relationship = new static($this->internalName, $this->publicName, $this->enabled, $this->hasOne);
-    $relationship->relatableResourceTypes = $resource_types;
-    return $relationship;
-  }
-
-  /**
-   * Gets the relatable resource types.
-   *
-   * @return \Drupal\jsonapi\ResourceType\ResourceType[]
-   *   The resource type to which this relationships can relate.
-   */
-  public function getRelatableResourceTypes() {
-    if (!isset($this->relatableResourceTypes)) {
-      throw new \LogicException("withRelatableResourceTypes() must be called before getting relatable resource types.");
+    /**
+     * Establishes the relatable resource types of this field.
+     *
+     * @param array $resource_types
+     *   The array of relatable resource types.
+     *
+     * @return static
+     *   A new instance of the field with the given relatable resource types.
+     */
+    public function withRelatableResourceTypes(array $resource_types): static
+    {
+        $relationship = new static($this->internalName, $this->publicName, $this->enabled, $this->hasOne);
+        $relationship->relatableResourceTypes = $resource_types;
+        return $relationship;
     }
-    return $this->relatableResourceTypes;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function withPublicName($public_name) {
-    $relationship = parent::withPublicName($public_name);
-    return isset($this->relatableResourceTypes)
-      ? $relationship->withRelatableResourceTypes($this->relatableResourceTypes)
-      : $relationship;
-  }
+    /**
+     * Gets the relatable resource types.
+     *
+     * @return \Drupal\jsonapi\ResourceType\ResourceType[]
+     *   The resource type to which this relationships can relate.
+     */
+    public function getRelatableResourceTypes()
+    {
+        if (!isset($this->relatableResourceTypes)) {
+            throw new \LogicException('withRelatableResourceTypes() must be called before getting relatable resource types.');
+        }
+        return $this->relatableResourceTypes;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function disabled() {
-    $relationship = parent::disabled();
-    return isset($this->relatableResourceTypes)
-      ? $relationship->withRelatableResourceTypes($this->relatableResourceTypes)
-      : $relationship;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function withPublicName($public_name)
+    {
+        $relationship = parent::withPublicName($public_name);
+        return isset($this->relatableResourceTypes)
+          ? $relationship->withRelatableResourceTypes($this->relatableResourceTypes)
+          : $relationship;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function disabled()
+    {
+        $relationship = parent::disabled();
+        return isset($this->relatableResourceTypes)
+          ? $relationship->withRelatableResourceTypes($this->relatableResourceTypes)
+          : $relationship;
+    }
 
 }

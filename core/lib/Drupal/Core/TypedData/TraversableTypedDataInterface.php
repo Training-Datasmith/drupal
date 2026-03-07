@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
@@ -9,16 +11,16 @@ namespace Drupal\Core\TypedData;
  * @template T of \Drupal\Core\TypedData\TypedDataInterface
  * @extends \Traversable<I, T>
  */
-interface TraversableTypedDataInterface extends TypedDataInterface, \Traversable {
-
-  /**
-   * React to changes to a child property or item.
-   *
-   * Note that this is invoked after any changes have been applied.
-   *
-   * @param string $name
-   *   The name of the property or the delta of the list item which is changed.
-   */
-  public function onChange($name);
+interface TraversableTypedDataInterface extends TypedDataInterface, \Traversable
+{
+    /**
+     * React to changes to a child property or item.
+     *
+     * Note that this is invoked after any changes have been applied.
+     *
+     * @param string $name
+     *   The name of the property or the delta of the list item which is changed.
+     */
+    public function onChange($name);
 
 }

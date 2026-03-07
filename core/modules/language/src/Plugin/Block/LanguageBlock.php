@@ -1,16 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\CacheOptionalInterface;
-use Drupal\Core\Path\PathMatcherInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\language\Plugin\Derivative\LanguageBlock as LanguageBlockDeriver;
@@ -19,94 +19,97 @@ use Drupal\language\Plugin\Derivative\LanguageBlock as LanguageBlockDeriver;
  * Provides a 'Language switcher' block.
  */
 #[Block(
-  id: "language_block",
-  admin_label: new TranslatableMarkup("Language switcher"),
-  category: new TranslatableMarkup("System"),
-  deriver: LanguageBlockDeriver::class
+    id: 'language_block',
+    admin_label: new TranslatableMarkup('Language switcher'),
+    category: new TranslatableMarkup('System'),
+    deriver: LanguageBlockDeriver::class
 )]
-class LanguageBlock extends BlockBase implements ContainerFactoryPluginInterface, CacheOptionalInterface {
-
-  /**
-   * Constructs a LanguageBlock object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
-   *   The path matcher.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function blockAccess(AccountInterface $account) {
-    $access = $this->languageManager->isMultilingual() ? AccessResult::allowed() : AccessResult::forbidden();
-    return $access->addCacheTags(['config:configurable_language_list']);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function build(): array {
-    $build = [];
-    $type = $this->getDerivativeId();
-    $route_match = \Drupal::routeMatch();
-    // If there is no route match, for example when creating blocks on 404 pages
-    // for logged-in users with big_pipe enabled using the front page instead.
-    if ($this->pathMatcher->isFrontPage() || !$route_match->getRouteObject()) {
-      // We are skipping the route match on both 404 and front page.
-      // Example: If on front page, there is no route match like when creating
-      // blocks on 404 pages for logged-in users with big_pipe enabled, use the
-      // front page.
-      $url = Url::fromRoute('<front>');
+class LanguageBlock extends BlockBase implements ContainerFactoryPluginInterface, CacheOptionalInterface
+{
+    /**
+     * Constructs a LanguageBlock object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
+     *   The path matcher.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    else {
-      $url = Url::fromRouteMatch($route_match);
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
+        $access = $this->languageManager->isMultilingual() ? AccessResult::allowed() : AccessResult::forbidden();
+        return $access->addCacheTags(['config:configurable_language_list']);
     }
-    $links = $this->languageManager->getLanguageSwitchLinks($type, $url);
 
-    // In any render cache items wrapping this block, account for variations
-    // by user access to each switcher link, the current path and query
-    // arguments, and language negotiation.
-    $cache_metadata = BubbleableMetadata::createFromRenderArray($build)
-      ->addCacheContexts(['url.path', 'url.query_args', 'url.site', 'languages:' . $type]);
-    if (isset($links->links)) {
-      $build = [
-        '#theme' => 'links__language_block',
-        '#links' => $links->links,
-        '#attributes' => [
-          'class' => [
-            "language-switcher-{$links->method_id}",
-          ],
-        ],
-        '#set_active_class' => TRUE,
-      ];
-
-      foreach ($links->links as $link) {
-        if ($link['url'] instanceof Url) {
-          $cache_metadata->addCacheableDependency($link['url']->access(NULL, TRUE));
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function build(): array
+    {
+        $build = [];
+        $type = $this->getDerivativeId();
+        $route_match = \Drupal::routeMatch();
+        // If there is no route match, for example when creating blocks on 404 pages
+        // for logged-in users with big_pipe enabled using the front page instead.
+        if ($this->pathMatcher->isFrontPage() || !$route_match->getRouteObject()) {
+            // We are skipping the route match on both 404 and front page.
+            // Example: If on front page, there is no route match like when creating
+            // blocks on 404 pages for logged-in users with big_pipe enabled, use the
+            // front page.
+            $url = Url::fromRoute('<front>');
+        } else {
+            $url = Url::fromRouteMatch($route_match);
         }
-      }
+        $links = $this->languageManager->getLanguageSwitchLinks($type, $url);
+
+        // In any render cache items wrapping this block, account for variations
+        // by user access to each switcher link, the current path and query
+        // arguments, and language negotiation.
+        $cache_metadata = BubbleableMetadata::createFromRenderArray($build)
+          ->addCacheContexts(['url.path', 'url.query_args', 'url.site', 'languages:' . $type]);
+        if (isset($links->links)) {
+            $build = [
+              '#theme' => 'links__language_block',
+              '#links' => $links->links,
+              '#attributes' => [
+                'class' => [
+                  "language-switcher-{$links->method_id}",
+                ],
+              ],
+              '#set_active_class' => true,
+            ];
+
+            foreach ($links->links as $link) {
+                if ($link['url'] instanceof Url) {
+                    $cache_metadata->addCacheableDependency($link['url']->access(null, true));
+                }
+            }
+        }
+        $cache_metadata->applyTo($build);
+
+        return $build;
     }
-    $cache_metadata->applyTo($build);
 
-    return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createPlaceholder(): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createPlaceholder(): bool
+    {
+        return true;
+    }
 
 }

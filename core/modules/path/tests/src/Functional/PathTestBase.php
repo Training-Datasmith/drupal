@@ -10,26 +10,27 @@ use Drupal\Tests\Traits\Core\PathAliasTestTrait;
 /**
  * Provides a base class for testing the Path module.
  */
-abstract class PathTestBase extends BrowserTestBase {
+abstract class PathTestBase extends BrowserTestBase
+{
+    use PathAliasTestTrait;
 
-  use PathAliasTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'path'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'path'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Create Basic page and Article node types.
-    if ($this->profile != 'standard') {
-      $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
-      $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+        // Create Basic page and Article node types.
+        if ($this->profile != 'standard') {
+            $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
+            $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+        }
     }
-  }
 
 }

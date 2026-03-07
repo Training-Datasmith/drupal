@@ -10,6 +10,6 @@ namespace Drupal\Core\Theme\Icon\Exception;
  * @internal
  *   This API is experimental.
  */
-class IconDefinitionInvalidDataException extends \Exception {
-
+class IconDefinitionInvalidDataException extends \Exception
+{
 }

@@ -13,24 +13,26 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a 'Block with validation error' test block.
  */
 #[Block(
-  id: "settings_tray_test_validation",
-  admin_label: new TranslatableMarkup("Block with validation error"),
+    id: 'settings_tray_test_validation',
+    admin_label: new TranslatableMarkup('Block with validation error'),
 )]
-class ValidationErrorBlock extends BlockBase {
+class ValidationErrorBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return ['#markup' => '<span>If I had more time this would be very witty :(.</span>'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return ['#markup' => '<span>If I had more time this would be very witty :(.</span>'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    parent::validateConfigurationForm($form, $form_state);
-    $form_state->setError($form['label'], 'Sorry system error. Save again.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+        parent::validateConfigurationForm($form, $form_state);
+        $form_state->setError($form['label'], 'Sorry system error. Save again.');
+    }
 
 }

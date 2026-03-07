@@ -10,20 +10,21 @@ use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 /**
  * The service provider for testing bedlam in container rebuilds.
  */
-class ErrorServiceTestServiceProvider implements ServiceModifierInterface {
+class ErrorServiceTestServiceProvider implements ServiceModifierInterface
+{
+    /**
+     * The in-situ container builder.
+     *
+     * @var \Drupal\Core\DependencyInjection\ContainerBuilder
+     */
+    public static $containerBuilder;
 
-  /**
-   * The in-situ container builder.
-   *
-   * @var \Drupal\Core\DependencyInjection\ContainerBuilder
-   */
-  public static $containerBuilder;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container) {
-    static::$containerBuilder = $container;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container)
+    {
+        static::$containerBuilder = $container;
+    }
 
 }

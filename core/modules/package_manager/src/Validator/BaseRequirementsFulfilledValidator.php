@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\package_manager\Validator;
 
 use Drupal\Core\Extension\Requirement\RequirementSeverity;
@@ -30,42 +32,44 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * @see \Drupal\package_manager\Validator\BaseRequirementValidatorTrait
  */
-final class BaseRequirementsFulfilledValidator implements EventSubscriberInterface {
+final class BaseRequirementsFulfilledValidator implements EventSubscriberInterface
+{
+    /**
+     * The priority of this validator.
+     *
+     * @see ::getSubscribedEvents()
+     *
+     * @var int
+     */
+    public const PRIORITY = 200;
 
-  /**
-   * The priority of this validator.
-   *
-   * @see ::getSubscribedEvents()
-   *
-   * @var int
-   */
-  public const PRIORITY = 200;
-
-  /**
-   * Validates that base requirements are fulfilled.
-   *
-   * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
-   *   The event.
-   */
-  public function validate(SandboxValidationEvent $event): void {
-    // If there are any errors from the validators which ran before this one,
-    // base requirements are not fulfilled. Stop any further validators from
-    // running.
-    if ($event->getResults(RequirementSeverity::Error->value)) {
-      $event->stopPropagation();
+    /**
+     * Validates that base requirements are fulfilled.
+     *
+     * @param \Drupal\package_manager\Event\SandboxValidationEvent $event
+     *   The event.
+     */
+    public function validate(SandboxValidationEvent $event): void
+    {
+        // If there are any errors from the validators which ran before this one,
+        // base requirements are not fulfilled. Stop any further validators from
+        // running.
+        if ($event->getResults(RequirementSeverity::Error->value)) {
+            $event->stopPropagation();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      PreCreateEvent::class => ['validate', self::PRIORITY],
-      PreRequireEvent::class => ['validate', self::PRIORITY],
-      PreApplyEvent::class => ['validate', self::PRIORITY],
-      StatusCheckEvent::class => ['validate', self::PRIORITY],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          PreCreateEvent::class => ['validate', self::PRIORITY],
+          PreRequireEvent::class => ['validate', self::PRIORITY],
+          PreApplyEvent::class => ['validate', self::PRIORITY],
+          StatusCheckEvent::class => ['validate', self::PRIORITY],
+        ];
+    }
 
 }

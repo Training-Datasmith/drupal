@@ -16,31 +16,35 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class VendorHardeningExcluder implements EventSubscriberInterface {
+final readonly class VendorHardeningExcluder implements EventSubscriberInterface
+{
+    public function __construct(private PathLocator $pathLocator)
+    {
+    }
 
-  public function __construct(private PathLocator $pathLocator) {}
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          CollectPathsToExcludeEvent::class => 'excludeVendorHardeningFiles',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      CollectPathsToExcludeEvent::class => 'excludeVendorHardeningFiles',
-    ];
-  }
-
-  /**
-   * Excludes vendor hardening files from stage operations.
-   *
-   * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
-   *   The event object.
-   */
-  public function excludeVendorHardeningFiles(CollectPathsToExcludeEvent $event): void {
-    // If the core-vendor-hardening plugin (used in the legacy-project template)
-    // is present, it may have written security hardening files in the vendor
-    // directory. They should always be excluded.
-    $vendor_dir = $this->pathLocator->getVendorDirectory();
-    $event->addPathsRelativeToProjectRoot([$vendor_dir . '/.htaccess']);
-  }
+    /**
+     * Excludes vendor hardening files from stage operations.
+     *
+     * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
+     *   The event object.
+     */
+    public function excludeVendorHardeningFiles(CollectPathsToExcludeEvent $event): void
+    {
+        // If the core-vendor-hardening plugin (used in the legacy-project template)
+        // is present, it may have written security hardening files in the vendor
+        // directory. They should always be excluded.
+        $vendor_dir = $this->pathLocator->getVendorDirectory();
+        $event->addPathsRelativeToProjectRoot([$vendor_dir . '/.htaccess']);
+    }
 
 }

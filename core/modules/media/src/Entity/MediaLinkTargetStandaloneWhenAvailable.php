@@ -13,21 +13,22 @@ use Drupal\media\MediaInterface;
  *
  * @see \Drupal\media\Entity\MediaLinkTarget
  */
-class MediaLinkTargetStandaloneWhenAvailable extends MediaLinkTarget {
+class MediaLinkTargetStandaloneWhenAvailable extends MediaLinkTarget
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLinkTarget(EntityInterface $entity): GeneratedUrl
+    {
+        assert($entity instanceof MediaInterface);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLinkTarget(EntityInterface $entity): GeneratedUrl {
-    assert($entity instanceof MediaInterface);
+        // Default to the standalone URL if it is enabled.
+        // @see media_entity_type_alter()
+        if (\Drupal::config('media.settings')->get('standalone_url')) {
+            return $entity->toUrl('canonical')->toString(true);
+        }
 
-    // Default to the standalone URL if it is enabled.
-    // @see media_entity_type_alter()
-    if (\Drupal::config('media.settings')->get('standalone_url')) {
-      return $entity->toUrl('canonical')->toString(TRUE);
+        return parent::getLinkTarget($entity);
     }
-
-    return parent::getLinkTarget($entity);
-  }
 
 }

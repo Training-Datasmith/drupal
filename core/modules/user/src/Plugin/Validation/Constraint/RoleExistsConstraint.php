@@ -12,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Checks if a role exists.
  */
 #[Constraint(
-  id: 'RoleExists',
-  label: new TranslatableMarkup('Role exists', [], ['context' => 'Validation'])
+    id: 'RoleExists',
+    label: new TranslatableMarkup('Role exists', [], ['context' => 'Validation'])
 )]
-class RoleExistsConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = "The role with id '@rid' does not exist.",
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class RoleExistsConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = "The role with id '@rid' does not exist.",
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

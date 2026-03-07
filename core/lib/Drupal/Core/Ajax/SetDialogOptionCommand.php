@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -7,47 +9,49 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class SetDialogOptionCommand implements CommandInterface {
+class SetDialogOptionCommand implements CommandInterface
+{
+    /**
+     * A CSS selector string.
+     *
+     * @var string
+     */
+    protected $selector;
 
-  /**
-   * A CSS selector string.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
-   * Constructs a SetDialogOptionCommand object.
-   *
-   * @param string $selector
-   *   The selector of the dialog whose title will be set. If set to an empty
-   *   value, the default modal dialog will be selected.
-   * @param string $optionName
-   *   The name of the option to set. May be any jQuery UI dialog option.
-   *   See http://api.jqueryui.com/dialog.
-   * @param mixed $optionValue
-   *   The value of the option to be passed to the dialog.
-   */
-  public function __construct($selector, /**
+    /**
+     * Constructs a SetDialogOptionCommand object.
+     *
+     * @param string $selector
+     *   The selector of the dialog whose title will be set. If set to an empty
+     *   value, the default modal dialog will be selected.
+     * @param string $optionName
+     *   The name of the option to set. May be any jQuery UI dialog option.
+     *   See http://api.jqueryui.com/dialog.
+     * @param mixed $optionValue
+     *   The value of the option to be passed to the dialog.
+     */
+    public function __construct($selector, /**
    * A jQuery UI dialog option name.
    */
-  protected $optionName, /**
+        protected $optionName, /**
    * A jQuery UI dialog option value.
    */
-  protected $optionValue) {
-    $this->selector = $selector ?: '#drupal-modal';
-  }
+        protected $optionValue)
+    {
+        $this->selector = $selector ?: '#drupal-modal';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'setDialogOption',
-      'selector' => $this->selector,
-      'optionName' => $this->optionName,
-      'optionValue' => $this->optionValue,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'setDialogOption',
+          'selector' => $this->selector,
+          'optionName' => $this->optionName,
+          'optionValue' => $this->optionValue,
+        ];
+    }
 
 }

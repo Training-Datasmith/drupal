@@ -17,50 +17,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('migrate')]
 #[RunTestsInSeparateProcesses]
-class MigrateMissingDatabaseTest extends KernelTestBase {
+class MigrateMissingDatabaseTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['migrate', 'migrate_missing_database_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['migrate', 'migrate_missing_database_test'];
+    /**
+     * The migration plugin manager.
+     *
+     * @var \Drupal\migrate\Plugin\MigrationPluginManager
+     */
+    protected $migrationPluginManager;
 
-  /**
-   * The migration plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationPluginManager
-   */
-  protected $migrationPluginManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->migrationPluginManager = \Drupal::service('plugin.manager.migration');
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->migrationPluginManager = \Drupal::service('plugin.manager.migration');
-
-    // Set the 'migrate' database connection to use a missing database.
-    $info = Database::getConnectionInfo('default')['default'];
-    $info['database'] = 'godot';
-    Database::addConnectionInfo('migrate', 'default', $info);
-  }
-
-  /**
-   * Tests a SQL migration without the database connection.
-   *
-   * - The migration can be instantiated.
-   * - The checkRequirements() method throws a RequirementsException.
-   */
-  public function testMissingDatabase(): void {
-    if (Database::getConnection()->driver() === 'sqlite') {
-      $this->markTestSkipped('Not compatible with sqlite');
+        // Set the 'migrate' database connection to use a missing database.
+        $info = Database::getConnectionInfo('default')['default'];
+        $info['database'] = 'godot';
+        Database::addConnectionInfo('migrate', 'default', $info);
     }
 
-    $migration = $this->migrationPluginManager->createInstance('missing_database');
-    $this->assertInstanceOf(MigrationInterface::class, $migration);
-    $this->assertInstanceOf(MigrateIdMapInterface::class, $migration->getIdMap());
-    $this->expectException(RequirementsException::class);
-    $this->expectExceptionMessage('No database connection available for source plugin migrate_missing_database_test');
-    $migration->checkRequirements();
-  }
+    /**
+     * Tests a SQL migration without the database connection.
+     *
+     * - The migration can be instantiated.
+     * - The checkRequirements() method throws a RequirementsException.
+     */
+    public function testMissingDatabase(): void
+    {
+        if (Database::getConnection()->driver() === 'sqlite') {
+            $this->markTestSkipped('Not compatible with sqlite');
+        }
+
+        $migration = $this->migrationPluginManager->createInstance('missing_database');
+        $this->assertInstanceOf(MigrationInterface::class, $migration);
+        $this->assertInstanceOf(MigrateIdMapInterface::class, $migration->getIdMap());
+        $this->expectException(RequirementsException::class);
+        $this->expectExceptionMessage('No database connection available for source plugin migrate_missing_database_test');
+        $migration->checkRequirements();
+    }
 
 }

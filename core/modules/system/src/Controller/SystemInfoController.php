@@ -1,69 +1,72 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Controller;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Site\Settings;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\system\SystemManager;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Returns responses for System Info routes.
  */
-class SystemInfoController implements ContainerInjectionInterface {
+class SystemInfoController implements ContainerInjectionInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('system.manager')
-    );
-  }
-
-  /**
-   * Constructs a SystemInfoController object.
-   *
-   * @param \Drupal\system\SystemManager $systemManager
-   *   System manager service.
-   */
-  public function __construct(protected \Drupal\system\SystemManager $systemManager)
-  {
-  }
-
-  /**
-   * Displays the site status report.
-   *
-   * @return array
-   *   A render array containing a list of system requirements for the Drupal
-   *   installation and whether this installation meets the requirements.
-   */
-  public function status(): array {
-    $requirements = $this->systemManager->listRequirements();
-    return ['#type' => 'status_report_page', '#requirements' => $requirements];
-  }
-
-  /**
-   * Returns the contents of phpinfo().
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   A response object to be sent to the client.
-   */
-  public function php() {
-    if (function_exists('phpinfo')) {
-      ob_start();
-      $phpinfo_flags = Settings::get('sa_core_2023_004_phpinfo_flags', ~ (INFO_VARIABLES | INFO_ENVIRONMENT));
-      phpinfo($phpinfo_flags);
-      $output = ob_get_clean();
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('system.manager')
+        );
     }
-    else {
-      $output = $this->t('The phpinfo() function is disabled. See <a href=":url" target="_blank">PHP documentation</a>.', [':url' => 'https://www.php.net/manual/function.phpinfo.php']);
+
+    /**
+     * Constructs a SystemInfoController object.
+     *
+     * @param \Drupal\system\SystemManager $systemManager
+     *   System manager service.
+     */
+    public function __construct(protected \Drupal\system\SystemManager $systemManager)
+    {
     }
-    return new Response($output);
-  }
+
+    /**
+     * Displays the site status report.
+     *
+     * @return array
+     *   A render array containing a list of system requirements for the Drupal
+     *   installation and whether this installation meets the requirements.
+     */
+    public function status(): array
+    {
+        $requirements = $this->systemManager->listRequirements();
+        return ['#type' => 'status_report_page', '#requirements' => $requirements];
+    }
+
+    /**
+     * Returns the contents of phpinfo().
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   A response object to be sent to the client.
+     */
+    public function php()
+    {
+        if (function_exists('phpinfo')) {
+            ob_start();
+            $phpinfo_flags = Settings::get('sa_core_2023_004_phpinfo_flags', ~ (INFO_VARIABLES | INFO_ENVIRONMENT));
+            phpinfo($phpinfo_flags);
+            $output = ob_get_clean();
+        } else {
+            $output = $this->t('The phpinfo() function is disabled. See <a href=":url" target="_blank">PHP documentation</a>.', [':url' => 'https://www.php.net/manual/function.phpinfo.php']);
+        }
+        return new Response($output);
+    }
 
 }

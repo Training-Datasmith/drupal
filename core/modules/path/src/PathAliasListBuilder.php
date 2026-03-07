@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\path_alias\AliasManagerInterface;
 use Drupal\Core\Url;
 use Drupal\path\Form\PathFilterForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -19,155 +18,161 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @see \Drupal\path_alias\Entity\PathAlias
  */
-class PathAliasListBuilder extends EntityListBuilder {
+class PathAliasListBuilder extends EntityListBuilder
+{
+    /**
+     * The current request.
+     *
+     * @var \Symfony\Component\HttpFoundation\Request
+     */
+    protected $currentRequest;
 
-  /**
-   * The current request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $currentRequest;
+    /**
+     * Constructs a new PathAliasListBuilder object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+     *   The entity storage class.
+     * @param \Symfony\Component\HttpFoundation\Request $current_request
+     *   The current request.
+     * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
+     *   The form builder.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
+     *   The path alias manager.
+     */
+    public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, Request $current_request, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\path_alias\AliasManagerInterface $aliasManager)
+    {
+        parent::__construct($entity_type, $storage);
 
-  /**
-   * Constructs a new PathAliasListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Symfony\Component\HttpFoundation\Request $current_request
-   *   The current request.
-   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
-   *   The form builder.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
-   *   The path alias manager.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, Request $current_request, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\path_alias\AliasManagerInterface $aliasManager) {
-    parent::__construct($entity_type, $storage);
-
-    $this->currentRequest = $current_request;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('request_stack')->getCurrentRequest(),
-      $container->get('form_builder'),
-      $container->get('language_manager'),
-      $container->get('path_alias.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityIds() {
-    $query = $this->getStorage()->getQuery()->accessCheck(TRUE);
-
-    $search = $this->currentRequest->query->get('search');
-    if ($search) {
-      $query->condition('alias', $search, 'CONTAINS');
+        $this->currentRequest = $current_request;
     }
 
-    // Only add the pager if a limit is specified.
-    if ($this->limit) {
-      $query->pager($this->limit);
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager')->getStorage($entity_type->id()),
+            $container->get('request_stack')->getCurrentRequest(),
+            $container->get('form_builder'),
+            $container->get('language_manager'),
+            $container->get('path_alias.manager')
+        );
     }
 
-    // Allow the entity query to sort using the table header.
-    $header = $this->buildHeader();
-    $query->tableSort($header);
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityIds()
+    {
+        $query = $this->getStorage()->getQuery()->accessCheck(true);
 
-    return $query->execute();
-  }
+        $search = $this->currentRequest->query->get('search');
+        if ($search) {
+            $query->condition('alias', $search, 'CONTAINS');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    $keys = $this->currentRequest->query->get('search');
-    $build['path_admin_filter_form'] = $this->formBuilder->getForm(PathFilterForm::class, $keys);
-    $build += parent::render();
+        // Only add the pager if a limit is specified.
+        if ($this->limit) {
+            $query->pager($this->limit);
+        }
 
-    $build['table']['#empty'] = $this->t('No path aliases available. <a href=":link">Add URL alias</a>.', [':link' => Url::fromRoute('entity.path_alias.add_form')->toString()]);
+        // Allow the entity query to sort using the table header.
+        $header = $this->buildHeader();
+        $query->tableSort($header);
 
-    return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header = [
-      'alias' => [
-        'data' => $this->t('Alias'),
-        'field' => 'alias',
-        'specifier' => 'alias',
-        'sort' => 'asc',
-      ],
-      'path' => [
-        'data' => $this->t('System path'),
-        'field' => 'path',
-        'specifier' => 'path',
-      ],
-    ];
-
-    // Enable language column and filter if multiple languages are added.
-    if ($this->languageManager->isMultilingual()) {
-      $header['language_name'] = [
-        'data' => $this->t('Language'),
-        'field' => 'langcode',
-        'specifier' => 'langcode',
-        'class' => [RESPONSIVE_PRIORITY_MEDIUM],
-      ];
+        return $query->execute();
     }
 
-    return $header + parent::buildHeader();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        $keys = $this->currentRequest->query->get('search');
+        $build['path_admin_filter_form'] = $this->formBuilder->getForm(PathFilterForm::class, $keys);
+        $build += parent::render();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity): array {
-    /** @var \Drupal\Core\Path\Entity\PathAlias $entity */
-    $langcode = $entity->language()->getId();
-    $alias = $entity->getAlias();
-    $path = $entity->getPath();
-    $url = Url::fromUserInput($path);
+        $build['table']['#empty'] = $this->t('No path aliases available. <a href=":link">Add URL alias</a>.', [':link' => Url::fromRoute('entity.path_alias.add_form')->toString()]);
 
-    $row['data']['alias']['data'] = [
-      '#type' => 'link',
-      '#title' => $alias,
-      '#url' => $url,
-    ];
-
-    // Create a new URL for linking to the un-aliased system path.
-    $system_url = Url::fromUri("base:{$path}");
-    $row['data']['path']['data'] = [
-      '#type' => 'link',
-      '#title' => $path,
-      '#url' => $system_url,
-    ];
-
-    if ($this->languageManager->isMultilingual()) {
-      $row['data']['language_name'] = $this->languageManager->getLanguageName($langcode);
+        return $build;
     }
 
-    $row['data']['operations']['data'] = $this->buildOperations($entity);
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header = [
+          'alias' => [
+            'data' => $this->t('Alias'),
+            'field' => 'alias',
+            'specifier' => 'alias',
+            'sort' => 'asc',
+          ],
+          'path' => [
+            'data' => $this->t('System path'),
+            'field' => 'path',
+            'specifier' => 'path',
+          ],
+        ];
 
-    // If the system path maps to a different URL alias, highlight this table
-    // row to let the user know of old aliases.
-    if ($alias != $this->aliasManager->getAliasByPath($path, $langcode)) {
-      $row['class'] = ['warning'];
+        // Enable language column and filter if multiple languages are added.
+        if ($this->languageManager->isMultilingual()) {
+            $header['language_name'] = [
+              'data' => $this->t('Language'),
+              'field' => 'langcode',
+              'specifier' => 'langcode',
+              'class' => [RESPONSIVE_PRIORITY_MEDIUM],
+            ];
+        }
+
+        return $header + parent::buildHeader();
     }
 
-    return $row;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity): array
+    {
+        /** @var \Drupal\Core\Path\Entity\PathAlias $entity */
+        $langcode = $entity->language()->getId();
+        $alias = $entity->getAlias();
+        $path = $entity->getPath();
+        $url = Url::fromUserInput($path);
+
+        $row['data']['alias']['data'] = [
+          '#type' => 'link',
+          '#title' => $alias,
+          '#url' => $url,
+        ];
+
+        // Create a new URL for linking to the un-aliased system path.
+        $system_url = Url::fromUri("base:{$path}");
+        $row['data']['path']['data'] = [
+          '#type' => 'link',
+          '#title' => $path,
+          '#url' => $system_url,
+        ];
+
+        if ($this->languageManager->isMultilingual()) {
+            $row['data']['language_name'] = $this->languageManager->getLanguageName($langcode);
+        }
+
+        $row['data']['operations']['data'] = $this->buildOperations($entity);
+
+        // If the system path maps to a different URL alias, highlight this table
+        // row to let the user know of old aliases.
+        if ($alias != $this->aliasManager->getAliasByPath($path, $langcode)) {
+            $row['class'] = ['warning'];
+        }
+
+        return $row;
+    }
 
 }

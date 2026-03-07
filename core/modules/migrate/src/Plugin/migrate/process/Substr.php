@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
-use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\Row;
 use Drupal\migrate\MigrateException;
+use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
+use Drupal\migrate\Row;
 
 // cspell:ignore skłodowska
 
@@ -63,26 +65,27 @@ use Drupal\migrate\MigrateException;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('substr')]
-class Substr extends ProcessPluginBase {
+class Substr extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string
+    {
+        $start = $this->configuration['start'] ?? 0;
+        if (!is_int($start)) {
+            throw new MigrateException('The start position configuration value should be an integer. Omit this key to capture from the beginning of the string.');
+        }
+        $length = $this->configuration['length'] ?? null;
+        if ($length !== null && !is_int($length)) {
+            throw new MigrateException('The character length configuration value should be an integer. Omit this key to capture from the start position to the end of the string.');
+        }
+        if (!is_string($value)) {
+            throw new MigrateException('The input value must be a string.');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string {
-    $start = $this->configuration['start'] ?? 0;
-    if (!is_int($start)) {
-      throw new MigrateException('The start position configuration value should be an integer. Omit this key to capture from the beginning of the string.');
+        // Use optional start or length to return a portion of $value.
+        return mb_substr($value, $start, $length);
     }
-    $length = $this->configuration['length'] ?? NULL;
-    if ($length !== NULL && !is_int($length)) {
-      throw new MigrateException('The character length configuration value should be an integer. Omit this key to capture from the start position to the end of the string.');
-    }
-    if (!is_string($value)) {
-      throw new MigrateException('The input value must be a string.');
-    }
-
-    // Use optional start or length to return a portion of $value.
-    return mb_substr($value, $start, $length);
-  }
 
 }

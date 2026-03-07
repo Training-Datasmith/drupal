@@ -19,42 +19,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('language')]
 #[CoversClass(ContentLanguageSettingsForm::class)]
 #[RunTestsInSeparateProcesses]
-class EntityTypeWithoutLanguageFormTest extends BrowserTestBase {
+class EntityTypeWithoutLanguageFormTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'language',
+      'language_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'language',
-    'language_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Create and log in administrative user.
+        $admin_user = $this->drupalCreateUser([
+          'administer languages',
+        ]);
+        $this->drupalLogin($admin_user);
+    }
 
-    // Create and log in administrative user.
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-    ]);
-    $this->drupalLogin($admin_user);
-  }
-
-  /**
-   * Tests configuration options with an entity without language definition.
-   */
-  public function testEmptyLangcode(): void {
-    // Assert that we can not enable language select from
-    // content language settings page.
-    $this->drupalGet('admin/config/regional/content-language');
-    $this->assertSession()->fieldNotExists('entity_types[no_language_entity_test]');
-  }
+    /**
+     * Tests configuration options with an entity without language definition.
+     */
+    public function testEmptyLangcode(): void
+    {
+        // Assert that we can not enable language select from
+        // content language settings page.
+        $this->drupalGet('admin/config/regional/content-language');
+        $this->assertSession()->fieldNotExists('entity_types[no_language_entity_test]');
+    }
 
 }

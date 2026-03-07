@@ -1,61 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin\Definition;
 
 /**
  * Provides object-based plugin definitions.
  */
 #[\AllowDynamicProperties]
-class PluginDefinition implements PluginDefinitionInterface {
+class PluginDefinition implements PluginDefinitionInterface
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    protected $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  protected $id;
+    /**
+     * A fully qualified class name.
+     *
+     * @var string
+     */
+    protected $class;
 
-  /**
-   * A fully qualified class name.
-   *
-   * @var string
-   */
-  protected $class;
+    /**
+     * The plugin provider.
+     *
+     * @var string
+     */
+    protected $provider;
 
-  /**
-   * The plugin provider.
-   *
-   * @var string
-   */
-  protected $provider;
+    /**
+     * {@inheritdoc}
+     */
+    public function id()
+    {
+        return $this->id;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function id() {
-    return $this->id;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setClass($class): static
+    {
+        $this->class = $class;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setClass($class): static {
-    $this->class = $class;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getClass() {
-    return $this->class;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getProvider() {
-    return $this->provider;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getProvider()
+    {
+        return $this->provider;
+    }
 
 }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
@@ -89,42 +91,44 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('explode')]
-class Explode extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
-    if (empty($this->configuration['delimiter'])) {
-      throw new MigrateException('delimiter is empty');
-    }
-
-    $strict = array_key_exists('strict', $this->configuration) ? $this->configuration['strict'] : TRUE;
-    if ($strict && !is_string($value)) {
-        throw new MigrateException(sprintf('%s is not a string', var_export($value, TRUE)));
-    }
-    if (!$strict) {
-        // Check if the incoming value can cast to a string.
-        $original = $value;
-        if (!is_string($original) && ($original != ($value = @strval($value)))) {
-          throw new MigrateException(sprintf('%s cannot be casted to a string', var_export($original, TRUE)));
+class Explode extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array
+    {
+        if (empty($this->configuration['delimiter'])) {
+            throw new MigrateException('delimiter is empty');
         }
-        // Empty strings should be exploded to empty arrays.
-        if ($value === '') {
-          return [];
+
+        $strict = array_key_exists('strict', $this->configuration) ? $this->configuration['strict'] : true;
+        if ($strict && !is_string($value)) {
+            throw new MigrateException(sprintf('%s is not a string', var_export($value, true)));
         }
+        if (!$strict) {
+            // Check if the incoming value can cast to a string.
+            $original = $value;
+            if (!is_string($original) && ($original != ($value = @strval($value)))) {
+                throw new MigrateException(sprintf('%s cannot be casted to a string', var_export($original, true)));
+            }
+            // Empty strings should be exploded to empty arrays.
+            if ($value === '') {
+                return [];
+            }
+        }
+
+        $limit = $this->configuration['limit'] ?? PHP_INT_MAX;
+
+        return explode($this->configuration['delimiter'], (string) $value, $limit);
     }
 
-    $limit = $this->configuration['limit'] ?? PHP_INT_MAX;
-
-    return explode($this->configuration['delimiter'], (string) $value, $limit);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function multiple(): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function multiple(): bool
+    {
+        return true;
+    }
 
 }

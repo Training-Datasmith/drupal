@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,39 +14,40 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\filter\Entity\FilterFormat
  */
-class FilterFormatAccessControlHandler extends EntityAccessControlHandler {
+class FilterFormatAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $filter_format, $operation, AccountInterface $account)
+    {
+        /** @var \Drupal\filter\FilterFormatInterface $filter_format */
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $filter_format, $operation, AccountInterface $account) {
-    /** @var \Drupal\filter\FilterFormatInterface $filter_format */
+        // All users are allowed to use the fallback filter.
+        if ($operation == 'use') {
+            if ($filter_format->isFallbackFormat()) {
+                return AccessResult::allowed();
+            }
+            return AccessResult::allowedIfHasPermission($account, $filter_format->getPermissionName());
+        }
 
-    // All users are allowed to use the fallback filter.
-    if ($operation == 'use') {
-      if ($filter_format->isFallbackFormat()) {
-        return AccessResult::allowed();
-      }
-      return AccessResult::allowedIfHasPermission($account, $filter_format->getPermissionName());
+        // The fallback format may not be disabled.
+        if ($operation == 'disable' && $filter_format->isFallbackFormat()) {
+            return AccessResult::forbidden();
+        }
+
+        // We do not allow filter formats to be deleted through the UI, because that
+        // would render any content that uses them unusable.
+        if ($operation == 'delete') {
+            return AccessResult::forbidden();
+        }
+
+        if (in_array($operation, ['disable', 'update', 'view', 'enable'])) {
+            return parent::checkAccess($filter_format, $operation, $account);
+        }
+
+        // No opinion.
+        return AccessResult::neutral();
     }
-
-    // The fallback format may not be disabled.
-    if ($operation == 'disable' && $filter_format->isFallbackFormat()) {
-      return AccessResult::forbidden();
-    }
-
-    // We do not allow filter formats to be deleted through the UI, because that
-    // would render any content that uses them unusable.
-    if ($operation == 'delete') {
-      return AccessResult::forbidden();
-    }
-
-    if (in_array($operation, ['disable', 'update', 'view', 'enable'])) {
-      return parent::checkAccess($filter_format, $operation, $account);
-    }
-
-    // No opinion.
-    return AccessResult::neutral();
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\options\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -14,84 +16,90 @@ use Drupal\Core\TypedData\DataDefinition;
  * Plugin implementation of the 'list_integer' field type.
  */
 #[FieldType(
-  id: "list_integer",
-  label: new TranslatableMarkup("Integer"),
-  description: [
-    new TranslatableMarkup("Values are whole numbers"),
-    new TranslatableMarkup("Example: Disagree (-1), Neutral (0), Agree (1)"),
+    id: 'list_integer',
+    label: new TranslatableMarkup('Integer'),
+    description: [
+    new TranslatableMarkup('Values are whole numbers'),
+    new TranslatableMarkup('Example: Disagree (-1), Neutral (0), Agree (1)'),
   ],
-  category: "selection_list",
-  weight: -30,
-  default_widget: "options_select",
-  default_formatter: "list_default",
+    category: 'selection_list',
+    weight: -30,
+    default_widget: 'options_select',
+    default_formatter: 'list_default',
 )]
-class ListIntegerItem extends ListItemBase {
+class ListIntegerItem extends ListItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('integer')
+          ->setLabel(new TranslatableMarkup('Integer value'))
+          ->setRequired(true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('integer')
-      ->setLabel(new TranslatableMarkup('Integer value'))
-      ->setRequired(TRUE);
-
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => 'int',
-        ],
-      ],
-      'indexes' => [
-        'value' => ['value'],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function allowedValuesDescription(): string {
-    $description = '<p>' . $this->t('The name will be used in displayed options and edit forms. The value is the stored value, and must be numeric.') . '</p>';
-    return $description . ('<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function validateAllowedValue($option): ?\Drupal\Core\StringTranslation\TranslatableMarkup {
-    if (!preg_match('/^-?\d+$/', $option)) {
-      return new TranslatableMarkup('Allowed values list: keys must be integers.');
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function castAllowedValue($value): int {
-    return (int) $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $element = parent::storageSettingsForm($form, $form_state, $has_data);
-
-    foreach (Element::children($element['allowed_values']['table']) as $delta => $row) {
-      // @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number
-      // @see \Drupal\Core\Field\Plugin\Field\FieldWidget\NumberWidget::formElement()
-      $element['allowed_values']['table'][$delta]['item']['key']['#type'] = 'number';
+        return $properties;
     }
 
-    return $element;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'type' => 'int',
+            ],
+          ],
+          'indexes' => [
+            'value' => ['value'],
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowedValuesDescription(): string
+    {
+        $description = '<p>' . $this->t('The name will be used in displayed options and edit forms. The value is the stored value, and must be numeric.') . '</p>';
+        return $description . ('<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function validateAllowedValue($option): ?\Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        if (!preg_match('/^-?\d+$/', $option)) {
+            return new TranslatableMarkup('Allowed values list: keys must be integers.');
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function castAllowedValue($value): int
+    {
+        return (int) $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data)
+    {
+        $element = parent::storageSettingsForm($form, $form_state, $has_data);
+
+        foreach (Element::children($element['allowed_values']['table']) as $delta => $row) {
+            // @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number
+            // @see \Drupal\Core\Field\Plugin\Field\FieldWidget\NumberWidget::formElement()
+            $element['allowed_values']['table'][$delta]['item']['key']['#type'] = 'number';
+        }
+
+        return $element;
+    }
 
 }

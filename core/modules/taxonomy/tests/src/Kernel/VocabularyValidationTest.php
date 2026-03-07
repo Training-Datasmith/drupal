@@ -16,29 +16,30 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class VocabularyValidationTest extends ConfigEntityValidationTestBase {
+class VocabularyValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static array $propertiesWithOptionalValues = ['description'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static array $propertiesWithOptionalValues = ['description'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['taxonomy'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['taxonomy'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = Vocabulary::create([
-      'vid' => 'test',
-      'name' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = Vocabulary::create([
+          'vid' => 'test',
+          'name' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

@@ -13,16 +13,17 @@ use Symfony\Component\Validator\Constraints\Optional;
  * Marks a field as optional in a Collection constraint.
  */
 #[Constraint(
-  id: 'Optional',
-  label: new TranslatableMarkup('Mark a field as optional in a Collection constraint', [], ['context' => 'Validation'])
+    id: 'Optional',
+    label: new TranslatableMarkup('Mark a field as optional in a Collection constraint', [], ['context' => 'Validation'])
 )]
-class OptionalConstraint extends Optional implements CompositeConstraintInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCompositeOptionStatic(): array|string {
-    return 'constraints';
-  }
+class OptionalConstraint extends Optional implements CompositeConstraintInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getCompositeOptionStatic(): array|string
+    {
+        return 'constraints';
+    }
 
 }

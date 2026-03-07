@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class SchemaTest extends BaseMySqlTest {
+class SchemaTest extends BaseMySqlTest
+{
 }

@@ -1,263 +1,273 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityTypeInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\TypedData\TranslatableInterface as TranslatableDataInterface;
 
 /**
  * Provides several mechanisms for retrieving entities.
  */
-class EntityRepository implements EntityRepositoryInterface {
-
-  /**
-   * Constructs a new EntityRepository.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
-   *   The context repository service.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadEntityByUuid($entity_type_id, $uuid) {
-    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-
-    if (!$uuid_key = $entity_type->getKey('uuid')) {
-      throw new EntityStorageException("Entity type $entity_type_id does not support UUIDs.");
+class EntityRepository implements EntityRepositoryInterface
+{
+    /**
+     * Constructs a new EntityRepository.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
+     *   The context repository service.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository)
+    {
     }
 
-    $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([$uuid_key => $uuid]);
+    /**
+     * {@inheritdoc}
+     */
+    public function loadEntityByUuid($entity_type_id, $uuid)
+    {
+        $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 
-    return ($entities) ? reset($entities) : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadEntityByConfigTarget($entity_type_id, $target) {
-    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-
-    // For configuration entities, the config target is given by the entity ID.
-    // @todo Consider adding a method to allow entity types to indicate the
-    //   target identifier key rather than hard-coding this check. Issue:
-    //   https://www.drupal.org/node/2412983.
-    if ($entity_type instanceof ConfigEntityTypeInterface) {
-      return $this->entityTypeManager->getStorage($entity_type_id)->load($target);
-    }
-
-    return $this->loadEntityByUuid($entity_type_id, $target);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTranslationFromContext(EntityInterface $entity, $langcode = NULL, $context = []) {
-    $translation = $entity;
-
-    if ($entity instanceof TranslatableDataInterface && count($entity->getTranslationLanguages()) > 1) {
-      if (empty($langcode)) {
-        $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
-        $entity->addCacheContexts(['languages:' . LanguageInterface::TYPE_CONTENT]);
-      }
-
-      // Retrieve language fallback candidates to perform the entity language
-      // negotiation, unless the current translation is already the desired one.
-      if ($entity->language()->getId() != $langcode) {
-        $context['data'] = $entity;
-        $context += ['operation' => 'entity_view', 'langcode' => $langcode];
-        $candidates = $this->languageManager->getFallbackCandidates($context);
-
-        // Ensure the default language has the proper language code.
-        $default_language = $entity->getUntranslated()->language();
-        $candidates[$default_language->getId()] = LanguageInterface::LANGCODE_DEFAULT;
-
-        // Return the most fitting entity translation.
-        foreach ($candidates as $candidate) {
-          if ($entity->hasTranslation($candidate)) {
-            $translation = $entity->getTranslation($candidate);
-            break;
-          }
+        if (!$uuid_key = $entity_type->getKey('uuid')) {
+            throw new EntityStorageException("Entity type $entity_type_id does not support UUIDs.");
         }
-      }
+
+        $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([$uuid_key => $uuid]);
+
+        return ($entities) ? reset($entities) : null;
     }
 
-    return $translation;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function loadEntityByConfigTarget($entity_type_id, $target)
+    {
+        $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getActive($entity_type_id, $entity_id, ?array $contexts = NULL) {
-    return current($this->getActiveMultiple($entity_type_id, [$entity_id], $contexts)) ?: NULL;
-  }
+        // For configuration entities, the config target is given by the entity ID.
+        // @todo Consider adding a method to allow entity types to indicate the
+        //   target identifier key rather than hard-coding this check. Issue:
+        //   https://www.drupal.org/node/2412983.
+        if ($entity_type instanceof ConfigEntityTypeInterface) {
+            return $this->entityTypeManager->getStorage($entity_type_id)->load($target);
+        }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getActiveMultiple($entity_type_id, array $entity_ids, ?array $contexts = NULL): array {
-    $active = [];
-
-    if (!isset($contexts)) {
-      $contexts = [];
+        return $this->loadEntityByUuid($entity_type_id, $target);
     }
 
-    // @todo Consider implementing a more performant version of this logic fully
-    //   supporting multiple entities in https://www.drupal.org/node/3031082.
-    $langcode = $this->languageManager->isMultilingual()
-      ? $this->getContentLanguageFromContexts($contexts)
-      : $this->languageManager->getDefaultLanguage()->getId();
+    /**
+     * {@inheritdoc}
+     */
+    public function getTranslationFromContext(EntityInterface $entity, $langcode = null, $context = [])
+    {
+        $translation = $entity;
 
-    $entities = $this->entityTypeManager
-      ->getStorage($entity_type_id)
-      ->loadMultiple($entity_ids);
+        if ($entity instanceof TranslatableDataInterface && count($entity->getTranslationLanguages()) > 1) {
+            if (empty($langcode)) {
+                $langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+                $entity->addCacheContexts(['languages:' . LanguageInterface::TYPE_CONTENT]);
+            }
 
-    foreach ($entities as $id => $entity) {
-      // Retrieve the fittest revision, if needed.
-      if ($entity instanceof RevisionableInterface && $entity->getEntityType()->isRevisionable()) {
-        $entity = $this->getLatestTranslationAffectedRevision($entity, $langcode);
-      }
+            // Retrieve language fallback candidates to perform the entity language
+            // negotiation, unless the current translation is already the desired one.
+            if ($entity->language()->getId() != $langcode) {
+                $context['data'] = $entity;
+                $context += ['operation' => 'entity_view', 'langcode' => $langcode];
+                $candidates = $this->languageManager->getFallbackCandidates($context);
 
-      // Retrieve the fittest translation, if needed.
-      if ($entity instanceof TranslatableInterface) {
-        $entity = $this->getTranslationFromContext($entity, $langcode);
-      }
+                // Ensure the default language has the proper language code.
+                $default_language = $entity->getUntranslated()->language();
+                $candidates[$default_language->getId()] = LanguageInterface::LANGCODE_DEFAULT;
 
-      $active[$id] = $entity;
+                // Return the most fitting entity translation.
+                foreach ($candidates as $candidate) {
+                    if ($entity->hasTranslation($candidate)) {
+                        $translation = $entity->getTranslation($candidate);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $translation;
     }
 
-    return $active;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCanonical($entity_type_id, $entity_id, ?array $contexts = NULL) {
-    return current($this->getCanonicalMultiple($entity_type_id, [$entity_id], $contexts)) ?: NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCanonicalMultiple($entity_type_id, array $entity_ids, ?array $contexts = NULL) {
-    $entities = $this->entityTypeManager->getStorage($entity_type_id)
-      ->loadMultiple($entity_ids);
-
-    if (!$entities || !$this->languageManager->isMultilingual()) {
-      return $entities;
+    /**
+     * {@inheritdoc}
+     */
+    public function getActive($entity_type_id, $entity_id, ?array $contexts = null)
+    {
+        return current($this->getActiveMultiple($entity_type_id, [$entity_id], $contexts)) ?: null;
     }
 
-    if (!isset($contexts)) {
-      $contexts = [];
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getActiveMultiple($entity_type_id, array $entity_ids, ?array $contexts = null): array
+    {
+        $active = [];
+
+        if (!isset($contexts)) {
+            $contexts = [];
+        }
+
+        // @todo Consider implementing a more performant version of this logic fully
+        //   supporting multiple entities in https://www.drupal.org/node/3031082.
+        $langcode = $this->languageManager->isMultilingual()
+          ? $this->getContentLanguageFromContexts($contexts)
+          : $this->languageManager->getDefaultLanguage()->getId();
+
+        $entities = $this->entityTypeManager
+          ->getStorage($entity_type_id)
+          ->loadMultiple($entity_ids);
+
+        foreach ($entities as $id => $entity) {
+            // Retrieve the fittest revision, if needed.
+            if ($entity instanceof RevisionableInterface && $entity->getEntityType()->isRevisionable()) {
+                $entity = $this->getLatestTranslationAffectedRevision($entity, $langcode);
+            }
+
+            // Retrieve the fittest translation, if needed.
+            if ($entity instanceof TranslatableInterface) {
+                $entity = $this->getTranslationFromContext($entity, $langcode);
+            }
+
+            $active[$id] = $entity;
+        }
+
+        return $active;
     }
 
-    $canonical = [];
-    $langcode = $this->getContentLanguageFromContexts($contexts);
-    foreach ($entities as $id => $entity) {
-      $canonical[$id] = $this->getTranslationFromContext($entity, $langcode, $contexts);
+    /**
+     * {@inheritdoc}
+     */
+    public function getCanonical($entity_type_id, $entity_id, ?array $contexts = null)
+    {
+        return current($this->getCanonicalMultiple($entity_type_id, [$entity_id], $contexts)) ?: null;
     }
 
-    return $canonical;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCanonicalMultiple($entity_type_id, array $entity_ids, ?array $contexts = null)
+    {
+        $entities = $this->entityTypeManager->getStorage($entity_type_id)
+          ->loadMultiple($entity_ids);
 
-  /**
-   * Retrieves the current content language from the specified contexts.
-   *
-   * This is a BC layer to support plugin context system identifiers, the
-   * langcode key should be used instead and is preferred when given.
-   *
-   * @param string[] $contexts
-   *   An array of context items.
-   *
-   * @return string|null
-   *   A language code or NULL if no language context was provided.
-   *
-   * @internal
-   */
-  protected function getContentLanguageFromContexts(array $contexts) {
+        if (!$entities || !$this->languageManager->isMultilingual()) {
+            return $entities;
+        }
 
-    return $contexts['langcode'] ?? $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
-  }
+        if (!isset($contexts)) {
+            $contexts = [];
+        }
 
-  /**
-   * Returns the latest revision translation of the specified entity.
-   *
-   * @param \Drupal\Core\Entity\RevisionableInterface $entity
-   *   The default revision of the entity being converted.
-   * @param string $langcode
-   *   The language of the revision translation to be loaded.
-   *
-   * @return \Drupal\Core\Entity\RevisionableInterface
-   *   The latest translation-affecting revision for the specified entity, or
-   *   just the latest revision, if the specified entity is not translatable or
-   *   does not have a matching translation yet.
-   */
-  protected function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode) {
-    $revision = NULL;
-    $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+        $canonical = [];
+        $langcode = $this->getContentLanguageFromContexts($contexts);
+        foreach ($entities as $id => $entity) {
+            $canonical[$id] = $this->getTranslationFromContext($entity, $langcode, $contexts);
+        }
 
-    if ($entity instanceof TranslatableRevisionableInterface && $entity->isTranslatable()) {
-      /** @var \Drupal\Core\Entity\TranslatableRevisionableStorageInterface $storage */
-      $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
-
-      // If the latest translation-affecting revision was a default revision, it
-      // is fine to load the latest revision instead, because in this case the
-      // latest revision, regardless of it being default or pending, will always
-      // contain the most up-to-date values for the specified translation. This
-      // provides a BC behavior when the route is defined by a module always
-      // expecting the latest revision to be loaded and to be the default
-      // revision. In this particular case the latest revision is always going
-      // to be the default revision, since pending revisions would not be
-      // supported.
-      $revision = $revision_id ? $this->loadRevision($entity, $revision_id) : NULL;
-      if (!$revision || ($revision->wasDefaultRevision() && !$revision->isDefaultRevision())) {
-        $revision = NULL;
-      }
+        return $canonical;
     }
 
-    // Fall back to the latest revisions if no affected revision for the current
-    // content language could be found. This is acceptable as it means the
-    // entity is not translated. This is the correct logic also on monolingual
-    // sites.
-    if (!isset($revision)) {
-      $revision_id = $storage->getLatestRevisionId($entity->id());
-      $revision = $this->loadRevision($entity, $revision_id);
+    /**
+     * Retrieves the current content language from the specified contexts.
+     *
+     * This is a BC layer to support plugin context system identifiers, the
+     * langcode key should be used instead and is preferred when given.
+     *
+     * @param string[] $contexts
+     *   An array of context items.
+     *
+     * @return string|null
+     *   A language code or NULL if no language context was provided.
+     *
+     * @internal
+     */
+    protected function getContentLanguageFromContexts(array $contexts)
+    {
+
+        return $contexts['langcode'] ?? $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
     }
 
-    return $revision;
-  }
+    /**
+     * Returns the latest revision translation of the specified entity.
+     *
+     * @param \Drupal\Core\Entity\RevisionableInterface $entity
+     *   The default revision of the entity being converted.
+     * @param string $langcode
+     *   The language of the revision translation to be loaded.
+     *
+     * @return \Drupal\Core\Entity\RevisionableInterface
+     *   The latest translation-affecting revision for the specified entity, or
+     *   just the latest revision, if the specified entity is not translatable or
+     *   does not have a matching translation yet.
+     */
+    protected function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode)
+    {
+        $revision = null;
+        $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
 
-  /**
-   * Loads the specified entity revision.
-   *
-   * @param \Drupal\Core\Entity\RevisionableInterface $entity
-   *   The default revision of the entity being converted.
-   * @param string $revision_id
-   *   The identifier of the revision to be loaded.
-   *
-   * @return \Drupal\Core\Entity\RevisionableInterface
-   *   An entity revision object.
-   */
-  protected function loadRevision(RevisionableInterface $entity, $revision_id) {
-    // We explicitly perform a loose equality check, since a revision ID may be
-    // returned as an integer or a string.
-    if ($entity->getLoadedRevisionId() != $revision_id) {
-      /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-      $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
-      return $storage->loadRevision($revision_id);
+        if ($entity instanceof TranslatableRevisionableInterface && $entity->isTranslatable()) {
+            /** @var \Drupal\Core\Entity\TranslatableRevisionableStorageInterface $storage */
+            $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
+
+            // If the latest translation-affecting revision was a default revision, it
+            // is fine to load the latest revision instead, because in this case the
+            // latest revision, regardless of it being default or pending, will always
+            // contain the most up-to-date values for the specified translation. This
+            // provides a BC behavior when the route is defined by a module always
+            // expecting the latest revision to be loaded and to be the default
+            // revision. In this particular case the latest revision is always going
+            // to be the default revision, since pending revisions would not be
+            // supported.
+            $revision = $revision_id ? $this->loadRevision($entity, $revision_id) : null;
+            if (!$revision || ($revision->wasDefaultRevision() && !$revision->isDefaultRevision())) {
+                $revision = null;
+            }
+        }
+
+        // Fall back to the latest revisions if no affected revision for the current
+        // content language could be found. This is acceptable as it means the
+        // entity is not translated. This is the correct logic also on monolingual
+        // sites.
+        if (!isset($revision)) {
+            $revision_id = $storage->getLatestRevisionId($entity->id());
+            $revision = $this->loadRevision($entity, $revision_id);
+        }
+
+        return $revision;
     }
-    return $entity;
-  }
+
+    /**
+     * Loads the specified entity revision.
+     *
+     * @param \Drupal\Core\Entity\RevisionableInterface $entity
+     *   The default revision of the entity being converted.
+     * @param string $revision_id
+     *   The identifier of the revision to be loaded.
+     *
+     * @return \Drupal\Core\Entity\RevisionableInterface
+     *   An entity revision object.
+     */
+    protected function loadRevision(RevisionableInterface $entity, $revision_id)
+    {
+        // We explicitly perform a loose equality check, since a revision ID may be
+        // returned as an integer or a string.
+        if ($entity->getLoadedRevisionId() != $revision_id) {
+            /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+            $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+            return $storage->loadRevision($revision_id);
+        }
+        return $entity;
+    }
 
 }

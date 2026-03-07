@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 /**
@@ -7,11 +9,11 @@ namespace Drupal\workspaces;
  *
  * @internal
  */
-interface WorkspacePublisherInterface extends WorkspaceOperationInterface {
-
-  /**
-   * Publishes the contents of a workspace to the default (Live) workspace.
-   */
-  public function publish();
+interface WorkspacePublisherInterface extends WorkspaceOperationInterface
+{
+    /**
+     * Publishes the contents of a workspace to the default (Live) workspace.
+     */
+    public function publish();
 
 }

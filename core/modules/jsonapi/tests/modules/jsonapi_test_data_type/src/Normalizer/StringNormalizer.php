@@ -11,27 +11,30 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * Normalizes string data weirdly: replaces 'super' with 'NOT' and vice versa.
  */
-class StringNormalizer extends NormalizerBase implements DenormalizerInterface {
+class StringNormalizer extends NormalizerBase implements DenormalizerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        return str_replace('super', 'NOT', $object->getValue());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    return str_replace('super', 'NOT', $object->getValue());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function denormalize($data, $class, $format = null, array $context = []): mixed
+    {
+        return str_replace('NOT', 'super', $data);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function denormalize($data, $class, $format = NULL, array $context = []): mixed {
-    return str_replace('NOT', 'super', $data);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [StringData::class => TRUE];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [StringData::class => true];
+    }
 
 }

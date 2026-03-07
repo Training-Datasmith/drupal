@@ -13,57 +13,59 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('help')]
 #[RunTestsInSeparateProcesses]
-class ExperimentalHelpTest extends BrowserTestBase {
+class ExperimentalHelpTest extends BrowserTestBase
+{
+    /**
+     * Modules to install.
+     *
+     * The experimental_module_test module implements hook_help() and is in the
+     * Core (Experimental) package.
+     *
+     * @var array
+     */
+    protected static $modules = [
+      'help',
+      'experimental_module_test',
+      'help_page_test',
+    ];
 
-  /**
-   * Modules to install.
-   *
-   * The experimental_module_test module implements hook_help() and is in the
-   * Core (Experimental) package.
-   *
-   * @var array
-   */
-  protected static $modules = [
-    'help',
-    'experimental_module_test',
-    'help_page_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The admin user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $adminUser;
 
-  /**
-   * The admin user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $adminUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = $this->drupalCreateUser(['access help pages']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->adminUser = $this->drupalCreateUser(['access help pages']);
-  }
+    /**
+     * Verifies that a warning message is displayed for experimental modules.
+     */
+    public function testExperimentalHelp(): void
+    {
+        $this->drupalLogin($this->adminUser);
+        $this->drupalGet('admin/help/experimental_module_test');
+        $this->assertSession()->statusMessageContains('This module is experimental.', 'warning');
 
-  /**
-   * Verifies that a warning message is displayed for experimental modules.
-   */
-  public function testExperimentalHelp(): void {
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/help/experimental_module_test');
-    $this->assertSession()->statusMessageContains('This module is experimental.', 'warning');
+        // Regular modules should not display the message.
+        $this->drupalGet('admin/help/help_page_test');
+        $this->assertSession()->statusMessageNotContains('This module is experimental.');
 
-    // Regular modules should not display the message.
-    $this->drupalGet('admin/help/help_page_test');
-    $this->assertSession()->statusMessageNotContains('This module is experimental.');
-
-    // Ensure the actual help page is displayed to avoid a false positive.
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('online documentation for the Help Page Test module');
-  }
+        // Ensure the actual help page is displayed to avoid a false positive.
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->pageTextContains('online documentation for the Help Page Test module');
+    }
 
 }

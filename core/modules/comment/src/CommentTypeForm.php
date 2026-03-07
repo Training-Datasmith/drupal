@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment;
 
 use Drupal\Core\Entity\EntityForm;
@@ -7,7 +9,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\language\Entity\ContentLanguageSettings;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,177 +16,180 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class CommentTypeForm extends EntityForm {
+class CommentTypeForm extends EntityForm
+{
+    /**
+     * Entity type manager service.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * Entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('logger.factory')->get('comment'),
-      $container->get('comment.manager')
-    );
-  }
-
-  /**
-   * Constructs a CommentTypeFormController.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\comment\CommentManagerInterface $commentManager
-   *   The comment manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\comment\CommentManagerInterface $commentManager) {
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(array $form, FormStateInterface $form_state): array {
-    $form = parent::form($form, $form_state);
-
-    $comment_type = $this->entity;
-
-    if ($this->operation === 'edit') {
-      $form['#title'] = $this->t('Edit %label comment type', ['%label' => $comment_type->label()]);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity_type.manager'),
+            $container->get('logger.factory')->get('comment'),
+            $container->get('comment.manager')
+        );
     }
 
-    $form['label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Label'),
-      '#maxlength' => 255,
-      '#default_value' => $comment_type->label(),
-      '#description' => $this->t('The human-readable name for this comment type, displayed on the <em>Comment types</em> page.'),
-      '#required' => TRUE,
-    ];
-    $form['id'] = [
-      '#type' => 'machine_name',
-      '#default_value' => $comment_type->id(),
-      '#machine_name' => [
-        'exists' => '\Drupal\comment\Entity\CommentType::load',
-      ],
-      '#description' => $this->t('Unique machine-readable name: lowercase letters, numbers, and underscores only.'),
-      '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
-      '#disabled' => !$comment_type->isNew(),
-    ];
-
-    $form['description'] = [
-      '#type' => 'textarea',
-      '#default_value' => $comment_type->getDescription(),
-      '#description' => $this->t('Displays on the <em>Comment types</em> page.'),
-      '#title' => $this->t('Description'),
-    ];
-
-    if ($comment_type->isNew()) {
-      $options = [];
-      // Only expose entities that have field UI enabled, only those can
-      // get comment fields added in the UI. Also, ensure to include only
-      // entities that have integer id.
-      foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
-          if (!$entity_type->hasIntegerId()) {
-              continue;
-          }
-          if (!$entity_type->get('field_ui_base_route')) {
-              continue;
-          }
-          $options[$entity_type->id()] = $entity_type->getLabel();
-      }
-      $form['target_entity_type_id'] = [
-        '#type' => 'select',
-        '#default_value' => $comment_type->getTargetEntityTypeId(),
-        '#title' => $this->t('Target entity type'),
-        '#required' => TRUE,
-        '#empty_value' => '_none',
-        '#options' => $options,
-        '#description' => $this->t('The target entity type can not be changed after the comment type has been created.'),
-      ];
-    }
-    else {
-      $form['target_entity_type_id_display'] = [
-        '#type' => 'item',
-        '#markup' => $this->entityTypeManager->getDefinition($comment_type->getTargetEntityTypeId())->getLabel(),
-        '#title' => $this->t('Target entity type'),
-      ];
+    /**
+     * Constructs a CommentTypeFormController.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager service.
+     * @param \Psr\Log\LoggerInterface $logger
+     *   A logger instance.
+     * @param \Drupal\comment\CommentManagerInterface $commentManager
+     *   The comment manager.
+     */
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\comment\CommentManagerInterface $commentManager)
+    {
+        $this->entityTypeManager = $entity_type_manager;
     }
 
-    if ($this->moduleHandler->moduleExists('content_translation')) {
-      $form['language'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Language settings'),
-        '#group' => 'additional_settings',
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public function form(array $form, FormStateInterface $form_state): array
+    {
+        $form = parent::form($form, $form_state);
 
-      $language_configuration = ContentLanguageSettings::loadByEntityTypeBundle('comment', $comment_type->id());
-      $form['language']['language_configuration'] = [
-        '#type' => 'language_configuration',
-        '#entity_information' => [
-          'entity_type' => 'comment',
-          'bundle' => $comment_type->id(),
-        ],
-        '#default_value' => $language_configuration,
-      ];
+        $comment_type = $this->entity;
 
-      $form['#submit'][] = 'language_configuration_element_submit';
+        if ($this->operation === 'edit') {
+            $form['#title'] = $this->t('Edit %label comment type', ['%label' => $comment_type->label()]);
+        }
+
+        $form['label'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Label'),
+          '#maxlength' => 255,
+          '#default_value' => $comment_type->label(),
+          '#description' => $this->t('The human-readable name for this comment type, displayed on the <em>Comment types</em> page.'),
+          '#required' => true,
+        ];
+        $form['id'] = [
+          '#type' => 'machine_name',
+          '#default_value' => $comment_type->id(),
+          '#machine_name' => [
+            'exists' => '\Drupal\comment\Entity\CommentType::load',
+          ],
+          '#description' => $this->t('Unique machine-readable name: lowercase letters, numbers, and underscores only.'),
+          '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
+          '#disabled' => !$comment_type->isNew(),
+        ];
+
+        $form['description'] = [
+          '#type' => 'textarea',
+          '#default_value' => $comment_type->getDescription(),
+          '#description' => $this->t('Displays on the <em>Comment types</em> page.'),
+          '#title' => $this->t('Description'),
+        ];
+
+        if ($comment_type->isNew()) {
+            $options = [];
+            // Only expose entities that have field UI enabled, only those can
+            // get comment fields added in the UI. Also, ensure to include only
+            // entities that have integer id.
+            foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
+                if (!$entity_type->hasIntegerId()) {
+                    continue;
+                }
+                if (!$entity_type->get('field_ui_base_route')) {
+                    continue;
+                }
+                $options[$entity_type->id()] = $entity_type->getLabel();
+            }
+            $form['target_entity_type_id'] = [
+              '#type' => 'select',
+              '#default_value' => $comment_type->getTargetEntityTypeId(),
+              '#title' => $this->t('Target entity type'),
+              '#required' => true,
+              '#empty_value' => '_none',
+              '#options' => $options,
+              '#description' => $this->t('The target entity type can not be changed after the comment type has been created.'),
+            ];
+        } else {
+            $form['target_entity_type_id_display'] = [
+              '#type' => 'item',
+              '#markup' => $this->entityTypeManager->getDefinition($comment_type->getTargetEntityTypeId())->getLabel(),
+              '#title' => $this->t('Target entity type'),
+            ];
+        }
+
+        if ($this->moduleHandler->moduleExists('content_translation')) {
+            $form['language'] = [
+              '#type' => 'details',
+              '#title' => $this->t('Language settings'),
+              '#group' => 'additional_settings',
+            ];
+
+            $language_configuration = ContentLanguageSettings::loadByEntityTypeBundle('comment', $comment_type->id());
+            $form['language']['language_configuration'] = [
+              '#type' => 'language_configuration',
+              '#entity_information' => [
+                'entity_type' => 'comment',
+                'bundle' => $comment_type->id(),
+              ],
+              '#default_value' => $language_configuration,
+            ];
+
+            $form['#submit'][] = 'language_configuration_element_submit';
+        }
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Save'),
+        ];
+
+        return $form;
     }
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-    ];
-
-    return $form;
-  }
-
-  /**
-   * Wraps _comment_entity_uses_integer_id().
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   Entity type being tested.
-   *
-   * @return bool
-   *   TRUE if entity-type uses integer IDs.
-   *
-   * @deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use
-   *   \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead.
-   *
-   * @see https://www.drupal.org/node/3566814
-   */
-  protected function entityTypeSupportsComments(EntityTypeInterface $entity_type): ?bool {
-    @trigger_error(__METHOD__ . '() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814', E_USER_DEPRECATED);
-    return $entity_type->hasIntegerId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state): void {
-    $comment_type = $this->entity;
-    $status = $comment_type->save();
-
-    $edit_link = $this->entity->toLink($this->t('Edit'), 'edit-form')->toString();
-    if ($status == SAVED_UPDATED) {
-      $this->messenger()->addStatus($this->t('Comment type %label has been updated.', ['%label' => $comment_type->label()]));
-      $this->logger->notice('Comment type %label has been updated.', ['%label' => $comment_type->label(), 'link' => $edit_link]);
-    }
-    else {
-      $this->commentManager->addBodyField($comment_type->id());
-      $this->messenger()->addStatus($this->t('Comment type %label has been added.', ['%label' => $comment_type->label()]));
-      $this->logger->notice('Comment type %label has been added.', ['%label' => $comment_type->label(), 'link' => $edit_link]);
+    /**
+     * Wraps _comment_entity_uses_integer_id().
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   Entity type being tested.
+     *
+     * @return bool
+     *   TRUE if entity-type uses integer IDs.
+     *
+     * @deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use
+     *   \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead.
+     *
+     * @see https://www.drupal.org/node/3566814
+     */
+    protected function entityTypeSupportsComments(EntityTypeInterface $entity_type): ?bool
+    {
+        @trigger_error(__METHOD__ . '() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814', E_USER_DEPRECATED);
+        return $entity_type->hasIntegerId();
     }
 
-    $form_state->setRedirectUrl($comment_type->toUrl('collection'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state): void
+    {
+        $comment_type = $this->entity;
+        $status = $comment_type->save();
+
+        $edit_link = $this->entity->toLink($this->t('Edit'), 'edit-form')->toString();
+        if ($status == SAVED_UPDATED) {
+            $this->messenger()->addStatus($this->t('Comment type %label has been updated.', ['%label' => $comment_type->label()]));
+            $this->logger->notice('Comment type %label has been updated.', ['%label' => $comment_type->label(), 'link' => $edit_link]);
+        } else {
+            $this->commentManager->addBodyField($comment_type->id());
+            $this->messenger()->addStatus($this->t('Comment type %label has been added.', ['%label' => $comment_type->label()]));
+            $this->logger->notice('Comment type %label has been added.', ['%label' => $comment_type->label(), 'link' => $edit_link]);
+        }
+
+        $form_state->setRedirectUrl($comment_type->toUrl('collection'));
+    }
 
 }

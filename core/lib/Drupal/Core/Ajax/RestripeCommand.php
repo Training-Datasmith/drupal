@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -13,35 +15,35 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class RestripeCommand implements CommandInterface {
+class RestripeCommand implements CommandInterface
+{
+    /**
+     * Constructs a RestripeCommand object.
+     *
+     * @param string $selector
+     *   A CSS selector for the table to be restriped.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string.
+         *
+         * If the command is a response to a request from an #ajax form element then
+         * this value can be NULL.
+         */
+        protected $selector
+    ) {
+    }
 
-  /**
-   * Constructs a RestripeCommand object.
-   *
-   * @param string $selector
-   *   A CSS selector for the table to be restriped.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string.
-       *
-       * If the command is a response to a request from an #ajax form element then
-       * this value can be NULL.
-       */
-      protected $selector
-  )
-  {
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'restripe',
-      'selector' => $this->selector,
-    ];
-  }
+        return [
+          'command' => 'restripe',
+          'selector' => $this->selector,
+        ];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks related to image styles and effects.
@@ -16,9 +18,10 @@
  * @param array $effects
  *   The array of image effects, keyed on the machine-readable effect name.
  */
-function hook_image_effect_info_alter(array &$effects): void {
-  // Override the Image module's 'Scale and Crop' effect label.
-  $effects['image_scale_and_crop']['label'] = t('Bangers and Mash');
+function hook_image_effect_info_alter(array &$effects): void
+{
+    // Override the Image module's 'Scale and Crop' effect label.
+    $effects['image_scale_and_crop']['label'] = t('Bangers and Mash');
 }
 
 /**
@@ -36,9 +39,10 @@ function hook_image_effect_info_alter(array &$effects): void {
  *   (optional) The original image path or URI. If it's supplied, only this
  *   image derivative will be flushed.
  */
-function hook_image_style_flush($style, $path = NULL): void {
-  // Empty cached data that contains information about the style.
-  \Drupal::cache('my_module')->deleteAll();
+function hook_image_style_flush($style, $path = null): void
+{
+    // Empty cached data that contains information about the style.
+    \Drupal::cache('my_module')->deleteAll();
 }
 
 /**

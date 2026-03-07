@@ -13,26 +13,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config_test')]
 #[RunTestsInSeparateProcesses]
-class ConfigTestValidationTest extends ConfigEntityValidationTestBase {
+class ConfigTestValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['config_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['config_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installConfig('config_test');
 
-    $this->installConfig('config_test');
-
-    $this->entity = \Drupal::entityTypeManager()->getStorage('config_test')->create([
-      'id' => 'test',
-      'label' => 'test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = \Drupal::entityTypeManager()->getStorage('config_test')->create([
+          'id' => 'test',
+          'label' => 'test',
+        ]);
+        $this->entity->save();
+    }
 
 }

@@ -15,24 +15,24 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('layout_builder')]
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderEntityViewDisplayXmlAnonTest extends LayoutBuilderEntityViewDisplayResourceTestBase {
+class LayoutBuilderEntityViewDisplayXmlAnonTest extends LayoutBuilderEntityViewDisplayResourceTestBase
+{
+    use AnonResourceTestTrait;
+    use XmlEntityNormalizationQuirksTrait;
 
-  use AnonResourceTestTrait;
-  use XmlEntityNormalizationQuirksTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'xml';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'xml';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'text/xml; charset=utf-8';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'text/xml; charset=utf-8';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

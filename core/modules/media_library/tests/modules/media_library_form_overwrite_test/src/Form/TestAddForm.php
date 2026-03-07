@@ -10,20 +10,22 @@ use Drupal\media_library\Form\AddFormBase;
 /**
  * Test add form.
  */
-class TestAddForm extends AddFormBase {
+class TestAddForm extends AddFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildInputElement(array $form, FormStateInterface $form_state)
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildInputElement(array $form, FormStateInterface $form_state) {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'test_add_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'test_add_form';
+    }
 
 }

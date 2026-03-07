@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Utility\Unicode;
@@ -16,34 +18,36 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * to itself but comments use permalink URL.
  */
 #[FieldFormatter(
-  id: 'comment_permalink',
-  label: new TranslatableMarkup('Comment Permalink'),
-  field_types: [
+    id: 'comment_permalink',
+    label: new TranslatableMarkup('Comment Permalink'),
+    field_types: [
     'string',
     'uri',
   ],
 )]
-class CommentPermalinkFormatter extends StringFormatter {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityUrl(EntityInterface $comment) {
-    /** @var \Drupal\comment\CommentInterface $comment */
-    $comment_permalink = $comment->permalink();
-    if ($comment->hasField('comment_body') && ($body = $comment->get('comment_body')->value)) {
-      $attributes = $comment_permalink->getOption('attributes') ?: [];
-      $attributes += ['title' => Unicode::truncate($body, 128)];
-      $comment_permalink->setOption('attributes', $attributes);
+class CommentPermalinkFormatter extends StringFormatter
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityUrl(EntityInterface $comment)
+    {
+        /** @var \Drupal\comment\CommentInterface $comment */
+        $comment_permalink = $comment->permalink();
+        if ($comment->hasField('comment_body') && ($body = $comment->get('comment_body')->value)) {
+            $attributes = $comment_permalink->getOption('attributes') ?: [];
+            $attributes += ['title' => Unicode::truncate($body, 128)];
+            $comment_permalink->setOption('attributes', $attributes);
+        }
+        return $comment_permalink;
     }
-    return $comment_permalink;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
-    return parent::isApplicable($field_definition) && $field_definition->getTargetEntityTypeId() === 'comment' && $field_definition->getName() === 'subject';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function isApplicable(FieldDefinitionInterface $field_definition): bool
+    {
+        return parent::isApplicable($field_definition) && $field_definition->getTargetEntityTypeId() === 'comment' && $field_definition->getName() === 'subject';
+    }
 
 }

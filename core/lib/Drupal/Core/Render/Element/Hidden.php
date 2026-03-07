@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\FormElement;
@@ -24,39 +26,41 @@ use Drupal\Core\Render\Element;
  * @see \Drupal\Core\Render\Element\Value
  */
 #[FormElement('hidden')]
-class Hidden extends FormElementBase {
+class Hidden extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#process' => [
+            [static::class, 'processAjaxForm'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderHidden'],
+          ],
+          '#theme' => 'input__hidden',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#process' => [
-        [static::class, 'processAjaxForm'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderHidden'],
-      ],
-      '#theme' => 'input__hidden',
-    ];
-  }
+    /**
+     * Prepares a #type 'hidden' render element for input.html.twig.
+     *
+     * @param array $element
+     *   An associative array containing the properties of the element.
+     *   Properties used: #name, #value, #attributes.
+     *
+     * @return array
+     *   The $element with prepared variables ready for input.html.twig.
+     */
+    public static function preRenderHidden(array $element): array
+    {
+        $element['#attributes']['type'] = 'hidden';
+        Element::setAttributes($element, ['name', 'value']);
 
-  /**
-   * Prepares a #type 'hidden' render element for input.html.twig.
-   *
-   * @param array $element
-   *   An associative array containing the properties of the element.
-   *   Properties used: #name, #value, #attributes.
-   *
-   * @return array
-   *   The $element with prepared variables ready for input.html.twig.
-   */
-  public static function preRenderHidden(array $element): array {
-    $element['#attributes']['type'] = 'hidden';
-    Element::setAttributes($element, ['name', 'value']);
-
-    return $element;
-  }
+        return $element;
+    }
 
 }

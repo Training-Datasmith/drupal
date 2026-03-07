@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\rest;
 
 use Drupal\Core\Cache\CacheableResponseInterface;
@@ -18,24 +20,25 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @see \Drupal\rest\ModifiedResourceResponse
  */
-class ResourceResponse extends Response implements CacheableResponseInterface, ResourceResponseInterface {
+class ResourceResponse extends Response implements CacheableResponseInterface, ResourceResponseInterface
+{
+    use CacheableResponseTrait;
+    use ResourceResponseTrait;
 
-  use CacheableResponseTrait;
-  use ResourceResponseTrait;
-
-  /**
-   * Constructor for ResourceResponse objects.
-   *
-   * @param mixed $data
-   *   Response data that should be serialized.
-   * @param int $status
-   *   The response status code.
-   * @param array $headers
-   *   An array of response headers.
-   */
-  public function __construct($data = NULL, $status = 200, $headers = []) {
-    $this->responseData = $data;
-    parent::__construct('', $status, $headers);
-  }
+    /**
+     * Constructor for ResourceResponse objects.
+     *
+     * @param mixed $data
+     *   Response data that should be serialized.
+     * @param int $status
+     *   The response status code.
+     * @param array $headers
+     *   An array of response headers.
+     */
+    public function __construct($data = null, $status = 200, $headers = [])
+    {
+        $this->responseData = $data;
+        parent::__construct('', $status, $headers);
+    }
 
 }

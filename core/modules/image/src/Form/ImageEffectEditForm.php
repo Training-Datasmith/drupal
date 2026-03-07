@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -10,28 +12,30 @@ use Drupal\image\ImageStyleInterface;
  *
  * @internal
  */
-class ImageEffectEditForm extends ImageEffectFormBase {
+class ImageEffectEditForm extends ImageEffectFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?ImageStyleInterface $image_style = null, $image_effect = null)
+    {
+        $form = parent::buildForm($form, $form_state, $image_style, $image_effect);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ImageStyleInterface $image_style = NULL, $image_effect = NULL) {
-    $form = parent::buildForm($form, $form_state, $image_style, $image_effect);
+        $form['#title'] = $this->t('Edit %label effect on style %style', [
+          '%label' => $this->imageEffect->label(),
+          '%style' => $image_style->label(),
+        ]);
+        $form['actions']['submit']['#value'] = $this->t('Update effect');
 
-    $form['#title'] = $this->t('Edit %label effect on style %style', [
-      '%label' => $this->imageEffect->label(),
-      '%style' => $image_style->label(),
-    ]);
-    $form['actions']['submit']['#value'] = $this->t('Update effect');
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareImageEffect($image_effect) {
-    return $this->imageStyle->getEffect($image_effect);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareImageEffect($image_effect)
+    {
+        return $this->imageStyle->getEffect($image_effect);
+    }
 
 }

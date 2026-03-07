@@ -20,41 +20,42 @@ use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 #[CoversClass(Comment::class)]
 #[Group('comment')]
 #[RunTestsInSeparateProcesses]
-class CommentHostnameTest extends KernelTestBase {
+class CommentHostnameTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['comment', 'entity_test', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['comment', 'entity_test', 'user'];
+    /**
+     * Tests hostname default value callback.
+     */
+    public function testGetDefaultHostname(): void
+    {
+        // Create a fake request to be used for testing.
+        $request = Request::create('/', 'GET', [], [], [], ['REMOTE_ADDR' => '203.0.113.1']);
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $stack */
+        $stack = $this->container->get('request_stack');
+        $stack->push($request);
 
-  /**
-   * Tests hostname default value callback.
-   */
-  public function testGetDefaultHostname(): void {
-    // Create a fake request to be used for testing.
-    $request = Request::create('/', 'GET', [], [], [], ['REMOTE_ADDR' => '203.0.113.1']);
-    $request->setSession(new Session(new MockArraySessionStorage()));
-    /** @var \Symfony\Component\HttpFoundation\RequestStack $stack */
-    $stack = $this->container->get('request_stack');
-    $stack->push($request);
+        CommentType::create([
+          'id' => 'foo',
+          'label' => 'Foo',
+          'target_entity_type_id' => 'entity_test',
+        ])->save();
 
-    CommentType::create([
-      'id' => 'foo',
-      'label' => 'Foo',
-      'target_entity_type_id' => 'entity_test',
-    ])->save();
+        // Check that the hostname is empty by default.
+        $comment = Comment::create(['comment_type' => 'foo']);
+        $this->assertEquals('', $comment->getHostname());
 
-    // Check that the hostname is empty by default.
-    $comment = Comment::create(['comment_type' => 'foo']);
-    $this->assertEquals('', $comment->getHostname());
-
-    \Drupal::configFactory()
-      ->getEditable('comment.settings')
-      ->set('log_ip_addresses', TRUE)
-      ->save(TRUE);
-    // Check that the hostname was set correctly.
-    $comment = Comment::create(['comment_type' => 'foo']);
-    $this->assertEquals('203.0.113.1', $comment->getHostname());
-  }
+        \Drupal::configFactory()
+          ->getEditable('comment.settings')
+          ->set('log_ip_addresses', true)
+          ->save(true);
+        // Check that the hostname was set correctly.
+        $comment = Comment::create(['comment_type' => 'foo']);
+        $this->assertEquals('203.0.113.1', $comment->getHostname());
+    }
 
 }

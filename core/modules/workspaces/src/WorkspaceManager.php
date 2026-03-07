@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 use Drupal\workspaces\Event\WorkspaceSwitchEvent;
@@ -10,175 +12,183 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Provides the workspace manager.
  */
-class WorkspaceManager implements WorkspaceManagerInterface {
+class WorkspaceManager implements WorkspaceManagerInterface
+{
+    /**
+     * The current active workspace.
+     *
+     * The value is either a workspace object, FALSE if there is no active
+     * workspace, or NULL if the active workspace hasn't been determined yet.
+     */
+    protected WorkspaceInterface|false|null $activeWorkspace = null;
 
-  /**
-   * The current active workspace.
-   *
-   * The value is either a workspace object, FALSE if there is no active
-   * workspace, or NULL if the active workspace hasn't been determined yet.
-   */
-  protected WorkspaceInterface|false|null $activeWorkspace = NULL;
+    public function __construct(
+        protected RequestStack $requestStack,
+        #[AutowireIterator(tag: 'workspace_negotiator')]
+        protected iterable $negotiators,
+        #[AutowireServiceClosure('entity_type.manager')]
+        protected \Closure $entityTypeManager,
+        #[AutowireServiceClosure('event_dispatcher')]
+        protected \Closure $eventDispatcher,
+    ) {
+    }
 
-  public function __construct(
-    protected RequestStack $requestStack,
-    #[AutowireIterator(tag: 'workspace_negotiator')]
-    protected iterable $negotiators,
-    #[AutowireServiceClosure('entity_type.manager')]
-    protected \Closure $entityTypeManager,
-    #[AutowireServiceClosure('event_dispatcher')]
-    protected \Closure $eventDispatcher,
-  ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function hasActiveWorkspace(): bool
+    {
+        return $this->getActiveWorkspace() !== null;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasActiveWorkspace(): bool {
-    return $this->getActiveWorkspace() !== NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getActiveWorkspace()
+    {
+        if (!isset($this->activeWorkspace)) {
+            $request = $this->requestStack->getCurrentRequest();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getActiveWorkspace() {
-    if (!isset($this->activeWorkspace)) {
-      $request = $this->requestStack->getCurrentRequest();
+            foreach ($this->negotiators as $negotiator) {
+                if ($negotiator->applies($request)) {
+                    if ($workspace_id = $negotiator->getActiveWorkspaceId($request)) {
+                        /** @var \Drupal\workspaces\WorkspaceInterface $negotiated_workspace */
+                        $negotiated_workspace = ($this->entityTypeManager)()
+                          ->getStorage('workspace')
+                          ->load($workspace_id);
+                    }
 
-      foreach ($this->negotiators as $negotiator) {
-        if ($negotiator->applies($request)) {
-          if ($workspace_id = $negotiator->getActiveWorkspaceId($request)) {
-            /** @var \Drupal\workspaces\WorkspaceInterface $negotiated_workspace */
-            $negotiated_workspace = ($this->entityTypeManager)()
-              ->getStorage('workspace')
-              ->load($workspace_id);
-          }
+                    // By default, 'view' access is checked when a workspace is activated,
+                    // but it should also be checked when retrieving the currently active
+                    // workspace.
+                    if (isset($negotiated_workspace) && $negotiated_workspace->access('view')) {
+                        // Notify the negotiator that its workspace has been selected.
+                        $negotiator->setActiveWorkspace($negotiated_workspace);
 
-          // By default, 'view' access is checked when a workspace is activated,
-          // but it should also be checked when retrieving the currently active
-          // workspace.
-          if (isset($negotiated_workspace) && $negotiated_workspace->access('view')) {
-            // Notify the negotiator that its workspace has been selected.
-            $negotiator->setActiveWorkspace($negotiated_workspace);
+                        $active_workspace = $negotiated_workspace;
+                        break;
+                    }
+                }
+            }
 
-            $active_workspace = $negotiated_workspace;
-            break;
-          }
+            // If no negotiator was able to provide a valid workspace, default to the
+            // live version of the site.
+            $this->activeWorkspace = $active_workspace ?? false;
         }
-      }
 
-      // If no negotiator was able to provide a valid workspace, default to the
-      // live version of the site.
-      $this->activeWorkspace = $active_workspace ?? FALSE;
+        return $this->activeWorkspace ?: null;
     }
 
-    return $this->activeWorkspace ?: NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setActiveWorkspace(WorkspaceInterface $workspace, bool $persist = true): static
+    {
+        $this->doSwitchWorkspace($workspace);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setActiveWorkspace(WorkspaceInterface $workspace, bool $persist = TRUE): static {
-    $this->doSwitchWorkspace($workspace);
-
-    // Set the workspace on the first applicable negotiator.
-    if ($persist) {
-      $request = $this->requestStack->getCurrentRequest();
-      foreach ($this->negotiators as $negotiator) {
-        if ($negotiator->applies($request)) {
-          $negotiator->setActiveWorkspace($workspace);
-          break;
+        // Set the workspace on the first applicable negotiator.
+        if ($persist) {
+            $request = $this->requestStack->getCurrentRequest();
+            foreach ($this->negotiators as $negotiator) {
+                if ($negotiator->applies($request)) {
+                    $negotiator->setActiveWorkspace($workspace);
+                    break;
+                }
+            }
         }
-      }
+
+        return $this;
     }
 
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function switchToLive(): static
+    {
+        $this->doSwitchWorkspace(null);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function switchToLive(): static {
-    $this->doSwitchWorkspace(NULL);
+        // Unset the active workspace on all negotiators.
+        foreach ($this->negotiators as $negotiator) {
+            $negotiator->unsetActiveWorkspace();
+        }
 
-    // Unset the active workspace on all negotiators.
-    foreach ($this->negotiators as $negotiator) {
-      $negotiator->unsetActiveWorkspace();
+        return $this;
     }
 
-    return $this;
-  }
+    /**
+     * Switches the current workspace.
+     *
+     * @param \Drupal\workspaces\WorkspaceInterface|null $workspace
+     *   The workspace to set as active or NULL to switch out of the currently
+     *   active workspace.
+     *
+     * @throws \Drupal\workspaces\WorkspaceAccessException
+     *   Thrown when the current user doesn't have access to view the workspace.
+     */
+    protected function doSwitchWorkspace($workspace)
+    {
+        // If the current user doesn't have access to view the workspace, they
+        // shouldn't be allowed to switch to it, except in CLI processes.
+        if ($workspace && PHP_SAPI !== 'cli' && !$workspace->access('view')) {
+            throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
+        }
 
-  /**
-   * Switches the current workspace.
-   *
-   * @param \Drupal\workspaces\WorkspaceInterface|null $workspace
-   *   The workspace to set as active or NULL to switch out of the currently
-   *   active workspace.
-   *
-   * @throws \Drupal\workspaces\WorkspaceAccessException
-   *   Thrown when the current user doesn't have access to view the workspace.
-   */
-  protected function doSwitchWorkspace($workspace) {
-    // If the current user doesn't have access to view the workspace, they
-    // shouldn't be allowed to switch to it, except in CLI processes.
-    if ($workspace && PHP_SAPI !== 'cli' && !$workspace->access('view')) {
-      throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
+        $previous_workspace = $this->activeWorkspace ?: null;
+        $this->activeWorkspace = $workspace ?: false;
+
+        $event = new WorkspaceSwitchEvent($this->activeWorkspace ?: null, $previous_workspace);
+        ($this->eventDispatcher)()->dispatch($event);
     }
 
-    $previous_workspace = $this->activeWorkspace ?: NULL;
-    $this->activeWorkspace = $workspace ?: FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function executeInWorkspace($workspace_id, callable $function)
+    {
+        /** @var \Drupal\workspaces\WorkspaceInterface $workspace */
+        $workspace = ($this->entityTypeManager)()->getStorage('workspace')->load($workspace_id);
 
-    $event = new WorkspaceSwitchEvent($this->activeWorkspace ?: NULL, $previous_workspace);
-    ($this->eventDispatcher)()->dispatch($event);
-  }
+        if (!$workspace) {
+            throw new \InvalidArgumentException('The ' . $workspace_id . ' workspace does not exist.');
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function executeInWorkspace($workspace_id, callable $function) {
-    /** @var \Drupal\workspaces\WorkspaceInterface $workspace */
-    $workspace = ($this->entityTypeManager)()->getStorage('workspace')->load($workspace_id);
+        $previous_active_workspace = $this->getActiveWorkspace();
 
-    if (!$workspace) {
-      throw new \InvalidArgumentException('The ' . $workspace_id . ' workspace does not exist.');
+        // Switch to the requested workspace only if we're in Live or in another
+        // workspace.
+        $should_switch_workspace = !$previous_active_workspace || $previous_active_workspace->id() != $workspace_id;
+        if ($should_switch_workspace) {
+            $this->doSwitchWorkspace($workspace);
+        }
+        $result = $function();
+
+        // Switch back if needed.
+        if ($should_switch_workspace) {
+            $this->doSwitchWorkspace($previous_active_workspace);
+        }
+
+        return $result;
     }
 
-    $previous_active_workspace = $this->getActiveWorkspace();
+    /**
+     * {@inheritdoc}
+     */
+    public function executeOutsideWorkspace(callable $function)
+    {
+        $previous_active_workspace = $this->getActiveWorkspace();
 
-    // Switch to the requested workspace only if we're in Live or in another
-    // workspace.
-    $should_switch_workspace = !$previous_active_workspace || $previous_active_workspace->id() != $workspace_id;
-    if ($should_switch_workspace) {
-      $this->doSwitchWorkspace($workspace);
+        // Switch to Live if we're in a workspace.
+        if ($previous_active_workspace) {
+            $this->doSwitchWorkspace(null);
+        }
+        $result = $function();
+
+        // Switch back if needed.
+        if ($previous_active_workspace) {
+            $this->doSwitchWorkspace($previous_active_workspace);
+        }
+
+        return $result;
     }
-    $result = $function();
-
-    // Switch back if needed.
-    if ($should_switch_workspace) {
-      $this->doSwitchWorkspace($previous_active_workspace);
-    }
-
-    return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function executeOutsideWorkspace(callable $function) {
-    $previous_active_workspace = $this->getActiveWorkspace();
-
-    // Switch to Live if we're in a workspace.
-    if ($previous_active_workspace) {
-      $this->doSwitchWorkspace(NULL);
-    }
-    $result = $function();
-
-    // Switch back if needed.
-    if ($previous_active_workspace) {
-      $this->doSwitchWorkspace($previous_active_workspace);
-    }
-
-    return $result;
-  }
 
 }

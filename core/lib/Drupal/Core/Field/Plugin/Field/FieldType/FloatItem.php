@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -13,71 +15,75 @@ use Drupal\Core\TypedData\DataDefinition;
  * Defines the 'float' field type.
  */
 #[FieldType(
-  id: "float",
-  label: new TranslatableMarkup("Float"),
-  description: [
-    new TranslatableMarkup("Numbers with decimal parts and exponents"),
-    new TranslatableMarkup("Accuracy depends on limits from database and/or PHP"),
-    new TranslatableMarkup("Examples: 1.23, -1.23, 0.00e1, 1e100, 6.02214076e23"),
+    id: 'float',
+    label: new TranslatableMarkup('Float'),
+    description: [
+    new TranslatableMarkup('Numbers with decimal parts and exponents'),
+    new TranslatableMarkup('Accuracy depends on limits from database and/or PHP'),
+    new TranslatableMarkup('Examples: 1.23, -1.23, 0.00e1, 1e100, 6.02214076e23'),
   ],
-  category: "number",
-  weight: -10,
-  no_ui: TRUE,
-  default_widget: "number",
-  default_formatter: "number_decimal"
+    category: 'number',
+    weight: -10,
+    no_ui: true,
+    default_widget: 'number',
+    default_formatter: 'number_decimal'
 )]
-class FloatItem extends NumericItemBase {
+class FloatItem extends NumericItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('float')
+          ->setLabel(t('Float'))
+          ->setRequired(true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('float')
-      ->setLabel(t('Float'))
-      ->setRequired(TRUE);
+        return $properties;
+    }
 
-    return $properties;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'type' => 'float',
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => 'float',
-        ],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fieldSettingsForm(array $form, FormStateInterface $form_state)
+    {
+        $element = parent::fieldSettingsForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
-    $element = parent::fieldSettingsForm($form, $form_state);
+        $element['min']['#step'] = 'any';
+        $element['max']['#step'] = 'any';
 
-    $element['min']['#step'] = 'any';
-    $element['max']['#step'] = 'any';
+        return $element;
+    }
 
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $settings = $field_definition->getSettings();
-    $precision = random_int(10, 32);
-    $scale = random_int(0, 2);
-    $max = is_numeric($settings['max']) ? $settings['max'] : 10 ** ($precision - $scale) - 1;
-    $min = is_numeric($settings['min']) ? $settings['min'] : -10 ** ($precision - $scale) + 1;
-    // @see "Example #1 Calculate a random floating-point number" in
-    // http://php.net/manual/function.mt-getrandmax.php
-    $random_decimal = $min + mt_rand() / mt_getrandmax() * ($max - $min);
-    $values['value'] = self::truncateDecimal($random_decimal, $scale);
-    return $values;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateSampleValue(FieldDefinitionInterface $field_definition)
+    {
+        $settings = $field_definition->getSettings();
+        $precision = random_int(10, 32);
+        $scale = random_int(0, 2);
+        $max = is_numeric($settings['max']) ? $settings['max'] : 10 ** ($precision - $scale) - 1;
+        $min = is_numeric($settings['min']) ? $settings['min'] : -10 ** ($precision - $scale) + 1;
+        // @see "Example #1 Calculate a random floating-point number" in
+        // http://php.net/manual/function.mt-getrandmax.php
+        $random_decimal = $min + mt_rand() / mt_getrandmax() * ($max - $min);
+        $values['value'] = self::truncateDecimal($random_decimal, $scale);
+        return $values;
+    }
 
 }

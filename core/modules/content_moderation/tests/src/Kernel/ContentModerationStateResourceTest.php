@@ -16,30 +16,31 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class ContentModerationStateResourceTest extends KernelTestBase {
+class ContentModerationStateResourceTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['serialization', 'rest', 'content_moderation'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['serialization', 'rest', 'content_moderation'];
-
-  /**
-   * @see \Drupal\content_moderation\Entity\ContentModerationState
-   */
-  public function testCreateContentModerationStateResource(): void {
-    $this->expectException(PluginNotFoundException::class);
-    $this->expectExceptionMessage('The "entity:content_moderation_state" plugin does not exist.');
-    RestResourceConfig::create([
-      'id' => 'entity.content_moderation_state',
-      'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-      'configuration' => [
-        'methods' => ['GET'],
-        'formats' => ['json'],
-        'authentication' => ['cookie'],
-      ],
-    ])
-      ->enable()
-      ->save();
-  }
+    /**
+     * @see \Drupal\content_moderation\Entity\ContentModerationState
+     */
+    public function testCreateContentModerationStateResource(): void
+    {
+        $this->expectException(PluginNotFoundException::class);
+        $this->expectExceptionMessage('The "entity:content_moderation_state" plugin does not exist.');
+        RestResourceConfig::create([
+          'id' => 'entity.content_moderation_state',
+          'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+          'configuration' => [
+            'methods' => ['GET'],
+            'formats' => ['json'],
+            'authentication' => ['cookie'],
+          ],
+        ])
+          ->enable()
+          ->save();
+    }
 
 }

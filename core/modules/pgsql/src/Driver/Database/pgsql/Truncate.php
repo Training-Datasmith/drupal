@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\pgsql\Driver\Database\pgsql;
 
 use Drupal\Core\Database\Query\Truncate as QueryTruncate;
@@ -7,23 +9,23 @@ use Drupal\Core\Database\Query\Truncate as QueryTruncate;
 /**
  * PostgreSQL implementation of \Drupal\Core\Database\Query\Truncate.
  */
-class Truncate extends QueryTruncate {
+class Truncate extends QueryTruncate
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function execute()
+    {
+        $this->connection->addSavepoint();
+        try {
+            $result = parent::execute();
+        } catch (\Exception $e) {
+            $this->connection->rollbackSavepoint();
+            throw $e;
+        }
+        $this->connection->releaseSavepoint();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function execute() {
-    $this->connection->addSavepoint();
-    try {
-      $result = parent::execute();
+        return $result;
     }
-    catch (\Exception $e) {
-      $this->connection->rollbackSavepoint();
-      throw $e;
-    }
-    $this->connection->releaseSavepoint();
-
-    return $result;
-  }
 
 }

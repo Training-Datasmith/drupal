@@ -14,30 +14,33 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(BaseFieldDefinition::class)]
 #[Group('path')]
-class PathFieldDefinitionTest extends BaseFieldDefinitionTestBase {
+class PathFieldDefinitionTest extends BaseFieldDefinitionTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPluginId(): string
+    {
+        return 'path';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPluginId(): string {
-    return 'path';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getModuleAndPath(): array
+    {
+        return ['path', dirname(__DIR__, 4)];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getModuleAndPath(): array {
-    return ['path', dirname(__DIR__, 4)];
-  }
-
-  /**
-   * Tests get columns.
-   *
-   * @legacy-covers ::getColumns
-   * @legacy-covers ::getSchema
-   */
-  public function testGetColumns(): void {
-    $this->assertSame([], $this->definition->getColumns());
-  }
+    /**
+     * Tests get columns.
+     *
+     * @legacy-covers ::getColumns
+     * @legacy-covers ::getSchema
+     */
+    public function testGetColumns(): void
+    {
+        $this->assertSame([], $this->definition->getColumns());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Display;
 
 /**
@@ -19,27 +21,27 @@ namespace Drupal\Core\Display;
  * @see \Drupal\Core\Display\VariantManager
  * @see plugin_api
  */
-interface PageVariantInterface extends VariantInterface {
+interface PageVariantInterface extends VariantInterface
+{
+    /**
+     * Sets the main content for the page being rendered.
+     *
+     * @param array $main_content
+     *   The render array representing the main content.
+     *
+     * @return $this
+     */
+    public function setMainContent(array $main_content);
 
-  /**
-   * Sets the main content for the page being rendered.
-   *
-   * @param array $main_content
-   *   The render array representing the main content.
-   *
-   * @return $this
-   */
-  public function setMainContent(array $main_content);
-
-  /**
-   * Sets the title for the page being rendered.
-   *
-   * @param string|array $title
-   *   The page title: either a string for plain titles or a render array for
-   *   formatted titles.
-   *
-   * @return $this
-   */
-  public function setTitle($title);
+    /**
+     * Sets the title for the page being rendered.
+     *
+     * @param string|array $title
+     *   The page title: either a string for plain titles or a render array for
+     *   formatted titles.
+     *
+     * @return $this
+     */
+    public function setTitle($title);
 
 }

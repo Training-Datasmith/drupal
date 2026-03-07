@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Plugin\LanguageNegotiation;
 
 use Drupal\Core\Language\LanguageInterface;
@@ -30,43 +32,43 @@ use Symfony\Component\HttpFoundation\Request;
  *     page matching the detected interface language.
  */
 #[LanguageNegotiation(
-  id: LanguageNegotiationUrlFallback::METHOD_ID,
-  name: new TranslatableMarkup('URL fallback'),
-  types: [LanguageInterface::TYPE_URL],
-  weight: 8,
-  description: new TranslatableMarkup('Use an already detected language for URLs if none is found.'),
+    id: LanguageNegotiationUrlFallback::METHOD_ID,
+    name: new TranslatableMarkup('URL fallback'),
+    types: [LanguageInterface::TYPE_URL],
+    weight: 8,
+    description: new TranslatableMarkup('Use an already detected language for URLs if none is found.'),
 )]
-class LanguageNegotiationUrlFallback extends LanguageNegotiationMethodBase {
+class LanguageNegotiationUrlFallback extends LanguageNegotiationMethodBase
+{
+    /**
+     * The language negotiation method id.
+     */
+    public const METHOD_ID = 'language-url-fallback';
 
-  /**
-   * The language negotiation method id.
-   */
-  const METHOD_ID = 'language-url-fallback';
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcode(?Request $request = null)
+    {
+        $langcode = null;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcode(?Request $request = NULL) {
-    $langcode = NULL;
+        if ($this->languageManager) {
+            $default = $this->languageManager->getDefaultLanguage();
+            $config = $this->config->get('language.negotiation')->get('url');
+            $prefix = ($config['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX);
 
-    if ($this->languageManager) {
-      $default = $this->languageManager->getDefaultLanguage();
-      $config = $this->config->get('language.negotiation')->get('url');
-      $prefix = ($config['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX);
+            // If the default language is not configured to convey language
+            // information, a missing URL language information indicates that URL
+            // language should be the default one, otherwise we fall back to an
+            // already detected language.
+            if (($prefix && empty($config['prefixes'][$default->getId()])) || (!$prefix && empty($config['domains'][$default->getId()]))) {
+                $langcode = $default->getId();
+            } else {
+                $langcode = $this->languageManager->getCurrentLanguage()->getId();
+            }
+        }
 
-      // If the default language is not configured to convey language
-      // information, a missing URL language information indicates that URL
-      // language should be the default one, otherwise we fall back to an
-      // already detected language.
-      if (($prefix && empty($config['prefixes'][$default->getId()])) || (!$prefix && empty($config['domains'][$default->getId()]))) {
-        $langcode = $default->getId();
-      }
-      else {
-        $langcode = $this->languageManager->getCurrentLanguage()->getId();
-      }
+        return $langcode;
     }
-
-    return $langcode;
-  }
 
 }

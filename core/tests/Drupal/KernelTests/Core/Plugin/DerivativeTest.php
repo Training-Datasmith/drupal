@@ -12,26 +12,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Plugin')]
 #[RunTestsInSeparateProcesses]
-class DerivativeTest extends PluginTestBase {
+class DerivativeTest extends PluginTestBase
+{
+    /**
+     * Tests getDefinitions() and getDefinition() with a derivativeDecorator.
+     */
+    public function testDerivativeDecorator(): void
+    {
+        // Ensure that getDefinitions() returns the expected definitions.
+        $this->assertEquals($this->mockBlockExpectedDefinitions, $this->mockBlockManager->getDefinitions());
 
-  /**
-   * Tests getDefinitions() and getDefinition() with a derivativeDecorator.
-   */
-  public function testDerivativeDecorator(): void {
-    // Ensure that getDefinitions() returns the expected definitions.
-    $this->assertEquals($this->mockBlockExpectedDefinitions, $this->mockBlockManager->getDefinitions());
+        // Ensure that getDefinition() returns the expected definition.
+        foreach ($this->mockBlockExpectedDefinitions as $id => $definition) {
+            $this->assertEquals($definition, $this->mockBlockManager->getDefinition($id));
+        }
 
-    // Ensure that getDefinition() returns the expected definition.
-    foreach ($this->mockBlockExpectedDefinitions as $id => $definition) {
-      $this->assertEquals($definition, $this->mockBlockManager->getDefinition($id));
+        // Ensure that NULL is returned as the definition of a non-existing base
+        // plugin, a non-existing derivative plugin, or a base plugin that may not
+        // be used without deriving.
+        $this->assertNull($this->mockBlockManager->getDefinition('non_existing', false), 'NULL returned as the definition of a non-existing base plugin.');
+        $this->assertNull($this->mockBlockManager->getDefinition('menu:non_existing', false), 'NULL returned as the definition of a non-existing derivative plugin.');
+        $this->assertNull($this->mockBlockManager->getDefinition('menu', false), 'NULL returned as the definition of a base plugin that may not be used without deriving.');
     }
-
-    // Ensure that NULL is returned as the definition of a non-existing base
-    // plugin, a non-existing derivative plugin, or a base plugin that may not
-    // be used without deriving.
-    $this->assertNull($this->mockBlockManager->getDefinition('non_existing', FALSE), 'NULL returned as the definition of a non-existing base plugin.');
-    $this->assertNull($this->mockBlockManager->getDefinition('menu:non_existing', FALSE), 'NULL returned as the definition of a non-existing derivative plugin.');
-    $this->assertNull($this->mockBlockManager->getDefinition('menu', FALSE), 'NULL returned as the definition of a base plugin that may not be used without deriving.');
-  }
 
 }

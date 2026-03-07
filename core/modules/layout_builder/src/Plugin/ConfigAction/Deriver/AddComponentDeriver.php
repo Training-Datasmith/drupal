@@ -15,39 +15,42 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   This API is experimental.
  */
-final class AddComponentDeriver extends DeriverBase implements ContainerDeriverInterface {
-
-  public function __construct(
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get(EntityTypeManagerInterface::class),
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition): array {
-    $entity_types = [];
-    foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
-      if ($entity_type->entityClassImplements(ConfigEntityInterface::class) && $entity_type->entityClassImplements(SectionListInterface::class)) {
-        $entity_types[] = $entity_type->id();
-      }
+final class AddComponentDeriver extends DeriverBase implements ContainerDeriverInterface
+{
+    public function __construct(
+        private readonly EntityTypeManagerInterface $entityTypeManager,
+    ) {
     }
-    $base_plugin_definition['entity_types'] = $entity_types;
-    $this->derivatives['addComponentToLayout'] = $base_plugin_definition + [
-      'multiple' => FALSE,
-    ];
-    $this->derivatives['addComponentsToLayout'] = $base_plugin_definition + [
-      'multiple' => TRUE,
-    ];
-    return $this->derivatives;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get(EntityTypeManagerInterface::class),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition): array
+    {
+        $entity_types = [];
+        foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
+            if ($entity_type->entityClassImplements(ConfigEntityInterface::class) && $entity_type->entityClassImplements(SectionListInterface::class)) {
+                $entity_types[] = $entity_type->id();
+            }
+        }
+        $base_plugin_definition['entity_types'] = $entity_types;
+        $this->derivatives['addComponentToLayout'] = $base_plugin_definition + [
+          'multiple' => false,
+        ];
+        $this->derivatives['addComponentsToLayout'] = $base_plugin_definition + [
+          'multiple' => true,
+        ];
+        return $this->derivatives;
+    }
 
 }

@@ -1,12 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Routing\RedirectDestinationTrait;
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Entity\Render\EntityTranslationRenderTrait;
@@ -17,159 +16,171 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("entity_operations")]
-class EntityOperations extends FieldPluginBase {
+#[ViewsField('entity_operations')]
+class EntityOperations extends FieldPluginBase
+{
+    use EntityTranslationRenderTrait;
+    use RedirectDestinationTrait;
 
-  use EntityTranslationRenderTrait;
-  use RedirectDestinationTrait;
+    /**
+     * The entity display repository.
+     *
+     * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+     */
+    protected $entityDisplayRepository;
 
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * Constructs a new EntityOperations object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function usesGroupBy(): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defineOptions() {
-    $options = parent::defineOptions();
-
-    $options['destination'] = [
-      'default' => FALSE,
-    ];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-
-    $form['destination'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Include destination'),
-      '#description' => $this->t('Enforce a <code>destination</code> parameter in the link to return the user to the original view upon completing the link action. Most operations include a destination by default and this setting is no longer needed.'),
-      '#default_value' => $this->options['destination'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values): string|array {
-    $entity = $this->getEntity($values);
-    // Allow for the case where there is no entity, if we are on a non-required
-    // relationship.
-    if (empty($entity)) {
-      return '';
+    /**
+     * Constructs a new EntityOperations object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param array $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    $entity = $this->getEntityTranslationByRelationship($entity, $values);
-    $cacheability = new CacheableMetadata();
-    $operations = $this->entityTypeManager->getListBuilder($entity->getEntityTypeId())->getOperations($entity, $cacheability);
-    if ($this->options['destination']) {
-      foreach ($operations as &$operation) {
-        if (!isset($operation['query'])) {
-          $operation['query'] = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function usesGroupBy(): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function defineOptions()
+    {
+        $options = parent::defineOptions();
+
+        $options['destination'] = [
+          'default' => false,
+        ];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+
+        $form['destination'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Include destination'),
+          '#description' => $this->t('Enforce a <code>destination</code> parameter in the link to return the user to the original view upon completing the link action. Most operations include a destination by default and this setting is no longer needed.'),
+          '#default_value' => $this->options['destination'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values): string|array
+    {
+        $entity = $this->getEntity($values);
+        // Allow for the case where there is no entity, if we are on a non-required
+        // relationship.
+        if (empty($entity)) {
+            return '';
         }
-        $operation['query'] += $this->getDestinationArray();
-      }
+
+        $entity = $this->getEntityTranslationByRelationship($entity, $values);
+        $cacheability = new CacheableMetadata();
+        $operations = $this->entityTypeManager->getListBuilder($entity->getEntityTypeId())->getOperations($entity, $cacheability);
+        if ($this->options['destination']) {
+            foreach ($operations as &$operation) {
+                if (!isset($operation['query'])) {
+                    $operation['query'] = [];
+                }
+                $operation['query'] += $this->getDestinationArray();
+            }
+        }
+        $build = [
+          '#type' => 'operations',
+          '#links' => $operations,
+          // Allow links to use modals.
+          '#attached' => [
+            'library' => ['core/drupal.dialog.ajax'],
+          ],
+        ];
+        $cacheability->applyTo($build);
+        return $build;
     }
-    $build = [
-      '#type' => 'operations',
-      '#links' => $operations,
-      // Allow links to use modals.
-      '#attached' => [
-        'library' => ['core/drupal.dialog.ajax'],
-      ],
-    ];
-    $cacheability->applyTo($build);
-    return $build;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    // We purposefully do not call parent::query() because we do not want the
-    // default query behavior for Views fields. Instead, let the entity
-    // translation renderer provide the correct query behavior.
-    if ($this->languageManager->isMultilingual()) {
-      $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        // We purposefully do not call parent::query() because we do not want the
+        // default query behavior for Views fields. Instead, let the entity
+        // translation renderer provide the correct query behavior.
+        if ($this->languageManager->isMultilingual()) {
+            $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityTypeId() {
-    return $this->getEntityType();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityTypeId()
+    {
+        return $this->getEntityType();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityTypeManager() {
-    return $this->entityTypeManager;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityTypeManager()
+    {
+        return $this->entityTypeManager;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityRepository() {
-    return $this->entityRepository;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityRepository()
+    {
+        return $this->entityRepository;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getLanguageManager() {
-    return $this->languageManager;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLanguageManager()
+    {
+        return $this->languageManager;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getView() {
-    return $this->view;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getView()
+    {
+        return $this->view;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clickSortable(): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function clickSortable(): bool
+    {
+        return false;
+    }
 
 }

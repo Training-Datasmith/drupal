@@ -14,18 +14,19 @@ use Drupal\Core\Hook\Order\Order;
  * to the alphabetical module names. Some of the implementations are reordered
  * using order attributes.
  */
-class TestHookReorderHookLast {
-
-  /**
-   * This pair tests ReorderHook.
-   */
-  #[Hook('custom_hook_override', order: Order::First)]
-  public function customHookOverride(): string {
-    // This normally would run second.
-    // We override that order here with Order::First.
-    // We override, that order in aaa_hook_collector_test with
-    // ReorderHook.
-    return __METHOD__;
-  }
+class TestHookReorderHookLast
+{
+    /**
+     * This pair tests ReorderHook.
+     */
+    #[Hook('custom_hook_override', order: Order::First)]
+    public function customHookOverride(): string
+    {
+        // This normally would run second.
+        // We override that order here with Order::First.
+        // We override, that order in aaa_hook_collector_test with
+        // ReorderHook.
+        return __METHOD__;
+    }
 
 }

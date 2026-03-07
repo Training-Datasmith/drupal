@@ -13,23 +13,23 @@ use Drupal\entity_test\EntityTestViewBuilder as TestViewBuilder;
  * Test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_label',
-  label: new TranslatableMarkup('Entity Test label'),
-  render_cache: FALSE,
-  entity_keys: [
+    id: 'entity_test_label',
+    label: new TranslatableMarkup('Entity Test label'),
+    render_cache: false,
+    entity_keys: [
     'uuid' => 'uuid',
     'id' => 'id',
     'label' => 'name',
     'bundle' => 'type',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
     'view_builder' => TestViewBuilder::class,
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_label',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_label',
 )]
-class EntityTestLabel extends EntityTest {
-
+class EntityTestLabel extends EntityTest
+{
 }

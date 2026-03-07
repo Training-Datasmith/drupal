@@ -10,5 +10,6 @@ use Symfony\Component\Routing\RouterInterface;
 /**
  * Provides a router interface that also can match requests.
  */
-interface TestRouterInterface extends RouterInterface, RequestMatcherInterface {
+interface TestRouterInterface extends RouterInterface, RequestMatcherInterface
+{
 }

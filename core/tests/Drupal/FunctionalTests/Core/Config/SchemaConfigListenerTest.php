@@ -14,18 +14,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class SchemaConfigListenerTest extends BrowserTestBase {
+class SchemaConfigListenerTest extends BrowserTestBase
+{
+    use SchemaConfigListenerTestTrait;
 
-  use SchemaConfigListenerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['config_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['config_test'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

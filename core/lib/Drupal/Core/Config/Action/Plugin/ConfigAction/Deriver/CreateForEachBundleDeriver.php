@@ -16,41 +16,44 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   This API is experimental.
  */
-final class CreateForEachBundleDeriver extends DeriverBase implements ContainerDeriverInterface {
+final class CreateForEachBundleDeriver extends DeriverBase implements ContainerDeriverInterface
+{
+    public function __construct(
+        private readonly EntityTypeManagerInterface $entityTypeManager,
+    ) {
+    }
 
-  public function __construct(
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-  ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get(EntityTypeManagerInterface::class),
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get(EntityTypeManagerInterface::class),
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition): array
+    {
+        // The action should only be available for entity types that are bundles of
+        // another entity type, such as node types, media types, taxonomy
+        // vocabularies, and so forth.
+        $bundle_entity_types = array_filter(
+            $this->entityTypeManager->getDefinitions(),
+            fn (EntityTypeInterface $entity_type): bool => is_string($entity_type->getBundleOf()),
+        );
+        $base_plugin_definition['entity_types'] = array_keys($bundle_entity_types);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition): array {
-    // The action should only be available for entity types that are bundles of
-    // another entity type, such as node types, media types, taxonomy
-    // vocabularies, and so forth.
-    $bundle_entity_types = array_filter(
-      $this->entityTypeManager->getDefinitions(),
-      fn (EntityTypeInterface $entity_type): bool => is_string($entity_type->getBundleOf()),
-    );
-    $base_plugin_definition['entity_types'] = array_keys($bundle_entity_types);
-
-    $this->derivatives['createForEachIfNotExists'] = $base_plugin_definition + [
-      'create_action' => 'createIfNotExists',
-    ];
-    $this->derivatives['createForEach'] = $base_plugin_definition + [
-      'create_action' => 'create',
-    ];
-    return $this->derivatives;
-  }
+        $this->derivatives['createForEachIfNotExists'] = $base_plugin_definition + [
+          'create_action' => 'createIfNotExists',
+        ];
+        $this->derivatives['createForEach'] = $base_plugin_definition + [
+          'create_action' => 'create',
+        ];
+        return $this->derivatives;
+    }
 
 }

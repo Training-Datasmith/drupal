@@ -16,43 +16,45 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Update')]
 #[CoversFunction('views_post_update_update_remember_role_empty')]
 #[RunTestsInSeparateProcesses]
-class UserRememberRolesFilterSettingTest extends UpdatePathTestBase {
+class UserRememberRolesFilterSettingTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Test that filter values are updated properly.
+     *
+     * @see views_post_update_update_remember_role_empty()
+     */
+    public function testViewsPostUpdateBooleanFilterAcceptEmpty(): void
+    {
+        $view = View::load('files');
+        $display = $view->get('display');
+        $expected = [
+          'authenticated' => 'authenticated',
+          'anonymous' => '0',
+          'administrator' => '0',
+        ];
+        $this->assertSame($expected, $display['default']['display_options']['filters']['filename']['expose']['remember_roles']);
 
-  /**
-   * Test that filter values are updated properly.
-   *
-   * @see views_post_update_update_remember_role_empty()
-   */
-  public function testViewsPostUpdateBooleanFilterAcceptEmpty(): void {
-    $view = View::load('files');
-    $display = $view->get('display');
-    $expected = [
-      'authenticated' => 'authenticated',
-      'anonymous' => '0',
-      'administrator' => '0',
-    ];
-    $this->assertSame($expected, $display['default']['display_options']['filters']['filename']['expose']['remember_roles']);
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $view = View::load('files');
-    $display = $view->get('display');
-    $expected = [
-      'authenticated' => 'authenticated',
-    ];
-    $this->assertSame($expected, $display['default']['display_options']['filters']['filename']['expose']['remember_roles']);
-  }
+        $view = View::load('files');
+        $display = $view->get('display');
+        $expected = [
+          'authenticated' => 'authenticated',
+        ];
+        $this->assertSame($expected, $display['default']['display_options']['filters']['filename']['expose']['remember_roles']);
+    }
 
 }

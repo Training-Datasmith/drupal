@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Action;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
@@ -11,30 +13,33 @@ use Drupal\Core\Plugin\PluginFormInterface;
 /**
  * Provides a base implementation for a configurable Action plugin.
  */
-abstract class ConfigurableActionBase extends ActionBase implements ConfigurableInterface, DependentPluginInterface, PluginFormInterface {
+abstract class ConfigurableActionBase extends ActionBase implements ConfigurableInterface, DependentPluginInterface, PluginFormInterface
+{
+    use ConfigurableTrait;
 
-  use ConfigurableTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->setConfiguration($configuration);
+    }
 
-    $this->setConfiguration($configuration);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        return [];
+    }
 
 }

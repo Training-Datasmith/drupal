@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PreWarm;
 
 /**
@@ -50,22 +52,22 @@ namespace Drupal\Core\PreWarm;
  * @see Drupal\Core\LockBackendAbstract::wait()
  * @see Drupal\Core\Routing\RouteProvider::preload()
  */
-interface CachePreWarmerInterface {
+interface CachePreWarmerInterface
+{
+    /**
+     * Prewarms one PreWarmable service.
+     *
+     * @return bool
+     *   TRUE if a cache was prewarmed, FALSE if there was nothing to prewarm.
+     */
+    public function preWarmOneCache(): bool;
 
-  /**
-   * Prewarms one PreWarmable service.
-   *
-   * @return bool
-   *   TRUE if a cache was prewarmed, FALSE if there was nothing to prewarm.
-   */
-  public function preWarmOneCache(): bool;
-
-  /**
-   * Prewarms all PreWarmable services.
-   *
-   * @return bool
-   *   TRUE if a cache was prewarmed, FALSE if there was nothing to prewarm.
-   */
-  public function preWarmAllCaches(): bool;
+    /**
+     * Prewarms all PreWarmable services.
+     *
+     * @return bool
+     *   TRUE if a cache was prewarmed, FALSE if there was nothing to prewarm.
+     */
+    public function preWarmAllCaches(): bool;
 
 }

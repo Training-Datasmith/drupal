@@ -24,19 +24,21 @@ use Psr\Http\Message\ResponseInterface;
  *   (POST/PATCH/DELETE) HTTP methods be allowed for a REST resource that allows
  *   anonymous access.
  */
-trait AnonResourceTestTrait {
+trait AnonResourceTestTrait
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function assertResponseWhenMissingAuthentication($method, ResponseInterface $response)
+    {
+        throw new \LogicException('When testing for anonymous users, authentication cannot be missing.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function assertResponseWhenMissingAuthentication($method, ResponseInterface $response) {
-    throw new \LogicException('When testing for anonymous users, authentication cannot be missing.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function assertAuthenticationEdgeCases($method, Url $url, array $request_options) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function assertAuthenticationEdgeCases($method, Url $url, array $request_options)
+    {
+    }
 
 }

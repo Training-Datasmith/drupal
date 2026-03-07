@@ -25,254 +25,262 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PageContext::class)]
 #[Group('navigation')]
-class PageContextTest extends UnitTestCase {
+class PageContextTest extends UnitTestCase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $container = new ContainerBuilder();
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests the build method when no entity is present on the route.
-   */
-  public function testBuildWhenNoEntityOnRoute(): void {
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn(NULL);
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
-    $moderation_information = $this->prophesize(ModerationInformationInterface::class)->reveal();
-
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation_information);
-    $build = $plugin->build();
-
-    $this->assertSame([
-      '#cache' => [
-        'contexts' => ['route'],
-      ],
-    ], $build);
-  }
-
-  /**
-   * Tests the build of an entity label within the page context plugin.
-   *
-   * @param mixed $label_value
-   *   The return value of the entity label method. Can be a string,
-   *   render array, stringable object, or an invalid value.
-   * @param string|array|null $expected
-   *   The expected parsed label value for the page context. If the label is
-   *   invalid, the value should be NULL.
-   */
-  #[DataProvider('entityLabelProvider')]
-  public function testBuildEntityLabel(mixed $label_value, string|array|null $expected): void {
-    // Route returns an entity with different label return types.
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->label()->willReturn($label_value);
-
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
-
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
-    $moderation_information = $this->prophesize(ModerationInformationInterface::class)->reveal();
-
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation_information);
-    $build = $plugin->build();
-
-    $expected_base = [
-      '#cache' => [
-        'contexts' => ['route'],
-      ],
-    ];
-
-    if ($expected === NULL) {
-      // Invalid label → no components added.
-      $this->assertSame($expected_base, $build);
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $container = new ContainerBuilder();
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
     }
 
-    // Title component should be present as the first item.
-    $this->assertArrayHasKey(0, $build);
-    $this->assertSame('component', $build[0]['#type']);
-    $this->assertSame('navigation:title', $build[0]['#component']);
-    $this->assertSame('database', $build[0]['#props']['icon']);
-    $this->assertSame($expected, $build[0]['#slots']['content']);
-  }
+    /**
+     * Tests the build method when no entity is present on the route.
+     */
+    public function testBuildWhenNoEntityOnRoute(): void
+    {
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn(null);
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+        $moderation_information = $this->prophesize(ModerationInformationInterface::class)->reveal();
 
-  /**
-   * Data provider for entity label scenarios.
-   *
-   * @return array
-   *   [label_return_value, expected]
-   */
-  public static function entityLabelProvider(): array {
-    $stringable = new class () implements \Stringable {
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation_information);
+        $build = $plugin->build();
 
-      /**
-       * Dummy string method.
-       *
-       * @return string
-       *   The dummy entity label.
-       */
-      public function __toString(): string {
-        return 'Stringable Label';
-      }
+        $this->assertSame([
+          '#cache' => [
+            'contexts' => ['route'],
+          ],
+        ], $build);
+    }
 
-    };
-    return [
-      'string' => ['My Label', 'My Label'],
-      'stringable' => [$stringable, 'Stringable Label'],
-      'render_array' => [['#markup' => 'Rendered Label'], NULL],
-      'invalid' => [new \stdClass(), NULL],
-    ];
-  }
+    /**
+     * Tests the build of an entity label within the page context plugin.
+     *
+     * @param mixed $label_value
+     *   The return value of the entity label method. Can be a string,
+     *   render array, stringable object, or an invalid value.
+     * @param string|array|null $expected
+     *   The expected parsed label value for the page context. If the label is
+     *   invalid, the value should be NULL.
+     */
+    #[DataProvider('entityLabelProvider')]
+    public function testBuildEntityLabel(mixed $label_value, string|array|null $expected): void
+    {
+        // Route returns an entity with different label return types.
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->label()->willReturn($label_value);
 
-  /**
-   * Tests the status badge for published and unpublished entities.
-   */
-  public function testBuildStatusBadge(): void {
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->willImplement(EntityPublishedInterface::class);
-    $entity->isPublished()->willReturn(TRUE);
-    $entity->label()->willReturn('Published Title');
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
 
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+        $moderation_information = $this->prophesize(ModerationInformationInterface::class)->reveal();
 
-    $published_plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, NULL);
-    $build = $published_plugin->build();
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation_information);
+        $build = $plugin->build();
 
-    $this->assertSame('Published Title', $build[0]['#slots']['content']);
-    $this->assertSame('navigation:badge', $build[1]['#component']);
-    $this->assertSame('Published', $build[1]['#slots']['label']);
-    $this->assertSame('success', $build[1]['#props']['status']);
+        $expected_base = [
+          '#cache' => [
+            'contexts' => ['route'],
+          ],
+        ];
 
-    // Now assert the Unpublished path.
-    $entity->isPublished()->willReturn(FALSE);
-    $entity->label()->willReturn('Unpublished Title');
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+        if ($expected === null) {
+            // Invalid label → no components added.
+            $this->assertSame($expected_base, $build);
+            return;
+        }
 
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, NULL);
-    $build = $plugin->build();
-    $this->assertSame('Unpublished Title', $build[0]['#slots']['content']);
-    $this->assertSame('Unpublished', $build[1]['#slots']['label']);
-    $this->assertSame('info', $build[1]['#props']['status']);
-  }
+        // Title component should be present as the first item.
+        $this->assertArrayHasKey(0, $build);
+        $this->assertSame('component', $build[0]['#type']);
+        $this->assertSame('navigation:title', $build[0]['#component']);
+        $this->assertSame('database', $build[0]['#props']['icon']);
+        $this->assertSame($expected, $build[0]['#slots']['content']);
+    }
 
-  /**
-   * Tests content moderation build output with no pending revisions.
-   */
-  public function testBuildContentModerationNoPending(): void {
-    // Mock moderated content entity with state 'draft'.
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->get('moderation_state')->willReturn((object) ['value' => 'draft']);
-    $entity->isDefaultRevision()->willReturn(TRUE);
-    $entity->getEntityTypeId()->willReturn('node');
-    $entity->id()->willReturn('1');
-    $entity->label()->willReturn('Example Title');
+    /**
+     * Data provider for entity label scenarios.
+     *
+     * @return array
+     *   [label_return_value, expected]
+     */
+    public static function entityLabelProvider(): array
+    {
+        $stringable = new class () implements \Stringable {
+            /**
+             * Dummy string method.
+             *
+             * @return string
+             *   The dummy entity label.
+             */
+            public function __toString(): string
+            {
+                return 'Stringable Label';
+            }
 
-    // Workflow chain: workflow -> type plugin -> state('draft')->label() => 'Draft'.
-    $state = $this->prophesize(StateInterface::class);
-    $state->label()->willReturn('Draft');
+        };
+        return [
+          'string' => ['My Label', 'My Label'],
+          'stringable' => [$stringable, 'Stringable Label'],
+          'render_array' => [['#markup' => 'Rendered Label'], null],
+          'invalid' => [new \stdClass(), null],
+        ];
+    }
 
-    $type = $this->prophesize(WorkflowTypeInterface::class);
-    $type->getState('draft')->willReturn($state->reveal());
+    /**
+     * Tests the status badge for published and unpublished entities.
+     */
+    public function testBuildStatusBadge(): void
+    {
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->willImplement(EntityPublishedInterface::class);
+        $entity->isPublished()->willReturn(true);
+        $entity->label()->willReturn('Published Title');
 
-    $workflow = $this->prophesize(WorkflowInterface::class);
-    $workflow->getTypePlugin()->willReturn($type->reveal());
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
 
-    $moderation = $this->prophesize(ModerationInformationInterface::class);
-    $moderation->isModeratedEntity($entity->reveal())->willReturn(TRUE);
-    $moderation->getWorkflowForEntity($entity->reveal())->willReturn($workflow->reveal());
-    $moderation->hasPendingRevision($entity->reveal())->willReturn(FALSE);
+        $published_plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, null);
+        $build = $published_plugin->build();
 
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+        $this->assertSame('Published Title', $build[0]['#slots']['content']);
+        $this->assertSame('navigation:badge', $build[1]['#component']);
+        $this->assertSame('Published', $build[1]['#slots']['label']);
+        $this->assertSame('success', $build[1]['#props']['status']);
 
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation->reveal());
-    $build = $plugin->build();
+        // Now assert the Unpublished path.
+        $entity->isPublished()->willReturn(false);
+        $entity->label()->willReturn('Unpublished Title');
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
 
-    // Title component.
-    $this->assertSame('Example Title', $build[0]['#slots']['content']);
-    // Badge component with label Draft, default status info (not published interface).
-    $this->assertSame('navigation:badge', $build[1]['#component']);
-    $this->assertSame('Draft', $build[1]['#slots']['label']);
-    $this->assertSame('info', $build[1]['#props']['status']);
-  }
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, null);
+        $build = $plugin->build();
+        $this->assertSame('Unpublished Title', $build[0]['#slots']['content']);
+        $this->assertSame('Unpublished', $build[1]['#slots']['label']);
+        $this->assertSame('info', $build[1]['#props']['status']);
+    }
 
-  /**
-   * Tests the content moderation build when is active with a pending entity.
-   */
-  public function testBuildContentModerationWithPendingActive(): void {
-    // Entity current state is 'draft', active is 'published'.
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->get('moderation_state')->willReturn((object) ['value' => 'draft']);
-    $entity->isDefaultRevision()->willReturn(TRUE);
-    $entity->getEntityTypeId()->willReturn('node');
-    $entity->id()->willReturn('1');
-    $entity->label()->willReturn('Example Title');
+    /**
+     * Tests content moderation build output with no pending revisions.
+     */
+    public function testBuildContentModerationNoPending(): void
+    {
+        // Mock moderated content entity with state 'draft'.
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->get('moderation_state')->willReturn((object) ['value' => 'draft']);
+        $entity->isDefaultRevision()->willReturn(true);
+        $entity->getEntityTypeId()->willReturn('node');
+        $entity->id()->willReturn('1');
+        $entity->label()->willReturn('Example Title');
 
-    $active = $this->prophesize(ContentEntityInterface::class);
-    $active->get('moderation_state')->willReturn((object) ['value' => 'published']);
+        // Workflow chain: workflow -> type plugin -> state('draft')->label() => 'Draft'.
+        $state = $this->prophesize(StateInterface::class);
+        $state->label()->willReturn('Draft');
 
-    // State objects and labels.
-    $draft_state = $this->prophesize(StateInterface::class);
-    $draft_state->label()->willReturn('Draft');
-    $published_state = $this->prophesize(StateInterface::class);
-    $published_state->label()->willReturn('Published');
+        $type = $this->prophesize(WorkflowTypeInterface::class);
+        $type->getState('draft')->willReturn($state->reveal());
 
-    $type = $this->prophesize(WorkflowTypeInterface::class);
-    $type->getState('draft')->willReturn($draft_state->reveal());
-    $type->getState('published')->willReturn($published_state->reveal());
+        $workflow = $this->prophesize(WorkflowInterface::class);
+        $workflow->getTypePlugin()->willReturn($type->reveal());
 
-    $workflow = $this->prophesize(WorkflowInterface::class);
-    $workflow->getTypePlugin()->willReturn($type->reveal());
+        $moderation = $this->prophesize(ModerationInformationInterface::class);
+        $moderation->isModeratedEntity($entity->reveal())->willReturn(true);
+        $moderation->getWorkflowForEntity($entity->reveal())->willReturn($workflow->reveal());
+        $moderation->hasPendingRevision($entity->reveal())->willReturn(false);
 
-    $moderation = $this->prophesize(ModerationInformationInterface::class);
-    $moderation->isModeratedEntity($entity->reveal())->willReturn(TRUE);
-    $moderation->getWorkflowForEntity($entity->reveal())->willReturn($workflow->reveal());
-    $moderation->getWorkflowForEntity($active->reveal())->willReturn($workflow->reveal());
-    $moderation->hasPendingRevision($entity->reveal())->willReturn(TRUE);
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
 
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class);
-    $entity_repository->getActive('node', '1')->willReturn($active->reveal());
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, $moderation->reveal());
+        $build = $plugin->build();
 
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+        // Title component.
+        $this->assertSame('Example Title', $build[0]['#slots']['content']);
+        // Badge component with label Draft, default status info (not published interface).
+        $this->assertSame('navigation:badge', $build[1]['#component']);
+        $this->assertSame('Draft', $build[1]['#slots']['label']);
+        $this->assertSame('info', $build[1]['#props']['status']);
+    }
 
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository->reveal(), $moderation->reveal());
-    $build = $plugin->build();
+    /**
+     * Tests the content moderation build when is active with a pending entity.
+     */
+    public function testBuildContentModerationWithPendingActive(): void
+    {
+        // Entity current state is 'draft', active is 'published'.
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->get('moderation_state')->willReturn((object) ['value' => 'draft']);
+        $entity->isDefaultRevision()->willReturn(true);
+        $entity->getEntityTypeId()->willReturn('node');
+        $entity->id()->willReturn('1');
+        $entity->label()->willReturn('Example Title');
 
-    $this->assertSame('Example Title', $build[0]['#slots']['content']);
-    $this->assertSame('navigation:badge', $build[1]['#component']);
-    $this->assertSame('Draft (Published available)', $build[1]['#slots']['label']);
-    // Status still defaults to info as entity might not be EntityPublishedInterface here.
-    $this->assertSame('info', $build[1]['#props']['status']);
-  }
+        $active = $this->prophesize(ContentEntityInterface::class);
+        $active->get('moderation_state')->willReturn((object) ['value' => 'published']);
 
-  /**
-   * Tests the behavior of a plugin with no valid badge present.
-   */
-  public function testNoValidBadge(): void {
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->label()->willReturn('Simple Title');
+        // State objects and labels.
+        $draft_state = $this->prophesize(StateInterface::class);
+        $draft_state->label()->willReturn('Draft');
+        $published_state = $this->prophesize(StateInterface::class);
+        $published_state->label()->willReturn('Published');
 
-    $route_helper = $this->prophesize(EntityRouteHelper::class);
-    $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
-    $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+        $type = $this->prophesize(WorkflowTypeInterface::class);
+        $type->getState('draft')->willReturn($draft_state->reveal());
+        $type->getState('published')->willReturn($published_state->reveal());
 
-    $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, NULL);
-    $build = $plugin->build();
+        $workflow = $this->prophesize(WorkflowInterface::class);
+        $workflow->getTypePlugin()->willReturn($type->reveal());
 
-    $this->assertSame('Simple Title', $build[0]['#slots']['content']);
-    // Only one component (title) should be present.
-    $this->assertArrayNotHasKey(1, $build);
-  }
+        $moderation = $this->prophesize(ModerationInformationInterface::class);
+        $moderation->isModeratedEntity($entity->reveal())->willReturn(true);
+        $moderation->getWorkflowForEntity($entity->reveal())->willReturn($workflow->reveal());
+        $moderation->getWorkflowForEntity($active->reveal())->willReturn($workflow->reveal());
+        $moderation->hasPendingRevision($entity->reveal())->willReturn(true);
+
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class);
+        $entity_repository->getActive('node', '1')->willReturn($active->reveal());
+
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository->reveal(), $moderation->reveal());
+        $build = $plugin->build();
+
+        $this->assertSame('Example Title', $build[0]['#slots']['content']);
+        $this->assertSame('navigation:badge', $build[1]['#component']);
+        $this->assertSame('Draft (Published available)', $build[1]['#slots']['label']);
+        // Status still defaults to info as entity might not be EntityPublishedInterface here.
+        $this->assertSame('info', $build[1]['#props']['status']);
+    }
+
+    /**
+     * Tests the behavior of a plugin with no valid badge present.
+     */
+    public function testNoValidBadge(): void
+    {
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->label()->willReturn('Simple Title');
+
+        $route_helper = $this->prophesize(EntityRouteHelper::class);
+        $route_helper->getContentEntityFromRoute()->willReturn($entity->reveal());
+        $entity_repository = $this->prophesize(EntityRepositoryInterface::class)->reveal();
+
+        $plugin = new PageContext([], 'page_context', [], $route_helper->reveal(), $entity_repository, null);
+        $build = $plugin->build();
+
+        $this->assertSame('Simple Title', $build[0]['#slots']['content']);
+        // Only one component (title) should be present.
+        $this->assertArrayNotHasKey(1, $build);
+    }
 
 }

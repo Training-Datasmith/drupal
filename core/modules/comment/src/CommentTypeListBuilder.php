@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -15,68 +17,73 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\comment\Entity\CommentType
  */
-class CommentTypeListBuilder extends ConfigEntityListBuilder {
-
-  /**
-   * Constructs a new CommentTypeListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected EntityTypeManagerInterface $entityTypeManager) {
-    parent::__construct($entity_type, $storage);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('entity_type.manager'),
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $operations = parent::getDefaultOperations($entity, $cacheability);
-    // Place the edit operation after the operations added by
-    // FieldUiHooks::entityOperation() which have the weights 15, 20, 25.
-    if (isset($operations['edit'])) {
-      $operations['edit']['weight'] = 30;
+class CommentTypeListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * Constructs a new CommentTypeListBuilder object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+     *   The entity storage class.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected EntityTypeManagerInterface $entityTypeManager)
+    {
+        parent::__construct($entity_type, $storage);
     }
-    return $operations;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['type'] = $this->t('Comment type');
-    $header['description'] = $this->t('Description');
-    $header['target'] = $this->t('Target entity type');
-    return $header + parent::buildHeader();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager')->getStorage($entity_type->id()),
+            $container->get('entity_type.manager'),
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    assert($entity instanceof CommentTypeInterface);
-    $entity_type = $this->entityTypeManager->getDefinition($entity->getTargetEntityTypeId());
-    $row['type'] = $entity->label();
-    $row['description']['data'] = ['#markup' => $entity->getDescription()];
-    $row['target'] = $entity_type->getLabel();
-    return $row + parent::buildRow($entity);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $operations = parent::getDefaultOperations($entity, $cacheability);
+        // Place the edit operation after the operations added by
+        // FieldUiHooks::entityOperation() which have the weights 15, 20, 25.
+        if (isset($operations['edit'])) {
+            $operations['edit']['weight'] = 30;
+        }
+        return $operations;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['type'] = $this->t('Comment type');
+        $header['description'] = $this->t('Description');
+        $header['target'] = $this->t('Target entity type');
+        return $header + parent::buildHeader();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        assert($entity instanceof CommentTypeInterface);
+        $entity_type = $this->entityTypeManager->getDefinition($entity->getTargetEntityTypeId());
+        $row['type'] = $entity->label();
+        $row['description']['data'] = ['#markup' => $entity->getDescription()];
+        $row['target'] = $entity_type->getLabel();
+        return $row + parent::buildRow($entity);
+    }
 
 }

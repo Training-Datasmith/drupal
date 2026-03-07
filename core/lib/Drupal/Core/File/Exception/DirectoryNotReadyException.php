@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\File\Exception;
 
 /**
@@ -8,5 +10,6 @@ namespace Drupal\Core\File\Exception;
  * A directory can be considered not ready when it either does not exist, or
  * is not writable.
  */
-class DirectoryNotReadyException extends FileException {
+class DirectoryNotReadyException extends FileException
+{
 }

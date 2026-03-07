@@ -7,6 +7,6 @@ namespace Drupal\Core\Render\Component\Exception;
 /**
  * Custom exception for incompatible schemas.
  */
-class IncompatibleComponentSchema extends \Exception {
-
+class IncompatibleComponentSchema extends \Exception
+{
 }

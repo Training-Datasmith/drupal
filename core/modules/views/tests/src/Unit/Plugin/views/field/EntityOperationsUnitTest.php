@@ -18,202 +18,208 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(EntityOperations::class)]
 #[Group('Views')]
-class EntityOperationsUnitTest extends UnitTestCase {
+class EntityOperationsUnitTest extends UnitTestCase
+{
+    use ViewsLoggerTestTrait;
 
-  use ViewsLoggerTestTrait;
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $entityTypeManager;
+    /**
+     * The entity repository.
+     *
+     * @var \Drupal\Core\Entity\EntityRepositoryInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $entityRepository;
 
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $entityRepository;
+    /**
+     * The language manager.
+     *
+     * @var \Drupal\Core\Language\LanguageManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $languageManager;
 
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $languageManager;
+    /**
+     * The plugin under test.
+     *
+     * @var \Drupal\views\Plugin\views\field\EntityOperations
+     */
+    protected $plugin;
 
-  /**
-   * The plugin under test.
-   *
-   * @var \Drupal\views\Plugin\views\field\EntityOperations
-   */
-  protected $plugin;
+    /**
+     * {@inheritdoc}
+     *
+     * @legacy-covers ::__construct
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   *
-   * @legacy-covers ::__construct
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+        $this->entityRepository = $this->createMock(EntityRepositoryInterface::class);
+        $this->languageManager = $this->createMock('\Drupal\Core\Language\LanguageManagerInterface');
 
-    $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $this->entityRepository = $this->createMock(EntityRepositoryInterface::class);
-    $this->languageManager = $this->createMock('\Drupal\Core\Language\LanguageManagerInterface');
+        $configuration = ['entity_type' => 'foo', 'entity field' => 'bar'];
+        $plugin_id = $this->randomMachineName();
+        $plugin_definition = [
+          'title' => $this->randomMachineName(),
+        ];
+        $this->plugin = new EntityOperations($configuration, $plugin_id, $plugin_definition, $this->entityTypeManager, $this->languageManager, $this->entityRepository);
 
-    $configuration = ['entity_type' => 'foo', 'entity field' => 'bar'];
-    $plugin_id = $this->randomMachineName();
-    $plugin_definition = [
-      'title' => $this->randomMachineName(),
-    ];
-    $this->plugin = new EntityOperations($configuration, $plugin_id, $plugin_definition, $this->entityTypeManager, $this->languageManager, $this->entityRepository);
+        $redirect_service = $this->createMock('Drupal\Core\Routing\RedirectDestinationInterface');
+        $redirect_service->expects($this->any())
+          ->method('getAsArray')
+          ->willReturn(['destination' => 'foobar']);
+        $this->plugin->setRedirectDestination($redirect_service);
 
-    $redirect_service = $this->createMock('Drupal\Core\Routing\RedirectDestinationInterface');
-    $redirect_service->expects($this->any())
-      ->method('getAsArray')
-      ->willReturn(['destination' => 'foobar']);
-    $this->plugin->setRedirectDestination($redirect_service);
+        $view = $this->getMockBuilder('\Drupal\views\ViewExecutable')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $display = $this->getMockBuilder('\Drupal\views\Plugin\views\display\DisplayPluginBase')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $view->display_handler = $display;
+        $this->plugin->init($view, $display);
+    }
 
-    $view = $this->getMockBuilder('\Drupal\views\ViewExecutable')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $display = $this->getMockBuilder('\Drupal\views\Plugin\views\display\DisplayPluginBase')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $view->display_handler = $display;
-    $this->plugin->init($view, $display);
-  }
+    /**
+     * Tests uses group by.
+     */
+    public function testUsesGroupBy(): void
+    {
+        $this->assertFalse($this->plugin->usesGroupBy());
+    }
 
-  /**
-   * Tests uses group by.
-   */
-  public function testUsesGroupBy(): void {
-    $this->assertFalse($this->plugin->usesGroupBy());
-  }
+    /**
+     * Tests define options.
+     */
+    public function testDefineOptions(): void
+    {
+        $options = $this->plugin->defineOptions();
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('destination', $options);
+    }
 
-  /**
-   * Tests define options.
-   */
-  public function testDefineOptions(): void {
-    $options = $this->plugin->defineOptions();
-    $this->assertIsArray($options);
-    $this->assertArrayHasKey('destination', $options);
-  }
+    /**
+     * Tests render with destination.
+     */
+    public function testRenderWithDestination(): void
+    {
+        $entity_type_id = $this->randomMachineName();
+        $entity = $this->getMockBuilder('\Drupal\user\Entity\Role')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $entity->expects($this->any())
+          ->method('getEntityTypeId')
+          ->willReturn($entity_type_id);
 
-  /**
-   * Tests render with destination.
-   */
-  public function testRenderWithDestination(): void {
-    $entity_type_id = $this->randomMachineName();
-    $entity = $this->getMockBuilder('\Drupal\user\Entity\Role')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $entity->expects($this->any())
-      ->method('getEntityTypeId')
-      ->willReturn($entity_type_id);
+        $operations = [
+          'foo' => [
+            'title' => $this->randomMachineName(),
+          ],
+        ];
+        $list_builder = $this->createMock('\Drupal\Core\Entity\EntityListBuilderInterface');
+        $list_builder->expects($this->once())
+          ->method('getOperations')
+          ->with($entity)
+          ->willReturn($operations);
 
-    $operations = [
-      'foo' => [
-        'title' => $this->randomMachineName(),
-      ],
-    ];
-    $list_builder = $this->createMock('\Drupal\Core\Entity\EntityListBuilderInterface');
-    $list_builder->expects($this->once())
-      ->method('getOperations')
-      ->with($entity)
-      ->willReturn($operations);
+        $this->entityTypeManager->expects($this->once())
+          ->method('getListBuilder')
+          ->with($entity_type_id)
+          ->willReturn($list_builder);
 
-    $this->entityTypeManager->expects($this->once())
-      ->method('getListBuilder')
-      ->with($entity_type_id)
-      ->willReturn($list_builder);
+        $this->plugin->options['destination'] = true;
 
-    $this->plugin->options['destination'] = TRUE;
+        $result = new ResultRow();
+        $result->_entity = $entity;
 
-    $result = new ResultRow();
-    $result->_entity = $entity;
+        $expected_build = [
+          '#type' => 'operations',
+          '#links' => $operations,
+          '#attached' => [
+            'library' => ['core/drupal.dialog.ajax'],
+          ],
+          '#cache' => [
+            'contexts' => [],
+            'tags' => [],
+            'max-age' => -1,
+          ],
+        ];
+        $expected_build['#links']['foo']['query'] = ['destination' => 'foobar'];
+        $build = $this->plugin->render($result);
+        $this->assertSame($expected_build, $build);
+    }
 
-    $expected_build = [
-      '#type' => 'operations',
-      '#links' => $operations,
-      '#attached' => [
-        'library' => ['core/drupal.dialog.ajax'],
-      ],
-      '#cache' => [
-        'contexts' => [],
-        'tags' => [],
-        'max-age' => -1,
-      ],
-    ];
-    $expected_build['#links']['foo']['query'] = ['destination' => 'foobar'];
-    $build = $this->plugin->render($result);
-    $this->assertSame($expected_build, $build);
-  }
+    /**
+     * Tests render without destination.
+     */
+    public function testRenderWithoutDestination(): void
+    {
+        $entity_type_id = $this->randomMachineName();
+        $entity = $this->getMockBuilder('\Drupal\user\Entity\Role')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $entity->expects($this->any())
+          ->method('getEntityTypeId')
+          ->willReturn($entity_type_id);
 
-  /**
-   * Tests render without destination.
-   */
-  public function testRenderWithoutDestination(): void {
-    $entity_type_id = $this->randomMachineName();
-    $entity = $this->getMockBuilder('\Drupal\user\Entity\Role')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $entity->expects($this->any())
-      ->method('getEntityTypeId')
-      ->willReturn($entity_type_id);
+        $operations = [
+          'foo' => [
+            'title' => $this->randomMachineName(),
+          ],
+        ];
+        $list_builder = $this->createMock('\Drupal\Core\Entity\EntityListBuilderInterface');
+        $list_builder->expects($this->once())
+          ->method('getOperations')
+          ->with($entity)
+          ->willReturn($operations);
 
-    $operations = [
-      'foo' => [
-        'title' => $this->randomMachineName(),
-      ],
-    ];
-    $list_builder = $this->createMock('\Drupal\Core\Entity\EntityListBuilderInterface');
-    $list_builder->expects($this->once())
-      ->method('getOperations')
-      ->with($entity)
-      ->willReturn($operations);
+        $this->entityTypeManager->expects($this->once())
+          ->method('getListBuilder')
+          ->with($entity_type_id)
+          ->willReturn($list_builder);
 
-    $this->entityTypeManager->expects($this->once())
-      ->method('getListBuilder')
-      ->with($entity_type_id)
-      ->willReturn($list_builder);
+        $this->plugin->options['destination'] = false;
 
-    $this->plugin->options['destination'] = FALSE;
+        $result = new ResultRow();
+        $result->_entity = $entity;
 
-    $result = new ResultRow();
-    $result->_entity = $entity;
+        $expected_build = [
+          '#type' => 'operations',
+          '#links' => $operations,
+          '#attached' => [
+            'library' => ['core/drupal.dialog.ajax'],
+          ],
+          '#cache' => [
+            'contexts' => [],
+            'tags' => [],
+            'max-age' => -1,
+          ],
+        ];
+        $build = $this->plugin->render($result);
+        $this->assertSame($expected_build, $build);
+    }
 
-    $expected_build = [
-      '#type' => 'operations',
-      '#links' => $operations,
-      '#attached' => [
-        'library' => ['core/drupal.dialog.ajax'],
-      ],
-      '#cache' => [
-        'contexts' => [],
-        'tags' => [],
-        'max-age' => -1,
-      ],
-    ];
-    $build = $this->plugin->render($result);
-    $this->assertSame($expected_build, $build);
-  }
+    /**
+     * Tests render without entity.
+     */
+    public function testRenderWithoutEntity(): void
+    {
+        $this->setUpMockLoggerWithMissingEntity();
 
-  /**
-   * Tests render without entity.
-   */
-  public function testRenderWithoutEntity(): void {
-    $this->setUpMockLoggerWithMissingEntity();
+        $entity = null;
 
-    $entity = NULL;
+        $result = new ResultRow();
+        $result->_entity = $entity;
 
-    $result = new ResultRow();
-    $result->_entity = $entity;
-
-    $expected_build = '';
-    $build = $this->plugin->render($result);
-    $this->assertSame($expected_build, $build);
-  }
+        $expected_build = '';
+        $build = $this->plugin->render($result);
+        $this->assertSame($expected_build, $build);
+    }
 
 }

@@ -16,24 +16,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class ResponsiveImageStyleValidationTest extends ConfigEntityValidationTestBase {
+class ResponsiveImageStyleValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['breakpoint', 'image', 'responsive_image'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['breakpoint', 'image', 'responsive_image'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = ResponsiveImageStyle::create([
-      'id' => 'test',
-      'label' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = ResponsiveImageStyle::create([
+          'id' => 'test',
+          'label' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

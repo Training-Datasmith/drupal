@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 /**
@@ -11,16 +13,17 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_api
  */
-abstract class RevisionableContentEntityBase extends ContentEntityBase implements RevisionLogInterface {
+abstract class RevisionableContentEntityBase extends ContentEntityBase implements RevisionLogInterface
+{
+    use RevisionLogEntityTrait;
 
-  use RevisionLogEntityTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
-    return $fields + static::revisionLogBaseFieldDefinitions($entity_type);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        $fields = parent::baseFieldDefinitions($entity_type);
+        return $fields + static::revisionLogBaseFieldDefinitions($entity_type);
+    }
 
 }

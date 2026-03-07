@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views_ui\Form\Ajax;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -11,113 +13,118 @@ use Drupal\views\ViewExecutable;
  *
  * @internal
  */
-class ConfigHandlerGroup extends ViewsFormBase {
-
-  /**
-   * Constructs a new ConfigHandlerGroup object.
-   */
-  public function __construct($type = NULL, $id = NULL) {
-    $this->setType($type);
-    $this->setID($id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormKey(): string {
-    return 'handler-group';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getForm(ViewEntityInterface $view, $display_id, $js, $type = NULL, $id = NULL) {
-    $this->setType($type);
-    $this->setID($id);
-    return parent::getForm($view, $display_id, $js);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'views_ui_config_item_group_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return array<'#attributes'|'#markup'|'#theme_wrappers'|'#tree', array<int|'class'|'data-drupal-views-scroll', 'container'|'scroll'[]|true>|\Drupal\Core\StringTranslation\TranslatableMarkup|true>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $view = $form_state->get('view');
-    $display_id = $form_state->get('display_id');
-    $type = $form_state->get('type');
-    $id = $form_state->get('id');
-
-    $form = [
-      'options' => [
-        '#tree' => TRUE,
-        '#theme_wrappers' => ['container'],
-        '#attributes' => ['class' => ['scroll'], 'data-drupal-views-scroll' => TRUE],
-      ],
-    ];
-    $executable = $view->getExecutable();
-    if (!$executable->setDisplay($display_id)) {
-      $form['markup'] = ['#markup' => $this->t('Invalid display id @display', ['@display' => $display_id])];
-      return $form;
+class ConfigHandlerGroup extends ViewsFormBase
+{
+    /**
+     * Constructs a new ConfigHandlerGroup object.
+     */
+    public function __construct($type = null, $id = null)
+    {
+        $this->setType($type);
+        $this->setID($id);
     }
 
-    $executable->initQuery();
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormKey(): string
+    {
+        return 'handler-group';
+    }
 
-    $item = $executable->getHandler($display_id, $type, $id);
+    /**
+     * {@inheritdoc}
+     */
+    public function getForm(ViewEntityInterface $view, $display_id, $js, $type = null, $id = null)
+    {
+        $this->setType($type);
+        $this->setID($id);
+        return parent::getForm($view, $display_id, $js);
+    }
 
-    if ($item) {
-      $handler = $executable->display_handler->getHandler($type, $id);
-      if (empty($handler)) {
-        $form['markup'] = [
-          '#markup' => $this->t("Error: handler for @table > @field doesn't exist!", [
-            '@table' => $item['table'],
-            '@field' => $item['field'],
-          ]),
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'views_ui_config_item_group_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return array<'#attributes'|'#markup'|'#theme_wrappers'|'#tree', array<int|'class'|'data-drupal-views-scroll', 'container'|'scroll'[]|true>|\Drupal\Core\StringTranslation\TranslatableMarkup|true>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $view = $form_state->get('view');
+        $display_id = $form_state->get('display_id');
+        $type = $form_state->get('type');
+        $id = $form_state->get('id');
+
+        $form = [
+          'options' => [
+            '#tree' => true,
+            '#theme_wrappers' => ['container'],
+            '#attributes' => ['class' => ['scroll'], 'data-drupal-views-scroll' => true],
+          ],
         ];
-      }
-      else {
-        $handler->init($executable, $executable->display_handler, $item);
-        $types = ViewExecutable::getHandlerTypes();
+        $executable = $view->getExecutable();
+        if (!$executable->setDisplay($display_id)) {
+            $form['markup'] = ['#markup' => $this->t('Invalid display id @display', ['@display' => $display_id])];
+            return $form;
+        }
 
-        $form['#title'] = $this->t('Configure aggregation settings for @type %item', [
-          '@type' => $types[$type]['lstitle'],
-          '%item' => $handler->adminLabel(),
-        ]);
+        $executable->initQuery();
 
-        $handler->buildGroupByForm($form['options'], $form_state);
-        $form_state->set('handler', $handler);
-      }
+        $item = $executable->getHandler($display_id, $type, $id);
 
-      $view->getStandardButtons($form, $form_state, 'views_ui_config_item_group_form');
+        if ($item) {
+            $handler = $executable->display_handler->getHandler($type, $id);
+            if (empty($handler)) {
+                $form['markup'] = [
+                  '#markup' => $this->t("Error: handler for @table > @field doesn't exist!", [
+                    '@table' => $item['table'],
+                    '@field' => $item['field'],
+                  ]),
+                ];
+            } else {
+                $handler->init($executable, $executable->display_handler, $item);
+                $types = ViewExecutable::getHandlerTypes();
+
+                $form['#title'] = $this->t('Configure aggregation settings for @type %item', [
+                  '@type' => $types[$type]['lstitle'],
+                  '%item' => $handler->adminLabel(),
+                ]);
+
+                $handler->buildGroupByForm($form['options'], $form_state);
+                $form_state->set('handler', $handler);
+            }
+
+            $view->getStandardButtons($form, $form_state, 'views_ui_config_item_group_form');
+        }
+        return $form;
     }
-    return $form;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $view = $form_state->get('view');
-    $item = &$form_state->get('handler')->options;
-    $type = $form_state->get('type');
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $view = $form_state->get('view');
+        $item = &$form_state->get('handler')->options;
+        $type = $form_state->get('type');
 
-    $handler = \Drupal::service('views.plugin_managers')->get($type)->getHandler($item);
-    $executable = $view->getExecutable();
-    $handler->init($executable, $executable->display_handler, $item);
+        $handler = \Drupal::service('views.plugin_managers')->get($type)->getHandler($item);
+        $executable = $view->getExecutable();
+        $handler->init($executable, $executable->display_handler, $item);
 
-    $handler->submitGroupByForm($form, $form_state);
+        $handler->submitGroupByForm($form, $form_state);
 
-    // Store the item back on the view.
-    $executable->setHandler($form_state->get('display_id'), $form_state->get('type'), $form_state->get('id'), $item);
+        // Store the item back on the view.
+        $executable->setHandler($form_state->get('display_id'), $form_state->get('type'), $form_state->get('id'), $item);
 
-    // Write to cache.
-    $view->cacheSet();
-  }
+        // Write to cache.
+        $view->cacheSet();
+    }
 
 }

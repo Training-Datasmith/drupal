@@ -9,5 +9,6 @@ use Drupal\Core\Controller\ControllerBase;
 /**
  * Stubs ControllerBase.
  */
-class StubControllerBase extends ControllerBase {
+class StubControllerBase extends ControllerBase
+{
 }

@@ -20,26 +20,29 @@ use PhpTuf\ComposerStager\API\Process\Service\ProcessInterface;
  *
  * @see \Drupal\fixture_manipulator\FixtureManipulator::setUpRepos()
  */
-final class ProcessFactory implements ProcessFactoryInterface {
+final class ProcessFactory implements ProcessFactoryInterface
+{
+    /**
+     * Constructs a ProcessFactory object.
+     *
+     * @param \PhpTuf\ComposerStager\API\Process\Factory\ProcessFactoryInterface $decorated
+     *   The decorated process factory service.
+     */
+    public function __construct(private readonly ProcessFactoryInterface $decorated)
+    {
+    }
 
-  /**
-   * Constructs a ProcessFactory object.
-   *
-   * @param \PhpTuf\ComposerStager\API\Process\Factory\ProcessFactoryInterface $decorated
-   *   The decorated process factory service.
-   */
-  public function __construct(private readonly ProcessFactoryInterface $decorated) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function create(array $command, ?PathInterface $cwd = null, array $env = []): ProcessInterface
+    {
+        $process = $this->decorated->create($command, $cwd, $env);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function create(array $command, ?PathInterface $cwd = NULL, array $env = []): ProcessInterface {
-    $process = $this->decorated->create($command, $cwd, $env);
-
-    $env = $process->getEnv();
-    $env['COMPOSER_MIRROR_PATH_REPOS'] = '1';
-    $process->setEnv($env);
-    return $process;
-  }
+        $env = $process->getEnv();
+        $env['COMPOSER_MIRROR_PATH_REPOS'] = '1';
+        $process->setEnv($env);
+        return $process;
+    }
 
 }

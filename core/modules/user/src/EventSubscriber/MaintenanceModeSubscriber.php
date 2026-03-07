@@ -1,58 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\EventSubscriber;
 
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\MaintenanceModeEvents;
-use Drupal\Core\Site\MaintenanceModeInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 /**
  * Maintenance mode subscriber to log out users.
  */
-class MaintenanceModeSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Constructs a new MaintenanceModeSubscriber.
-   *
-   * @param \Drupal\Core\Site\MaintenanceModeInterface $maintenanceMode
-   *   The maintenance mode.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The current user.
-   */
-  public function __construct(
-      /**
-       * The maintenance mode.
-       */
-      protected \Drupal\Core\Site\MaintenanceModeInterface $maintenanceMode,
-      protected \Drupal\Core\Session\AccountInterface $account
-  )
-  {
-  }
-
-  /**
-   * Logout users if site is in maintenance mode and user is not exempt.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The event to process.
-   */
-  public function onMaintenanceModeRequest(RequestEvent $event): void {
-    // If the site is offline, log out unprivileged users.
-    if ($this->account->isAuthenticated()) {
-      user_logout();
+class MaintenanceModeSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs a new MaintenanceModeSubscriber.
+     *
+     * @param \Drupal\Core\Site\MaintenanceModeInterface $maintenanceMode
+     *   The maintenance mode.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The current user.
+     */
+    public function __construct(
+        /**
+         * The maintenance mode.
+         */
+        protected \Drupal\Core\Site\MaintenanceModeInterface $maintenanceMode,
+        protected \Drupal\Core\Session\AccountInterface $account
+    ) {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[MaintenanceModeEvents::MAINTENANCE_MODE_REQUEST][] = [
-      'onMaintenanceModeRequest',
-      -900,
-    ];
-    return $events;
-  }
+    /**
+     * Logout users if site is in maintenance mode and user is not exempt.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+     *   The event to process.
+     */
+    public function onMaintenanceModeRequest(RequestEvent $event): void
+    {
+        // If the site is offline, log out unprivileged users.
+        if ($this->account->isAuthenticated()) {
+            user_logout();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[MaintenanceModeEvents::MAINTENANCE_MODE_REQUEST][] = [
+          'onMaintenanceModeRequest',
+          -900,
+        ];
+        return $events;
+    }
 
 }

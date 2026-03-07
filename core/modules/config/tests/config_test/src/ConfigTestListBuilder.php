@@ -12,24 +12,26 @@ use Drupal\Core\Entity\EntityInterface;
  *
  * @see \Drupal\config_test\Entity\ConfigTest
  */
-class ConfigTestListBuilder extends ConfigEntityListBuilder {
+class ConfigTestListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['label'] = 'Label';
+        $header['id'] = 'Machine name';
+        return $header + parent::buildHeader();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['label'] = 'Label';
-    $header['id'] = 'Machine name';
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
-    $row['id'] = $entity->id();
-    return $row + parent::buildRow($entity);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['label'] = $entity->label();
+        $row['id'] = $entity->id();
+        return $row + parent::buildRow($entity);
+    }
 
 }

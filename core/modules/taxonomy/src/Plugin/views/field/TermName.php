@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -12,46 +14,49 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("term_name")]
-class TermName extends EntityField {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getItems(ResultRow $values) {
-    $items = parent::getItems($values);
-    if ($this->options['convert_spaces']) {
-      foreach ($items as &$item) {
-        // Replace spaces with hyphens.
-        $name = str_replace(' ', '-', $item['raw']->get('value')->getValue());
-        empty($this->options['settings']['link_to_entity']) ?
-          $item['rendered']['#context']['value'] = $name :
-          $item['rendered']['#title']['#context']['value'] = $name;
-      }
+#[ViewsField('term_name')]
+class TermName extends EntityField
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getItems(ResultRow $values)
+    {
+        $items = parent::getItems($values);
+        if ($this->options['convert_spaces']) {
+            foreach ($items as &$item) {
+                // Replace spaces with hyphens.
+                $name = str_replace(' ', '-', $item['raw']->get('value')->getValue());
+                empty($this->options['settings']['link_to_entity']) ?
+                  $item['rendered']['#context']['value'] = $name :
+                  $item['rendered']['#title']['#context']['value'] = $name;
+            }
+        }
+        return $items;
     }
-    return $items;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['convert_spaces'] = ['default' => FALSE];
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['convert_spaces'] = ['default' => false];
+        return $options;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['convert_spaces'] = [
-      '#title' => $this->t('Convert spaces in term names to hyphens'),
-      '#type' => 'checkbox',
-      '#default_value' => !empty($this->options['convert_spaces']),
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['convert_spaces'] = [
+          '#title' => $this->t('Convert spaces in term names to hyphens'),
+          '#type' => 'checkbox',
+          '#default_value' => !empty($this->options['convert_spaces']),
+        ];
 
-    parent::buildOptionsForm($form, $form_state);
-  }
+        parent::buildOptionsForm($form, $form_state);
+    }
 
 }

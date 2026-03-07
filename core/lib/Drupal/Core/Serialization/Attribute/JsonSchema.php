@@ -10,27 +10,28 @@ namespace Drupal\Core\Serialization\Attribute;
  * This attribute may be repeated to define multiple potential types.
  */
 #[\Attribute(\Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class JsonSchema {
+class JsonSchema
+{
+    /**
+     * Constructor.
+     *
+     * @param array $schema
+     *   Schema.
+     */
+    public function __construct(
+        public readonly array $schema = [],
+    ) {
+    }
 
-  /**
-   * Constructor.
-   *
-   * @param array $schema
-   *   Schema.
-   */
-  public function __construct(
-    public readonly array $schema = [],
-  ) {
-  }
-
-  /**
-   * Get a JSON Schema type definition array.
-   *
-   * @return array
-   *   Type definition.
-   */
-  public function getJsonSchema(): array {
-    return $this->schema;
-  }
+    /**
+     * Get a JSON Schema type definition array.
+     *
+     * @return array
+     *   Type definition.
+     */
+    public function getJsonSchema(): array
+    {
+        return $this->schema;
+    }
 
 }

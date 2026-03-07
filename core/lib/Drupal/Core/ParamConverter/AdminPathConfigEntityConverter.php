@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ParamConverter;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Routing\AdminContext;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -23,69 +23,72 @@ use Symfony\Component\Routing\Route;
  * from EntityConverter. As we only allow a single converter per route
  * argument, EntityConverter is ignored when this converter applies.
  */
-class AdminPathConfigEntityConverter extends EntityConverter {
-
-  /**
-   * Constructs a new EntityConverter.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   * @param \Drupal\Core\Routing\AdminContext $adminContext
-   *   The route admin context service.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Routing\AdminContext $adminContext, \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository = NULL) {
-    parent::__construct($entity_type_manager, $entity_repository);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-    if (!$this->entityTypeManager->hasDefinition($entity_type_id)) {
-      return NULL;
-    }
-    // If the entity type is dynamic, confirm it to be a config entity. Static
-    // entity types will have performed this check in self::applies().
-    if (str_starts_with((string) $definition['type'], 'entity:{')) {
-      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      if (!$entity_type->entityClassImplements(ConfigEntityInterface::class)) {
-        return parent::convert($value, $definition, $name, $defaults);
-      }
+class AdminPathConfigEntityConverter extends EntityConverter
+{
+    /**
+     * Constructs a new EntityConverter.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     * @param \Drupal\Core\Routing\AdminContext $adminContext
+     *   The route admin context service.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+     *   The entity repository.
+     */
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Routing\AdminContext $adminContext, \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository = null)
+    {
+        parent::__construct($entity_type_manager, $entity_repository);
     }
 
-    if ($storage = $this->entityTypeManager->getStorage($entity_type_id)) {
-      // Make sure no overrides are loaded.
-      return $storage->loadOverrideFree($value);
-    }
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
+        if (!$this->entityTypeManager->hasDefinition($entity_type_id)) {
+            return null;
+        }
+        // If the entity type is dynamic, confirm it to be a config entity. Static
+        // entity types will have performed this check in self::applies().
+        if (str_starts_with((string) $definition['type'], 'entity:{')) {
+            $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+            if (!$entity_type->entityClassImplements(ConfigEntityInterface::class)) {
+                return parent::convert($value, $definition, $name, $defaults);
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route) {
-    if (isset($definition['with_config_overrides']) && $definition['with_config_overrides']) {
-      return FALSE;
+        if ($storage = $this->entityTypeManager->getStorage($entity_type_id)) {
+            // Make sure no overrides are loaded.
+            return $storage->loadOverrideFree($value);
+        }
     }
 
-    if (parent::applies($definition, $name, $route)) {
-      $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
-      // If the entity type is dynamic, defer checking to self::convert().
-      if (str_starts_with($entity_type_id, '{')) {
-        return TRUE;
-      }
-      // As we only want to override EntityConverter for ConfigEntities, find
-      // out whether the current entity is a ConfigEntity.
-      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      if ($entity_type->entityClassImplements(ConfigEntityInterface::class)) {
-        return $this->adminContext->isAdminRoute($route);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route)
+    {
+        if (isset($definition['with_config_overrides']) && $definition['with_config_overrides']) {
+            return false;
+        }
+
+        if (parent::applies($definition, $name, $route)) {
+            $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
+            // If the entity type is dynamic, defer checking to self::convert().
+            if (str_starts_with($entity_type_id, '{')) {
+                return true;
+            }
+            // As we only want to override EntityConverter for ConfigEntities, find
+            // out whether the current entity is a ConfigEntity.
+            $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+            if ($entity_type->entityClassImplements(ConfigEntityInterface::class)) {
+                return $this->adminContext->isAdminRoute($route);
+            }
+        }
+        return false;
     }
-    return FALSE;
-  }
 
 }

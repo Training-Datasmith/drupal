@@ -15,41 +15,42 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('entity')]
 #[RunTestsInSeparateProcesses]
-class EntityReferenceFieldCreationTest extends BrowserTestBase {
+class EntityReferenceFieldCreationTest extends BrowserTestBase
+{
+    use EntityReferenceFieldCreationTrait;
+    use FieldUiTestTrait;
 
-  use EntityReferenceFieldCreationTrait;
-  use FieldUiTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'node', 'field_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'node', 'field_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests that entity reference fields cannot target entity types without IDs.
+     */
+    public function testAddReferenceFieldTargetingEntityTypeWithoutId(): void
+    {
 
-  /**
-   * Tests that entity reference fields cannot target entity types without IDs.
-   */
-  public function testAddReferenceFieldTargetingEntityTypeWithoutId(): void {
+        $node_type = $this->drupalCreateContentType()->id();
+        $this->drupalLogin($this->drupalCreateUser([
+          'administer content types',
+          'administer node fields',
+        ]));
 
-    $node_type = $this->drupalCreateContentType()->id();
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer content types',
-      'administer node fields',
-    ]));
+        // Entity types without an ID key should not be presented as options when
+        // creating an entity reference field in the UI.
+        $this->fieldUIAddNewField("/admin/structure/types/manage/$node_type", 'test_reference_field', 'Test Field', 'entity_reference', [], [], false);
+        $this->assertSession()->optionNotExists('field_storage[subform][settings][target_type]', 'entity_test_no_id');
 
-    // Entity types without an ID key should not be presented as options when
-    // creating an entity reference field in the UI.
-    $this->fieldUIAddNewField("/admin/structure/types/manage/$node_type", 'test_reference_field', 'Test Field', 'entity_reference', [], [], FALSE);
-    $this->assertSession()->optionNotExists('field_storage[subform][settings][target_type]', 'entity_test_no_id');
-
-    // Trying to do it programmatically should raise an exception.
-    $this->expectException('\Drupal\Core\Field\FieldException');
-    $this->expectExceptionMessage('Entity type "entity_test_no_id" has no ID key and cannot be targeted by entity reference field "test_reference_field"');
-    $this->createEntityReferenceField('node', $node_type, 'test_reference_field', 'Test Field', 'entity_test_no_id');
-  }
+        // Trying to do it programmatically should raise an exception.
+        $this->expectException('\Drupal\Core\Field\FieldException');
+        $this->expectExceptionMessage('Entity type "entity_test_no_id" has no ID key and cannot be targeted by entity reference field "test_reference_field"');
+        $this->createEntityReferenceField('node', $node_type, 'test_reference_field', 'Test Field', 'entity_test_no_id');
+    }
 
 }

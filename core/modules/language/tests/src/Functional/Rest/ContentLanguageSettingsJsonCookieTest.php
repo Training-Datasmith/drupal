@@ -13,28 +13,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class ContentLanguageSettingsJsonCookieTest extends ContentLanguageSettingsResourceTestBase {
+class ContentLanguageSettingsJsonCookieTest extends ContentLanguageSettingsResourceTestBase
+{
+    use CookieResourceTestTrait;
 
-  use CookieResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'cookie';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'cookie';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

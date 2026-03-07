@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
-use Drupal\Core\Entity\EntityResolverManager;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Routing\RoutingEvents;
 use Drupal\Core\Routing\RouteBuildEvent;
+use Drupal\Core\Routing\RoutingEvents;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Registers the 'type' of route parameter names that match an entity type.
@@ -18,36 +19,38 @@ use Drupal\Core\Routing\RouteBuildEvent;
  *   kind of PHP variable (e.g., a type hinted interface) the controller
  *   requires: https://www.drupal.org/node/2041907.
  */
-class EntityRouteAlterSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Constructs an EntityRouteAlterSubscriber instance.
-   *
-   * @param \Drupal\Core\Entity\EntityResolverManager $resolverManager
-   *   The entity resolver manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityResolverManager $resolverManager)
-  {
-  }
-
-  /**
-   * Applies parameter converters to route parameters.
-   *
-   * @param \Drupal\Core\Routing\RouteBuildEvent $event
-   *   The event to process.
-   */
-  public function onRoutingRouteAlterSetType(RouteBuildEvent $event): void {
-    foreach ($event->getRouteCollection() as $route) {
-      $this->resolverManager->setRouteOptions($route);
+class EntityRouteAlterSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs an EntityRouteAlterSubscriber instance.
+     *
+     * @param \Drupal\Core\Entity\EntityResolverManager $resolverManager
+     *   The entity resolver manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityResolverManager $resolverManager)
+    {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[RoutingEvents::ALTER][] = ['onRoutingRouteAlterSetType', -150];
-    return $events;
-  }
+    /**
+     * Applies parameter converters to route parameters.
+     *
+     * @param \Drupal\Core\Routing\RouteBuildEvent $event
+     *   The event to process.
+     */
+    public function onRoutingRouteAlterSetType(RouteBuildEvent $event): void
+    {
+        foreach ($event->getRouteCollection() as $route) {
+            $this->resolverManager->setRouteOptions($route);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[RoutingEvents::ALTER][] = ['onRoutingRouteAlterSetType', -150];
+        return $events;
+    }
 
 }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -36,30 +38,29 @@ namespace Drupal\Component\Annotation\Doctrine;
  */
 final class SimpleAnnotationReader
 {
-
     protected $ignoredAnnotations = [
-      'addtogroup' => TRUE,
-      'code' => TRUE,
-      'defgroup' => TRUE,
-      'deprecated' => TRUE,
-      'endcode' => TRUE,
-      'endlink' => TRUE,
-      'file' => TRUE,
-      'ingroup' => TRUE,
-      'group' => TRUE,
-      'link' => TRUE,
-      'mainpage' => TRUE,
-      'param' => TRUE,
-      'ref' => TRUE,
-      'return' => TRUE,
-      'section' => TRUE,
-      'see' => TRUE,
-      'subsection' => TRUE,
-      'throws' => TRUE,
-      'todo' => TRUE,
-      'var' => TRUE,
-      '{' => TRUE,
-      '}' => TRUE,
+      'addtogroup' => true,
+      'code' => true,
+      'defgroup' => true,
+      'deprecated' => true,
+      'endcode' => true,
+      'endlink' => true,
+      'file' => true,
+      'ingroup' => true,
+      'group' => true,
+      'link' => true,
+      'mainpage' => true,
+      'param' => true,
+      'ref' => true,
+      'return' => true,
+      'section' => true,
+      'see' => true,
+      'subsection' => true,
+      'throws' => true,
+      'todo' => true,
+      'var' => true,
+      '{' => true,
+      '}' => true,
     ];
 
     private readonly \Drupal\Component\Annotation\Doctrine\DocParser $parser;

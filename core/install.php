@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Initiates a browser-based installation of Drupal.
@@ -30,8 +32,8 @@ define('MAINTENANCE_MODE', 'install');
 // in the printed message to the user) whenever \Drupal::MINIMUM_PHP is
 // updated.
 if (version_compare(PHP_VERSION, '8.1.0') < 0) {
-  print 'Your PHP installation is too old. Refer to the <a href="https://www.drupal.org/docs/system-requirements/php-requirements">Drupal PHP requirements</a> for the currently recommended PHP version for this release. See <a href="https://php.net/supported-versions.php">PHP\'s version support documentation</a> for more information on PHP\'s own support schedule.';
-  exit;
+    print 'Your PHP installation is too old. Refer to the <a href="https://www.drupal.org/docs/system-requirements/php-requirements">Drupal PHP requirements</a> for the currently recommended PHP version for this release. See <a href="https://php.net/supported-versions.php">PHP\'s version support documentation</a> for more information on PHP\'s own support schedule.';
+    exit;
 }
 
 // Initialize the autoloader.
@@ -39,8 +41,8 @@ $class_loader = require_once $root_path . '/autoload.php';
 
 // If OPcache is in use, ensure opcache.save_comments is enabled.
 if (OpCodeCache::isEnabled() && !ini_get('opcache.save_comments')) {
-  print 'Systems with OPcache installed must have <a href="http://php.net/manual/opcache.configuration.php#ini.opcache.save-comments">opcache.save_comments</a> enabled.';
-  exit();
+    print 'Systems with OPcache installed must have <a href="http://php.net/manual/opcache.configuration.php#ini.opcache.save-comments">opcache.save_comments</a> enabled.';
+    exit();
 }
 
 // Set the Drupal custom error handler.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Asset;
 
 /**
@@ -13,72 +15,72 @@ namespace Drupal\Core\Asset;
  *
  * @see \Drupal\Core\Asset\AssetResolverInterface
  */
-interface AttachedAssetsInterface {
+interface AttachedAssetsInterface
+{
+    /**
+     * Creates an AttachedAssetsInterface object from a render array.
+     *
+     * @param array $render_array
+     *   A render array.
+     *
+     * @return static
+     *
+     * @throws \LogicException
+     */
+    public static function createFromRenderArray(array $render_array);
 
-  /**
-   * Creates an AttachedAssetsInterface object from a render array.
-   *
-   * @param array $render_array
-   *   A render array.
-   *
-   * @return static
-   *
-   * @throws \LogicException
-   */
-  public static function createFromRenderArray(array $render_array);
+    /**
+     * Sets the asset libraries attached to the current response.
+     *
+     * @param string[] $libraries
+     *   A list of libraries, in the order they should be loaded.
+     *
+     * @return $this
+     */
+    public function setLibraries(array $libraries);
 
-  /**
-   * Sets the asset libraries attached to the current response.
-   *
-   * @param string[] $libraries
-   *   A list of libraries, in the order they should be loaded.
-   *
-   * @return $this
-   */
-  public function setLibraries(array $libraries);
+    /**
+     * Returns the asset libraries attached to the current response.
+     *
+     * @return string[]
+     *   A list of libraries attached to this response.
+     */
+    public function getLibraries();
 
-  /**
-   * Returns the asset libraries attached to the current response.
-   *
-   * @return string[]
-   *   A list of libraries attached to this response.
-   */
-  public function getLibraries();
+    /**
+     * Sets the JavaScript settings that are attached to the current response.
+     *
+     * @param array $settings
+     *   The needed JavaScript settings.
+     *
+     * @return $this
+     */
+    public function setSettings(array $settings);
 
-  /**
-   * Sets the JavaScript settings that are attached to the current response.
-   *
-   * @param array $settings
-   *   The needed JavaScript settings.
-   *
-   * @return $this
-   */
-  public function setSettings(array $settings);
+    /**
+     * Returns the settings attached to the current response.
+     *
+     * @return array
+     *   An array of the settings attached to the current response.
+     */
+    public function getSettings();
 
-  /**
-   * Returns the settings attached to the current response.
-   *
-   * @return array
-   *   An array of the settings attached to the current response.
-   */
-  public function getSettings();
+    /**
+     * Sets the asset libraries that the current request marked as already loaded.
+     *
+     * @param string[] $libraries
+     *   The set of already loaded libraries.
+     *
+     * @return $this
+     */
+    public function setAlreadyLoadedLibraries(array $libraries);
 
-  /**
-   * Sets the asset libraries that the current request marked as already loaded.
-   *
-   * @param string[] $libraries
-   *   The set of already loaded libraries.
-   *
-   * @return $this
-   */
-  public function setAlreadyLoadedLibraries(array $libraries);
-
-  /**
-   * Returns the set of already loaded asset libraries.
-   *
-   * @return string[]
-   *   A list of the loaded libraries.
-   */
-  public function getAlreadyLoadedLibraries();
+    /**
+     * Returns the set of already loaded asset libraries.
+     *
+     * @return string[]
+     *   A list of the loaded libraries.
+     */
+    public function getAlreadyLoadedLibraries();
 
 }

@@ -9,6 +9,6 @@ use Drupal\Core\Database\Query\Select as QuerySelect;
 /**
  * A stub of the MySQL query builder for SELECT statements.
  */
-class Select extends QuerySelect {
-
+class Select extends QuerySelect
+{
 }

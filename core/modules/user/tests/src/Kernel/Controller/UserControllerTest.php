@@ -18,61 +18,63 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(UserController::class)]
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserControllerTest extends KernelTestBase {
+class UserControllerTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * The user controller.
+     *
+     * @var \Drupal\user\Controller\UserController
+     */
+    protected $userController;
 
-  /**
-   * The user controller.
-   *
-   * @var \Drupal\user\Controller\UserController
-   */
-  protected $userController;
+    /**
+     * The logged in user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $user;
 
-  /**
-   * The logged in user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $user;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'user',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
+        parent::setUp();
 
-    parent::setUp();
+        $this->userController = UserController::create(\Drupal::getContainer());
 
-    $this->userController = UserController::create(\Drupal::getContainer());
+        // Create and log in a user.
+        $this->user = $this->setUpCurrentUser();
 
-    // Create and log in a user.
-    $this->user = $this->setUpCurrentUser();
+    }
 
-  }
+    /**
+     * Tests the redirection to a user edit page.
+     */
+    public function testUserEditPage(): void
+    {
 
-  /**
-   * Tests the redirection to a user edit page.
-   */
-  public function testUserEditPage(): void {
+        $response = $this->userController->userEditPage();
 
-    $response = $this->userController->userEditPage();
+        // Ensure the response is directed to the correct user edit page.
+        $edit_url = Url::fromRoute('entity.user.edit_form', [
+          'user' => $this->user->id(),
+        ])->setAbsolute()
+          ->toString();
+        $this->assertEquals($edit_url, $response->getTargetUrl());
 
-    // Ensure the response is directed to the correct user edit page.
-    $edit_url = Url::fromRoute('entity.user.edit_form', [
-      'user' => $this->user->id(),
-    ])->setAbsolute()
-      ->toString();
-    $this->assertEquals($edit_url, $response->getTargetUrl());
+        $this->assertEquals(302, $response->getStatusCode());
 
-    $this->assertEquals(302, $response->getStatusCode());
-
-  }
+    }
 
 }

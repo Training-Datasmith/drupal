@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin;
 
 /**
@@ -7,30 +9,30 @@ namespace Drupal\Component\Plugin;
  *
  * @ingroup plugin_api
  */
-interface ConfigurableInterface {
+interface ConfigurableInterface
+{
+    /**
+     * Gets this plugin's configuration.
+     *
+     * @return array
+     *   An array of this plugin's configuration.
+     */
+    public function getConfiguration();
 
-  /**
-   * Gets this plugin's configuration.
-   *
-   * @return array
-   *   An array of this plugin's configuration.
-   */
-  public function getConfiguration();
+    /**
+     * Sets the configuration for this plugin instance.
+     *
+     * @param array $configuration
+     *   An associative array containing the plugin's configuration.
+     */
+    public function setConfiguration(array $configuration);
 
-  /**
-   * Sets the configuration for this plugin instance.
-   *
-   * @param array $configuration
-   *   An associative array containing the plugin's configuration.
-   */
-  public function setConfiguration(array $configuration);
-
-  /**
-   * Gets default configuration for this plugin.
-   *
-   * @return array
-   *   An associative array with the default configuration.
-   */
-  public function defaultConfiguration();
+    /**
+     * Gets default configuration for this plugin.
+     *
+     * @return array
+     *   An associative array with the default configuration.
+     */
+    public function defaultConfiguration();
 
 }

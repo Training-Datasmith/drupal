@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsFilter;
-use Drupal\views\ViewExecutable;
-use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ManyToOneHelper;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\ViewExecutable;
 
 /**
  * Complex filter to handle filtering for many to one relationships.
@@ -19,139 +21,144 @@ use Drupal\views\ManyToOneHelper;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("many_to_one")]
-class ManyToOne extends InOperator {
+#[ViewsFilter('many_to_one')]
+class ManyToOne extends InOperator
+{
+    /**
+     * @var \Drupal\views\ManyToOneHelper
+     *
+     * Stores the Helper object which handles the many_to_one complexity.
+     */
+    public $helper;
 
-  /**
-   * @var \Drupal\views\ManyToOneHelper
-   *
-   * Stores the Helper object which handles the many_to_one complexity.
-   */
-  public $helper;
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    $this->helper = new ManyToOneHelper($this);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-
-    $options['operator']['default'] = 'or';
-    $options['value']['default'] = [];
-
-    if (isset($this->helper)) {
-      $this->helper->defineOptions($options);
-    }
-    else {
-      $helper = new ManyToOneHelper($this);
-      $helper->defineOptions($options);
+        $this->helper = new ManyToOneHelper($this);
     }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, short_single: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opHelper', values: 1, ensure_my_table: 'helper'}[]
-   */
-  public function operators(): array {
-    $operators = [
-      'or' => [
-        'title' => $this->t('Is one of'),
-        'short' => $this->t('or'),
-        'short_single' => $this->t('='),
-        'method' => 'opHelper',
-        'values' => 1,
-        'ensure_my_table' => 'helper',
-      ],
-      'and' => [
-        'title' => $this->t('Is all of'),
-        'short' => $this->t('and'),
-        'short_single' => $this->t('='),
-        'method' => 'opHelper',
-        'values' => 1,
-        'ensure_my_table' => 'helper',
-      ],
-      'not' => [
-        'title' => $this->t('Is none of'),
-        'short' => $this->t('not'),
-        'short_single' => $this->t('<>'),
-        'method' => 'opHelper',
-        'values' => 1,
-        'ensure_my_table' => 'helper',
-      ],
-    ];
-    // If the definition allows for the empty operator, add it.
-    if (!empty($this->definition['allow empty'])) {
-      $operators += [
-        'empty' => [
-          'title' => $this->t('Is empty (NULL)'),
-          'method' => 'opEmpty',
-          'short' => $this->t('empty'),
-          'values' => 0,
-        ],
-        'not empty' => [
-          'title' => $this->t('Is not empty (NOT NULL)'),
-          'method' => 'opEmpty',
-          'short' => $this->t('not empty'),
-          'values' => 0,
-        ],
-      ];
+        $options['operator']['default'] = 'or';
+        $options['value']['default'] = [];
+
+        if (isset($this->helper)) {
+            $this->helper->defineOptions($options);
+        } else {
+            $helper = new ManyToOneHelper($this);
+            $helper->defineOptions($options);
+        }
+
+        return $options;
     }
 
-    return $operators;
-  }
+    /**
+     * {@inheritdoc}
+     * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, short_single: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opHelper', values: 1, ensure_my_table: 'helper'}[]
+     */
+    public function operators(): array
+    {
+        $operators = [
+          'or' => [
+            'title' => $this->t('Is one of'),
+            'short' => $this->t('or'),
+            'short_single' => $this->t('='),
+            'method' => 'opHelper',
+            'values' => 1,
+            'ensure_my_table' => 'helper',
+          ],
+          'and' => [
+            'title' => $this->t('Is all of'),
+            'short' => $this->t('and'),
+            'short_single' => $this->t('='),
+            'method' => 'opHelper',
+            'values' => 1,
+            'ensure_my_table' => 'helper',
+          ],
+          'not' => [
+            'title' => $this->t('Is none of'),
+            'short' => $this->t('not'),
+            'short_single' => $this->t('<>'),
+            'method' => 'opHelper',
+            'values' => 1,
+            'ensure_my_table' => 'helper',
+          ],
+        ];
+        // If the definition allows for the empty operator, add it.
+        if (!empty($this->definition['allow empty'])) {
+            $operators += [
+              'empty' => [
+                'title' => $this->t('Is empty (NULL)'),
+                'method' => 'opEmpty',
+                'short' => $this->t('empty'),
+                'values' => 0,
+              ],
+              'not empty' => [
+                'title' => $this->t('Is not empty (NOT NULL)'),
+                'method' => 'opEmpty',
+                'short' => $this->t('not empty'),
+                'values' => 0,
+              ],
+            ];
+        }
 
-  /**
-   * The default form type.
-   *
-   * @var string
-   */
-  protected $valueFormType = 'select';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function valueForm(&$form, FormStateInterface $form_state) {
-    parent::valueForm($form, $form_state);
-
-    if (!$form_state->get('exposed')) {
-      $this->helper->buildOptionsForm($form, $form_state);
+        return $operators;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function ensureMyTable() {
-    // Defer to helper if the operator specifies it.
-    $info = $this->operators();
-    if (isset($info[$this->operator]['ensure_my_table']) && $info[$this->operator]['ensure_my_table'] == 'helper') {
-      return $this->helper->ensureMyTable();
+    /**
+     * The default form type.
+     *
+     * @var string
+     */
+    protected $valueFormType = 'select';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function valueForm(&$form, FormStateInterface $form_state)
+    {
+        parent::valueForm($form, $form_state);
+
+        if (!$form_state->get('exposed')) {
+            $this->helper->buildOptionsForm($form, $form_state);
+        }
     }
 
-    return parent::ensureMyTable();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function ensureMyTable()
+    {
+        // Defer to helper if the operator specifies it.
+        $info = $this->operators();
+        if (isset($info[$this->operator]['ensure_my_table']) && $info[$this->operator]['ensure_my_table'] == 'helper') {
+            return $this->helper->ensureMyTable();
+        }
 
-  /**
-   * Adds a filter.
-   */
-  protected function opHelper() {
-    if (empty($this->value)) {
-      return;
+        return parent::ensureMyTable();
     }
-    // Form API returns unchecked options in the form of option_id => 0. This
-    // breaks the generated query for "is all of" filters so we remove them.
-    $this->value = array_filter($this->value, [static::class, 'arrayFilterZero']);
-    $this->helper->addFilter();
-  }
+
+    /**
+     * Adds a filter.
+     */
+    protected function opHelper()
+    {
+        if (empty($this->value)) {
+            return;
+        }
+        // Form API returns unchecked options in the form of option_id => 0. This
+        // breaks the generated query for "is all of" filters so we remove them.
+        $this->value = array_filter($this->value, [static::class, 'arrayFilterZero']);
+        $this->helper->addFilter();
+    }
 
 }

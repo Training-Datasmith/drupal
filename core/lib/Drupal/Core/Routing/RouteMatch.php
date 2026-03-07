@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 use Symfony\Component\HttpFoundation\InputBag;
@@ -10,144 +12,156 @@ use Symfony\Component\Routing\Route;
 /**
  * Default object representing the results of routing.
  */
-class RouteMatch implements RouteMatchInterface {
+class RouteMatch implements RouteMatchInterface
+{
+    /**
+     * The route.
+     *
+     * @var \Symfony\Component\Routing\Route
+     */
+    protected $route;
 
-  /**
-   * The route.
-   *
-   * @var \Symfony\Component\Routing\Route
-   */
-  protected $route;
+    /**
+     * A key|value store of parameters.
+     *
+     * @var \Symfony\Component\HttpFoundation\ParameterBag
+     */
+    protected $parameters;
 
-  /**
-   * A key|value store of parameters.
-   *
-   * @var \Symfony\Component\HttpFoundation\ParameterBag
-   */
-  protected $parameters;
+    /**
+     * A key|value store of raw parameters.
+     *
+     * @var \Symfony\Component\HttpFoundation\InputBag
+     */
+    protected $rawParameters;
 
-  /**
-   * A key|value store of raw parameters.
-   *
-   * @var \Symfony\Component\HttpFoundation\InputBag
-   */
-  protected $rawParameters;
-
-  /**
-   * Constructs a RouteMatch object.
-   *
-   * @param string $routeName
-   *   The name of the route.
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route.
-   * @param array $parameters
-   *   The parameters array.
-   * @param array $raw_parameters
-   *   The raw $parameters array.
-   */
-  public function __construct(/**
+    /**
+     * Constructs a RouteMatch object.
+     *
+     * @param string $routeName
+     *   The name of the route.
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route.
+     * @param array $parameters
+     *   The parameters array.
+     * @param array $raw_parameters
+     *   The raw $parameters array.
+     */
+    public function __construct(/**
    * The route name.
    */
-  protected $routeName, Route $route, array $parameters = [], array $raw_parameters = []) {
-    $this->route = $route;
+        protected $routeName,
+        Route $route,
+        array $parameters = [],
+        array $raw_parameters = []
+    ) {
+        $this->route = $route;
 
-    // Pre-filter parameters.
-    $route_params = $this->getParameterNames();
-    $parameters = array_intersect_key($parameters, $route_params);
-    $raw_parameters = array_intersect_key($raw_parameters, $route_params);
-    $this->parameters = new ParameterBag($parameters);
-    $this->rawParameters = new InputBag($raw_parameters);
-  }
-
-  /**
-   * Creates a RouteMatch from a request.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   A request object.
-   *
-   * @return \Drupal\Core\Routing\RouteMatchInterface
-   *   A new RouteMatch object if there's a matched route for the request.
-   *   A new NullRouteMatch object otherwise (e.g., on a 404 page or when
-   *   invoked prior to routing).
-   */
-  public static function createFromRequest(Request $request): self|\Drupal\Core\Routing\NullRouteMatch {
-    if ($request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
-      $raw_variables = [];
-      if ($raw = $request->attributes->get('_raw_variables')) {
-        $raw_variables = $raw->all();
-      }
-      return new static(
-        $request->attributes->get(RouteObjectInterface::ROUTE_NAME),
-        $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT),
-        $request->attributes->all(),
-        $raw_variables);
+        // Pre-filter parameters.
+        $route_params = $this->getParameterNames();
+        $parameters = array_intersect_key($parameters, $route_params);
+        $raw_parameters = array_intersect_key($raw_parameters, $route_params);
+        $this->parameters = new ParameterBag($parameters);
+        $this->rawParameters = new InputBag($raw_parameters);
     }
-    return new NullRouteMatch();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRouteName() {
-    return $this->routeName;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRouteObject() {
-    return $this->route;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getParameter($parameter_name) {
-    return $this->parameters->get($parameter_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getParameters() {
-    return $this->parameters;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRawParameter($parameter_name) {
-    return $this->rawParameters->get($parameter_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRawParameters() {
-    return $this->rawParameters;
-  }
-
-  /**
-   * Returns the names of all parameters for the currently matched route.
-   *
-   * @return array
-   *   Route parameter names as both the keys and values.
-   */
-  protected function getParameterNames(): array {
-    $names = [];
-    if ($route = $this->getRouteObject()) {
-      // Variables defined in path and host patterns are route parameters.
-      $variables = $route->compile()->getVariables();
-      $names = array_combine($variables, $variables);
-      // Route defaults that do not start with a leading "_" are also
-      // parameters, even if they are not included in path or host patterns.
-      foreach ($route->getDefaults() as $name => $value) {
-        if (!isset($names[$name]) && !str_starts_with((string) $name, '_')) {
-          $names[$name] = $name;
+    /**
+     * Creates a RouteMatch from a request.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   A request object.
+     *
+     * @return \Drupal\Core\Routing\RouteMatchInterface
+     *   A new RouteMatch object if there's a matched route for the request.
+     *   A new NullRouteMatch object otherwise (e.g., on a 404 page or when
+     *   invoked prior to routing).
+     */
+    public static function createFromRequest(Request $request): self|\Drupal\Core\Routing\NullRouteMatch
+    {
+        if ($request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
+            $raw_variables = [];
+            if ($raw = $request->attributes->get('_raw_variables')) {
+                $raw_variables = $raw->all();
+            }
+            return new static(
+                $request->attributes->get(RouteObjectInterface::ROUTE_NAME),
+                $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT),
+                $request->attributes->all(),
+                $raw_variables);
         }
-      }
+        return new NullRouteMatch();
     }
-    return $names;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteName()
+    {
+        return $this->routeName;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteObject()
+    {
+        return $this->route;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParameter($parameter_name)
+    {
+        return $this->parameters->get($parameter_name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRawParameter($parameter_name)
+    {
+        return $this->rawParameters->get($parameter_name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRawParameters()
+    {
+        return $this->rawParameters;
+    }
+
+    /**
+     * Returns the names of all parameters for the currently matched route.
+     *
+     * @return array
+     *   Route parameter names as both the keys and values.
+     */
+    protected function getParameterNames(): array
+    {
+        $names = [];
+        if ($route = $this->getRouteObject()) {
+            // Variables defined in path and host patterns are route parameters.
+            $variables = $route->compile()->getVariables();
+            $names = array_combine($variables, $variables);
+            // Route defaults that do not start with a leading "_" are also
+            // parameters, even if they are not included in path or host patterns.
+            foreach ($route->getDefaults() as $name => $value) {
+                if (!isset($names[$name]) && !str_starts_with((string) $name, '_')) {
+                    $names[$name] = $name;
+                }
+            }
+        }
+        return $names;
+    }
 
 }

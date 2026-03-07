@@ -14,59 +14,61 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class CacheabilityMetadataConfigOverrideIntegrationTest extends BrowserTestBase {
+class CacheabilityMetadataConfigOverrideIntegrationTest extends BrowserTestBase
+{
+    use AssertPageCacheContextsAndTagsTrait;
 
-  use AssertPageCacheContextsAndTagsTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block_test',
+      'config_override_integration_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block_test',
-    'config_override_integration_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // @todo If our block does not contain any content then the cache context
+        //   is not bubbling up and the test fails. Remove this line once the cache
+        //   contexts are properly set. See https://www.drupal.org/node/2529980.
+        \Drupal::keyValue('block_test')->set('content', 'Needs to have some content');
 
-    // @todo If our block does not contain any content then the cache context
-    //   is not bubbling up and the test fails. Remove this line once the cache
-    //   contexts are properly set. See https://www.drupal.org/node/2529980.
-    \Drupal::keyValue('block_test')->set('content', 'Needs to have some content');
+        $this->drupalLogin($this->drupalCreateUser());
+    }
 
-    $this->drupalLogin($this->drupalCreateUser());
-  }
+    /**
+     * Tests if config overrides correctly set cacheability metadata.
+     */
+    public function testConfigOverride(): void
+    {
+        // Check the default (disabled) state of the cache context. The block label
+        // should not be overridden.
+        $this->drupalGet('<front>');
+        $this->assertSession()->pageTextNotContains('Overridden block label');
 
-  /**
-   * Tests if config overrides correctly set cacheability metadata.
-   */
-  public function testConfigOverride(): void {
-    // Check the default (disabled) state of the cache context. The block label
-    // should not be overridden.
-    $this->drupalGet('<front>');
-    $this->assertSession()->pageTextNotContains('Overridden block label');
+        // Both the cache context and tag should be present.
+        $this->assertCacheContext('config_override_integration_test');
+        $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config_override_integration_test_tag');
 
-    // Both the cache context and tag should be present.
-    $this->assertCacheContext('config_override_integration_test');
-    $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config_override_integration_test_tag');
+        // Flip the state of the cache context. The block label should now be
+        // overridden.
+        \Drupal::state()->set('config_override_integration_test.enabled', true);
+        $this->drupalGet('<front>');
+        $this->assertSession()->pageTextContains('Overridden block label');
 
-    // Flip the state of the cache context. The block label should now be
-    // overridden.
-    \Drupal::state()->set('config_override_integration_test.enabled', TRUE);
-    $this->drupalGet('<front>');
-    $this->assertSession()->pageTextContains('Overridden block label');
-
-    // Both the cache context and tag should still be present.
-    $this->assertCacheContext('config_override_integration_test');
-    $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config_override_integration_test_tag');
-  }
+        // Both the cache context and tag should still be present.
+        $this->assertCacheContext('config_override_integration_test');
+        $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config_override_integration_test_tag');
+    }
 
 }

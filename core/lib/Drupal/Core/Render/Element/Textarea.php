@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -27,48 +29,51 @@ use Drupal\Core\Render\Attribute\FormElement;
  * @see \Drupal\filter\Element\TextFormat
  */
 #[FormElement('textarea')]
-class Textarea extends FormElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#cols' => 60,
-      '#rows' => 5,
-      '#resizable' => 'vertical',
-      '#process' => [
-        [static::class, 'processAjaxForm'],
-        [static::class, 'processGroup'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderGroup'],
-        [static::class, 'preRenderAttachments'],
-      ],
-      '#theme' => 'textarea',
-      '#theme_wrappers' => ['form_element'],
-    ];
-  }
-
-  /**
-   * Adds the textarea resize library.
-   */
-  public static function preRenderAttachments(array $element): array {
-    $element['#attached']['library'][] = 'core/drupal.textarea-resize';
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
-    if ($input !== FALSE && $input !== NULL) {
-      // This should be a string, but allow other scalars since they might be
-      // valid input in programmatic form submissions.
-      return is_scalar($input) ? (string) $input : '';
+class Textarea extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#cols' => 60,
+          '#rows' => 5,
+          '#resizable' => 'vertical',
+          '#process' => [
+            [static::class, 'processAjaxForm'],
+            [static::class, 'processGroup'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderGroup'],
+            [static::class, 'preRenderAttachments'],
+          ],
+          '#theme' => 'textarea',
+          '#theme_wrappers' => ['form_element'],
+        ];
     }
-    return NULL;
-  }
+
+    /**
+     * Adds the textarea resize library.
+     */
+    public static function preRenderAttachments(array $element): array
+    {
+        $element['#attached']['library'][] = 'core/drupal.textarea-resize';
+        return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string
+    {
+        if ($input !== false && $input !== null) {
+            // This should be a string, but allow other scalars since they might be
+            // valid input in programmatic form submissions.
+            return is_scalar($input) ? (string) $input : '';
+        }
+        return null;
+    }
 
 }

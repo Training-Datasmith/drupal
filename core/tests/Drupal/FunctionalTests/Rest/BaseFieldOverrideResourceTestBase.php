@@ -11,104 +11,110 @@ use Drupal\Tests\rest\Functional\EntityResource\ConfigEntityResourceTestBase;
 /**
  * Resource test base for BaseFieldOverride entity.
  */
-abstract class BaseFieldOverrideResourceTestBase extends ConfigEntityResourceTestBase {
+abstract class BaseFieldOverrideResourceTestBase extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'field_ui', 'node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'field_ui', 'node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'base_field_override';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'base_field_override';
+    /**
+     * @var \Drupal\Core\Field\Entity\BaseFieldOverride
+     */
+    protected $entity;
 
-  /**
-   * @var \Drupal\Core\Field\Entity\BaseFieldOverride
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method)
+    {
+        $this->grantPermissionsToTestedRole(['administer node fields']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method) {
-    $this->grantPermissionsToTestedRole(['administer node fields']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $camelids = NodeType::create([
+          'name' => 'Camelids',
+          'type' => 'camelids',
+        ]);
+        $camelids->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $camelids = NodeType::create([
-      'name' => 'Camelids',
-      'type' => 'camelids',
-    ]);
-    $camelids->save();
+        $entity = BaseFieldOverride::create([
+          'field_name' => 'promote',
+          'entity_type' => 'node',
+          'bundle' => 'camelids',
+          'label' => 'Promote to front page',
+        ]);
+        $entity->save();
 
-    $entity = BaseFieldOverride::create([
-      'field_name' => 'promote',
-      'entity_type' => 'node',
-      'bundle' => 'camelids',
-      'label' => 'Promote to front page',
-    ]);
-    $entity->save();
+        return $entity;
+    }
 
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedNormalizedEntity()
+    {
+        return [
+          'bundle' => 'camelids',
+          'default_value' => [],
+          'default_value_callback' => '',
+          'dependencies' => [
+            'config' => [
+              'node.type.camelids',
+            ],
+          ],
+          'description' => '',
+          'entity_type' => 'node',
+          'field_name' => 'promote',
+          'field_type' => 'boolean',
+          'id' => 'node.camelids.promote',
+          'label' => 'Promote to front page',
+          'langcode' => 'en',
+          'required' => false,
+          'settings' => [
+            'on_label' => 'On',
+            'off_label' => 'Off',
+          ],
+          'status' => true,
+          'translatable' => true,
+          'uuid' => $this->entity->uuid(),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedNormalizedEntity() {
-    return [
-      'bundle' => 'camelids',
-      'default_value' => [],
-      'default_value_callback' => '',
-      'dependencies' => [
-        'config' => [
-          'node.type.camelids',
-        ],
-      ],
-      'description' => '',
-      'entity_type' => 'node',
-      'field_name' => 'promote',
-      'field_type' => 'boolean',
-      'id' => 'node.camelids.promote',
-      'label' => 'Promote to front page',
-      'langcode' => 'en',
-      'required' => FALSE,
-      'settings' => [
-        'on_label' => 'On',
-        'off_label' => 'Off',
-      ],
-      'status' => TRUE,
-      'translatable' => TRUE,
-      'uuid' => $this->entity->uuid(),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNormalizedPostEntity()
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getNormalizedPostEntity() {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedCacheContexts()
+    {
+        return [
+          'user.permissions',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedCacheContexts() {
-    return [
-      'user.permissions',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method) {
-    return "The 'administer node fields' permission is required.";
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method)
+    {
+        return "The 'administer node fields' permission is required.";
+    }
 
 }

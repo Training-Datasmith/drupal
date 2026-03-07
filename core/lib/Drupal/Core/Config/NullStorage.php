@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config;
 
 /**
@@ -16,114 +18,126 @@ namespace Drupal\Core\Config;
  *
  * This also can be used for testing purposes.
  */
-class NullStorage implements StorageInterface {
+class NullStorage implements StorageInterface
+{
+    /**
+     * Constructs a new NullStorage.
+     *
+     * @param string $collection
+     *   (optional) The collection to store configuration in. Defaults to the
+     *   default collection.
+     */
+    public function __construct(
+        /**
+         * The storage collection.
+         */
+        protected $collection = StorageInterface::DEFAULT_COLLECTION
+    ) {
+    }
 
-  /**
-   * Constructs a new NullStorage.
-   *
-   * @param string $collection
-   *   (optional) The collection to store configuration in. Defaults to the
-   *   default collection.
-   */
-  public function __construct(
-      /**
-       * The storage collection.
-       */
-      protected $collection = StorageInterface::DEFAULT_COLLECTION
-  )
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function exists($name): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function exists($name): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function read($name): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function read($name): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function readMultiple(array $names): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function readMultiple(array $names): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function write($name, array $data): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function write($name, array $data): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($name): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($name): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function rename($name, $new_name): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function rename($name, $new_name): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function encode($data)
+    {
+        return $data;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function encode($data) {
-    return $data;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function decode($raw)
+    {
+        return $raw;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function decode($raw) {
-    return $raw;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function listAll($prefix = ''): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function listAll($prefix = ''): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll($prefix = ''): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll($prefix = ''): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createCollection($collection): static
+    {
+        return new static($collection);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createCollection($collection): static {
-    return new static($collection);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllCollectionNames(): array
+    {
+        // Returns only non empty collections.
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAllCollectionNames(): array {
-    // Returns only non empty collections.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCollectionName() {
-    return $this->collection;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCollectionName()
+    {
+        return $this->collection;
+    }
 
 }

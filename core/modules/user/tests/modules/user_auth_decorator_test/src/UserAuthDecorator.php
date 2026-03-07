@@ -9,22 +9,24 @@ use Drupal\user\UserAuthInterface;
 /**
  * Helper to validate UserAuthInterface BC layers are functional.
  */
-class UserAuthDecorator implements UserAuthInterface {
+class UserAuthDecorator implements UserAuthInterface
+{
+    /**
+     * Constructs a UserAuthDecorator object.
+     *
+     * @param \Drupal\user\UserAuthInterface $inner
+     *   The inner User.Auth service.
+     */
+    public function __construct(protected UserAuthInterface $inner)
+    {
+    }
 
-  /**
-   * Constructs a UserAuthDecorator object.
-   *
-   * @param \Drupal\user\UserAuthInterface $inner
-   *   The inner User.Auth service.
-   */
-  public function __construct(protected UserAuthInterface $inner) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function authenticate($username, #[\SensitiveParameter] $password) {
-    return $this->inner->authenticate($username, $password);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function authenticate($username, #[\SensitiveParameter] $password)
+    {
+        return $this->inner->authenticate($username, $password);
+    }
 
 }

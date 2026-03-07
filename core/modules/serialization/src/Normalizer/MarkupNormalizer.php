@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -7,39 +9,42 @@ use Drupal\Component\Render\MarkupInterface;
 /**
  * Normalizes MarkupInterface objects into a string.
  */
-class MarkupNormalizer extends NormalizerBase {
+class MarkupNormalizer extends NormalizerBase
+{
+    use SchematicNormalizerTrait;
+    use JsonSchemaReflectionTrait;
 
-  use SchematicNormalizerTrait;
-  use JsonSchemaReflectionTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function doNormalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        return (string) $object;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function doNormalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    return (string) $object;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNormalizationSchema(mixed $object, array $context = []): array {
-    return $this->getJsonSchemaForMethod(
-      $object,
-      '__toString',
-      [
-        'type' => 'string',
-        'description' => 'May contain HTML markup.',
+    /**
+     * {@inheritdoc}
+     */
+    public function getNormalizationSchema(mixed $object, array $context = []): array
+    {
+        return $this->getJsonSchemaForMethod(
+            $object,
+            '__toString',
+            [
+            'type' => 'string',
+            'description' => 'May contain HTML markup.',
       ]
-    );
-  }
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      MarkupInterface::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          MarkupInterface::class => true,
+        ];
+    }
 
 }

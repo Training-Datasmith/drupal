@@ -13,18 +13,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class UserJsonBasicAuthDecoratedTest extends UserJsonBasicAuthTest {
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user_auth_decorator_test'];
+class UserJsonBasicAuthDecoratedTest extends UserJsonBasicAuthTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user_auth_decorator_test'];
 
-  /**
-   * Test that the UserAuthDecorator is providing user.auth.
-   */
-  public function testServiceDecorated(): void {
-    $service = \Drupal::service('user.auth');
-    $this->assertInstanceOf(UserAuthDecorator::class, $service);
-  }
+    /**
+     * Test that the UserAuthDecorator is providing user.auth.
+     */
+    public function testServiceDecorated(): void
+    {
+        $service = \Drupal::service('user.auth');
+        $this->assertInstanceOf(UserAuthDecorator::class, $service);
+    }
 
 }

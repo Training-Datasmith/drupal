@@ -15,18 +15,18 @@ chdir('../../../..');
 $autoloader = require_once 'autoload.php';
 
 // Change to HTTP.
-$_SERVER['HTTPS'] = NULL;
-ini_set('session.cookie_secure', FALSE);
+$_SERVER['HTTPS'] = null;
+ini_set('session.cookie_secure', false);
 foreach ($_SERVER as &$value) {
-  if (!is_string($value)) {
-    continue;
-  }
-  // Because HTTPS is null.
-  $value = $value ? str_replace('core/modules/system/tests/http.php', 'index.php', $value) : "";
-  $value = $value ? str_replace('https://', 'http://', $value) : "";
+    if (!is_string($value)) {
+        continue;
+    }
+    // Because HTTPS is null.
+    $value = $value ? str_replace('core/modules/system/tests/http.php', 'index.php', $value) : '';
+    $value = $value ? str_replace('https://', 'http://', $value) : '';
 }
 
-$kernel = new TestKernel('testing', $autoloader, TRUE);
+$kernel = new TestKernel('testing', $autoloader, true);
 
 $request = Request::createFromGlobals();
 $response = $kernel->handle($request);

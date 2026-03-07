@@ -15,112 +15,113 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class ContextualLinksTest extends WebDriverTestBase {
+class ContextualLinksTest extends WebDriverTestBase
+{
+    use ContextualLinkClickTrait;
 
-  use ContextualLinkClickTrait;
+    /**
+     * An array of node revisions.
+     *
+     * @var \Drupal\node\NodeInterface[]
+     */
+    protected $nodes;
 
-  /**
-   * An array of node revisions.
-   *
-   * @var \Drupal\node\NodeInterface[]
-   */
-  protected $nodes;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'contextual'];
 
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'contextual'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+        $this->drupalCreateContentType([
+          'type' => 'page',
+          'name' => 'Basic page',
+          'display_submitted' => false,
+        ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Create initial node.
+        $node = $this->drupalCreateNode();
 
-    $this->drupalCreateContentType([
-      'type' => 'page',
-      'name' => 'Basic page',
-      'display_submitted' => FALSE,
-    ]);
+        $nodes = [];
 
-    // Create initial node.
-    $node = $this->drupalCreateNode();
+        // Get original node.
+        $nodes[] = clone $node;
 
-    $nodes = [];
+        // Create two revisions.
+        $revision_count = 2;
+        for ($i = 0; $i < $revision_count; $i++) {
 
-    // Get original node.
-    $nodes[] = clone $node;
+            // Create revision with a random title and body and update variables.
+            $node->title = $this->randomMachineName();
+            $node->body = [
+              'value' => $this->randomMachineName(32),
+              'format' => filter_default_format(),
+            ];
+            $node->setNewRevision();
 
-    // Create two revisions.
-    $revision_count = 2;
-    for ($i = 0; $i < $revision_count; $i++) {
+            $node->save();
 
-      // Create revision with a random title and body and update variables.
-      $node->title = $this->randomMachineName();
-      $node->body = [
-        'value' => $this->randomMachineName(32),
-        'format' => filter_default_format(),
-      ];
-      $node->setNewRevision();
+            // Make sure we get revision information.
+            $node = Node::load($node->id());
+            $nodes[] = clone $node;
+        }
 
-      $node->save();
+        $this->nodes = $nodes;
 
-      // Make sure we get revision information.
-      $node = Node::load($node->id());
-      $nodes[] = clone $node;
+        $this->drupalLogin($this->createUser(
+            [
+            'view page revisions',
+            'revert page revisions',
+            'delete page revisions',
+            'edit any page content',
+            'delete any page content',
+            'access contextual links',
+            'administer content types',
+      ]
+        ));
     }
 
-    $this->nodes = $nodes;
+    /**
+     * Tests the contextual links on revisions.
+     */
+    public function testRevisionContextualLinks(): void
+    {
+        // Confirm that the "Edit" and "Delete" contextual links appear for the
+        // default revision.
+        $this->drupalGet('node/' . $this->nodes[0]->id());
+        $page = $this->getSession()->getPage();
+        $page->waitFor(10, function () use ($page) {
+            return $page->find('css', 'main .contextual');
+        });
 
-    $this->drupalLogin($this->createUser(
-      [
-        'view page revisions',
-        'revert page revisions',
-        'delete page revisions',
-        'edit any page content',
-        'delete any page content',
-        'access contextual links',
-        'administer content types',
-      ]
-    ));
-  }
+        $this->toggleContextualTriggerVisibility('main');
+        $page->find('css', 'main .contextual button')->press();
+        $links = $page->findAll('css', 'main .contextual-links li a');
 
-  /**
-   * Tests the contextual links on revisions.
-   */
-  public function testRevisionContextualLinks(): void {
-    // Confirm that the "Edit" and "Delete" contextual links appear for the
-    // default revision.
-    $this->drupalGet('node/' . $this->nodes[0]->id());
-    $page = $this->getSession()->getPage();
-    $page->waitFor(10, function () use ($page) {
-      return $page->find('css', "main .contextual");
-    });
+        $this->assertEquals('Edit', $links[0]->getText());
+        $this->assertEquals('Delete', $links[1]->getText());
 
-    $this->toggleContextualTriggerVisibility('main');
-    $page->find('css', 'main .contextual button')->press();
-    $links = $page->findAll('css', "main .contextual-links li a");
+        // Confirm that "Edit" and "Delete" contextual links don't appear for
+        // non-default revision.
+        $this->drupalGet('node/' . $this->nodes[0]->id() . '/revisions/' . $this->nodes[1]->getRevisionId() . '/view');
+        $this->assertSession()->pageTextContains($this->nodes[1]->getTitle());
+        $page->waitFor(10, function () use ($page) {
+            return $page->find('css', 'main .contextual');
+        });
 
-    $this->assertEquals('Edit', $links[0]->getText());
-    $this->assertEquals('Delete', $links[1]->getText());
-
-    // Confirm that "Edit" and "Delete" contextual links don't appear for
-    // non-default revision.
-    $this->drupalGet("node/" . $this->nodes[0]->id() . "/revisions/" . $this->nodes[1]->getRevisionId() . "/view");
-    $this->assertSession()->pageTextContains($this->nodes[1]->getTitle());
-    $page->waitFor(10, function () use ($page) {
-      return $page->find('css', "main .contextual");
-    });
-
-    $this->toggleContextualTriggerVisibility('main');
-    $contextual_button = $page->find('css', 'main .contextual button');
-    $this->assertEmpty(0, $contextual_button ?: '');
-  }
+        $this->toggleContextualTriggerVisibility('main');
+        $contextual_button = $page->find('css', 'main .contextual button');
+        $this->assertEmpty(0, $contextual_button ?: '');
+    }
 
 }

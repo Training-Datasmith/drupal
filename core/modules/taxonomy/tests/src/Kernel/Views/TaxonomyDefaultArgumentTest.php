@@ -15,100 +15,105 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class TaxonomyDefaultArgumentTest extends TaxonomyTestBase {
+class TaxonomyDefaultArgumentTest extends TaxonomyTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['taxonomy_default_argument_test'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['taxonomy_default_argument_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        // The view requires the current user to be logged in.
+        $this->setUpCurrentUser(permissions: ['access content']);
+    }
 
-    // The view requires the current user to be logged in.
-    $this->setUpCurrentUser(permissions: ['access content']);
-  }
+    /**
+     * Init view with a request by provided URL.
+     *
+     * @param string $request_url
+     *   The requested URL.
+     * @param string $view_name
+     *   The name of the view.
+     *
+     * @return \Drupal\views\ViewExecutable
+     *   The initiated view.
+     *
+     * @throws \Exception
+     */
+    protected function initViewWithRequest($request_url, $view_name = 'taxonomy_default_argument_test')
+    {
+        $view = Views::getView($view_name);
 
-  /**
-   * Init view with a request by provided URL.
-   *
-   * @param string $request_url
-   *   The requested URL.
-   * @param string $view_name
-   *   The name of the view.
-   *
-   * @return \Drupal\views\ViewExecutable
-   *   The initiated view.
-   *
-   * @throws \Exception
-   */
-  protected function initViewWithRequest($request_url, $view_name = 'taxonomy_default_argument_test') {
-    $view = Views::getView($view_name);
+        $request = Request::create($request_url);
+        $request->server->set('SCRIPT_NAME', $GLOBALS['base_path'] . 'index.php');
+        $request->server->set('SCRIPT_FILENAME', 'index.php');
 
-    $request = Request::create($request_url);
-    $request->server->set('SCRIPT_NAME', $GLOBALS['base_path'] . 'index.php');
-    $request->server->set('SCRIPT_FILENAME', 'index.php');
+        $response = $this->container->get('http_kernel')->handle($request);
 
-    $response = $this->container->get('http_kernel')->handle($request);
+        $view->setRequest($request);
+        $view->setResponse($response);
+        $view->initHandlers();
 
-    $view->setRequest($request);
-    $view->setResponse($response);
-    $view->initHandlers();
+        return $view;
+    }
 
-    return $view;
-  }
+    /**
+     * Tests the relationship.
+     */
+    public function testNodePath(): void
+    {
+        $view = $this->initViewWithRequest($this->nodes[0]->toUrl()->toString());
 
-  /**
-   * Tests the relationship.
-   */
-  public function testNodePath(): void {
-    $view = $this->initViewWithRequest($this->nodes[0]->toUrl()->toString());
+        $expected = implode(',', [$this->term1->id(), $this->term2->id()]);
+        $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
+        $this->assertEquals($this->nodes[0]->getCacheTags(), $view->argument['tid']->getPlugin('argument_default')->getCacheTags());
+        $view->destroy();
+    }
 
-    $expected = implode(',', [$this->term1->id(), $this->term2->id()]);
-    $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
-    $this->assertEquals($this->nodes[0]->getCacheTags(), $view->argument['tid']->getPlugin('argument_default')->getCacheTags());
-    $view->destroy();
-  }
+    /**
+     * Tests the entity reference field using a view for selection.
+     */
+    public function testNodePathWithViewSelection(): void
+    {
+        // Change the term entity reference field to use a view as selection plugin.
+        \Drupal::service('module_installer')->install(['entity_reference_test']);
 
-  /**
-   * Tests the entity reference field using a view for selection.
-   */
-  public function testNodePathWithViewSelection(): void {
-    // Change the term entity reference field to use a view as selection plugin.
-    \Drupal::service('module_installer')->install(['entity_reference_test']);
+        $field_name = 'field_' . $this->vocabulary->id();
+        $field = FieldConfig::loadByName('node', 'article', $field_name);
+        $field->setSetting('handler', 'views');
+        $field->setSetting('handler_settings', [
+          'view' => [
+            'view_name' => 'test_entity_reference',
+            'display_name' => 'entity_reference_1',
+          ],
+        ]);
+        $field->save();
 
-    $field_name = 'field_' . $this->vocabulary->id();
-    $field = FieldConfig::loadByName('node', 'article', $field_name);
-    $field->setSetting('handler', 'views');
-    $field->setSetting('handler_settings', [
-      'view' => [
-        'view_name' => 'test_entity_reference',
-        'display_name' => 'entity_reference_1',
-      ],
-    ]);
-    $field->save();
+        $view = $this->initViewWithRequest($this->nodes[0]->toUrl()->toString());
 
-    $view = $this->initViewWithRequest($this->nodes[0]->toUrl()->toString());
+        $expected = implode(',', [$this->term1->id(), $this->term2->id()]);
+        $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
+        $this->assertEquals($this->nodes[0]->getCacheTags(), $view->argument['tid']->getPlugin('argument_default')->getCacheTags());
+    }
 
-    $expected = implode(',', [$this->term1->id(), $this->term2->id()]);
-    $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
-    $this->assertEquals($this->nodes[0]->getCacheTags(), $view->argument['tid']->getPlugin('argument_default')->getCacheTags());
-  }
+    /**
+     * Tests the behavior of term ID argument when accessing a term path.
+     */
+    public function testTermPath(): void
+    {
+        $view = $this->initViewWithRequest($this->term1->toUrl()->toString());
 
-  /**
-   * Tests the behavior of term ID argument when accessing a term path.
-   */
-  public function testTermPath(): void {
-    $view = $this->initViewWithRequest($this->term1->toUrl()->toString());
-
-    $expected = $this->term1->id();
-    $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
-    $this->assertEmpty($view->argument['tid']->getPlugin('argument_default')->getCacheTags());
-  }
+        $expected = $this->term1->id();
+        $this->assertEquals($expected, $view->argument['tid']->getDefaultArgument());
+        $this->assertEmpty($view->argument['tid']->getPlugin('argument_default')->getCacheTags());
+    }
 
 }

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -16,62 +17,68 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\views\Plugin\views\argument_validator\Entity
  */
-class ViewsEntityArgumentValidator extends DeriverBase implements ContainerDeriverInterface {
-  use StringTranslationTrait;
+class ViewsEntityArgumentValidator extends DeriverBase implements ContainerDeriverInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * List of derivative definitions.
-   *
-   * @var array
-   */
-  protected $derivatives = [];
+    /**
+     * List of derivative definitions.
+     *
+     * @var array
+     */
+    protected $derivatives = [];
 
-  /**
-   * Constructs a ViewsEntityArgumentValidator object.
-   *
-   * @param string $basePluginId
-   *   The base plugin ID.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation.
-   */
-  public function __construct(/**
+    /**
+     * Constructs a ViewsEntityArgumentValidator object.
+     *
+     * @param string $basePluginId
+     *   The base plugin ID.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation.
+     */
+    public function __construct(/**
    * The base plugin ID this derivative is for.
    */
-  protected $basePluginId, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $base_plugin_id,
-      $container->get('entity_type.manager'),
-      $container->get('string_translation')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    $entity_types = $this->entityTypeManager->getDefinitions();
-    $this->derivatives = [];
-    foreach ($entity_types as $entity_type_id => $entity_type) {
-      $this->derivatives[$entity_type_id] = [
-        'id' => 'entity:' . $entity_type_id,
-        'provider' => 'views',
-        'title' => $entity_type->getLabel(),
-        'help' => $this->t('Validate @label', ['@label' => $entity_type->getLabel()]),
-        'entity_type' => $entity_type_id,
-        'class' => $base_plugin_definition['class'],
-      ];
+        protected $basePluginId,
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+        TranslationInterface $string_translation
+    ) {
+        $this->stringTranslation = $string_translation;
     }
 
-    return $this->derivatives;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $base_plugin_id,
+            $container->get('entity_type.manager'),
+            $container->get('string_translation')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        $entity_types = $this->entityTypeManager->getDefinitions();
+        $this->derivatives = [];
+        foreach ($entity_types as $entity_type_id => $entity_type) {
+            $this->derivatives[$entity_type_id] = [
+              'id' => 'entity:' . $entity_type_id,
+              'provider' => 'views',
+              'title' => $entity_type->getLabel(),
+              'help' => $this->t('Validate @label', ['@label' => $entity_type->getLabel()]),
+              'entity_type' => $entity_type_id,
+              'class' => $base_plugin_definition['class'],
+            ];
+        }
+
+        return $this->derivatives;
+    }
 
 }

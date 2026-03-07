@@ -14,6 +14,6 @@ use Drupal\Component\Plugin\Attribute\Plugin;
  * @ingroup views_argument_handlers
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ViewsArgument extends Plugin {
-
+class ViewsArgument extends Plugin
+{
 }

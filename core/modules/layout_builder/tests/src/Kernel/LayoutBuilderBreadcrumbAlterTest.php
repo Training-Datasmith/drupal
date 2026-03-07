@@ -16,16 +16,17 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('layout_builder')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderBreadcrumbAlterTest extends EntityKernelTestBase {
-
-  /**
-   * Check that there are no errors when alter called with null route match.
-   */
-  public function testBreadcrumbAlterNullRouteMatch(): void {
-    $breadcrumb = new Breadcrumb();
-    $route_match = new NullRouteMatch();
-    $layoutBuilderSystemBreadcrumbAlter = new LayoutBuilderHooks();
-    $layoutBuilderSystemBreadcrumbAlter->systemBreadcrumbAlter($breadcrumb, $route_match, []);
-  }
+class LayoutBuilderBreadcrumbAlterTest extends EntityKernelTestBase
+{
+    /**
+     * Check that there are no errors when alter called with null route match.
+     */
+    public function testBreadcrumbAlterNullRouteMatch(): void
+    {
+        $breadcrumb = new Breadcrumb();
+        $route_match = new NullRouteMatch();
+        $layoutBuilderSystemBreadcrumbAlter = new LayoutBuilderHooks();
+        $layoutBuilderSystemBreadcrumbAlter->systemBreadcrumbAlter($breadcrumb, $route_match, []);
+    }
 
 }

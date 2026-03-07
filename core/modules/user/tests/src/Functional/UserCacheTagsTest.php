@@ -16,50 +16,53 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserCacheTagsTest extends EntityWithUriCacheTagsTestBase {
+class UserCacheTagsTest extends EntityWithUriCacheTagsTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Give anonymous users permission to view user profiles, so that we can
+        // verify the cache tags of cached versions of user profile pages.
+        $user_role = Role::load(RoleInterface::ANONYMOUS_ID);
+        $user_role->grantPermission('access user profiles');
+        $user_role->save();
+    }
 
-    // Give anonymous users permission to view user profiles, so that we can
-    // verify the cache tags of cached versions of user profile pages.
-    $user_role = Role::load(RoleInterface::ANONYMOUS_ID);
-    $user_role->grantPermission('access user profiles');
-    $user_role->save();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Llama" user.
+        $user = User::create([
+          'name' => 'Llama',
+          'status' => true,
+        ]);
+        $user->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Llama" user.
-    $user = User::create([
-      'name' => 'Llama',
-      'status' => TRUE,
-    ]);
-    $user->save();
+        return $user;
+    }
 
-    return $user;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAdditionalCacheTagsForEntityListing(): array {
-    return ['user:0', 'user:1'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAdditionalCacheTagsForEntityListing(): array
+    {
+        return ['user:0', 'user:1'];
+    }
 
 }

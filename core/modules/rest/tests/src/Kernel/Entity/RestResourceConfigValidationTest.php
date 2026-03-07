@@ -17,41 +17,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class RestResourceConfigValidationTest extends ConfigEntityValidationTestBase {
+class RestResourceConfigValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['rest', 'serialization'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['rest', 'serialization'];
+    /**
+     * {@inheritdoc}
+     */
+    protected bool $hasLabel = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected bool $hasLabel = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entity = RestResourceConfig::create([
+          'id' => 'test',
+          'plugin_id' => 'entity:date_format',
+          'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
+          'configuration' => [],
+        ]);
+        $this->entity->save();
+    }
 
-    $this->entity = RestResourceConfig::create([
-      'id' => 'test',
-      'plugin_id' => 'entity:date_format',
-      'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
-      'configuration' => [],
-    ]);
-    $this->entity->save();
-  }
-
-  /**
-   * Tests that the resource plugin ID is validated.
-   */
-  public function testInvalidPluginId(): void {
-    $this->entity->set('plugin_id', 'non_existent');
-    $this->assertValidationErrors([
-      'plugin_id' => "The 'non_existent' plugin does not exist.",
-    ]);
-  }
+    /**
+     * Tests that the resource plugin ID is validated.
+     */
+    public function testInvalidPluginId(): void
+    {
+        $this->entity->set('plugin_id', 'non_existent');
+        $this->assertValidationErrors([
+          'plugin_id' => "The 'non_existent' plugin does not exist.",
+        ]);
+    }
 
 }

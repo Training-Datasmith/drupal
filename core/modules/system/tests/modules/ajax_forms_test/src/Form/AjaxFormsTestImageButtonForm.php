@@ -13,39 +13,42 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class AjaxFormsTestImageButtonForm extends FormBase {
+class AjaxFormsTestImageButtonForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'ajax_forms_test_image_button_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'ajax_forms_test_image_button_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['image_button'] = [
+          '#type' => 'image_button',
+          '#name' => 'image_button',
+          '#src' => 'core/misc/icons/787878/cog.svg',
+          '#attributes' => ['alt' => $this->t('Edit')],
+          '#op' => 'edit',
+          '#ajax' => [
+            'callback' => [Callbacks::class, 'imageButtonCallback'],
+          ],
+          '#suffix' => '<div id="ajax_image_button_result">Image button not pressed yet.</div>',
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['image_button'] = [
-      '#type' => 'image_button',
-      '#name' => 'image_button',
-      '#src' => 'core/misc/icons/787878/cog.svg',
-      '#attributes' => ['alt' => $this->t('Edit')],
-      '#op' => 'edit',
-      '#ajax' => [
-        'callback' => [Callbacks::class, 'imageButtonCallback'],
-      ],
-      '#suffix' => '<div id="ajax_image_button_result">Image button not pressed yet.</div>',
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    // No submit code needed.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        // No submit code needed.
+    }
 
 }

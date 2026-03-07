@@ -14,74 +14,77 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class CacheabilityMetadataConfigOverrideTest extends KernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block',
-    'block_content',
-    'config_override_test',
-    'path_alias',
-    'system',
-    'user',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->container->get('theme_installer')->install(['stark']);
-    $this->installEntitySchema('block_content');
-    $this->installConfig([
+class CacheabilityMetadataConfigOverrideTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block',
       'block_content',
       'config_override_test',
-    ]);
-  }
+      'path_alias',
+      'system',
+      'user',
+    ];
 
-  /**
-   * Tests if config overrides correctly set cacheability metadata.
-   */
-  public function testConfigOverride(): void {
-    // It's pirate day today!
-    $GLOBALS['it_is_pirate_day'] = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->container->get('theme_installer')->install(['stark']);
+        $this->installEntitySchema('block_content');
+        $this->installConfig([
+          'block_content',
+          'config_override_test',
+        ]);
+    }
 
-    $config_factory = $this->container->get('config.factory');
-    $config = $config_factory->get('system.theme');
+    /**
+     * Tests if config overrides correctly set cacheability metadata.
+     */
+    public function testConfigOverride(): void
+    {
+        // It's pirate day today!
+        $GLOBALS['it_is_pirate_day'] = true;
 
-    // Check that we are using the Pirate theme.
-    $theme = $config->get('default');
-    $this->assertEquals('pirate', $theme);
+        $config_factory = $this->container->get('config.factory');
+        $config = $config_factory->get('system.theme');
 
-    // Check that the cacheability metadata is correct.
-    $this->assertEquals(['pirate_day'], $config->getCacheContexts());
-    $this->assertEquals(['config:system.theme', 'pirate-day-tag'], $config->getCacheTags());
-    $this->assertEquals(PirateDayCacheContext::PIRATE_DAY_MAX_AGE, $config->getCacheMaxAge());
-  }
+        // Check that we are using the Pirate theme.
+        $theme = $config->get('default');
+        $this->assertEquals('pirate', $theme);
 
-  /**
-   * Tests if config overrides set cacheability metadata on config entities.
-   */
-  public function testConfigEntityOverride(): void {
-    // It's pirate day today!
-    $GLOBALS['it_is_pirate_day'] = TRUE;
+        // Check that the cacheability metadata is correct.
+        $this->assertEquals(['pirate_day'], $config->getCacheContexts());
+        $this->assertEquals(['config:system.theme', 'pirate-day-tag'], $config->getCacheTags());
+        $this->assertEquals(PirateDayCacheContext::PIRATE_DAY_MAX_AGE, $config->getCacheMaxAge());
+    }
 
-    // Load the User login block and check that its cacheability metadata is
-    // overridden correctly. This verifies that the metadata is correctly
-    // applied to config entities.
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
-    $entity_type_manager = $this->container->get('entity_type.manager');
-    $block = $entity_type_manager->getStorage('block')->load('call_to_action');
+    /**
+     * Tests if config overrides set cacheability metadata on config entities.
+     */
+    public function testConfigEntityOverride(): void
+    {
+        // It's pirate day today!
+        $GLOBALS['it_is_pirate_day'] = true;
 
-    // Check that our call to action message is appealing to filibusters.
-    $this->assertEquals('Draw yer cutlasses!', $block->label());
+        // Load the User login block and check that its cacheability metadata is
+        // overridden correctly. This verifies that the metadata is correctly
+        // applied to config entities.
+        /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+        $entity_type_manager = $this->container->get('entity_type.manager');
+        $block = $entity_type_manager->getStorage('block')->load('call_to_action');
 
-    // Check that the cacheability metadata is correct.
-    $this->assertEquals(['pirate_day'], $block->getCacheContexts());
-    $this->assertEquals(['config:block_list', 'pirate-day-tag'], $block->getCacheTags());
-    $this->assertEquals(PirateDayCacheContext::PIRATE_DAY_MAX_AGE, $block->getCacheMaxAge());
-  }
+        // Check that our call to action message is appealing to filibusters.
+        $this->assertEquals('Draw yer cutlasses!', $block->label());
+
+        // Check that the cacheability metadata is correct.
+        $this->assertEquals(['pirate_day'], $block->getCacheContexts());
+        $this->assertEquals(['config:block_list', 'pirate-day-tag'], $block->getCacheTags());
+        $this->assertEquals(PirateDayCacheContext::PIRATE_DAY_MAX_AGE, $block->getCacheMaxAge());
+    }
 
 }

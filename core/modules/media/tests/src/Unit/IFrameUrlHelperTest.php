@@ -17,79 +17,81 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(IFrameUrlHelper::class)]
 #[Group('media')]
-class IFrameUrlHelperTest extends UnitTestCase {
+class IFrameUrlHelperTest extends UnitTestCase
+{
+    /**
+     * Data provider for testIsSecure().
+     *
+     * @see ::testIsSecure()
+     *
+     * @return array
+     *   An array of test data.
+     */
+    public static function providerIsSecure()
+    {
+        return [
+          'no domain' => [
+            '/path/to/media.php',
+            'http://www.example.com/',
+            false,
+          ],
+          'no base URL domain' => [
+            'http://www.example.com/media.php',
+            '/invalid/base/url',
+            false,
+          ],
+          'same domain' => [
+            'http://www.example.com/media.php',
+            'http://www.example.com/',
+            false,
+          ],
+          'different domain' => [
+            'http://www.example.com/media.php',
+            'http://www.example-assets.com/',
+            true,
+          ],
+          'same subdomain' => [
+            'http://foo.example.com/media.php',
+            'http://foo.example.com/',
+            false,
+          ],
+          'different subdomain' => [
+            'http://assets.example.com/media.php',
+            'http://foo.example.com/',
+            true,
+          ],
+          'subdomain and top-level domain' => [
+            'http://assets.example.com/media.php',
+            'http://example.com/',
+            true,
+          ],
+        ];
+    }
 
-  /**
-   * Data provider for testIsSecure().
-   *
-   * @see ::testIsSecure()
-   *
-   * @return array
-   *   An array of test data.
-   */
-  public static function providerIsSecure() {
-    return [
-      'no domain' => [
-        '/path/to/media.php',
-        'http://www.example.com/',
-        FALSE,
-      ],
-      'no base URL domain' => [
-        'http://www.example.com/media.php',
-        '/invalid/base/url',
-        FALSE,
-      ],
-      'same domain' => [
-        'http://www.example.com/media.php',
-        'http://www.example.com/',
-        FALSE,
-      ],
-      'different domain' => [
-        'http://www.example.com/media.php',
-        'http://www.example-assets.com/',
-        TRUE,
-      ],
-      'same subdomain' => [
-        'http://foo.example.com/media.php',
-        'http://foo.example.com/',
-        FALSE,
-      ],
-      'different subdomain' => [
-        'http://assets.example.com/media.php',
-        'http://foo.example.com/',
-        TRUE,
-      ],
-      'subdomain and top-level domain' => [
-        'http://assets.example.com/media.php',
-        'http://example.com/',
-        TRUE,
-      ],
-    ];
-  }
+    /**
+     * Tests that isSecure() behaves properly.
+     *
+     * @param string $url
+     *   The URL to test for security.
+     * @param string $base_url
+     *   The base URL to compare $url against.
+     * @param bool $secure
+     *   The expected result of isSecure().
+     */
+    #[DataProvider('providerIsSecure')]
+    public function testIsSecure($url, $base_url, $secure): void
+    {
+        $request_context = $this->createMock(RequestContext::class);
+        $request_context->expects($this->any())
+          ->method('getCompleteBaseUrl')
+          ->willReturn($base_url);
 
-  /**
-   * Tests that isSecure() behaves properly.
-   *
-   * @param string $url
-   *   The URL to test for security.
-   * @param string $base_url
-   *   The base URL to compare $url against.
-   * @param bool $secure
-   *   The expected result of isSecure().
-   */
-  #[DataProvider('providerIsSecure')]
-  public function testIsSecure($url, $base_url, $secure): void {
-    $request_context = $this->createMock(RequestContext::class);
-    $request_context->expects($this->any())
-      ->method('getCompleteBaseUrl')
-      ->willReturn($base_url);
+        $url_helper = new IFrameUrlHelper(
+            $request_context,
+            $this->createMock(PrivateKey::class)
+        );
 
-    $url_helper = new IFrameUrlHelper(
-      $request_context,
-      $this->createMock(PrivateKey::class)
-    );
-
-    $this->assertSame($secure, $url_helper->isSecure($url));
-  }
+        $this->assertSame($secure, $url_helper->isSecure($url));
+    }
 
 }

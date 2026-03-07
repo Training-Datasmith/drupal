@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\big_pipe\Render\Placeholder;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Session\SessionConfigurationInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -58,241 +58,245 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * @see \Drupal\big_pipe\Render\BigPipe
  */
-class BigPipeStrategy implements PlaceholderStrategyInterface {
+class BigPipeStrategy implements PlaceholderStrategyInterface
+{
+    /**
+     * BigPipe no-JS cookie name.
+     */
+    public const NOJS_COOKIE = 'big_pipe_nojs';
 
-  /**
-   * BigPipe no-JS cookie name.
-   */
-  const NOJS_COOKIE = 'big_pipe_nojs';
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
-
-  /**
-   * Constructs a new BigPipeStrategy class.
-   *
-   * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
-   *   The session configuration.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match.
-   */
-  public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, RequestStack $request_stack, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
-    $this->requestStack = $request_stack;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processPlaceholders(array $placeholders) {
-    $request = $this->requestStack->getCurrentRequest();
-
-    // Prevent placeholders from being processed by BigPipe on uncacheable
-    // request methods. For example, a form rendered inside a placeholder will
-    // be rendered as soon as possible before any headers are sent, so that it
-    // can be detected, submitted, and redirected immediately.
-    // @todo https://www.drupal.org/node/2367555
-    if (!$request->isMethodCacheable()) {
-      return [];
+    /**
+     * Constructs a new BigPipeStrategy class.
+     *
+     * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
+     *   The session configuration.
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match.
+     */
+    public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, RequestStack $request_stack, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    {
+        $this->requestStack = $request_stack;
     }
 
-    // Routes can opt out from using the BigPipe HTML delivery technique.
-    if ($this->routeMatch->getRouteObject()->getOption('_no_big_pipe')) {
-      return [];
-    }
+    /**
+     * {@inheritdoc}
+     */
+    public function processPlaceholders(array $placeholders)
+    {
+        $request = $this->requestStack->getCurrentRequest();
 
-    if (!$this->sessionConfiguration->hasSession($request)) {
-      return [];
-    }
-
-    return $this->doProcessPlaceholders($placeholders);
-  }
-
-  /**
-   * Transforms placeholders to BigPipe placeholders, either no-JS or JS.
-   *
-   * @param array $placeholders
-   *   The placeholders to process.
-   *
-   * @return array
-   *   The BigPipe placeholders.
-   */
-  protected function doProcessPlaceholders(array $placeholders): array {
-    $overridden_placeholders = [];
-    foreach ($placeholders as $placeholder => $placeholder_elements) {
-      // BigPipe uses JavaScript and the DOM to find the placeholder to replace.
-      // This means finding the placeholder to replace must be efficient. Most
-      // placeholders are HTML, which we can find efficiently thanks to the
-      // querySelector API. But some placeholders are HTML attribute values or
-      // parts thereof, and potentially even plain text in DOM text nodes. For
-      // BigPipe's JavaScript to find those placeholders, it would need to
-      // iterate over all DOM text nodes. This is highly inefficient. Therefore,
-      // the BigPipe placeholder strategy only converts HTML placeholders into
-      // BigPipe placeholders. The other placeholders need to be replaced on the
-      // server, not via BigPipe.
-      // @see \Drupal\Core\Access\RouteProcessorCsrf::renderPlaceholderCsrfToken()
-      // @see \Drupal\Core\Form\FormBuilder::renderFormTokenPlaceholder()
-      // @see \Drupal\Core\Form\FormBuilder::renderPlaceholderFormAction()
-      if (static::placeholderIsAttributeSafe($placeholder)) {
-        $overridden_placeholders[$placeholder] = static::createBigPipeNoJsPlaceholder($placeholder, $placeholder_elements, TRUE);
-      }
-      else {
-        // If the current request/session doesn't have JavaScript, fall back to
-        // no-JS BigPipe.
-        if ($this->requestStack->getCurrentRequest()->cookies->has(static::NOJS_COOKIE)) {
-          $overridden_placeholders[$placeholder] = static::createBigPipeNoJsPlaceholder($placeholder, $placeholder_elements, FALSE);
+        // Prevent placeholders from being processed by BigPipe on uncacheable
+        // request methods. For example, a form rendered inside a placeholder will
+        // be rendered as soon as possible before any headers are sent, so that it
+        // can be detected, submitted, and redirected immediately.
+        // @todo https://www.drupal.org/node/2367555
+        if (!$request->isMethodCacheable()) {
+            return [];
         }
-        else {
-          $overridden_placeholders[$placeholder] = static::createBigPipeJsPlaceholder($placeholder, $placeholder_elements);
+
+        // Routes can opt out from using the BigPipe HTML delivery technique.
+        if ($this->routeMatch->getRouteObject()->getOption('_no_big_pipe')) {
+            return [];
         }
-        $overridden_placeholders[$placeholder]['#cache']['contexts'][] = 'cookies:' . static::NOJS_COOKIE;
-      }
+
+        if (!$this->sessionConfiguration->hasSession($request)) {
+            return [];
+        }
+
+        return $this->doProcessPlaceholders($placeholders);
     }
 
-    return $overridden_placeholders;
-  }
+    /**
+     * Transforms placeholders to BigPipe placeholders, either no-JS or JS.
+     *
+     * @param array $placeholders
+     *   The placeholders to process.
+     *
+     * @return array
+     *   The BigPipe placeholders.
+     */
+    protected function doProcessPlaceholders(array $placeholders): array
+    {
+        $overridden_placeholders = [];
+        foreach ($placeholders as $placeholder => $placeholder_elements) {
+            // BigPipe uses JavaScript and the DOM to find the placeholder to replace.
+            // This means finding the placeholder to replace must be efficient. Most
+            // placeholders are HTML, which we can find efficiently thanks to the
+            // querySelector API. But some placeholders are HTML attribute values or
+            // parts thereof, and potentially even plain text in DOM text nodes. For
+            // BigPipe's JavaScript to find those placeholders, it would need to
+            // iterate over all DOM text nodes. This is highly inefficient. Therefore,
+            // the BigPipe placeholder strategy only converts HTML placeholders into
+            // BigPipe placeholders. The other placeholders need to be replaced on the
+            // server, not via BigPipe.
+            // @see \Drupal\Core\Access\RouteProcessorCsrf::renderPlaceholderCsrfToken()
+            // @see \Drupal\Core\Form\FormBuilder::renderFormTokenPlaceholder()
+            // @see \Drupal\Core\Form\FormBuilder::renderPlaceholderFormAction()
+            if (static::placeholderIsAttributeSafe($placeholder)) {
+                $overridden_placeholders[$placeholder] = static::createBigPipeNoJsPlaceholder($placeholder, $placeholder_elements, true);
+            } else {
+                // If the current request/session doesn't have JavaScript, fall back to
+                // no-JS BigPipe.
+                if ($this->requestStack->getCurrentRequest()->cookies->has(static::NOJS_COOKIE)) {
+                    $overridden_placeholders[$placeholder] = static::createBigPipeNoJsPlaceholder($placeholder, $placeholder_elements, false);
+                } else {
+                    $overridden_placeholders[$placeholder] = static::createBigPipeJsPlaceholder($placeholder, $placeholder_elements);
+                }
+                $overridden_placeholders[$placeholder]['#cache']['contexts'][] = 'cookies:' . static::NOJS_COOKIE;
+            }
+        }
 
-  /**
-   * Determines whether the given placeholder is attribute-safe or not.
-   *
-   * @param string $placeholder
-   *   A placeholder.
-   *
-   * @return bool
-   *   Whether the placeholder is safe for use in an HTML attribute (in case
-   *   it's a placeholder for an HTML attribute value or a subset of it).
-   */
-  protected static function placeholderIsAttributeSafe($placeholder): bool {
-    assert(is_string($placeholder));
-    return $placeholder[0] !== '<' || $placeholder !== Html::normalize($placeholder);
-  }
-
-  /**
-   * Creates a BigPipe JS placeholder.
-   *
-   * @param string $original_placeholder
-   *   The original placeholder.
-   * @param array $placeholder_render_array
-   *   The render array for a placeholder.
-   *
-   * @return array
-   *   The resulting BigPipe JS placeholder render array.
-   */
-  protected static function createBigPipeJsPlaceholder($original_placeholder, array $placeholder_render_array): array {
-    $big_pipe_placeholder_id = static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array);
-
-    $interface_preview = [];
-    if (isset($placeholder_render_array['#lazy_builder'])) {
-      $interface_preview = [
-        '#theme' => 'big_pipe_interface_preview',
-        '#callback' => $placeholder_render_array['#lazy_builder'][0],
-        '#arguments' => $placeholder_render_array['#lazy_builder'][1],
-      ];
-      if (isset($placeholder_render_array['#preview'])) {
-        $interface_preview['#preview'] = $placeholder_render_array['#preview'];
-        unset($placeholder_render_array['#preview']);
-      }
+        return $overridden_placeholders;
     }
 
-    return [
-      '#prefix' => '<span data-big-pipe-placeholder-id="' . Html::escape($big_pipe_placeholder_id) . '">',
-      'interface_preview' => $interface_preview,
-      '#suffix' => '</span>',
-      '#cache' => [
-        'max-age' => 0,
-        'contexts' => [
-          'session.exists',
-        ],
-      ],
-      '#attached' => [
-        'library' => [
-          'big_pipe/big_pipe',
-        ],
-        // Inform BigPipe' JavaScript known BigPipe placeholder IDs.
-        'drupalSettings' => [
-          'bigPipePlaceholderIds' => [$big_pipe_placeholder_id => TRUE],
-        ],
-        'big_pipe_placeholders' => [
-          Html::escape($big_pipe_placeholder_id) => $placeholder_render_array,
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * Creates a BigPipe no-JS placeholder.
-   *
-   * @param string $original_placeholder
-   *   The original placeholder.
-   * @param array $placeholder_render_array
-   *   The render array for a placeholder.
-   * @param bool $placeholder_must_be_attribute_safe
-   *   Whether the placeholder must be safe for use in an HTML attribute (in
-   *   case it's a placeholder for an HTML attribute value or a subset of it).
-   *
-   * @return array
-   *   The resulting BigPipe no-JS placeholder render array.
-   */
-  protected static function createBigPipeNoJsPlaceholder($original_placeholder, array $placeholder_render_array, $placeholder_must_be_attribute_safe = FALSE): array {
-    if (!$placeholder_must_be_attribute_safe) {
-      $big_pipe_placeholder = '<span data-big-pipe-nojs-placeholder-id="' . Html::escape(static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array)) . '"></span>';
-    }
-    else {
-      $big_pipe_placeholder = 'big_pipe_nojs_placeholder_attribute_safe:' . Html::escape($original_placeholder);
+    /**
+     * Determines whether the given placeholder is attribute-safe or not.
+     *
+     * @param string $placeholder
+     *   A placeholder.
+     *
+     * @return bool
+     *   Whether the placeholder is safe for use in an HTML attribute (in case
+     *   it's a placeholder for an HTML attribute value or a subset of it).
+     */
+    protected static function placeholderIsAttributeSafe($placeholder): bool
+    {
+        assert(is_string($placeholder));
+        return $placeholder[0] !== '<' || $placeholder !== Html::normalize($placeholder);
     }
 
-    return [
-      '#markup' => $big_pipe_placeholder,
-      '#cache' => [
-        'max-age' => 0,
-        'contexts' => [
-          'session.exists',
-        ],
-      ],
-      '#attached' => [
-        'big_pipe_nojs_placeholders' => [
-          $big_pipe_placeholder => $placeholder_render_array,
-        ],
-      ],
-    ];
-  }
+    /**
+     * Creates a BigPipe JS placeholder.
+     *
+     * @param string $original_placeholder
+     *   The original placeholder.
+     * @param array $placeholder_render_array
+     *   The render array for a placeholder.
+     *
+     * @return array
+     *   The resulting BigPipe JS placeholder render array.
+     */
+    protected static function createBigPipeJsPlaceholder($original_placeholder, array $placeholder_render_array): array
+    {
+        $big_pipe_placeholder_id = static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array);
 
-  /**
-   * Generates a BigPipe placeholder ID.
-   *
-   * @param string $original_placeholder
-   *   The original placeholder.
-   * @param array $placeholder_render_array
-   *   The render array for a placeholder.
-   *
-   * @return string
-   *   The generated BigPipe placeholder ID.
-   */
-  protected static function generateBigPipePlaceholderId($original_placeholder, array $placeholder_render_array): string|array|null {
-    // Generate a BigPipe placeholder ID (to be used by BigPipe's JavaScript).
-    // @see \Drupal\Core\Render\PlaceholderGenerator::createPlaceholder()
-    if (isset($placeholder_render_array['#lazy_builder'])) {
-      // Be sure cache contexts and tags are sorted before serializing them and
-      // making hash. Issue #3225328 removes sort from contexts and tags arrays
-      // for performances reasons.
-      if (isset($placeholder_render_array['#cache']['contexts'])) {
-        sort($placeholder_render_array['#cache']['contexts']);
-      }
-      if (isset($placeholder_render_array['#cache']['tags'])) {
-        sort($placeholder_render_array['#cache']['tags']);
-      }
+        $interface_preview = [];
+        if (isset($placeholder_render_array['#lazy_builder'])) {
+            $interface_preview = [
+              '#theme' => 'big_pipe_interface_preview',
+              '#callback' => $placeholder_render_array['#lazy_builder'][0],
+              '#arguments' => $placeholder_render_array['#lazy_builder'][1],
+            ];
+            if (isset($placeholder_render_array['#preview'])) {
+                $interface_preview['#preview'] = $placeholder_render_array['#preview'];
+                unset($placeholder_render_array['#preview']);
+            }
+        }
 
-      $callback = $placeholder_render_array['#lazy_builder'][0];
-      $arguments = $placeholder_render_array['#lazy_builder'][1];
-      $token = Crypt::hashBase64(serialize($placeholder_render_array));
-      return UrlHelper::buildQuery(['callback' => $callback, 'args' => $arguments, 'token' => $token]);
+        return [
+          '#prefix' => '<span data-big-pipe-placeholder-id="' . Html::escape($big_pipe_placeholder_id) . '">',
+          'interface_preview' => $interface_preview,
+          '#suffix' => '</span>',
+          '#cache' => [
+            'max-age' => 0,
+            'contexts' => [
+              'session.exists',
+            ],
+          ],
+          '#attached' => [
+            'library' => [
+              'big_pipe/big_pipe',
+            ],
+            // Inform BigPipe' JavaScript known BigPipe placeholder IDs.
+            'drupalSettings' => [
+              'bigPipePlaceholderIds' => [$big_pipe_placeholder_id => true],
+            ],
+            'big_pipe_placeholders' => [
+              Html::escape($big_pipe_placeholder_id) => $placeholder_render_array,
+            ],
+          ],
+        ];
     }
-    return Html::getId($original_placeholder);
-  }
+
+    /**
+     * Creates a BigPipe no-JS placeholder.
+     *
+     * @param string $original_placeholder
+     *   The original placeholder.
+     * @param array $placeholder_render_array
+     *   The render array for a placeholder.
+     * @param bool $placeholder_must_be_attribute_safe
+     *   Whether the placeholder must be safe for use in an HTML attribute (in
+     *   case it's a placeholder for an HTML attribute value or a subset of it).
+     *
+     * @return array
+     *   The resulting BigPipe no-JS placeholder render array.
+     */
+    protected static function createBigPipeNoJsPlaceholder($original_placeholder, array $placeholder_render_array, $placeholder_must_be_attribute_safe = false): array
+    {
+        if (!$placeholder_must_be_attribute_safe) {
+            $big_pipe_placeholder = '<span data-big-pipe-nojs-placeholder-id="' . Html::escape(static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array)) . '"></span>';
+        } else {
+            $big_pipe_placeholder = 'big_pipe_nojs_placeholder_attribute_safe:' . Html::escape($original_placeholder);
+        }
+
+        return [
+          '#markup' => $big_pipe_placeholder,
+          '#cache' => [
+            'max-age' => 0,
+            'contexts' => [
+              'session.exists',
+            ],
+          ],
+          '#attached' => [
+            'big_pipe_nojs_placeholders' => [
+              $big_pipe_placeholder => $placeholder_render_array,
+            ],
+          ],
+        ];
+    }
+
+    /**
+     * Generates a BigPipe placeholder ID.
+     *
+     * @param string $original_placeholder
+     *   The original placeholder.
+     * @param array $placeholder_render_array
+     *   The render array for a placeholder.
+     *
+     * @return string
+     *   The generated BigPipe placeholder ID.
+     */
+    protected static function generateBigPipePlaceholderId($original_placeholder, array $placeholder_render_array): string|array|null
+    {
+        // Generate a BigPipe placeholder ID (to be used by BigPipe's JavaScript).
+        // @see \Drupal\Core\Render\PlaceholderGenerator::createPlaceholder()
+        if (isset($placeholder_render_array['#lazy_builder'])) {
+            // Be sure cache contexts and tags are sorted before serializing them and
+            // making hash. Issue #3225328 removes sort from contexts and tags arrays
+            // for performances reasons.
+            if (isset($placeholder_render_array['#cache']['contexts'])) {
+                sort($placeholder_render_array['#cache']['contexts']);
+            }
+            if (isset($placeholder_render_array['#cache']['tags'])) {
+                sort($placeholder_render_array['#cache']['tags']);
+            }
+
+            $callback = $placeholder_render_array['#lazy_builder'][0];
+            $arguments = $placeholder_render_array['#lazy_builder'][1];
+            $token = Crypt::hashBase64(serialize($placeholder_render_array));
+            return UrlHelper::buildQuery(['callback' => $callback, 'args' => $arguments, 'token' => $token]);
+        }
+        return Html::getId($original_placeholder);
+    }
 
 }

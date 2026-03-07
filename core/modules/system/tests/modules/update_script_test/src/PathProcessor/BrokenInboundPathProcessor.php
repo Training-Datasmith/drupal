@@ -11,35 +11,36 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Example path processor which breaks on inbound.
  */
-class BrokenInboundPathProcessor implements InboundPathProcessorInterface {
+class BrokenInboundPathProcessor implements InboundPathProcessorInterface
+{
+    /**
+     * The state.
+     *
+     * @var \Drupal\Core\State\StateInterface
+     */
+    protected $state;
 
-  /**
-   * The state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * Constructs a new BrokenInboundPathProcessor instance.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state.
-   */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request) {
-    if ($this->state->get('update_script_test_broken_inbound', FALSE)) {
-      throw new \RuntimeException();
+    /**
+     * Constructs a new BrokenInboundPathProcessor instance.
+     *
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state.
+     */
+    public function __construct(StateInterface $state)
+    {
+        $this->state = $state;
     }
-    else {
-      return $path;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request)
+    {
+        if ($this->state->get('update_script_test_broken_inbound', false)) {
+            throw new \RuntimeException();
+        } else {
+            return $path;
+        }
     }
-  }
 
 }

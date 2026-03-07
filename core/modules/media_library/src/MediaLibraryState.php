@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library;
 
 use Drupal\Component\Utility\Crypt;
@@ -39,259 +41,274 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *
  * @see \Drupal\media_library\MediaLibraryOpenerInterface
  */
-class MediaLibraryState extends ParameterBag implements CacheableDependencyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $parameters = []) {
-    $this->validateRequiredParameters($parameters['media_library_opener_id'], $parameters['media_library_allowed_types'], $parameters['media_library_selected_type'], $parameters['media_library_remaining']);
-    $parameters += [
-      'media_library_opener_parameters' => [],
-    ];
-    parent::__construct($parameters);
-    $this->set('hash', $this->getHash());
-  }
-
-  /**
-   * Creates a new MediaLibraryState object.
-   *
-   * @param string $opener_id
-   *   The opener ID.
-   * @param string[] $allowed_media_type_ids
-   *   The allowed media type IDs.
-   * @param string $selected_type_id
-   *   The selected media type ID.
-   * @param int $remaining_slots
-   *   The number of remaining items the user is allowed to select or add in the
-   *   library.
-   * @param array $opener_parameters
-   *   (optional) Any additional opener-specific parameter values.
-   *
-   * @return static
-   *   A state object.
-   */
-  public static function create($opener_id, array $allowed_media_type_ids, $selected_type_id, $remaining_slots, array $opener_parameters = []) {
-    return new static([
-      'media_library_opener_id' => $opener_id,
-      'media_library_allowed_types' => $allowed_media_type_ids,
-      'media_library_selected_type' => $selected_type_id,
-      'media_library_remaining' => $remaining_slots,
-      'media_library_opener_parameters' => $opener_parameters,
-    ]);
-  }
-
-  /**
-   * Get the media library state from a request.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return static
-   *   A state object.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   *   Thrown when the hash query parameter is invalid.
-   */
-  public static function fromRequest(Request $request) {
-    $query = $request->query;
-
-    // Create a MediaLibraryState object through the create method to make sure
-    // all validation runs.
-    $state = static::create(
-      $query->get('media_library_opener_id'),
-      $query->all('media_library_allowed_types'),
-      $query->get('media_library_selected_type'),
-      $query->get('media_library_remaining'),
-      $query->all('media_library_opener_parameters')
-    );
-
-    // The request parameters need to contain a valid hash to prevent a
-    // malicious user modifying the query string to attempt to access
-    // inaccessible information.
-    if (!$state->isValidHash($query->get('hash'))) {
-      throw new BadRequestHttpException("Invalid media library parameters specified.");
+class MediaLibraryState extends ParameterBag implements CacheableDependencyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $parameters = [])
+    {
+        $this->validateRequiredParameters($parameters['media_library_opener_id'], $parameters['media_library_allowed_types'], $parameters['media_library_selected_type'], $parameters['media_library_remaining']);
+        $parameters += [
+          'media_library_opener_parameters' => [],
+        ];
+        parent::__construct($parameters);
+        $this->set('hash', $this->getHash());
     }
 
-    // @todo Review parameters passed and remove irrelevant ones in
-    //   https://www.drupal.org/i/3396650
-
-    // Once we have validated the required parameters, we restore the parameters
-    // from the request since there might be additional values.
-    $state->replace($query->all());
-    return $state;
-  }
-
-  /**
-   * Validates the required parameters for a new MediaLibraryState object.
-   *
-   * @param string $opener_id
-   *   The media library opener service ID.
-   * @param string[] $allowed_media_type_ids
-   *   The allowed media type IDs.
-   * @param string $selected_type_id
-   *   The selected media type ID.
-   * @param int $remaining_slots
-   *   The number of remaining items the user is allowed to select or add in the
-   *   library.
-   *
-   * @throws \InvalidArgumentException
-   *   If one of the passed arguments is missing or does not pass the
-   *   validation.
-   */
-  protected function validateRequiredParameters($opener_id, array $allowed_media_type_ids, $selected_type_id, $remaining_slots) {
-    // The opener ID must be a non-empty string.
-    if (!is_string($opener_id) || empty(trim($opener_id))) {
-      throw new \InvalidArgumentException('The opener ID parameter is required and must be a string.');
+    /**
+     * Creates a new MediaLibraryState object.
+     *
+     * @param string $opener_id
+     *   The opener ID.
+     * @param string[] $allowed_media_type_ids
+     *   The allowed media type IDs.
+     * @param string $selected_type_id
+     *   The selected media type ID.
+     * @param int $remaining_slots
+     *   The number of remaining items the user is allowed to select or add in the
+     *   library.
+     * @param array $opener_parameters
+     *   (optional) Any additional opener-specific parameter values.
+     *
+     * @return static
+     *   A state object.
+     */
+    public static function create($opener_id, array $allowed_media_type_ids, $selected_type_id, $remaining_slots, array $opener_parameters = [])
+    {
+        return new static([
+          'media_library_opener_id' => $opener_id,
+          'media_library_allowed_types' => $allowed_media_type_ids,
+          'media_library_selected_type' => $selected_type_id,
+          'media_library_remaining' => $remaining_slots,
+          'media_library_opener_parameters' => $opener_parameters,
+        ]);
     }
 
-    // The allowed media type IDs must be an array of non-empty strings.
-    if (empty($allowed_media_type_ids) || !is_array($allowed_media_type_ids)) {
-      throw new \InvalidArgumentException('The allowed types parameter is required and must be an array of strings.');
+    /**
+     * Get the media library state from a request.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request.
+     *
+     * @return static
+     *   A state object.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     *   Thrown when the hash query parameter is invalid.
+     */
+    public static function fromRequest(Request $request)
+    {
+        $query = $request->query;
+
+        // Create a MediaLibraryState object through the create method to make sure
+        // all validation runs.
+        $state = static::create(
+            $query->get('media_library_opener_id'),
+            $query->all('media_library_allowed_types'),
+            $query->get('media_library_selected_type'),
+            $query->get('media_library_remaining'),
+            $query->all('media_library_opener_parameters')
+        );
+
+        // The request parameters need to contain a valid hash to prevent a
+        // malicious user modifying the query string to attempt to access
+        // inaccessible information.
+        if (!$state->isValidHash($query->get('hash'))) {
+            throw new BadRequestHttpException('Invalid media library parameters specified.');
+        }
+
+        // @todo Review parameters passed and remove irrelevant ones in
+        //   https://www.drupal.org/i/3396650
+
+        // Once we have validated the required parameters, we restore the parameters
+        // from the request since there might be additional values.
+        $state->replace($query->all());
+        return $state;
     }
-    foreach ($allowed_media_type_ids as $allowed_media_type_id) {
-      if (!is_string($allowed_media_type_id) || empty(trim($allowed_media_type_id))) {
-        throw new \InvalidArgumentException('The allowed types parameter is required and must be an array of strings.');
-      }
+
+    /**
+     * Validates the required parameters for a new MediaLibraryState object.
+     *
+     * @param string $opener_id
+     *   The media library opener service ID.
+     * @param string[] $allowed_media_type_ids
+     *   The allowed media type IDs.
+     * @param string $selected_type_id
+     *   The selected media type ID.
+     * @param int $remaining_slots
+     *   The number of remaining items the user is allowed to select or add in the
+     *   library.
+     *
+     * @throws \InvalidArgumentException
+     *   If one of the passed arguments is missing or does not pass the
+     *   validation.
+     */
+    protected function validateRequiredParameters($opener_id, array $allowed_media_type_ids, $selected_type_id, $remaining_slots)
+    {
+        // The opener ID must be a non-empty string.
+        if (!is_string($opener_id) || empty(trim($opener_id))) {
+            throw new \InvalidArgumentException('The opener ID parameter is required and must be a string.');
+        }
+
+        // The allowed media type IDs must be an array of non-empty strings.
+        if (empty($allowed_media_type_ids) || !is_array($allowed_media_type_ids)) {
+            throw new \InvalidArgumentException('The allowed types parameter is required and must be an array of strings.');
+        }
+        foreach ($allowed_media_type_ids as $allowed_media_type_id) {
+            if (!is_string($allowed_media_type_id) || empty(trim($allowed_media_type_id))) {
+                throw new \InvalidArgumentException('The allowed types parameter is required and must be an array of strings.');
+            }
+        }
+
+        // The selected type ID must be a non-empty string.
+        if (!is_string($selected_type_id) || empty(trim($selected_type_id))) {
+            throw new \InvalidArgumentException('The selected type parameter is required and must be a string.');
+        }
+        // The selected type ID must be present in the list of allowed types.
+        if (!in_array($selected_type_id, $allowed_media_type_ids, true)) {
+            throw new \InvalidArgumentException('The selected type parameter must be present in the list of allowed types.');
+        }
+
+        // The remaining slots must be numeric.
+        if (!is_numeric($remaining_slots)) {
+            throw new \InvalidArgumentException('The remaining slots parameter is required and must be numeric.');
+        }
     }
 
-    // The selected type ID must be a non-empty string.
-    if (!is_string($selected_type_id) || empty(trim($selected_type_id))) {
-      throw new \InvalidArgumentException('The selected type parameter is required and must be a string.');
+    /**
+     * Get the hash for the state object.
+     *
+     * @return string
+     *   The hashed parameters.
+     */
+    public function getHash()
+    {
+        // Create a hash from the required state parameters and the serialized
+        // optional opener-specific parameters. Sort the allowed types and
+        // opener parameters so that differences in order do not result in
+        // different hashes.
+        $allowed_media_type_ids = array_values($this->getAllowedTypeIds());
+        sort($allowed_media_type_ids);
+        $opener_parameters = $this->getOpenerParameters();
+        ksort($opener_parameters);
+        $hash = implode(':', [
+          $this->getOpenerId(),
+          implode(':', $allowed_media_type_ids),
+          $this->getSelectedTypeId(),
+          $this->getAvailableSlots(),
+          serialize($opener_parameters),
+        ]);
+
+        return Crypt::hmacBase64($hash, \Drupal::service('private_key')->get() . Settings::getHashSalt());
     }
-    // The selected type ID must be present in the list of allowed types.
-    if (!in_array($selected_type_id, $allowed_media_type_ids, TRUE)) {
-      throw new \InvalidArgumentException('The selected type parameter must be present in the list of allowed types.');
+
+    /**
+     * Validate a hash for the state object.
+     *
+     * @param string $hash
+     *   The hash to validate.
+     *
+     * @return string
+     *   The hashed parameters.
+     */
+    public function isValidHash($hash)
+    {
+        return hash_equals($this->getHash(), $hash);
     }
 
-    // The remaining slots must be numeric.
-    if (!is_numeric($remaining_slots)) {
-      throw new \InvalidArgumentException('The remaining slots parameter is required and must be numeric.');
+    /**
+     * Returns the ID of the media library opener service.
+     *
+     * @return string
+     *   The media library opener service ID.
+     */
+    public function getOpenerId()
+    {
+        return $this->get('media_library_opener_id');
     }
-  }
 
-  /**
-   * Get the hash for the state object.
-   *
-   * @return string
-   *   The hashed parameters.
-   */
-  public function getHash() {
-    // Create a hash from the required state parameters and the serialized
-    // optional opener-specific parameters. Sort the allowed types and
-    // opener parameters so that differences in order do not result in
-    // different hashes.
-    $allowed_media_type_ids = array_values($this->getAllowedTypeIds());
-    sort($allowed_media_type_ids);
-    $opener_parameters = $this->getOpenerParameters();
-    ksort($opener_parameters);
-    $hash = implode(':', [
-      $this->getOpenerId(),
-      implode(':', $allowed_media_type_ids),
-      $this->getSelectedTypeId(),
-      $this->getAvailableSlots(),
-      serialize($opener_parameters),
-    ]);
+    /**
+     * Returns the media type IDs which can be selected.
+     *
+     * @return string[]
+     *   The media type IDs.
+     */
+    public function getAllowedTypeIds()
+    {
+        return $this->all('media_library_allowed_types');
+    }
 
-    return Crypt::hmacBase64($hash, \Drupal::service('private_key')->get() . Settings::getHashSalt());
-  }
+    /**
+     * Returns the selected media type.
+     *
+     * @return string
+     *   The selected media type.
+     */
+    public function getSelectedTypeId()
+    {
+        return $this->get('media_library_selected_type');
+    }
 
-  /**
-   * Validate a hash for the state object.
-   *
-   * @param string $hash
-   *   The hash to validate.
-   *
-   * @return string
-   *   The hashed parameters.
-   */
-  public function isValidHash($hash) {
-    return hash_equals($this->getHash(), $hash);
-  }
+    /**
+     * Determines if additional media items can be selected.
+     *
+     * @return bool
+     *   TRUE if additional items can be selected, otherwise FALSE.
+     */
+    public function hasSlotsAvailable()
+    {
+        return $this->getAvailableSlots() !== 0;
+    }
 
-  /**
-   * Returns the ID of the media library opener service.
-   *
-   * @return string
-   *   The media library opener service ID.
-   */
-  public function getOpenerId() {
-    return $this->get('media_library_opener_id');
-  }
+    /**
+     * Returns the number of additional media items that can be selected.
+     *
+     * When the value is not available in the URL the default is 0. When a
+     * negative integer is passed, an unlimited amount of media items can be
+     * selected.
+     *
+     * @return int
+     *   The number of additional media items that can be selected.
+     */
+    public function getAvailableSlots()
+    {
+        return $this->getInt('media_library_remaining');
+    }
 
-  /**
-   * Returns the media type IDs which can be selected.
-   *
-   * @return string[]
-   *   The media type IDs.
-   */
-  public function getAllowedTypeIds() {
-    return $this->all('media_library_allowed_types');
-  }
+    /**
+     * Returns all opener-specific parameter values.
+     *
+     * @return array
+     *   An associative array of all opener-specific parameter values.
+     */
+    public function getOpenerParameters()
+    {
+        return $this->all('media_library_opener_parameters');
+    }
 
-  /**
-   * Returns the selected media type.
-   *
-   * @return string
-   *   The selected media type.
-   */
-  public function getSelectedTypeId() {
-    return $this->get('media_library_selected_type');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts()
+    {
+        return ['url.query_args'];
+    }
 
-  /**
-   * Determines if additional media items can be selected.
-   *
-   * @return bool
-   *   TRUE if additional items can be selected, otherwise FALSE.
-   */
-  public function hasSlotsAvailable() {
-    return $this->getAvailableSlots() !== 0;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge()
+    {
+        return Cache::PERMANENT;
+    }
 
-  /**
-   * Returns the number of additional media items that can be selected.
-   *
-   * When the value is not available in the URL the default is 0. When a
-   * negative integer is passed, an unlimited amount of media items can be
-   * selected.
-   *
-   * @return int
-   *   The number of additional media items that can be selected.
-   */
-  public function getAvailableSlots() {
-    return $this->getInt('media_library_remaining');
-  }
-
-  /**
-   * Returns all opener-specific parameter values.
-   *
-   * @return array
-   *   An associative array of all opener-specific parameter values.
-   */
-  public function getOpenerParameters() {
-    return $this->all('media_library_opener_parameters');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    return ['url.query_args'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge() {
-    return Cache::PERMANENT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags()
+    {
+        return [];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\StreamWrapper;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -11,44 +13,49 @@ use Drupal\Core\Url;
  * Provides support for storing temporarily accessible files with the Drupal
  * file interface.
  */
-class TemporaryStream extends LocalStream {
+class TemporaryStream extends LocalStream
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public static function getType(): int
+    {
+        return StreamWrapperInterface::LOCAL_HIDDEN;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getType(): int {
-    return StreamWrapperInterface::LOCAL_HIDDEN;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return $this->t('Temporary files');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return $this->t('Temporary files');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return $this->t('Temporary local files for upload and previews.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return $this->t('Temporary local files for upload and previews.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectoryPath()
+    {
+        return \Drupal::service('file_system')->getTempDirectory();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDirectoryPath() {
-    return \Drupal::service('file_system')->getTempDirectory();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getExternalUrl() {
-    $path = str_replace('\\', '/', $this->getTarget());
-    return Url::fromRoute('system.temporary', [], ['absolute' => TRUE, 'query' => ['file' => $path]])->toString();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getExternalUrl()
+    {
+        $path = str_replace('\\', '/', $this->getTarget());
+        return Url::fromRoute('system.temporary', [], ['absolute' => true, 'query' => ['file' => $path]])->toString();
+    }
 
 }

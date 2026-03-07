@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,26 +14,27 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\node\Entity\NodeType
  */
-class NodeTypeAccessControlHandler extends EntityAccessControlHandler {
+class NodeTypeAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        switch ($operation) {
+            case 'view':
+                return AccessResult::allowedIfHasPermission($account, 'access content');
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    switch ($operation) {
-      case 'view':
-        return AccessResult::allowedIfHasPermission($account, 'access content');
+            case 'delete':
+                if ($entity->isLocked()) {
+                    return AccessResult::forbidden()->addCacheableDependency($entity);
+                }
+                return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
 
-      case 'delete':
-        if ($entity->isLocked()) {
-          return AccessResult::forbidden()->addCacheableDependency($entity);
+            default:
+                return parent::checkAccess($entity, $operation, $account);
+
         }
-        return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-
-      default:
-        return parent::checkAccess($entity, $operation, $account);
-
     }
-  }
 
 }

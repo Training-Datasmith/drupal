@@ -16,49 +16,51 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 #[CoversClass(User::class)]
 #[Group('user')]
-class UserTest extends UnitTestCase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createUserSession(array $rids = [], $authenticated = FALSE): User&MockObject {
-    $user = $this->getMockBuilder('Drupal\user\Entity\User')
-      ->disableOriginalConstructor()
-      ->onlyMethods(['get', 'id'])
-      ->getMock();
-    $user->expects($this->once())
-      ->method('id')
-      // @todo Also test the uid = 1 handling.
-      ->willReturn($authenticated ? 2 : 0);
-    $roles = [];
-    foreach ($rids as $rid) {
-      $roles[] = (object) [
-        'target_id' => $rid,
-      ];
+class UserTest extends UnitTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function createUserSession(array $rids = [], $authenticated = false): User&MockObject
+    {
+        $user = $this->getMockBuilder('Drupal\user\Entity\User')
+          ->disableOriginalConstructor()
+          ->onlyMethods(['get', 'id'])
+          ->getMock();
+        $user->expects($this->once())
+          ->method('id')
+          // @todo Also test the uid = 1 handling.
+          ->willReturn($authenticated ? 2 : 0);
+        $roles = [];
+        foreach ($rids as $rid) {
+            $roles[] = (object) [
+              'target_id' => $rid,
+            ];
+        }
+        $user->expects($this->atLeastOnce())
+          ->method('get')
+          ->with('roles')
+          ->willReturn($roles);
+        return $user;
     }
-    $user->expects($this->atLeastOnce())
-      ->method('get')
-      ->with('roles')
-      ->willReturn($roles);
-    return $user;
-  }
 
-  /**
-   * Tests the method getRoles exclude or include locked roles based in param.
-   *
-   * @see \Drupal\user\Entity\User::getRoles()
-   * @legacy-covers ::getRoles
-   */
-  public function testUserGetRoles(): void {
-    // Anonymous user.
-    $user = $this->createUserSession([]);
-    $this->assertEquals([RoleInterface::ANONYMOUS_ID], $user->getRoles());
-    $this->assertEquals([], $user->getRoles(TRUE));
+    /**
+     * Tests the method getRoles exclude or include locked roles based in param.
+     *
+     * @see \Drupal\user\Entity\User::getRoles()
+     * @legacy-covers ::getRoles
+     */
+    public function testUserGetRoles(): void
+    {
+        // Anonymous user.
+        $user = $this->createUserSession([]);
+        $this->assertEquals([RoleInterface::ANONYMOUS_ID], $user->getRoles());
+        $this->assertEquals([], $user->getRoles(true));
 
-    // Authenticated user.
-    $user = $this->createUserSession([], TRUE);
-    $this->assertEquals([RoleInterface::AUTHENTICATED_ID], $user->getRoles());
-    $this->assertEquals([], $user->getRoles(TRUE));
-  }
+        // Authenticated user.
+        $user = $this->createUserSession([], true);
+        $this->assertEquals([RoleInterface::AUTHENTICATED_ID], $user->getRoles());
+        $this->assertEquals([], $user->getRoles(true));
+    }
 
 }

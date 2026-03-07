@@ -1,65 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\help\Plugin\HelpSection;
 
 use Drupal\Core\Extension\ModuleExtensionList;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Link;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\help\Attribute\HelpSection;
 
 /**
  * Provides the module topics list section for the help page.
  */
 #[HelpSection(
-  id: 'hook_help',
-  title: new TranslatableMarkup('Module overviews'),
-  description: new TranslatableMarkup('Module overviews are provided by modules. Overviews available for your installed modules:')
+    id: 'hook_help',
+    title: new TranslatableMarkup('Module overviews'),
+    description: new TranslatableMarkup('Module overviews are provided by modules. Overviews available for your installed modules:')
 )]
-class HookHelpSection extends HelpSectionPluginBase implements ContainerFactoryPluginInterface {
+class HookHelpSection extends HelpSectionPluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a HookHelpSection object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler service.
+     * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
+     *   The module extension list.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+        protected ModuleExtensionList $moduleExtensionList,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * Constructs a HookHelpSection object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
-   *   The module extension list.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
-    protected ModuleExtensionList $moduleExtensionList,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     * @return \Drupal\Core\Link[]
+     */
+    public function listTopics(): array
+    {
+        $topics = [];
+        $this->moduleHandler->invokeAllWith(
+            'help',
+            function (callable $hook, string $module) use (&$topics): void {
+                $title = $this->moduleExtensionList->getName($module);
+                $topics[$title] = Link::createFromRoute($title, 'help.page', ['name' => $module]);
+            }
+        );
 
-  /**
-   * {@inheritdoc}
-   * @return \Drupal\Core\Link[]
-   */
-  public function listTopics(): array {
-    $topics = [];
-    $this->moduleHandler->invokeAllWith(
-      'help',
-      function (callable $hook, string $module) use (&$topics): void {
-        $title = $this->moduleExtensionList->getName($module);
-        $topics[$title] = Link::createFromRoute($title, 'help.page', ['name' => $module]);
-      }
-    );
-
-    // Sort topics by title, which is the array key above.
-    ksort($topics);
-    return $topics;
-  }
+        // Sort topics by title, which is the array key above.
+        ksort($topics);
+        return $topics;
+    }
 
 }

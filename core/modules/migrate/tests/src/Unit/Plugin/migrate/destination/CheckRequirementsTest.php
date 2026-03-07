@@ -17,24 +17,25 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests check requirements exception on DestinationBase.
  */
 #[Group('migrate')]
-class CheckRequirementsTest extends UnitTestCase {
-
-  /**
-   * Tests the check requirements exception message.
-   */
-  public function testException(): void {
-    $destination = new Config(
-      ['config_name' => 'test'],
-      'test',
-      [],
-      $this->prophesize(MigrationInterface::class)->reveal(),
-      $this->prophesize(ConfigFactoryInterface::class)->reveal(),
-      $this->prophesize(LanguageManagerInterface::class)->reveal(),
-      $this->prophesize(TypedConfigManagerInterface::class)->reveal(),
-    );
-    $this->expectException(RequirementsException::class);
-    $this->expectExceptionMessage("Destination plugin 'test' did not meet the requirements");
-    $destination->checkRequirements();
-  }
+class CheckRequirementsTest extends UnitTestCase
+{
+    /**
+     * Tests the check requirements exception message.
+     */
+    public function testException(): void
+    {
+        $destination = new Config(
+            ['config_name' => 'test'],
+            'test',
+            [],
+            $this->prophesize(MigrationInterface::class)->reveal(),
+            $this->prophesize(ConfigFactoryInterface::class)->reveal(),
+            $this->prophesize(LanguageManagerInterface::class)->reveal(),
+            $this->prophesize(TypedConfigManagerInterface::class)->reveal(),
+        );
+        $this->expectException(RequirementsException::class);
+        $this->expectExceptionMessage("Destination plugin 'test' did not meet the requirements");
+        $destination->checkRequirements();
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the Locale module.
@@ -114,16 +116,17 @@
  * @see locale_translation_project_list()
  * @ingroup interface_translation_properties
  */
-function hook_locale_translation_projects_alter(array &$projects): void {
-  // The translations are located at a custom translation sever.
-  $projects['existing_project'] = [
-    'info' => [
-      'interface translation server pattern' => 'http://example.com/files/translations/%core/%project/%project-%version.%language.po',
-    ],
-    // An optional key to change the order in which translation files are
-    // processed. By default, the projects are sorted alphabetically by key.
-    'weight' => 1,
-  ];
+function hook_locale_translation_projects_alter(array &$projects): void
+{
+    // The translations are located at a custom translation sever.
+    $projects['existing_project'] = [
+      'info' => [
+        'interface translation server pattern' => 'http://example.com/files/translations/%core/%project/%project-%version.%language.po',
+      ],
+      // An optional key to change the order in which translation files are
+      // processed. By default, the projects are sorted alphabetically by key.
+      'weight' => 1,
+    ];
 }
 
 /**

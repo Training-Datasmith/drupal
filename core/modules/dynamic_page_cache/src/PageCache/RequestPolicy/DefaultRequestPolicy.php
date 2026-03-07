@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\dynamic_page_cache\PageCache\RequestPolicy;
 
 use Drupal\Core\PageCache\ChainRequestPolicy;
@@ -12,13 +14,14 @@ use Drupal\Core\PageCache\RequestPolicy\CommandLineOrUnsafeMethod;
  * the command line or the request was not initiated with a safe method (GET or
  * HEAD).
  */
-class DefaultRequestPolicy extends ChainRequestPolicy {
-
-  /**
-   * Constructs the default Dynamic Page Cache request policy.
-   */
-  public function __construct() {
-    $this->addPolicy(new CommandLineOrUnsafeMethod());
-  }
+class DefaultRequestPolicy extends ChainRequestPolicy
+{
+    /**
+     * Constructs the default Dynamic Page Cache request policy.
+     */
+    public function __construct()
+    {
+        $this->addPolicy(new CommandLineOrUnsafeMethod());
+    }
 
 }

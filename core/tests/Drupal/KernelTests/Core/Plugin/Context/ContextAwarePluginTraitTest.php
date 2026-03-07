@@ -30,140 +30,149 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ContextAwarePluginTrait::class)]
 #[Group('Plugin')]
 #[RunTestsInSeparateProcesses]
-class ContextAwarePluginTraitTest extends KernelTestBase {
+class ContextAwarePluginTraitTest extends KernelTestBase
+{
+    /**
+     * The plugin instance under test.
+     *
+     * @var \Drupal\KernelTests\Core\Plugin\Context\TestContextAwarePlugin
+     */
+    private $plugin;
 
-  /**
-   * The plugin instance under test.
-   *
-   * @var \Drupal\KernelTests\Core\Plugin\Context\TestContextAwarePlugin
-   */
-  private $plugin;
+    /**
+     * The configurable plugin instance under test.
+     *
+     * @var \Drupal\KernelTests\Core\Plugin\Context\TestConfigurableContextAwarePlugin
+     */
+    private $configurablePlugin;
 
-  /**
-   * The configurable plugin instance under test.
-   *
-   * @var \Drupal\KernelTests\Core\Plugin\Context\TestConfigurableContextAwarePlugin
-   */
-  private $configurablePlugin;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $plugin_definition = new TestContextAwarePluginDefinition();
+        $plugin_definition->addContextDefinition('nato_letter', ContextDefinition::create('string'));
+        $this->plugin = new TestContextAwarePlugin([], 'the_sisko', $plugin_definition);
+        $this->configurablePlugin = new TestConfigurableContextAwarePlugin([], 'the_sisko', $plugin_definition);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $plugin_definition = new TestContextAwarePluginDefinition();
-    $plugin_definition->addContextDefinition('nato_letter', ContextDefinition::create('string'));
-    $this->plugin = new TestContextAwarePlugin([], 'the_sisko', $plugin_definition);
-    $this->configurablePlugin = new TestConfigurableContextAwarePlugin([], 'the_sisko', $plugin_definition);
-  }
+    /**
+     * Tests get context definitions.
+     */
+    public function testGetContextDefinitions(): void
+    {
+        $this->assertIsArray($this->plugin->getContextDefinitions());
+    }
 
-  /**
-   * Tests get context definitions.
-   */
-  public function testGetContextDefinitions(): void {
-    $this->assertIsArray($this->plugin->getContextDefinitions());
-  }
+    /**
+     * Tests get context definition.
+     */
+    public function testGetContextDefinition(): void
+    {
+        // The context is not defined, so an exception will be thrown.
+        $this->expectException(ContextException::class);
+        $this->expectExceptionMessage('The person context is not a valid context.');
+        $this->plugin->getContextDefinition('person');
+    }
 
-  /**
-   * Tests get context definition.
-   */
-  public function testGetContextDefinition(): void {
-    // The context is not defined, so an exception will be thrown.
-    $this->expectException(ContextException::class);
-    $this->expectExceptionMessage('The person context is not a valid context.');
-    $this->plugin->getContextDefinition('person');
-  }
+    /**
+     * Tests get context value.
+     */
+    public function testGetContextValue(): void
+    {
+        $this->plugin->setContextValue('nato_letter', 'Alpha');
+        $this->assertSame('Alpha', $this->plugin->getContextValue('nato_letter'));
+    }
 
-  /**
-   * Tests get context value.
-   */
-  public function testGetContextValue(): void {
-    $this->plugin->setContextValue('nato_letter', 'Alpha');
-    $this->assertSame('Alpha', $this->plugin->getContextValue('nato_letter'));
-  }
+    /**
+     * Tests set context value.
+     */
+    public function testSetContextValue(): void
+    {
+        $typed_data_manager = $this->prophesize(TypedDataManagerInterface::class);
+        $container = new ContainerBuilder();
+        $container->set('typed_data_manager', $typed_data_manager->reveal());
+        \Drupal::setContainer($container);
 
-  /**
-   * Tests set context value.
-   */
-  public function testSetContextValue(): void {
-    $typed_data_manager = $this->prophesize(TypedDataManagerInterface::class);
-    $container = new ContainerBuilder();
-    $container->set('typed_data_manager', $typed_data_manager->reveal());
-    \Drupal::setContainer($container);
+        $this->plugin->getPluginDefinition()->addContextDefinition('foo', new ContextDefinition('string'));
 
-    $this->plugin->getPluginDefinition()->addContextDefinition('foo', new ContextDefinition('string'));
-
-    $this->assertFalse($this->plugin->setContextCalled);
-    $this->plugin->setContextValue('foo', new StringData(new DataDefinition(), 'bar'));
-    $this->assertTrue($this->plugin->setContextCalled);
-  }
+        $this->assertFalse($this->plugin->setContextCalled);
+        $this->plugin->setContextValue('foo', new StringData(new DataDefinition(), 'bar'));
+        $this->assertTrue($this->plugin->setContextCalled);
+    }
 
 }
 
 /**
  * A plugin definition test class.
  */
-class TestContextAwarePluginDefinition extends PluginDefinition implements ContextAwarePluginDefinitionInterface {
-
-  use ContextAwarePluginDefinitionTrait;
+class TestContextAwarePluginDefinition extends PluginDefinition implements ContextAwarePluginDefinitionInterface
+{
+    use ContextAwarePluginDefinitionTrait;
 
 }
 
 /**
  * Context aware plugin test class.
  */
-class TestContextAwarePlugin extends PluginBase implements ContextAwarePluginInterface {
+class TestContextAwarePlugin extends PluginBase implements ContextAwarePluginInterface
+{
+    use ContextAwarePluginTrait {
+        setContext as setContextTrait;
+    }
 
-  use ContextAwarePluginTrait {
-    setContext as setContextTrait;
-  }
+    /**
+     * Indicates if ::setContext() has been called or not.
+     *
+     * @var bool
+     */
+    public $setContextCalled = false;
 
-  /**
-   * Indicates if ::setContext() has been called or not.
-   *
-   * @var bool
-   */
-  public $setContextCalled = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setContext($name, ComponentContextInterface $context): void {
-    $this->setContextTrait($name, $context);
-    $this->setContextCalled = TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setContext($name, ComponentContextInterface $context): void
+    {
+        $this->setContextTrait($name, $context);
+        $this->setContextCalled = true;
+    }
 
 }
 
 /**
  * Configurable context aware plugin test class.
  */
-class TestConfigurableContextAwarePlugin extends PluginBase implements ConfigurableInterface, ContextAwarePluginInterface {
+class TestConfigurableContextAwarePlugin extends PluginBase implements ConfigurableInterface, ContextAwarePluginInterface
+{
+    use ContextAwarePluginTrait;
 
-  use ContextAwarePluginTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration(): array
+    {
+        return [
+          'context' => [
+            'nato_letter' => 'Alpha',
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration(): array {
-    return [
-      'context' => [
-        'nato_letter' => 'Alpha',
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setConfiguration(array $configuration) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setConfiguration(array $configuration)
+    {
+    }
 
 }

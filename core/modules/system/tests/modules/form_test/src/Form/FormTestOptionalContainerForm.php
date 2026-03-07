@@ -12,53 +12,56 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestOptionalContainerForm extends FormBase {
+class FormTestOptionalContainerForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_optional_container';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_optional_container';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        // Empty containers.
+        $form['empty_optional'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['empty_optional']],
+          '#optional' => true,
+        ];
+        $form['empty_non_optional'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['empty_non_optional']],
+          '#optional' => false,
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    // Empty containers.
-    $form['empty_optional'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['empty_optional']],
-      '#optional' => TRUE,
-    ];
-    $form['empty_non_optional'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['empty_non_optional']],
-      '#optional' => FALSE,
-    ];
+        // Non-empty containers.
+        $form['nonempty_optional'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['nonempty_optional']],
+          '#optional' => true,
+        ];
+        $form['nonempty_optional']['child_1'] = [];
 
-    // Non-empty containers.
-    $form['nonempty_optional'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['nonempty_optional']],
-      '#optional' => TRUE,
-    ];
-    $form['nonempty_optional']['child_1'] = [];
+        $form['nonempty_non_optional'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['nonempty_non_optional']],
+          '#optional' => false,
+        ];
+        $form['nonempty_non_optional']['child_2'] = [];
 
-    $form['nonempty_non_optional'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['nonempty_non_optional']],
-      '#optional' => FALSE,
-    ];
-    $form['nonempty_non_optional']['child_2'] = [];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

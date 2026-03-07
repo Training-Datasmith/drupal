@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Field\FieldDefinitionListenerInterface;
@@ -14,6 +16,6 @@ use Drupal\Core\Field\FieldStorageDefinitionListenerInterface;
  *
  * For example, configurable fields defined and exposed by field.module.
  */
-interface DynamicallyFieldableEntityStorageInterface extends FieldableEntityStorageInterface, FieldStorageDefinitionListenerInterface, FieldDefinitionListenerInterface {
-
+interface DynamicallyFieldableEntityStorageInterface extends FieldableEntityStorageInterface, FieldStorageDefinitionListenerInterface, FieldDefinitionListenerInterface
+{
 }

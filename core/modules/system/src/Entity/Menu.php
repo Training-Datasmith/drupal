@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Entity;
 
-use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\system\MenuAccessControlHandler;
 use Drupal\system\MenuInterface;
 use Drupal\system\MenuStorage;
@@ -14,112 +16,117 @@ use Drupal\system\MenuStorage;
  * Defines the Menu configuration entity class.
  */
 #[ConfigEntityType(
-  id: 'menu',
-  label: new TranslatableMarkup('Menu'),
-  label_collection: new TranslatableMarkup('Menus'),
-  label_singular: new TranslatableMarkup('menu'),
-  label_plural: new TranslatableMarkup('menus'),
-  entity_keys: [
+    id: 'menu',
+    label: new TranslatableMarkup('Menu'),
+    label_collection: new TranslatableMarkup('Menus'),
+    label_singular: new TranslatableMarkup('menu'),
+    label_plural: new TranslatableMarkup('menus'),
+    entity_keys: [
     'id' => 'id',
     'label' => 'label',
   ],
-  handlers: [
+    handlers: [
     'access' => MenuAccessControlHandler::class,
     'storage' => MenuStorage::class,
   ],
-  admin_permission: 'administer menu',
-  label_count: [
+    admin_permission: 'administer menu',
+    label_count: [
     'singular' => '@count menu',
     'plural' => '@count menus',
   ],
-  config_export: [
+    config_export: [
     'id',
     'label',
     'description',
     'locked',
   ],
 )]
-class Menu extends ConfigEntityBase implements MenuInterface {
+class Menu extends ConfigEntityBase implements MenuInterface
+{
+    /**
+     * The menu machine name.
+     *
+     * @var string
+     */
+    protected $id;
 
-  /**
-   * The menu machine name.
-   *
-   * @var string
-   */
-  protected $id;
+    /**
+     * The human-readable name of the menu entity.
+     *
+     * @var string
+     */
+    protected $label;
 
-  /**
-   * The human-readable name of the menu entity.
-   *
-   * @var string
-   */
-  protected $label;
+    /**
+     * The menu description.
+     *
+     * @var string
+     */
+    protected $description;
 
-  /**
-   * The menu description.
-   *
-   * @var string
-   */
-  protected $description;
+    /**
+     * The locked status of this menu.
+     *
+     * @var bool
+     */
+    protected $locked = false;
 
-  /**
-   * The locked status of this menu.
-   *
-   * @var bool
-   */
-  protected $locked = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isLocked(): bool {
-    return (bool) $this->locked;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::preDelete($storage, $entities);
-    /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
-    $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
-    foreach ($entities as $menu) {
-      // Delete all links from the menu.
-      $menu_link_manager->deleteLinksInMenu($menu->id());
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return $this->description;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    $return = parent::save();
-    \Drupal::cache('menu')->deleteAll();
-    // Invalidate the block cache to update menu-based derivatives.
-    if (\Drupal::moduleHandler()->moduleExists('block')) {
-      \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+    /**
+     * {@inheritdoc}
+     */
+    public function isLocked(): bool
+    {
+        return (bool) $this->locked;
     }
-    return $return;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    parent::delete();
-    \Drupal::cache('menu')->deleteAll();
-
-    // Invalidate the block cache to update menu-based derivatives.
-    if (\Drupal::moduleHandler()->moduleExists('block')) {
-      \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+    /**
+     * {@inheritdoc}
+     */
+    public static function preDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::preDelete($storage, $entities);
+        /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+        $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
+        foreach ($entities as $menu) {
+            // Delete all links from the menu.
+            $menu_link_manager->deleteLinksInMenu($menu->id());
+        }
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save()
+    {
+        $return = parent::save();
+        \Drupal::cache('menu')->deleteAll();
+        // Invalidate the block cache to update menu-based derivatives.
+        if (\Drupal::moduleHandler()->moduleExists('block')) {
+            \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+        }
+        return $return;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(): void
+    {
+        parent::delete();
+        \Drupal::cache('menu')->deleteAll();
+
+        // Invalidate the block cache to update menu-based derivatives.
+        if (\Drupal::moduleHandler()->moduleExists('block')) {
+            \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+        }
+    }
 
 }

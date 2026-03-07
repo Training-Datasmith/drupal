@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Access;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\PrivateKey;
-use Drupal\Core\Session\MetadataBag;
 use Drupal\Core\Site\Settings;
 
 /**
@@ -12,92 +12,95 @@ use Drupal\Core\Site\Settings;
  *
  * @see \Drupal\Tests\Core\Access\CsrfTokenGeneratorTest
  */
-class CsrfTokenGenerator {
-
-  /**
-   * Constructs the token generator.
-   *
-   * @param \Drupal\Core\PrivateKey $privateKey
-   *   The private key service.
-   * @param \Drupal\Core\Session\MetadataBag $sessionMetadata
-   *   The session metadata bag.
-   */
-  public function __construct(protected \Drupal\Core\PrivateKey $privateKey, protected \Drupal\Core\Session\MetadataBag $sessionMetadata)
-  {
-  }
-
-  /**
-   * Generates a token based on $value, the user session, and the private key.
-   *
-   * The generated token is based on the session of the current user. Normally,
-   * anonymous users do not have a session, so the generated token will be
-   * different on every page request. To generate a token for users without a
-   * session, manually start a session prior to calling this function.
-   *
-   * @param string $value
-   *   (optional) An additional value to base the token on.
-   *
-   * @return string
-   *   A 43-character URL-safe token for validation, based on the token seed,
-   *   the hash salt provided by Settings::getHashSalt(), and the
-   *   'drupal_private_key' configuration variable.
-   *
-   * @see \Drupal\Core\Site\Settings::getHashSalt()
-   * @see \Symfony\Component\HttpFoundation\Session\SessionInterface::start()
-   */
-  public function get($value = '') {
-    $seed = $this->sessionMetadata->getCsrfTokenSeed();
-    if (empty($seed)) {
-      $seed = Crypt::randomBytesBase64();
-      $this->sessionMetadata->setCsrfTokenSeed($seed);
+class CsrfTokenGenerator
+{
+    /**
+     * Constructs the token generator.
+     *
+     * @param \Drupal\Core\PrivateKey $privateKey
+     *   The private key service.
+     * @param \Drupal\Core\Session\MetadataBag $sessionMetadata
+     *   The session metadata bag.
+     */
+    public function __construct(protected \Drupal\Core\PrivateKey $privateKey, protected \Drupal\Core\Session\MetadataBag $sessionMetadata)
+    {
     }
 
-    return $this->computeToken($seed, $value);
-  }
+    /**
+     * Generates a token based on $value, the user session, and the private key.
+     *
+     * The generated token is based on the session of the current user. Normally,
+     * anonymous users do not have a session, so the generated token will be
+     * different on every page request. To generate a token for users without a
+     * session, manually start a session prior to calling this function.
+     *
+     * @param string $value
+     *   (optional) An additional value to base the token on.
+     *
+     * @return string
+     *   A 43-character URL-safe token for validation, based on the token seed,
+     *   the hash salt provided by Settings::getHashSalt(), and the
+     *   'drupal_private_key' configuration variable.
+     *
+     * @see \Drupal\Core\Site\Settings::getHashSalt()
+     * @see \Symfony\Component\HttpFoundation\Session\SessionInterface::start()
+     */
+    public function get($value = '')
+    {
+        $seed = $this->sessionMetadata->getCsrfTokenSeed();
+        if (empty($seed)) {
+            $seed = Crypt::randomBytesBase64();
+            $this->sessionMetadata->setCsrfTokenSeed($seed);
+        }
 
-  /**
-   * Validates a token based on $value, the user session, and the private key.
-   *
-   * @param string $token
-   *   The token to be validated.
-   * @param string $value
-   *   (optional) An additional value to base the token on.
-   *
-   * @return bool
-   *   TRUE for a valid token, FALSE for an invalid token.
-   */
-  public function validate($token, $value = '') {
-    $seed = $this->sessionMetadata->getCsrfTokenSeed();
-    if (empty($seed)) {
-      return FALSE;
+        return $this->computeToken($seed, $value);
     }
-    $value = $this->computeToken($seed, $value);
-    // PHP 8.0 strictly type hints for hash_equals. Maintain BC until we can
-    // enforce scalar type hints on this method.
-    if (!is_string($token)) {
-      return FALSE;
+
+    /**
+     * Validates a token based on $value, the user session, and the private key.
+     *
+     * @param string $token
+     *   The token to be validated.
+     * @param string $value
+     *   (optional) An additional value to base the token on.
+     *
+     * @return bool
+     *   TRUE for a valid token, FALSE for an invalid token.
+     */
+    public function validate($token, $value = '')
+    {
+        $seed = $this->sessionMetadata->getCsrfTokenSeed();
+        if (empty($seed)) {
+            return false;
+        }
+        $value = $this->computeToken($seed, $value);
+        // PHP 8.0 strictly type hints for hash_equals. Maintain BC until we can
+        // enforce scalar type hints on this method.
+        if (!is_string($token)) {
+            return false;
+        }
+
+        return hash_equals($value, $token);
     }
 
-    return hash_equals($value, $token);
-  }
-
-  /**
-   * Generates a token based on $value, the token seed, and the private key.
-   *
-   * @param string $seed
-   *   The per-session token seed.
-   * @param string $value
-   *   (optional) An additional value to base the token on.
-   *
-   * @return string
-   *   A 43-character URL-safe token for validation, based on the token seed,
-   *   the hash salt provided by Settings::getHashSalt(), and the site private
-   *   key.
-   *
-   * @see \Drupal\Core\Site\Settings::getHashSalt()
-   */
-  protected function computeToken(string $seed, $value = ''): string {
-    return Crypt::hmacBase64($value, $seed . $this->privateKey->get() . Settings::getHashSalt());
-  }
+    /**
+     * Generates a token based on $value, the token seed, and the private key.
+     *
+     * @param string $seed
+     *   The per-session token seed.
+     * @param string $value
+     *   (optional) An additional value to base the token on.
+     *
+     * @return string
+     *   A 43-character URL-safe token for validation, based on the token seed,
+     *   the hash salt provided by Settings::getHashSalt(), and the site private
+     *   key.
+     *
+     * @see \Drupal\Core\Site\Settings::getHashSalt()
+     */
+    protected function computeToken(string $seed, $value = ''): string
+    {
+        return Crypt::hmacBase64($value, $seed . $this->privateKey->get() . Settings::getHashSalt());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -9,17 +11,18 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FilterFormatAddForm extends FilterFormatFormBase {
+class FilterFormatAddForm extends FilterFormatFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        parent::submitForm($form, $form_state);
+        $this->messenger()->addStatus($this->t('Added text format %format.', ['%format' => $this->entity->label()]));
+        $form_state->setRedirect('filter.admin_overview');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    parent::submitForm($form, $form_state);
-    $this->messenger()->addStatus($this->t('Added text format %format.', ['%format' => $this->entity->label()]));
-    $form_state->setRedirect('filter.admin_overview');
-
-    return $this->entity;
-  }
+        return $this->entity;
+    }
 
 }

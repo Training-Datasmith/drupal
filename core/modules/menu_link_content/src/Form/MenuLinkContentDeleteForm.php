@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\menu_link_content\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -10,30 +12,33 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-class MenuLinkContentDeleteForm extends ContentEntityDeleteForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl() {
-    if ($this->moduleHandler->moduleExists('menu_ui')) {
-      return new Url('entity.menu.edit_form', ['menu' => $this->entity->getMenuName()]);
+class MenuLinkContentDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl()
+    {
+        if ($this->moduleHandler->moduleExists('menu_ui')) {
+            return new Url('entity.menu.edit_form', ['menu' => $this->entity->getMenuName()]);
+        }
+        return $this->entity->toUrl();
     }
-    return $this->entity->toUrl();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    return $this->getCancelUrl();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRedirectUrl()
+    {
+        return $this->getCancelUrl();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('The menu link %title has been deleted.', ['%title' => $this->entity->label()]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('The menu link %title has been deleted.', ['%title' => $this->entity->label()]);
+    }
 
 }

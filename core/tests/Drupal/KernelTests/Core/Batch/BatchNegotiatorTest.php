@@ -15,27 +15,28 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[Group('Batch')]
 #[RunTestsInSeparateProcesses]
-class BatchNegotiatorTest extends KernelTestBase {
+class BatchNegotiatorTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-  ];
+    /**
+     * Test that the negotiator applies to the batch route.
+     */
+    public function testApplies(): void
+    {
+        $request = Request::create('/batch');
+        // Use the router to enhance the object so that a RouteMatch can be created.
+        $this->container->get('router')->matchRequest($request);
+        $routeMatch = RouteMatch::createFromRequest($request);
+        // The negotiator under test.
+        $negotiator = $this->container->get('theme.negotiator.system.batch');
 
-  /**
-   * Test that the negotiator applies to the batch route.
-   */
-  public function testApplies(): void {
-    $request = Request::create('/batch');
-    // Use the router to enhance the object so that a RouteMatch can be created.
-    $this->container->get('router')->matchRequest($request);
-    $routeMatch = RouteMatch::createFromRequest($request);
-    // The negotiator under test.
-    $negotiator = $this->container->get('theme.negotiator.system.batch');
-
-    $this->assertTrue($negotiator->applies($routeMatch));
-  }
+        $this->assertTrue($negotiator->applies($routeMatch));
+    }
 
 }

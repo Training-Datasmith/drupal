@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -37,350 +36,370 @@ use Symfony\Component\Routing\RouteCollection;
  *   Plugin classes are internal.
  */
 #[SectionStorage(
-  id: "overrides",
-  weight: -20,
-  context_definitions: [
+    id: 'overrides',
+    weight: -20,
+    context_definitions: [
     'entity' => new ContextDefinition(
-      data_type: 'entity',
-      label: new TranslatableMarkup("Entity"),
-      constraints: [
-        "EntityHasField" => ['field_name' => OverridesSectionStorage::FIELD_NAME],
+        data_type: 'entity',
+        label: new TranslatableMarkup('Entity'),
+        constraints: [
+        'EntityHasField' => ['field_name' => OverridesSectionStorage::FIELD_NAME],
       ],
     ),
     'view_mode' => new ContextDefinition(
-      data_type: 'string',
-      label: new TranslatableMarkup("View mode"),
-      default_value: "default",
+        data_type: 'string',
+        label: new TranslatableMarkup('View mode'),
+        default_value: 'default',
     ),
   ],
-  handles_permission_check: TRUE,
+    handles_permission_check: true,
 )]
-class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
+class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface
+{
+    use LayoutEntityHelperTrait;
 
-  use LayoutEntityHelperTrait;
+    /**
+     * The field name used by this storage.
+     *
+     * @var string
+     */
+    public const FIELD_NAME = 'layout_builder__layout';
 
-  /**
-   * The field name used by this storage.
-   *
-   * @var string
-   */
-  const FIELD_NAME = 'layout_builder__layout';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
    * The entity type manager.
    */
-  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
    * The entity field manager.
    */
-  protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, SectionStorageManagerInterface $section_storage_manager, /**
+        protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, SectionStorageManagerInterface $section_storage_manager, /**
    * The entity repository.
    */
-  protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, /**
+        protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, /**
    * The current user.
    */
-  protected \Drupal\Core\Session\AccountInterface $currentUser) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->sectionStorageManager = $section_storage_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSectionList() {
-    return $this->getEntity()->get(static::FIELD_NAME);
-  }
-
-  /**
-   * Gets the entity storing the overrides.
-   *
-   * @return \Drupal\Core\Entity\FieldableEntityInterface
-   *   The entity storing the overrides.
-   */
-  protected function getEntity() {
-    return $this->getContextValue('entity');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageId(): string {
-    $entity = $this->getEntity();
-    return $entity->getEntityTypeId() . '.' . $entity->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTempstoreKey(): string {
-    $key = parent::getTempstoreKey();
-    $key .= '.' . $this->getContextValue('view_mode');
-
-    $entity = $this->getEntity();
-    // @todo Allow entities to provide this contextual information in
-    //   https://www.drupal.org/project/drupal/issues/3026957.
-    if ($entity instanceof TranslatableInterface) {
-      $key .= '.' . $entity->language()->getId();
-    }
-    return $key;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array {
-    if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
-      return $this->getSectionStorageContextsForEntity($entity);
-    }
-    return [];
-  }
-
-  /**
-   * Extracts an entity from the route values.
-   *
-   * @param mixed $value
-   *   The raw value from the route.
-   * @param array $defaults
-   *   The route defaults array.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface|null
-   *   The entity for the route, or NULL if none exist. The entity is not
-   *   guaranteed to be fieldable, or contain the necessary field for this
-   *   section storage plugin.
-   *
-   * @see \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute()
-   * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
-   */
-  private function extractEntityFromRoute($value, array $defaults): ?\Drupal\Core\Entity\FieldableEntityInterface {
-    if (str_contains((string) $value, '.')) {
-      [$entity_type_id, $entity_id] = explode('.', (string) $value, 2);
-    }
-    elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
-      $entity_type_id = $defaults['entity_type_id'];
-      $entity_id = $defaults[$entity_type_id];
-    }
-    else {
-      return NULL;
+        protected \Drupal\Core\Session\AccountInterface $currentUser)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->sectionStorageManager = $section_storage_manager;
     }
 
-    $entity = $this->entityRepository->getActive($entity_type_id, $entity_id);
-    return ($entity instanceof FieldableEntityInterface) ? $entity : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRoutes(RouteCollection $collection): void {
-    foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
-      // If the canonical route does not exist, do not provide any Layout
-      // Builder UI routes for this entity type.
-      if (!$collection->get("entity.$entity_type_id.canonical")) {
-        continue;
-      }
-
-      $defaults = [];
-      $defaults['entity_type_id'] = $entity_type_id;
-
-      // Retrieve the requirements from the canonical route.
-      $requirements = $collection->get("entity.$entity_type_id.canonical")->getRequirements();
-
-      $options = [];
-      // Ensure that upcasting is run in the correct order.
-      $options['parameters']['section_storage'] = [];
-      $options['parameters'][$entity_type_id]['type'] = 'entity:' . $entity_type_id;
-      $options['_admin_route'] = FALSE;
-
-      $template = $entity_type->getLinkTemplate('canonical') . '/layout';
-      $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $template, $defaults, $requirements, $options, $entity_type_id, $entity_type_id);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return array<non-falsy-string, non-empty-array>
-   */
-  public function buildLocalTasks($base_plugin_definition): array {
-    $local_tasks = [];
-    foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
-      $local_tasks["layout_builder.overrides.$entity_type_id.view"] = $base_plugin_definition + [
-        'route_name' => "layout_builder.overrides.$entity_type_id.view",
-        'weight' => 15,
-        'title' => $this->t('Layout'),
-        'base_route' => "entity.$entity_type_id.canonical",
-        'cache_contexts' => ['layout_builder_is_active:' . $entity_type_id],
-      ];
-    }
-    return $local_tasks;
-  }
-
-  /**
-   * Determines if this entity type's ID is stored as an integer.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   An entity type.
-   *
-   * @return bool
-   *   TRUE if this entity type's ID key is always an integer, FALSE otherwise.
-   *
-   * @deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use
-   *   \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead.
-   *
-   * @see https://www.drupal.org/node/3566814
-   */
-  protected function hasIntegerId(EntityTypeInterface $entity_type): ?bool {
-    @trigger_error(__METHOD__ . "() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814", E_USER_DEPRECATED);
-    return $entity_type->hasIntegerId();
-  }
-
-  /**
-   * Returns an array of relevant entity types.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface[]
-   *   An array of entity types.
-   */
-  protected function getEntityTypes(): array {
-    return array_filter($this->entityTypeManager->getDefinitions(), fn(EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultSectionStorage() {
-    $display = LayoutBuilderEntityViewDisplay::collectRenderDisplay($this->getEntity(), $this->getContextValue('view_mode'));
-    return $this->sectionStorageManager->load('defaults', ['display' => EntityContext::fromEntity($display)]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRedirectUrl() {
-    return $this->getEntity()->toUrl('canonical');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url {
-    $entity = $this->getEntity();
-    $route_parameters[$entity->getEntityTypeId()] = $entity->id();
-    return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getEntity()->getEntityTypeId()}.$rel", $route_parameters);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextsDuringPreview() {
-    $contexts = parent::getContextsDuringPreview();
-
-    if (isset($contexts['entity'])) {
-      $contexts['layout_builder.entity'] = $contexts['entity'];
-      unset($contexts['entity']);
-    }
-    return $contexts;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getEntity()->label();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    return $this->getEntity()->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    if ($account === NULL) {
-      $account = $this->currentUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getSectionList()
+    {
+        return $this->getEntity()->get(static::FIELD_NAME);
     }
 
-    $entity = $this->getEntity();
-
-    // Create an access result that will allow access to the layout if one of
-    // these conditions applies:
-    // 1. The user can configure any layouts.
-    $any_access = AccessResult::allowedIfHasPermission($account, 'configure any layout');
-    // 2. The user can configure layouts on all items of the bundle type.
-    $bundle_access = AccessResult::allowedIfHasPermission($account, "configure all {$entity->bundle()} {$entity->getEntityTypeId()} layout overrides");
-    // 3. The user can configure layouts items of this bundle type they can edit
-    //    AND the user has access to edit this entity.
-    $edit_only_bundle_access = AccessResult::allowedIfHasPermission($account, "configure editable {$entity->bundle()} {$entity->getEntityTypeId()} layout overrides");
-    $edit_only_bundle_access = $edit_only_bundle_access->andIf($entity->access('update', $account, TRUE));
-
-    $result = $any_access
-      ->orIf($bundle_access)
-      ->orIf($edit_only_bundle_access);
-
-    // Access also depends on the default being enabled.
-    $result = $result->andIf($this->getDefaultSectionStorage()->access($operation, $account, TRUE));
-    // Access also depends on the default layout being overridable.
-    $result = $result->andIf(AccessResult::allowedIf($this->getDefaultSectionStorage()->isOverridable())->addCacheableDependency($this->getDefaultSectionStorage()));
-    $result = $this->handleTranslationAccess($result, $operation, $account);
-    return $return_as_object ? $result : $result->isAllowed();
-  }
-
-  /**
-   * Handles access checks related to translations.
-   *
-   * @param \Drupal\Core\Access\AccessResult $result
-   *   The access result.
-   * @param string $operation
-   *   The operation to be performed.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user for which to check access.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  protected function handleTranslationAccess(AccessResult $result, $operation, AccountInterface $account) {
-    $entity = $this->getEntity();
-    // Access is always denied on non-default translations.
-    return $result->andIf(AccessResult::allowedIf(!($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())))->addCacheableDependency($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isApplicable(RefinableCacheableDependencyInterface $cacheability): bool {
-    $default_section_storage = $this->getDefaultSectionStorage();
-    $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
-    // Check that overrides are enabled and have at least one section.
-    return $default_section_storage->isOverridable() && $this->isOverridden();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isOverridden(): bool {
-    // If there are any sections at all, including a blank one, this section
-    // storage has been overridden. Do not use count() as it does not include
-    // blank sections.
-    return !empty($this->getSections());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool {
-    // Layout builder currently only supports the default view mode.
-    // @see https://www.drupal.org/node/2907413
-    if ($view_mode !== 'default') {
-      return FALSE;
+    /**
+     * Gets the entity storing the overrides.
+     *
+     * @return \Drupal\Core\Entity\FieldableEntityInterface
+     *   The entity storing the overrides.
+     */
+    protected function getEntity()
+    {
+        return $this->getContextValue('entity');
     }
-    $id = "$entity_type_id.$bundle.$view_mode";
-    $storage = $this->entityTypeManager->getStorage('entity_view_display');
-    $display = $storage->load($id);
-    return $display instanceof LayoutEntityDisplayInterface && $display->isOverridable();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageId(): string
+    {
+        $entity = $this->getEntity();
+        return $entity->getEntityTypeId() . '.' . $entity->id();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTempstoreKey(): string
+    {
+        $key = parent::getTempstoreKey();
+        $key .= '.' . $this->getContextValue('view_mode');
+
+        $entity = $this->getEntity();
+        // @todo Allow entities to provide this contextual information in
+        //   https://www.drupal.org/project/drupal/issues/3026957.
+        if ($entity instanceof TranslatableInterface) {
+            $key .= '.' . $entity->language()->getId();
+        }
+        return $key;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array
+    {
+        if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
+            return $this->getSectionStorageContextsForEntity($entity);
+        }
+        return [];
+    }
+
+    /**
+     * Extracts an entity from the route values.
+     *
+     * @param mixed $value
+     *   The raw value from the route.
+     * @param array $defaults
+     *   The route defaults array.
+     *
+     * @return \Drupal\Core\Entity\EntityInterface|null
+     *   The entity for the route, or NULL if none exist. The entity is not
+     *   guaranteed to be fieldable, or contain the necessary field for this
+     *   section storage plugin.
+     *
+     * @see \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute()
+     * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
+     */
+    private function extractEntityFromRoute($value, array $defaults): ?\Drupal\Core\Entity\FieldableEntityInterface
+    {
+        if (str_contains((string) $value, '.')) {
+            [$entity_type_id, $entity_id] = explode('.', (string) $value, 2);
+        } elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
+            $entity_type_id = $defaults['entity_type_id'];
+            $entity_id = $defaults[$entity_type_id];
+        } else {
+            return null;
+        }
+
+        $entity = $this->entityRepository->getActive($entity_type_id, $entity_id);
+        return ($entity instanceof FieldableEntityInterface) ? $entity : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRoutes(RouteCollection $collection): void
+    {
+        foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
+            // If the canonical route does not exist, do not provide any Layout
+            // Builder UI routes for this entity type.
+            if (!$collection->get("entity.$entity_type_id.canonical")) {
+                continue;
+            }
+
+            $defaults = [];
+            $defaults['entity_type_id'] = $entity_type_id;
+
+            // Retrieve the requirements from the canonical route.
+            $requirements = $collection->get("entity.$entity_type_id.canonical")->getRequirements();
+
+            $options = [];
+            // Ensure that upcasting is run in the correct order.
+            $options['parameters']['section_storage'] = [];
+            $options['parameters'][$entity_type_id]['type'] = 'entity:' . $entity_type_id;
+            $options['_admin_route'] = false;
+
+            $template = $entity_type->getLinkTemplate('canonical') . '/layout';
+            $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $template, $defaults, $requirements, $options, $entity_type_id, $entity_type_id);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return array<non-falsy-string, non-empty-array>
+     */
+    public function buildLocalTasks($base_plugin_definition): array
+    {
+        $local_tasks = [];
+        foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
+            $local_tasks["layout_builder.overrides.$entity_type_id.view"] = $base_plugin_definition + [
+              'route_name' => "layout_builder.overrides.$entity_type_id.view",
+              'weight' => 15,
+              'title' => $this->t('Layout'),
+              'base_route' => "entity.$entity_type_id.canonical",
+              'cache_contexts' => ['layout_builder_is_active:' . $entity_type_id],
+            ];
+        }
+        return $local_tasks;
+    }
+
+    /**
+     * Determines if this entity type's ID is stored as an integer.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   An entity type.
+     *
+     * @return bool
+     *   TRUE if this entity type's ID key is always an integer, FALSE otherwise.
+     *
+     * @deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use
+     *   \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead.
+     *
+     * @see https://www.drupal.org/node/3566814
+     */
+    protected function hasIntegerId(EntityTypeInterface $entity_type): ?bool
+    {
+        @trigger_error(__METHOD__ . "() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814", E_USER_DEPRECATED);
+        return $entity_type->hasIntegerId();
+    }
+
+    /**
+     * Returns an array of relevant entity types.
+     *
+     * @return \Drupal\Core\Entity\EntityTypeInterface[]
+     *   An array of entity types.
+     */
+    protected function getEntityTypes(): array
+    {
+        return array_filter($this->entityTypeManager->getDefinitions(), fn (EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical'));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultSectionStorage()
+    {
+        $display = LayoutBuilderEntityViewDisplay::collectRenderDisplay($this->getEntity(), $this->getContextValue('view_mode'));
+        return $this->sectionStorageManager->load('defaults', ['display' => EntityContext::fromEntity($display)]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRedirectUrl()
+    {
+        return $this->getEntity()->toUrl('canonical');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url
+    {
+        $entity = $this->getEntity();
+        $route_parameters[$entity->getEntityTypeId()] = $entity->id();
+        return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getEntity()->getEntityTypeId()}.$rel", $route_parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextsDuringPreview()
+    {
+        $contexts = parent::getContextsDuringPreview();
+
+        if (isset($contexts['entity'])) {
+            $contexts['layout_builder.entity'] = $contexts['entity'];
+            unset($contexts['entity']);
+        }
+        return $contexts;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getEntity()->label();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save()
+    {
+        return $this->getEntity()->save();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($operation, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        if ($account === null) {
+            $account = $this->currentUser;
+        }
+
+        $entity = $this->getEntity();
+
+        // Create an access result that will allow access to the layout if one of
+        // these conditions applies:
+        // 1. The user can configure any layouts.
+        $any_access = AccessResult::allowedIfHasPermission($account, 'configure any layout');
+        // 2. The user can configure layouts on all items of the bundle type.
+        $bundle_access = AccessResult::allowedIfHasPermission($account, "configure all {$entity->bundle()} {$entity->getEntityTypeId()} layout overrides");
+        // 3. The user can configure layouts items of this bundle type they can edit
+        //    AND the user has access to edit this entity.
+        $edit_only_bundle_access = AccessResult::allowedIfHasPermission($account, "configure editable {$entity->bundle()} {$entity->getEntityTypeId()} layout overrides");
+        $edit_only_bundle_access = $edit_only_bundle_access->andIf($entity->access('update', $account, true));
+
+        $result = $any_access
+          ->orIf($bundle_access)
+          ->orIf($edit_only_bundle_access);
+
+        // Access also depends on the default being enabled.
+        $result = $result->andIf($this->getDefaultSectionStorage()->access($operation, $account, true));
+        // Access also depends on the default layout being overridable.
+        $result = $result->andIf(AccessResult::allowedIf($this->getDefaultSectionStorage()->isOverridable())->addCacheableDependency($this->getDefaultSectionStorage()));
+        $result = $this->handleTranslationAccess($result, $operation, $account);
+        return $return_as_object ? $result : $result->isAllowed();
+    }
+
+    /**
+     * Handles access checks related to translations.
+     *
+     * @param \Drupal\Core\Access\AccessResult $result
+     *   The access result.
+     * @param string $operation
+     *   The operation to be performed.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The user for which to check access.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    protected function handleTranslationAccess(AccessResult $result, $operation, AccountInterface $account)
+    {
+        $entity = $this->getEntity();
+        // Access is always denied on non-default translations.
+        return $result->andIf(AccessResult::allowedIf(!($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())))->addCacheableDependency($entity);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isApplicable(RefinableCacheableDependencyInterface $cacheability): bool
+    {
+        $default_section_storage = $this->getDefaultSectionStorage();
+        $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
+        // Check that overrides are enabled and have at least one section.
+        return $default_section_storage->isOverridable() && $this->isOverridden();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isOverridden(): bool
+    {
+        // If there are any sections at all, including a blank one, this section
+        // storage has been overridden. Do not use count() as it does not include
+        // blank sections.
+        return !empty($this->getSections());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool
+    {
+        // Layout builder currently only supports the default view mode.
+        // @see https://www.drupal.org/node/2907413
+        if ($view_mode !== 'default') {
+            return false;
+        }
+        $id = "$entity_type_id.$bundle.$view_mode";
+        $storage = $this->entityTypeManager->getStorage('entity_view_display');
+        $display = $storage->load($id);
+        return $display instanceof LayoutEntityDisplayInterface && $display->isOverridable();
+    }
 
 }

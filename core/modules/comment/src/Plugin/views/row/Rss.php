@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\row;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -10,129 +12,132 @@ use Drupal\views\Plugin\views\row\RssPluginBase;
  * Plugin which formats the comments as RSS items.
  */
 #[ViewsRow(
-  id: "comment_rss",
-  title: new TranslatableMarkup("Comment"),
-  help: new TranslatableMarkup("Display the comment as RSS."),
-  theme: "views_view_row_rss",
-  register_theme: FALSE,
-  base: ["comment_field_data"],
-  display_types: ["feed"]
+    id: 'comment_rss',
+    title: new TranslatableMarkup('Comment'),
+    help: new TranslatableMarkup('Display the comment as RSS.'),
+    theme: 'views_view_row_rss',
+    register_theme: false,
+    base: ['comment_field_data'],
+    display_types: ['feed']
 )]
-class Rss extends RssPluginBase {
+class Rss extends RssPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected $base_table = 'comment_field_data';
 
-  /**
-   * {@inheritdoc}
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $base_table = 'comment_field_data';
+    /**
+     * {@inheritdoc}
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    public string $base_field = 'cid';
 
-  /**
-   * {@inheritdoc}
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public string $base_field = 'cid';
+    /**
+     * The field alias.
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    public string $field_alias;
 
-  /**
-   * The field alias.
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public string $field_alias;
+    /**
+     * @var \Drupal\comment\CommentInterface[]
+     */
+    protected $comments;
 
-  /**
-   * @var \Drupal\comment\CommentInterface[]
-   */
-  protected $comments;
+    /**
+     * {@inheritdoc}
+     */
+    protected $entityTypeId = 'comment';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $entityTypeId = 'comment';
+    /**
+     * {@inheritdoc}
+     */
+    public function preRender($result): void
+    {
+        $cids = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function preRender($result): void {
-    $cids = [];
+        foreach ($result as $row) {
+            $cids[] = $row->cid;
+        }
 
-    foreach ($result as $row) {
-      $cids[] = $row->cid;
+        $this->comments = $this->entityTypeManager->getStorage('comment')->loadMultiple($cids);
     }
 
-    $this->comments = $this->entityTypeManager->getStorage('comment')->loadMultiple($cids);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm_summary_options() {
-    $options = parent::buildOptionsForm_summary_options();
-    $options[$this::TITLE_VIEW_MODE] = $this->t('Title only');
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($row) {
-    global $base_url;
-
-    $cid = $row->{$this->field_alias};
-    if (!is_numeric($cid)) {
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm_summary_options()
+    {
+        $options = parent::buildOptionsForm_summary_options();
+        $options[$this::TITLE_VIEW_MODE] = $this->t('Title only');
+        return $options;
     }
 
-    $view_mode = $this->options['view_mode'];
+    /**
+     * {@inheritdoc}
+     */
+    public function render($row)
+    {
+        global $base_url;
 
-    // Load the specified comment and its associated node:
-    /** @var \Drupal\comment\CommentInterface $comment */
-    $comment = $this->comments[$cid];
-    if (empty($comment)) {
-      return;
+        $cid = $row->{$this->field_alias};
+        if (!is_numeric($cid)) {
+            return;
+        }
+
+        $view_mode = $this->options['view_mode'];
+
+        // Load the specified comment and its associated node:
+        /** @var \Drupal\comment\CommentInterface $comment */
+        $comment = $this->comments[$cid];
+        if (empty($comment)) {
+            return;
+        }
+
+        $comment->rss_namespaces = [];
+        $comment->rss_elements = [
+          [
+            'key' => 'pubDate',
+            'value' => gmdate('r', $comment->getCreatedTime()),
+          ],
+          [
+            'key' => 'dc:creator',
+            'value' => $comment->getAuthorName(),
+          ],
+          [
+            'key' => 'guid',
+            'value' => 'comment ' . $comment->id() . ' at ' . $base_url,
+            'attributes' => ['isPermaLink' => 'false'],
+          ],
+        ];
+
+        // The comment gets built and modules add to or modify
+        // $comment->rss_elements and $comment->rss_namespaces.
+        $build = $this->entityTypeManager->getViewBuilder('comment')->view($comment, $view_mode);
+        unset($build['#theme']);
+
+        if (!empty($comment->rss_namespaces)) {
+            $this->view->style_plugin->namespaces = array_merge($this->view->style_plugin->namespaces, $comment->rss_namespaces);
+        }
+
+        $item = new \stdClass();
+        if ($view_mode != $this::TITLE_VIEW_MODE) {
+            // We render comment contents.
+            $item->description = $build;
+        }
+        $item->title = $comment->label();
+        $item->link = $comment->toUrl('canonical', ['absolute' => true])->toString();
+        // Provide a reference so that the render call in
+        // template_preprocess_views_view_row_rss() can still access it.
+        $item->elements = &$comment->rss_elements;
+        $item->cid = $comment->id();
+        return [
+          '#theme' => $this->themeFunctions(),
+          '#view' => $this->view,
+          '#options' => $this->options,
+          '#row' => $item,
+        ];
     }
-
-    $comment->rss_namespaces = [];
-    $comment->rss_elements = [
-      [
-        'key' => 'pubDate',
-        'value' => gmdate('r', $comment->getCreatedTime()),
-      ],
-      [
-        'key' => 'dc:creator',
-        'value' => $comment->getAuthorName(),
-      ],
-      [
-        'key' => 'guid',
-        'value' => 'comment ' . $comment->id() . ' at ' . $base_url,
-        'attributes' => ['isPermaLink' => 'false'],
-      ],
-    ];
-
-    // The comment gets built and modules add to or modify
-    // $comment->rss_elements and $comment->rss_namespaces.
-    $build = $this->entityTypeManager->getViewBuilder('comment')->view($comment, $view_mode);
-    unset($build['#theme']);
-
-    if (!empty($comment->rss_namespaces)) {
-      $this->view->style_plugin->namespaces = array_merge($this->view->style_plugin->namespaces, $comment->rss_namespaces);
-    }
-
-    $item = new \stdClass();
-    if ($view_mode != $this::TITLE_VIEW_MODE) {
-      // We render comment contents.
-      $item->description = $build;
-    }
-    $item->title = $comment->label();
-    $item->link = $comment->toUrl('canonical', ['absolute' => TRUE])->toString();
-    // Provide a reference so that the render call in
-    // template_preprocess_views_view_row_rss() can still access it.
-    $item->elements = &$comment->rss_elements;
-    $item->cid = $comment->id();
-    return [
-      '#theme' => $this->themeFunctions(),
-      '#view' => $this->view,
-      '#options' => $this->options,
-      '#row' => $item,
-    ];
-  }
 
 }

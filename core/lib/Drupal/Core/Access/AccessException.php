@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Access;
 
 /**
@@ -8,5 +10,6 @@ namespace Drupal\Core\Access;
  * Examples could be invalid access callback return values, or invalid access
  * objects being used.
  */
-class AccessException extends \RuntimeException {
+class AccessException extends \RuntimeException
+{
 }

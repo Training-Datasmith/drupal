@@ -11,17 +11,18 @@ use Drupal\Component\Plugin\Derivative\DeriverBase;
  *
  * @see \Drupal\system\Tests\Menu\LocalActionTest
  */
-class LocalActionTest extends DeriverBase {
+class LocalActionTest extends DeriverBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        $this->derivatives['example'] = $base_plugin_definition + [
+          'title' => "<script>alert('Welcome to the derived jungle!')</script>",
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    $this->derivatives['example'] = $base_plugin_definition + [
-      'title' => "<script>alert('Welcome to the derived jungle!')</script>",
-    ];
-
-    return $this->derivatives;
-  }
+        return $this->derivatives;
+    }
 
 }

@@ -12,31 +12,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FilterGroupFormTest extends ViewTestBase {
+class FilterGroupFormTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static array $testViews = ['test_empty_group_form'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static array $testViews = ['test_empty_group_form'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
-
-  /**
-   * Tests a view with a grouped filter with empty options.
-   */
-  public function testFilterGroupFormEmpty(): void {
-    $this->drupalGet('/test-empty-groups');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Tests a view with a grouped filter with empty options.
+     */
+    public function testFilterGroupFormEmpty(): void
+    {
+        $this->drupalGet('/test-empty-groups');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

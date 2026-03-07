@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 /**
@@ -11,13 +13,14 @@ namespace Drupal\jsonapi\JsonApiResource;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class NullIncludedData extends IncludedData {
-
-  /**
-   * NullData constructor.
-   */
-  public function __construct() {
-    parent::__construct([]);
-  }
+class NullIncludedData extends IncludedData
+{
+    /**
+     * NullData constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct([]);
+    }
 
 }

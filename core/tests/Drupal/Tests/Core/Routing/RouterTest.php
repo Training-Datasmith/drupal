@@ -22,50 +22,51 @@ use Symfony\Component\Routing\RouteCollection;
  */
 #[CoversClass(Router::class)]
 #[Group('Routing')]
-class RouterTest extends UnitTestCase {
+class RouterTest extends UnitTestCase
+{
+    /**
+     * Tests matches with different fit order.
+     *
+     * @legacy-covers ::applyFitOrder
+     */
+    public function testMatchesWithDifferentFitOrder(): void
+    {
+        $route_provider = $this->prophesize(RouteProviderInterface::class);
 
-  /**
-   * Tests matches with different fit order.
-   *
-   * @legacy-covers ::applyFitOrder
-   */
-  public function testMatchesWithDifferentFitOrder(): void {
-    $route_provider = $this->prophesize(RouteProviderInterface::class);
+        $route_collection = new RouteCollection();
 
-    $route_collection = new RouteCollection();
+        $route = new Route('/user/{user}');
+        $route->setOption('compiler_class', RouteCompiler::class);
+        $route_collection->add('user_view', $route);
 
-    $route = new Route('/user/{user}');
-    $route->setOption('compiler_class', RouteCompiler::class);
-    $route_collection->add('user_view', $route);
+        $route = new Route('/user/login');
+        $route->setOption('compiler_class', RouteCompiler::class);
+        $route_collection->add('user_login', $route);
 
-    $route = new Route('/user/login');
-    $route->setOption('compiler_class', RouteCompiler::class);
-    $route_collection->add('user_login', $route);
+        $route_provider->getRouteCollectionForRequest(Argument::any())
+          ->willReturn($route_collection);
 
-    $route_provider->getRouteCollectionForRequest(Argument::any())
-      ->willReturn($route_collection);
+        $current_path_stack = $this->prophesize(CurrentPathStack::class);
+        $router = new Router($route_provider->reveal(), $current_path_stack->reveal());
 
-    $current_path_stack = $this->prophesize(CurrentPathStack::class);
-    $router = new Router($route_provider->reveal(), $current_path_stack->reveal());
+        $request_context = $this->createMock(RequestContext::class);
+        $request_context->expects($this->any())
+          ->method('getScheme')
+          ->willReturn('http');
+        $router->setContext($request_context);
 
-    $request_context = $this->createMock(RequestContext::class);
-    $request_context->expects($this->any())
-      ->method('getScheme')
-      ->willReturn('http');
-    $router->setContext($request_context);
+        $current_path_stack->getPath(Argument::any())->willReturn('/user/1');
+        $result = $router->match('/user/1');
 
-    $current_path_stack->getPath(Argument::any())->willReturn('/user/1');
-    $result = $router->match('/user/1');
+        $this->assertEquals('user_view', $result['_route']);
 
-    $this->assertEquals('user_view', $result['_route']);
+        $current_path_stack->getPath(Argument::any())->willReturn('/user/login');
+        $result = $router->match('/user/login');
 
-    $current_path_stack->getPath(Argument::any())->willReturn('/user/login');
-    $result = $router->match('/user/login');
+        $this->assertEquals('user_login', $result['_route']);
 
-    $this->assertEquals('user_login', $result['_route']);
-
-    $this->expectException(ResourceNotFoundException::class);
-    $router->match('/user/login ');
-  }
+        $this->expectException(ResourceNotFoundException::class);
+        $router->match('/user/login ');
+    }
 
 }

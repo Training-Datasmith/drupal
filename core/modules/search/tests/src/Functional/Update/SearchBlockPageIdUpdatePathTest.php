@@ -14,31 +14,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('search')]
 #[RunTestsInSeparateProcesses]
-class SearchBlockPageIdUpdatePathTest extends UpdatePathTestBase {
+class SearchBlockPageIdUpdatePathTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles()
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles() {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests update path for the search block's `page_id` setting from '' to NULL.
+     */
+    public function testRunUpdates()
+    {
+        $this->assertSame('', Block::load('olivero_search_form_narrow')->get('settings')['page_id']);
+        $this->assertSame('', Block::load('olivero_search_form_wide')->get('settings')['page_id']);
 
-  /**
-   * Tests update path for the search block's `page_id` setting from '' to NULL.
-   */
-  public function testRunUpdates() {
-    $this->assertSame('', Block::load('olivero_search_form_narrow')->get('settings')['page_id']);
-    $this->assertSame('', Block::load('olivero_search_form_wide')->get('settings')['page_id']);
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $this->assertNull(Block::load('olivero_search_form_narrow')->get('settings')['page_id']);
-    $this->assertNull(Block::load('olivero_search_form_wide')->get('settings')['page_id']);
-  }
+        $this->assertNull(Block::load('olivero_search_form_narrow')->get('settings')['page_id']);
+        $this->assertNull(Block::load('olivero_search_form_wide')->get('settings')['page_id']);
+    }
 
 }

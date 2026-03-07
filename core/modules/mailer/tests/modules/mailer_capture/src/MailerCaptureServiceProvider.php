@@ -20,19 +20,20 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
  * sidestepping mailer transport factory. As a result, the contents of the
  * system.mail mailer_dsn is irrelevant for transport service construction.
  */
-class MailerCaptureServiceProvider implements ServiceModifierInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    $definition = new Definition(CaptureTransport::class, [
-      new Reference(EventDispatcherInterface::class),
-    ]);
-    $definition->addMethodCall('setKeyValueFactory', [
-      new Reference(KeyValueFactoryInterface::class),
-    ]);
-    $container->setDefinition(TransportInterface::class, $definition->setPublic(TRUE));
-  }
+class MailerCaptureServiceProvider implements ServiceModifierInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        $definition = new Definition(CaptureTransport::class, [
+          new Reference(EventDispatcherInterface::class),
+        ]);
+        $definition->addMethodCall('setKeyValueFactory', [
+          new Reference(KeyValueFactoryInterface::class),
+        ]);
+        $container->setDefinition(TransportInterface::class, $definition->setPublic(true));
+    }
 
 }

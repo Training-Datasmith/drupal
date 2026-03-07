@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Installer;
 
 use Drupal\Core\Session\AccessPolicyBase;
@@ -13,32 +15,34 @@ use Drupal\Core\Session\RefinableCalculatedPermissionsInterface;
  * @internal
  *   The policy is only to be used by the installer.
  */
-final class InstallerAccessPolicy extends AccessPolicyBase {
+final class InstallerAccessPolicy extends AccessPolicyBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function calculatePermissions(AccountInterface $account, string $scope): RefinableCalculatedPermissionsInterface
+    {
+        $calculated_permissions = parent::calculatePermissions($account, $scope);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculatePermissions(AccountInterface $account, string $scope): RefinableCalculatedPermissionsInterface {
-    $calculated_permissions = parent::calculatePermissions($account, $scope);
+        // Prevent the access policy from working when not in the installer.
+        if (((int) $account->id()) !== 1 || !InstallerKernel::installationAttempted()) {
+            return $calculated_permissions;
+        }
 
-    // Prevent the access policy from working when not in the installer.
-    if (((int) $account->id()) !== 1 || !InstallerKernel::installationAttempted()) {
-      return $calculated_permissions;
+        return $calculated_permissions->addItem(new CalculatedPermissionsItem([], true));
     }
 
-    return $calculated_permissions->addItem(new CalculatedPermissionsItem([], TRUE));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPersistentCacheContexts(): array {
-    // Note that cache contexts in the installer are ignored because
-    // \Drupal\Core\Installer\NormalInstallerServiceProvider::register() changes
-    // everything to use a memory cache. If this was not the case, then this
-    // should also return a cache context related to the return value of
-    // \Drupal\Core\Installer\InstallerKernel::installationAttempted().
-    return ['user.is_super_user'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPersistentCacheContexts(): array
+    {
+        // Note that cache contexts in the installer are ignored because
+        // \Drupal\Core\Installer\NormalInstallerServiceProvider::register() changes
+        // everything to use a memory cache. If this was not the case, then this
+        // should also return a cache context related to the return value of
+        // \Drupal\Core\Installer\InstallerKernel::installationAttempted().
+        return ['user.is_super_user'];
+    }
 
 }

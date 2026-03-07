@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Database\fake;
 
 use Drupal\Core\Database\Connection as CoreConnection;
@@ -18,142 +20,159 @@ use Drupal\Core\Database\Transaction;
 /**
  * A fake Connection class for testing purposes.
  */
-class Connection extends CoreConnection {
+class Connection extends CoreConnection
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $statementClass = null;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $statementClass = NULL;
+    /**
+     * {@inheritdoc}
+     */
+    protected $statementWrapperClass = StatementWrapper::class;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $statementWrapperClass = StatementWrapper::class;
+    /**
+     * {@inheritdoc}
+     */
+    protected $identifierQuotes = ['"', '"'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $identifierQuotes = ['"', '"'];
+    /**
+     * Public property so we can test driver loading mechanism.
+     *
+     * @var string
+     * @see driver().
+     */
+    public $driver = 'fake';
 
-  /**
-   * Public property so we can test driver loading mechanism.
-   *
-   * @var string
-   * @see driver().
-   */
-  public $driver = 'fake';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function queryRange($query, $from, $count, array $args = [], array $options = []): NULL {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function driver() {
-    return $this->driver;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function databaseType(): string {
-    return 'fake';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createDatabase($database) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mapConditionOperator($operator): NULL {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function exceptionHandler(): ExceptionHandler {
-    return new ExceptionHandler();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function select($table, $alias = NULL, array $options = []): Select {
-    return new Select($this, $table, $alias, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function insert($table, array $options = []): Insert {
-    return new Insert($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function merge($table, array $options = []): Merge {
-    return new Merge($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function upsert($table, array $options = []): Upsert {
-    return new Upsert($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function update($table, array $options = []): Update {
-    return new Update($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($table, array $options = []): Delete {
-    return new Delete($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function truncate($table, array $options = []): Truncate {
-    return new Truncate($this, $table, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function schema() {
-    if (empty($this->schema)) {
-      $this->schema = new Schema($this);
+    /**
+     * {@inheritdoc}
+     */
+    public function queryRange($query, $from, $count, array $args = [], array $options = []): null
+    {
+        return null;
     }
-    return $this->schema;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function condition($conjunction): Condition {
-    return new Condition($conjunction, FALSE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function driver()
+    {
+        return $this->driver;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function startTransaction($name = ''): Transaction {
-    return new Transaction($this, $name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function databaseType(): string
+    {
+        return 'fake';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createDatabase($database)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function mapConditionOperator($operator): null
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exceptionHandler(): ExceptionHandler
+    {
+        return new ExceptionHandler();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function select($table, $alias = null, array $options = []): Select
+    {
+        return new Select($this, $table, $alias, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function insert($table, array $options = []): Insert
+    {
+        return new Insert($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function merge($table, array $options = []): Merge
+    {
+        return new Merge($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function upsert($table, array $options = []): Upsert
+    {
+        return new Upsert($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update($table, array $options = []): Update
+    {
+        return new Update($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($table, array $options = []): Delete
+    {
+        return new Delete($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function truncate($table, array $options = []): Truncate
+    {
+        return new Truncate($this, $table, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function schema()
+    {
+        if (empty($this->schema)) {
+            $this->schema = new Schema($this);
+        }
+        return $this->schema;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function condition($conjunction): Condition
+    {
+        return new Condition($conjunction, false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function startTransaction($name = ''): Transaction
+    {
+        return new Transaction($this, $name);
+    }
 
 }

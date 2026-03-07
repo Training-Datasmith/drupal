@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -20,46 +22,46 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  * object with overrides. Therefore, override free and editable configuration
  * objects are limited to those listed by the getEditableConfigNames() method.
  */
-trait ConfigFormBaseTrait {
+trait ConfigFormBaseTrait
+{
+    /**
+     * Retrieves a configuration object.
+     *
+     * @param string $name
+     *   The name of the configuration object to retrieve. The name corresponds to
+     *   a configuration file. For Drupal::config('my_module.admin'), the config
+     *   object returned will contain the contents of node.admin configuration
+     *   file.
+     *
+     * @return \Drupal\Core\Config\Config|\Drupal\Core\Config\ImmutableConfig
+     *   An editable configuration object if the given name is listed in the
+     *   getEditableConfigNames() method or an immutable configuration object if
+     *   not.
+     */
+    protected function config($name)
+    {
+        if (method_exists($this, 'configFactory')) {
+            $config_factory = $this->configFactory();
+        } elseif (property_exists($this, 'configFactory')) {
+            $config_factory = $this->configFactory;
+        }
+        if (!isset($config_factory) || !($config_factory instanceof ConfigFactoryInterface)) {
+            throw new \LogicException('No config factory available for ConfigFormBaseTrait');
+        }
+        if (in_array($name, $this->getEditableConfigNames())) {
+            // Get a mutable object from the factory.
+            return $config_factory->getEditable($name);
+        }
+        return $config_factory->get($name);
+    }
 
-  /**
-   * Retrieves a configuration object.
-   *
-   * @param string $name
-   *   The name of the configuration object to retrieve. The name corresponds to
-   *   a configuration file. For Drupal::config('my_module.admin'), the config
-   *   object returned will contain the contents of node.admin configuration
-   *   file.
-   *
-   * @return \Drupal\Core\Config\Config|\Drupal\Core\Config\ImmutableConfig
-   *   An editable configuration object if the given name is listed in the
-   *   getEditableConfigNames() method or an immutable configuration object if
-   *   not.
-   */
-  protected function config($name) {
-    if (method_exists($this, 'configFactory')) {
-      $config_factory = $this->configFactory();
-    }
-    elseif (property_exists($this, 'configFactory')) {
-      $config_factory = $this->configFactory;
-    }
-    if (!isset($config_factory) || !($config_factory instanceof ConfigFactoryInterface)) {
-      throw new \LogicException('No config factory available for ConfigFormBaseTrait');
-    }
-    if (in_array($name, $this->getEditableConfigNames())) {
-      // Get a mutable object from the factory.
-      return $config_factory->getEditable($name);
-    }
-    return $config_factory->get($name);
-  }
-
-  /**
-   * Gets the configuration names that will be editable.
-   *
-   * @return array
-   *   An array of configuration object names that are editable if called in
-   *   conjunction with the trait's config() method.
-   */
-  abstract protected function getEditableConfigNames();
+    /**
+     * Gets the configuration names that will be editable.
+     *
+     * @return array
+     *   An array of configuration object names that are editable if called in
+     *   conjunction with the trait's config() method.
+     */
+    abstract protected function getEditableConfigNames();
 
 }

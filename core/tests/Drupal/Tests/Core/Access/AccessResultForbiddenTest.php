@@ -14,35 +14,37 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(AccessResultForbidden::class)]
 #[Group('Access')]
-class AccessResultForbiddenTest extends UnitTestCase {
+class AccessResultForbiddenTest extends UnitTestCase
+{
+    /**
+     * Tests the construction of an AccessResultForbidden object.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::getReason
+     */
+    public function testConstruction(): void
+    {
 
-  /**
-   * Tests the construction of an AccessResultForbidden object.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::getReason
-   */
-  public function testConstruction(): void {
+        $a = new AccessResultForbidden();
+        $this->assertEquals(null, $a->getReason());
 
-    $a = new AccessResultForbidden();
-    $this->assertEquals(NULL, $a->getReason());
+        $reason = $this->getRandomGenerator()->string();
+        $b = new AccessResultForbidden($reason);
+        $this->assertEquals($reason, $b->getReason());
+    }
 
-    $reason = $this->getRandomGenerator()->string();
-    $b = new AccessResultForbidden($reason);
-    $this->assertEquals($reason, $b->getReason());
-  }
+    /**
+     * Tests setReason()
+     */
+    public function testSetReason(): void
+    {
+        $a = new AccessResultForbidden();
 
-  /**
-   * Tests setReason()
-   */
-  public function testSetReason(): void {
-    $a = new AccessResultForbidden();
+        $reason = $this->getRandomGenerator()->string();
+        $return = $a->setReason($reason);
 
-    $reason = $this->getRandomGenerator()->string();
-    $return = $a->setReason($reason);
-
-    $this->assertSame($reason, $a->getReason());
-    $this->assertSame($a, $return);
-  }
+        $this->assertSame($reason, $a->getReason());
+        $this->assertSame($a, $return);
+    }
 
 }

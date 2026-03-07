@@ -14,42 +14,45 @@ use JsonSchema\Validator;
 /**
  * Support methods for testing JSON API schema.
  */
-trait JsonApiJsonSchemaTestTrait {
-
-  use JsonSchemaTestTrait {
-    getNormalizationForValue as parentGetNormalizationForValue;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getJsonSchemaTestNormalizationFormat(): ?string {
-    return 'api_json';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getValidator(): Validator {
-    $uriRetriever = new UriRetriever();
-    $uriRetriever->setTranslation(
-      '|^' . JsonApiSpec::SUPPORTED_SPECIFICATION_JSON_SCHEMA . '#?|',
-      sprintf('file://%s/schema.json', realpath(__DIR__ . '/../../..'))
-    );
-    return new Validator(new Factory(
-      uriRetriever: $uriRetriever,
-    ));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getNormalizationForValue(mixed $value): mixed {
-    $normalization = $this->parentGetNormalizationForValue($value);
-    if ($normalization instanceof CacheableNormalization) {
-      return $normalization->getNormalization();
+trait JsonApiJsonSchemaTestTrait
+{
+    use JsonSchemaTestTrait {
+        getNormalizationForValue as parentGetNormalizationForValue;
     }
-    return $normalization;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getJsonSchemaTestNormalizationFormat(): ?string
+    {
+        return 'api_json';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getValidator(): Validator
+    {
+        $uriRetriever = new UriRetriever();
+        $uriRetriever->setTranslation(
+            '|^' . JsonApiSpec::SUPPORTED_SPECIFICATION_JSON_SCHEMA . '#?|',
+            sprintf('file://%s/schema.json', realpath(__DIR__ . '/../../..'))
+        );
+        return new Validator(new Factory(
+            uriRetriever: $uriRetriever,
+        ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNormalizationForValue(mixed $value): mixed
+    {
+        $normalization = $this->parentGetNormalizationForValue($value);
+        if ($normalization instanceof CacheableNormalization) {
+            return $normalization->getNormalization();
+        }
+        return $normalization;
+    }
 
 }

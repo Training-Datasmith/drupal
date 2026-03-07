@@ -7,6 +7,6 @@ namespace Drupal\decorated_service_test;
 /**
  * Decorator for the TestService class.
  */
-class TestServiceDecorator extends TestService {
-
+class TestServiceDecorator extends TestService
+{
 }

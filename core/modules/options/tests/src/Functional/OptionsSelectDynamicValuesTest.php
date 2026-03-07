@@ -12,37 +12,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('options')]
 #[RunTestsInSeparateProcesses]
-class OptionsSelectDynamicValuesTest extends OptionsDynamicValuesTestBase {
+class OptionsSelectDynamicValuesTest extends OptionsDynamicValuesTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests the 'options_select' widget (single select).
+     */
+    public function testSelectListDynamic(): void
+    {
+        // Create an entity.
+        $this->entity->save();
 
-  /**
-   * Tests the 'options_select' widget (single select).
-   */
-  public function testSelectListDynamic(): void {
-    // Create an entity.
-    $this->entity->save();
+        // Create a web user.
+        $web_user = $this->drupalCreateUser([
+          'view test entity',
+          'administer entity_test content',
+        ]);
+        $this->drupalLogin($web_user);
 
-    // Create a web user.
-    $web_user = $this->drupalCreateUser([
-      'view test entity',
-      'administer entity_test content',
-    ]);
-    $this->drupalLogin($web_user);
-
-    // Display form.
-    $this->drupalGet('entity_test_rev/manage/' . $this->entity->id() . '/edit');
-    $options = $this->assertSession()->selectExists('edit-test-options')->findAll('css', 'option');
-    $this->assertCount(count($this->test) + 1, $options);
-    foreach ($options as $option) {
-      $value = $option->getValue();
-      if ($value != '_none') {
-        $this->assertContains($value, $this->test);
-      }
+        // Display form.
+        $this->drupalGet('entity_test_rev/manage/' . $this->entity->id() . '/edit');
+        $options = $this->assertSession()->selectExists('edit-test-options')->findAll('css', 'option');
+        $this->assertCount(count($this->test) + 1, $options);
+        foreach ($options as $option) {
+            $value = $option->getValue();
+            if ($value != '_none') {
+                $this->assertContains($value, $this->test);
+            }
+        }
     }
-  }
 
 }

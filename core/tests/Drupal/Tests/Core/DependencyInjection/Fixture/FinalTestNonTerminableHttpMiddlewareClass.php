@@ -11,16 +11,18 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 /**
  * Stub of http_middleware class that is declared final but is not terminable.
  */
-final class FinalTestNonTerminableHttpMiddlewareClass implements HttpKernelInterface {
+final class FinalTestNonTerminableHttpMiddlewareClass implements HttpKernelInterface
+{
+    public function __construct(protected readonly HttpKernelInterface $inner)
+    {
+    }
 
-  public function __construct(protected readonly HttpKernelInterface $inner) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = TRUE): Response {
-    return new Response();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response
+    {
+        return new Response();
+    }
 
 }

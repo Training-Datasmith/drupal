@@ -10,22 +10,23 @@ use Drupal\Core\Extension\Requirement\RequirementSeverity;
 /**
  * Provides method for checking requirements during install time.
  */
-class ModuleInstallRequirements implements InstallRequirementsInterface {
+class ModuleInstallRequirements implements InstallRequirementsInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getRequirements(): array
+    {
+        $GLOBALS['module_install_requirements'] = 'module_install_requirements';
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getRequirements(): array {
-    $GLOBALS['module_install_requirements'] = 'module_install_requirements';
-
-    return [
-      'test.runtime.install' => [
-        'title' => t('InstallOk'),
-        'value' => t('None'),
-        'description' => t('Install OK.'),
-        'severity' => RequirementSeverity::OK,
-      ],
-    ];
-  }
+        return [
+          'test.runtime.install' => [
+            'title' => t('InstallOk'),
+            'value' => t('None'),
+            'description' => t('Install OK.'),
+            'severity' => RequirementSeverity::OK,
+          ],
+        ];
+    }
 
 }

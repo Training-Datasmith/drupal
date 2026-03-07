@@ -11,49 +11,52 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Controller to test concurrent CSRF token generation.
  */
-class TestController extends ControllerBase {
+class TestController extends ControllerBase
+{
+    /**
+     * Token generator service.
+     *
+     * @var \Drupal\Core\Access\CsrfTokenGenerator
+     */
+    protected $tokenGenerator;
 
-  /**
-   * Token generator service.
-   *
-   * @var \Drupal\Core\Access\CsrfTokenGenerator
-   */
-  protected $tokenGenerator;
+    /**
+     * Controller constructor.
+     */
+    public function __construct(CsrfTokenGenerator $token_generator)
+    {
+        $this->tokenGenerator = $token_generator;
+    }
 
-  /**
-   * Controller constructor.
-   */
-  public function __construct(CsrfTokenGenerator $token_generator) {
-    $this->tokenGenerator = $token_generator;
-  }
+    /**
+     * Helper page to load jQuery in test.
+     *
+     * @return array
+     *   Empty page with jQuery.
+     */
+    public function testMethod()
+    {
+        return [
+          '#markup' => '',
+          '#attached' => [
+            'library' => 'core/jquery',
+          ],
+        ];
+    }
 
-  /**
-   * Helper page to load jQuery in test.
-   *
-   * @return array
-   *   Empty page with jQuery.
-   */
-  public function testMethod() {
-    return [
-      '#markup' => '',
-      '#attached' => [
-        'library' => 'core/jquery',
-      ],
-    ];
-  }
-
-  /**
-   * Just return generated CSRF token for concurrent requests.
-   *
-   * We delay the response to the first request to make sure the second request
-   * is made when the first is not yet finished.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   CSRF token.
-   */
-  public function getCsrfToken(int $num) {
-    sleep($num);
-    return new JsonResponse($this->tokenGenerator->get());
-  }
+    /**
+     * Just return generated CSRF token for concurrent requests.
+     *
+     * We delay the response to the first request to make sure the second request
+     * is made when the first is not yet finished.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   CSRF token.
+     */
+    public function getCsrfToken(int $num)
+    {
+        sleep($num);
+        return new JsonResponse($this->tokenGenerator->get());
+    }
 
 }

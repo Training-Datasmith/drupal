@@ -14,21 +14,21 @@ use Drupal\migrate\Row;
  * Provides a testing process plugin that skips rows.
  */
 #[MigrateProcess('test_skip_row_process')]
-class TestSkipRowProcess extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    // Test both options for save_to_map.
-    $data = $row->getSourceProperty('data');
-    if ($data == 'skip_and_record (use plugin)') {
-      throw new MigrateSkipRowException('', TRUE);
+class TestSkipRowProcess extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        // Test both options for save_to_map.
+        $data = $row->getSourceProperty('data');
+        if ($data == 'skip_and_record (use plugin)') {
+            throw new MigrateSkipRowException('', true);
+        } elseif ($data == 'skip_and_do_not_record (use plugin)') {
+            throw new MigrateSkipRowException('', false);
+        }
+        return $value;
     }
-    elseif ($data == 'skip_and_do_not_record (use plugin)') {
-      throw new MigrateSkipRowException('', FALSE);
-    }
-    return $value;
-  }
 
 }

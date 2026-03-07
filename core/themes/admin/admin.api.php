@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks for the admin theme.
@@ -26,14 +28,15 @@
  * @see Helper::isContentForm()
  * @see hook_admin_content_form_routes_alter()
  */
-function hook_admin_content_form_routes(): array {
-  return [
-    // Layout a custom node form.
-    'entity.node.my_custom_form',
+function hook_admin_content_form_routes(): array
+{
+    return [
+      // Layout a custom node form.
+      'entity.node.my_custom_form',
 
-    // Layout a custom entity type edit form.
-    'entity.my_type.edit_form',
-  ];
+      // Layout a custom entity type edit form.
+      'entity.my_type.edit_form',
+    ];
 }
 
 /**
@@ -45,9 +48,10 @@ function hook_admin_content_form_routes(): array {
  * @see Helper::isContentForm()
  * @see hook_admin_content_form_routes()
  */
-function hook_admin_content_form_routes_alter(array &$routes): void {
-  // Example: disable admin edit form layout customizations for an entity type.
-  $routes = array_diff($routes, ['entity.my_type.edit_form']);
+function hook_admin_content_form_routes_alter(array &$routes): void
+{
+    // Example: disable admin edit form layout customizations for an entity type.
+    $routes = array_diff($routes, ['entity.my_type.edit_form']);
 }
 
 /**
@@ -56,12 +60,13 @@ function hook_admin_content_form_routes_alter(array &$routes): void {
  * @return string[]
  *   The list of form IDs.
  */
-function hook_admin_content_form_ignore_form_ids(): array {
-  return [
-    'media_library_add_form_',
-    'views_form_media_library_widget_',
-    'views_exposed_form',
-  ];
+function hook_admin_content_form_ignore_form_ids(): array
+{
+    return [
+      'media_library_add_form_',
+      'views_form_media_library_widget_',
+      'views_exposed_form',
+    ];
 }
 
 /**

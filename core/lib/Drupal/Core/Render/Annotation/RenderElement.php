@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Annotation;
 
 use Drupal\Component\Annotation\PluginID;
@@ -24,6 +26,6 @@ use Drupal\Component\Annotation\PluginID;
  *
  * @Annotation
  */
-class RenderElement extends PluginID {
-
+class RenderElement extends PluginID
+{
 }

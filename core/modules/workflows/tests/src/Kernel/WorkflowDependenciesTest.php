@@ -16,38 +16,39 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(Workflow::class)]
 #[Group('workflows')]
 #[RunTestsInSeparateProcesses]
-class WorkflowDependenciesTest extends KernelTestBase {
+class WorkflowDependenciesTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'workflows',
+      'workflow_type_test',
+      'workflow_third_party_settings_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'workflows',
-    'workflow_type_test',
-    'workflow_third_party_settings_test',
-  ];
+    /**
+     * Tests \Drupal\workflows\Entity\Workflow::onDependencyRemoval().
+     */
+    public function testOnDependencyRemoval(): void
+    {
+        // Create a workflow that has a dependency on a third party setting.
+        $workflow = Workflow::create([
+          'id' => 'test3',
+          'label' => 'Test workflow',
+          'type' => 'workflow_type_complex_test',
+        ]);
+        $workflow->setThirdPartySetting('workflow_third_party_settings_test', 'key', 'value');
+        $workflow->save();
+        $this->assertSame(['workflow_third_party_settings_test', 'workflow_type_test'], $workflow->getDependencies()['module']);
 
-  /**
-   * Tests \Drupal\workflows\Entity\Workflow::onDependencyRemoval().
-   */
-  public function testOnDependencyRemoval(): void {
-    // Create a workflow that has a dependency on a third party setting.
-    $workflow = Workflow::create([
-      'id' => 'test3',
-      'label' => 'Test workflow',
-      'type' => 'workflow_type_complex_test',
-    ]);
-    $workflow->setThirdPartySetting('workflow_third_party_settings_test', 'key', 'value');
-    $workflow->save();
-    $this->assertSame(['workflow_third_party_settings_test', 'workflow_type_test'], $workflow->getDependencies()['module']);
-
-    // Uninstall workflow_third_party_settings_test to ensure
-    // \Drupal\workflows\Entity\Workflow::onDependencyRemoval() works as
-    // expected.
-    \Drupal::service('module_installer')->uninstall(['node', 'workflow_third_party_settings_test']);
-    /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = \Drupal::entityTypeManager()->getStorage('workflow')->loadUnchanged($workflow->id());
-    $this->assertSame(['workflow_type_test'], $workflow->getDependencies()['module']);
-  }
+        // Uninstall workflow_third_party_settings_test to ensure
+        // \Drupal\workflows\Entity\Workflow::onDependencyRemoval() works as
+        // expected.
+        \Drupal::service('module_installer')->uninstall(['node', 'workflow_third_party_settings_test']);
+        /** @var \Drupal\workflows\WorkflowInterface $workflow */
+        $workflow = \Drupal::entityTypeManager()->getStorage('workflow')->loadUnchanged($workflow->id());
+        $this->assertSame(['workflow_type_test'], $workflow->getDependencies()['module']);
+    }
 
 }

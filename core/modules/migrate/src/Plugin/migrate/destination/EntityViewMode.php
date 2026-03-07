@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -28,23 +30,25 @@ use Drupal\migrate\Attribute\MigrateDestination;
  * "targetEntityType") to an "entity_view_mode" entity.
  */
 #[MigrateDestination('entity:entity_view_mode')]
-class EntityViewMode extends EntityConfigBase {
+class EntityViewMode extends EntityConfigBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['targetEntityType']['type'] = 'string';
+        $ids['mode']['type'] = 'string';
+        return $ids;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['targetEntityType']['type'] = 'string';
-    $ids['mode']['type'] = 'string';
-    return $ids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rollback(array $destination_identifier): void {
-    $destination_identifier = implode('.', $destination_identifier);
-    parent::rollback([$destination_identifier]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function rollback(array $destination_identifier): void
+    {
+        $destination_identifier = implode('.', $destination_identifier);
+        parent::rollback([$destination_identifier]);
+    }
 
 }

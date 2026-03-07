@@ -12,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Checks if a string conforms to the RFC 3986 host component.
  */
 #[Constraint(
-  id: 'UriHost',
-  label: new TranslatableMarkup('URI host', [], ['context' => 'Validation']),
+    id: 'UriHost',
+    label: new TranslatableMarkup('URI host', [], ['context' => 'Validation']),
 )]
-class UriHostConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public string $message = 'This value should conform to RFC 3986 URI host component.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class UriHostConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public string $message = 'This value should conform to RFC 3986 URI host component.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

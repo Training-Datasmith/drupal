@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Attribute\EntityReferenceSelection;
@@ -14,43 +16,47 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * not found.
  */
 #[EntityReferenceSelection(
-  id: "broken",
-  label: new TranslatableMarkup("Broken/Missing"),
-  group: '',
-  weight: -100,
+    id: 'broken',
+    label: new TranslatableMarkup('Broken/Missing'),
+    group: '',
+    weight: -100,
 )]
-class Broken extends SelectionPluginBase {
+class Broken extends SelectionPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildConfigurationForm($form, $form_state);
+        $form['selection_handler'] = [
+          '#markup' => $this->t('The selected selection handler is broken.'),
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
-    $form['selection_handler'] = [
-      '#markup' => $this->t('The selected selection handler is broken.'),
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getReferenceableEntities($match = null, $match_operator = 'CONTAINS', $limit = 0): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function countReferenceableEntities($match = null, $match_operator = 'CONTAINS'): int
+    {
+        return 0;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS'): int {
-    return 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateReferenceableEntities(array $ids): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateReferenceableEntities(array $ids): array
+    {
+        return [];
+    }
 
 }

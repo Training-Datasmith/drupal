@@ -11,4 +11,6 @@ namespace Drupal\plugin_test\Plugin\plugin_test\fruit;
  *   color = "orange"
  * )
  */
-class Orange implements FruitInterface {}
+class Orange implements FruitInterface
+{
+}

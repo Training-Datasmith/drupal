@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\Core\Url;
@@ -12,31 +14,33 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("comment_link_reply")]
-class LinkReply extends LinkBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
-    /** @var \Drupal\comment\CommentInterface $comment */
-    $comment = $this->getEntity($row);
-    if (!$comment) {
-      return NULL;
+#[ViewsField('comment_link_reply')]
+class LinkReply extends LinkBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url
+    {
+        /** @var \Drupal\comment\CommentInterface $comment */
+        $comment = $this->getEntity($row);
+        if (!$comment) {
+            return null;
+        }
+        return Url::fromRoute('comment.reply', [
+          'entity_type' => $comment->getCommentedEntityTypeId(),
+          'entity' => $comment->getCommentedEntityId(),
+          'field_name' => $comment->getFieldName(),
+          'pid' => $comment->id(),
+        ]);
     }
-    return Url::fromRoute('comment.reply', [
-      'entity_type' => $comment->getCommentedEntityTypeId(),
-      'entity' => $comment->getCommentedEntityId(),
-      'field_name' => $comment->getFieldName(),
-      'pid' => $comment->id(),
-    ]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Reply');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Reply');
+    }
 
 }

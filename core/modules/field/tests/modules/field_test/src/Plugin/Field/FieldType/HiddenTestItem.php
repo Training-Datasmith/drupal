@@ -11,13 +11,13 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines the 'hidden_test' entity field item.
  */
 #[FieldType(
-  id: "hidden_test_field",
-  label: new TranslatableMarkup("Hidden from UI test field"),
-  description: new TranslatableMarkup("Dummy hidden field type used for tests."),
-  default_widget: "test_field_widget",
-  default_formatter: "field_test_default",
-  no_ui: TRUE
+    id: 'hidden_test_field',
+    label: new TranslatableMarkup('Hidden from UI test field'),
+    description: new TranslatableMarkup('Dummy hidden field type used for tests.'),
+    default_widget: 'test_field_widget',
+    default_formatter: 'field_test_default',
+    no_ui: true
 )]
-class HiddenTestItem extends TestItem {
-
+class HiddenTestItem extends TestItem
+{
 }

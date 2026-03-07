@@ -21,59 +21,62 @@ use Symfony\Component\Routing\Route;
 #[CoversClass(ActiveWorkspaceCheck::class)]
 #[Group('workspaces')]
 #[Group('Access')]
-class ActiveWorkspaceCheckTest extends UnitTestCase {
+class ActiveWorkspaceCheckTest extends UnitTestCase
+{
+    /**
+     * The dependency injection container.
+     *
+     * @var \Symfony\Component\DependencyInjection\ContainerBuilder
+     */
+    protected $container;
 
-  /**
-   * The dependency injection container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerBuilder
-   */
-  protected $container;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->container = new ContainerBuilder();
+        $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
+        $cache_contexts_manager->assertValidTokens()->willReturn(true);
+        $cache_contexts_manager->reveal();
+        $this->container->set('cache_contexts_manager', $cache_contexts_manager);
+        \Drupal::setContainer($this->container);
+    }
 
-    $this->container = new ContainerBuilder();
-    $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
-    $cache_contexts_manager->assertValidTokens()->willReturn(TRUE);
-    $cache_contexts_manager->reveal();
-    $this->container->set('cache_contexts_manager', $cache_contexts_manager);
-    \Drupal::setContainer($this->container);
-  }
+    /**
+     * Provides data for the testAccess method.
+     *
+     * @return array
+     *   An array of test data.
+     */
+    public static function providerTestAccess()
+    {
+        return [
+          [[], false, false],
+          [[], true, false],
+          [['_has_active_workspace' => 'TRUE'], true, true, ['workspace']],
+          [['_has_active_workspace' => 'TRUE'], false, false, ['workspace']],
+          [['_has_active_workspace' => 'FALSE'], true, false, ['workspace']],
+          [['_has_active_workspace' => 'FALSE'], false, true, ['workspace']],
+        ];
+    }
 
-  /**
-   * Provides data for the testAccess method.
-   *
-   * @return array
-   *   An array of test data.
-   */
-  public static function providerTestAccess() {
-    return [
-      [[], FALSE, FALSE],
-      [[], TRUE, FALSE],
-      [['_has_active_workspace' => 'TRUE'], TRUE, TRUE, ['workspace']],
-      [['_has_active_workspace' => 'TRUE'], FALSE, FALSE, ['workspace']],
-      [['_has_active_workspace' => 'FALSE'], TRUE, FALSE, ['workspace']],
-      [['_has_active_workspace' => 'FALSE'], FALSE, TRUE, ['workspace']],
-    ];
-  }
+    /**
+     * Tests access.
+     */
+    #[DataProvider('providerTestAccess')]
+    public function testAccess($requirements, $has_active_workspace, $access, array $contexts = []): void
+    {
+        $route = new Route('', [], $requirements);
 
-  /**
-   * Tests access.
-   */
-  #[DataProvider('providerTestAccess')]
-  public function testAccess($requirements, $has_active_workspace, $access, array $contexts = []): void {
-    $route = new Route('', [], $requirements);
+        $workspace_manager = $this->prophesize(WorkspaceManagerInterface::class);
+        $workspace_manager->hasActiveWorkspace()->willReturn($has_active_workspace);
+        $access_check = new ActiveWorkspaceCheck($workspace_manager->reveal());
 
-    $workspace_manager = $this->prophesize(WorkspaceManagerInterface::class);
-    $workspace_manager->hasActiveWorkspace()->willReturn($has_active_workspace);
-    $access_check = new ActiveWorkspaceCheck($workspace_manager->reveal());
-
-    $access_result = AccessResult::allowedIf($access)->addCacheContexts($contexts);
-    $this->assertEquals($access_result, $access_check->access($route));
-  }
+        $access_result = AccessResult::allowedIf($access)->addCacheContexts($contexts);
+        $this->assertEquals($access_result, $access_check->access($route));
+    }
 
 }

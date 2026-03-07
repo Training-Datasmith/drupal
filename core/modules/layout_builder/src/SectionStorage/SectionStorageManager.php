@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\SectionStorage;
 
 use Drupal\Component\Plugin\Exception\ContextException;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\Context\ContextHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\layout_builder\Attribute\SectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -21,101 +22,106 @@ use Drupal\layout_builder\SupportAwareSectionStorageInterface;
  * While internally depending on the parent class is necessary, external code
  * should only use the methods available on that interface.
  */
-class SectionStorageManager extends DefaultPluginManager implements SupportAwareSectionStorageManagerInterface {
+class SectionStorageManager extends DefaultPluginManager implements SupportAwareSectionStorageManagerInterface
+{
+    /**
+     * Constructs a new SectionStorageManager object.
+     *
+     * @param \Traversable $namespaces
+     *   An object that implements \Traversable which contains the root paths
+     *   keyed by the corresponding namespace to look for plugin implementations.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   Cache backend instance to use.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler to invoke the alter hook with.
+     * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler
+     *   The context handler.
+     */
+    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler)
+    {
+        parent::__construct('Plugin/SectionStorage', $namespaces, $module_handler, SectionStorageInterface::class, SectionStorage::class, \Drupal\layout_builder\Annotation\SectionStorage::class);
 
-  /**
-   * Constructs a new SectionStorageManager object.
-   *
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler to invoke the alter hook with.
-   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler
-   *   The context handler.
-   */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler) {
-    parent::__construct('Plugin/SectionStorage', $namespaces, $module_handler, SectionStorageInterface::class, SectionStorage::class, \Drupal\layout_builder\Annotation\SectionStorage::class);
-
-    $this->alterInfo('layout_builder_section_storage');
-    $this->setCacheBackend($cache_backend, 'layout_builder_section_storage_plugins');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function findDefinitions() {
-    $definitions = parent::findDefinitions();
-
-    // Sort the definitions by their weight while preserving the original order
-    // for those with matching weights.
-    $weights = array_map(fn(SectionStorageDefinition $definition) => $definition->getWeight(), $definitions);
-    $ids = array_keys($definitions);
-    array_multisort($weights, $ids, $definitions);
-    return $definitions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load($type, array $contexts = []) {
-    $plugin = $this->loadEmpty($type);
-    try {
-      $this->contextHandler->applyContextMapping($plugin, $contexts);
+        $this->alterInfo('layout_builder_section_storage');
+        $this->setCacheBackend($cache_backend, 'layout_builder_section_storage_plugins');
     }
-    catch (ContextException) {
-      return NULL;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function findDefinitions()
+    {
+        $definitions = parent::findDefinitions();
+
+        // Sort the definitions by their weight while preserving the original order
+        // for those with matching weights.
+        $weights = array_map(fn (SectionStorageDefinition $definition) => $definition->getWeight(), $definitions);
+        $ids = array_keys($definitions);
+        array_multisort($weights, $ids, $definitions);
+        return $definitions;
     }
-    return $plugin;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function findByContext(array $contexts, RefinableCacheableDependencyInterface $cacheability) {
-    $storage_types = array_keys($this->contextHandler->filterPluginDefinitionsByContexts($contexts, $this->getDefinitions()));
-
-    // Add the manager as a cacheable dependency in order to vary by changes to
-    // the plugin definitions.
-    $cacheability->addCacheableDependency($this);
-
-    foreach ($storage_types as $type) {
-      $plugin = $this->load($type, $contexts);
-      if ($plugin && $plugin->isApplicable($cacheability)) {
+    /**
+     * {@inheritdoc}
+     */
+    public function load($type, array $contexts = [])
+    {
+        $plugin = $this->loadEmpty($type);
+        try {
+            $this->contextHandler->applyContextMapping($plugin, $contexts);
+        } catch (ContextException) {
+            return null;
+        }
         return $plugin;
-      }
     }
-    return NULL;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function loadEmpty($type) {
-    return $this->createInstance($type);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function findByContext(array $contexts, RefinableCacheableDependencyInterface $cacheability)
+    {
+        $storage_types = array_keys($this->contextHandler->filterPluginDefinitionsByContexts($contexts, $this->getDefinitions()));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function notSupported(string $entity_type_id, string $bundle, string $view_mode): bool {
-    $storage_types = array_keys($this->getDefinitions());
-    foreach ($storage_types as $storage_type) {
-      $storage = $this->loadEmpty($storage_type);
+        // Add the manager as a cacheable dependency in order to vary by changes to
+        // the plugin definitions.
+        $cacheability->addCacheableDependency($this);
 
-      if (!$storage instanceof SupportAwareSectionStorageInterface) {
-        @trigger_error('Section storage ' . $storage::class . ' not implementing \Drupal\layout_builder\SupportAwareSectionStorageInterface is deprecated in drupal:11.4.0 and is required from drupal:13.0.0. See https://www.drupal.org/node/3574738', E_USER_DEPRECATED);
-        return FALSE;
-      }
-
-      if ($storage->isSupported($entity_type_id, $bundle, $view_mode)) {
-        return FALSE;
-      }
+        foreach ($storage_types as $type) {
+            $plugin = $this->load($type, $contexts);
+            if ($plugin && $plugin->isApplicable($cacheability)) {
+                return $plugin;
+            }
+        }
+        return null;
     }
-    // No plugins support this view mode.
-    return TRUE;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function loadEmpty($type)
+    {
+        return $this->createInstance($type);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function notSupported(string $entity_type_id, string $bundle, string $view_mode): bool
+    {
+        $storage_types = array_keys($this->getDefinitions());
+        foreach ($storage_types as $storage_type) {
+            $storage = $this->loadEmpty($storage_type);
+
+            if (!$storage instanceof SupportAwareSectionStorageInterface) {
+                @trigger_error('Section storage ' . $storage::class . ' not implementing \Drupal\layout_builder\SupportAwareSectionStorageInterface is deprecated in drupal:11.4.0 and is required from drupal:13.0.0. See https://www.drupal.org/node/3574738', E_USER_DEPRECATED);
+                return false;
+            }
+
+            if ($storage->isSupported($entity_type_id, $bundle, $view_mode)) {
+                return false;
+            }
+        }
+        // No plugins support this view mode.
+        return true;
+    }
 
 }

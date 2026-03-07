@@ -13,16 +13,17 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('system')]
 #[Group('Test')]
-class TraitAccessTest extends UnitTestCase {
+class TraitAccessTest extends UnitTestCase
+{
+    use TestTrait;
 
-  use TestTrait;
-
-  /**
-   * Tests \Drupal\Tests\system\Traits\TestTrait::getStuff().
-   */
-  public function testSimpleStuff(): void {
-    $stuff = $this->getStuff();
-    $this->assertSame($stuff, 'stuff', "Same old stuff");
-  }
+    /**
+     * Tests \Drupal\Tests\system\Traits\TestTrait::getStuff().
+     */
+    public function testSimpleStuff(): void
+    {
+        $stuff = $this->getStuff();
+        $this->assertSame($stuff, 'stuff', 'Same old stuff');
+    }
 
 }

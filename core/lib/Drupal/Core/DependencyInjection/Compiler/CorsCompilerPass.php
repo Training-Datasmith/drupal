@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -10,22 +12,23 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *
  * @see core.services.yml
  */
-class CorsCompilerPass implements CompilerPassInterface {
+class CorsCompilerPass implements CompilerPassInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
+    {
+        $enabled = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process(ContainerBuilder $container): void {
-    $enabled = FALSE;
+        if ($cors_config = $container->getParameter('cors.config')) {
+            $enabled = !empty($cors_config['enabled']);
+        }
 
-    if ($cors_config = $container->getParameter('cors.config')) {
-      $enabled = !empty($cors_config['enabled']);
+        // Remove the CORS middleware completely in case it was not enabled.
+        if (!$enabled) {
+            $container->removeDefinition('http_middleware.cors');
+        }
     }
-
-    // Remove the CORS middleware completely in case it was not enabled.
-    if (!$enabled) {
-      $container->removeDefinition('http_middleware.cors');
-    }
-  }
 
 }

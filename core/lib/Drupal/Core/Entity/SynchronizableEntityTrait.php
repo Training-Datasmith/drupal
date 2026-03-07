@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 /**
@@ -7,29 +9,31 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_api
  */
-trait SynchronizableEntityTrait {
+trait SynchronizableEntityTrait
+{
+    /**
+     * Is entity being created updated or deleted through synchronization process.
+     *
+     * @var bool
+     */
+    protected $isSyncing = false;
 
-  /**
-   * Is entity being created updated or deleted through synchronization process.
-   *
-   * @var bool
-   */
-  protected $isSyncing = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function setSyncing($syncing)
+    {
+        $this->isSyncing = $syncing;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setSyncing($syncing) {
-    $this->isSyncing = $syncing;
+        return $this;
+    }
 
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isSyncing() {
-    return $this->isSyncing;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isSyncing()
+    {
+        return $this->isSyncing;
+    }
 
 }

@@ -13,23 +13,23 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class ShortcutSetJsonAnonTest extends ShortcutSetResourceTestBase {
+class ShortcutSetJsonAnonTest extends ShortcutSetResourceTestBase
+{
+    use AnonResourceTestTrait;
 
-  use AnonResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

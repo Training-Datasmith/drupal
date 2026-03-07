@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\link\Plugin\Field\FieldType;
 
 use Drupal\Component\Utility\Random;
@@ -19,181 +21,191 @@ use Drupal\link\LinkTitleVisibility;
  * Plugin implementation of the 'link' field type.
  */
 #[FieldType(
-  id: "link",
-  label: new TranslatableMarkup("Link"),
-  description: new TranslatableMarkup("A URL or internal path, with optional link text"),
-  default_widget: "link_default",
-  default_formatter: "link",
-  constraints: [
-    "LinkType" => [],
-    "LinkAccess" => [],
-    "LinkExternalProtocols" => [],
-    "LinkNotExistingInternal" => [],
-    "LinkTitleRequired" => [],
+    id: 'link',
+    label: new TranslatableMarkup('Link'),
+    description: new TranslatableMarkup('A URL or internal path, with optional link text'),
+    default_widget: 'link_default',
+    default_formatter: 'link',
+    constraints: [
+    'LinkType' => [],
+    'LinkAccess' => [],
+    'LinkExternalProtocols' => [],
+    'LinkNotExistingInternal' => [],
+    'LinkTitleRequired' => [],
   ]
 )]
-class LinkItem extends FieldItemBase implements LinkItemInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultFieldSettings() {
-    return [
-      'title' => LinkTitleVisibility::Optional->value,
-      'link_type' => LinkItemInterface::LINK_GENERIC,
-    ] + parent::defaultFieldSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['uri'] = DataDefinition::create('uri')
-      ->setLabel(new TranslatableMarkup('URI'));
-
-    $properties['title'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Link text'));
-
-    $properties['options'] = MapDataDefinition::create()
-      ->setLabel(new TranslatableMarkup('Options'));
-
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'uri' => [
-          'description' => 'The URI of the link.',
-          'type' => 'varchar',
-          'length' => 2048,
-        ],
-        'title' => [
-          'description' => 'The link text.',
-          'type' => 'varchar',
-          'length' => 255,
-        ],
-        'options' => [
-          'description' => 'Serialized array of options for the link.',
-          'type' => 'blob',
-          'size' => 'big',
-          'serialize' => TRUE,
-        ],
-      ],
-      'indexes' => [
-        'uri' => [['uri', 30]],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
-    $element = [];
-
-    $element['link_type'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Allowed link type'),
-      '#default_value' => $this->getSetting('link_type'),
-      '#options' => [
-        static::LINK_INTERNAL => $this->t('Internal links only'),
-        static::LINK_EXTERNAL => $this->t('External links only'),
-        static::LINK_GENERIC => $this->t('Both internal and external links'),
-      ],
-    ];
-
-    $element['title'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Allow link text'),
-      '#default_value' => $this->getSetting('title'),
-      '#options' => LinkTitleVisibility::asOptions(),
-    ];
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
-    $random = new Random();
-    if ($field_definition->getItemDefinition()->getSetting('link_type') & LinkItemInterface::LINK_EXTERNAL) {
-      // Set of possible top-level domains.
-      $tlds = ['com', 'net', 'gov', 'org', 'edu', 'biz', 'info'];
-      // Set random length for the domain name.
-      $domain_length = mt_rand(7, 15);
-
-      $link_title_visibility = LinkTitleVisibility::tryFrom((int) $field_definition->getSetting('title'));
-      $values['title'] = match ($link_title_visibility) {
-        LinkTitleVisibility::Required => $random->sentences(4),
-        // In case of optional title, randomize its generation.
-        LinkTitleVisibility::Optional => mt_rand(0, 1) ? $random->sentences(4) : '',
-        // Disabled, or a value that does not translate to an enum case.
-        default => '',
-      };
-      $values['uri'] = 'https://www.' . $random->word($domain_length) . '.' . $tlds[mt_rand(0, (count($tlds) - 1))];
+class LinkItem extends FieldItemBase implements LinkItemInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultFieldSettings()
+    {
+        return [
+          'title' => LinkTitleVisibility::Optional->value,
+          'link_type' => LinkItemInterface::LINK_GENERIC,
+        ] + parent::defaultFieldSettings();
     }
-    else {
-      $values['uri'] = 'base:' . $random->name(mt_rand(1, 64));
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['uri'] = DataDefinition::create('uri')
+          ->setLabel(new TranslatableMarkup('URI'));
+
+        $properties['title'] = DataDefinition::create('string')
+          ->setLabel(new TranslatableMarkup('Link text'));
+
+        $properties['options'] = MapDataDefinition::create()
+          ->setLabel(new TranslatableMarkup('Options'));
+
+        return $properties;
     }
-    return $values;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty(): bool {
-    $value = $this->get('uri')->getValue();
-    return $value === NULL || $value === '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isExternal() {
-    return $this->getUrl()->isExternal();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function mainPropertyName(): string {
-    return 'uri';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getUrl() {
-    return Url::fromUri($this->uri, (array) $this->options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(): ?string {
-    return $this->title ?: NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($values, $notify = TRUE): void {
-    // Treat the values as property value of the main property, if no array is
-    // given.
-    if (isset($values) && !is_array($values)) {
-      $values = [static::mainPropertyName() => $values];
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'uri' => [
+              'description' => 'The URI of the link.',
+              'type' => 'varchar',
+              'length' => 2048,
+            ],
+            'title' => [
+              'description' => 'The link text.',
+              'type' => 'varchar',
+              'length' => 255,
+            ],
+            'options' => [
+              'description' => 'Serialized array of options for the link.',
+              'type' => 'blob',
+              'size' => 'big',
+              'serialize' => true,
+            ],
+          ],
+          'indexes' => [
+            'uri' => [['uri', 30]],
+          ],
+        ];
     }
-    if (isset($values)) {
-      $values += [
-        'options' => [],
-      ];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fieldSettingsForm(array $form, FormStateInterface $form_state): array
+    {
+        $element = [];
+
+        $element['link_type'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Allowed link type'),
+          '#default_value' => $this->getSetting('link_type'),
+          '#options' => [
+            static::LINK_INTERNAL => $this->t('Internal links only'),
+            static::LINK_EXTERNAL => $this->t('External links only'),
+            static::LINK_GENERIC => $this->t('Both internal and external links'),
+          ],
+        ];
+
+        $element['title'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Allow link text'),
+          '#default_value' => $this->getSetting('title'),
+          '#options' => LinkTitleVisibility::asOptions(),
+        ];
+
+        return $element;
     }
-    parent::setValue($values, $notify);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateSampleValue(FieldDefinitionInterface $field_definition): array
+    {
+        $random = new Random();
+        if ($field_definition->getItemDefinition()->getSetting('link_type') & LinkItemInterface::LINK_EXTERNAL) {
+            // Set of possible top-level domains.
+            $tlds = ['com', 'net', 'gov', 'org', 'edu', 'biz', 'info'];
+            // Set random length for the domain name.
+            $domain_length = mt_rand(7, 15);
+
+            $link_title_visibility = LinkTitleVisibility::tryFrom((int) $field_definition->getSetting('title'));
+            $values['title'] = match ($link_title_visibility) {
+                LinkTitleVisibility::Required => $random->sentences(4),
+                // In case of optional title, randomize its generation.
+                LinkTitleVisibility::Optional => mt_rand(0, 1) ? $random->sentences(4) : '',
+                // Disabled, or a value that does not translate to an enum case.
+                default => '',
+            };
+            $values['uri'] = 'https://www.' . $random->word($domain_length) . '.' . $tlds[mt_rand(0, (count($tlds) - 1))];
+        } else {
+            $values['uri'] = 'base:' . $random->name(mt_rand(1, 64));
+        }
+        return $values;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty(): bool
+    {
+        $value = $this->get('uri')->getValue();
+        return $value === null || $value === '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isExternal()
+    {
+        return $this->getUrl()->isExternal();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function mainPropertyName(): string
+    {
+        return 'uri';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUrl()
+    {
+        return Url::fromUri($this->uri, (array) $this->options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title ?: null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($values, $notify = true): void
+    {
+        // Treat the values as property value of the main property, if no array is
+        // given.
+        if (isset($values) && !is_array($values)) {
+            $values = [static::mainPropertyName() => $values];
+        }
+        if (isset($values)) {
+            $values += [
+              'options' => [],
+            ];
+        }
+        parent::setValue($values, $notify);
+    }
 
 }

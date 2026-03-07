@@ -19,61 +19,63 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  */
 #[CoversClass(EntityResourceValidationTrait::class)]
 #[Group('rest')]
-class EntityResourceValidationTraitTest extends UnitTestCase {
+class EntityResourceValidationTraitTest extends UnitTestCase
+{
+    /**
+     * Tests validate.
+     */
+    public function testValidate(): void
+    {
+        $trait = new EntityResourceValidationTraitTestClass();
 
-  /**
-   * Tests validate.
-   */
-  public function testValidate(): void {
-    $trait = new EntityResourceValidationTraitTestClass();
+        $method = new \ReflectionMethod($trait, 'validate');
 
-    $method = new \ReflectionMethod($trait, 'validate');
+        $violations = $this->prophesize(EntityConstraintViolationList::class);
+        $violations->filterByFieldAccess()->shouldBeCalled()->willReturn([]);
+        $violations->count()->shouldBeCalled()->willReturn(0);
 
-    $violations = $this->prophesize(EntityConstraintViolationList::class);
-    $violations->filterByFieldAccess()->shouldBeCalled()->willReturn([]);
-    $violations->count()->shouldBeCalled()->willReturn(0);
+        $entity = $this->prophesize(Node::class);
+        $entity->validate()->shouldBeCalled()->willReturn($violations->reveal());
 
-    $entity = $this->prophesize(Node::class);
-    $entity->validate()->shouldBeCalled()->willReturn($violations->reveal());
+        $method->invoke($trait, $entity->reveal());
+    }
 
-    $method->invoke($trait, $entity->reveal());
-  }
+    /**
+     * Tests failed validate.
+     *
+     * @legacy-covers ::validate
+     */
+    public function testFailedValidate(): void
+    {
+        $violation1 = $this->prophesize(ConstraintViolationInterface::class);
+        $violation1->getPropertyPath()->willReturn('property_path');
+        $violation1->getMessage()->willReturn('message');
 
-  /**
-   * Tests failed validate.
-   *
-   * @legacy-covers ::validate
-   */
-  public function testFailedValidate(): void {
-    $violation1 = $this->prophesize(ConstraintViolationInterface::class);
-    $violation1->getPropertyPath()->willReturn('property_path');
-    $violation1->getMessage()->willReturn('message');
+        $violation2 = $this->prophesize(ConstraintViolationInterface::class);
+        $violation2->getPropertyPath()->willReturn('property_path');
+        $violation2->getMessage()->willReturn('message');
 
-    $violation2 = $this->prophesize(ConstraintViolationInterface::class);
-    $violation2->getPropertyPath()->willReturn('property_path');
-    $violation2->getMessage()->willReturn('message');
+        $entity = $this->prophesize(User::class);
 
-    $entity = $this->prophesize(User::class);
+        $violations = $this->getMockBuilder(EntityConstraintViolationList::class)
+          ->setConstructorArgs([$entity->reveal(), [$violation1->reveal(), $violation2->reveal()]])
+          ->onlyMethods(['filterByFieldAccess'])
+          ->getMock();
 
-    $violations = $this->getMockBuilder(EntityConstraintViolationList::class)
-      ->setConstructorArgs([$entity->reveal(), [$violation1->reveal(), $violation2->reveal()]])
-      ->onlyMethods(['filterByFieldAccess'])
-      ->getMock();
+        $violations->expects($this->once())
+          ->method('filterByFieldAccess')
+          ->willReturn([]);
 
-    $violations->expects($this->once())
-      ->method('filterByFieldAccess')
-      ->willReturn([]);
+        $entity->validate()->willReturn($violations);
 
-    $entity->validate()->willReturn($violations);
+        $trait = new EntityResourceValidationTraitTestClass();
 
-    $trait = new EntityResourceValidationTraitTestClass();
+        $method = new \ReflectionMethod($trait, 'validate');
 
-    $method = new \ReflectionMethod($trait, 'validate');
+        $this->expectException(UnprocessableEntityHttpException::class);
 
-    $this->expectException(UnprocessableEntityHttpException::class);
-
-    $method->invoke($trait, $entity->reveal());
-  }
+        $method->invoke($trait, $entity->reveal());
+    }
 
 }
 
@@ -83,7 +85,8 @@ class EntityResourceValidationTraitTest extends UnitTestCase {
  * Because the mock doesn't use the \Drupal namespace, the Symfony 4+ class
  * loader will throw a deprecation error.
  */
-class EntityResourceValidationTraitTestClass {
-  use EntityResourceValidationTrait;
+class EntityResourceValidationTraitTestClass
+{
+    use EntityResourceValidationTrait;
 
 }

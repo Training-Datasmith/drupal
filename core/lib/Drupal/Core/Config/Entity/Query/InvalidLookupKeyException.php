@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Entity\Query;
 
 /**
  * Exception thrown when a config entity uses an invalid lookup key.
  */
-class InvalidLookupKeyException extends \LogicException {
+class InvalidLookupKeyException extends \LogicException
+{
 }

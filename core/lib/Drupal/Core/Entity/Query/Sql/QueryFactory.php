@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Query\Sql;
 
 use Drupal\Core\Database\Connection;
@@ -13,42 +15,45 @@ use Drupal\Core\Entity\Query\QueryFactoryInterface;
  * @see \Drupal\Core\Entity\Query\Sql\Query
  * @see \Drupal\Core\Entity\Query\Sql\QueryAggregate
  */
-class QueryFactory implements QueryFactoryInterface {
+class QueryFactory implements QueryFactoryInterface
+{
+    /**
+     * The namespace of this class, the parent class etc.
+     *
+     * @var array
+     */
+    protected $namespaces;
 
-  /**
-   * The namespace of this class, the parent class etc.
-   *
-   * @var array
-   */
-  protected $namespaces;
+    /**
+     * Constructs a QueryFactory object.
+     *
+     * Initializes the list of namespaces used to locate query
+     * classes for different entity types.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection used by the entity query.
+     */
+    public function __construct(protected \Drupal\Core\Database\Connection $connection)
+    {
+        $this->namespaces = QueryBase::getNamespaces($this);
+    }
 
-  /**
-   * Constructs a QueryFactory object.
-   *
-   * Initializes the list of namespaces used to locate query
-   * classes for different entity types.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection used by the entity query.
-   */
-  public function __construct(protected \Drupal\Core\Database\Connection $connection) {
-    $this->namespaces = QueryBase::getNamespaces($this);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get(EntityTypeInterface $entity_type, $conjunction)
+    {
+        $class = QueryBase::getClass($this->namespaces, 'Query');
+        return new $class($entity_type, $conjunction, $this->connection, $this->namespaces);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get(EntityTypeInterface $entity_type, $conjunction) {
-    $class = QueryBase::getClass($this->namespaces, 'Query');
-    return new $class($entity_type, $conjunction, $this->connection, $this->namespaces);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
-    $class = QueryBase::getClass($this->namespaces, 'QueryAggregate');
-    return new $class($entity_type, $conjunction, $this->connection, $this->namespaces);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAggregate(EntityTypeInterface $entity_type, $conjunction)
+    {
+        $class = QueryBase::getClass($this->namespaces, 'QueryAggregate');
+        return new $class($entity_type, $conjunction, $this->connection, $this->namespaces);
+    }
 
 }

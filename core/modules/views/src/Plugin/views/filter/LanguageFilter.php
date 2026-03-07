@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\views\Attribute\ViewsFilter;
@@ -14,56 +15,60 @@ use Drupal\views\Plugin\views\PluginBase;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("language")]
-class LanguageFilter extends InOperator implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a new LanguageFilter instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValueOptions() {
-    if (!isset($this->valueOptions)) {
-      $this->valueTitle = $this->t('Language');
-      // Pass the current values so options that are already selected do not get
-      // lost when there are changes in the language configuration.
-      $this->valueOptions = $this->listLanguages(LanguageInterface::STATE_ALL | LanguageInterface::STATE_SITE_DEFAULT | PluginBase::INCLUDE_NEGOTIATED, array_keys($this->value));
-    }
-    return $this->valueOptions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    // No point in displaying the language filter on monolingual sites,
-    // as only one language value is available.
-    if (!$this->languageManager->isMultilingual()) {
-      return;
+#[ViewsFilter('language')]
+class LanguageFilter extends InOperator implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a new LanguageFilter instance.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    parent::query();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getValueOptions()
+    {
+        if (!isset($this->valueOptions)) {
+            $this->valueTitle = $this->t('Language');
+            // Pass the current values so options that are already selected do not get
+            // lost when there are changes in the language configuration.
+            $this->valueOptions = $this->listLanguages(LanguageInterface::STATE_ALL | LanguageInterface::STATE_SITE_DEFAULT | PluginBase::INCLUDE_NEGOTIATED, array_keys($this->value));
+        }
+        return $this->valueOptions;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access(AccountInterface $account): bool {
-    return $this->languageManager->isMultilingual() && parent::access($account);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        // No point in displaying the language filter on monolingual sites,
+        // as only one language value is available.
+        if (!$this->languageManager->isMultilingual()) {
+            return;
+        }
+
+        parent::query();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access(AccountInterface $account): bool
+    {
+        return $this->languageManager->isMultilingual() && parent::access($account);
+    }
 
 }

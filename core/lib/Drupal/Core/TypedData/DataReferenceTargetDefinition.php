@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
@@ -14,21 +16,22 @@ namespace Drupal\Core\TypedData;
  *
  * @see \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::preSave()
  */
-class DataReferenceTargetDefinition extends DataDefinition {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConstraints() {
-    $constraints = parent::getConstraints();
-    // If this data definition is marked as required for the sake of schema
-    // definitions, we don't enforce it using the NotNull constraint. Instead
-    // \Drupal\Core\Field\EntityReferenceItem is validated by the
-    // 'ValidReference' constraint that operates at the field-item level. This
-    // constraint takes into consideration that the target_id property can
-    // be derived from the entity property.
-    unset($constraints['NotNull']);
-    return $constraints;
-  }
+class DataReferenceTargetDefinition extends DataDefinition
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getConstraints()
+    {
+        $constraints = parent::getConstraints();
+        // If this data definition is marked as required for the sake of schema
+        // definitions, we don't enforce it using the NotNull constraint. Instead
+        // \Drupal\Core\Field\EntityReferenceItem is validated by the
+        // 'ValidReference' constraint that operates at the field-item level. This
+        // constraint takes into consideration that the target_id property can
+        // be derived from the entity property.
+        unset($constraints['NotNull']);
+        return $constraints;
+    }
 
 }

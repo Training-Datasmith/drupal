@@ -17,53 +17,55 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class ArgumentTransformTermTest extends TaxonomyTestBase {
+class ArgumentTransformTermTest extends TaxonomyTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_argument_transform_term'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_argument_transform_term'];
+    /**
+     * Tests term argument transformation of hyphens and spaces.
+     *
+     * @param string $name
+     *   The name of the taxonomy term to use for the test.
+     */
+    #[DataProvider('termArgumentTransformationProvider')]
+    public function testTermArgumentTransformation($name): void
+    {
+        /** @var \Drupal\taxonomy\TermInterface $term */
+        $term = $this->createTerm(['name' => $name]);
 
-  /**
-   * Tests term argument transformation of hyphens and spaces.
-   *
-   * @param string $name
-   *   The name of the taxonomy term to use for the test.
-   */
-  #[DataProvider('termArgumentTransformationProvider')]
-  public function testTermArgumentTransformation($name): void {
-    /** @var \Drupal\taxonomy\TermInterface $term */
-    $term = $this->createTerm(['name' => $name]);
+        /** @var \Drupal\views\ViewExecutable $view */
+        $view = Views::getView('test_argument_transform_term');
+        $view->initHandlers();
 
-    /** @var \Drupal\views\ViewExecutable $view */
-    $view = Views::getView('test_argument_transform_term');
-    $view->initHandlers();
+        /** @var string $hyphenated_term */
+        $hyphenated_term = str_replace(' ', '-', $term->label());
+        $this->assertTrue($view->argument['tid']->setArgument($hyphenated_term));
+        // Assert hyphens are converted back to spaces.
+        $this->assertEquals($term->label(), $view->argument['tid']->argument);
+    }
 
-    /** @var string $hyphenated_term */
-    $hyphenated_term = str_replace(' ', '-', $term->label());
-    $this->assertTrue($view->argument['tid']->setArgument($hyphenated_term));
-    // Assert hyphens are converted back to spaces.
-    $this->assertEquals($term->label(), $view->argument['tid']->argument);
-  }
-
-  /**
-   * Provides data for testTermArgumentTransformation().
-   *
-   * @return array[]
-   *   Test data.
-   */
-  public static function termArgumentTransformationProvider() {
-    return [
-      'space in the middle' => [
-        'name' => Random::machineName() . ' ' . Random::machineName(),
-      ],
-      'space at the start' => [
-        'name' => ' ' . Random::machineName(),
-      ],
-      'space at the end' => [
-        'name' => Random::machineName() . ' ',
-      ],
-    ];
-  }
+    /**
+     * Provides data for testTermArgumentTransformation().
+     *
+     * @return array[]
+     *   Test data.
+     */
+    public static function termArgumentTransformationProvider()
+    {
+        return [
+          'space in the middle' => [
+            'name' => Random::machineName() . ' ' . Random::machineName(),
+          ],
+          'space at the start' => [
+            'name' => ' ' . Random::machineName(),
+          ],
+          'space at the end' => [
+            'name' => Random::machineName() . ' ',
+          ],
+        ];
+    }
 
 }

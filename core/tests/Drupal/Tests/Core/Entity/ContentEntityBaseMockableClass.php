@@ -9,5 +9,6 @@ use Drupal\Core\Entity\ContentEntityBase;
 /**
  * A class extending ContentEntityBase for mocking purposes.
  */
-class ContentEntityBaseMockableClass extends ContentEntityBase {
+class ContentEntityBaseMockableClass extends ContentEntityBase
+{
 }

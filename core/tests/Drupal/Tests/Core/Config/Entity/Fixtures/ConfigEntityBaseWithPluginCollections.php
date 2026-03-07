@@ -13,5 +13,6 @@ use Drupal\Core\Entity\EntityWithPluginCollectionInterface;
  * @see \Drupal\Tests\Core\Config\Entity\ConfigEntityBaseUnitTest::testCalculateDependenciesWithPluginCollections()
  * @see \Drupal\Core\Config\Entity\ConfigEntityBase::calculateDependencies()
  */
-abstract class ConfigEntityBaseWithPluginCollections extends ConfigEntityBase implements EntityWithPluginCollectionInterface {
+abstract class ConfigEntityBaseWithPluginCollections extends ConfigEntityBase implements EntityWithPluginCollectionInterface
+{
 }

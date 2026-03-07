@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -13,17 +15,18 @@ use Drupal\Core\TypedData\Type\UriInterface;
  * The plain value of a URI is an absolute URI represented as PHP string.
  */
 #[DataType(
-  id: "uri",
-  label: new TranslatableMarkup("URI")
+    id: 'uri',
+    label: new TranslatableMarkup('URI')
 )]
-class Uri extends StringData implements UriInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'string', 'format' => 'uri'])]
-  public function getCastedValue() {
-    return parent::getCastedValue();
-  }
+class Uri extends StringData implements UriInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'string', 'format' => 'uri'])]
+    public function getCastedValue()
+    {
+        return parent::getCastedValue();
+    }
 
 }

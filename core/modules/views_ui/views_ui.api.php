@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  */
@@ -34,8 +36,9 @@ use Drupal\views_ui\ViewUI;
  *
  * @see \Drupal\views_ui\ViewUI::renderDisplayTop()
  */
-function hook_views_ui_display_top_alter(array &$build, ViewUI $view, $display_id): void {
-  $build['custom']['#markup'] = 'This text should always appear';
+function hook_views_ui_display_top_alter(array &$build, ViewUI $view, $display_id): void
+{
+    $build['custom']['#markup'] = 'This text should always appear';
 }
 
 /**
@@ -56,8 +59,9 @@ function hook_views_ui_display_top_alter(array &$build, ViewUI $view, $display_i
  *
  * @see \Drupal\views_ui\ViewEditForm::getDisplayTab()
  */
-function hook_views_ui_display_tab_alter(array &$build, ViewUI $view, $display_id): void {
-  $build['custom']['#markup'] = 'This text should always appear';
+function hook_views_ui_display_tab_alter(array &$build, ViewUI $view, $display_id): void
+{
+    $build['custom']['#markup'] = 'This text should always appear';
 }
 
 /**
@@ -74,11 +78,12 @@ function hook_views_ui_display_tab_alter(array &$build, ViewUI $view, $display_i
  *
  * @see \Drupal\views_ui\ViewUI::renderDisplayTop()
  */
-function hook_views_ui_display_top_links_alter(array &$links, ViewExecutable $view, $display_id): void {
-  // Put the export link first in the list.
-  if (isset($links['export'])) {
-    $links = ['export' => $links['export']] + $links;
-  }
+function hook_views_ui_display_top_links_alter(array &$links, ViewExecutable $view, $display_id): void
+{
+    // Put the export link first in the list.
+    if (isset($links['export'])) {
+        $links = ['export' => $links['export']] + $links;
+    }
 }
 
 /**

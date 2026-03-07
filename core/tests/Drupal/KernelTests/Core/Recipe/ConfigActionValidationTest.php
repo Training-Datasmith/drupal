@@ -21,55 +21,56 @@ use PHPUnit\Framework\Attributes\TestWith;
  */
 #[Group('Recipe')]
 #[RunTestsInSeparateProcesses]
-class ConfigActionValidationTest extends KernelTestBase {
+class ConfigActionValidationTest extends KernelTestBase
+{
+    use RecipeTestTrait;
 
-  use RecipeTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block_content',
+      'link',
+      'node',
+      'system',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block_content',
-    'link',
-    'node',
-    'system',
-    'user',
-  ];
+    /**
+     * {@inheritdoc}
+     *
+     * This test requires that we save invalid config, so we can test that it gets
+     * validated after applying a recipe.
+     */
+    protected $strictConfigSchema = false;
 
-  /**
-   * {@inheritdoc}
-   *
-   * This test requires that we save invalid config, so we can test that it gets
-   * validated after applying a recipe.
-   */
-  protected $strictConfigSchema = FALSE;
-
-  /**
+    /**
  * Tests config actions are validated.
  */
-  #[TestWith(["block_content_type"])]
-  #[TestWith(["node_type"])]
-  #[TestWith(["menu"])]
-  public function testConfigActionsAreValidated(string $entity_type_id): void {
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
-    $storage = $this->container->get(EntityTypeManagerInterface::class)
-      ->getStorage($entity_type_id);
+    #[TestWith(['block_content_type'])]
+    #[TestWith(['node_type'])]
+    #[TestWith(['menu'])]
+    public function testConfigActionsAreValidated(string $entity_type_id): void
+    {
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
+        $storage = $this->container->get(EntityTypeManagerInterface::class)
+          ->getStorage($entity_type_id);
 
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityTypeInterface $entity_type */
-    $entity_type = $storage->getEntityType();
-    // If there is a label key, it's safe to assume that it's not allowed to be
-    // empty. We don't care whether it's immutable; we just care that the value
-    // the config action sets it to (an empty string) violates config schema.
-    $label_key = $entity_type->getKey('label');
-    $this->assertNotEmpty($label_key);
-    $entity = $storage->create([
-      $entity_type->getKey('id') => 'test',
-      $label_key => 'Test',
-    ]);
-    $entity->save();
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityTypeInterface $entity_type */
+        $entity_type = $storage->getEntityType();
+        // If there is a label key, it's safe to assume that it's not allowed to be
+        // empty. We don't care whether it's immutable; we just care that the value
+        // the config action sets it to (an empty string) violates config schema.
+        $label_key = $entity_type->getKey('label');
+        $this->assertNotEmpty($label_key);
+        $entity = $storage->create([
+          $entity_type->getKey('id') => 'test',
+          $label_key => 'Test',
+        ]);
+        $entity->save();
 
-    $config_name = $entity->getConfigDependencyName();
-    $recipe_data = <<<YAML
+        $config_name = $entity->getConfigDependencyName();
+        $recipe_data = <<<YAML
 name: Config actions making bad decisions
 config:
   actions:
@@ -78,39 +79,40 @@ config:
         $label_key: ''
 YAML;
 
-    $recipe = $this->createRecipe($recipe_data);
-    try {
-      RecipeRunner::processRecipe($recipe);
-      $this->fail('An exception should have been thrown.');
+        $recipe = $this->createRecipe($recipe_data);
+        try {
+            RecipeRunner::processRecipe($recipe);
+            $this->fail('An exception should have been thrown.');
+        } catch (InvalidConfigException $e) {
+            $this->assertCount(1, $e->violations);
+            $violation = $e->violations->get(0);
+            $this->assertSame($label_key, $violation->getPropertyPath());
+            $this->assertSame('This value should not be blank.', (string) $violation->getMessage());
+        }
     }
-    catch (InvalidConfigException $e) {
-      $this->assertCount(1, $e->violations);
-      $violation = $e->violations->get(0);
-      $this->assertSame($label_key, $violation->getPropertyPath());
-      $this->assertSame("This value should not be blank.", (string) $violation->getMessage());
+
+    /**
+     * Tests validating that config actions' dependencies are present.
+     *
+     * Tests that the all of the config listed in a recipe's config actions are
+     * provided by extensions that will be installed by the recipe, or one of its
+     * dependencies (no matter how deeply nested).
+     */
+    #[TestWith(['direct_dependency'])]
+    #[TestWith(['indirect_dependency_one_level_down'])]
+    #[TestWith(['indirect_dependency_two_levels_down'])]
+    #[DoesNotPerformAssertions]
+    public function testConfigActionDependenciesAreValidated(string $name): void
+    {
+        Recipe::createFromDirectory("core/tests/fixtures/recipes/config_actions_dependency_validation/$name");
     }
-  }
 
-  /**
-   * Tests validating that config actions' dependencies are present.
-   *
-   * Tests that the all of the config listed in a recipe's config actions are
-   * provided by extensions that will be installed by the recipe, or one of its
-   * dependencies (no matter how deeply nested).
-   */
-  #[TestWith(["direct_dependency"])]
-  #[TestWith(["indirect_dependency_one_level_down"])]
-  #[TestWith(["indirect_dependency_two_levels_down"])]
-  #[DoesNotPerformAssertions]
-  public function testConfigActionDependenciesAreValidated(string $name): void {
-    Recipe::createFromDirectory("core/tests/fixtures/recipes/config_actions_dependency_validation/$name");
-  }
-
-  /**
-   * Tests config action validation for missing dependency.
-   */
-  public function testConfigActionMissingDependency(): void {
-    $recipe_data = <<<YAML
+    /**
+     * Tests config action validation for missing dependency.
+     */
+    public function testConfigActionMissingDependency(): void
+    {
+        $recipe_data = <<<YAML
 name: Config actions making bad decisions
 config:
   actions:
@@ -119,16 +121,15 @@ config:
         label: ''
 YAML;
 
-    try {
-      $this->createRecipe($recipe_data);
-      $this->fail('An exception should have been thrown.');
+        try {
+            $this->createRecipe($recipe_data);
+            $this->fail('An exception should have been thrown.');
+        } catch (RecipeFileException $e) {
+            $this->assertIsObject($e->violations);
+            $this->assertCount(1, $e->violations);
+            $this->assertSame('[config][actions][random.config]', $e->violations[0]->getPropertyPath());
+            $this->assertSame('Config actions cannot be applied to random.config because the random extension is not installed, and is not installed by this recipe or any of the recipes it depends on.', (string) $e->violations[0]->getMessage());
+        }
     }
-    catch (RecipeFileException $e) {
-      $this->assertIsObject($e->violations);
-      $this->assertCount(1, $e->violations);
-      $this->assertSame('[config][actions][random.config]', $e->violations[0]->getPropertyPath());
-      $this->assertSame("Config actions cannot be applied to random.config because the random extension is not installed, and is not installed by this recipe or any of the recipes it depends on.", (string) $e->violations[0]->getMessage());
-    }
-  }
 
 }

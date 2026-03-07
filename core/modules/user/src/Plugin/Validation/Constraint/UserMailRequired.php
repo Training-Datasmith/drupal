@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,29 +16,29 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * This allows users without email address to be edited and deleted.
  */
 #[Constraint(
-  id: 'UserMailRequired',
-  label: new TranslatableMarkup('User email required', [], ['context' => 'Validation'])
+    id: 'UserMailRequired',
+    label: new TranslatableMarkup('User email required', [], ['context' => 'Validation'])
 )]
-class UserMailRequired extends SymfonyConstraint {
+class UserMailRequired extends SymfonyConstraint
+{
+    /**
+     * Violation message. Use the same message as FormValidator.
+     *
+     * Note that the name argument is not sanitized so that translators only have
+     * one string to translate. The name is sanitized in self::validate().
+     *
+     * @var string
+     */
+    public $message = '@name field is required.';
 
-  /**
-   * Violation message. Use the same message as FormValidator.
-   *
-   * Note that the name argument is not sanitized so that translators only have
-   * one string to translate. The name is sanitized in self::validate().
-   *
-   * @var string
-   */
-  public $message = '@name field is required.';
-
-  public function __construct(
-    mixed $options = NULL,
-    ?string $message = NULL,
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->message = $message ?? $this->message;
-  }
+    public function __construct(
+        mixed $options = null,
+        ?string $message = null,
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->message = $message ?? $this->message;
+    }
 
 }

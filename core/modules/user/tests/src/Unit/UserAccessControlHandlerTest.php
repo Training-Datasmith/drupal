@@ -24,409 +24,423 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversClass(UserAccessControlHandler::class)]
 #[Group('Drupal')]
 #[Group('User')]
-class UserAccessControlHandlerTest extends UnitTestCase {
+class UserAccessControlHandlerTest extends UnitTestCase
+{
+    /**
+     * The user access controller to test.
+     *
+     * @var \Drupal\user\UserAccessControlHandler
+     */
+    protected $accessControlHandler;
 
-  /**
-   * The user access controller to test.
-   *
-   * @var \Drupal\user\UserAccessControlHandler
-   */
-  protected $accessControlHandler;
+    /**
+     * The mock user account with view access.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $viewer;
 
-  /**
-   * The mock user account with view access.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $viewer;
+    /**
+     * The mock user account with 'view user email addresses' permission.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $emailViewer;
 
-  /**
-   * The mock user account with 'view user email addresses' permission.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $emailViewer;
+    /**
+     * The mock user account that is able to change their own account name.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $owner;
 
-  /**
-   * The mock user account that is able to change their own account name.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $owner;
+    /**
+     * The mock administrative test user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $admin;
 
-  /**
-   * The mock administrative test user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $admin;
+    /**
+     * The mocked test field items.
+     *
+     * @var \Drupal\Core\Field\FieldItemList
+     */
+    protected $items;
 
-  /**
-   * The mocked test field items.
-   *
-   * @var \Drupal\Core\Field\FieldItemList
-   */
-  protected $items;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
+        $cache_contexts_manager->assertValidTokens()->willReturn(true);
+        $cache_contexts_manager->reveal();
+        $container = new Container();
+        $container->set('cache_contexts_manager', $cache_contexts_manager);
+        \Drupal::setContainer($container);
 
-    $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
-    $cache_contexts_manager->assertValidTokens()->willReturn(TRUE);
-    $cache_contexts_manager->reveal();
-    $container = new Container();
-    $container->set('cache_contexts_manager', $cache_contexts_manager);
-    \Drupal::setContainer($container);
+        $this->viewer = $this->createStub(UserInterface::class);
+        $this->viewer
+          ->method('hasPermission')
+          ->willReturn(false);
+        $this->viewer
+          ->method('id')
+          ->willReturn(1);
 
-    $this->viewer = $this->createStub(UserInterface::class);
-    $this->viewer
-      ->method('hasPermission')
-      ->willReturn(FALSE);
-    $this->viewer
-      ->method('id')
-      ->willReturn(1);
+        $this->owner = $this->createStub(UserInterface::class);
+        $this->owner
+          ->method('hasPermission')
+          ->willReturnMap([
+            ['administer users', false],
+            ['change own username', true],
+          ]);
 
-    $this->owner = $this->createStub(UserInterface::class);
-    $this->owner
-      ->method('hasPermission')
-      ->willReturnMap([
-        ['administer users', FALSE],
-        ['change own username', TRUE],
-      ]);
+        $this->owner
+          ->method('id')
+          ->willReturn(2);
 
-    $this->owner
-      ->method('id')
-      ->willReturn(2);
+        $this->admin = $this->createStub(UserInterface::class);
+        $this->admin
+          ->method('hasPermission')
+          ->willReturn(true);
 
-    $this->admin = $this->createStub(UserInterface::class);
-    $this->admin
-      ->method('hasPermission')
-      ->willReturn(TRUE);
+        $this->emailViewer = $this->createStub(UserInterface::class);
+        $this->emailViewer
+          ->method('hasPermission')
+          ->willReturnMap([
+            ['view user email addresses', true],
+          ]);
+        $this->emailViewer
+          ->method('id')
+          ->willReturn(3);
 
-    $this->emailViewer = $this->createStub(UserInterface::class);
-    $this->emailViewer
-      ->method('hasPermission')
-      ->willReturnMap([
-        ['view user email addresses', TRUE],
-      ]);
-    $this->emailViewer
-      ->method('id')
-      ->willReturn(3);
+        $this->accessControlHandler = new UserAccessControlHandler($this->createStub(EntityTypeInterface::class));
+        $this->accessControlHandler->setModuleHandler($this->createStub(ModuleHandlerInterface::class));
 
-    $this->accessControlHandler = new UserAccessControlHandler($this->createStub(EntityTypeInterface::class));
-    $this->accessControlHandler->setModuleHandler($this->createStub(ModuleHandlerInterface::class));
-
-    $this->items = $this->createStub(FieldItemList::class);
-    $this->items
-      ->method('defaultAccess')
-      ->willReturn(AccessResult::allowed());
-  }
-
-  /**
-   * Asserts correct field access grants for a field.
-   *
-   * @internal
-   */
-  public function assertFieldAccess(string $field, string $viewer, string $target, bool $view, bool $edit): void {
-    $field_definition = $this->createStub(FieldDefinitionInterface::class);
-    $field_definition
-      ->method('getName')
-      ->willReturn($field);
-
-    $this->items
-      ->method('getEntity')
-      ->willReturn($this->{$target});
-
-    foreach (['view' => $view, 'edit' => $edit] as $operation => $result) {
-      $result_text = !isset($result) ? 'null' : ($result ? 'true' : 'false');
-      $message = "User '$field' field access returns '$result_text' with operation '$operation' for '$viewer' accessing '$target'";
-      $this->assertSame($result, $this->accessControlHandler->fieldAccess($operation, $field_definition, $this->{$viewer}, $this->items), $message);
-    }
-  }
-
-  /**
-   * Ensures user name access is working properly.
-   */
-  #[DataProvider('userNameProvider')]
-  public function testUserNameAccess($viewer, $target, $view, $edit): void {
-    $this->assertFieldAccess('name', $viewer, $target, $view, $edit);
-  }
-
-  /**
-   * Provides test data for testUserNameAccess().
-   */
-  public static function userNameProvider() {
-    $name_access = [
-      // The viewer user is allowed to see user names on all accounts.
-      [
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => FALSE,
-      ],
-      [
-        'viewer' => 'owner',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => FALSE,
-      ],
-      [
-        'viewer' => 'viewer',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => FALSE,
-      ],
-      // The owner user is allowed to change its own user name.
-      [
-        'viewer' => 'owner',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-      // The users-administrator user has full access.
-      [
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-    ];
-    return $name_access;
-  }
-
-  /**
-   * Tests that private user settings cannot be viewed by other users.
-   */
-  #[DataProvider('hiddenUserSettingsProvider')]
-  public function testHiddenUserSettings($field, $viewer, $target, $view, $edit): void {
-    $this->assertFieldAccess($field, $viewer, $target, $view, $edit);
-  }
-
-  /**
-   * Provides test data for testHiddenUserSettings().
-   */
-  public static function hiddenUserSettingsProvider() {
-    $access_info = [];
-
-    $fields = [
-      'preferred_langcode',
-      'preferred_admin_langcode',
-      'timezone',
-      'mail',
-    ];
-
-    foreach ($fields as $field) {
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'viewer',
-        'target' => 'owner',
-        'view' => FALSE,
-        // Anyone with edit access to the user can also edit these fields. In
-        // reality edit access will already be checked on entity level and the
-        // user without view access will typically not be able to edit.
-        'edit' => TRUE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'owner',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'emailViewer',
-        'target' => 'owner',
-        'view' => $field === 'mail',
-        // See note above.
-        'edit' => TRUE,
-      ];
+        $this->items = $this->createStub(FieldItemList::class);
+        $this->items
+          ->method('defaultAccess')
+          ->willReturn(AccessResult::allowed());
     }
 
-    return $access_info;
-  }
+    /**
+     * Asserts correct field access grants for a field.
+     *
+     * @internal
+     */
+    public function assertFieldAccess(string $field, string $viewer, string $target, bool $view, bool $edit): void
+    {
+        $field_definition = $this->createStub(FieldDefinitionInterface::class);
+        $field_definition
+          ->method('getName')
+          ->willReturn($field);
 
-  /**
-   * Tests that private user settings cannot be viewed by other users.
-   */
-  #[DataProvider('adminFieldAccessProvider')]
-  public function testAdminFieldAccess($field, $viewer, $target, $view, $edit): void {
-    $this->assertFieldAccess($field, $viewer, $target, $view, $edit);
-  }
+        $this->items
+          ->method('getEntity')
+          ->willReturn($this->{$target});
 
-  /**
-   * Provides test data for testAdminFieldAccess().
-   */
-  public static function adminFieldAccessProvider() {
-    $access_info = [];
-
-    $fields = [
-      'roles',
-      'status',
-      'access',
-      'login',
-      'init',
-    ];
-
-    foreach ($fields as $field) {
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => FALSE,
-        'edit' => FALSE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'viewer',
-        'target' => 'owner',
-        'view' => FALSE,
-        'edit' => FALSE,
-      ];
-      $access_info[] = [
-        'field' => $field,
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ];
+        foreach (['view' => $view, 'edit' => $edit] as $operation => $result) {
+            $result_text = !isset($result) ? 'null' : ($result ? 'true' : 'false');
+            $message = "User '$field' field access returns '$result_text' with operation '$operation' for '$viewer' accessing '$target'";
+            $this->assertSame($result, $this->accessControlHandler->fieldAccess($operation, $field_definition, $this->{$viewer}, $this->items), $message);
+        }
     }
 
-    return $access_info;
-  }
+    /**
+     * Ensures user name access is working properly.
+     */
+    #[DataProvider('userNameProvider')]
+    public function testUserNameAccess($viewer, $target, $view, $edit): void
+    {
+        $this->assertFieldAccess('name', $viewer, $target, $view, $edit);
+    }
 
-  /**
-   * Tests that passwords cannot be viewed, just edited.
-   */
-  #[DataProvider('passwordAccessProvider')]
-  public function testPasswordAccess($viewer, $target, $view, $edit): void {
-    $this->assertFieldAccess('pass', $viewer, $target, $view, $edit);
-  }
+    /**
+     * Provides test data for testUserNameAccess().
+     */
+    public static function userNameProvider()
+    {
+        $name_access = [
+          // The viewer user is allowed to see user names on all accounts.
+          [
+            'viewer' => 'viewer',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => false,
+          ],
+          [
+            'viewer' => 'owner',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => false,
+          ],
+          [
+            'viewer' => 'viewer',
+            'target' => 'owner',
+            'view' => true,
+            'edit' => false,
+          ],
+          // The owner user is allowed to change its own user name.
+          [
+            'viewer' => 'owner',
+            'target' => 'owner',
+            'view' => true,
+            'edit' => true,
+          ],
+          // The users-administrator user has full access.
+          [
+            'viewer' => 'admin',
+            'target' => 'owner',
+            'view' => true,
+            'edit' => true,
+          ],
+        ];
+        return $name_access;
+    }
 
-  /**
-   * Provides test data for passwordAccessProvider().
-   */
-  public static function passwordAccessProvider() {
-    $pass_access = [
-      [
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => FALSE,
-        'edit' => TRUE,
-      ],
-      [
-        'viewer' => 'viewer',
-        'target' => 'owner',
-        'view' => FALSE,
-        // Anyone with edit access to the user can also edit these fields. In
-        // reality edit access will already be checked on entity level and the
-        // user without view access will typically not be able to edit.
-        'edit' => TRUE,
-      ],
-      [
-        'viewer' => 'owner',
-        'target' => 'viewer',
-        'view' => FALSE,
-        'edit' => TRUE,
-      ],
-      [
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => FALSE,
-        'edit' => TRUE,
-      ],
-    ];
-    return $pass_access;
-  }
+    /**
+     * Tests that private user settings cannot be viewed by other users.
+     */
+    #[DataProvider('hiddenUserSettingsProvider')]
+    public function testHiddenUserSettings($field, $viewer, $target, $view, $edit): void
+    {
+        $this->assertFieldAccess($field, $viewer, $target, $view, $edit);
+    }
 
-  /**
-   * Tests the user created field access.
-   */
-  #[DataProvider('createdAccessProvider')]
-  public function testCreatedAccess($viewer, $target, $view, $edit): void {
-    $this->assertFieldAccess('created', $viewer, $target, $view, $edit);
-  }
+    /**
+     * Provides test data for testHiddenUserSettings().
+     */
+    public static function hiddenUserSettingsProvider()
+    {
+        $access_info = [];
 
-  /**
-   * Provides test data for testCreatedAccess().
-   */
-  public static function createdAccessProvider() {
-    $created_access = [
-      [
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => FALSE,
-      ],
-      [
-        'viewer' => 'owner',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => FALSE,
-      ],
-      [
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-    ];
-    return $created_access;
-  }
+        $fields = [
+          'preferred_langcode',
+          'preferred_admin_langcode',
+          'timezone',
+          'mail',
+        ];
 
-  /**
-   * Tests access to a non-existing base field.
-   */
-  #[DataProvider('NonExistingFieldAccessProvider')]
-  public function testNonExistingFieldAccess($viewer, $target, $view, $edit): void {
-    // By default everyone has access to all fields that do not have explicit
-    // access control.
-    // @see EntityAccessControlHandler::checkFieldAccess()
-    $this->assertFieldAccess('some_non_existing_field', $viewer, $target, $view, $edit);
-  }
+        foreach ($fields as $field) {
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'viewer',
+              'target' => 'viewer',
+              'view' => true,
+              'edit' => true,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'viewer',
+              'target' => 'owner',
+              'view' => false,
+              // Anyone with edit access to the user can also edit these fields. In
+              // reality edit access will already be checked on entity level and the
+              // user without view access will typically not be able to edit.
+              'edit' => true,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'owner',
+              'target' => 'owner',
+              'view' => true,
+              'edit' => true,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'admin',
+              'target' => 'owner',
+              'view' => true,
+              'edit' => true,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'emailViewer',
+              'target' => 'owner',
+              'view' => $field === 'mail',
+              // See note above.
+              'edit' => true,
+            ];
+        }
 
-  /**
-   * Provides test data for testNonExistingFieldAccess().
-   */
-  public static function NonExistingFieldAccessProvider() {
-    $created_access = [
-      [
-        'viewer' => 'viewer',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-      [
-        'viewer' => 'owner',
-        'target' => 'viewer',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-      [
-        'viewer' => 'admin',
-        'target' => 'owner',
-        'view' => TRUE,
-        'edit' => TRUE,
-      ],
-    ];
-    return $created_access;
-  }
+        return $access_info;
+    }
+
+    /**
+     * Tests that private user settings cannot be viewed by other users.
+     */
+    #[DataProvider('adminFieldAccessProvider')]
+    public function testAdminFieldAccess($field, $viewer, $target, $view, $edit): void
+    {
+        $this->assertFieldAccess($field, $viewer, $target, $view, $edit);
+    }
+
+    /**
+     * Provides test data for testAdminFieldAccess().
+     */
+    public static function adminFieldAccessProvider()
+    {
+        $access_info = [];
+
+        $fields = [
+          'roles',
+          'status',
+          'access',
+          'login',
+          'init',
+        ];
+
+        foreach ($fields as $field) {
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'viewer',
+              'target' => 'viewer',
+              'view' => false,
+              'edit' => false,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'viewer',
+              'target' => 'owner',
+              'view' => false,
+              'edit' => false,
+            ];
+            $access_info[] = [
+              'field' => $field,
+              'viewer' => 'admin',
+              'target' => 'owner',
+              'view' => true,
+              'edit' => true,
+            ];
+        }
+
+        return $access_info;
+    }
+
+    /**
+     * Tests that passwords cannot be viewed, just edited.
+     */
+    #[DataProvider('passwordAccessProvider')]
+    public function testPasswordAccess($viewer, $target, $view, $edit): void
+    {
+        $this->assertFieldAccess('pass', $viewer, $target, $view, $edit);
+    }
+
+    /**
+     * Provides test data for passwordAccessProvider().
+     */
+    public static function passwordAccessProvider()
+    {
+        $pass_access = [
+          [
+            'viewer' => 'viewer',
+            'target' => 'viewer',
+            'view' => false,
+            'edit' => true,
+          ],
+          [
+            'viewer' => 'viewer',
+            'target' => 'owner',
+            'view' => false,
+            // Anyone with edit access to the user can also edit these fields. In
+            // reality edit access will already be checked on entity level and the
+            // user without view access will typically not be able to edit.
+            'edit' => true,
+          ],
+          [
+            'viewer' => 'owner',
+            'target' => 'viewer',
+            'view' => false,
+            'edit' => true,
+          ],
+          [
+            'viewer' => 'admin',
+            'target' => 'owner',
+            'view' => false,
+            'edit' => true,
+          ],
+        ];
+        return $pass_access;
+    }
+
+    /**
+     * Tests the user created field access.
+     */
+    #[DataProvider('createdAccessProvider')]
+    public function testCreatedAccess($viewer, $target, $view, $edit): void
+    {
+        $this->assertFieldAccess('created', $viewer, $target, $view, $edit);
+    }
+
+    /**
+     * Provides test data for testCreatedAccess().
+     */
+    public static function createdAccessProvider()
+    {
+        $created_access = [
+          [
+            'viewer' => 'viewer',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => false,
+          ],
+          [
+            'viewer' => 'owner',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => false,
+          ],
+          [
+            'viewer' => 'admin',
+            'target' => 'owner',
+            'view' => true,
+            'edit' => true,
+          ],
+        ];
+        return $created_access;
+    }
+
+    /**
+     * Tests access to a non-existing base field.
+     */
+    #[DataProvider('NonExistingFieldAccessProvider')]
+    public function testNonExistingFieldAccess($viewer, $target, $view, $edit): void
+    {
+        // By default everyone has access to all fields that do not have explicit
+        // access control.
+        // @see EntityAccessControlHandler::checkFieldAccess()
+        $this->assertFieldAccess('some_non_existing_field', $viewer, $target, $view, $edit);
+    }
+
+    /**
+     * Provides test data for testNonExistingFieldAccess().
+     */
+    public static function NonExistingFieldAccessProvider()
+    {
+        $created_access = [
+          [
+            'viewer' => 'viewer',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => true,
+          ],
+          [
+            'viewer' => 'owner',
+            'target' => 'viewer',
+            'view' => true,
+            'edit' => true,
+          ],
+          [
+            'viewer' => 'admin',
+            'target' => 'owner',
+            'view' => true,
+            'edit' => true,
+          ],
+        ];
+        return $created_access;
+    }
 
 }

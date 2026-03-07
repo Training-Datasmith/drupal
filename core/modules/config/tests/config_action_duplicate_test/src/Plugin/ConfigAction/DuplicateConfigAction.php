@@ -15,18 +15,19 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   This API is experimental.
  */
 #[ConfigAction(
-  id: 'config_action_duplicate_test:config_test.dynamic:setProtectedProperty',
-  admin_label: new TranslatableMarkup('A duplicate config action'),
-  entity_types: ['config_test'],
+    id: 'config_action_duplicate_test:config_test.dynamic:setProtectedProperty',
+    admin_label: new TranslatableMarkup('A duplicate config action'),
+    entity_types: ['config_test'],
 )]
-final class DuplicateConfigAction implements ConfigActionPluginInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function apply(string $configName, mixed $value): void {
-    // This method should never be called.
-    throw new \BadMethodCallException();
-  }
+final class DuplicateConfigAction implements ConfigActionPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function apply(string $configName, mixed $value): void
+    {
+        // This method should never be called.
+        throw new \BadMethodCallException();
+    }
 
 }

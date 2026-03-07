@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ImageToolkit;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -16,28 +18,28 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  * @see \Drupal\Core\ImageToolkit\ImageToolkitOperationManager
  * @see plugin_api
  */
-interface ImageToolkitOperationInterface extends PluginInspectionInterface {
+interface ImageToolkitOperationInterface extends PluginInspectionInterface
+{
+    /**
+     * Set the image toolkit instance for this operation.
+     *
+     * @param \Drupal\Core\ImageToolkit\ImageToolkitInterface $toolkit
+     *   The image toolkit in use.
+     */
+    public function setToolkit(ImageToolkitInterface $toolkit): void;
 
-  /**
-   * Set the image toolkit instance for this operation.
-   *
-   * @param \Drupal\Core\ImageToolkit\ImageToolkitInterface $toolkit
-   *   The image toolkit in use.
-   */
-  public function setToolkit(ImageToolkitInterface $toolkit): void;
-
-  /**
-   * Applies a toolkit specific operation to an image.
-   *
-   * @param array $arguments
-   *   An associative array of data to be used by the toolkit operation.
-   *
-   * @return bool
-   *   TRUE if the operation was performed successfully, FALSE otherwise.
-   *
-   * @throws \InvalidArgumentException
-   *   If one or more of the arguments are not valid.
-   */
-  public function apply(array $arguments);
+    /**
+     * Applies a toolkit specific operation to an image.
+     *
+     * @param array $arguments
+     *   An associative array of data to be used by the toolkit operation.
+     *
+     * @return bool
+     *   TRUE if the operation was performed successfully, FALSE otherwise.
+     *
+     * @throws \InvalidArgumentException
+     *   If one or more of the arguments are not valid.
+     */
+    public function apply(array $arguments);
 
 }

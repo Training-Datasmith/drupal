@@ -13,33 +13,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('path_alias')]
 #[RunTestsInSeparateProcesses]
-class PathAliasJsonBasicAuthTest extends PathAliasResourceTestBase {
+class PathAliasJsonBasicAuthTest extends PathAliasResourceTestBase
+{
+    use BasicAuthResourceTestTrait;
 
-  use BasicAuthResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['basic_auth'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['basic_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'basic_auth';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'basic_auth';
 
 }

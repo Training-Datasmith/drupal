@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\Plugin\Validation\Constraint;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -11,41 +12,43 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Checks if data still exists for a deleted workspace ID.
  */
-class DeletedWorkspaceConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
-
-  /**
-   * Creates a new DeletedWorkspaceConstraintValidator instance.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service.
-   */
-  public function __construct(protected \Drupal\Core\State\StateInterface $state)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('state')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    /** @var \Drupal\Core\Field\FieldItemListInterface $value */
-    // This constraint applies only to newly created workspace entities.
-    if (!isset($value) || !$value->getEntity()->isNew()) {
-      return;
+class DeletedWorkspaceConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    /**
+     * Creates a new DeletedWorkspaceConstraintValidator instance.
+     *
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state service.
+     */
+    public function __construct(protected \Drupal\Core\State\StateInterface $state)
+    {
     }
 
-    $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
-    if (isset($deleted_workspace_ids[$value->getEntity()->id()])) {
-      $this->context->addViolation($constraint->message);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
+            $container->get('state')
+        );
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        /** @var \Drupal\Core\Field\FieldItemListInterface $value */
+        // This constraint applies only to newly created workspace entities.
+        if (!isset($value) || !$value->getEntity()->isNew()) {
+            return;
+        }
+
+        $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
+        if (isset($deleted_workspace_ids[$value->getEntity()->id()])) {
+            $this->context->addViolation($constraint->message);
+        }
+    }
 
 }

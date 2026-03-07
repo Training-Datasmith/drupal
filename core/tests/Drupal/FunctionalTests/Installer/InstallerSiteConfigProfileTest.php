@@ -12,66 +12,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerSiteConfigProfileTest extends InstallerTestBase {
+class InstallerSiteConfigProfileTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'testing_site_config';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'testing_site_config';
+    /**
+     * The site mail we expect to be set from the install profile.
+     *
+     * @see testing_site_config_install()
+     */
+    public const EXPECTED_SITE_MAIL = 'profile-testing-site-config@example.com';
 
-  /**
-   * The site mail we expect to be set from the install profile.
-   *
-   * @see testing_site_config_install()
-   */
-  const EXPECTED_SITE_MAIL = 'profile-testing-site-config@example.com';
+    /**
+     * The timezone we expect to be set from the install profile.
+     *
+     * @see testing_site_config_install()
+     */
+    public const EXPECTED_TIMEZONE = 'America/Los_Angeles';
 
-  /**
-   * The timezone we expect to be set from the install profile.
-   *
-   * @see testing_site_config_install()
-   */
-  const EXPECTED_TIMEZONE = 'America/Los_Angeles';
+    /**
+     * {@inheritdoc}
+     */
+    protected function installParameters()
+    {
+        $parameters = parent::installParameters();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function installParameters() {
-    $parameters = parent::installParameters();
+        // Don't override the site email address, allowing it to default to the one
+        // from our install profile.
+        unset($parameters['forms']['install_configure_form']['site_mail']);
 
-    // Don't override the site email address, allowing it to default to the one
-    // from our install profile.
-    unset($parameters['forms']['install_configure_form']['site_mail']);
+        // Set 'enable_update_status_module' flag to test that
+        // SiteConfigureForm::submit() handles the container rebuild correctly after
+        // the Update Status module is installed.
+        $parameters['forms']['install_configure_form']['enable_update_status_module'] = true;
+        return $parameters;
+    }
 
-    // Set 'enable_update_status_module' flag to test that
-    // SiteConfigureForm::submit() handles the container rebuild correctly after
-    // the Update Status module is installed.
-    $parameters['forms']['install_configure_form']['enable_update_status_module'] = TRUE;
-    return $parameters;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpSite()
+    {
+        $this->assertSession()->fieldValueEquals('site_mail', self::EXPECTED_SITE_MAIL);
+        $this->assertSession()->fieldValueEquals('date_default_timezone', self::EXPECTED_TIMEZONE);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpSite() {
-    $this->assertSession()->fieldValueEquals('site_mail', self::EXPECTED_SITE_MAIL);
-    $this->assertSession()->fieldValueEquals('date_default_timezone', self::EXPECTED_TIMEZONE);
+        return parent::setUpSite();
+    }
 
-    return parent::setUpSite();
-  }
-
-  /**
-   * Verify the correct site config was set.
-   */
-  public function testInstaller(): void {
-    $this->assertEquals(self::EXPECTED_SITE_MAIL, $this->config('system.site')->get('mail'));
-    $this->assertEquals(self::EXPECTED_TIMEZONE, $this->config('system.date')->get('timezone.default'));
-    $this->assertTrue(\Drupal::moduleHandler()->moduleExists('update'));
-  }
+    /**
+     * Verify the correct site config was set.
+     */
+    public function testInstaller(): void
+    {
+        $this->assertEquals(self::EXPECTED_SITE_MAIL, $this->config('system.site')->get('mail'));
+        $this->assertEquals(self::EXPECTED_TIMEZONE, $this->config('system.date')->get('timezone.default'));
+        $this->assertTrue(\Drupal::moduleHandler()->moduleExists('update'));
+    }
 
 }

@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block\Plugin\DisplayVariant;
 
-use Drupal\block\BlockRepositoryInterface;
 use Drupal\Core\Block\MainContentBlockPluginInterface;
-use Drupal\Core\Block\TitleBlockPluginInterface;
 use Drupal\Core\Block\MessagesBlockPluginInterface;
+use Drupal\Core\Block\TitleBlockPluginInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Display\Attribute\PageDisplayVariant;
 use Drupal\Core\Display\PageVariantInterface;
-use Drupal\Core\Entity\EntityViewBuilderInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Display\VariantBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -27,160 +27,165 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\Core\Block\MessagesBlockPluginInterface
  */
 #[PageDisplayVariant(
-  id: 'block_page',
-  admin_label: new TranslatableMarkup('Page with blocks')
+    id: 'block_page',
+    admin_label: new TranslatableMarkup('Page with blocks')
 )]
-class BlockPageVariant extends VariantBase implements PageVariantInterface, ContainerFactoryPluginInterface {
+class BlockPageVariant extends VariantBase implements PageVariantInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * The render array representing the main page content.
+     *
+     * @var array
+     */
+    protected $mainContent = [];
 
-  /**
-   * The render array representing the main page content.
-   *
-   * @var array
-   */
-  protected $mainContent = [];
+    /**
+     * The page title: a string (plain title) or a render array (formatted title).
+     *
+     * @var string|array
+     */
+    protected $title = '';
 
-  /**
-   * The page title: a string (plain title) or a render array (formatted title).
-   *
-   * @var string|array
-   */
-  protected $title = '';
-
-  /**
-   * Constructs a new BlockPageVariant.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\block\BlockRepositoryInterface $blockRepository
-   *   The block repository.
-   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $blockViewBuilder
-   *   The block view builder.
-   * @param string[] $blockListCacheTags
-   *   The Block entity type list cache tags.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\block\BlockRepositoryInterface $blockRepository, protected \Drupal\Core\Entity\EntityViewBuilderInterface $blockViewBuilder, /**
+    /**
+     * Constructs a new BlockPageVariant.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\block\BlockRepositoryInterface $blockRepository
+     *   The block repository.
+     * @param \Drupal\Core\Entity\EntityViewBuilderInterface $blockViewBuilder
+     *   The block view builder.
+     * @param string[] $blockListCacheTags
+     *   The Block entity type list cache tags.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\block\BlockRepositoryInterface $blockRepository, protected \Drupal\Core\Entity\EntityViewBuilderInterface $blockViewBuilder, /**
    * The Block entity type list cache tags.
    */
-  protected array $blockListCacheTags) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+        protected array $blockListCacheTags)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('block.repository'),
-      $container->get('entity_type.manager')->getViewBuilder('block'),
-      $container->get('entity_type.manager')->getDefinition('block')->getListCacheTags()
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $container->get('block.repository'),
+            $container->get('entity_type.manager')->getViewBuilder('block'),
+            $container->get('entity_type.manager')->getDefinition('block')->getListCacheTags()
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMainContent(array $main_content): static {
-    $this->mainContent = $main_content;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setMainContent(array $main_content): static
+    {
+        $this->mainContent = $main_content;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setTitle($title): static {
-    $this->title = $title;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setTitle($title): static
+    {
+        $this->title = $title;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function build(): array {
-    // Track whether blocks showing the main content and messages are displayed.
-    $main_content_block_displayed = FALSE;
-    $messages_block_displayed = FALSE;
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function build(): array
+    {
+        // Track whether blocks showing the main content and messages are displayed.
+        $main_content_block_displayed = false;
+        $messages_block_displayed = false;
 
-    $build = [
-      '#cache' => [
-        'tags' => $this->blockListCacheTags,
-      ],
-    ];
-    // Load all region content assigned via blocks.
-    $cacheable_metadata_list = [];
-    foreach ($this->blockRepository->getVisibleBlocksPerRegion($cacheable_metadata_list) as $region => $blocks) {
-      /** @var \Drupal\block\BlockInterface[] $blocks */
-      foreach ($blocks as $key => $block) {
-        $block_plugin = $block->getPlugin();
-        if ($block_plugin instanceof MainContentBlockPluginInterface) {
-          $block_plugin->setMainContent($this->mainContent);
-          $main_content_block_displayed = TRUE;
+        $build = [
+          '#cache' => [
+            'tags' => $this->blockListCacheTags,
+          ],
+        ];
+        // Load all region content assigned via blocks.
+        $cacheable_metadata_list = [];
+        foreach ($this->blockRepository->getVisibleBlocksPerRegion($cacheable_metadata_list) as $region => $blocks) {
+            /** @var \Drupal\block\BlockInterface[] $blocks */
+            foreach ($blocks as $key => $block) {
+                $block_plugin = $block->getPlugin();
+                if ($block_plugin instanceof MainContentBlockPluginInterface) {
+                    $block_plugin->setMainContent($this->mainContent);
+                    $main_content_block_displayed = true;
+                }
+                if ($block_plugin instanceof TitleBlockPluginInterface) {
+                    $block_plugin->setTitle($this->title);
+                }
+                if ($block_plugin instanceof MessagesBlockPluginInterface) {
+                    $messages_block_displayed = true;
+                }
+                $build[$region][$key] = $this->blockViewBuilder->view($block);
+
+                // The main content block cannot be cached: it is a placeholder for the
+                // render array returned by the controller. It should be rendered as-is,
+                // with other placed blocks "decorating" it. Analogous reasoning for the
+                // title block.
+                if ($block_plugin instanceof MainContentBlockPluginInterface || $block_plugin instanceof TitleBlockPluginInterface) {
+                    unset($build[$region][$key]['#cache']['keys']);
+                }
+            }
+            if (!empty($build[$region])) {
+                // \Drupal\block\BlockRepositoryInterface::getVisibleBlocksPerRegion()
+                // returns the blocks in sorted order.
+                $build[$region]['#sorted'] = true;
+            }
         }
-        if ($block_plugin instanceof TitleBlockPluginInterface) {
-          $block_plugin->setTitle($this->title);
+
+        // If no block that shows the main content is displayed, still show the main
+        // content. Otherwise the end user will see all displayed blocks, but not
+        // the main content they came for.
+        if (!$main_content_block_displayed) {
+            $build['content']['system_main'] = $this->mainContent;
         }
-        if ($block_plugin instanceof MessagesBlockPluginInterface) {
-          $messages_block_displayed = TRUE;
+
+        // If no block displays status messages, still render them.
+        if (!$messages_block_displayed) {
+            $build['content']['messages'] = [
+              '#weight' => -1000,
+              '#type' => 'status_messages',
+              '#include_fallback' => true,
+            ];
         }
-        $build[$region][$key] = $this->blockViewBuilder->view($block);
 
-        // The main content block cannot be cached: it is a placeholder for the
-        // render array returned by the controller. It should be rendered as-is,
-        // with other placed blocks "decorating" it. Analogous reasoning for the
-        // title block.
-        if ($block_plugin instanceof MainContentBlockPluginInterface || $block_plugin instanceof TitleBlockPluginInterface) {
-          unset($build[$region][$key]['#cache']['keys']);
+        // If any render arrays are manually placed, render arrays and blocks must
+        // be sorted.
+        if (!$main_content_block_displayed || !$messages_block_displayed) {
+            unset($build['content']['#sorted']);
         }
-      }
-      if (!empty($build[$region])) {
-        // \Drupal\block\BlockRepositoryInterface::getVisibleBlocksPerRegion()
-        // returns the blocks in sorted order.
-        $build[$region]['#sorted'] = TRUE;
-      }
-    }
 
-    // If no block that shows the main content is displayed, still show the main
-    // content. Otherwise the end user will see all displayed blocks, but not
-    // the main content they came for.
-    if (!$main_content_block_displayed) {
-      $build['content']['system_main'] = $this->mainContent;
-    }
+        // The access results' cacheability is currently added to the top level of
+        // the render array. This is done to prevent issues with empty regions being
+        // displayed.
+        // This would need to be changed to allow caching of block regions, as each
+        // region must then have the relevant cacheable metadata.
+        $merged_cacheable_metadata = CacheableMetadata::createFromRenderArray($build);
+        foreach ($cacheable_metadata_list as $cacheable_metadata) {
+            $merged_cacheable_metadata = $merged_cacheable_metadata->merge($cacheable_metadata);
+        }
+        $merged_cacheable_metadata->addCacheableDependency($this);
+        $merged_cacheable_metadata->applyTo($build);
 
-    // If no block displays status messages, still render them.
-    if (!$messages_block_displayed) {
-      $build['content']['messages'] = [
-        '#weight' => -1000,
-        '#type' => 'status_messages',
-        '#include_fallback' => TRUE,
-      ];
+        return $build;
     }
-
-    // If any render arrays are manually placed, render arrays and blocks must
-    // be sorted.
-    if (!$main_content_block_displayed || !$messages_block_displayed) {
-      unset($build['content']['#sorted']);
-    }
-
-    // The access results' cacheability is currently added to the top level of
-    // the render array. This is done to prevent issues with empty regions being
-    // displayed.
-    // This would need to be changed to allow caching of block regions, as each
-    // region must then have the relevant cacheable metadata.
-    $merged_cacheable_metadata = CacheableMetadata::createFromRenderArray($build);
-    foreach ($cacheable_metadata_list as $cacheable_metadata) {
-      $merged_cacheable_metadata = $merged_cacheable_metadata->merge($cacheable_metadata);
-    }
-    $merged_cacheable_metadata->addCacheableDependency($this);
-    $merged_cacheable_metadata->applyTo($build);
-
-    return $build;
-  }
 
 }

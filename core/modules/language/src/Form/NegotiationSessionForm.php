@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -10,48 +12,52 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class NegotiationSessionForm extends ConfigFormBase {
+class NegotiationSessionForm extends ConfigFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'language_negotiation_configure_session_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'language_negotiation_configure_session_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames(): array
+    {
+        return ['language.negotiation'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames(): array {
-    return ['language.negotiation'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $config = $this->config('language.negotiation');
+        $form['language_negotiation_session_param'] = [
+          '#title' => $this->t('Request/session parameter'),
+          '#type' => 'textfield',
+          '#default_value' => $config->get('session.parameter'),
+          '#description' => $this->t('Name of the request/session parameter used to determine the desired language.'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('language.negotiation');
-    $form['language_negotiation_session_param'] = [
-      '#title' => $this->t('Request/session parameter'),
-      '#type' => 'textfield',
-      '#default_value' => $config->get('session.parameter'),
-      '#description' => $this->t('Name of the request/session parameter used to determine the desired language.'),
-    ];
+        $form_state->setRedirect('language.negotiation');
 
-    $form_state->setRedirect('language.negotiation');
+        return parent::buildForm($form, $form_state);
+    }
 
-    return parent::buildForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->config('language.negotiation')
+          ->set('session.parameter', $form_state->getValue('language_negotiation_session_param'))
+          ->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->config('language.negotiation')
-      ->set('session.parameter', $form_state->getValue('language_negotiation_session_param'))
-      ->save();
-
-    parent::submitForm($form, $form_state);
-  }
+        parent::submitForm($form, $form_state);
+    }
 
 }

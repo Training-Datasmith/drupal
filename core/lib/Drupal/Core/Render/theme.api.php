@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks and documentation related to the theme and render system.
@@ -535,14 +537,15 @@ use Drupal\Core\Extension\ThemeSettingsProvider;
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The current state of the form.
  */
-function hook_form_system_theme_settings_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state): void {
-  // Add a checkbox to toggle the breadcrumb trail.
-  $form['toggle_breadcrumb'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Display the breadcrumb'),
-    '#default_value' => \Drupal::service(ThemeSettingsProvider::class)->getSetting('features.breadcrumb'),
-    '#description'   => t('Show a trail of links from the homepage to the current page.'),
-  ];
+function hook_form_system_theme_settings_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state): void
+{
+    // Add a checkbox to toggle the breadcrumb trail.
+    $form['toggle_breadcrumb'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Display the breadcrumb'),
+      '#default_value' => \Drupal::service(ThemeSettingsProvider::class)->getSetting('features.breadcrumb'),
+      '#description'   => t('Show a trail of links from the homepage to the current page.'),
+    ];
 }
 
 /**
@@ -560,38 +563,38 @@ function hook_form_system_theme_settings_alter(array &$form, \Drupal\Core\Form\F
  * @param string $hook
  *   The name of the theme hook.
  */
-function hook_preprocess(array &$variables, $hook): void {
-  static $hooks;
+function hook_preprocess(array &$variables, $hook): void
+{
+    static $hooks;
 
-  // Add contextual links to the variables, if the user has permission.
+    // Add contextual links to the variables, if the user has permission.
 
-  if (!\Drupal::currentUser()->hasPermission('access contextual links')) {
-    return;
-  }
-
-  if (!isset($hooks)) {
-    $hooks = \Drupal::service('theme.registry')->get();
-  }
-
-  // Determine the primary theme function argument.
-  if (isset($hooks[$hook]['variables'])) {
-    $keys = array_keys($hooks[$hook]['variables']);
-    $key = $keys[0];
-  }
-  else {
-    $key = $hooks[$hook]['render element'];
-  }
-
-  if (isset($variables[$key])) {
-    $element = $variables[$key];
-  }
-
-  if (isset($element) && is_array($element) && !empty($element['#contextual_links'])) {
-    $variables['title_suffix']['contextual_links'] = contextual_links_view($element);
-    if (!empty($variables['title_suffix']['contextual_links'])) {
-      $variables['attributes']['class'][] = 'contextual-links-region';
+    if (!\Drupal::currentUser()->hasPermission('access contextual links')) {
+        return;
     }
-  }
+
+    if (!isset($hooks)) {
+        $hooks = \Drupal::service('theme.registry')->get();
+    }
+
+    // Determine the primary theme function argument.
+    if (isset($hooks[$hook]['variables'])) {
+        $keys = array_keys($hooks[$hook]['variables']);
+        $key = $keys[0];
+    } else {
+        $key = $hooks[$hook]['render element'];
+    }
+
+    if (isset($variables[$key])) {
+        $element = $variables[$key];
+    }
+
+    if (isset($element) && is_array($element) && !empty($element['#contextual_links'])) {
+        $variables['title_suffix']['contextual_links'] = contextual_links_view($element);
+        if (!empty($variables['title_suffix']['contextual_links'])) {
+            $variables['attributes']['class'][] = 'contextual-links-region';
+        }
+    }
 }
 
 /**
@@ -607,15 +610,16 @@ function hook_preprocess(array &$variables, $hook): void {
  * @param array $variables
  *   The variables array (modify in place).
  */
-function hook_preprocess_HOOK(array &$variables): void {
-  // This example is from \Drupal\node\Hook\NodeThemeHooks::preprocessHtml().
-  // It adds the node type to the body classes, when on an individual node page
-  // or node preview page.
-  if (($node = \Drupal::routeMatch()->getParameter('node')) || ($node = \Drupal::routeMatch()->getParameter('node_preview'))) {
-    if ($node instanceof NodeInterface) {
-      $variables['node_type'] = $node->getType();
+function hook_preprocess_HOOK(array &$variables): void
+{
+    // This example is from \Drupal\node\Hook\NodeThemeHooks::preprocessHtml().
+    // It adds the node type to the body classes, when on an individual node page
+    // or node preview page.
+    if (($node = \Drupal::routeMatch()->getParameter('node')) || ($node = \Drupal::routeMatch()->getParameter('node_preview'))) {
+        if ($node instanceof NodeInterface) {
+            $variables['node_type'] = $node->getType();
+        }
     }
-  }
 }
 
 /**
@@ -665,17 +669,18 @@ function hook_preprocess_HOOK(array &$variables): void {
  *
  * @see hook_theme_suggestions_HOOK_alter()
  */
-function hook_theme_suggestions_HOOK(array $variables): array {
-  $suggestions = [];
+function hook_theme_suggestions_HOOK(array $variables): array
+{
+    $suggestions = [];
 
-  $suggestions[] = 'hookname__' . $variables['elements']['#langcode'];
+    $suggestions[] = 'hookname__' . $variables['elements']['#langcode'];
 
-  // Theme suggestions can be deprecated by specifying them in the __DEPRECATED
-  // key.
-  $suggestions[] = 'hookname__outdated';
-  $suggestions['__DEPRECATED']['hookname__outdated'] = 'Theme suggestion hookname__outdated is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. See http://drupal.org/node/the-change-notice-nid.';
+    // Theme suggestions can be deprecated by specifying them in the __DEPRECATED
+    // key.
+    $suggestions[] = 'hookname__outdated';
+    $suggestions['__DEPRECATED']['hookname__outdated'] = 'Theme suggestion hookname__outdated is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. See http://drupal.org/node/the-change-notice-nid.';
 
-  return $suggestions;
+    return $suggestions;
 }
 
 /**
@@ -723,9 +728,10 @@ function hook_theme_suggestions_HOOK(array $variables): array {
  *
  * @see hook_theme_suggestions_HOOK_alter()
  */
-function hook_theme_suggestions_alter(array &$suggestions, array &$variables, string $hook): void {
-  // Add an interface-language specific suggestion to all theme hooks.
-  $suggestions[] = $hook . '__' . \Drupal::languageManager()->getCurrentLanguage()->getId();
+function hook_theme_suggestions_alter(array &$suggestions, array &$variables, string $hook): void
+{
+    // Add an interface-language specific suggestion to all theme hooks.
+    $suggestions[] = $hook . '__' . \Drupal::languageManager()->getCurrentLanguage()->getId();
 }
 
 /**
@@ -773,10 +779,11 @@ function hook_theme_suggestions_alter(array &$suggestions, array &$variables, st
  * @see hook_theme_suggestions_alter()
  * @see hook_theme_suggestions_HOOK()
  */
-function hook_theme_suggestions_HOOK_alter(array &$suggestions, array &$variables): void {
-  if (empty($variables['header'])) {
-    $suggestions[] = 'hookname__no_header';
-  }
+function hook_theme_suggestions_HOOK_alter(array &$suggestions, array &$variables): void
+{
+    if (empty($variables['header'])) {
+        $suggestions[] = 'hookname__no_header';
+    }
 }
 
 /**
@@ -787,10 +794,11 @@ function hook_theme_suggestions_HOOK_alter(array &$suggestions, array &$variable
  *
  * @see \Drupal\Core\Extension\ThemeInstallerInterface::install()
  */
-function hook_themes_installed($theme_list): void {
-  foreach ($theme_list as $theme) {
-    // ...perform some action based on the $theme.
-  }
+function hook_themes_installed($theme_list): void
+{
+    foreach ($theme_list as $theme) {
+        // ...perform some action based on the $theme.
+    }
 }
 
 /**
@@ -801,11 +809,12 @@ function hook_themes_installed($theme_list): void {
  *
  * @see \Drupal\Core\Extension\ThemeInstallerInterface::uninstall()
  */
-function hook_themes_uninstalled(array $themes): void {
-  // Remove some state entries depending on the theme.
-  foreach ($themes as $theme) {
-    \Drupal::state()->delete('example.' . $theme);
-  }
+function hook_themes_uninstalled(array $themes): void
+{
+    // Remove some state entries depending on the theme.
+    foreach ($themes as $theme) {
+        \Drupal::state()->delete('example.' . $theme);
+    }
 }
 
 /**
@@ -817,9 +826,10 @@ function hook_themes_uninstalled(array $themes): void {
  * @return string
  *   The file extension the theme engine will recognize.
  */
-function hook_extension(): string {
-  // Extension for template base names in Twig.
-  return '.html.twig';
+function hook_extension(): string
+{
+    // Extension for template base names in Twig.
+    return '.html.twig';
 }
 
 /**
@@ -843,10 +853,11 @@ function hook_extension(): string {
  *   The output generated from the template. In most cases this will be a string
  *   containing HTML markup.
  */
-function hook_render_template($template_file, $variables): string|\Stringable {
-  $twig_service = \Drupal::service('twig');
+function hook_render_template($template_file, $variables): string|\Stringable
+{
+    $twig_service = \Drupal::service('twig');
 
-  return $twig_service->loadTemplate($template_file)->render($variables);
+    return $twig_service->loadTemplate($template_file)->render($variables);
 }
 
 /**
@@ -862,11 +873,12 @@ function hook_render_template($template_file, $variables): string|\Stringable {
  * @see \Drupal\Core\Render\ElementInfoManager
  * @see \Drupal\Core\Render\Element\ElementInterface
  */
-function hook_element_info_alter(array &$info): void {
-  // Decrease the default size of textfields.
-  if (isset($info['textfield']['#size'])) {
-    $info['textfield']['#size'] = 40;
-  }
+function hook_element_info_alter(array &$info): void
+{
+    // Decrease the default size of textfields.
+    if (isset($info['textfield']['#size'])) {
+        $info['textfield']['#size'] = 40;
+    }
 }
 
 /**
@@ -882,9 +894,10 @@ function hook_element_info_alter(array &$info): void {
  * @see \Drupal\Core\Render\ElementInfoManager
  * @see \Drupal\Core\Render\Element\ElementInterface
  */
-function hook_element_plugin_alter(array &$definitions): void {
-  // Use a custom class for the LayoutBuilder element.
-  $definitions['layout_builder']['class'] = '\Drupal\my_module\Element\MyLayoutBuilderElement';
+function hook_element_plugin_alter(array &$definitions): void
+{
+    // Use a custom class for the LayoutBuilder element.
+    $definitions['layout_builder']['class'] = '\Drupal\my_module\Element\MyLayoutBuilderElement';
 }
 
 /**
@@ -899,9 +912,10 @@ function hook_element_plugin_alter(array &$definitions): void {
  *
  * @see \Drupal\Core\Asset\AssetResolver
  */
-function hook_js_alter(array &$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void {
-  // Swap out jQuery to use an updated version of the library.
-  $javascript['core/assets/vendor/jquery/jquery.min.js']['data'] = \Drupal::service('extension.list.module')->getPath('jquery_update') . '/jquery.js';
+function hook_js_alter(array &$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void
+{
+    // Swap out jQuery to use an updated version of the library.
+    $javascript['core/assets/vendor/jquery/jquery.min.js']['data'] = \Drupal::service('extension.list.module')->getPath('jquery_update') . '/jquery.js';
 }
 
 /**
@@ -918,60 +932,60 @@ function hook_js_alter(array &$javascript, \Drupal\Core\Asset\AttachedAssetsInte
  * @see core.libraries.yml
  * @see hook_library_info_alter()
  */
-function hook_library_info_build(): array {
-  $libraries = [];
-  // Add a library whose information changes depending on certain conditions.
-  $libraries['zombie'] = [
-    'dependencies' => [
-      'core/once',
-    ],
-  ];
-  if (Drupal::moduleHandler()->moduleExists('minify_zombies')) {
-    $libraries['zombie'] += [
-      'js' => [
-        'zombie.min.js' => [],
-      ],
-      'css' => [
-        'base' => [
-          'zombie.min.css' => [],
-        ],
-      ],
-    ];
-  }
-  else {
-    $libraries['zombie'] += [
-      'js' => [
-        'zombie.js' => [],
-      ],
-      'css' => [
-        'base' => [
-          'zombie.css' => [],
-        ],
-      ],
-    ];
-  }
-
-  // Add a library only if a certain condition is met. If code wants to
-  // integrate with this library it is safe to (try to) load it unconditionally
-  // without reproducing this check. If the library definition does not exist
-  // the library (of course) not be loaded but no notices or errors will be
-  // triggered.
-  if (Drupal::moduleHandler()->moduleExists('vampire')) {
-    $libraries['vampire'] = [
-      'js' => [
-        'js/vampire.js' => [],
-      ],
-      'css' => [
-        'base' => [
-          'css/vampire.css',
-        ],
-      ],
+function hook_library_info_build(): array
+{
+    $libraries = [];
+    // Add a library whose information changes depending on certain conditions.
+    $libraries['zombie'] = [
       'dependencies' => [
-        'core/jquery',
+        'core/once',
       ],
     ];
-  }
-  return $libraries;
+    if (Drupal::moduleHandler()->moduleExists('minify_zombies')) {
+        $libraries['zombie'] += [
+          'js' => [
+            'zombie.min.js' => [],
+          ],
+          'css' => [
+            'base' => [
+              'zombie.min.css' => [],
+            ],
+          ],
+        ];
+    } else {
+        $libraries['zombie'] += [
+          'js' => [
+            'zombie.js' => [],
+          ],
+          'css' => [
+            'base' => [
+              'zombie.css' => [],
+            ],
+          ],
+        ];
+    }
+
+    // Add a library only if a certain condition is met. If code wants to
+    // integrate with this library it is safe to (try to) load it unconditionally
+    // without reproducing this check. If the library definition does not exist
+    // the library (of course) not be loaded but no notices or errors will be
+    // triggered.
+    if (Drupal::moduleHandler()->moduleExists('vampire')) {
+        $libraries['vampire'] = [
+          'js' => [
+            'js/vampire.js' => [],
+          ],
+          'css' => [
+            'base' => [
+              'css/vampire.css',
+            ],
+          ],
+          'dependencies' => [
+            'core/jquery',
+          ],
+        ];
+    }
+    return $libraries;
 }
 
 /**
@@ -988,11 +1002,12 @@ function hook_library_info_build(): array {
  * The results of this hook are cached, however modules may use
  * hook_js_settings_alter() to dynamically alter settings.
  */
-function hook_js_settings_build(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets): void {
-  // Manipulate settings.
-  if (isset($settings['dialog'])) {
-    $settings['dialog']['autoResize'] = FALSE;
-  }
+function hook_js_settings_build(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets): void
+{
+    // Manipulate settings.
+    if (isset($settings['dialog'])) {
+        $settings['dialog']['autoResize'] = false;
+    }
 }
 
 /**
@@ -1006,14 +1021,15 @@ function hook_js_settings_build(array &$settings, \Drupal\Core\Asset\AttachedAss
  *
  * @see \Drupal\Core\Asset\AssetResolver
  */
-function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets): void {
-  // Add settings.
-  $settings['user']['uid'] = \Drupal::currentUser();
+function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets): void
+{
+    // Add settings.
+    $settings['user']['uid'] = \Drupal::currentUser();
 
-  // Manipulate settings.
-  if (isset($settings['dialog'])) {
-    $settings['dialog']['autoResize'] = FALSE;
-  }
+    // Manipulate settings.
+    if (isset($settings['dialog'])) {
+        $settings['dialog']['autoResize'] = false;
+    }
 }
 
 /**
@@ -1040,35 +1056,35 @@ function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAss
  *
  * @see \Drupal\Core\Asset\LibraryDiscoveryParser::parseLibraryInfo()
  */
-function hook_library_info_alter(array &$libraries, $extension): void {
-  // Update imaginary library 'foo' to version 2.0.
-  if ($extension === 'core' && isset($libraries['foo'])) {
-    // Verify existing version is older than the one we are updating to.
-    if (version_compare($libraries['foo']['version'], '2.0', '<')) {
-      // Update the existing 'foo' to version 2.0.
-      $libraries['foo']['version'] = '2.0';
-      // To accurately replace library files, the order of files and the options
-      // of each file have to be retained; e.g., like this:
-      $old_path = 'assets/vendor/foo';
-      // Since the replaced library files are no longer located in a directory
-      // relative to the original extension, specify an absolute path (relative
-      // to DRUPAL_ROOT / base_path()) to the new location.
-      $new_path = '/' . \Drupal::service('extension.list.module')->getPath('foo_update') . '/js';
-      $new_js = [];
-      $replacements = [
-        $old_path . '/foo.js' => $new_path . '/foo-2.0.js',
-      ];
-      foreach ($libraries['foo']['js'] as $source => $options) {
-        if (isset($replacements[$source])) {
-          $new_js[$replacements[$source]] = $options;
+function hook_library_info_alter(array &$libraries, $extension): void
+{
+    // Update imaginary library 'foo' to version 2.0.
+    if ($extension === 'core' && isset($libraries['foo'])) {
+        // Verify existing version is older than the one we are updating to.
+        if (version_compare($libraries['foo']['version'], '2.0', '<')) {
+            // Update the existing 'foo' to version 2.0.
+            $libraries['foo']['version'] = '2.0';
+            // To accurately replace library files, the order of files and the options
+            // of each file have to be retained; e.g., like this:
+            $old_path = 'assets/vendor/foo';
+            // Since the replaced library files are no longer located in a directory
+            // relative to the original extension, specify an absolute path (relative
+            // to DRUPAL_ROOT / base_path()) to the new location.
+            $new_path = '/' . \Drupal::service('extension.list.module')->getPath('foo_update') . '/js';
+            $new_js = [];
+            $replacements = [
+              $old_path . '/foo.js' => $new_path . '/foo-2.0.js',
+            ];
+            foreach ($libraries['foo']['js'] as $source => $options) {
+                if (isset($replacements[$source])) {
+                    $new_js[$replacements[$source]] = $options;
+                } else {
+                    $new_js[$source] = $options;
+                }
+            }
+            $libraries['foo']['js'] = $new_js;
         }
-        else {
-          $new_js[$source] = $options;
-        }
-      }
-      $libraries['foo']['js'] = $new_js;
     }
-  }
 }
 
 /**
@@ -1084,10 +1100,11 @@ function hook_library_info_alter(array &$libraries, $extension): void {
  *
  * @see Drupal\Core\Asset\LibraryResolverInterface::getCssAssets()
  */
-function hook_css_alter(array &$css, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void {
-  // Remove defaults.css file.
-  $file_path = \Drupal::service('extension.list.module')->getPath('system') . '/defaults.css';
-  unset($css[$file_path]);
+function hook_css_alter(array &$css, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void
+{
+    // Remove defaults.css file.
+    $file_path = \Drupal::service('extension.list.module')->getPath('system') . '/defaults.css';
+    unset($css[$file_path]);
 }
 
 /**
@@ -1108,14 +1125,15 @@ function hook_css_alter(array &$css, \Drupal\Core\Asset\AttachedAssetsInterface 
  *
  * @see hook_page_attachments_alter()
  */
-function hook_page_attachments(array &$attachments): void {
-  // Unconditionally attach an asset to the page.
-  $attachments['#attached']['library'][] = 'core/drupalSettings';
+function hook_page_attachments(array &$attachments): void
+{
+    // Unconditionally attach an asset to the page.
+    $attachments['#attached']['library'][] = 'core/drupalSettings';
 
-  // Conditionally attach an asset to the page.
-  if (!\Drupal::currentUser()->hasPermission('may pet kittens')) {
-    $attachments['#attached']['library'][] = 'core/jquery';
-  }
+    // Conditionally attach an asset to the page.
+    if (!\Drupal::currentUser()->hasPermission('may pet kittens')) {
+        $attachments['#attached']['library'][] = 'core/jquery';
+    }
 }
 
 /**
@@ -1135,12 +1153,13 @@ function hook_page_attachments(array &$attachments): void {
  *
  * @see hook_page_attachments()
  */
-function hook_page_attachments_alter(array &$attachments): void {
-  // Conditionally remove an asset.
-  if (in_array('core/jquery', $attachments['#attached']['library'])) {
-    $index = array_search('core/jquery', $attachments['#attached']['library']);
-    unset($attachments['#attached']['library'][$index]);
-  }
+function hook_page_attachments_alter(array &$attachments): void
+{
+    // Conditionally remove an asset.
+    if (in_array('core/jquery', $attachments['#attached']['library'])) {
+        $index = array_search('core/jquery', $attachments['#attached']['library']);
+        unset($attachments['#attached']['library'][$index]);
+    }
 }
 
 /**
@@ -1149,8 +1168,9 @@ function hook_page_attachments_alter(array &$attachments): void {
  * @param array $page_top
  *   A renderable array representing the top of the page.
  */
-function hook_page_top(array &$page_top): void {
-  $page_top['my_module'] = ['#markup' => 'This is the top.'];
+function hook_page_top(array &$page_top): void
+{
+    $page_top['my_module'] = ['#markup' => 'This is the top.'];
 }
 
 /**
@@ -1159,8 +1179,9 @@ function hook_page_top(array &$page_top): void {
  * @param array $page_bottom
  *   A renderable array representing the bottom of the page.
  */
-function hook_page_bottom(array &$page_bottom): void {
-  $page_bottom['my_module'] = ['#markup' => 'This is the bottom.'];
+function hook_page_bottom(array &$page_bottom): void
+{
+    $page_bottom['my_module'] = ['#markup' => 'This is the bottom.'];
 }
 
 /**
@@ -1264,39 +1285,40 @@ function hook_page_bottom(array &$page_bottom): void {
  * @see themeable
  * @see hook_theme_registry_alter()
  */
-function hook_theme($existing, $type, $theme, $path): array {
-  return [
-    'my_module_display' => [
-      'variables' => [
-        'my_modules' => NULL,
-        'topics' => NULL,
-        'parents' => NULL,
-        'tid' => NULL,
-        'sortby' => NULL,
-        'my_module_per_page' => NULL,
+function hook_theme($existing, $type, $theme, $path): array
+{
+    return [
+      'my_module_display' => [
+        'variables' => [
+          'my_modules' => null,
+          'topics' => null,
+          'parents' => null,
+          'tid' => null,
+          'sortby' => null,
+          'my_module_per_page' => null,
+        ],
+        'initial preprocess' => 'PreprocessClass::preprocessDisplay',
       ],
-      'initial preprocess' => 'PreprocessClass::preprocessDisplay',
-    ],
-    'my_module_list' => [
-      'variables' => [
-        'my_modules' => NULL,
-        'parents' => NULL,
-        'tid' => NULL,
+      'my_module_list' => [
+        'variables' => [
+          'my_modules' => null,
+          'parents' => null,
+          'tid' => null,
+        ],
+        'initial preprocess' => 'service.name:preprocessList',
       ],
-      'initial preprocess' => 'service.name:preprocessList',
-    ],
-    'my_module_icon' => [
-      'variables' => [
-        'new_posts' => NULL,
-        'num_posts' => 0,
-        'comment_mode' => 0,
-        'sticky' => 0,
+      'my_module_icon' => [
+        'variables' => [
+          'new_posts' => null,
+          'num_posts' => 0,
+          'comment_mode' => 0,
+          'sticky' => 0,
+        ],
       ],
-    ],
-    'status_report' => [
-      'render element' => 'requirements',
-    ],
-  ];
+      'status_report' => [
+        'render element' => 'requirements',
+      ],
+    ];
 }
 
 /**
@@ -1337,13 +1359,14 @@ function hook_theme($existing, $type, $theme, $path): array {
  * @see hook_theme()
  * @see \Drupal\Core\Theme\Registry::processExtension()
  */
-function hook_theme_registry_alter(array &$theme_registry): void {
-  // Kill the next/previous my_module topic navigation links.
-  foreach ($theme_registry['my_module_topic_navigation']['preprocess functions'] as $key => $value) {
-    if ($value == 'template_preprocess_my_module_topic_navigation') {
-      unset($theme_registry['my_module_topic_navigation']['preprocess functions'][$key]);
+function hook_theme_registry_alter(array &$theme_registry): void
+{
+    // Kill the next/previous my_module topic navigation links.
+    foreach ($theme_registry['my_module_topic_navigation']['preprocess functions'] as $key => $value) {
+        if ($value == 'template_preprocess_my_module_topic_navigation') {
+            unset($theme_registry['my_module_topic_navigation']['preprocess functions'][$key]);
+        }
     }
-  }
 }
 
 /**
@@ -1368,8 +1391,9 @@ function hook_theme_registry_alter(array &$theme_registry): void {
  *   Drupal/Core/Theme/ThemeManagerInterface::getDefaultTemplateVariables().
  *   Passed by reference.
  */
-function hook_template_preprocess_default_variables_alter(array &$variables): void {
-  $variables['is_admin'] = \Drupal::currentUser()->hasPermission('access administration pages');
+function hook_template_preprocess_default_variables_alter(array &$variables): void
+{
+    $variables['is_admin'] = \Drupal::currentUser()->hasPermission('access administration pages');
 }
 
 /**

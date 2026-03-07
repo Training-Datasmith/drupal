@@ -10,66 +10,70 @@ use Drupal\Core\Entity\Sql\TableMappingInterface;
 /**
  * A test subclass of SqlContentEntityStorage.
  */
-class TestableSqlContentEntityStorage extends SqlContentEntityStorage {
+class TestableSqlContentEntityStorage extends SqlContentEntityStorage
+{
+    /**
+     * Make some properties public to allow manual injection of dependencies.
+     */
 
-  /**
-   * Make some properties public to allow manual injection of dependencies.
-   */
+    /**
+     * {@inheritdoc}
+     */
+    public $database;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $database;
+    /**
+     * {@inheritdoc}
+     */
+    public $entityType;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $entityType;
+    /**
+     * {@inheritdoc}
+     */
+    public $fieldStorageDefinitions;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $fieldStorageDefinitions;
+    /**
+     * {@inheritdoc}
+     */
+    protected $tableMapping;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableMapping;
+    /**
+     * Override the constructor to bypass the parent's constructor.
+     */
+    public function __construct()
+    {
+        // Do nothing to bypass parent's constructor.
+    }
 
-  /**
-   * Override the constructor to bypass the parent's constructor.
-   */
-  public function __construct() {
-    // Do nothing to bypass parent's constructor.
-  }
+    /**
+     * Sets the table mapping.
+     *
+     * @param \Drupal\Core\Entity\Sql\TableMappingInterface $table_mapping
+     *   The dummy table mapping.
+     */
+    public function setTableMapping(TableMappingInterface $table_mapping): void
+    {
+        $this->tableMapping = $table_mapping;
+    }
 
-  /**
-   * Sets the table mapping.
-   *
-   * @param \Drupal\Core\Entity\Sql\TableMappingInterface $table_mapping
-   *   The dummy table mapping.
-   */
-  public function setTableMapping(TableMappingInterface $table_mapping): void {
-    $this->tableMapping = $table_mapping;
-  }
+    /**
+     * Overrides original SqlContentEntityStorage::getTableMapping().
+     *
+     * {@inheritdoc}
+     */
+    public function getTableMapping(?array $storage_definitions = null)
+    {
+        return $this->tableMapping;
+    }
 
-  /**
-   * Overrides original SqlContentEntityStorage::getTableMapping().
-   *
-   * {@inheritdoc}
-   */
-  public function getTableMapping(?array $storage_definitions = NULL) {
-    return $this->tableMapping;
-  }
-
-  /**
-   * Exposes the protected deleteFromDedicatedTables() method for testing.
-   *
-   * @param array $ids
-   *   The array of entity IDs to delete.
-   */
-  public function publicDeleteFromDedicatedTables(array $ids): void {
-    $this->deleteFromDedicatedTables($ids);
-  }
+    /**
+     * Exposes the protected deleteFromDedicatedTables() method for testing.
+     *
+     * @param array $ids
+     *   The array of entity IDs to delete.
+     */
+    public function publicDeleteFromDedicatedTables(array $ids): void
+    {
+        $this->deleteFromDedicatedTables($ids);
+    }
 
 }

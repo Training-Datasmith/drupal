@@ -13,41 +13,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Theme')]
 #[RunTestsInSeparateProcesses]
-class TwigRawTest extends KernelTestBase {
+class TwigRawTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['twig_theme_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['twig_theme_test'];
+    /**
+     * Tests the raw filter inside an autoescape tag.
+     */
+    public function testAutoescapeRaw(): void
+    {
+        $test = [
+          '#theme' => 'twig_raw_test',
+          '#script' => '<script>alert("This alert is real because I will put it through the raw filter!");</script>',
+        ];
+        $rendered = \Drupal::service('renderer')->renderRoot($test);
+        $this->setRawContent($rendered);
+        $this->assertRaw('<script>alert("This alert is real because I will put it through the raw filter!");</script>');
+    }
 
-  /**
-   * Tests the raw filter inside an autoescape tag.
-   */
-  public function testAutoescapeRaw(): void {
-    $test = [
-      '#theme' => 'twig_raw_test',
-      '#script' => '<script>alert("This alert is real because I will put it through the raw filter!");</script>',
-    ];
-    $rendered = \Drupal::service('renderer')->renderRoot($test);
-    $this->setRawContent($rendered);
-    $this->assertRaw('<script>alert("This alert is real because I will put it through the raw filter!");</script>');
-  }
-
-  /**
-   * Tests autoescaping of unsafe content.
-   *
-   * This is one of the most important tests in Drupal itself in terms of
-   * security.
-   */
-  public function testAutoescape(): void {
-    $script = '<script>alert("This alert is unreal!");</script>';
-    $build = [
-      '#theme' => 'twig_autoescape_test',
-      '#script' => $script,
-    ];
-    $rendered = \Drupal::service('renderer')->renderRoot($build);
-    $this->setRawContent($rendered);
-    $this->assertEscaped($script);
-  }
+    /**
+     * Tests autoescaping of unsafe content.
+     *
+     * This is one of the most important tests in Drupal itself in terms of
+     * security.
+     */
+    public function testAutoescape(): void
+    {
+        $script = '<script>alert("This alert is unreal!");</script>';
+        $build = [
+          '#theme' => 'twig_autoescape_test',
+          '#script' => $script,
+        ];
+        $rendered = \Drupal::service('renderer')->renderRoot($build);
+        $this->setRawContent($rendered);
+        $this->assertEscaped($script);
+    }
 
 }

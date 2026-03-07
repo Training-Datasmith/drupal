@@ -13,44 +13,46 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(AddRoleUser::class)]
 #[Group('user')]
-class AddRoleUserTest extends RoleUserTestBase {
+class AddRoleUserTest extends RoleUserTestBase
+{
+    /**
+     * Tests the execute method on a user with a role.
+     */
+    public function testExecuteAddExistingRole(): void
+    {
+        $this->account->expects($this->never())
+          ->method('addRole')
+          ->willReturn($this->account);
 
-  /**
-   * Tests the execute method on a user with a role.
-   */
-  public function testExecuteAddExistingRole(): void {
-    $this->account->expects($this->never())
-      ->method('addRole')
-      ->willReturn($this->account);
+        $this->account
+          ->method('hasRole')
+          ->with($this->equalTo('test_role_1'))
+          ->willReturn(true);
 
-    $this->account
-      ->method('hasRole')
-      ->with($this->equalTo('test_role_1'))
-      ->willReturn(TRUE);
+        $config = ['rid' => 'test_role_1'];
+        $add_role_plugin = new AddRoleUser($config, 'user_add_role_action', ['type' => 'user'], $this->userRoleEntityType);
 
-    $config = ['rid' => 'test_role_1'];
-    $add_role_plugin = new AddRoleUser($config, 'user_add_role_action', ['type' => 'user'], $this->userRoleEntityType);
+        $add_role_plugin->execute($this->account);
+    }
 
-    $add_role_plugin->execute($this->account);
-  }
+    /**
+     * Tests the execute method on a user without a specific role.
+     */
+    public function testExecuteAddNonExistingRole(): void
+    {
+        $this->account->expects($this->once())
+          ->method('addRole')
+          ->willReturn($this->account);
 
-  /**
-   * Tests the execute method on a user without a specific role.
-   */
-  public function testExecuteAddNonExistingRole(): void {
-    $this->account->expects($this->once())
-      ->method('addRole')
-      ->willReturn($this->account);
+        $this->account
+          ->method('hasRole')
+          ->with($this->equalTo('test_role_1'))
+          ->willReturn(false);
 
-    $this->account
-      ->method('hasRole')
-      ->with($this->equalTo('test_role_1'))
-      ->willReturn(FALSE);
+        $config = ['rid' => 'test_role_1'];
+        $add_role_plugin = new AddRoleUser($config, 'user_add_role_action', ['type' => 'user'], $this->userRoleEntityType);
 
-    $config = ['rid' => 'test_role_1'];
-    $add_role_plugin = new AddRoleUser($config, 'user_add_role_action', ['type' => 'user'], $this->userRoleEntityType);
-
-    $add_role_plugin->execute($this->account);
-  }
+        $add_role_plugin->execute($this->account);
+    }
 
 }

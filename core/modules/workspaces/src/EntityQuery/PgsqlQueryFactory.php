@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\EntityQuery;
 
 /**
@@ -7,6 +9,6 @@ namespace Drupal\workspaces\EntityQuery;
  *
  * @internal
  */
-class PgsqlQueryFactory extends QueryFactory {
-
+class PgsqlQueryFactory extends QueryFactory
+{
 }

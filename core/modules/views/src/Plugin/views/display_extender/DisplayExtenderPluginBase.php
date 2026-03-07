@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\display_extender;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -30,49 +32,65 @@ use Drupal\views\Plugin\views\PluginBase;
 /**
  * Base class for Views display extender plugins.
  */
-abstract class DisplayExtenderPluginBase extends PluginBase {
+abstract class DisplayExtenderPluginBase extends PluginBase
+{
+    /**
+     * Provide a form to edit options for this plugin.
+     */
+    public function defineOptionsAlter(&$options)
+    {
+    }
 
-  /**
-   * Provide a form to edit options for this plugin.
-   */
-  public function defineOptionsAlter(&$options) {}
+    /**
+     * Provide a form to edit options for this plugin.
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+    }
 
-  /**
-   * Provide a form to edit options for this plugin.
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {}
+    /**
+     * Validate the options form.
+     */
+    public function validateOptionsForm(&$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * Validate the options form.
-   */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {}
+    /**
+     * Handle any special handling on the validate form.
+     */
+    public function submitOptionsForm(&$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * Handle any special handling on the validate form.
-   */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {}
+    /**
+     * Set up any variables on the view prior to execution.
+     */
+    public function preExecute()
+    {
+    }
 
-  /**
-   * Set up any variables on the view prior to execution.
-   */
-  public function preExecute() {}
+    /**
+     * Inject anything into the query that the display_extender handler needs.
+     */
+    public function query()
+    {
+    }
 
-  /**
-   * Inject anything into the query that the display_extender handler needs.
-   */
-  public function query() {}
+    /**
+     * Provide the default summary for options in the views UI.
+     *
+     * This output is returned as an array.
+     */
+    public function optionsSummary(&$categories, &$options)
+    {
+    }
 
-  /**
-   * Provide the default summary for options in the views UI.
-   *
-   * This output is returned as an array.
-   */
-  public function optionsSummary(&$categories, &$options) {}
-
-  /**
-   * Gets a list of defaultable sections and the items they contain.
-   */
-  public function defaultableSections(&$sections, $section = NULL) {}
+    /**
+     * Gets a list of defaultable sections and the items they contain.
+     */
+    public function defaultableSections(&$sections, $section = null)
+    {
+    }
 
 }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
@@ -10,14 +12,14 @@ namespace Drupal\Core\TypedData;
  *
  * @ingroup typed_data
  */
-interface DataReferenceDefinitionInterface extends DataDefinitionInterface {
-
-  /**
-   * Gets the data definition of the referenced data.
-   *
-   * @return \Drupal\Core\TypedData\DataDefinitionInterface
-   *   The data definition of the referenced data.
-   */
-  public function getTargetDefinition();
+interface DataReferenceDefinitionInterface extends DataDefinitionInterface
+{
+    /**
+     * Gets the data definition of the referenced data.
+     *
+     * @return \Drupal\Core\TypedData\DataDefinitionInterface
+     *   The data definition of the referenced data.
+     */
+    public function getTargetDefinition();
 
 }

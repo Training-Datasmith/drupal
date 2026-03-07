@@ -9,13 +9,14 @@ use Drupal\jsonapi\ResourceType\ResourceType;
 /**
  * Subclass with overridden ::includeCount() for testing purposes.
  */
-class CountableResourceType extends ResourceType {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function includeCount() {
-    return TRUE;
-  }
+class CountableResourceType extends ResourceType
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function includeCount()
+    {
+        return true;
+    }
 
 }

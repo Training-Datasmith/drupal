@@ -18,63 +18,65 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class WizardPluginBaseKernelTest extends ViewsKernelTestBase {
+class WizardPluginBaseKernelTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language', 'system', 'user', 'views_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language', 'system', 'user', 'views_ui'];
+    /**
+     * Contains thw wizard plugin manager.
+     *
+     * @var \Drupal\views\Plugin\views\wizard\WizardPluginBase
+     */
+    protected $wizard;
 
-  /**
-   * Contains thw wizard plugin manager.
-   *
-   * @var \Drupal\views\Plugin\views\wizard\WizardPluginBase
-   */
-  protected $wizard;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp();
+        $this->installConfig(['language']);
 
-    $this->installConfig(['language']);
+        $this->wizard = $this->container->get('plugin.manager.views.wizard')->createInstance('standard:views_test_data', []);
+    }
 
-    $this->wizard = $this->container->get('plugin.manager.views.wizard')->createInstance('standard:views_test_data', []);
-  }
+    /**
+     * Tests the creating of a view.
+     *
+     * @see \Drupal\views\Plugin\views\wizard\WizardPluginBase
+     */
+    public function testCreateView(): void
+    {
+        $form = [];
+        $form_state = new FormState();
+        $form = $this->wizard->buildForm($form, $form_state);
+        $random_id = $this->randomMachineName();
+        $random_label = $this->randomMachineName();
+        $random_description = $this->randomMachineName();
 
-  /**
-   * Tests the creating of a view.
-   *
-   * @see \Drupal\views\Plugin\views\wizard\WizardPluginBase
-   */
-  public function testCreateView(): void {
-    $form = [];
-    $form_state = new FormState();
-    $form = $this->wizard->buildForm($form, $form_state);
-    $random_id = $this->randomMachineName();
-    $random_label = $this->randomMachineName();
-    $random_description = $this->randomMachineName();
+        // Add a new language and mark it as default.
+        ConfigurableLanguage::createFromLangcode('it')->save();
+        $this->config('system.site')->set('default_langcode', 'it')->save();
 
-    // Add a new language and mark it as default.
-    ConfigurableLanguage::createFromLangcode('it')->save();
-    $this->config('system.site')->set('default_langcode', 'it')->save();
+        $form_state->setValues([
+          'id' => $random_id,
+          'label' => $random_label,
+          'description' => $random_description,
+          'base_table' => 'views_test_data',
+        ]);
 
-    $form_state->setValues([
-      'id' => $random_id,
-      'label' => $random_label,
-      'description' => $random_description,
-      'base_table' => 'views_test_data',
-    ]);
-
-    $this->wizard->validateView($form, $form_state);
-    $view = $this->wizard->createView($form, $form_state);
-    $this->assertInstanceOf(ViewUI::class, $view);
-    $this->assertEquals($random_id, $view->get('id'));
-    $this->assertEquals($random_label, $view->get('label'));
-    $this->assertEquals($random_description, $view->get('description'));
-    $this->assertEquals('views_test_data', $view->get('base_table'));
-    $this->assertEquals('it', $view->get('langcode'));
-  }
+        $this->wizard->validateView($form, $form_state);
+        $view = $this->wizard->createView($form, $form_state);
+        $this->assertInstanceOf(ViewUI::class, $view);
+        $this->assertEquals($random_id, $view->get('id'));
+        $this->assertEquals($random_label, $view->get('label'));
+        $this->assertEquals($random_description, $view->get('description'));
+        $this->assertEquals('views_test_data', $view->get('base_table'));
+        $this->assertEquals('it', $view->get('langcode'));
+    }
 
 }

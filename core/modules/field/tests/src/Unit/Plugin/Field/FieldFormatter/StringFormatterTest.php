@@ -24,87 +24,88 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(StringFormatter::class)]
 #[Group('field')]
-final class StringFormatterTest extends UnitTestCase {
+final class StringFormatterTest extends UnitTestCase
+{
+    /**
+     * Checks link visibility depending on link templates and access.
+     *
+     * @param bool $hasUrl
+     *   Whether the entity type has a canonical link template.
+     * @param string|null $accessClass
+     *   The access result for the current user.
+     * @param bool $expectIsLinkElement
+     *   Whether to expect the text to be wrapped in a link element.
+     *
+     * @phpstan-param class-string<\Drupal\Core\Access\AccessResultInterface>|null $accessClass
+     */
+    #[DataProvider('providerAccessLinkToEntity')]
+    public function testLinkToEntity(bool $hasUrl, ?string $accessClass, bool $expectIsLinkElement): void
+    {
+        $fieldDefinition = $this->prophesize(FieldDefinitionInterface::class);
+        $entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
+        $fieldFormatter = new StringFormatter('foobar', [], $fieldDefinition->reveal(), [], 'TestLabel', 'default', [], $entityTypeManager->reveal());
+        $fieldFormatter->setSetting('link_to_entity', true);
 
-  /**
-   * Checks link visibility depending on link templates and access.
-   *
-   * @param bool $hasUrl
-   *   Whether the entity type has a canonical link template.
-   * @param string|null $accessClass
-   *   The access result for the current user.
-   * @param bool $expectIsLinkElement
-   *   Whether to expect the text to be wrapped in a link element.
-   *
-   * @phpstan-param class-string<\Drupal\Core\Access\AccessResultInterface>|null $accessClass
-   */
-  #[DataProvider('providerAccessLinkToEntity')]
-  public function testLinkToEntity(bool $hasUrl, ?string $accessClass, bool $expectIsLinkElement): void {
-    $fieldDefinition = $this->prophesize(FieldDefinitionInterface::class);
-    $entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
-    $fieldFormatter = new StringFormatter('foobar', [], $fieldDefinition->reveal(), [], 'TestLabel', 'default', [], $entityTypeManager->reveal());
-    $fieldFormatter->setSetting('link_to_entity', TRUE);
+        $entityType = $this->prophesize(EntityTypeInterface::class);
+        $entityType->hasLinkTemplate('canonical')->willReturn($hasUrl)->shouldBeCalledTimes(1);
+        $entityType->hasLinkTemplate('revision')->willReturn(false)->shouldBeCalledTimes($hasUrl ? 1 : 0);
 
-    $entityType = $this->prophesize(EntityTypeInterface::class);
-    $entityType->hasLinkTemplate('canonical')->willReturn($hasUrl)->shouldBeCalledTimes(1);
-    $entityType->hasLinkTemplate('revision')->willReturn(FALSE)->shouldBeCalledTimes($hasUrl ? 1 : 0);
+        $entity = $this->prophesize(EntityInterface::class);
+        $entity->isNew()->willReturn(false);
+        $entity->getEntityType()->willReturn($entityType->reveal());
+        if ($hasUrl) {
+            $url = $this->prophesize(Url::class);
+            $url->access(null, true)->willReturn(new $accessClass());
+            $entity->toUrl('canonical')->willReturn($url);
+        }
 
-    $entity = $this->prophesize(EntityInterface::class);
-    $entity->isNew()->willReturn(FALSE);
-    $entity->getEntityType()->willReturn($entityType->reveal());
-    if ($hasUrl) {
-      $url = $this->prophesize(Url::class);
-      $url->access(NULL, TRUE)->willReturn(new $accessClass());
-      $entity->toUrl('canonical')->willReturn($url);
+        $item = $this->getMockBuilder(StringItem::class)
+          ->disableOriginalConstructor()
+          ->onlyMethods([])
+          ->getMock();
+        $item->setValue(['value' => 'FooText']);
+
+        $items = $this->prophesize(FieldItemListInterface::class);
+        $items->getEntity()->willReturn($entity->reveal());
+        $items->valid()->willReturn(true, false);
+        $items->next();
+        $items->rewind();
+        $items->current()->willReturn($item);
+        $items->key()->willReturn(0);
+
+        $elements = $fieldFormatter->viewElements($items->reveal(), 'en');
+        if ($expectIsLinkElement) {
+            $this->assertEquals('link', $elements[0]['#type']);
+            $this->assertEquals('FooText', $elements[0]['#title']['#context']['value']);
+        } else {
+            $this->assertEquals('inline_template', $elements[0]['#type']);
+            $this->assertEquals('FooText', $elements[0]['#context']['value']);
+        }
     }
 
-    $item = $this->getMockBuilder(StringItem::class)
-      ->disableOriginalConstructor()
-      ->onlyMethods([])
-      ->getMock();
-    $item->setValue(['value' => 'FooText']);
-
-    $items = $this->prophesize(FieldItemListInterface::class);
-    $items->getEntity()->willReturn($entity->reveal());
-    $items->valid()->willReturn(TRUE, FALSE);
-    $items->next();
-    $items->rewind();
-    $items->current()->willReturn($item);
-    $items->key()->willReturn(0);
-
-    $elements = $fieldFormatter->viewElements($items->reveal(), 'en');
-    if ($expectIsLinkElement) {
-      $this->assertEquals('link', $elements[0]['#type']);
-      $this->assertEquals('FooText', $elements[0]['#title']['#context']['value']);
+    /**
+     * Data provider.
+     *
+     * @return \Generator
+     *   Test scenarios.
+     */
+    public static function providerAccessLinkToEntity(): \Generator
+    {
+        yield 'entity with no URL' => [
+          false,
+          null,
+          false,
+        ];
+        yield 'entity with url, with access' => [
+          true,
+          AccessResultAllowed::class,
+          true,
+        ];
+        yield 'entity with url, no access' => [
+          true,
+          AccessResultForbidden::class,
+          false,
+        ];
     }
-    else {
-      $this->assertEquals('inline_template', $elements[0]['#type']);
-      $this->assertEquals('FooText', $elements[0]['#context']['value']);
-    }
-  }
-
-  /**
-   * Data provider.
-   *
-   * @return \Generator
-   *   Test scenarios.
-   */
-  public static function providerAccessLinkToEntity(): \Generator {
-    yield 'entity with no URL' => [
-      FALSE,
-      NULL,
-      FALSE,
-    ];
-    yield 'entity with url, with access' => [
-      TRUE,
-      AccessResultAllowed::class,
-      TRUE,
-    ];
-    yield 'entity with url, no access' => [
-      TRUE,
-      AccessResultForbidden::class,
-      FALSE,
-    ];
-  }
 
 }

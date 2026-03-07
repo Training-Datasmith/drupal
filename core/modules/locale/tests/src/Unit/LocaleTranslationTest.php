@@ -20,55 +20,57 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(LocaleTranslation::class)]
 #[Group('locale')]
-class LocaleTranslationTest extends UnitTestCase {
+class LocaleTranslationTest extends UnitTestCase
+{
+    /**
+     * A mocked storage to use when instantiating LocaleTranslation objects.
+     */
+    protected StringStorageInterface&MockObject $storage;
 
-  /**
-   * A mocked storage to use when instantiating LocaleTranslation objects.
-   */
-  protected StringStorageInterface&MockObject $storage;
+    /**
+     * A mocked lock to use when instantiating LocaleTranslation objects.
+     */
+    protected LockBackendInterface&MockObject $lock;
 
-  /**
-   * A mocked lock to use when instantiating LocaleTranslation objects.
-   */
-  protected LockBackendInterface&MockObject $lock;
+    /**
+     * A mocked cache to use when instantiating LocaleTranslation objects.
+     */
+    protected CacheBackendInterface&MockObject $cache;
 
-  /**
-   * A mocked cache to use when instantiating LocaleTranslation objects.
-   */
-  protected CacheBackendInterface&MockObject $cache;
+    /**
+     * A mocked language manager built from LanguageManagerInterface.
+     */
+    protected LanguageManagerInterface&MockObject $languageManager;
 
-  /**
-   * A mocked language manager built from LanguageManagerInterface.
-   */
-  protected LanguageManagerInterface&MockObject $languageManager;
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->storage = $this->createMock('Drupal\locale\StringStorageInterface');
+        $this->cache = $this->createMock('Drupal\Core\Cache\CacheBackendInterface');
+        $this->lock = $this->createMock('Drupal\Core\Lock\LockBackendInterface');
+        $this->languageManager = $this->createMock('Drupal\Core\Language\LanguageManagerInterface');
+        $this->requestStack = new RequestStack();
+    }
 
-    $this->storage = $this->createMock('Drupal\locale\StringStorageInterface');
-    $this->cache = $this->createMock('Drupal\Core\Cache\CacheBackendInterface');
-    $this->lock = $this->createMock('Drupal\Core\Lock\LockBackendInterface');
-    $this->languageManager = $this->createMock('Drupal\Core\Language\LanguageManagerInterface');
-    $this->requestStack = new RequestStack();
-  }
-
-  /**
-   * Tests for \Drupal\locale\LocaleTranslation::destruct().
-   */
-  public function testDestruct(): void {
-    $translation = new LocaleTranslation($this->storage, $this->cache, $this->lock, $this->getConfigFactoryStub(), $this->languageManager, $this->requestStack);
-    // Prove that destruction works without errors when translations are empty.
-    $this->assertNull($translation->destruct());
-  }
+    /**
+     * Tests for \Drupal\locale\LocaleTranslation::destruct().
+     */
+    public function testDestruct(): void
+    {
+        $translation = new LocaleTranslation($this->storage, $this->cache, $this->lock, $this->getConfigFactoryStub(), $this->languageManager, $this->requestStack);
+        // Prove that destruction works without errors when translations are empty.
+        $this->assertNull($translation->destruct());
+    }
 
 }

@@ -13,4 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('core_basic_shortcuts_recipe')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericRecipeTestBase {}
+class GenericTest extends GenericRecipeTestBase
+{
+}

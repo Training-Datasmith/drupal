@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -13,52 +15,55 @@ use Drupal\layout_builder\SectionStorageInterface;
  * @internal
  *   Form classes are internal.
  */
-class AddBlockForm extends ConfigureBlockFormBase {
+class AddBlockForm extends ConfigureBlockFormBase
+{
+    use LayoutBuilderHighlightTrait;
 
-  use LayoutBuilderHighlightTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'layout_builder_add_block';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function submitLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Add block');
-  }
-
-  /**
-   * Builds the form for the block.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage being configured.
-   * @param int $delta
-   *   The delta of the section.
-   * @param string $region
-   *   The region of the block.
-   * @param string|null $plugin_id
-   *   The plugin ID of the block to add.
-   *
-   * @return array
-   *   The form array.
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, $region = NULL, $plugin_id = NULL) {
-    // Only generate a new component once per form submission.
-    if (!$component = $form_state->get('layout_builder__component')) {
-      $component = new SectionComponent($this->uuidGenerator->generate(), $region, ['id' => $plugin_id]);
-      $section_storage->getSection($delta)->appendComponent($component);
-      $form_state->set('layout_builder__component', $component);
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'layout_builder_add_block';
     }
-    $form['#attributes']['data-layout-builder-target-highlight-id'] = $this->blockAddHighlightId($delta, $region);
-    return $this->doBuildForm($form, $form_state, $section_storage, $delta, $component);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function submitLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Add block');
+    }
+
+    /**
+     * Builds the form for the block.
+     *
+     * @param array $form
+     *   An associative array containing the structure of the form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+     *   The section storage being configured.
+     * @param int $delta
+     *   The delta of the section.
+     * @param string $region
+     *   The region of the block.
+     * @param string|null $plugin_id
+     *   The plugin ID of the block to add.
+     *
+     * @return array
+     *   The form array.
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = null, $delta = null, $region = null, $plugin_id = null)
+    {
+        // Only generate a new component once per form submission.
+        if (!$component = $form_state->get('layout_builder__component')) {
+            $component = new SectionComponent($this->uuidGenerator->generate(), $region, ['id' => $plugin_id]);
+            $section_storage->getSection($delta)->appendComponent($component);
+            $form_state->set('layout_builder__component', $component);
+        }
+        $form['#attributes']['data-layout-builder-target-highlight-id'] = $this->blockAddHighlightId($delta, $region);
+        return $this->doBuildForm($form, $form_state, $section_storage, $delta, $component);
+    }
 
 }

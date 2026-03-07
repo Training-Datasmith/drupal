@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin\Context;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -7,89 +9,92 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a context repository which uses context provider services.
  */
-class LazyContextRepository implements ContextRepositoryInterface {
+class LazyContextRepository implements ContextRepositoryInterface
+{
+    /**
+     * The service container.
+     *
+     * @var \Symfony\Component\DependencyInjection\ContainerInterface
+     */
+    protected $container;
 
-  /**
-   * The service container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  protected $container;
+    /**
+     * The statically cached contexts.
+     *
+     * @var \Drupal\Core\Plugin\Context\ContextInterface[]
+     */
+    protected $contexts = [];
 
-  /**
-   * The statically cached contexts.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextInterface[]
-   */
-  protected $contexts = [];
-
-  /**
-   * Constructs a LazyContextRepository object.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The current service container.
-   * @param string[] $contextProviderServiceIDs
-   *   The set of the available context provider service IDs.
-   */
-  public function __construct(ContainerInterface $container, /**
+    /**
+     * Constructs a LazyContextRepository object.
+     *
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+     *   The current service container.
+     * @param string[] $contextProviderServiceIDs
+     *   The set of the available context provider service IDs.
+     */
+    public function __construct(ContainerInterface $container, /**
    * The set of available context providers service IDs.
    */
-  protected array $contextProviderServiceIDs) {
-    $this->container = $container;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getRuntimeContexts(array $context_ids): array {
-    $contexts = [];
-
-    // Create a map of context providers (service IDs) to unqualified context
-    // IDs.
-    $context_ids_by_service = [];
-    foreach ($context_ids as $id) {
-      if (isset($this->contexts[$id])) {
-        $contexts[$id] = $this->contexts[$id];
-        continue;
-      }
-      assert($id[0] === '@' && str_contains($id, ':'), 'You must provide the context IDs in the @{service_id}:{unqualified_context_id} format.');
-      [$service_id, $unqualified_context_id] = explode(':', $id, 2);
-      // Remove the leading '@'.
-      $service_id = substr($service_id, 1);
-      $context_ids_by_service[$service_id][] = $unqualified_context_id;
+        protected array $contextProviderServiceIDs)
+    {
+        $this->container = $container;
     }
 
-    // Iterate over all missing context providers (services), gather the
-    // runtime contexts and assign them as requested.
-    foreach ($context_ids_by_service as $service_id => $unqualified_context_ids) {
-      $contexts_by_service = $this->container->get($service_id)->getRuntimeContexts($unqualified_context_ids);
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getRuntimeContexts(array $context_ids): array
+    {
+        $contexts = [];
 
-      $wanted_contexts = array_intersect_key($contexts_by_service, array_flip($unqualified_context_ids));
-      foreach ($wanted_contexts as $unqualified_context_id => $context) {
-        $context_id = '@' . $service_id . ':' . $unqualified_context_id;
-        $this->contexts[$context_id] = $contexts[$context_id] = $context;
-      }
+        // Create a map of context providers (service IDs) to unqualified context
+        // IDs.
+        $context_ids_by_service = [];
+        foreach ($context_ids as $id) {
+            if (isset($this->contexts[$id])) {
+                $contexts[$id] = $this->contexts[$id];
+                continue;
+            }
+            assert($id[0] === '@' && str_contains($id, ':'), 'You must provide the context IDs in the @{service_id}:{unqualified_context_id} format.');
+            [$service_id, $unqualified_context_id] = explode(':', $id, 2);
+            // Remove the leading '@'.
+            $service_id = substr($service_id, 1);
+            $context_ids_by_service[$service_id][] = $unqualified_context_id;
+        }
+
+        // Iterate over all missing context providers (services), gather the
+        // runtime contexts and assign them as requested.
+        foreach ($context_ids_by_service as $service_id => $unqualified_context_ids) {
+            $contexts_by_service = $this->container->get($service_id)->getRuntimeContexts($unqualified_context_ids);
+
+            $wanted_contexts = array_intersect_key($contexts_by_service, array_flip($unqualified_context_ids));
+            foreach ($wanted_contexts as $unqualified_context_id => $context) {
+                $context_id = '@' . $service_id . ':' . $unqualified_context_id;
+                $this->contexts[$context_id] = $contexts[$context_id] = $context;
+            }
+        }
+
+        return $contexts;
     }
 
-    return $contexts;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getAvailableContexts(): array
+    {
+        $contexts = [];
+        foreach ($this->contextProviderServiceIDs as $service_id) {
+            $contexts_by_service = $this->container->get($service_id)->getAvailableContexts();
+            foreach ($contexts_by_service as $unqualified_context_id => $context) {
+                $context_id = '@' . $service_id . ':' . $unqualified_context_id;
+                $contexts[$context_id] = $context;
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getAvailableContexts(): array {
-    $contexts = [];
-    foreach ($this->contextProviderServiceIDs as $service_id) {
-      $contexts_by_service = $this->container->get($service_id)->getAvailableContexts();
-      foreach ($contexts_by_service as $unqualified_context_id => $context) {
-        $context_id = '@' . $service_id . ':' . $unqualified_context_id;
-        $contexts[$context_id] = $context;
-      }
+        return $contexts;
     }
-
-    return $contexts;
-  }
 
 }

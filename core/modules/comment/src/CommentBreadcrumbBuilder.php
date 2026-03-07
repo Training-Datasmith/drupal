@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment;
 
-use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
+use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -13,47 +14,50 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Class to define the comment breadcrumb builder.
  */
-class CommentBreadcrumbBuilder implements BreadcrumbBuilderInterface {
-  use StringTranslationTrait;
+class CommentBreadcrumbBuilder implements BreadcrumbBuilderInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * Constructs the CommentBreadcrumbBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
-    $cacheable_metadata->addCacheContexts(['route']);
-    return $route_match->getRouteName() == 'comment.reply' && $route_match->getParameter('entity');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb {
-    $breadcrumb = new Breadcrumb();
-    $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
-
-    $entity = $route_match->getParameter('entity');
-    $breadcrumb->addLink(new Link($entity->label(), $entity->toUrl()));
-    $breadcrumb->addCacheableDependency($entity);
-
-    if (($pid = $route_match->getParameter('pid')) && ($comment = $this->entityTypeManager->getStorage('comment')->load($pid))) {
-      /** @var \Drupal\comment\CommentInterface $comment */
-      $breadcrumb->addCacheableDependency($comment);
-      // Display link to parent comment.
-      // @todo Clean-up permalink in https://www.drupal.org/node/2198041
-      $breadcrumb->addLink(new Link($comment->getSubject(), $comment->toUrl()));
+    /**
+     * Constructs the CommentBreadcrumbBuilder.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
 
-    return $breadcrumb;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool
+    {
+        $cacheable_metadata->addCacheContexts(['route']);
+        return $route_match->getRouteName() == 'comment.reply' && $route_match->getParameter('entity');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb
+    {
+        $breadcrumb = new Breadcrumb();
+        $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
+
+        $entity = $route_match->getParameter('entity');
+        $breadcrumb->addLink(new Link($entity->label(), $entity->toUrl()));
+        $breadcrumb->addCacheableDependency($entity);
+
+        if (($pid = $route_match->getParameter('pid')) && ($comment = $this->entityTypeManager->getStorage('comment')->load($pid))) {
+            /** @var \Drupal\comment\CommentInterface $comment */
+            $breadcrumb->addCacheableDependency($comment);
+            // Display link to parent comment.
+            // @todo Clean-up permalink in https://www.drupal.org/node/2198041
+            $breadcrumb->addLink(new Link($comment->getSubject(), $comment->toUrl()));
+        }
+
+        return $breadcrumb;
+    }
 
 }

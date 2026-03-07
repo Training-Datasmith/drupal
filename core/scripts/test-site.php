@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * A command line application to install Drupal for tests.
@@ -9,7 +11,7 @@
 use Drupal\TestSite\TestSiteApplication;
 
 if (PHP_SAPI !== 'cli') {
-  return;
+    return;
 }
 
 // Use the PHPUnit bootstrap to prime an autoloader that works for test classes.

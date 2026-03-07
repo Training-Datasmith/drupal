@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks and documentation related to the menu system and links.
@@ -267,19 +269,20 @@
  *
  * @ingroup menu
  */
-function hook_menu_links_discovered_alter(array &$links): void {
-  // Change the weight and title of the user.logout link.
-  $links['user.logout']['weight'] = -10;
-  $links['user.logout']['title'] = new \Drupal\Core\StringTranslation\TranslatableMarkup('Logout');
-  // Conditionally add an additional link with a title that's not translated.
-  if (\Drupal::moduleHandler()->moduleExists('search')) {
-    $links['menu.api.search'] = [
-      'title' => \Drupal::config('system.site')->get('name'),
-      'route_name' => 'menu.api.search',
-      'description' => new \Drupal\Core\StringTranslation\TranslatableMarkup('View popular search phrases for this site.'),
-      'parent' => 'system.admin_reports',
-    ];
-  }
+function hook_menu_links_discovered_alter(array &$links): void
+{
+    // Change the weight and title of the user.logout link.
+    $links['user.logout']['weight'] = -10;
+    $links['user.logout']['title'] = new \Drupal\Core\StringTranslation\TranslatableMarkup('Logout');
+    // Conditionally add an additional link with a title that's not translated.
+    if (\Drupal::moduleHandler()->moduleExists('search')) {
+        $links['menu.api.search'] = [
+          'title' => \Drupal::config('system.site')->get('name'),
+          'route_name' => 'menu.api.search',
+          'description' => new \Drupal\Core\StringTranslation\TranslatableMarkup('View popular search phrases for this site.'),
+          'parent' => 'system.admin_reports',
+        ];
+    }
 }
 
 /**
@@ -314,23 +317,24 @@ function hook_menu_links_discovered_alter(array &$links): void {
  *
  * @ingroup menu
  */
-function hook_menu_local_tasks_alter(array &$data, $route_name, \Drupal\Core\Cache\RefinableCacheableDependencyInterface &$cacheability): void {
+function hook_menu_local_tasks_alter(array &$data, $route_name, \Drupal\Core\Cache\RefinableCacheableDependencyInterface &$cacheability): void
+{
 
-  // Add a tab linking to node/add to all pages.
-  $data['tabs'][0]['entity.node.add_page'] = [
-    '#theme' => 'menu_local_task',
-    '#link' => [
-      'title' => t('Example tab'),
-      'url' => Url::fromRoute('entity.node.add_page'),
-      'localized_options' => [
-        'attributes' => [
-          'title' => t('Add content'),
+    // Add a tab linking to node/add to all pages.
+    $data['tabs'][0]['entity.node.add_page'] = [
+      '#theme' => 'menu_local_task',
+      '#link' => [
+        'title' => t('Example tab'),
+        'url' => Url::fromRoute('entity.node.add_page'),
+        'localized_options' => [
+          'attributes' => [
+            'title' => t('Add content'),
+          ],
         ],
       ],
-    ],
-  ];
-  // The tab we're adding is dependent on a user's access to add content.
-  $cacheability->addCacheContexts(['user.permissions']);
+    ];
+    // The tab we're adding is dependent on a user's access to add content.
+    $cacheability->addCacheContexts(['user.permissions']);
 }
 
 /**
@@ -344,7 +348,8 @@ function hook_menu_local_tasks_alter(array &$data, $route_name, \Drupal\Core\Cac
  *
  * @ingroup menu
  */
-function hook_menu_local_actions_alter(&$local_actions): void {
+function hook_menu_local_actions_alter(&$local_actions): void
+{
 }
 
 /**
@@ -359,9 +364,10 @@ function hook_menu_local_actions_alter(&$local_actions): void {
  *
  * @ingroup menu
  */
-function hook_local_tasks_alter(array &$local_tasks): void {
-  // Remove a specified local task plugin.
-  unset($local_tasks['example_plugin_id']);
+function hook_local_tasks_alter(array &$local_tasks): void
+{
+    // Remove a specified local task plugin.
+    unset($local_tasks['example_plugin_id']);
 }
 
 /**
@@ -397,13 +403,14 @@ function hook_local_tasks_alter(array &$local_tasks): void {
  *
  * @ingroup menu
  */
-function hook_contextual_links_alter(array &$links, $group, array $route_parameters): void {
-  if ($group == 'menu') {
-    // Dynamically use the menu name for the title of the menu_edit contextual
-    // link.
-    $menu = \Drupal::entityTypeManager()->getStorage('menu')->load($route_parameters['menu']);
-    $links['menu_edit']['title'] = t('Edit menu: @label', ['@label' => $menu->label()]);
-  }
+function hook_contextual_links_alter(array &$links, $group, array $route_parameters): void
+{
+    if ($group == 'menu') {
+        // Dynamically use the menu name for the title of the menu_edit contextual
+        // link.
+        $menu = \Drupal::entityTypeManager()->getStorage('menu')->load($route_parameters['menu']);
+        $links['menu_edit']['title'] = t('Edit menu: @label', ['@label' => $menu->label()]);
+    }
 }
 
 /**
@@ -421,8 +428,9 @@ function hook_contextual_links_alter(array &$links, $group, array $route_paramet
  *
  * @ingroup menu
  */
-function hook_contextual_links_plugins_alter(array &$contextual_links): void {
-  $contextual_links['menu_edit']['title'] = 'Edit the menu';
+function hook_contextual_links_plugins_alter(array &$contextual_links): void
+{
+    $contextual_links['menu_edit']['title'] = 'Edit the menu';
 }
 
 /**
@@ -440,9 +448,10 @@ function hook_contextual_links_plugins_alter(array &$contextual_links): void {
  *
  * @ingroup menu
  */
-function hook_system_breadcrumb_alter(\Drupal\Core\Breadcrumb\Breadcrumb &$breadcrumb, \Drupal\Core\Routing\RouteMatchInterface $route_match, array $context): void {
-  // Add an item to the end of the breadcrumb.
-  $breadcrumb->addLink(\Drupal\Core\Link::createFromRoute(t('Text'), 'example_route_name'));
+function hook_system_breadcrumb_alter(\Drupal\Core\Breadcrumb\Breadcrumb &$breadcrumb, \Drupal\Core\Routing\RouteMatchInterface $route_match, array $context): void
+{
+    // Add an item to the end of the breadcrumb.
+    $breadcrumb->addLink(\Drupal\Core\Link::createFromRoute(t('Text'), 'example_route_name'));
 }
 
 /**

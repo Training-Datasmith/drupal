@@ -13,18 +13,19 @@ use Symfony\Contracts\EventDispatcher\Event;
  * decoded data. Subscribers can modify the entity data (default and
  * translations) but not the metadata.
  */
-final class PreEntityImportEvent extends Event {
+final class PreEntityImportEvent extends Event
+{
+    /**
+     * The entity metadata.
+     *
+     * @var array<string, mixed>
+     */
+    public readonly array $metadata;
 
-  /**
-   * The entity metadata.
-   *
-   * @var array<string, mixed>
-   */
-  public readonly array $metadata;
-
-  public function __construct(public array $data) {
-    $this->metadata = $data['_meta'];
-    unset($this->data['_meta']);
-  }
+    public function __construct(public array $data)
+    {
+        $this->metadata = $data['_meta'];
+        unset($this->data['_meta']);
+    }
 
 }

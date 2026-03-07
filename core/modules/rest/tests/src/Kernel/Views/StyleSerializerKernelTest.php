@@ -18,42 +18,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(Serializer::class)]
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class StyleSerializerKernelTest extends ViewsKernelTestBase {
+class StyleSerializerKernelTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_serializer_display_entity'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_serializer_display_entity'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['rest_test_views', 'serialization', 'rest'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['rest_test_views', 'serialization', 'rest'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        ViewTestData::createTestViews(static::class, ['rest_test_views']);
+    }
 
-    ViewTestData::createTestViews(static::class, ['rest_test_views']);
-  }
+    /**
+     * Tests calculate dependencies.
+     */
+    public function testCalculateDependencies(): void
+    {
+        /** @var \Drupal\views\Entity\View $view */
+        $view = View::load('test_serializer_display_entity');
+        $display = &$view->getDisplay('rest_export_1');
 
-  /**
-   * Tests calculate dependencies.
-   */
-  public function testCalculateDependencies(): void {
-    /** @var \Drupal\views\Entity\View $view */
-    $view = View::load('test_serializer_display_entity');
-    $display = &$view->getDisplay('rest_export_1');
+        $display['display_options']['defaults']['style'] = false;
+        $display['display_options']['style']['type'] = 'serializer';
+        $display['display_options']['style']['options']['formats'] = ['json', 'xml'];
+        $view->save();
 
-    $display['display_options']['defaults']['style'] = FALSE;
-    $display['display_options']['style']['type'] = 'serializer';
-    $display['display_options']['style']['options']['formats'] = ['json', 'xml'];
-    $view->save();
-
-    $view->calculateDependencies();
-    $this->assertEquals(['module' => ['rest', 'serialization', 'user']], $view->getDependencies());
-  }
+        $view->calculateDependencies();
+        $this->assertEquals(['module' => ['rest', 'serialization', 'user']], $view->getDependencies());
+    }
 
 }

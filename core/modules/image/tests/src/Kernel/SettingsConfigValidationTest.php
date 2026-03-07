@@ -14,31 +14,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('image')]
 #[RunTestsInSeparateProcesses]
-class SettingsConfigValidationTest extends KernelTestBase {
+class SettingsConfigValidationTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['image', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['image', 'system'];
+    /**
+     * Tests that the preview_image setting must be an existing image file.
+     */
+    public function testPreviewImagePathIsValidated(): void
+    {
+        $this->installConfig(['system', 'image']);
 
-  /**
-   * Tests that the preview_image setting must be an existing image file.
-   */
-  public function testPreviewImagePathIsValidated(): void {
-    $this->installConfig(['system', 'image']);
+        // Drupal does not have a hard dependency on the fileinfo extension and
+        // implements an extension-based mimetype guesser. Therefore, we must use
+        // an incorrect extension here instead of writing text to a supposed PNG
+        // file and depending on a check of the file contents.
+        $file = sys_get_temp_dir() . '/fake_image.png.txt';
+        file_put_contents($file, 'Not an image!');
 
-    // Drupal does not have a hard dependency on the fileinfo extension and
-    // implements an extension-based mimetype guesser. Therefore, we must use
-    // an incorrect extension here instead of writing text to a supposed PNG
-    // file and depending on a check of the file contents.
-    $file = sys_get_temp_dir() . '/fake_image.png.txt';
-    file_put_contents($file, 'Not an image!');
-
-    $this->expectException(SchemaIncompleteException::class);
-    $this->expectExceptionMessage('[preview_image] This file is not a valid image.');
-    $this->config('image.settings')
-      ->set('preview_image', $file)
-      ->save();
-  }
+        $this->expectException(SchemaIncompleteException::class);
+        $this->expectExceptionMessage('[preview_image] This file is not a valid image.');
+        $this->config('image.settings')
+          ->set('preview_image', $file)
+          ->save();
+    }
 
 }

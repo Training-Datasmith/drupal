@@ -17,11 +17,11 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Image')]
 #[RequiresPhpExtension('gd')]
 #[RunTestsInSeparateProcesses]
-class GdToolkitJpegImageManipulationTest extends GdToolkitImageManipulationTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected string $sourceTestImage = 'image-test.jpg';
+class GdToolkitJpegImageManipulationTest extends GdToolkitImageManipulationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected string $sourceTestImage = 'image-test.jpg';
 
 }

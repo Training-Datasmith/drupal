@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\dblog\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -11,22 +13,24 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("dblog_operations")]
-class DblogOperations extends FieldPluginBase {
+#[ViewsField('dblog_operations')]
+class DblogOperations extends FieldPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function clickSortable(): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clickSortable(): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $this->getValue($values);
-    return $this->sanitizeValue($value, 'xss_admin');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $this->getValue($values);
+        return $this->sanitizeValue($value, 'xss_admin');
+    }
 
 }

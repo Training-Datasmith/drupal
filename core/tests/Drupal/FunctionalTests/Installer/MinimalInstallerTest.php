@@ -13,25 +13,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class MinimalInstallerTest extends ConfigAfterInstallerTestBase {
+class MinimalInstallerTest extends ConfigAfterInstallerTestBase
+{
+    use AssertConfigTrait;
 
-  use AssertConfigTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'minimal';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'minimal';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Ensures that the exported minimal configuration is up to date.
-   */
-  public function testMinimalConfig(): void {
-    $this->assertInstalledConfig([]);
-  }
+    /**
+     * Ensures that the exported minimal configuration is up to date.
+     */
+    public function testMinimalConfig(): void
+    {
+        $this->assertInstalledConfig([]);
+    }
 
 }

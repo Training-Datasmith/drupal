@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
 use Drupal\Core\Discovery\YamlDiscovery;
 use Drupal\Core\Extension\ModuleExtensionList;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Utility\CallableResolver;
@@ -50,175 +51,182 @@ use Drupal\Core\Utility\CallableResolver;
  * @see \Drupal\filter\FilterPermissions
  * @see user_api
  */
-class PermissionHandler implements PermissionHandlerInterface {
+class PermissionHandler implements PermissionHandlerInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The YAML discovery class to find all .permissions.yml files.
+     *
+     * @var \Drupal\Core\Discovery\YamlDiscovery
+     */
+    protected $yamlDiscovery;
 
-  /**
-   * The YAML discovery class to find all .permissions.yml files.
-   *
-   * @var \Drupal\Core\Discovery\YamlDiscovery
-   */
-  protected $yamlDiscovery;
-
-  /**
-   * Constructs a new PermissionHandler.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation.
-   * @param \Drupal\Core\Utility\CallableResolver $callableResolver
-   *   The callable resolver.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
-   *   The module extension list.
-   */
-  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, TranslationInterface $string_translation, /**
+    /**
+     * Constructs a new PermissionHandler.
+     *
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation.
+     * @param \Drupal\Core\Utility\CallableResolver $callableResolver
+     *   The callable resolver.
+     * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
+     *   The module extension list.
+     */
+    public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, TranslationInterface $string_translation, /**
    * The callable resolver.
    */
-  protected CallableResolver $callableResolver, protected ModuleExtensionList $moduleExtensionList) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * Gets the YAML discovery.
-   *
-   * @return \Drupal\Core\Discovery\YamlDiscovery
-   *   The YAML discovery.
-   */
-  protected function getYamlDiscovery() {
-    if (!isset($this->yamlDiscovery)) {
-      $this->yamlDiscovery = new YamlDiscovery('permissions', $this->moduleHandler->getModuleDirectories());
+        protected CallableResolver $callableResolver, protected ModuleExtensionList $moduleExtensionList)
+    {
+        $this->stringTranslation = $string_translation;
     }
-    return $this->yamlDiscovery;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPermissions() {
-    $all_permissions = $this->buildPermissionsYaml();
-
-    return $this->sortPermissions($all_permissions);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function moduleProvidesPermissions($module_name): bool {
-    // @todo Static cache this information.
-    //   https://www.drupal.org/node/2339487
-    $permissions = $this->getPermissions();
-
-    foreach ($permissions as $permission) {
-      if ($permission['provider'] == $module_name) {
-        return TRUE;
-      }
+    /**
+     * Gets the YAML discovery.
+     *
+     * @return \Drupal\Core\Discovery\YamlDiscovery
+     *   The YAML discovery.
+     */
+    protected function getYamlDiscovery()
+    {
+        if (!isset($this->yamlDiscovery)) {
+            $this->yamlDiscovery = new YamlDiscovery('permissions', $this->moduleHandler->getModuleDirectories());
+        }
+        return $this->yamlDiscovery;
     }
-    return FALSE;
-  }
 
-  /**
-   * Builds all permissions provided by .permissions.yml files.
-   *
-   * @return array[]
-   *   An array with the same structure as
-   *   PermissionHandlerInterface::getPermissions().
-   *
-   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
-   */
-  protected function buildPermissionsYaml() {
-    $all_permissions = [];
-    $all_callback_permissions = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function getPermissions()
+    {
+        $all_permissions = $this->buildPermissionsYaml();
 
-    foreach ($this->getYamlDiscovery()->findAll() as $provider => $permissions) {
-      // The top-level 'permissions_callback' is a list of methods in callable
-      // syntax, see \Drupal\Core\Utility\CallableResolver. These methods
-      // should return an array of permissions in the same structure.
-      if (isset($permissions['permission_callbacks'])) {
-        foreach ($permissions['permission_callbacks'] as $permission_callback) {
-          $callback = $this->callableResolver->getCallableFromDefinition($permission_callback);
-          if ($callback_permissions = call_user_func($callback)) {
-            // Add any callback permissions to the array of permissions. Any
-            // defaults can then get processed below.
-            foreach ($callback_permissions as $name => $callback_permission) {
-              if (!is_array($callback_permission)) {
-                $callback_permission = [
-                  'title' => $callback_permission,
-                ];
-              }
+        return $this->sortPermissions($all_permissions);
+    }
 
-              $callback_permission += [
-                'description' => NULL,
-                'provider' => $provider,
-              ];
+    /**
+     * {@inheritdoc}
+     */
+    public function moduleProvidesPermissions($module_name): bool
+    {
+        // @todo Static cache this information.
+        //   https://www.drupal.org/node/2339487
+        $permissions = $this->getPermissions();
 
-              $all_callback_permissions[$name] = $callback_permission;
+        foreach ($permissions as $permission) {
+            if ($permission['provider'] == $module_name) {
+                return true;
             }
-          }
         }
-
-        unset($permissions['permission_callbacks']);
-      }
-
-      foreach ($permissions as &$permission) {
-        if (!is_array($permission)) {
-          $permission = [
-            'title' => $permission,
-          ];
-        }
-        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        $permission['title'] = $this->t($permission['title']);
-        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        $permission['description'] = isset($permission['description']) ? $this->t($permission['description']) : NULL;
-        $permission['provider'] = !empty($permission['provider']) ? $permission['provider'] : $provider;
-      }
-
-      $all_permissions += $permissions;
+        return false;
     }
 
-    return $all_permissions + $all_callback_permissions;
-  }
+    /**
+     * Builds all permissions provided by .permissions.yml files.
+     *
+     * @return array[]
+     *   An array with the same structure as
+     *   PermissionHandlerInterface::getPermissions().
+     *
+     * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+     */
+    protected function buildPermissionsYaml()
+    {
+        $all_permissions = [];
+        $all_callback_permissions = [];
 
-  /**
-   * Sorts the given permissions by provider name and title.
-   *
-   * @param array $all_permissions
-   *   The permissions to be sorted.
-   *
-   * @return array[]
-   *   An array with the same structure as
-   *   PermissionHandlerInterface::getPermissions().
-   *
-   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
-   */
-  protected function sortPermissions(array $all_permissions = []): array {
-    // Get a list of all the modules providing permissions and sort by
-    // display name.
-    $modules = $this->getModuleNames();
+        foreach ($this->getYamlDiscovery()->findAll() as $provider => $permissions) {
+            // The top-level 'permissions_callback' is a list of methods in callable
+            // syntax, see \Drupal\Core\Utility\CallableResolver. These methods
+            // should return an array of permissions in the same structure.
+            if (isset($permissions['permission_callbacks'])) {
+                foreach ($permissions['permission_callbacks'] as $permission_callback) {
+                    $callback = $this->callableResolver->getCallableFromDefinition($permission_callback);
+                    if ($callback_permissions = call_user_func($callback)) {
+                        // Add any callback permissions to the array of permissions. Any
+                        // defaults can then get processed below.
+                        foreach ($callback_permissions as $name => $callback_permission) {
+                            if (!is_array($callback_permission)) {
+                                $callback_permission = [
+                                  'title' => $callback_permission,
+                                ];
+                            }
 
-    uasort($all_permissions, function (array $permission_a, array $permission_b) use ($modules): int {
-      if ($modules[$permission_a['provider']] == $modules[$permission_b['provider']]) {
-        return $permission_a['title'] <=> $permission_b['title'];
-      }
-      return $modules[$permission_a['provider']] <=> $modules[$permission_b['provider']];
-    });
-    return $all_permissions;
-  }
+                            $callback_permission += [
+                              'description' => null,
+                              'provider' => $provider,
+                            ];
 
-  /**
-   * Returns all module names.
-   *
-   * @return string[]
-   *   Returns the human readable names of all modules keyed by machine name.
-   */
-  protected function getModuleNames(): array {
-    $modules = [];
-    foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
-      $modules[$module] = $this->moduleExtensionList->getName($module);
+                            $all_callback_permissions[$name] = $callback_permission;
+                        }
+                    }
+                }
+
+                unset($permissions['permission_callbacks']);
+            }
+
+            foreach ($permissions as &$permission) {
+                if (!is_array($permission)) {
+                    $permission = [
+                      'title' => $permission,
+                    ];
+                }
+                // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+                $permission['title'] = $this->t($permission['title']);
+                // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+                $permission['description'] = isset($permission['description']) ? $this->t($permission['description']) : null;
+                $permission['provider'] = !empty($permission['provider']) ? $permission['provider'] : $provider;
+            }
+
+            $all_permissions += $permissions;
+        }
+
+        return $all_permissions + $all_callback_permissions;
     }
-    asort($modules);
-    return $modules;
-  }
+
+    /**
+     * Sorts the given permissions by provider name and title.
+     *
+     * @param array $all_permissions
+     *   The permissions to be sorted.
+     *
+     * @return array[]
+     *   An array with the same structure as
+     *   PermissionHandlerInterface::getPermissions().
+     *
+     * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+     */
+    protected function sortPermissions(array $all_permissions = []): array
+    {
+        // Get a list of all the modules providing permissions and sort by
+        // display name.
+        $modules = $this->getModuleNames();
+
+        uasort($all_permissions, function (array $permission_a, array $permission_b) use ($modules): int {
+            if ($modules[$permission_a['provider']] == $modules[$permission_b['provider']]) {
+                return $permission_a['title'] <=> $permission_b['title'];
+            }
+            return $modules[$permission_a['provider']] <=> $modules[$permission_b['provider']];
+        });
+        return $all_permissions;
+    }
+
+    /**
+     * Returns all module names.
+     *
+     * @return string[]
+     *   Returns the human readable names of all modules keyed by machine name.
+     */
+    protected function getModuleNames(): array
+    {
+        $modules = [];
+        foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
+            $modules[$module] = $this->moduleExtensionList->getName($module);
+        }
+        asort($modules);
+        return $modules;
+    }
 
 }

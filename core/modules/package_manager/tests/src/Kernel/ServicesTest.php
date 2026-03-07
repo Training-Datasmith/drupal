@@ -26,30 +26,31 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('package_manager')]
 #[RunTestsInSeparateProcesses]
-class ServicesTest extends KernelTestBase {
+class ServicesTest extends KernelTestBase
+{
+    use AssertPreconditionsTrait;
 
-  use AssertPreconditionsTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['package_manager', 'update'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['package_manager', 'update'];
-
-  /**
-   * Tests that Package Manager's public services can be instantiated.
-   */
-  public function testPackageManagerServices(): void {
-    // Ensure that certain Composer Stager services are decorated correctly.
-    $overrides = [
-      ExecutableFinderInterface::class => ExecutableFinder::class,
-      TranslatableFactoryInterface::class => TranslatableStringFactory::class,
-      BeginnerInterface::class => LoggingBeginner::class,
-      StagerInterface::class => LoggingStager::class,
-      CommitterInterface::class => LoggingCommitter::class,
-    ];
-    foreach ($overrides as $interface => $expected_class) {
-      $this->assertInstanceOf($expected_class, $this->container->get($interface));
+    /**
+     * Tests that Package Manager's public services can be instantiated.
+     */
+    public function testPackageManagerServices(): void
+    {
+        // Ensure that certain Composer Stager services are decorated correctly.
+        $overrides = [
+          ExecutableFinderInterface::class => ExecutableFinder::class,
+          TranslatableFactoryInterface::class => TranslatableStringFactory::class,
+          BeginnerInterface::class => LoggingBeginner::class,
+          StagerInterface::class => LoggingStager::class,
+          CommitterInterface::class => LoggingCommitter::class,
+        ];
+        foreach ($overrides as $interface => $expected_class) {
+            $this->assertInstanceOf($expected_class, $this->container->get($interface));
+        }
     }
-  }
 
 }

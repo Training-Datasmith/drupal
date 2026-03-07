@@ -14,38 +14,39 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Batch')]
 #[RunTestsInSeparateProcesses]
-class BatchNotFoundTest extends BrowserTestBase {
+class BatchNotFoundTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['batch_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['batch_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests for page not found error if batch ID does not exist.
+     */
+    public function testBatchNotFound(): void
+    {
 
-  /**
-   * Tests for page not found error if batch ID does not exist.
-   */
-  public function testBatchNotFound(): void {
+        $edit = ['batch' => 'batch0'];
+        $this->drupalGet('batch-test');
+        $this->submitForm($edit, 'Submit');
+        $this->assertSession()->statusCodeEquals(200);
 
-    $edit = ['batch' => 'batch0'];
-    $this->drupalGet('batch-test');
-    $this->submitForm($edit, 'Submit');
-    $this->assertSession()->statusCodeEquals(200);
+        $batch_id = \Drupal::service(BatchStorageInterface::class)->getId();
 
-    $batch_id = \Drupal::service(BatchStorageInterface::class)->getId();
+        $this->drupalGet('batch', [
+          'query' => [
+            'op' => 'start',
+            'id' => $batch_id,
+          ],
+        ]);
 
-    $this->drupalGet('batch', [
-      'query' => [
-        'op' => 'start',
-        'id' => $batch_id,
-      ],
-    ]);
-
-    $this->assertSession()->statusCodeEquals(404);
-  }
+        $this->assertSession()->statusCodeEquals(404);
+    }
 
 }

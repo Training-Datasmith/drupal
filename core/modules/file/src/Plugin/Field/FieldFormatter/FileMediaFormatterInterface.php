@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 /**
@@ -13,14 +15,14 @@ namespace Drupal\file\Plugin\Field\FieldFormatter;
  *
  * @see \Drupal\file\Plugin\Field\FieldFormatter\FileMediaFormatterBase
  */
-interface FileMediaFormatterInterface {
-
-  /**
-   * Gets the applicable media type for a formatter.
-   *
-   * @return string
-   *   The media type of this formatter.
-   */
-  public static function getMediaType();
+interface FileMediaFormatterInterface
+{
+    /**
+     * Gets the applicable media type for a formatter.
+     *
+     * @return string
+     *   The media type of this formatter.
+     */
+    public static function getMediaType();
 
 }

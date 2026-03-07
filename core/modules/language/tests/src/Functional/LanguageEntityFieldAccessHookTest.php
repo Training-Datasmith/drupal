@@ -13,38 +13,39 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class LanguageEntityFieldAccessHookTest extends BrowserTestBase {
+class LanguageEntityFieldAccessHookTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'node',
+      'text',
+      'field',
+      'filter',
+      'language',
+      'language_entity_field_access_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'node',
-    'text',
-    'field',
-    'filter',
-    'language',
-    'language_entity_field_access_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests compatibility with hook_entity_field_access().
+     */
+    public function testHookEntityFieldAccess(): void
+    {
+        // Create an admin user and do the login.
+        $user = $this->drupalCreateUser([], null, true);
+        $this->drupalLogin($user);
 
-  /**
-   * Tests compatibility with hook_entity_field_access().
-   */
-  public function testHookEntityFieldAccess(): void {
-    // Create an admin user and do the login.
-    $user = $this->drupalCreateUser([], NULL, TRUE);
-    $this->drupalLogin($user);
+        // Assess the field is not visible.
+        $this->drupalGet('node/add/page');
+        $this->assertSession()->fieldNotExists('langcode[0][value]');
 
-    // Assess the field is not visible.
-    $this->drupalGet('node/add/page');
-    $this->assertSession()->fieldNotExists('langcode[0][value]');
-
-    $this->drupalLogout();
-  }
+        $this->drupalLogout();
+    }
 
 }

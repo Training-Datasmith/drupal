@@ -21,26 +21,27 @@ use Drupal\entity_test\TypedData\ComputedString;
  * @see \Drupal\entity_test\Plugin\Field\FieldType\InternalPropertyTestFieldItem
  */
 #[FieldType(
-  id: "single_internal_property_test",
-  label: new TranslatableMarkup("Single Internal Property (test)"),
-  description: new TranslatableMarkup("A field containing one string, from which one internal string is computed."),
-  default_widget: "string_textfield",
-  default_formatter: "string",
+    id: 'single_internal_property_test',
+    label: new TranslatableMarkup('Single Internal Property (test)'),
+    description: new TranslatableMarkup('A field containing one string, from which one internal string is computed.'),
+    default_widget: 'string_textfield',
+    default_formatter: 'string',
 )]
-class SingleInternalPropertyTestFieldItem extends StringItem {
+class SingleInternalPropertyTestFieldItem extends StringItem
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties = parent::propertyDefinitions($field_definition);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties = parent::propertyDefinitions($field_definition);
-
-    // Add a computed property that is internal.
-    $properties['internal_value'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Computed string, internal property'))
-      ->setComputed(TRUE)
-      ->setClass(ComputedString::class);
-    return $properties;
-  }
+        // Add a computed property that is internal.
+        $properties['internal_value'] = DataDefinition::create('string')
+          ->setLabel(new TranslatableMarkup('Computed string, internal property'))
+          ->setComputed(true)
+          ->setClass(ComputedString::class);
+        return $properties;
+    }
 
 }

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -13,41 +14,43 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Plugin derivers are internal.
  */
-class InlineBlockDeriver extends DeriverBase implements ContainerDeriverInterface {
-
-  /**
-   * Constructs a BlockContentDeriver object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    $this->derivatives = [];
-    if ($this->entityTypeManager->hasDefinition('block_content_type')) {
-      $block_content_types = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
-      foreach ($block_content_types as $id => $type) {
-        $this->derivatives[$id] = $base_plugin_definition;
-        $this->derivatives[$id]['admin_label'] = $type->label();
-        $this->derivatives[$id]['config_dependencies'][$type->getConfigDependencyKey()][] = $type->getConfigDependencyName();
-      }
+class InlineBlockDeriver extends DeriverBase implements ContainerDeriverInterface
+{
+    /**
+     * Constructs a BlockContentDeriver object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
-    return parent::getDerivativeDefinitions($base_plugin_definition);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get('entity_type.manager')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        $this->derivatives = [];
+        if ($this->entityTypeManager->hasDefinition('block_content_type')) {
+            $block_content_types = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
+            foreach ($block_content_types as $id => $type) {
+                $this->derivatives[$id] = $base_plugin_definition;
+                $this->derivatives[$id]['admin_label'] = $type->label();
+                $this->derivatives[$id]['config_dependencies'][$type->getConfigDependencyKey()][] = $type->getConfigDependencyName();
+            }
+        }
+        return parent::getDerivativeDefinitions($base_plugin_definition);
+    }
 
 }

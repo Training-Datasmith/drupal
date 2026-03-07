@@ -12,36 +12,40 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class BigPipeTestForm extends FormBase {
+class BigPipeTestForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'big_pipe_test_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'big_pipe_test_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['#token'] = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['#token'] = FALSE;
+        $form['big_pipe'] = [
+          '#type' => 'checkboxes',
+          '#title' => $this->t('BigPipe works…'),
+          '#options' => [
+            'js' => $this->t('… with JavaScript'),
+            'nojs' => $this->t('… without JavaScript'),
+          ],
+        ];
 
-    $form['big_pipe'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('BigPipe works…'),
-      '#options' => [
-        'js' => $this->t('… with JavaScript'),
-        'nojs' => $this->t('… without JavaScript'),
-      ],
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

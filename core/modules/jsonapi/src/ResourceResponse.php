@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -20,33 +22,37 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @see \Drupal\rest\ModifiedResourceResponse
  */
-class ResourceResponse extends Response {
-
-  /**
-   * Constructor for ResourceResponse objects.
-   *
-   * @param mixed $responseData
-   *   Response data that should be serialized.
-   * @param int $status
-   *   The response status code.
-   * @param array $headers
-   *   An array of response headers.
-   */
-  public function __construct(/**
+class ResourceResponse extends Response
+{
+    /**
+     * Constructor for ResourceResponse objects.
+     *
+     * @param mixed $responseData
+     *   Response data that should be serialized.
+     * @param int $status
+     *   The response status code.
+     * @param array $headers
+     *   An array of response headers.
+     */
+    public function __construct(/**
    * Response data that should be serialized.
    */
-  protected $responseData = NULL, $status = 200, array $headers = []) {
-    parent::__construct('', $status, $headers);
-  }
+        protected $responseData = null,
+        $status = 200,
+        array $headers = []
+    ) {
+        parent::__construct('', $status, $headers);
+    }
 
-  /**
-   * Returns response data that should be serialized.
-   *
-   * @return mixed
-   *   Response data that should be serialized.
-   */
-  public function getResponseData() {
-    return $this->responseData;
-  }
+    /**
+     * Returns response data that should be serialized.
+     *
+     * @return mixed
+     *   Response data that should be serialized.
+     */
+    public function getResponseData()
+    {
+        return $this->responseData;
+    }
 
 }

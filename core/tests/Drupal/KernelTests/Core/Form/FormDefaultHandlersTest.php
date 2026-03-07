@@ -16,78 +16,85 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class FormDefaultHandlersTest extends KernelTestBase implements FormInterface {
+class FormDefaultHandlersTest extends KernelTestBase implements FormInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'test_form_handlers';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'test_form_handlers';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $form['#validate'][] = '::customValidateForm';
+        $form['#submit'][] = '::customSubmitForm';
+        $form['submit'] = ['#type' => 'submit', '#value' => 'Save'];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $form['#validate'][] = '::customValidateForm';
-    $form['#submit'][] = '::customSubmitForm';
-    $form['submit'] = ['#type' => 'submit', '#value' => 'Save'];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function customValidateForm(array &$form, FormStateInterface $form_state): void
+    {
+        $test_handlers = $form_state->get('test_handlers');
+        $test_handlers['validate'][] = __FUNCTION__;
+        $form_state->set('test_handlers', $test_handlers);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function customValidateForm(array &$form, FormStateInterface $form_state): void {
-    $test_handlers = $form_state->get('test_handlers');
-    $test_handlers['validate'][] = __FUNCTION__;
-    $form_state->set('test_handlers', $test_handlers);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state): void
+    {
+        $test_handlers = $form_state->get('test_handlers');
+        $test_handlers['validate'][] = __FUNCTION__;
+        $form_state->set('test_handlers', $test_handlers);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $test_handlers = $form_state->get('test_handlers');
-    $test_handlers['validate'][] = __FUNCTION__;
-    $form_state->set('test_handlers', $test_handlers);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function customSubmitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $test_handlers = $form_state->get('test_handlers');
+        $test_handlers['submit'][] = __FUNCTION__;
+        $form_state->set('test_handlers', $test_handlers);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function customSubmitForm(array &$form, FormStateInterface $form_state): void {
-    $test_handlers = $form_state->get('test_handlers');
-    $test_handlers['submit'][] = __FUNCTION__;
-    $form_state->set('test_handlers', $test_handlers);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $test_handlers = $form_state->get('test_handlers');
+        $test_handlers['submit'][] = __FUNCTION__;
+        $form_state->set('test_handlers', $test_handlers);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $test_handlers = $form_state->get('test_handlers');
-    $test_handlers['submit'][] = __FUNCTION__;
-    $form_state->set('test_handlers', $test_handlers);
-  }
+    /**
+     * Tests that default handlers are added even if custom are specified.
+     */
+    public function testDefaultAndCustomHandlers(): void
+    {
+        $form_state = new FormState();
+        $form_builder = $this->container->get('form_builder');
+        $form_builder->submitForm($this, $form_state);
 
-  /**
-   * Tests that default handlers are added even if custom are specified.
-   */
-  public function testDefaultAndCustomHandlers(): void {
-    $form_state = new FormState();
-    $form_builder = $this->container->get('form_builder');
-    $form_builder->submitForm($this, $form_state);
+        $handlers = $form_state->get('test_handlers');
 
-    $handlers = $form_state->get('test_handlers');
+        $this->assertCount(2, $handlers['validate']);
+        $this->assertSame('customValidateForm', $handlers['validate'][0]);
+        $this->assertSame('validateForm', $handlers['validate'][1]);
 
-    $this->assertCount(2, $handlers['validate']);
-    $this->assertSame('customValidateForm', $handlers['validate'][0]);
-    $this->assertSame('validateForm', $handlers['validate'][1]);
-
-    $this->assertCount(2, $handlers['submit']);
-    $this->assertSame('customSubmitForm', $handlers['submit'][0]);
-    $this->assertSame('submitForm', $handlers['submit'][1]);
-  }
+        $this->assertCount(2, $handlers['submit']);
+        $this->assertSame('customSubmitForm', $handlers['submit'][0]);
+        $this->assertSame('submitForm', $handlers['submit'][1]);
+    }
 
 }

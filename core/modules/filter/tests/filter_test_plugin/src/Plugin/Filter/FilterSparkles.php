@@ -19,19 +19,20 @@ use Drupal\filter\Plugin\FilterInterface;
  * @see \Drupal\Tests\filter\Functional\FilterFormTest::testFilterForm()
  */
 #[Filter(
-  id: "filter_sparkles",
-  title: new TranslatableMarkup("Sparkles filter"),
-  type: FilterInterface::TYPE_HTML_RESTRICTOR,
-  weight: -10,
-  settings: [],
+    id: 'filter_sparkles',
+    title: new TranslatableMarkup('Sparkles filter'),
+    type: FilterInterface::TYPE_HTML_RESTRICTOR,
+    weight: -10,
+    settings: [],
 )]
-class FilterSparkles extends FilterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode) {
-    return new FilterProcessResult($text);
-  }
+class FilterSparkles extends FilterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode)
+    {
+        return new FilterProcessResult($text);
+    }
 
 }

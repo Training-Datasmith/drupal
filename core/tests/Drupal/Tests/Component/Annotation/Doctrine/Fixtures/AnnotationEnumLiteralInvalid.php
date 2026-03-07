@@ -10,9 +10,9 @@ namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
  */
 final class AnnotationEnumLiteralInvalid
 {
-    const ONE   = 1;
-    const TWO   = 2;
-    const THREE = 3;
+    public const ONE   = 1;
+    public const TWO   = 2;
+    public const THREE = 3;
 
     /**
      * @var mixed

@@ -16,30 +16,31 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserRoleTest extends ViewsKernelTestBase {
+class UserRoleTest extends ViewsKernelTestBase
+{
+    /**
+     * Tests numeric role.
+     */
+    public function testNumericRole(): void
+    {
+        $this->installEntitySchema('user');
+        $this->installSchema('user', ['users_data']);
 
-  /**
-   * Tests numeric role.
-   */
-  public function testNumericRole(): void {
-    $this->installEntitySchema('user');
-    $this->installSchema('user', ['users_data']);
+        Role::create(['id' => 123, 'label' => 'Numeric'])
+          ->save();
 
-    Role::create(['id' => 123, 'label' => 'Numeric'])
-      ->save();
+        $user = User::create([
+          'uid' => 2,
+          'name' => 'foo',
+          'roles' => 123,
+        ]);
+        $user->save();
 
-    $user = User::create([
-      'uid' => 2,
-      'name' => 'foo',
-      'roles' => 123,
-    ]);
-    $user->save();
-
-    $view = Views::getView('user_admin_people');
-    $this->executeView($view);
-    $view->render('user_admin_people');
-    $output = $view->field['roles_target_id']->render($view->result[0]);
-    $this->assertEquals(2, $output);
-  }
+        $view = Views::getView('user_admin_people');
+        $this->executeView($view);
+        $view->render('user_admin_people');
+        $output = $view->field['roles_target_id']->render($view->result[0]);
+        $this->assertEquals(2, $output);
+    }
 
 }

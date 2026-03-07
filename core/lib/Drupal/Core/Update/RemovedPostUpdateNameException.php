@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Update;
 
 /**
@@ -8,5 +10,6 @@ namespace Drupal\Core\Update;
  * Occurs when a module defines hook_post_update_NAME() implementations
  * that are listed as removed in hook_removed_post_updates().
  */
-class RemovedPostUpdateNameException extends \LogicException {
+class RemovedPostUpdateNameException extends \LogicException
+{
 }

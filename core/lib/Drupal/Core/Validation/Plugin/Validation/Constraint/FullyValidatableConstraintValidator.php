@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
@@ -12,13 +12,14 @@ use Symfony\Component\Validator\ConstraintValidator;
  *
  * @internal
  */
-final class FullyValidatableConstraintValidator extends ConstraintValidator {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate(mixed $value, Constraint $constraint): void {
-    // No-op.
-  }
+final class FullyValidatableConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate(mixed $value, Constraint $constraint): void
+    {
+        // No-op.
+    }
 
 }

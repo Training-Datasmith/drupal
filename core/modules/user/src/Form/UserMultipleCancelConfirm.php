@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
-use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,192 +15,199 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class UserMultipleCancelConfirm extends ConfirmFormBase {
-
-  /**
-   * Constructs a new UserMultipleCancelConfirm.
-   *
-   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory
-   *   The temp store factory.
-   * @param \Drupal\user\UserStorageInterface $userStorage
-   *   The user storage.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory, protected \Drupal\user\UserStorageInterface $userStorage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('tempstore.private'),
-      $container->get('entity_type.manager')->getStorage('user'),
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'user_multiple_cancel_confirm';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Are you sure you want to cancel these user accounts?');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return new Url('entity.user.collection');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Confirm');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): string {
-    return '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    // Retrieve the accounts to be canceled from the temp store.
-    /** @var \Drupal\user\Entity\User[] $accounts */
-    $accounts = $this->tempStoreFactory
-      ->get('user_user_operations_cancel')
-      ->get($this->currentUser()->id());
-    if (!$accounts) {
-      return $this->redirect('entity.user.collection');
+class UserMultipleCancelConfirm extends ConfirmFormBase
+{
+    /**
+     * Constructs a new UserMultipleCancelConfirm.
+     *
+     * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory
+     *   The temp store factory.
+     * @param \Drupal\user\UserStorageInterface $userStorage
+     *   The user storage.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory, protected \Drupal\user\UserStorageInterface $userStorage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
 
-    $root = NULL;
-    $names = [];
-    $form['accounts'] = ['#tree' => TRUE];
-    foreach ($accounts as $account) {
-      $uid = $account->id();
-      $names[$uid] = $account->label();
-      // Prevent user 1 from being canceled.
-      if ($uid <= 1) {
-        $root = intval($uid) === 1 ? $account : $root;
-        continue;
-      }
-      $form['accounts'][$uid] = [
-        '#type' => 'hidden',
-        '#value' => $uid,
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('tempstore.private'),
+            $container->get('entity_type.manager')->getStorage('user'),
+            $container->get('entity_type.manager')
+        );
     }
 
-    $form['account']['names'] = [
-      '#theme' => 'item_list',
-      '#items' => $names,
-    ];
-
-    // Output a notice that user 1 cannot be canceled.
-    if (isset($root)) {
-      $redirect = (count($accounts) == 1);
-      $message = $this->t('The user account %name cannot be canceled.', ['%name' => $root->label()]);
-      $this->messenger()->addMessage($message, $redirect ? MessengerInterface::TYPE_ERROR : MessengerInterface::TYPE_WARNING);
-      // If only user 1 was selected, redirect to the overview.
-      if ($redirect) {
-        return $this->redirect('entity.user.collection');
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'user_multiple_cancel_confirm';
     }
 
-    $form['operation'] = ['#type' => 'hidden', '#value' => 'cancel'];
-
-    // Display account cancellation method selection, if allowed.
-    $user = $this->currentUser();
-    $selectCancel = $user->hasPermission('administer users') || $user->hasPermission('select account cancellation method');
-
-    $form['user_cancel_method'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Cancellation method'),
-      '#access' => $selectCancel,
-    ];
-
-    $form['user_cancel_method'] += user_cancel_methods();
-
-    if (!$selectCancel) {
-      // Display an item to inform the user of the setting.
-      $default_method = $form['user_cancel_method']['#default_value'];
-      $form['user_cancel_method_show'] = [
-        '#type' => 'item',
-        '#title' => $this->t('When cancelling these accounts'),
-        '#plain_text' => $form['user_cancel_method']['#options'][$default_method],
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Are you sure you want to cancel these user accounts?');
     }
 
-    // Allow to send the account cancellation confirmation mail.
-    $form['user_cancel_confirm'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require email confirmation'),
-      '#default_value' => FALSE,
-      '#description' => $this->t('When enabled, the user must confirm the account cancellation via email.'),
-    ];
-    // Also allow to send account canceled notification mail, if enabled.
-    $form['user_cancel_notify'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Notify user when account is canceled'),
-      '#default_value' => FALSE,
-      '#access' => $this->config('user.settings')->get('notify.status_canceled'),
-      '#description' => $this->t('When enabled, the user will receive an email notification after the account has been canceled.'),
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return new Url('entity.user.collection');
+    }
 
-    return parent::buildForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Confirm');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $current_user_id = $this->currentUser()->id();
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): string
+    {
+        return '';
+    }
 
-    // Clear out the accounts from the temp store.
-    $this->tempStoreFactory->get('user_user_operations_cancel')->delete($current_user_id);
-    if ($form_state->getValue('confirm')) {
-      foreach ($form_state->getValue('accounts') as $uid => $value) {
-        // Prevent programmatic form submissions from cancelling user 1.
-        if ($uid <= 1) {
-          continue;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        // Retrieve the accounts to be canceled from the temp store.
+        /** @var \Drupal\user\Entity\User[] $accounts */
+        $accounts = $this->tempStoreFactory
+          ->get('user_user_operations_cancel')
+          ->get($this->currentUser()->id());
+        if (!$accounts) {
+            return $this->redirect('entity.user.collection');
         }
-        // Prevent user administrators from deleting themselves without
-        // confirmation.
-        if ($uid == $current_user_id) {
-          $admin_form_mock = [];
-          $admin_form_state = $form_state;
-          $admin_form_state->unsetValue('user_cancel_confirm');
-          // The $user global is not a complete user entity, so load the full
-          // entity.
-          $account = $this->userStorage->load($uid);
-          $admin_form = $this->entityTypeManager->getFormObject('user', 'cancel');
-          $admin_form->setEntity($account);
-          // Calling this directly required to init form object with $account.
-          $admin_form->buildForm($admin_form_mock, $admin_form_state);
-          $admin_form->submitForm($admin_form_mock, $admin_form_state);
+
+        $root = null;
+        $names = [];
+        $form['accounts'] = ['#tree' => true];
+        foreach ($accounts as $account) {
+            $uid = $account->id();
+            $names[$uid] = $account->label();
+            // Prevent user 1 from being canceled.
+            if ($uid <= 1) {
+                $root = intval($uid) === 1 ? $account : $root;
+                continue;
+            }
+            $form['accounts'][$uid] = [
+              '#type' => 'hidden',
+              '#value' => $uid,
+            ];
         }
-        else {
-          user_cancel($form_state->getValues(), $uid, $form_state->getValue('user_cancel_method'));
+
+        $form['account']['names'] = [
+          '#theme' => 'item_list',
+          '#items' => $names,
+        ];
+
+        // Output a notice that user 1 cannot be canceled.
+        if (isset($root)) {
+            $redirect = (count($accounts) == 1);
+            $message = $this->t('The user account %name cannot be canceled.', ['%name' => $root->label()]);
+            $this->messenger()->addMessage($message, $redirect ? MessengerInterface::TYPE_ERROR : MessengerInterface::TYPE_WARNING);
+            // If only user 1 was selected, redirect to the overview.
+            if ($redirect) {
+                return $this->redirect('entity.user.collection');
+            }
         }
-      }
+
+        $form['operation'] = ['#type' => 'hidden', '#value' => 'cancel'];
+
+        // Display account cancellation method selection, if allowed.
+        $user = $this->currentUser();
+        $selectCancel = $user->hasPermission('administer users') || $user->hasPermission('select account cancellation method');
+
+        $form['user_cancel_method'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Cancellation method'),
+          '#access' => $selectCancel,
+        ];
+
+        $form['user_cancel_method'] += user_cancel_methods();
+
+        if (!$selectCancel) {
+            // Display an item to inform the user of the setting.
+            $default_method = $form['user_cancel_method']['#default_value'];
+            $form['user_cancel_method_show'] = [
+              '#type' => 'item',
+              '#title' => $this->t('When cancelling these accounts'),
+              '#plain_text' => $form['user_cancel_method']['#options'][$default_method],
+            ];
+        }
+
+        // Allow to send the account cancellation confirmation mail.
+        $form['user_cancel_confirm'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Require email confirmation'),
+          '#default_value' => false,
+          '#description' => $this->t('When enabled, the user must confirm the account cancellation via email.'),
+        ];
+        // Also allow to send account canceled notification mail, if enabled.
+        $form['user_cancel_notify'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Notify user when account is canceled'),
+          '#default_value' => false,
+          '#access' => $this->config('user.settings')->get('notify.status_canceled'),
+          '#description' => $this->t('When enabled, the user will receive an email notification after the account has been canceled.'),
+        ];
+
+        return parent::buildForm($form, $form_state);
     }
-    $form_state->setRedirect('entity.user.collection');
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $current_user_id = $this->currentUser()->id();
+
+        // Clear out the accounts from the temp store.
+        $this->tempStoreFactory->get('user_user_operations_cancel')->delete($current_user_id);
+        if ($form_state->getValue('confirm')) {
+            foreach ($form_state->getValue('accounts') as $uid => $value) {
+                // Prevent programmatic form submissions from cancelling user 1.
+                if ($uid <= 1) {
+                    continue;
+                }
+                // Prevent user administrators from deleting themselves without
+                // confirmation.
+                if ($uid == $current_user_id) {
+                    $admin_form_mock = [];
+                    $admin_form_state = $form_state;
+                    $admin_form_state->unsetValue('user_cancel_confirm');
+                    // The $user global is not a complete user entity, so load the full
+                    // entity.
+                    $account = $this->userStorage->load($uid);
+                    $admin_form = $this->entityTypeManager->getFormObject('user', 'cancel');
+                    $admin_form->setEntity($account);
+                    // Calling this directly required to init form object with $account.
+                    $admin_form->buildForm($admin_form_mock, $admin_form_state);
+                    $admin_form->submitForm($admin_form_mock, $admin_form_state);
+                } else {
+                    user_cancel($form_state->getValues(), $uid, $form_state->getValue('user_cancel_method'));
+                }
+            }
+        }
+        $form_state->setRedirect('entity.user.collection');
+    }
 
 }

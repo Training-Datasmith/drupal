@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 /**
@@ -12,13 +14,14 @@ namespace Drupal\Core\Plugin;
  * @phpstan-require-implements \Drupal\Component\Plugin\Discovery\DiscoveryInterface
  * @phpstan-require-implements \Drupal\Core\PreWarm\PreWarmableInterface
  */
-trait PreWarmablePluginManagerTrait {
-
-  /**
-   * Implements \Drupal\Core\PreWarm\PreWarmableInterface.
-   */
-  public function preWarm(): void {
-    $this->getDefinitions();
-  }
+trait PreWarmablePluginManagerTrait
+{
+    /**
+     * Implements \Drupal\Core\PreWarm\PreWarmableInterface.
+     */
+    public function preWarm(): void
+    {
+        $this->getDefinitions();
+    }
 
 }

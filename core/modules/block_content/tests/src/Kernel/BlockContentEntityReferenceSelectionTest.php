@@ -19,156 +19,160 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block_content')]
 #[RunTestsInSeparateProcesses]
-class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block_content',
-    'block_content_test',
-    'user',
-  ];
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Test reusable block.
-   *
-   * @var \Drupal\block_content\BlockContentInterface
-   */
-  protected $blockReusable;
-
-  /**
-   * Test non-reusable block.
-   *
-   * @var \Drupal\block_content\BlockContentInterface
-   */
-  protected $blockNonReusable;
-
-  /**
-   * Test selection handler.
-   *
-   * @var \Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection
-   */
-  protected $selectionHandler;
-
-  /**
-   * Test block expectations.
-   *
-   * @var array
-   */
-  protected $expectations;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('block_content');
-
-    // Create a block content type.
-    $block_content_type = BlockContentType::create([
-      'id' => 'spiffy',
-      'label' => 'Very spiffy',
-      'description' => "Provides a block type that increases your site's spiffy rating by up to 11%",
-    ]);
-    $block_content_type->save();
-    $this->entityTypeManager = $this->container->get('entity_type.manager');
-
-    // And reusable block content entities.
-    $this->blockReusable = BlockContent::create([
-      'info' => 'Reusable Block',
-      'type' => 'spiffy',
-    ]);
-    $this->blockReusable->save();
-    $this->blockNonReusable = BlockContent::create([
-      'info' => 'Non-reusable Block',
-      'type' => 'spiffy',
-      'reusable' => FALSE,
-    ]);
-    $this->blockNonReusable->save();
-
-    $configuration = [
-      'target_type' => 'block_content',
-      'target_bundles' => ['spiffy' => 'spiffy'],
-      'sort' => ['field' => '_none'],
+class BlockContentEntityReferenceSelectionTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block_content',
+      'block_content_test',
+      'user',
     ];
-    $this->selectionHandler = new TestSelection($configuration, '', '', $this->container->get('entity_type.manager'), $this->container->get('module_handler'), \Drupal::currentUser(), \Drupal::service('entity_field.manager'), \Drupal::service('entity_type.bundle.info'), \Drupal::service('entity.repository'));
 
-    // Setup the 3 expectation cases.
-    $this->expectations = [
-      'both_blocks' => [
-        'spiffy' => [
-          $this->blockReusable->id() => $this->blockReusable->label(),
-          $this->blockNonReusable->id() => $this->blockNonReusable->label(),
-        ],
-      ],
-      'block_reusable' => ['spiffy' => [$this->blockReusable->id() => $this->blockReusable->label()]],
-      'block_non_reusable' => ['spiffy' => [$this->blockNonReusable->id() => $this->blockNonReusable->label()]],
-    ];
-  }
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * Tests to make sure queries without the expected tags are not altered.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function testQueriesNotAltered(): void {
-    // Ensure that queries without all the tags are not altered.
-    $query = $this->entityTypeManager->getStorage('block_content')
-      ->getQuery()
-      ->accessCheck(FALSE);
-    $this->assertCount(2, $query->execute());
+    /**
+     * Test reusable block.
+     *
+     * @var \Drupal\block_content\BlockContentInterface
+     */
+    protected $blockReusable;
 
-    $query = $this->entityTypeManager->getStorage('block_content')
-      ->getQuery()
-      ->accessCheck(FALSE);
-    $query->addTag('block_content_access');
-    $this->assertCount(2, $query->execute());
+    /**
+     * Test non-reusable block.
+     *
+     * @var \Drupal\block_content\BlockContentInterface
+     */
+    protected $blockNonReusable;
 
-    $query = $this->entityTypeManager->getStorage('block_content')
-      ->getQuery()
-      ->accessCheck(FALSE);
-    $query->addTag('entity_query_block_content');
-    $this->assertCount(2, $query->execute());
-  }
+    /**
+     * Test selection handler.
+     *
+     * @var \Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection
+     */
+    protected $selectionHandler;
 
-  /**
-   * Tests setting 'reusable' condition on different levels.
-   *
-   * @throws \Exception
-   */
-  #[DataProvider('fieldConditionProvider')]
-  public function testFieldConditions($condition_type, $is_reusable): void {
-    $this->selectionHandler->setTestMode($condition_type, $is_reusable);
-    $this->assertEquals(
-      $is_reusable ? $this->expectations['block_reusable'] : $this->expectations['block_non_reusable'],
-      $this->selectionHandler->getReferenceableEntities()
-    );
-  }
+    /**
+     * Test block expectations.
+     *
+     * @var array
+     */
+    protected $expectations;
 
-  /**
-   * Provides possible fields and condition types.
-   */
-  public static function fieldConditionProvider() {
-    $cases = [];
-    foreach (['base', 'group', 'nested_group'] as $condition_type) {
-      foreach ([TRUE, FALSE] as $reusable) {
-        $cases["$condition_type:" . ($reusable ? 'reusable' : 'non-reusable')] = [
-          $condition_type,
-          $reusable,
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('block_content');
+
+        // Create a block content type.
+        $block_content_type = BlockContentType::create([
+          'id' => 'spiffy',
+          'label' => 'Very spiffy',
+          'description' => "Provides a block type that increases your site's spiffy rating by up to 11%",
+        ]);
+        $block_content_type->save();
+        $this->entityTypeManager = $this->container->get('entity_type.manager');
+
+        // And reusable block content entities.
+        $this->blockReusable = BlockContent::create([
+          'info' => 'Reusable Block',
+          'type' => 'spiffy',
+        ]);
+        $this->blockReusable->save();
+        $this->blockNonReusable = BlockContent::create([
+          'info' => 'Non-reusable Block',
+          'type' => 'spiffy',
+          'reusable' => false,
+        ]);
+        $this->blockNonReusable->save();
+
+        $configuration = [
+          'target_type' => 'block_content',
+          'target_bundles' => ['spiffy' => 'spiffy'],
+          'sort' => ['field' => '_none'],
         ];
-      }
+        $this->selectionHandler = new TestSelection($configuration, '', '', $this->container->get('entity_type.manager'), $this->container->get('module_handler'), \Drupal::currentUser(), \Drupal::service('entity_field.manager'), \Drupal::service('entity_type.bundle.info'), \Drupal::service('entity.repository'));
+
+        // Setup the 3 expectation cases.
+        $this->expectations = [
+          'both_blocks' => [
+            'spiffy' => [
+              $this->blockReusable->id() => $this->blockReusable->label(),
+              $this->blockNonReusable->id() => $this->blockNonReusable->label(),
+            ],
+          ],
+          'block_reusable' => ['spiffy' => [$this->blockReusable->id() => $this->blockReusable->label()]],
+          'block_non_reusable' => ['spiffy' => [$this->blockNonReusable->id() => $this->blockNonReusable->label()]],
+        ];
     }
-    return $cases;
-  }
+
+    /**
+     * Tests to make sure queries without the expected tags are not altered.
+     *
+     * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+     * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+     */
+    public function testQueriesNotAltered(): void
+    {
+        // Ensure that queries without all the tags are not altered.
+        $query = $this->entityTypeManager->getStorage('block_content')
+          ->getQuery()
+          ->accessCheck(false);
+        $this->assertCount(2, $query->execute());
+
+        $query = $this->entityTypeManager->getStorage('block_content')
+          ->getQuery()
+          ->accessCheck(false);
+        $query->addTag('block_content_access');
+        $this->assertCount(2, $query->execute());
+
+        $query = $this->entityTypeManager->getStorage('block_content')
+          ->getQuery()
+          ->accessCheck(false);
+        $query->addTag('entity_query_block_content');
+        $this->assertCount(2, $query->execute());
+    }
+
+    /**
+     * Tests setting 'reusable' condition on different levels.
+     *
+     * @throws \Exception
+     */
+    #[DataProvider('fieldConditionProvider')]
+    public function testFieldConditions($condition_type, $is_reusable): void
+    {
+        $this->selectionHandler->setTestMode($condition_type, $is_reusable);
+        $this->assertEquals(
+            $is_reusable ? $this->expectations['block_reusable'] : $this->expectations['block_non_reusable'],
+            $this->selectionHandler->getReferenceableEntities()
+        );
+    }
+
+    /**
+     * Provides possible fields and condition types.
+     */
+    public static function fieldConditionProvider()
+    {
+        $cases = [];
+        foreach (['base', 'group', 'nested_group'] as $condition_type) {
+            foreach ([true, false] as $reusable) {
+                $cases["$condition_type:" . ($reusable ? 'reusable' : 'non-reusable')] = [
+                  $condition_type,
+                  $reusable,
+                ];
+            }
+        }
+        return $cases;
+    }
 
 }

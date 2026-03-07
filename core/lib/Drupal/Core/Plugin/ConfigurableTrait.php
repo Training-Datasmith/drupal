@@ -21,61 +21,64 @@ use Drupal\Component\Utility\NestedArray;
  *
  * @ingroup Plugin
  */
-trait ConfigurableTrait {
+trait ConfigurableTrait
+{
+    /**
+     * Configuration information passed into the plugin.
+     *
+     * This property is declared in \Drupal\Component\Plugin\PluginBase as well,
+     * which most classes using this trait will ultimately be extending. It is
+     * re-declared here to make the trait self-contained and to permit use of the
+     * trait in classes that do not extend PluginBase.
+     *
+     * @var array
+     */
+    protected $configuration;
 
-  /**
-   * Configuration information passed into the plugin.
-   *
-   * This property is declared in \Drupal\Component\Plugin\PluginBase as well,
-   * which most classes using this trait will ultimately be extending. It is
-   * re-declared here to make the trait self-contained and to permit use of the
-   * trait in classes that do not extend PluginBase.
-   *
-   * @var array
-   */
-  protected $configuration;
+    /**
+     * Gets this plugin's configuration.
+     *
+     * @return array
+     *   An associative array containing the plugin's configuration.
+     *
+     * @see \Drupal\Component\Plugin\ConfigurableInterface::getConfiguration()
+     */
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
 
-  /**
-   * Gets this plugin's configuration.
-   *
-   * @return array
-   *   An associative array containing the plugin's configuration.
-   *
-   * @see \Drupal\Component\Plugin\ConfigurableInterface::getConfiguration()
-   */
-  public function getConfiguration() {
-    return $this->configuration;
-  }
+    /**
+     * Sets the configuration for this plugin instance.
+     *
+     * The provided configuration is merged with the plugin's default
+     * configuration. If the same configuration key exists in both configurations,
+     * then the value in the provided configuration will override the default.
+     *
+     * @param array $configuration
+     *   An associative array containing the plugin's configuration.
+     *
+     * @return $this
+     *
+     * @see \Drupal\Component\Plugin\ConfigurableInterface::setConfiguration()
+     */
+    public function setConfiguration(array $configuration)
+    {
+        $this->configuration = NestedArray::mergeDeepArray([$this->defaultConfiguration(), $configuration], true);
+        return $this;
+    }
 
-  /**
-   * Sets the configuration for this plugin instance.
-   *
-   * The provided configuration is merged with the plugin's default
-   * configuration. If the same configuration key exists in both configurations,
-   * then the value in the provided configuration will override the default.
-   *
-   * @param array $configuration
-   *   An associative array containing the plugin's configuration.
-   *
-   * @return $this
-   *
-   * @see \Drupal\Component\Plugin\ConfigurableInterface::setConfiguration()
-   */
-  public function setConfiguration(array $configuration) {
-    $this->configuration = NestedArray::mergeDeepArray([$this->defaultConfiguration(), $configuration], TRUE);
-    return $this;
-  }
-
-  /**
-   * Gets default configuration for this plugin.
-   *
-   * @return array
-   *   An associative array containing the default configuration.
-   *
-   * @see \Drupal\Component\Plugin\ConfigurableInterface::defaultConfiguration()
-   */
-  public function defaultConfiguration(): array {
-    return [];
-  }
+    /**
+     * Gets default configuration for this plugin.
+     *
+     * @return array
+     *   An associative array containing the default configuration.
+     *
+     * @see \Drupal\Component\Plugin\ConfigurableInterface::defaultConfiguration()
+     */
+    public function defaultConfiguration(): array
+    {
+        return [];
+    }
 
 }

@@ -17,78 +17,81 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(LayoutTempstoreRepository::class)]
 #[Group('layout_builder')]
-class LayoutTempstoreRepositoryTest extends UnitTestCase {
+class LayoutTempstoreRepositoryTest extends UnitTestCase
+{
+    /**
+     * Tests get empty tempstore.
+     *
+     * @legacy-covers ::get
+     * @legacy-covers ::has
+     */
+    public function testGetEmptyTempstore(): void
+    {
+        $section_storage = $this->prophesize(SectionStorageInterface::class);
+        $section_storage->getStorageType()->willReturn('my_storage_type');
+        $section_storage->getStorageId()->willReturn('my_storage_id');
 
-  /**
-   * Tests get empty tempstore.
-   *
-   * @legacy-covers ::get
-   * @legacy-covers ::has
-   */
-  public function testGetEmptyTempstore(): void {
-    $section_storage = $this->prophesize(SectionStorageInterface::class);
-    $section_storage->getStorageType()->willReturn('my_storage_type');
-    $section_storage->getStorageId()->willReturn('my_storage_id');
+        $tempstore = $this->prophesize(SharedTempStore::class);
+        $tempstore->get('my_storage_id')->shouldBeCalled();
 
-    $tempstore = $this->prophesize(SharedTempStore::class);
-    $tempstore->get('my_storage_id')->shouldBeCalled();
+        $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
+        $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
 
-    $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
-    $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
+        $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
 
-    $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
+        $this->assertFalse($repository->has($section_storage->reveal()));
 
-    $this->assertFalse($repository->has($section_storage->reveal()));
+        $result = $repository->get($section_storage->reveal());
+        $this->assertSame($section_storage->reveal(), $result);
+    }
 
-    $result = $repository->get($section_storage->reveal());
-    $this->assertSame($section_storage->reveal(), $result);
-  }
+    /**
+     * Tests get loaded tempstore.
+     *
+     * @legacy-covers ::get
+     * @legacy-covers ::has
+     */
+    public function testGetLoadedTempstore(): void
+    {
+        $section_storage = $this->prophesize(SectionStorageInterface::class);
+        $section_storage->getStorageType()->willReturn('my_storage_type');
+        $section_storage->getStorageId()->willReturn('my_storage_id');
 
-  /**
-   * Tests get loaded tempstore.
-   *
-   * @legacy-covers ::get
-   * @legacy-covers ::has
-   */
-  public function testGetLoadedTempstore(): void {
-    $section_storage = $this->prophesize(SectionStorageInterface::class);
-    $section_storage->getStorageType()->willReturn('my_storage_type');
-    $section_storage->getStorageId()->willReturn('my_storage_id');
+        $tempstore_section_storage = $this->prophesize(SectionStorageInterface::class);
+        $tempstore = $this->prophesize(SharedTempStore::class);
+        $tempstore->get('my_storage_id')->willReturn(['section_storage' => $tempstore_section_storage->reveal()]);
+        $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
+        $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
 
-    $tempstore_section_storage = $this->prophesize(SectionStorageInterface::class);
-    $tempstore = $this->prophesize(SharedTempStore::class);
-    $tempstore->get('my_storage_id')->willReturn(['section_storage' => $tempstore_section_storage->reveal()]);
-    $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
-    $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
+        $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
 
-    $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
+        $this->assertTrue($repository->has($section_storage->reveal()));
 
-    $this->assertTrue($repository->has($section_storage->reveal()));
+        $result = $repository->get($section_storage->reveal());
+        $this->assertSame($tempstore_section_storage->reveal(), $result);
+        $this->assertNotSame($section_storage->reveal(), $result);
+    }
 
-    $result = $repository->get($section_storage->reveal());
-    $this->assertSame($tempstore_section_storage->reveal(), $result);
-    $this->assertNotSame($section_storage->reveal(), $result);
-  }
+    /**
+     * Tests get invalid entry.
+     */
+    public function testGetInvalidEntry(): void
+    {
+        $section_storage = $this->prophesize(SectionStorageInterface::class);
+        $section_storage->getStorageType()->willReturn('my_storage_type');
+        $section_storage->getStorageId()->willReturn('my_storage_id');
 
-  /**
-   * Tests get invalid entry.
-   */
-  public function testGetInvalidEntry(): void {
-    $section_storage = $this->prophesize(SectionStorageInterface::class);
-    $section_storage->getStorageType()->willReturn('my_storage_type');
-    $section_storage->getStorageId()->willReturn('my_storage_id');
+        $tempstore = $this->prophesize(SharedTempStore::class);
+        $tempstore->get('my_storage_id')->willReturn(['section_storage' => 'this_is_not_an_entity']);
 
-    $tempstore = $this->prophesize(SharedTempStore::class);
-    $tempstore->get('my_storage_id')->willReturn(['section_storage' => 'this_is_not_an_entity']);
+        $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
+        $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
 
-    $tempstore_factory = $this->prophesize(SharedTempStoreFactory::class);
-    $tempstore_factory->get('layout_builder.section_storage.my_storage_type')->willReturn($tempstore->reveal());
+        $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
 
-    $repository = new LayoutTempstoreRepository($tempstore_factory->reveal());
-
-    $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage('The entry with storage type "my_storage_type" and ID "my_storage_id" is invalid');
-    $repository->get($section_storage->reveal());
-  }
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('The entry with storage type "my_storage_type" and ID "my_storage_id" is invalid');
+        $repository->get($section_storage->reveal());
+    }
 
 }

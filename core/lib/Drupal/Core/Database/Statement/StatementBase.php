@@ -31,340 +31,356 @@ use Drupal\Core\Database\StatementIteratorTrait;
  * PHP memory (that an \IteratorAggregate implementation would force) and
  * therefore optimize memory usage while iterating the resultset.
  */
-abstract class StatementBase implements \Iterator, StatementInterface {
+abstract class StatementBase implements \Iterator, StatementInterface
+{
+    use FetchModeTrait;
+    use StatementIteratorTrait;
 
-  use FetchModeTrait;
-  use StatementIteratorTrait;
+    /**
+     * The client database Statement object.
+     *
+     * For a \PDO client connection, this will be a \PDOStatement object.
+     */
+    protected ?object $clientStatement = null;
 
-  /**
-   * The client database Statement object.
-   *
-   * For a \PDO client connection, this will be a \PDOStatement object.
-   */
-  protected ?object $clientStatement = null;
+    /**
+     * The results of a data query language (DQL) statement.
+     */
+    protected ?ResultBase $result = null;
 
-  /**
-   * The results of a data query language (DQL) statement.
-   */
-  protected ?ResultBase $result = NULL;
+    /**
+     * Holds the default fetch mode.
+     */
+    protected FetchAs $fetchMode = FetchAs::Object;
 
-  /**
-   * Holds the default fetch mode.
-   */
-  protected FetchAs $fetchMode = FetchAs::Object;
+    /**
+     * Holds fetch options.
+     *
+     * @var array{'class': class-string, 'constructor_args': list<mixed>, 'column': int}
+     */
+    protected array $fetchOptions = [
+      'class' => 'stdClass',
+      'constructor_args' => [],
+      'column' => 0,
+    ];
 
-  /**
-   * Holds fetch options.
-   *
-   * @var array{'class': class-string, 'constructor_args': list<mixed>, 'column': int}
-   */
-  protected array $fetchOptions = [
-    'class' => 'stdClass',
-    'constructor_args' => [],
-    'column' => 0,
-  ];
-
-  /**
-   * Constructor.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   Drupal database connection object.
-   * @param object $clientConnection
-   *   Client database connection object, for example \PDO.
-   * @param string $queryString
-   *   The query string.
-   * @param bool $rowCountEnabled
-   *   (optional) Enables counting the rows matched. Defaults to FALSE.
-   */
-  public function __construct(
-    protected readonly Connection $connection,
-    protected readonly object $clientConnection,
-    protected readonly string $queryString,
-    protected readonly bool $rowCountEnabled = FALSE,
-  ) {
-  }
-
-  /**
-   * Determines if the client-level database statement object exists.
-   *
-   * This method should normally be used only within database driver code.
-   *
-   * @return bool
-   *   TRUE if the client statement exists, FALSE otherwise.
-   */
-  public function hasClientStatement(): bool {
-    return isset($this->clientStatement);
-  }
-
-  /**
-   * Returns the client-level database statement object.
-   *
-   * This method should normally be used only within database driver code.
-   *
-   * @return object
-   *   The client-level database statement.
-   *
-   * @throws \RuntimeException
-   *   If the client-level statement is not set.
-   */
-  public function getClientStatement(): object {
-    if ($this->hasClientStatement()) {
-      return $this->clientStatement;
+    /**
+     * Constructor.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   Drupal database connection object.
+     * @param object $clientConnection
+     *   Client database connection object, for example \PDO.
+     * @param string $queryString
+     *   The query string.
+     * @param bool $rowCountEnabled
+     *   (optional) Enables counting the rows matched. Defaults to FALSE.
+     */
+    public function __construct(
+        protected readonly Connection $connection,
+        protected readonly object $clientConnection,
+        protected readonly string $queryString,
+        protected readonly bool $rowCountEnabled = false,
+    ) {
     }
-    throw new \LogicException('Client statement not initialized');
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConnectionTarget(): string {
-    return $this->connection->getTarget();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract public function execute($args = [], $options = []);
-
-  /**
-   * Dispatches an event informing that the statement execution begins.
-   *
-   * @param array $args
-   *   An array of values with as many elements as there are bound parameters in
-   *   the SQL statement being executed. This can be empty.
-   *
-   * @return \Drupal\Core\Database\Event\StatementExecutionStartEvent|null
-   *   The dispatched event or NULL if event dispatching is not enabled.
-   */
-  protected function dispatchStatementExecutionStartEvent(array $args): ?StatementExecutionStartEvent {
-    if ($this->connection->isEventEnabled(StatementExecutionStartEvent::class)) {
-      $startEvent = new StatementExecutionStartEvent(
-        spl_object_id($this),
-        $this->connection->getKey(),
-        $this->connection->getTarget(),
-        $this->getQueryString(),
-        $args,
-        $this->connection->findCallerFromDebugBacktrace()
-      );
-      $this->connection->dispatchEvent($startEvent);
-      return $startEvent;
+    /**
+     * Determines if the client-level database statement object exists.
+     *
+     * This method should normally be used only within database driver code.
+     *
+     * @return bool
+     *   TRUE if the client statement exists, FALSE otherwise.
+     */
+    public function hasClientStatement(): bool
+    {
+        return isset($this->clientStatement);
     }
-    return NULL;
-  }
 
-  /**
-   * Dispatches an event informing that the statement execution succeeded.
-   *
-   * @param \Drupal\Core\Database\Event\StatementExecutionStartEvent|null $startEvent
-   *   The start event or NULL if event dispatching is not enabled.
-   */
-  protected function dispatchStatementExecutionEndEvent(?StatementExecutionStartEvent $startEvent): void {
-    if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionEndEvent::class)) {
-      $this->connection->dispatchEvent(new StatementExecutionEndEvent(
-        $startEvent->statementObjectId,
-        $startEvent->key,
-        $startEvent->target,
-        $startEvent->queryString,
-        $startEvent->args,
-        $startEvent->caller,
-        $startEvent->time
-      ));
-    }
-  }
-
-  /**
-   * Dispatches an event informing of the statement execution failure.
-   *
-   * @param \Drupal\Core\Database\Event\StatementExecutionStartEvent|null $startEvent
-   *   The start event or NULL if event dispatching is not enabled.
-   * @param \Exception $e
-   *   The statement exception thrown.
-   */
-  protected function dispatchStatementExecutionFailureEvent(?StatementExecutionStartEvent $startEvent, \Exception $e): void {
-    if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionFailureEvent::class)) {
-      $this->connection->dispatchEvent(new StatementExecutionFailureEvent(
-        $startEvent->statementObjectId,
-        $startEvent->key,
-        $startEvent->target,
-        $startEvent->queryString,
-        $startEvent->args,
-        $startEvent->caller,
-        $startEvent->time,
-        $e::class,
-        $e->getCode(),
-        $e->getMessage(),
-      ));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQueryString() {
-    return $this->queryString;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
-    assert($mode instanceof FetchAs);
-
-    $this->fetchMode = $mode;
-    switch ($mode) {
-      case FetchAs::ClassObject:
-        $this->fetchOptions['class'] = $a1;
-        if ($a2) {
-          $this->fetchOptions['constructor_args'] = $a2;
+    /**
+     * Returns the client-level database statement object.
+     *
+     * This method should normally be used only within database driver code.
+     *
+     * @return object
+     *   The client-level database statement.
+     *
+     * @throws \RuntimeException
+     *   If the client-level statement is not set.
+     */
+    public function getClientStatement(): object
+    {
+        if ($this->hasClientStatement()) {
+            return $this->clientStatement;
         }
-        break;
-
-      case FetchAs::Column:
-        $this->fetchOptions['column'] = $a1;
-        break;
-
+        throw new \LogicException('Client statement not initialized');
     }
 
-    // If the result object is missing, just do with the properties setting.
-    try {
-      if ($this->result) {
-        return $this->result->setFetchMode($mode, $this->fetchOptions);
-      }
-      return TRUE;
-    }
-    catch (\LogicException) {
-      return TRUE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetch($mode = NULL, $cursorOrientation = NULL, $cursorOffset = NULL) {
-    assert($mode === NULL || $mode instanceof FetchAs);
-
-    $fetchOptions = match(func_num_args()) {
-      0 => $this->fetchOptions,
-      1 => $this->fetchOptions,
-      2 => $this->fetchOptions + [
-        'cursor_orientation' => $cursorOrientation,
-      ],
-      default => $this->fetchOptions + [
-        'cursor_orientation' => $cursorOrientation,
-        'cursor_offset' => $cursorOffset,
-      ],
-    };
-
-    $row = $this->result->fetch($mode ?? $this->fetchMode, $fetchOptions);
-
-    if ($row === FALSE) {
-      $this->markResultsetFetchingComplete();
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function getConnectionTarget(): string
+    {
+        return $this->connection->getTarget();
     }
 
-    $this->setResultsetCurrentRow($row);
-    return $row;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function execute($args = [], $options = []);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchObject(?string $className = NULL, array $constructorArguments = []) {
-    $row = $className === NULL ?
-      $this->result->fetch(FetchAs::Object, []) :
-      $this->result->fetch(FetchAs::ClassObject, [
-        'class' => $className,
-        'constructor_args' => $constructorArguments,
-      ]);
-
-    if ($row === FALSE) {
-      $this->markResultsetFetchingComplete();
-      return FALSE;
+    /**
+     * Dispatches an event informing that the statement execution begins.
+     *
+     * @param array $args
+     *   An array of values with as many elements as there are bound parameters in
+     *   the SQL statement being executed. This can be empty.
+     *
+     * @return \Drupal\Core\Database\Event\StatementExecutionStartEvent|null
+     *   The dispatched event or NULL if event dispatching is not enabled.
+     */
+    protected function dispatchStatementExecutionStartEvent(array $args): ?StatementExecutionStartEvent
+    {
+        if ($this->connection->isEventEnabled(StatementExecutionStartEvent::class)) {
+            $startEvent = new StatementExecutionStartEvent(
+                spl_object_id($this),
+                $this->connection->getKey(),
+                $this->connection->getTarget(),
+                $this->getQueryString(),
+                $args,
+                $this->connection->findCallerFromDebugBacktrace()
+            );
+            $this->connection->dispatchEvent($startEvent);
+            return $startEvent;
+        }
+        return null;
     }
 
-    $this->setResultsetCurrentRow($row);
-    return $row;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchAssoc() {
-    return $this->fetch(FetchAs::Associative);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchField($index = 0) {
-    $column = $this->result->fetch(FetchAs::Column, ['column' => $index]);
-
-    if ($column === FALSE) {
-      $this->markResultsetFetchingComplete();
-      return FALSE;
+    /**
+     * Dispatches an event informing that the statement execution succeeded.
+     *
+     * @param \Drupal\Core\Database\Event\StatementExecutionStartEvent|null $startEvent
+     *   The start event or NULL if event dispatching is not enabled.
+     */
+    protected function dispatchStatementExecutionEndEvent(?StatementExecutionStartEvent $startEvent): void
+    {
+        if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionEndEvent::class)) {
+            $this->connection->dispatchEvent(new StatementExecutionEndEvent(
+                $startEvent->statementObjectId,
+                $startEvent->key,
+                $startEvent->target,
+                $startEvent->queryString,
+                $startEvent->args,
+                $startEvent->caller,
+                $startEvent->time
+            ));
+        }
     }
 
-    $this->setResultsetCurrentRow($column);
-    return $column;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchAll($mode = NULL, $columnIndex = NULL, $constructorArguments = NULL) {
-    assert($mode === NULL || $mode instanceof FetchAs);
-
-    $fetchMode = $mode ?? $this->fetchMode;
-    if (isset($columnIndex)) {
-      $this->fetchOptions['column'] = $columnIndex;
+    /**
+     * Dispatches an event informing of the statement execution failure.
+     *
+     * @param \Drupal\Core\Database\Event\StatementExecutionStartEvent|null $startEvent
+     *   The start event or NULL if event dispatching is not enabled.
+     * @param \Exception $e
+     *   The statement exception thrown.
+     */
+    protected function dispatchStatementExecutionFailureEvent(?StatementExecutionStartEvent $startEvent, \Exception $e): void
+    {
+        if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionFailureEvent::class)) {
+            $this->connection->dispatchEvent(new StatementExecutionFailureEvent(
+                $startEvent->statementObjectId,
+                $startEvent->key,
+                $startEvent->target,
+                $startEvent->queryString,
+                $startEvent->args,
+                $startEvent->caller,
+                $startEvent->time,
+                $e::class,
+                $e->getCode(),
+                $e->getMessage(),
+            ));
+        }
     }
-    if (isset($constructorArguments)) {
-      $this->fetchOptions['constructor_args'] = $constructorArguments;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQueryString()
+    {
+        return $this->queryString;
     }
 
-    $return = $this->result->fetchAll($fetchMode, $this->fetchOptions);
+    /**
+     * {@inheritdoc}
+     */
+    public function setFetchMode($mode, $a1 = null, $a2 = [])
+    {
+        assert($mode instanceof FetchAs);
 
-    $this->markResultsetFetchingComplete();
+        $this->fetchMode = $mode;
+        switch ($mode) {
+            case FetchAs::ClassObject:
+                $this->fetchOptions['class'] = $a1;
+                if ($a2) {
+                    $this->fetchOptions['constructor_args'] = $a2;
+                }
+                break;
 
-    return $return;
-  }
+            case FetchAs::Column:
+                $this->fetchOptions['column'] = $a1;
+                break;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchCol($index = 0) {
-    return $this->fetchAll(FetchAs::Column, $index);
-  }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchAllAssoc($key, $fetch = NULL) {
-    assert($fetch === NULL || $fetch instanceof FetchAs);
-
-    $result = $this->result->fetchAllAssoc($key, $fetch ?? $this->fetchMode, $this->fetchOptions);
-    $this->markResultsetFetchingComplete();
-    return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchAllKeyed($keyIndex = 0, $valueIndex = 1) {
-    $result = $this->result->fetchAllKeyed($keyIndex, $valueIndex);
-    $this->markResultsetFetchingComplete();
-    return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rowCount() {
-    // SELECT query should not use the method.
-    if ($this->rowCountEnabled) {
-      return $this->result->rowCount();
+        // If the result object is missing, just do with the properties setting.
+        try {
+            if ($this->result) {
+                return $this->result->setFetchMode($mode, $this->fetchOptions);
+            }
+            return true;
+        } catch (\LogicException) {
+            return true;
+        }
     }
-    throw new RowCountException();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetch($mode = null, $cursorOrientation = null, $cursorOffset = null)
+    {
+        assert($mode === null || $mode instanceof FetchAs);
+
+        $fetchOptions = match(func_num_args()) {
+            0 => $this->fetchOptions,
+            1 => $this->fetchOptions,
+            2 => $this->fetchOptions + [
+              'cursor_orientation' => $cursorOrientation,
+            ],
+            default => $this->fetchOptions + [
+              'cursor_orientation' => $cursorOrientation,
+              'cursor_offset' => $cursorOffset,
+            ],
+        };
+
+        $row = $this->result->fetch($mode ?? $this->fetchMode, $fetchOptions);
+
+        if ($row === false) {
+            $this->markResultsetFetchingComplete();
+            return false;
+        }
+
+        $this->setResultsetCurrentRow($row);
+        return $row;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchObject(?string $className = null, array $constructorArguments = [])
+    {
+        $row = $className === null ?
+          $this->result->fetch(FetchAs::Object, []) :
+          $this->result->fetch(FetchAs::ClassObject, [
+            'class' => $className,
+            'constructor_args' => $constructorArguments,
+          ]);
+
+        if ($row === false) {
+            $this->markResultsetFetchingComplete();
+            return false;
+        }
+
+        $this->setResultsetCurrentRow($row);
+        return $row;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchAssoc()
+    {
+        return $this->fetch(FetchAs::Associative);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchField($index = 0)
+    {
+        $column = $this->result->fetch(FetchAs::Column, ['column' => $index]);
+
+        if ($column === false) {
+            $this->markResultsetFetchingComplete();
+            return false;
+        }
+
+        $this->setResultsetCurrentRow($column);
+        return $column;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchAll($mode = null, $columnIndex = null, $constructorArguments = null)
+    {
+        assert($mode === null || $mode instanceof FetchAs);
+
+        $fetchMode = $mode ?? $this->fetchMode;
+        if (isset($columnIndex)) {
+            $this->fetchOptions['column'] = $columnIndex;
+        }
+        if (isset($constructorArguments)) {
+            $this->fetchOptions['constructor_args'] = $constructorArguments;
+        }
+
+        $return = $this->result->fetchAll($fetchMode, $this->fetchOptions);
+
+        $this->markResultsetFetchingComplete();
+
+        return $return;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchCol($index = 0)
+    {
+        return $this->fetchAll(FetchAs::Column, $index);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchAllAssoc($key, $fetch = null)
+    {
+        assert($fetch === null || $fetch instanceof FetchAs);
+
+        $result = $this->result->fetchAllAssoc($key, $fetch ?? $this->fetchMode, $this->fetchOptions);
+        $this->markResultsetFetchingComplete();
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchAllKeyed($keyIndex = 0, $valueIndex = 1)
+    {
+        $result = $this->result->fetchAllKeyed($keyIndex, $valueIndex);
+        $this->markResultsetFetchingComplete();
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rowCount()
+    {
+        // SELECT query should not use the method.
+        if ($this->rowCountEnabled) {
+            return $this->result->rowCount();
+        }
+        throw new RowCountException();
+    }
 
 }

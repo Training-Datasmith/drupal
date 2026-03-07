@@ -16,24 +16,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('options')]
 #[RunTestsInSeparateProcesses]
-class OptionsFormattersTest extends OptionsFieldUnitTestBase {
+class OptionsFormattersTest extends OptionsFieldUnitTestBase
+{
+    /**
+     * Tests the formatters.
+     */
+    public function testFormatter(): void
+    {
+        $entity = EntityTest::create();
+        $entity->{$this->fieldName}->value = 1;
 
-  /**
-   * Tests the formatters.
-   */
-  public function testFormatter(): void {
-    $entity = EntityTest::create();
-    $entity->{$this->fieldName}->value = 1;
+        $items = $entity->get($this->fieldName);
 
-    $items = $entity->get($this->fieldName);
+        $build = $items->view();
+        $this->assertEquals('list_default', $build['#formatter'], 'Ensure to fall back to the default formatter.');
+        $this->assertEquals('One', $build[0]['#markup']);
 
-    $build = $items->view();
-    $this->assertEquals('list_default', $build['#formatter'], 'Ensure to fall back to the default formatter.');
-    $this->assertEquals('One', $build[0]['#markup']);
-
-    $build = $items->view(['type' => 'list_key']);
-    $this->assertEquals('list_key', $build['#formatter'], 'The chosen formatter is used.');
-    $this->assertEquals(1, (string) $build[0]['#markup']);
-  }
+        $build = $items->view(['type' => 'list_key']);
+        $this->assertEquals('list_key', $build['#formatter'], 'The chosen formatter is used.');
+        $this->assertEquals(1, (string) $build[0]['#markup']);
+    }
 
 }

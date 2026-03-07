@@ -16,35 +16,37 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Validation')]
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class EntityViewModeValidationTest extends ConfigEntityValidationTestBase {
+class EntityViewModeValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installConfig('user');
 
-    $this->installConfig('user');
+        $this->entity = EntityViewMode::create([
+          'id' => 'user.test',
+          'label' => 'Test',
+          'targetEntityType' => 'user',
+        ]);
+        $this->entity->save();
+    }
 
-    $this->entity = EntityViewMode::create([
-      'id' => 'user.test',
-      'label' => 'Test',
-      'targetEntityType' => 'user',
-    ]);
-    $this->entity->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testImmutableProperties(array $valid_values = []): void {
-    $valid_values['id'] = 'user.test_changed';
-    parent::testImmutableProperties($valid_values);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testImmutableProperties(array $valid_values = []): void
+    {
+        $valid_values['id'] = 'user.test_changed';
+        parent::testImmutableProperties($valid_values);
+    }
 
 }

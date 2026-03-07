@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\FrontMatter;
 
 use Drupal\Component\FrontMatter\Exception\FrontMatterParseException;
@@ -40,149 +42,154 @@ use Drupal\Component\Serialization\SerializationInterface;
  *
  * @ingroup utility
  */
-class FrontMatter {
+class FrontMatter
+{
+    /**
+     * The separator used to indicate front matter data.
+     *
+     * @var string
+     */
+    public const SEPARATOR = '---';
 
-  /**
-   * The separator used to indicate front matter data.
-   *
-   * @var string
-   */
-  const SEPARATOR = '---';
+    /**
+     * The regular expression used to extract the YAML front matter content.
+     *
+     * @var string
+     */
+    public const REGEXP = '/\A(' . self::SEPARATOR . '(.*?)?\R' . self::SEPARATOR . ')(\R.*)?\Z/s';
 
-  /**
-   * The regular expression used to extract the YAML front matter content.
-   *
-   * @var string
-   */
-  const REGEXP = '/\A(' . self::SEPARATOR . '(.*?)?\R' . self::SEPARATOR . ')(\R.*)?\Z/s';
+    /**
+     * The parsed source.
+     *
+     * @var array
+     */
+    protected $parsed;
 
-  /**
-   * The parsed source.
-   *
-   * @var array
-   */
-  protected $parsed;
+    /**
+     * A serializer.
+     */
+    protected string $serializer;
 
-  /**
-   * A serializer.
-   */
-  protected string $serializer;
-
-  /**
-   * FrontMatter constructor.
-   *
-   * @param string $source
-   *   A string source.
-   * @param string $serializer
-   *   The name of a class that implements
-   *   \Drupal\Component\Serialization\SerializationInterface.
-   */
-  public function __construct(protected string $source, string $serializer = \Drupal\Component\Serialization\Yaml::class) {
-    assert(is_subclass_of($serializer, SerializationInterface::class), sprintf('The $serializer parameter must reference a class that implements %s.', SerializationInterface::class));
-    $this->serializer = $serializer;
-  }
-
-  /**
-   * Creates a new FrontMatter instance.
-   *
-   * @param string $source
-   *   A string source.
-   * @param string $serializer
-   *   The name of a class that implements
-   *   \Drupal\Component\Serialization\SerializationInterface.
-   */
-  public static function create(string $source, string $serializer = \Drupal\Component\Serialization\Yaml::class): static {
-    return new static($source, $serializer);
-  }
-
-  /**
-   * Parses the source.
-   *
-   * @return array
-   *   An associative array containing:
-   *   - content: The real content.
-   *   - data: The front matter data extracted and decoded.
-   *   - line: The line number where the real content starts.
-   *
-   * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
-   */
-  protected function parse(): array {
-    if (!$this->parsed) {
-      $content = $this->source;
-      $data = [];
-      $line = 1;
-
-      // Parse front matter data.
-      if (preg_match(static::REGEXP, $content, $matches)) {
-        // Extract the source content.
-        $content = !empty($matches[3]) ? trim($matches[3]) : '';
-
-        // Extract the front matter data and typecast to an array to ensure
-        // top level scalars are in an array.
-        $raw = !empty($matches[2]) ? trim($matches[2]) : '';
-        if ($raw) {
-          try {
-            $data = (array) $this->serializer::decode($raw);
-          }
-          catch (InvalidDataTypeException $exception) {
-            // Rethrow a specific front matter parse exception.
-            throw new FrontMatterParseException($exception);
-          }
-        }
-
-        // Determine the real source line by counting all newlines in the first
-        // match (which includes the front matter separators) and append a new
-        // line to denote that the content should start after it.
-        if (!empty($matches[1])) {
-          $line += preg_match_all('/\R/', $matches[1] . "\n");
-        }
-      }
-
-      // Set the parsed data.
-      $this->parsed = [
-        'content' => $content,
-        'data' => $data,
-        'line' => $line,
-      ];
+    /**
+     * FrontMatter constructor.
+     *
+     * @param string $source
+     *   A string source.
+     * @param string $serializer
+     *   The name of a class that implements
+     *   \Drupal\Component\Serialization\SerializationInterface.
+     */
+    public function __construct(protected string $source, string $serializer = \Drupal\Component\Serialization\Yaml::class)
+    {
+        assert(is_subclass_of($serializer, SerializationInterface::class), sprintf('The $serializer parameter must reference a class that implements %s.', SerializationInterface::class));
+        $this->serializer = $serializer;
     }
 
-    return $this->parsed;
-  }
+    /**
+     * Creates a new FrontMatter instance.
+     *
+     * @param string $source
+     *   A string source.
+     * @param string $serializer
+     *   The name of a class that implements
+     *   \Drupal\Component\Serialization\SerializationInterface.
+     */
+    public static function create(string $source, string $serializer = \Drupal\Component\Serialization\Yaml::class): static
+    {
+        return new static($source, $serializer);
+    }
 
-  /**
-   * Retrieves the extracted source content.
-   *
-   * @return string
-   *   The extracted source content.
-   *
-   * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
-   */
-  public function getContent(): string {
-    return $this->parse()['content'];
-  }
+    /**
+     * Parses the source.
+     *
+     * @return array
+     *   An associative array containing:
+     *   - content: The real content.
+     *   - data: The front matter data extracted and decoded.
+     *   - line: The line number where the real content starts.
+     *
+     * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
+     */
+    protected function parse(): array
+    {
+        if (!$this->parsed) {
+            $content = $this->source;
+            $data = [];
+            $line = 1;
 
-  /**
-   * Retrieves the extracted front matter data.
-   *
-   * @return array
-   *   The extracted front matter data.
-   *
-   * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
-   */
-  public function getData(): array {
-    return $this->parse()['data'];
-  }
+            // Parse front matter data.
+            if (preg_match(static::REGEXP, $content, $matches)) {
+                // Extract the source content.
+                $content = !empty($matches[3]) ? trim($matches[3]) : '';
 
-  /**
-   * Retrieves the line where the source content starts, after any data.
-   *
-   * @return int
-   *   The source content line.
-   *
-   * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
-   */
-  public function getLine(): int {
-    return $this->parse()['line'];
-  }
+                // Extract the front matter data and typecast to an array to ensure
+                // top level scalars are in an array.
+                $raw = !empty($matches[2]) ? trim($matches[2]) : '';
+                if ($raw) {
+                    try {
+                        $data = (array) $this->serializer::decode($raw);
+                    } catch (InvalidDataTypeException $exception) {
+                        // Rethrow a specific front matter parse exception.
+                        throw new FrontMatterParseException($exception);
+                    }
+                }
+
+                // Determine the real source line by counting all newlines in the first
+                // match (which includes the front matter separators) and append a new
+                // line to denote that the content should start after it.
+                if (!empty($matches[1])) {
+                    $line += preg_match_all('/\R/', $matches[1] . "\n");
+                }
+            }
+
+            // Set the parsed data.
+            $this->parsed = [
+              'content' => $content,
+              'data' => $data,
+              'line' => $line,
+            ];
+        }
+
+        return $this->parsed;
+    }
+
+    /**
+     * Retrieves the extracted source content.
+     *
+     * @return string
+     *   The extracted source content.
+     *
+     * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
+     */
+    public function getContent(): string
+    {
+        return $this->parse()['content'];
+    }
+
+    /**
+     * Retrieves the extracted front matter data.
+     *
+     * @return array
+     *   The extracted front matter data.
+     *
+     * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
+     */
+    public function getData(): array
+    {
+        return $this->parse()['data'];
+    }
+
+    /**
+     * Retrieves the line where the source content starts, after any data.
+     *
+     * @return int
+     *   The source content line.
+     *
+     * @throws \Drupal\Component\FrontMatter\Exception\FrontMatterParseException
+     */
+    public function getLine(): int
+    {
+        return $this->parse()['line'];
+    }
 
 }

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Condition;
 
 use Drupal\Core\Condition\Attribute\Condition;
 use Drupal\Core\Condition\ConditionPluginBase;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\Plugin\Condition\Deriver\EntityBundle as EntityBundleDeriver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -13,107 +14,113 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
  * Provides the 'Entity Bundle' condition.
  */
 #[Condition(
-  id: "entity_bundle",
-  deriver: EntityBundleDeriver::class,
+    id: 'entity_bundle',
+    deriver: EntityBundleDeriver::class,
 )]
-class EntityBundle extends ConditionPluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Creates a new EntityBundle instance.
-   *
-   * @param array $configuration
-   *   The plugin configuration, i.e. an array with configuration values keyed
-   *   by configuration option name. The special key 'context' may be used to
-   *   initialize the defined contexts by setting it to an array of context
-   *   values keyed by context names.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
-   *   The entity type bundle info service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['bundles'] = [
-      '#title' => $this->pluginDefinition['label'],
-      '#type' => 'checkboxes',
-      '#options' => $this->entityTypeBundleInfo->getBundleLabels($this->getDerivativeId()),
-      '#default_value' => $this->configuration['bundles'],
-    ];
-    return parent::buildConfigurationForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
-    parent::submitConfigurationForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function evaluate() {
-    // Returns true if no bundles are selected and negate option is disabled.
-    if (empty($this->configuration['bundles']) && !$this->isNegated()) {
-      return TRUE;
+class EntityBundle extends ConditionPluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Creates a new EntityBundle instance.
+     *
+     * @param array $configuration
+     *   The plugin configuration, i.e. an array with configuration values keyed
+     *   by configuration option name. The special key 'context' may be used to
+     *   initialize the defined contexts by setting it to an array of context
+     *   values keyed by context names.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+     *   The entity type bundle info service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $entity = $this->getContextValue($this->getDerivativeId());
-    return !empty($this->configuration['bundles'][$entity->bundle()]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summary() {
-    if (count($this->configuration['bundles']) > 1) {
-      $bundles = $this->configuration['bundles'];
-      $last = array_pop($bundles);
-      $bundles = implode(', ', $bundles);
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form['bundles'] = [
+          '#title' => $this->pluginDefinition['label'],
+          '#type' => 'checkboxes',
+          '#options' => $this->entityTypeBundleInfo->getBundleLabels($this->getDerivativeId()),
+          '#default_value' => $this->configuration['bundles'],
+        ];
+        return parent::buildConfigurationForm($form, $form_state);
+    }
 
-      if (empty($this->configuration['negate'])) {
-        return $this->t('@bundle_type is @bundles or @last', [
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
+        parent::submitConfigurationForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function evaluate()
+    {
+        // Returns true if no bundles are selected and negate option is disabled.
+        if (empty($this->configuration['bundles']) && !$this->isNegated()) {
+            return true;
+        }
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+        $entity = $this->getContextValue($this->getDerivativeId());
+        return !empty($this->configuration['bundles'][$entity->bundle()]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function summary()
+    {
+        if (count($this->configuration['bundles']) > 1) {
+            $bundles = $this->configuration['bundles'];
+            $last = array_pop($bundles);
+            $bundles = implode(', ', $bundles);
+
+            if (empty($this->configuration['negate'])) {
+                return $this->t('@bundle_type is @bundles or @last', [
+                  '@bundle_type' => $this->pluginDefinition['label'],
+                  '@bundles' => $bundles,
+                  '@last' => $last,
+                ]);
+            }
+            return $this->t('@bundle_type is not @bundles or @last', [
+              '@bundle_type' => $this->pluginDefinition['label'],
+              '@bundles' => $bundles,
+              '@last' => $last,
+            ]);
+        }
+        $bundle = reset($this->configuration['bundles']);
+
+        if (empty($this->configuration['negate'])) {
+            return $this->t('@bundle_type is @bundle', [
+              '@bundle_type' => $this->pluginDefinition['label'],
+              '@bundle' => $bundle,
+            ]);
+        }
+        return $this->t('@bundle_type is not @bundle', [
           '@bundle_type' => $this->pluginDefinition['label'],
-          '@bundles' => $bundles,
-          '@last' => $last,
+          '@bundle' => $bundle,
         ]);
-      }
-      return $this->t('@bundle_type is not @bundles or @last', [
-        '@bundle_type' => $this->pluginDefinition['label'],
-        '@bundles' => $bundles,
-        '@last' => $last,
-      ]);
     }
-    $bundle = reset($this->configuration['bundles']);
 
-    if (empty($this->configuration['negate'])) {
-      return $this->t('@bundle_type is @bundle', [
-        '@bundle_type' => $this->pluginDefinition['label'],
-        '@bundle' => $bundle,
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration()
+    {
+        return [
+          'bundles' => [],
+        ] + parent::defaultConfiguration();
     }
-    return $this->t('@bundle_type is not @bundle', [
-      '@bundle_type' => $this->pluginDefinition['label'],
-      '@bundle' => $bundle,
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration() {
-    return [
-      'bundles' => [],
-    ] + parent::defaultConfiguration();
-  }
 
 }

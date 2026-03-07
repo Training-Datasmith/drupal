@@ -22,16 +22,18 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  *
  * @see \Drupal\Core\Installer\Form\SiteConfigureForm::submitForm()
  */
-class TestingSiteConfigHooks {
+class TestingSiteConfigHooks
+{
+    public function __construct(
+        #[Autowire(service: 'kernel')]
+        protected $kernel,
+    ) {
+    }
 
-  public function __construct(
-    #[Autowire(service: 'kernel')]
-    protected $kernel,
-  ) {}
-
-  #[Hook('user_load')]
-  public function userLoad(): void {
-    assert(isset($this->kernel));
-  }
+    #[Hook('user_load')]
+    public function userLoad(): void
+    {
+        assert(isset($this->kernel));
+    }
 
 }

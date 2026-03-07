@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 use Drupal\Component\Plugin\ContextAwarePluginInterface as ComponentContextAwarePluginInterface;
@@ -12,28 +14,28 @@ use Drupal\Component\Plugin\ContextAwarePluginInterface as ComponentContextAware
  *
  * @ingroup plugin_api
  */
-interface ContextAwarePluginInterface extends ComponentContextAwarePluginInterface {
+interface ContextAwarePluginInterface extends ComponentContextAwarePluginInterface
+{
+    /**
+     * Gets the context definitions of the plugin.
+     *
+     * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface[]
+     *   The array of context definitions, keyed by context name.
+     */
+    public function getContextDefinitions();
 
-  /**
-   * Gets the context definitions of the plugin.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface[]
-   *   The array of context definitions, keyed by context name.
-   */
-  public function getContextDefinitions();
-
-  /**
-   * Gets a specific context definition of the plugin.
-   *
-   * @param string $name
-   *   The name of the context in the plugin definition.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface
-   *   The definition against which the context value must validate.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\ContextException
-   *   If the requested context is not defined.
-   */
-  public function getContextDefinition($name);
+    /**
+     * Gets a specific context definition of the plugin.
+     *
+     * @param string $name
+     *   The name of the context in the plugin definition.
+     *
+     * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface
+     *   The definition against which the context value must validate.
+     *
+     * @throws \Drupal\Component\Plugin\Exception\ContextException
+     *   If the requested context is not defined.
+     */
+    public function getContextDefinition($name);
 
 }

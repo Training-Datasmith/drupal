@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -25,12 +27,10 @@
 
 namespace Drupal\Component\Annotation\Doctrine\Annotation;
 
+use function in_array;
+
 use InvalidArgumentException;
 
-use function get_class;
-use function gettype;
-use function in_array;
-use function is_object;
 use function is_scalar;
 use function sprintf;
 

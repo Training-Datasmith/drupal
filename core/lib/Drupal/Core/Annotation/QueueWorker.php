@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -35,34 +37,34 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class QueueWorker extends Plugin {
+class QueueWorker extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable title of the plugin.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title;
 
-  /**
-   * The human-readable title of the plugin.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title;
-
-  /**
-   * An optional associative array of settings for cron.
-   *
-   * @var array
-   *   The array has one key, time, which is set to the time Drupal cron should
-   *   spend on calling this worker in seconds. The default is set in
-   *   \Drupal\Core\Queue\QueueWorkerManager::processDefinition().
-   *
-   * @see \Drupal\Core\Queue\QueueWorkerManager::processDefinition()
-   */
-  public $cron;
+    /**
+     * An optional associative array of settings for cron.
+     *
+     * @var array
+     *   The array has one key, time, which is set to the time Drupal cron should
+     *   spend on calling this worker in seconds. The default is set in
+     *   \Drupal\Core\Queue\QueueWorkerManager::processDefinition().
+     *
+     * @see \Drupal\Core\Queue\QueueWorkerManager::processDefinition()
+     */
+    public $cron;
 
 }

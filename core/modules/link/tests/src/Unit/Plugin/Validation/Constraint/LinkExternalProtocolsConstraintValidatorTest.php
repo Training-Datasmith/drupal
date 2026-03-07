@@ -23,133 +23,138 @@ use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
  */
 #[CoversMethod(LinkExternalProtocolsConstraintValidator::class, 'validate')]
 #[Group('Link')]
-class LinkExternalProtocolsConstraintValidatorTest extends UnitTestCase {
+class LinkExternalProtocolsConstraintValidatorTest extends UnitTestCase
+{
+    /**
+     * Tests validate.
+     */
+    #[DataProvider('providerValidate')]
+    #[RunInSeparateProcess]
+    public function testValidate($url, $valid): void
+    {
+        $link = $this->createMock('Drupal\link\LinkItemInterface');
+        $link->expects($this->any())
+          ->method('getUrl')
+          ->willReturn(Url::fromUri($url));
+        $context = $this->createMock(ExecutionContextInterface::class);
 
-  /**
-   * Tests validate.
-   */
-  #[DataProvider('providerValidate')]
-  #[RunInSeparateProcess]
-  public function testValidate($url, $valid): void {
-    $link = $this->createMock('Drupal\link\LinkItemInterface');
-    $link->expects($this->any())
-      ->method('getUrl')
-      ->willReturn(Url::fromUri($url));
-    $context = $this->createMock(ExecutionContextInterface::class);
+        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $constraintViolationBuilder->method('atPath')
+          ->with('uri')
+          ->willReturn($constraintViolationBuilder);
 
-    $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
-    $constraintViolationBuilder->method('atPath')
-      ->with('uri')
-      ->willReturn($constraintViolationBuilder);
+        if ($valid) {
+            $context->expects($this->never())
+              ->method('buildViolation');
+        } else {
+            $context->expects($this->once())
+              ->method('buildViolation')
+              ->willReturn($constraintViolationBuilder);
+        }
 
-    if ($valid) {
-      $context->expects($this->never())
-        ->method('buildViolation');
+        // Setup some more allowed protocols.
+        UrlHelper::setAllowedProtocols(['http', 'https', 'magnet']);
+
+        $constraint = new LinkExternalProtocolsConstraint();
+
+        $validator = new LinkExternalProtocolsConstraintValidator();
+        $validator->initialize($context);
+        $validator->validate($link, $constraint);
     }
-    else {
-      $context->expects($this->once())
-        ->method('buildViolation')
-        ->willReturn($constraintViolationBuilder);
+
+    /**
+     * Data provider for ::testValidate.
+     */
+    public static function providerValidate()
+    {
+        $data = [];
+
+        // Test allowed protocols.
+        $data[] = ['http://www.example.com', true];
+        $data[] = ['https://www.example.com', true];
+        // cSpell:disable-next-line
+        $data[] = ['magnet:?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C', true];
+
+        // Invalid protocols.
+        $data[] = ['ftp://ftp.funet.fi/pub/standards/RFC/rfc959.txt', false];
+
+        return $data;
     }
 
-    // Setup some more allowed protocols.
-    UrlHelper::setAllowedProtocols(['http', 'https', 'magnet']);
+    /**
+     * Tests validate with malformed uri.
+     *
+     * @see \Drupal\Core\Url::fromUri
+     */
+    public function testValidateWithMalformedUri(): void
+    {
+        $link = $this->createMock('Drupal\link\LinkItemInterface');
+        $link->expects($this->any())
+          ->method('getUrl')
+          ->willThrowException(new \InvalidArgumentException());
 
-    $constraint = new LinkExternalProtocolsConstraint();
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $context->expects($this->never())
+          ->method('buildViolation');
 
-    $validator = new LinkExternalProtocolsConstraintValidator();
-    $validator->initialize($context);
-    $validator->validate($link, $constraint);
-  }
+        $constraint = new LinkExternalProtocolsConstraint();
 
-  /**
-   * Data provider for ::testValidate.
-   */
-  public static function providerValidate() {
-    $data = [];
+        $validator = new LinkExternalProtocolsConstraintValidator();
+        $validator->initialize($context);
+        $validator->validate($link, $constraint);
+    }
 
-    // Test allowed protocols.
-    $data[] = ['http://www.example.com', TRUE];
-    $data[] = ['https://www.example.com', TRUE];
-    // cSpell:disable-next-line
-    $data[] = ['magnet:?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C', TRUE];
+    /**
+     * Tests validate ignores internal urls.
+     */
+    public function testValidateIgnoresInternalUrls(): void
+    {
+        $link = $this->createMock('Drupal\link\LinkItemInterface');
+        $link->expects($this->any())
+          ->method('getUrl')
+          ->willReturn(Url::fromRoute('example.test'));
 
-    // Invalid protocols.
-    $data[] = ['ftp://ftp.funet.fi/pub/standards/RFC/rfc959.txt', FALSE];
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $context->expects($this->never())
+          ->method('buildViolation');
 
-    return $data;
-  }
+        $constraint = new LinkExternalProtocolsConstraint();
 
-  /**
-   * Tests validate with malformed uri.
-   *
-   * @see \Drupal\Core\Url::fromUri
-   */
-  public function testValidateWithMalformedUri(): void {
-    $link = $this->createMock('Drupal\link\LinkItemInterface');
-    $link->expects($this->any())
-      ->method('getUrl')
-      ->willThrowException(new \InvalidArgumentException());
+        $validator = new LinkExternalProtocolsConstraintValidator();
+        $validator->initialize($context);
+        $validator->validate($link, $constraint);
+    }
 
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $context->expects($this->never())
-      ->method('buildViolation');
+    /**
+     * Tests validating a value that isn't a LinkItemInterface.
+     */
+    public function testUnexpectedValue(): void
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $validator = new LinkExternalProtocolsConstraintValidator();
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $validator->initialize($context);
+        $constraint = new LinkExternalProtocolsConstraint();
+        $validator->validate('bad value', $constraint);
+    }
 
-    $constraint = new LinkExternalProtocolsConstraint();
+    /**
+     * Tests validating an empty Link field.
+     */
+    public function testEmptyField(): void
+    {
+        $link = $this->createMock(LinkItemInterface::class);
+        $link->expects($this->once())
+          ->method('isEmpty')
+          ->willReturn(true);
+        $link->expects($this->never())
+          ->method('getUrl');
 
-    $validator = new LinkExternalProtocolsConstraintValidator();
-    $validator->initialize($context);
-    $validator->validate($link, $constraint);
-  }
-
-  /**
-   * Tests validate ignores internal urls.
-   */
-  public function testValidateIgnoresInternalUrls(): void {
-    $link = $this->createMock('Drupal\link\LinkItemInterface');
-    $link->expects($this->any())
-      ->method('getUrl')
-      ->willReturn(Url::fromRoute('example.test'));
-
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $context->expects($this->never())
-      ->method('buildViolation');
-
-    $constraint = new LinkExternalProtocolsConstraint();
-
-    $validator = new LinkExternalProtocolsConstraintValidator();
-    $validator->initialize($context);
-    $validator->validate($link, $constraint);
-  }
-
-  /**
-   * Tests validating a value that isn't a LinkItemInterface.
-   */
-  public function testUnexpectedValue(): void {
-    $this->expectException(UnexpectedValueException::class);
-    $validator = new LinkExternalProtocolsConstraintValidator();
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $validator->initialize($context);
-    $constraint = new LinkExternalProtocolsConstraint();
-    $validator->validate('bad value', $constraint);
-  }
-
-  /**
-   * Tests validating an empty Link field.
-   */
-  public function testEmptyField(): void {
-    $link = $this->createMock(LinkItemInterface::class);
-    $link->expects($this->once())
-      ->method('isEmpty')
-      ->willReturn(TRUE);
-    $link->expects($this->never())
-      ->method('getUrl');
-
-    $validator = new LinkExternalProtocolsConstraintValidator();
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $validator->initialize($context);
-    $constraint = new LinkExternalProtocolsConstraint();
-    $validator->validate($link, $constraint);
-  }
+        $validator = new LinkExternalProtocolsConstraintValidator();
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $validator->initialize($context);
+        $constraint = new LinkExternalProtocolsConstraint();
+        $validator->validate($link, $constraint);
+    }
 
 }

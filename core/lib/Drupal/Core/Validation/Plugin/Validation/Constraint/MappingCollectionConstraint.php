@@ -16,16 +16,17 @@ use Symfony\Component\Validator\Constraints\Collection;
  * array of constraint objects and use them.
  */
 #[Constraint(
-  id: 'MappingCollection',
-  label: new TranslatableMarkup('Validate mapping as a Collection', [], ['context' => 'Validation'])
+    id: 'MappingCollection',
+    label: new TranslatableMarkup('Validate mapping as a Collection', [], ['context' => 'Validation'])
 )]
-class MappingCollectionConstraint extends Collection implements CompositeConstraintInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCompositeOptionStatic(): string {
-    return 'fields';
-  }
+class MappingCollectionConstraint extends Collection implements CompositeConstraintInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getCompositeOptionStatic(): string
+    {
+        return 'fields';
+    }
 
 }

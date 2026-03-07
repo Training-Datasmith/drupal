@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Kyrgyz transliteration data for the PhpTransliteration class.

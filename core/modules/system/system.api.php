@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the System module.
@@ -20,17 +22,18 @@ use Drupal\Core\Url;
  *
  * @see system_themes_page()
  */
-function hook_system_themes_page_alter(array &$theme_groups): void {
-  foreach ($theme_groups as $state => &$group) {
-    foreach ($theme_groups[$state] as &$theme) {
-      // Add a foo link to each list of theme operations.
-      $theme->operations[] = [
-        'title' => t('Foo'),
-        'url' => Url::fromRoute('system.themes_page'),
-        'query' => ['theme' => $theme->getName()],
-      ];
+function hook_system_themes_page_alter(array &$theme_groups): void
+{
+    foreach ($theme_groups as $state => &$group) {
+        foreach ($theme_groups[$state] as &$theme) {
+            // Add a foo link to each list of theme operations.
+            $theme->operations[] = [
+              'title' => t('Foo'),
+              'url' => Url::fromRoute('system.themes_page'),
+              'query' => ['theme' => $theme->getName()],
+            ];
+        }
     }
-  }
 }
 
 /**

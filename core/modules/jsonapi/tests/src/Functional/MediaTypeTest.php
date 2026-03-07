@@ -15,107 +15,111 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class MediaTypeTest extends ConfigEntityResourceTestBase {
+class MediaTypeTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['media'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['media'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'media_type';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'media_type';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'media_type--media_type';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'media_type--media_type';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\media\MediaTypeInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\media\MediaTypeInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer media types']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer media types']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Camelids" media type.
-    $camelids = MediaType::create([
-      'label' => 'Camelids',
-      'id' => 'camelids',
-      'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
-      'source' => 'file',
-    ]);
-
-    $camelids->save();
-
-    return $camelids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/media_type/media_type/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'media_type--media_type',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'dependencies' => [],
-          'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
-          'field_map' => [],
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Camelids" media type.
+        $camelids = MediaType::create([
           'label' => 'Camelids',
-          'langcode' => 'en',
-          'new_revision' => FALSE,
-          'queue_thumbnail_downloads' => FALSE,
+          'id' => 'camelids',
+          'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
           'source' => 'file',
-          'source_configuration' => [
-            'source_field' => '',
-          ],
-          'status' => TRUE,
-          'drupal_internal__id' => 'camelids',
-        ],
-      ],
-    ];
-  }
+        ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+        $camelids->save();
+
+        return $camelids;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/media_type/media_type/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'media_type--media_type',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'dependencies' => [],
+              'description' => 'Camelids are large, strictly herbivorous animals with slender necks and long legs.',
+              'field_map' => [],
+              'label' => 'Camelids',
+              'langcode' => 'en',
+              'new_revision' => false,
+              'queue_thumbnail_downloads' => false,
+              'source' => 'file',
+              'source_configuration' => [
+                'source_field' => '',
+              ],
+              'status' => true,
+              'drupal_internal__id' => 'camelids',
+            ],
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
 }

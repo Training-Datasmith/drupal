@@ -13,36 +13,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspaceAssociationStringIdsUpdatePathTest extends UpdatePathTestBase {
+class WorkspaceAssociationStringIdsUpdatePathTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+          __DIR__ . '/../../../fixtures/update/workspaces-10.3.0.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-      __DIR__ . '/../../../fixtures/update/workspaces-10.3.0.php',
-    ];
-  }
+    /**
+     * Tests the update path for string IDs in workspace_association.
+     */
+    public function testRunUpdates(): void
+    {
+        $schema = \Drupal::database()->schema();
+        $find_primary_key_columns = new \ReflectionMethod(get_class($schema), 'findPrimaryKeyColumns');
 
-  /**
-   * Tests the update path for string IDs in workspace_association.
-   */
-  public function testRunUpdates(): void {
-    $schema = \Drupal::database()->schema();
-    $find_primary_key_columns = new \ReflectionMethod(get_class($schema), 'findPrimaryKeyColumns');
+        $this->assertFalse($schema->fieldExists('workspace_association', 'target_entity_id_string'));
+        $primary_key_columns = ['workspace', 'target_entity_type_id', 'target_entity_id'];
+        $this->assertEquals($primary_key_columns, $find_primary_key_columns->invoke($schema, 'workspace_association'));
 
-    $this->assertFalse($schema->fieldExists('workspace_association', 'target_entity_id_string'));
-    $primary_key_columns = ['workspace', 'target_entity_type_id', 'target_entity_id'];
-    $this->assertEquals($primary_key_columns, $find_primary_key_columns->invoke($schema, 'workspace_association'));
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $this->assertTrue($schema->fieldExists('workspace_association', 'target_entity_id_string'));
-    $primary_key_columns = ['workspace', 'target_entity_type_id', 'target_entity_id', 'target_entity_id_string'];
-    $this->assertEquals($primary_key_columns, $find_primary_key_columns->invoke($schema, 'workspace_association'));
-  }
+        $this->assertTrue($schema->fieldExists('workspace_association', 'target_entity_id_string'));
+        $primary_key_columns = ['workspace', 'target_entity_type_id', 'target_entity_id', 'target_entity_id_string'];
+        $this->assertEquals($primary_key_columns, $find_primary_key_columns->invoke($schema, 'workspace_association'));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Lock;
 
 /**
@@ -80,76 +82,76 @@ namespace Drupal\Core\Lock;
  *
  * @ingroup lock
  */
-interface LockBackendInterface {
+interface LockBackendInterface
+{
+    /**
+     * Acquires a lock.
+     *
+     * @param string $name
+     *   Lock name. Limit of name's length is 255 characters.
+     * @param float $timeout
+     *   (optional) Lock lifetime in seconds. Defaults to 30.0.
+     *
+     * @return bool
+     *   TRUE if the lock was successfully acquired, FALSE otherwise.
+     */
+    public function acquire($name, $timeout = 30.0);
 
-  /**
-   * Acquires a lock.
-   *
-   * @param string $name
-   *   Lock name. Limit of name's length is 255 characters.
-   * @param float $timeout
-   *   (optional) Lock lifetime in seconds. Defaults to 30.0.
-   *
-   * @return bool
-   *   TRUE if the lock was successfully acquired, FALSE otherwise.
-   */
-  public function acquire($name, $timeout = 30.0);
+    /**
+     * Checks if a lock is available for acquiring.
+     *
+     * @param string $name
+     *   Lock to acquire.
+     *
+     * @return bool
+     *   TRUE if the lock can be acquired, FALSE otherwise.
+     */
+    public function lockMayBeAvailable($name);
 
-  /**
-   * Checks if a lock is available for acquiring.
-   *
-   * @param string $name
-   *   Lock to acquire.
-   *
-   * @return bool
-   *   TRUE if the lock can be acquired, FALSE otherwise.
-   */
-  public function lockMayBeAvailable($name);
+    /**
+     * Waits a short amount of time before a second lock acquire attempt.
+     *
+     * While this method is subject to have a generic implementation in abstract
+     * backend implementation, some backends may provide non blocking or less I/O
+     * intensive wait mechanism: this is why this method remains on the backend
+     * interface.
+     *
+     * @param string $name
+     *   Lock name currently being locked.
+     * @param int $delay
+     *   Seconds to wait for. Defaults to 30.
+     *
+     * @return bool
+     *   TRUE if the lock holds, FALSE if it may be available. You still need to
+     *   acquire the lock manually and it may fail again.
+     */
+    public function wait($name, $delay = 30);
 
-  /**
-   * Waits a short amount of time before a second lock acquire attempt.
-   *
-   * While this method is subject to have a generic implementation in abstract
-   * backend implementation, some backends may provide non blocking or less I/O
-   * intensive wait mechanism: this is why this method remains on the backend
-   * interface.
-   *
-   * @param string $name
-   *   Lock name currently being locked.
-   * @param int $delay
-   *   Seconds to wait for. Defaults to 30.
-   *
-   * @return bool
-   *   TRUE if the lock holds, FALSE if it may be available. You still need to
-   *   acquire the lock manually and it may fail again.
-   */
-  public function wait($name, $delay = 30);
+    /**
+     * Releases the given lock.
+     *
+     * @param string $name
+     *   The lock name.
+     */
+    public function release($name);
 
-  /**
-   * Releases the given lock.
-   *
-   * @param string $name
-   *   The lock name.
-   */
-  public function release($name);
+    /**
+     * Releases all locks for the given lock token identifier.
+     *
+     * @param string $lockId
+     *   (optional) If none given, remove all locks from the current page.
+     *   Defaults to NULL.
+     */
+    public function releaseAll($lockId = null);
 
-  /**
-   * Releases all locks for the given lock token identifier.
-   *
-   * @param string $lockId
-   *   (optional) If none given, remove all locks from the current page.
-   *   Defaults to NULL.
-   */
-  public function releaseAll($lockId = NULL);
-
-  /**
-   * Gets the unique page token for locks.
-   *
-   * Locks will be wiped out at the end of each page request on a token basis.
-   *
-   * @return string
-   *   The lock ID.
-   */
-  public function getLockId();
+    /**
+     * Gets the unique page token for locks.
+     *
+     * Locks will be wiped out at the end of each page request on a token basis.
+     *
+     * @return string
+     *   The lock ID.
+     */
+    public function getLockId();
 
 }

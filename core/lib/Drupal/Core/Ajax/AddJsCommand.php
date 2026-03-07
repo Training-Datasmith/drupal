@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -13,37 +15,37 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AddJsCommand implements CommandInterface {
+class AddJsCommand implements CommandInterface
+{
+    /**
+     * Constructs an AddJsCommand.
+     *
+     * @param array $scripts
+     *   An array containing the attributes of the 'script' tags to be added to
+     *   the page. i.e. `['src' => 'someURL', 'defer' => TRUE]` becomes
+     *   `<script src="someURL" defer>`.
+     * @param string $selector
+     *   A CSS selector of the element where the script tags will be appended.
+     */
+    public function __construct(
+        /**
+         * An array containing attributes of the scripts to be added to the page.
+         */
+        protected array $scripts,
+        protected string $selector = 'body'
+    ) {
+    }
 
-  /**
-   * Constructs an AddJsCommand.
-   *
-   * @param array $scripts
-   *   An array containing the attributes of the 'script' tags to be added to
-   *   the page. i.e. `['src' => 'someURL', 'defer' => TRUE]` becomes
-   *   `<script src="someURL" defer>`.
-   * @param string $selector
-   *   A CSS selector of the element where the script tags will be appended.
-   */
-  public function __construct(
-      /**
-       * An array containing attributes of the scripts to be added to the page.
-       */
-      protected array $scripts,
-      protected string $selector = 'body'
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'add_js',
-      'selector' => $this->selector,
-      'data' => $this->scripts,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'add_js',
+          'selector' => $this->selector,
+          'data' => $this->scripts,
+        ];
+    }
 
 }

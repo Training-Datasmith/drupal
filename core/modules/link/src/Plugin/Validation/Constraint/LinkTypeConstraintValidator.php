@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\link\Plugin\Validation\Constraint;
 
 use Drupal\link\LinkItemInterface;
@@ -10,49 +12,49 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 /**
  * Constraint validator for links receiving data allowed by its settings.
  */
-class LinkTypeConstraintValidator extends ConstraintValidator {
+class LinkTypeConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        if (!$value instanceof LinkItemInterface) {
+            throw new UnexpectedValueException($value, LinkItemInterface::class);
+        }
+        if ($value->isEmpty()) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    if (!$value instanceof LinkItemInterface) {
-      throw new UnexpectedValueException($value, LinkItemInterface::class);
-    }
-    if ($value->isEmpty()) {
-      return;
-    }
+        $uri_is_valid = true;
 
-    $uri_is_valid = TRUE;
+        $link_item = $value;
+        $link_type = $link_item->getFieldDefinition()->getSetting('link_type');
 
-    $link_item = $value;
-    $link_type = $link_item->getFieldDefinition()->getSetting('link_type');
+        // Try to resolve the given URI to a URL. It may fail if it's schemeless.
+        try {
+            $url = $link_item->getUrl();
+        } catch (\InvalidArgumentException) {
+            $uri_is_valid = false;
+        }
 
-    // Try to resolve the given URI to a URL. It may fail if it's schemeless.
-    try {
-      $url = $link_item->getUrl();
-    }
-    catch (\InvalidArgumentException) {
-      $uri_is_valid = FALSE;
-    }
+        // If the link field doesn't support both internal and external links,
+        // check whether the URL (a resolved URI) is in fact violating either
+        // restriction.
+        if ($uri_is_valid && $link_type !== LinkItemInterface::LINK_GENERIC) {
+            if (!($link_type & LinkItemInterface::LINK_EXTERNAL) && $url->isExternal()) {
+                $uri_is_valid = false;
+            }
+            if (!($link_type & LinkItemInterface::LINK_INTERNAL) && !$url->isExternal()) {
+                $uri_is_valid = false;
+            }
+        }
 
-    // If the link field doesn't support both internal and external links,
-    // check whether the URL (a resolved URI) is in fact violating either
-    // restriction.
-    if ($uri_is_valid && $link_type !== LinkItemInterface::LINK_GENERIC) {
-      if (!($link_type & LinkItemInterface::LINK_EXTERNAL) && $url->isExternal()) {
-        $uri_is_valid = FALSE;
-      }
-      if (!($link_type & LinkItemInterface::LINK_INTERNAL) && !$url->isExternal()) {
-        $uri_is_valid = FALSE;
-      }
+        if (!$uri_is_valid) {
+            $this->context->buildViolation($constraint->message, ['@uri' => $link_item->uri])
+              ->atPath('uri')
+              ->addViolation();
+        }
     }
-
-    if (!$uri_is_valid) {
-      $this->context->buildViolation($constraint->message, ['@uri' => $link_item->uri])
-        ->atPath('uri')
-        ->addViolation();
-    }
-  }
 
 }

@@ -18,53 +18,55 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(FileIsImageConstraintValidator::class)]
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class FileIsImageConstraintValidatorTest extends FileValidatorTestBase {
+class FileIsImageConstraintValidatorTest extends FileValidatorTestBase
+{
+    /**
+     * An image file.
+     *
+     * @var \Drupal\file\FileInterface
+     */
+    protected FileInterface $image;
 
-  /**
-   * An image file.
-   *
-   * @var \Drupal\file\FileInterface
-   */
-  protected FileInterface $image;
+    /**
+     * A file which is not an image.
+     *
+     * @var \Drupal\file\FileInterface
+     */
+    protected FileInterface $nonImage;
 
-  /**
-   * A file which is not an image.
-   *
-   * @var \Drupal\file\FileInterface
-   */
-  protected FileInterface $nonImage;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->image = File::create();
+        $this->image->setFileUri('core/misc/druplicon.png');
+        $this->image->setFilename(basename($this->image->getFileUri()));
 
-    $this->image = File::create();
-    $this->image->setFileUri('core/misc/druplicon.png');
-    $this->image->setFilename(basename($this->image->getFileUri()));
+        $this->nonImage = File::create();
+        $this->nonImage->setFileUri('core/assets/vendor/jquery/jquery.min.js');
+        $this->nonImage->setFilename(basename($this->nonImage->getFileUri()));
+    }
 
-    $this->nonImage = File::create();
-    $this->nonImage->setFileUri('core/assets/vendor/jquery/jquery.min.js');
-    $this->nonImage->setFilename(basename($this->nonImage->getFileUri()));
-  }
+    /**
+     * This ensures a specific file is actually an image.
+     *
+     * @legacy-covers ::validate
+     */
+    public function testFileIsImage(): void
+    {
+        $this->assertFileExists($this->image->getFileUri());
+        $validators = [
+          'FileIsImage' => [],
+        ];
+        $violations = $this->validator->validate($this->image, $validators);
+        $this->assertCount(0, $violations, 'No error reported for our image file.');
 
-  /**
-   * This ensures a specific file is actually an image.
-   *
-   * @legacy-covers ::validate
-   */
-  public function testFileIsImage(): void {
-    $this->assertFileExists($this->image->getFileUri());
-    $validators = [
-      'FileIsImage' => [],
-    ];
-    $violations = $this->validator->validate($this->image, $validators);
-    $this->assertCount(0, $violations, 'No error reported for our image file.');
-
-    $this->assertFileExists($this->nonImage->getFileUri());
-    $violations = $this->validator->validate($this->nonImage, $validators);
-    $this->assertCount(1, $violations, 'An error reported for our non-image file.');
-  }
+        $this->assertFileExists($this->nonImage->getFileUri());
+        $violations = $this->validator->validate($this->nonImage, $validators);
+        $this->assertCount(1, $violations, 'An error reported for our non-image file.');
+    }
 
 }

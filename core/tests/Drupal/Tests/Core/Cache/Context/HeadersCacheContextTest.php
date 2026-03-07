@@ -17,67 +17,69 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(HeadersCacheContext::class)]
 #[Group('Cache')]
-class HeadersCacheContextTest extends UnitTestCase {
+class HeadersCacheContextTest extends UnitTestCase
+{
+    /**
+     * Tests get context.
+     */
+    #[DataProvider('providerTestGetContext')]
+    public function testGetContext($headers, $header_name, $context): void
+    {
+        $request_stack = new RequestStack();
+        $request = Request::create('/', 'GET');
+        // Request defaults could change, so compare with default values instead of
+        // passed in context value.
+        $request->headers->replace($headers);
+        $request_stack->push($request);
+        $cache_context = new HeadersCacheContext($request_stack);
+        $this->assertSame($cache_context->getContext($header_name), $context);
+    }
 
-  /**
-   * Tests get context.
-   */
-  #[DataProvider('providerTestGetContext')]
-  public function testGetContext($headers, $header_name, $context): void {
-    $request_stack = new RequestStack();
-    $request = Request::create('/', 'GET');
-    // Request defaults could change, so compare with default values instead of
-    // passed in context value.
-    $request->headers->replace($headers);
-    $request_stack->push($request);
-    $cache_context = new HeadersCacheContext($request_stack);
-    $this->assertSame($cache_context->getContext($header_name), $context);
-  }
-
-  /**
-   * Provides a list of headers and expected cache contexts.
-   */
-  public static function providerTestGetContext(): array {
-    return [
-      [[], NULL, ''],
-      [[], 'foo', ''],
-      // Non-empty headers.
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        NULL,
-        'alpaca=&llama=rocks&panda=drools&z=0',
-      ],
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        'llama',
-        'rocks',
-      ],
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        'alpaca',
-        '?valueless?',
-      ],
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        'panda',
-        'drools',
-      ],
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        'z',
-        '0',
-      ],
-      [
-        ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
-        'chicken',
-        '',
-      ],
-      // Header value could be an array.
-      [['z' => ['0', '1']], NULL, 'z=0,1'],
-      // Values are sorted to minimize cache variations.
-      [['z' => ['1', '0'], 'a' => []], NULL, 'a=&z=0,1'],
-      [['a' => [], 'z' => ['1', '0']], NULL, 'a=&z=0,1'],
-    ];
-  }
+    /**
+     * Provides a list of headers and expected cache contexts.
+     */
+    public static function providerTestGetContext(): array
+    {
+        return [
+          [[], null, ''],
+          [[], 'foo', ''],
+          // Non-empty headers.
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            null,
+            'alpaca=&llama=rocks&panda=drools&z=0',
+          ],
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            'llama',
+            'rocks',
+          ],
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            'alpaca',
+            '?valueless?',
+          ],
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            'panda',
+            'drools',
+          ],
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            'z',
+            '0',
+          ],
+          [
+            ['llama' => 'rocks', 'alpaca' => '', 'panda' => 'drools', 'z' => '0'],
+            'chicken',
+            '',
+          ],
+          // Header value could be an array.
+          [['z' => ['0', '1']], null, 'z=0,1'],
+          // Values are sorted to minimize cache variations.
+          [['z' => ['1', '0'], 'a' => []], null, 'a=&z=0,1'],
+          [['a' => [], 'z' => ['1', '0']], null, 'a=&z=0,1'],
+        ];
+    }
 
 }

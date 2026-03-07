@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\OEmbed;
 
 /**
@@ -9,46 +11,49 @@ namespace Drupal\media\OEmbed;
  *   This is an internal part of the oEmbed system and should only be used by
  *   oEmbed-related code in Drupal core.
  */
-class ResourceException extends \Exception {
-
-  /**
-   * ResourceException constructor.
-   *
-   * @param string $message
-   *   The exception message.
-   * @param string $url
-   *   The URL of the resource. Can be the actual endpoint URL or the canonical
-   *   URL.
-   * @param array $data
-   *   (optional) The raw resource data, if available.
-   * @param \Throwable $previous
-   *   (optional) The previous exception, if any.
-   */
-  public function __construct($message, /**
+class ResourceException extends \Exception
+{
+    /**
+     * ResourceException constructor.
+     *
+     * @param string $message
+     *   The exception message.
+     * @param string $url
+     *   The URL of the resource. Can be the actual endpoint URL or the canonical
+     *   URL.
+     * @param array $data
+     *   (optional) The raw resource data, if available.
+     * @param \Throwable $previous
+     *   (optional) The previous exception, if any.
+     */
+    public function __construct($message, /**
    * The URL of the resource.
    */
-  protected $url, protected array $data = [], ?\Throwable $previous = NULL) {
-    parent::__construct($message, 0, $previous);
-  }
+        protected $url, protected array $data = [], ?\Throwable $previous = null)
+    {
+        parent::__construct($message, 0, $previous);
+    }
 
-  /**
-   * Gets the URL of the resource which caused the exception.
-   *
-   * @return string
-   *   The URL of the resource.
-   */
-  public function getUrl() {
-    return $this->url;
-  }
+    /**
+     * Gets the URL of the resource which caused the exception.
+     *
+     * @return string
+     *   The URL of the resource.
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
 
-  /**
-   * Gets the raw resource data, if available.
-   *
-   * @return array
-   *   The resource data.
-   */
-  public function getData() {
-    return $this->data;
-  }
+    /**
+     * Gets the raw resource data, if available.
+     *
+     * @return array
+     *   The resource data.
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
 
 }

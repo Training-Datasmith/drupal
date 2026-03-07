@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Logger;
 
 /**
@@ -12,47 +14,49 @@ namespace Drupal\Core\Logger;
  *
  * @see \Drupal\Core\DependencyInjection\ContainerInjectionInterface
  */
-trait LoggerChannelTrait {
+trait LoggerChannelTrait
+{
+    /**
+     * The logger channel factory service.
+     *
+     * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+     */
+    protected $loggerFactory;
 
-  /**
-   * The logger channel factory service.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
-   * Gets the logger for a specific channel.
-   *
-   * @param string $channel
-   *   The name of the channel. Can be any string, but the general practice is
-   *   to use the name of the subsystem calling this.
-   *
-   * @return \Psr\Log\LoggerInterface
-   *   The logger for the given channel.
-   *
-   * @todo Require the use of injected services:
-   *   https://www.drupal.org/node/2733703
-   */
-  protected function getLogger($channel) {
-    if (!$this->loggerFactory) {
-      $this->loggerFactory = \Drupal::service('logger.factory');
+    /**
+     * Gets the logger for a specific channel.
+     *
+     * @param string $channel
+     *   The name of the channel. Can be any string, but the general practice is
+     *   to use the name of the subsystem calling this.
+     *
+     * @return \Psr\Log\LoggerInterface
+     *   The logger for the given channel.
+     *
+     * @todo Require the use of injected services:
+     *   https://www.drupal.org/node/2733703
+     */
+    protected function getLogger($channel)
+    {
+        if (!$this->loggerFactory) {
+            $this->loggerFactory = \Drupal::service('logger.factory');
+        }
+        return $this->loggerFactory->get($channel);
     }
-    return $this->loggerFactory->get($channel);
-  }
 
-  /**
-   * Injects the logger channel factory.
-   *
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger channel factory service.
-   *
-   * @return $this
-   */
-  public function setLoggerFactory(LoggerChannelFactoryInterface $logger_factory) {
-    $this->loggerFactory = $logger_factory;
+    /**
+     * Injects the logger channel factory.
+     *
+     * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+     *   The logger channel factory service.
+     *
+     * @return $this
+     */
+    public function setLoggerFactory(LoggerChannelFactoryInterface $logger_factory)
+    {
+        $this->loggerFactory = $logger_factory;
 
-    return $this;
-  }
+        return $this;
+    }
 
 }

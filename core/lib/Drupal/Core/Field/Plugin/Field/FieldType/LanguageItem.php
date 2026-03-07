@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -17,142 +19,149 @@ use Drupal\Core\TypedData\OptionsProviderInterface;
  * Defines the 'language' entity field item.
  */
 #[FieldType(
-  id: "language",
-  label: new TranslatableMarkup("Language"),
-  description: new TranslatableMarkup("An entity field referencing a language."),
-  default_widget: "language_select",
-  default_formatter: "language",
-  no_ui: TRUE,
-  constraints: [
-    "ComplexData" => [
-      "properties" => [
-        "value" => [
-          "Length" => ["max" => 12],
+    id: 'language',
+    label: new TranslatableMarkup('Language'),
+    description: new TranslatableMarkup('An entity field referencing a language.'),
+    default_widget: 'language_select',
+    default_formatter: 'language',
+    no_ui: true,
+    constraints: [
+    'ComplexData' => [
+      'properties' => [
+        'value' => [
+          'Length' => ['max' => 12],
         ],
       ],
     ],
   ]
 )]
-class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
+class LanguageItem extends FieldItemBase implements OptionsProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties['value'] = DataDefinition::create('string')
+          ->setLabel(t('Language code'))
+          ->setRequired(true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('string')
-      ->setLabel(t('Language code'))
-      ->setRequired(TRUE);
+        $properties['language'] = DataReferenceDefinition::create('language')
+          ->setLabel(t('Language object'))
+          ->setDescription(t('The referenced language'))
+          // The language object is retrieved via the language code.
+          ->setComputed(true)
+          ->setReadOnly(false);
 
-    $properties['language'] = DataReferenceDefinition::create('language')
-      ->setLabel(t('Language object'))
-      ->setDescription(t('The referenced language'))
-      // The language object is retrieved via the language code.
-      ->setComputed(TRUE)
-      ->setReadOnly(FALSE);
-
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => 'varchar_ascii',
-          'length' => 12,
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($values, $notify = TRUE): void {
-    // Treat the values as property value of the language property, if no array
-    // is given as this handles language codes and objects.
-    if (isset($values) && !is_array($values)) {
-      $this->set('language', $values, $notify);
+        return $properties;
     }
-    else {
-      // Make sure that the 'language' property gets set as 'value'.
-      if (isset($values['value']) && !isset($values['language'])) {
-        $values['language'] = $values['value'];
-      }
-      parent::setValue($values, $notify);
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'type' => 'varchar_ascii',
+              'length' => 12,
+            ],
+          ],
+        ];
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applyDefaultValue($notify = TRUE): static {
-    // Default to the site's default language. When language module is enabled,
-    // this behavior is configurable, see language_field_info_alter().
-    $this->setValue(['value' => \Drupal::languageManager()->getDefaultLanguage()->getId()], $notify);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onChange($property_name, $notify = TRUE): void {
-    // Make sure that the value and the language property stay in sync.
-    if ($property_name == 'value') {
-      $this->writePropertyValue('language', $this->value);
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($values, $notify = true): void
+    {
+        // Treat the values as property value of the language property, if no array
+        // is given as this handles language codes and objects.
+        if (isset($values) && !is_array($values)) {
+            $this->set('language', $values, $notify);
+        } else {
+            // Make sure that the 'language' property gets set as 'value'.
+            if (isset($values['value']) && !isset($values['language'])) {
+                $values['language'] = $values['value'];
+            }
+            parent::setValue($values, $notify);
+        }
     }
-    elseif ($property_name == 'language') {
-      $this->writePropertyValue('value', $this->get('language')->getTargetIdentifier());
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applyDefaultValue($notify = true): static
+    {
+        // Default to the site's default language. When language module is enabled,
+        // this behavior is configurable, see language_field_info_alter().
+        $this->setValue(['value' => \Drupal::languageManager()->getDefaultLanguage()->getId()], $notify);
+        return $this;
     }
-    parent::onChange($property_name, $notify);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    // Defer to the callback in the item definition as it can be overridden.
-    $complex_data_constraint = $field_definition->getItemDefinition()->getConstraint('ComplexData') ?: [];
-    $constraint = $complex_data_constraint['properties'] ?? $complex_data_constraint;
-    if (isset($constraint['value']['AllowedValues']['callback'])) {
-      $languages = call_user_func($constraint['value']['AllowedValues']['callback']);
+    /**
+     * {@inheritdoc}
+     */
+    public function onChange($property_name, $notify = true): void
+    {
+        // Make sure that the value and the language property stay in sync.
+        if ($property_name == 'value') {
+            $this->writePropertyValue('language', $this->value);
+        } elseif ($property_name == 'language') {
+            $this->writePropertyValue('value', $this->get('language')->getTargetIdentifier());
+        }
+        parent::onChange($property_name, $notify);
     }
-    else {
-      $languages = array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL));
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateSampleValue(FieldDefinitionInterface $field_definition)
+    {
+        // Defer to the callback in the item definition as it can be overridden.
+        $complex_data_constraint = $field_definition->getItemDefinition()->getConstraint('ComplexData') ?: [];
+        $constraint = $complex_data_constraint['properties'] ?? $complex_data_constraint;
+        if (isset($constraint['value']['AllowedValues']['callback'])) {
+            $languages = call_user_func($constraint['value']['AllowedValues']['callback']);
+        } else {
+            $languages = array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL));
+        }
+        $values['value'] = $languages[array_rand($languages)];
+        return $values;
     }
-    $values['value'] = $languages[array_rand($languages)];
-    return $values;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPossibleValues(?AccountInterface $account = NULL): array {
-    return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPossibleValues(?AccountInterface $account = null): array
+    {
+        return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPossibleOptions(?AccountInterface $account = NULL): array {
-    $languages = \Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL);
-    return array_map(fn(LanguageInterface $language) => $language->getName(), $languages);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPossibleOptions(?AccountInterface $account = null): array
+    {
+        $languages = \Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL);
+        return array_map(fn (LanguageInterface $language) => $language->getName(), $languages);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSettableValues(?AccountInterface $account = NULL) {
-    return $this->getPossibleValues($account);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettableValues(?AccountInterface $account = null)
+    {
+        return $this->getPossibleValues($account);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSettableOptions(?AccountInterface $account = NULL) {
-    return $this->getPossibleValues($account);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettableOptions(?AccountInterface $account = null)
+    {
+        return $this->getPossibleValues($account);
+    }
 
 }

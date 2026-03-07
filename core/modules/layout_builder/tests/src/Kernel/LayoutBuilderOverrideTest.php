@@ -15,50 +15,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('layout_builder')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderOverrideTest extends LayoutBuilderCompatibilityTestBase {
+class LayoutBuilderOverrideTest extends LayoutBuilderCompatibilityTestBase
+{
+    /**
+     * Tests installation after overriding LayoutBuilderEntityViewDisplay.
+     */
+    public function testLayoutBuilderOverride(): void
+    {
+        // Install the module overriding LayoutBuilderEntityViewDisplay.
+        $this->container->get('module_installer')
+          ->install(['layout_builder_override']);
 
-  /**
-   * Tests installation after overriding LayoutBuilderEntityViewDisplay.
-   */
-  public function testLayoutBuilderOverride(): void {
-    // Install the module overriding LayoutBuilderEntityViewDisplay.
-    $this->container->get('module_installer')
-      ->install(['layout_builder_override']);
+        // Now install layout_builder module.
+        $status = $this->container->get('module_installer')
+          ->install(['layout_builder']);
+        $this->assertEquals(true, $status);
 
-    // Now install layout_builder module.
-    $status = $this->container->get('module_installer')
-      ->install(['layout_builder']);
-    $this->assertEquals(TRUE, $status);
-
-    $displays = $this->container->get('entity_type.manager')
-      ->getStorage('entity_view_display')
-      ->loadMultiple();
-    foreach ($displays as $display) {
-      $this->assertInstanceOf(LayoutBuilderEntityViewDisplayOverride::class, $display);
-    }
-  }
-
-  /**
-   * Tests installation while overriding LayoutBuilderEntityViewDisplay.
-   */
-  public function testLayoutBuilderOverrideDependency(): void {
-    $this->container->get('module_installer')
-      ->install(['layout_builder_override_dependency']);
-
-    // Test with the entity type manager.
-    $displays = $this->container->get('entity_type.manager')
-      ->getStorage('entity_view_display')
-      ->loadMultiple();
-    foreach ($displays as $display) {
-      $this->assertInstanceOf(LayoutBuilderEntityViewDisplayDependency::class, $display);
+        $displays = $this->container->get('entity_type.manager')
+          ->getStorage('entity_view_display')
+          ->loadMultiple();
+        foreach ($displays as $display) {
+            $this->assertInstanceOf(LayoutBuilderEntityViewDisplayOverride::class, $display);
+        }
     }
 
-    // Test with a static call (which will call
-    // EntityTypeRepositoryInterface::getEntityTypeFromClass).
-    $displays = LayoutBuilderEntityViewDisplay::loadMultiple();
-    foreach ($displays as $display) {
-      $this->assertInstanceOf(LayoutBuilderEntityViewDisplayDependency::class, $display);
+    /**
+     * Tests installation while overriding LayoutBuilderEntityViewDisplay.
+     */
+    public function testLayoutBuilderOverrideDependency(): void
+    {
+        $this->container->get('module_installer')
+          ->install(['layout_builder_override_dependency']);
+
+        // Test with the entity type manager.
+        $displays = $this->container->get('entity_type.manager')
+          ->getStorage('entity_view_display')
+          ->loadMultiple();
+        foreach ($displays as $display) {
+            $this->assertInstanceOf(LayoutBuilderEntityViewDisplayDependency::class, $display);
+        }
+
+        // Test with a static call (which will call
+        // EntityTypeRepositoryInterface::getEntityTypeFromClass).
+        $displays = LayoutBuilderEntityViewDisplay::loadMultiple();
+        foreach ($displays as $display) {
+            $this->assertInstanceOf(LayoutBuilderEntityViewDisplayDependency::class, $display);
+        }
     }
-  }
 
 }

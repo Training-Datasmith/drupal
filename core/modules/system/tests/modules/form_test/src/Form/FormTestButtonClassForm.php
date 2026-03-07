@@ -12,36 +12,39 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestButtonClassForm extends FormBase {
+class FormTestButtonClassForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_button_class';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_button_class';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['button'] = [
+          '#type' => 'button',
+          '#value' => 'test',
+          '#button_type' => 'foo',
+        ];
+        $form['delete'] = [
+          '#type' => 'button',
+          '#value' => 'Delete',
+          '#button_type' => 'danger',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['button'] = [
-      '#type' => 'button',
-      '#value' => 'test',
-      '#button_type' => 'foo',
-    ];
-    $form['delete'] = [
-      '#type' => 'button',
-      '#value' => 'Delete',
-      '#button_type' => 'danger',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

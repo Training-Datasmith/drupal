@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -49,37 +51,38 @@ use Drupal\migrate\Attribute\MigrateDestination;
  * refer to \Drupal\migrate\Plugin\migrate\destination\EntityFieldInstance.
  */
 #[MigrateDestination('entity:field_storage_config')]
-class EntityFieldStorageConfig extends EntityConfigBase {
+class EntityFieldStorageConfig extends EntityConfigBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['entity_type']['type'] = 'string';
+        $ids['field_name']['type'] = 'string';
+        // @todo Remove conditional. https://www.drupal.org/node/3004574
+        if ($this->isTranslationDestination()) {
+            $ids['langcode']['type'] = 'string';
+        }
+        return $ids;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['entity_type']['type'] = 'string';
-    $ids['field_name']['type'] = 'string';
-    // @todo Remove conditional. https://www.drupal.org/node/3004574
-    if ($this->isTranslationDestination()) {
-      $ids['langcode']['type'] = 'string';
+    /**
+     * {@inheritdoc}
+     */
+    public function rollback(array $destination_identifier): void
+    {
+        if ($this->isTranslationDestination()) {
+            $language = $destination_identifier['langcode'];
+            unset($destination_identifier['langcode']);
+            $destination_identifier = [
+              implode('.', $destination_identifier),
+              'langcode' => $language,
+            ];
+        } else {
+            $destination_identifier = [implode('.', $destination_identifier)];
+        }
+        parent::rollback($destination_identifier);
     }
-    return $ids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rollback(array $destination_identifier): void {
-    if ($this->isTranslationDestination()) {
-      $language = $destination_identifier['langcode'];
-      unset($destination_identifier['langcode']);
-      $destination_identifier = [
-        implode('.', $destination_identifier),
-        'langcode' => $language,
-      ];
-    }
-    else {
-      $destination_identifier = [implode('.', $destination_identifier)];
-    }
-    parent::rollback($destination_identifier);
-  }
 
 }

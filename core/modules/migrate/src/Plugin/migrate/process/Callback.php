@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -75,32 +77,34 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('callback')]
-class Callback extends ProcessPluginBase {
+class Callback extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        if (!isset($configuration['callable'])) {
+            throw new \InvalidArgumentException('The "callable" must be set.');
+        }
+        if (!is_callable($configuration['callable'])) {
+            throw new \InvalidArgumentException('The "callable" must be a valid function or method.');
+        }
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    if (!isset($configuration['callable'])) {
-        throw new \InvalidArgumentException('The "callable" must be set.');
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): mixed
+    {
+        if (!empty($this->configuration['unpack_source'])) {
+            if (!is_array($value)) {
+                throw new MigrateException(sprintf("When 'unpack_source' is set, the source must be an array. Instead it was of type '%s'", gettype($value)));
+            }
+            return call_user_func($this->configuration['callable'], ...$value);
+        }
+        return call_user_func($this->configuration['callable'], $value);
     }
-    if (!is_callable($configuration['callable'])) {
-        throw new \InvalidArgumentException('The "callable" must be a valid function or method.');
-    }
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): mixed {
-    if (!empty($this->configuration['unpack_source'])) {
-      if (!is_array($value)) {
-        throw new MigrateException(sprintf("When 'unpack_source' is set, the source must be an array. Instead it was of type '%s'", gettype($value)));
-      }
-      return call_user_func($this->configuration['callable'], ...$value);
-    }
-    return call_user_func($this->configuration['callable'], $value);
-  }
 
 }

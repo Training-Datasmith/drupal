@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Plugin\LazyPluginCollection;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
@@ -16,78 +17,84 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
  * class can be used directly, or subclassed to add further exception handling
  * in self::initializePlugin().
  */
-class DefaultSingleLazyPluginCollection extends LazyPluginCollection {
-  use DependencySerializationTrait;
+class DefaultSingleLazyPluginCollection extends LazyPluginCollection
+{
+    use DependencySerializationTrait;
 
-  /**
-   * An array of configuration to instantiate the plugin with.
-   *
-   * @var array
-   */
-  protected $configuration;
+    /**
+     * An array of configuration to instantiate the plugin with.
+     *
+     * @var array
+     */
+    protected $configuration;
 
-  /**
-   * The instance ID used for this plugin collection.
-   *
-   * @var string
-   */
-  protected $instanceId;
+    /**
+     * The instance ID used for this plugin collection.
+     *
+     * @var string
+     */
+    protected $instanceId;
 
-  /**
-   * Constructs a new DefaultSingleLazyPluginCollection object.
-   *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
-   *   The manager to be used for instantiating plugins.
-   * @param string $instance_id
-   *   The ID of the plugin instance.
-   * @param array $configuration
-   *   An array of configuration.
-   */
-  public function __construct(protected \Drupal\Component\Plugin\PluginManagerInterface $manager, $instance_id, array $configuration) {
-    $this->addInstanceId($instance_id, $configuration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function initializePlugin($instance_id) {
-    $this->set($instance_id, $this->manager->createInstance($instance_id, $this->configuration));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration() {
-    $plugin = $this->get($this->instanceId);
-    if ($plugin instanceof ConfigurableInterface) {
-      return $plugin->getConfiguration();
+    /**
+     * Constructs a new DefaultSingleLazyPluginCollection object.
+     *
+     * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
+     *   The manager to be used for instantiating plugins.
+     * @param string $instance_id
+     *   The ID of the plugin instance.
+     * @param array $configuration
+     *   An array of configuration.
+     */
+    public function __construct(protected \Drupal\Component\Plugin\PluginManagerInterface $manager, $instance_id, array $configuration)
+    {
+        $this->addInstanceId($instance_id, $configuration);
     }
-    return $this->configuration;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setConfiguration(array $configuration): static {
-    $this->configuration = $configuration;
-    $plugin = $this->get($this->instanceId);
-    if ($plugin instanceof ConfigurableInterface) {
-      $plugin->setConfiguration($configuration);
+    /**
+     * {@inheritdoc}
+     */
+    protected function initializePlugin($instance_id)
+    {
+        $this->set($instance_id, $this->manager->createInstance($instance_id, $this->configuration));
     }
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addInstanceId($id, $configuration = NULL): void {
-    $this->instanceId = $id;
-    // Reset the list of instance IDs since there can be only one.
-    $this->instanceIds = [];
-    parent::addInstanceId($id, $configuration);
-    if ($configuration !== NULL) {
-      $this->setConfiguration($configuration);
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration()
+    {
+        $plugin = $this->get($this->instanceId);
+        if ($plugin instanceof ConfigurableInterface) {
+            return $plugin->getConfiguration();
+        }
+        return $this->configuration;
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setConfiguration(array $configuration): static
+    {
+        $this->configuration = $configuration;
+        $plugin = $this->get($this->instanceId);
+        if ($plugin instanceof ConfigurableInterface) {
+            $plugin->setConfiguration($configuration);
+        }
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addInstanceId($id, $configuration = null): void
+    {
+        $this->instanceId = $id;
+        // Reset the list of instance IDs since there can be only one.
+        $this->instanceIds = [];
+        parent::addInstanceId($id, $configuration);
+        if ($configuration !== null) {
+            $this->setConfiguration($configuration);
+        }
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\options\Plugin\views\filter;
 
 use Drupal\views\Attribute\ViewsFilter;
@@ -13,20 +15,21 @@ use Drupal\views\ViewExecutable;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("list_field")]
-class ListField extends ManyToOne {
+#[ViewsFilter('list_field')]
+class ListField extends ManyToOne
+{
+    use FieldAPIHandlerTrait;
 
-  use FieldAPIHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    $field_storage = $this->getFieldStorageDefinition();
-    // Set valueOptions here so getValueOptions() will just return it.
-    $this->valueOptions = options_allowed_values($field_storage);
-  }
+        $field_storage = $this->getFieldStorageDefinition();
+        // Set valueOptions here so getValueOptions() will just return it.
+        $this->valueOptions = options_allowed_values($field_storage);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
@@ -11,31 +13,33 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'entity_reference_autocomplete_tags' widget.
  */
 #[FieldWidget(
-  id: 'entity_reference_autocomplete_tags',
-  label: new TranslatableMarkup('Autocomplete (Tags style)'),
-  description: new TranslatableMarkup('An autocomplete text field with tagging support.'),
-  field_types: ['entity_reference'],
-  multiple_values: TRUE,
+    id: 'entity_reference_autocomplete_tags',
+    label: new TranslatableMarkup('Autocomplete (Tags style)'),
+    description: new TranslatableMarkup('An autocomplete text field with tagging support.'),
+    field_types: ['entity_reference'],
+    multiple_values: true,
 )]
-class EntityReferenceAutocompleteTagsWidget extends EntityReferenceAutocompleteWidget {
+class EntityReferenceAutocompleteTagsWidget extends EntityReferenceAutocompleteWidget
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)
+    {
+        $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $element = parent::formElement($items, $delta, $element, $form, $form_state);
+        $element['target_id']['#tags'] = true;
+        $element['target_id']['#default_value'] = $items->referencedEntities();
 
-    $element['target_id']['#tags'] = TRUE;
-    $element['target_id']['#default_value'] = $items->referencedEntities();
+        return $element;
+    }
 
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    return $values['target_id'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function massageFormValues(array $values, array $form, FormStateInterface $form_state)
+    {
+        return $values['target_id'];
+    }
 
 }

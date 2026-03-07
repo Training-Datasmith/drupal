@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Revisions;
 
 use Drupal\Core\Entity\EntityInterface;
@@ -13,16 +15,17 @@ use Drupal\Core\Entity\EntityInterface;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class VersionById extends NegotiatorBase implements VersionNegotiatorInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRevisionId(EntityInterface $entity, $version_argument) {
-    if (!is_numeric($version_argument)) {
-      throw new InvalidVersionIdentifierException('The revision ID must be an integer.');
+class VersionById extends NegotiatorBase implements VersionNegotiatorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRevisionId(EntityInterface $entity, $version_argument)
+    {
+        if (!is_numeric($version_argument)) {
+            throw new InvalidVersionIdentifierException('The revision ID must be an integer.');
+        }
+        return $version_argument;
     }
-    return $version_argument;
-  }
 
 }

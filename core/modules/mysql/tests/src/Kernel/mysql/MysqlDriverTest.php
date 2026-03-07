@@ -15,16 +15,17 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class MysqlDriverTest extends DriverSpecificKernelTestBase {
-
-  /**
-   * Tests connection.
-   *
-   * @legacy-covers \Drupal\mysql\Driver\Database\mysql\Connection
-   */
-  public function testConnection(): void {
-    $connection = new Connection($this->createMock(Mysql::class), []);
-    $this->assertInstanceOf(Connection::class, $connection);
-  }
+class MysqlDriverTest extends DriverSpecificKernelTestBase
+{
+    /**
+     * Tests connection.
+     *
+     * @legacy-covers \Drupal\mysql\Driver\Database\mysql\Connection
+     */
+    public function testConnection(): void
+    {
+        $connection = new Connection($this->createMock(Mysql::class), []);
+        $this->assertInstanceOf(Connection::class, $connection);
+    }
 
 }

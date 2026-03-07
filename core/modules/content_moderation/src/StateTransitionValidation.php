@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -11,41 +13,43 @@ use Drupal\workflows\WorkflowInterface;
 /**
  * Validates whether a certain state transition is allowed.
  */
-class StateTransitionValidation implements StateTransitionValidationInterface {
+class StateTransitionValidation implements StateTransitionValidationInterface
+{
+    /**
+     * Stores the possible state transitions.
+     *
+     * @var array
+     */
+    protected $possibleTransitions = [];
 
-  /**
-   * Stores the possible state transitions.
-   *
-   * @var array
-   */
-  protected $possibleTransitions = [];
+    /**
+     * Constructs a new StateTransitionValidation.
+     *
+     * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
+     *   The moderation information service.
+     */
+    public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo)
+    {
+    }
 
-  /**
-   * Constructs a new StateTransitionValidation.
-   *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
-   *   The moderation information service.
-   */
-  public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getValidTransitions(ContentEntityInterface $entity, AccountInterface $user): array
+    {
+        $workflow = $this->moderationInfo->getWorkflowForEntity($entity);
+        $current_state = $entity->moderation_state->value ? $workflow->getTypePlugin()->getState($entity->moderation_state->value) : $workflow->getTypePlugin()->getInitialState($entity);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getValidTransitions(ContentEntityInterface $entity, AccountInterface $user): array {
-    $workflow = $this->moderationInfo->getWorkflowForEntity($entity);
-    $current_state = $entity->moderation_state->value ? $workflow->getTypePlugin()->getState($entity->moderation_state->value) : $workflow->getTypePlugin()->getInitialState($entity);
+        return array_filter($current_state->getTransitions(), fn (Transition $transition) => $user->hasPermission('use ' . $workflow->id() . ' transition ' . $transition->id()));
+    }
 
-    return array_filter($current_state->getTransitions(), fn(Transition $transition) => $user->hasPermission('use ' . $workflow->id() . ' transition ' . $transition->id()));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isTransitionValid(WorkflowInterface $workflow, StateInterface $original_state, StateInterface $new_state, AccountInterface $user, ContentEntityInterface $entity) {
-    $transition = $workflow->getTypePlugin()->getTransitionFromStateToState($original_state->id(), $new_state->id());
-    return $user->hasPermission('use ' . $workflow->id() . ' transition ' . $transition->id());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isTransitionValid(WorkflowInterface $workflow, StateInterface $original_state, StateInterface $new_state, AccountInterface $user, ContentEntityInterface $entity)
+    {
+        $transition = $workflow->getTypePlugin()->getTransitionFromStateToState($original_state->id(), $new_state->id());
+        return $user->hasPermission('use ' . $workflow->id() . ' transition ' . $transition->id());
+    }
 
 }

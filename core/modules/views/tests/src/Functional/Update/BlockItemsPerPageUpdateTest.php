@@ -16,34 +16,36 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Update')]
 #[CoversFunction('views_post_update_block_items_per_page')]
 #[RunTestsInSeparateProcesses]
-final class BlockItemsPerPageUpdateTest extends UpdatePathTestBase {
+final class BlockItemsPerPageUpdateTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+          __DIR__ . '/../../../fixtures/update/views-block-items-per-page.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-      __DIR__ . '/../../../fixtures/update/views-block-items-per-page.php',
-    ];
-  }
+    /**
+     * Tests changing an `items_per_page` setting of `none` to NULL.
+     */
+    public function testUpdateItemsPerPage(): void
+    {
+        $settings = Block::load('olivero_who_s_online')?->get('settings');
+        $this->assertIsArray($settings);
+        $this->assertSame('none', $settings['items_per_page']);
 
-  /**
-   * Tests changing an `items_per_page` setting of `none` to NULL.
-   */
-  public function testUpdateItemsPerPage(): void {
-    $settings = Block::load('olivero_who_s_online')?->get('settings');
-    $this->assertIsArray($settings);
-    $this->assertSame('none', $settings['items_per_page']);
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $settings = Block::load('olivero_who_s_online')?->get('settings');
-    $this->assertIsArray($settings);
-    $this->assertNull($settings['items_per_page']);
-  }
+        $settings = Block::load('olivero_who_s_online')?->get('settings');
+        $this->assertIsArray($settings);
+        $this->assertNull($settings['items_per_page']);
+    }
 
 }

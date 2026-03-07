@@ -13,53 +13,55 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('content_translation')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class ContentTestTranslationUITest extends ContentTranslationUITestBase {
+class ContentTestTranslationUITest extends ContentTranslationUITestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $testHTMLEscapeForAllLanguages = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $testHTMLEscapeForAllLanguages = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultCacheContexts = [
+      'languages:language_interface',
+      'theme',
+      'url.query_args:_wrapper_format',
+      'user.permissions',
+      'url.site',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultCacheContexts = [
-    'languages:language_interface',
-    'theme',
-    'url.query_args:_wrapper_format',
-    'user.permissions',
-    'url.site',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'language',
+      'content_translation',
+      'entity_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'language',
-    'content_translation',
-    'entity_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        // Use the entity_test_mul as this has multilingual property support.
+        $this->entityTypeId = 'entity_test_mul_changed';
+        parent::setUp();
+        $this->doSetup();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    // Use the entity_test_mul as this has multilingual property support.
-    $this->entityTypeId = 'entity_test_mul_changed';
-    parent::setUp();
-    $this->doSetup();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getTranslatorPermissions(): array {
-    return array_merge(parent::getTranslatorPermissions(), ['administer entity_test content', 'view test entity']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getTranslatorPermissions(): array
+    {
+        return array_merge(parent::getTranslatorPermissions(), ['administer entity_test content', 'view test entity']);
+    }
 
 }

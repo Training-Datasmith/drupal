@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views_ui\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -9,31 +11,31 @@ use Drupal\Core\Ajax\CommandInterface;
  *
  * This command is implemented in Drupal.AjaxCommands.prototype.viewsSetForm.
  */
-class SetFormCommand implements CommandInterface {
+class SetFormCommand implements CommandInterface
+{
+    /**
+     * Constructs a SetFormCommand object.
+     *
+     * @param string $url
+     *   The URL of the form.
+     */
+    public function __construct(
+        /**
+         * The URL of the form.
+         */
+        protected $url
+    ) {
+    }
 
-  /**
-   * Constructs a SetFormCommand object.
-   *
-   * @param string $url
-   *   The URL of the form.
-   */
-  public function __construct(
-      /**
-       * The URL of the form.
-       */
-      protected $url
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'viewsSetForm',
-      'url' => $this->url,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'viewsSetForm',
+          'url' => $this->url,
+        ];
+    }
 
 }

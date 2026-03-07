@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -11,37 +13,40 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Formatter for a text field on a file entity that links the field to the file.
  */
 #[FieldFormatter(
-  id: 'file_link',
-  label: new TranslatableMarkup('File link'),
-  field_types: [
+    id: 'file_link',
+    label: new TranslatableMarkup('File link'),
+    field_types: [
     'string',
   ],
 )]
-class DefaultFileFormatter extends BaseFieldFileFormatterBase {
+class DefaultFileFormatter extends BaseFieldFileFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        $settings = parent::defaultSettings();
+        $settings['link_to_file'] = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $settings = parent::defaultSettings();
-    $settings['link_to_file'] = TRUE;
+        return $settings;
+    }
 
-    return $settings;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state): array
+    {
+        // We don't call the parent in order to bypass the link to file form.
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state): array {
-    // We don't call the parent in order to bypass the link to file form.
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function viewValue(FieldItemInterface $item) {
-    return $item->value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function viewValue(FieldItemInterface $item)
+    {
+        return $item->value;
+    }
 
 }

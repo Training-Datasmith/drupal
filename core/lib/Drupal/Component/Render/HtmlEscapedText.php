@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Render;
 
 use Drupal\Component\Utility\Html;
@@ -12,42 +14,46 @@ use Drupal\Component\Utility\Html;
  *
  * @ingroup sanitization
  */
-class HtmlEscapedText implements MarkupInterface, \Countable {
+class HtmlEscapedText implements MarkupInterface, \Countable
+{
+    /**
+     * The string to escape.
+     */
+    protected string $string;
 
-  /**
-   * The string to escape.
-   */
-  protected string $string;
+    /**
+     * Constructs an HtmlEscapedText object.
+     *
+     * @param string $string
+     *   The string to escape. This value will be cast to a string.
+     */
+    public function __construct($string)
+    {
+        $this->string = (string) $string;
+    }
 
-  /**
-   * Constructs an HtmlEscapedText object.
-   *
-   * @param string $string
-   *   The string to escape. This value will be cast to a string.
-   */
-  public function __construct($string) {
-    $this->string = (string) $string;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return Html::escape($this->string);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return Html::escape($this->string);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return mb_strlen($this->string);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function count(): int {
-    return mb_strlen($this->string);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function jsonSerialize(): string {
-    return $this->__toString();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize(): string
+    {
+        return $this->__toString();
+    }
 
 }

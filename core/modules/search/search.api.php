@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the Search module.
@@ -46,22 +48,23 @@
  *
  * @ingroup search
  */
-function hook_search_preprocess($text, $langcode = NULL): string {
-  // If the language is not set, get it from the language manager.
-  if (!isset($langcode)) {
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
-  }
-
-  // If the langcode is set to 'en' then add variations of the word "testing"
-  // which can also be found during English language searches.
-  if ($langcode == 'en') {
-    // Add the alternate verb forms for the word "testing".
-    if ($text == 'we are testing') {
-      $text .= ' test tested';
+function hook_search_preprocess($text, $langcode = null): string
+{
+    // If the language is not set, get it from the language manager.
+    if (!isset($langcode)) {
+        $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
     }
-  }
 
-  return $text;
+    // If the langcode is set to 'en' then add variations of the word "testing"
+    // which can also be found during English language searches.
+    if ($langcode == 'en') {
+        // Add the alternate verb forms for the word "testing".
+        if ($text == 'we are testing') {
+            $text .= ' test tested';
+        }
+    }
+
+    return $text;
 }
 
 /**
@@ -73,10 +76,11 @@ function hook_search_preprocess($text, $langcode = NULL): string {
  * @see \Drupal\search\Annotation\SearchPlugin
  * @see \Drupal\search\SearchPluginManager
  */
-function hook_search_plugin_alter(array &$definitions): void {
-  if (isset($definitions['node_search'])) {
-    $definitions['node_search']['title'] = t('Nodes');
-  }
+function hook_search_plugin_alter(array &$definitions): void
+{
+    if (isset($definitions['node_search'])) {
+        $definitions['node_search']['title'] = t('Nodes');
+    }
 }
 
 /**

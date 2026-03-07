@@ -17,16 +17,16 @@ use Drupal\views\EntityViewsData;
  * Defines a test entity type with administrative routes.
  */
 #[ContentEntityType(
-  id: 'entity_test_admin_routes',
-  label: new TranslatableMarkup('Test entity - admin routes'),
-  entity_keys: [
+    id: 'entity_test_admin_routes',
+    label: new TranslatableMarkup('Test entity - admin routes'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'view_builder' => TestViewBuilder::class,
     'access' => EntityTestAccessControlHandler::class,
     'form' => [
@@ -36,16 +36,16 @@ use Drupal\views\EntityViewsData;
     'views_data' => EntityViewsData::class,
     'route_provider' => ['html' => AdminHtmlRouteProvider::class],
   ],
-  links: [
+    links: [
     'canonical' => '/entity_test_admin_routes/manage/{entity_test_admin_routes}',
     'edit-form' => '/entity_test_admin_routes/manage/{entity_test_admin_routes}/edit',
     'delete-form' => '/entity_test/delete/entity_test_admin_routes/{entity_test_admin_routes}',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_admin_routes',
-  data_table: 'entity_test_admin_routes_property_data',
-  translatable: TRUE,
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_admin_routes',
+    data_table: 'entity_test_admin_routes_property_data',
+    translatable: true,
 )]
-class EntityTestAdminRoutes extends EntityTest {
-
+class EntityTestAdminRoutes extends EntityTest
+{
 }

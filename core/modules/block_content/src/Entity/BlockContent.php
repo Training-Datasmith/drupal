@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Entity;
 
 use Drupal\block_content\BlockContentAccessControlHandler;
 use Drupal\block_content\BlockContentForm;
+use Drupal\block_content\BlockContentInterface;
 use Drupal\block_content\BlockContentListBuilder;
 use Drupal\block_content\BlockContentStorageSchema;
 use Drupal\block_content\BlockContentTranslationHandler;
@@ -13,16 +16,15 @@ use Drupal\block_content\Form\BlockContentDeleteForm;
 use Drupal\block_content\Routing\BlockContentRouteProvider;
 use Drupal\Core\Access\RefinableDependentAccessTrait;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
-use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
-use Drupal\Core\Entity\Form\RevisionRevertForm;
-use Drupal\Core\Entity\Form\RevisionDeleteForm;
-use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Form\RevisionDeleteForm;
+use Drupal\Core\Entity\Form\RevisionRevertForm;
+use Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\block_content\BlockContentInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the content block entity class.
@@ -33,13 +35,13 @@ use Drupal\block_content\BlockContentInterface;
  * See https://www.drupal.org/node/2284917#comment-9132521 for more information.
  */
 #[ContentEntityType(
-  id: 'block_content',
-  label: new TranslatableMarkup('Content block'),
-  label_collection: new TranslatableMarkup('Content blocks'),
-  label_singular: new TranslatableMarkup('content block'),
-  label_plural: new TranslatableMarkup('content blocks'),
-  render_cache: FALSE,
-  entity_keys: [
+    id: 'block_content',
+    label: new TranslatableMarkup('Content block'),
+    label_collection: new TranslatableMarkup('Content blocks'),
+    label_singular: new TranslatableMarkup('content block'),
+    label_plural: new TranslatableMarkup('content blocks'),
+    render_cache: false,
+    entity_keys: [
     'id' => 'id',
     'revision' => 'revision_id',
     'bundle' => 'type',
@@ -48,7 +50,7 @@ use Drupal\block_content\BlockContentInterface;
     'uuid' => 'uuid',
     'published' => 'status',
   ],
-  handlers: [
+    handlers: [
     'storage' => SqlContentEntityStorage::class,
     'storage_schema' => BlockContentStorageSchema::class,
     'access' => BlockContentAccessControlHandler::class,
@@ -69,7 +71,7 @@ use Drupal\block_content\BlockContentInterface;
     ],
     'translation' => BlockContentTranslationHandler::class,
   ],
-  links: [
+    links: [
     'add-page' => '/block/add',
     'add-form' => '/block/add/{block_content_type}',
     'canonical' => '/admin/content/block/{block_content}',
@@ -81,211 +83,225 @@ use Drupal\block_content\BlockContentInterface;
     'revision-revert-form' => '/admin/content/block/{block_content}/revision/{block_content_revision}/revert',
     'version-history' => '/admin/content/block/{block_content}/revisions',
   ],
-  admin_permission: 'administer block content',
-  collection_permission: 'access block library',
-  bundle_entity_type: 'block_content_type',
-  bundle_label: new TranslatableMarkup('Block type'),
-  base_table: 'block_content',
-  data_table: 'block_content_field_data',
-  revision_table: 'block_content_revision',
-  revision_data_table: 'block_content_field_revision',
-  translatable: TRUE,
-  show_revision_ui: TRUE,
-  label_count: [
+    admin_permission: 'administer block content',
+    collection_permission: 'access block library',
+    bundle_entity_type: 'block_content_type',
+    bundle_label: new TranslatableMarkup('Block type'),
+    base_table: 'block_content',
+    data_table: 'block_content_field_data',
+    revision_table: 'block_content_revision',
+    revision_data_table: 'block_content_field_revision',
+    translatable: true,
+    show_revision_ui: true,
+    label_count: [
     'singular' => '@count content block',
     'plural' => '@count content blocks',
   ],
-  field_ui_base_route: 'entity.block_content_type.edit_form',
-  revision_metadata_keys: [
+    field_ui_base_route: 'entity.block_content_type.edit_form',
+    revision_metadata_keys: [
     'revision_user' => 'revision_user',
     'revision_created' => 'revision_created',
     'revision_log_message' => 'revision_log',
   ],
 )]
-class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
+class BlockContent extends EditorialContentEntityBase implements BlockContentInterface
+{
+    use RefinableDependentAccessTrait;
 
-  use RefinableDependentAccessTrait;
+    /**
+     * The theme the block is being created in.
+     *
+     * When creating a new content block from the block library, the user is
+     * redirected to the configure form for that block in the given theme. The
+     * theme is stored against the block when the content block add form is shown.
+     *
+     * @var string
+     */
+    protected $theme;
 
-  /**
-   * The theme the block is being created in.
-   *
-   * When creating a new content block from the block library, the user is
-   * redirected to the configure form for that block in the given theme. The
-   * theme is stored against the block when the content block add form is shown.
-   *
-   * @var string
-   */
-  protected $theme;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createDuplicate() {
-    $duplicate = parent::createDuplicate();
-    $duplicate->revision_id->value = NULL;
-    $duplicate->id->value = NULL;
-    return $duplicate;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setTheme($theme): static {
-    $this->theme = $theme;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTheme() {
-    return $this->theme;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage, $update);
-    if ($this->isReusable() || $this->getOriginal()?->isReusable()) {
-      static::invalidateBlockPluginCache();
+    /**
+     * {@inheritdoc}
+     */
+    public function createDuplicate()
+    {
+        $duplicate = parent::createDuplicate();
+        $duplicate->revision_id->value = null;
+        $duplicate->id->value = null;
+        return $duplicate;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::preDelete($storage, $entities);
-
-    /** @var \Drupal\block_content\BlockContentInterface $block */
-    foreach ($entities as $block) {
-      foreach ($block->getInstances() as $instance) {
-        $instance->delete();
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function setTheme($theme): static
+    {
+        $this->theme = $theme;
+        return $this;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::postDelete($storage, $entities);
-    /** @var \Drupal\block_content\BlockContentInterface $block */
-    foreach ($entities as $block) {
-      if ($block->isReusable()) {
-        // If any deleted blocks are reusable clear the block cache.
-        static::invalidateBlockPluginCache();
-        return;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTheme()
+    {
+        return $this->theme;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getInstances() {
-    return \Drupal::entityTypeManager()->getStorage('block')->loadByProperties(['plugin' => 'block_content:' . $this->uuid()]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record): void {
-    parent::preSaveRevision($storage, $record);
-
-    if (!$this->isNewRevision() && $this->getOriginal() && empty($record->revision_log_message)) {
-      // If we are updating an existing block_content without adding a new
-      // revision and the user did not supply a revision log, keep the existing
-      // one.
-      $record->revision_log = $this->getOriginal()->getRevisionLogMessage();
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave(EntityStorageInterface $storage, $update = true): void
+    {
+        parent::postSave($storage, $update);
+        if ($this->isReusable() || $this->getOriginal()?->isReusable()) {
+            static::invalidateBlockPluginCache();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
-    $fields = parent::baseFieldDefinitions($entity_type);
+    /**
+     * {@inheritdoc}
+     */
+    public static function preDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::preDelete($storage, $entities);
 
-    $fields['id']->setLabel(t('Content block ID'))
-      ->setDescription(t('The content block ID.'));
+        /** @var \Drupal\block_content\BlockContentInterface $block */
+        foreach ($entities as $block) {
+            foreach ($block->getInstances() as $instance) {
+                $instance->delete();
+            }
+        }
+    }
 
-    $fields['uuid']->setDescription(t('The content block UUID.'));
+    /**
+     * {@inheritdoc}
+     */
+    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::postDelete($storage, $entities);
+        /** @var \Drupal\block_content\BlockContentInterface $block */
+        foreach ($entities as $block) {
+            if ($block->isReusable()) {
+                // If any deleted blocks are reusable clear the block cache.
+                static::invalidateBlockPluginCache();
+                return;
+            }
+        }
+    }
 
-    $fields['revision_id']->setDescription(t('The revision ID.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function getInstances()
+    {
+        return \Drupal::entityTypeManager()->getStorage('block')->loadByProperties(['plugin' => 'block_content:' . $this->uuid()]);
+    }
 
-    $fields['langcode']->setDescription(t('The content block language code.'));
+    /**
+     * {@inheritdoc}
+     */
+    public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record): void
+    {
+        parent::preSaveRevision($storage, $record);
 
-    $fields['type']->setLabel(t('Block type'))
-      ->setDescription(t('The block type.'));
+        if (!$this->isNewRevision() && $this->getOriginal() && empty($record->revision_log_message)) {
+            // If we are updating an existing block_content without adding a new
+            // revision and the user did not supply a revision log, keep the existing
+            // one.
+            $record->revision_log = $this->getOriginal()->getRevisionLogMessage();
+        }
+    }
 
-    $fields['revision_log']->setDescription(t('The log entry explaining the changes in this revision.'));
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
+        $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['info'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Block description'))
-      ->setDescription(t('A brief description of your block.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
-      ->setRequired(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -5,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+        $fields['id']->setLabel(t('Content block ID'))
+          ->setDescription(t('The content block ID.'));
 
-    $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the content block was last edited.'))
-      ->setTranslatable(TRUE)
-      ->setRevisionable(TRUE);
+        $fields['uuid']->setDescription(t('The content block UUID.'));
 
-    $fields['reusable'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Reusable'))
-      ->setDescription(t('A boolean indicating whether this block is reusable.'))
-      ->setTranslatable(FALSE)
-      ->setRevisionable(FALSE)
-      ->setDefaultValue(TRUE);
+        $fields['revision_id']->setDescription(t('The revision ID.'));
 
-    return $fields;
-  }
+        $fields['langcode']->setDescription(t('The content block language code.'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setInfo($info): static {
-    $this->set('info', $info);
-    return $this;
-  }
+        $fields['type']->setLabel(t('Block type'))
+          ->setDescription(t('The block type.'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isReusable(): bool {
-    return (bool) $this->get('reusable')->value;
-  }
+        $fields['revision_log']->setDescription(t('The log entry explaining the changes in this revision.'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setReusable() {
-    return $this->set('reusable', TRUE);
-  }
+        $fields['info'] = BaseFieldDefinition::create('string')
+          ->setLabel(t('Block description'))
+          ->setDescription(t('A brief description of your block.'))
+          ->setRevisionable(true)
+          ->setTranslatable(true)
+          ->setRequired(true)
+          ->setDisplayOptions('form', [
+            'type' => 'string_textfield',
+            'weight' => -5,
+          ])
+          ->setDisplayConfigurable('form', true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setNonReusable() {
-    return $this->set('reusable', FALSE);
-  }
+        $fields['changed'] = BaseFieldDefinition::create('changed')
+          ->setLabel(t('Changed'))
+          ->setDescription(t('The time that the content block was last edited.'))
+          ->setTranslatable(true)
+          ->setRevisionable(true);
 
-  /**
-   * Invalidates the block plugin cache after changes and deletions.
-   */
-  protected static function invalidateBlockPluginCache() {
-    // Invalidate the block cache to update content block-based derivatives.
-    \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
-  }
+        $fields['reusable'] = BaseFieldDefinition::create('boolean')
+          ->setLabel(t('Reusable'))
+          ->setDescription(t('A boolean indicating whether this block is reusable.'))
+          ->setTranslatable(false)
+          ->setRevisionable(false)
+          ->setDefaultValue(true);
+
+        return $fields;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setInfo($info): static
+    {
+        $this->set('info', $info);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isReusable(): bool
+    {
+        return (bool) $this->get('reusable')->value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setReusable()
+    {
+        return $this->set('reusable', true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setNonReusable()
+    {
+        return $this->set('reusable', false);
+    }
+
+    /**
+     * Invalidates the block plugin cache after changes and deletions.
+     */
+    protected static function invalidateBlockPluginCache()
+    {
+        // Invalidate the block cache to update content block-based derivatives.
+        \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+    }
 
 }

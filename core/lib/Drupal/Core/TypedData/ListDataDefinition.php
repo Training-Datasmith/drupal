@@ -1,113 +1,125 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
  * A typed data definition class for defining lists.
  */
-class ListDataDefinition extends DataDefinition implements ListDataDefinitionInterface {
+class ListDataDefinition extends DataDefinition implements ListDataDefinitionInterface
+{
+    /**
+     * Creates a new list definition.
+     *
+     * @param string $item_type
+     *   The data type of the list items; e.g., 'string', 'integer' or 'any'.
+     *
+     * @return static
+     *   A new List Data Definition object.
+     */
+    public static function create($item_type)
+    {
+        return static::createFromItemType($item_type);
+    }
 
-  /**
-   * Creates a new list definition.
-   *
-   * @param string $item_type
-   *   The data type of the list items; e.g., 'string', 'integer' or 'any'.
-   *
-   * @return static
-   *   A new List Data Definition object.
-   */
-  public static function create($item_type) {
-    return static::createFromItemType($item_type);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function createFromDataType($type)
+    {
+        $definition = parent::createFromDataType($type);
+        // If nothing else given, default to a list of 'any' items.
+        $definition->itemDefinition = DataDefinition::create('any');
+        return $definition;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function createFromDataType($type) {
-    $definition = parent::createFromDataType($type);
-    // If nothing else given, default to a list of 'any' items.
-    $definition->itemDefinition = DataDefinition::create('any');
-    return $definition;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function createFromItemType($item_type): static
+    {
+        return new static([], \Drupal::typedDataManager()->createDataDefinition($item_type));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function createFromItemType($item_type): static {
-    return new static([], \Drupal::typedDataManager()->createDataDefinition($item_type));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $values = [], /**
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $values = [], /**
    * The data definition of a list item.
    */
-  protected ?\Drupal\Core\TypedData\DataDefinitionInterface $itemDefinition = NULL) {
-    $this->definition = $values;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDataType(): string {
-    return 'list';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setDataType($type): void {
-    if ($type != 'list') {
-      throw new \LogicException('Lists must always be of data type "list".');
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getClass() {
-    if (!empty($this->definition['class'])) {
-      return $this->definition['class'];
+        protected ?\Drupal\Core\TypedData\DataDefinitionInterface $itemDefinition = null)
+    {
+        $this->definition = $values;
     }
 
-    // If a list definition is used but no class has been specified, derive the
-    // default list class from the item type.
-    $item_type_definition = \Drupal::typedDataManager()
-      ->getDefinition($this->getItemDefinition()->getDataType());
-    if (!$item_type_definition) {
-      throw new \LogicException("An invalid data type '{$this->getItemDefinition()->getDataType()}' has been specified for list items");
+    /**
+     * {@inheritdoc}
+     */
+    public function getDataType(): string
+    {
+        return 'list';
     }
-    return $item_type_definition['list_class'];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getItemDefinition() {
-    return $this->itemDefinition;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setDataType($type): void
+    {
+        if ($type != 'list') {
+            throw new \LogicException('Lists must always be of data type "list".');
+        }
+    }
 
-  /**
-   * Sets the item definition.
-   *
-   * @param \Drupal\Core\TypedData\DataDefinitionInterface $definition
-   *   A list item's data definition.
-   *
-   * @return $this
-   */
-  public function setItemDefinition(DataDefinitionInterface $definition): static {
-    $this->itemDefinition = $definition;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getClass()
+    {
+        if (!empty($this->definition['class'])) {
+            return $this->definition['class'];
+        }
 
-  /**
-   * Magic method: Implements a deep clone.
-   */
-  public function __clone() {
-    // Ensure the itemDefinition property is actually cloned by overwriting the
-    // original reference.
-    $this->itemDefinition = clone $this->itemDefinition;
-  }
+        // If a list definition is used but no class has been specified, derive the
+        // default list class from the item type.
+        $item_type_definition = \Drupal::typedDataManager()
+          ->getDefinition($this->getItemDefinition()->getDataType());
+        if (!$item_type_definition) {
+            throw new \LogicException("An invalid data type '{$this->getItemDefinition()->getDataType()}' has been specified for list items");
+        }
+        return $item_type_definition['list_class'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getItemDefinition()
+    {
+        return $this->itemDefinition;
+    }
+
+    /**
+     * Sets the item definition.
+     *
+     * @param \Drupal\Core\TypedData\DataDefinitionInterface $definition
+     *   A list item's data definition.
+     *
+     * @return $this
+     */
+    public function setItemDefinition(DataDefinitionInterface $definition): static
+    {
+        $this->itemDefinition = $definition;
+        return $this;
+    }
+
+    /**
+     * Magic method: Implements a deep clone.
+     */
+    public function __clone()
+    {
+        // Ensure the itemDefinition property is actually cloned by overwriting the
+        // original reference.
+        $this->itemDefinition = clone $this->itemDefinition;
+    }
 
 }

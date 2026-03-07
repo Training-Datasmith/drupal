@@ -13,44 +13,46 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RemoveRoleUser::class)]
 #[Group('user')]
-class RemoveRoleUserTest extends RoleUserTestBase {
+class RemoveRoleUserTest extends RoleUserTestBase
+{
+    /**
+     * Tests the execute method on a user with a role.
+     */
+    public function testExecuteRemoveExistingRole(): void
+    {
+        $this->account->expects($this->once())
+          ->method('removeRole')
+          ->willReturn($this->account);
 
-  /**
-   * Tests the execute method on a user with a role.
-   */
-  public function testExecuteRemoveExistingRole(): void {
-    $this->account->expects($this->once())
-      ->method('removeRole')
-      ->willReturn($this->account);
+        $this->account
+          ->method('hasRole')
+          ->with($this->equalTo('test_role_1'))
+          ->willReturn(true);
 
-    $this->account
-      ->method('hasRole')
-      ->with($this->equalTo('test_role_1'))
-      ->willReturn(TRUE);
+        $config = ['rid' => 'test_role_1'];
+        $remove_role_plugin = new RemoveRoleUser($config, 'user_remove_role_action', ['type' => 'user'], $this->userRoleEntityType);
 
-    $config = ['rid' => 'test_role_1'];
-    $remove_role_plugin = new RemoveRoleUser($config, 'user_remove_role_action', ['type' => 'user'], $this->userRoleEntityType);
+        $remove_role_plugin->execute($this->account);
+    }
 
-    $remove_role_plugin->execute($this->account);
-  }
+    /**
+     * Tests the execute method on a user without a specific role.
+     */
+    public function testExecuteRemoveNonExistingRole(): void
+    {
+        $this->account->expects($this->never())
+          ->method('removeRole')
+          ->willReturn($this->account);
 
-  /**
-   * Tests the execute method on a user without a specific role.
-   */
-  public function testExecuteRemoveNonExistingRole(): void {
-    $this->account->expects($this->never())
-      ->method('removeRole')
-      ->willReturn($this->account);
+        $this->account
+          ->method('hasRole')
+          ->with($this->equalTo('test_role_1'))
+          ->willReturn(false);
 
-    $this->account
-      ->method('hasRole')
-      ->with($this->equalTo('test_role_1'))
-      ->willReturn(FALSE);
+        $config = ['rid' => 'test_role_1'];
+        $remove_role_plugin = new RemoveRoleUser($config, 'user_remove_role_action', ['type' => 'user'], $this->userRoleEntityType);
 
-    $config = ['rid' => 'test_role_1'];
-    $remove_role_plugin = new RemoveRoleUser($config, 'user_remove_role_action', ['type' => 'user'], $this->userRoleEntityType);
-
-    $remove_role_plugin->execute($this->account);
-  }
+        $remove_role_plugin->execute($this->account);
+    }
 
 }

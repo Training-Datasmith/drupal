@@ -12,28 +12,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('help')]
 #[RunTestsInSeparateProcesses]
-class HelpPageReverseOrderTest extends HelpPageOrderTest {
+class HelpPageReverseOrderTest extends HelpPageOrderTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['more_help_page_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['more_help_page_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Strings to search for on admin/help, in order.
-   *
-   * These are reversed, due to the alter hook.
-   *
-   * @var string[]
-   */
-  protected $stringOrder = [
-    'This description should appear',
-    'Module overviews are provided',
-  ];
+    /**
+     * Strings to search for on admin/help, in order.
+     *
+     * These are reversed, due to the alter hook.
+     *
+     * @var string[]
+     */
+    protected $stringOrder = [
+      'This description should appear',
+      'Module overviews are provided',
+    ];
 
 }

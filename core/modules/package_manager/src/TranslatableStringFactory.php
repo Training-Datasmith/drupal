@@ -18,39 +18,43 @@ use PhpTuf\ComposerStager\API\Translation\Value\TranslationParametersInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class TranslatableStringFactory implements TranslatableFactoryInterface {
+final readonly class TranslatableStringFactory implements TranslatableFactoryInterface
+{
+    public function __construct(
+        private TranslatableFactoryInterface $decorated,
+        private TranslationInterface $translation,
+    ) {
+    }
 
-  public function __construct(
-    private TranslatableFactoryInterface $decorated,
-    private TranslationInterface $translation,
-  ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function createDomainOptions(): DomainOptionsInterface
+    {
+        return $this->decorated->createDomainOptions();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createDomainOptions(): DomainOptionsInterface {
-    return $this->decorated->createDomainOptions();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createTranslatableMessage(string $message, ?TranslationParametersInterface $parameters = null, ?string $domain = null): TranslatableInterface
+    {
+        return new TranslatableStringAdapter(
+            $message,
+            $parameters?->getAll() ?? [],
+            // TranslatableMarkup's 'context' option is the closest analogue to the
+            // $domain parameter.
+            ['context' => $domain ?? ''],
+            $this->translation,
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createTranslatableMessage(string $message, ?TranslationParametersInterface $parameters = NULL, ?string $domain = NULL): TranslatableInterface {
-    return new TranslatableStringAdapter(
-      $message,
-      $parameters?->getAll() ?? [],
-      // TranslatableMarkup's 'context' option is the closest analogue to the
-      // $domain parameter.
-      ['context' => $domain ?? ''],
-      $this->translation,
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createTranslationParameters(array $parameters = []): TranslationParametersInterface {
-    return $this->decorated->createTranslationParameters($parameters);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createTranslationParameters(array $parameters = []): TranslationParametersInterface
+    {
+        return $this->decorated->createTranslationParameters($parameters);
+    }
 
 }

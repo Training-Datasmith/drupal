@@ -16,44 +16,45 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class AreaViewTest extends ViewsKernelTestBase {
+class AreaViewTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_simple_argument', 'test_area_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_simple_argument', 'test_area_view'];
+    /**
+     * Tests the view area handler.
+     */
+    public function testViewArea(): void
+    {
+        /** @var \Drupal\Core\Render\RendererInterface $renderer */
+        $renderer = $this->container->get('renderer');
+        $view = Views::getView('test_area_view');
 
-  /**
-   * Tests the view area handler.
-   */
-  public function testViewArea(): void {
-    /** @var \Drupal\Core\Render\RendererInterface $renderer */
-    $renderer = $this->container->get('renderer');
-    $view = Views::getView('test_area_view');
+        // Tests \Drupal\views\Plugin\views\area\View::calculateDependencies().
+        $this->assertSame(['config' => ['views.view.test_simple_argument'], 'module' => ['views_test_data']], $view->getDependencies());
 
-    // Tests \Drupal\views\Plugin\views\area\View::calculateDependencies().
-    $this->assertSame(['config' => ['views.view.test_simple_argument'], 'module' => ['views_test_data']], $view->getDependencies());
+        $this->executeView($view);
+        $output = $view->render();
+        $output = (string) $renderer->renderRoot($output);
+        $this->assertStringContainsString('js-view-dom-id-' . $view->dom_id, $output, 'The test view is correctly embedded.');
+        $view->destroy();
 
-    $this->executeView($view);
-    $output = $view->render();
-    $output = (string) $renderer->renderRoot($output);
-    $this->assertStringContainsString('js-view-dom-id-' . $view->dom_id, $output, 'The test view is correctly embedded.');
-    $view->destroy();
-
-    $view->setArguments([27]);
-    $this->executeView($view);
-    $output = $view->render();
-    $output = (string) $renderer->renderRoot($output);
-    $this->assertStringNotContainsString('John', $output, 'The test view is correctly embedded with inherited arguments.');
-    $this->assertStringContainsString('George', $output, 'The test view is correctly embedded with inherited arguments.');
-    $view->destroy();
-  }
+        $view->setArguments([27]);
+        $this->executeView($view);
+        $output = $view->render();
+        $output = (string) $renderer->renderRoot($output);
+        $this->assertStringNotContainsString('John', $output, 'The test view is correctly embedded with inherited arguments.');
+        $this->assertStringContainsString('George', $output, 'The test view is correctly embedded with inherited arguments.');
+        $view->destroy();
+    }
 
 }

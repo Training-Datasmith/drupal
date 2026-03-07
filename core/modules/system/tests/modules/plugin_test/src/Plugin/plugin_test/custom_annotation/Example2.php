@@ -12,4 +12,6 @@ namespace Drupal\plugin_test\Plugin\plugin_test\custom_annotation;
  *   custom = "Paul"
  * )
  */
-class Example2 {}
+class Example2
+{
+}

@@ -17,25 +17,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('help')]
 #[RunTestsInSeparateProcesses]
-class HelpSearchPluginTest extends KernelTestBase {
+class HelpSearchPluginTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['help', 'search'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['help', 'search'];
-
-  /**
-   * Tests search plugin annotation and interfaces.
-   */
-  public function testAnnotation(): void {
-    /** @var \Drupal\search\SearchPluginManager $manager */
-    $manager = \Drupal::service('plugin.manager.search');
-    /** @var \Drupal\help\Plugin\Search\HelpSearch $plugin */
-    $plugin = $manager->createInstance('help_search');
-    $this->assertInstanceOf(AccessibleInterface::class, $plugin);
-    $this->assertInstanceOf(SearchIndexingInterface::class, $plugin);
-    $this->assertSame('Help', (string) $plugin->getPluginDefinition()['title']);
-    $this->assertTrue($plugin->usesAdminTheme());
-  }
+    /**
+     * Tests search plugin annotation and interfaces.
+     */
+    public function testAnnotation(): void
+    {
+        /** @var \Drupal\search\SearchPluginManager $manager */
+        $manager = \Drupal::service('plugin.manager.search');
+        /** @var \Drupal\help\Plugin\Search\HelpSearch $plugin */
+        $plugin = $manager->createInstance('help_search');
+        $this->assertInstanceOf(AccessibleInterface::class, $plugin);
+        $this->assertInstanceOf(SearchIndexingInterface::class, $plugin);
+        $this->assertSame('Help', (string) $plugin->getPluginDefinition()['title']);
+        $this->assertTrue($plugin->usesAdminTheme());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Session;
 
 /**
@@ -7,32 +9,32 @@ namespace Drupal\Core\Session;
  *
  * @ingroup user_api
  */
-interface AccountSwitcherInterface {
+interface AccountSwitcherInterface
+{
+    /**
+     * Safely switches to another account.
+     *
+     * Each invocation of AccountSwitcherInterface::switchTo() must be
+     * matched by a corresponding invocation of
+     * AccountSwitcherInterface::switchBack() in the same function.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The account to switch to.
+     *
+     * @return $this
+     *   $this.
+     */
+    public function switchTo(AccountInterface $account);
 
-  /**
-   * Safely switches to another account.
-   *
-   * Each invocation of AccountSwitcherInterface::switchTo() must be
-   * matched by a corresponding invocation of
-   * AccountSwitcherInterface::switchBack() in the same function.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The account to switch to.
-   *
-   * @return $this
-   *   $this.
-   */
-  public function switchTo(AccountInterface $account);
-
-  /**
-   * Reverts to a previous account after switching.
-   *
-   * @return $this
-   *   $this.
-   *
-   * @throws \RuntimeException
-   *   When there are no more account switches to revert.
-   */
-  public function switchBack();
+    /**
+     * Reverts to a previous account after switching.
+     *
+     * @return $this
+     *   $this.
+     *
+     * @throws \RuntimeException
+     *   When there are no more account switches to revert.
+     */
+    public function switchBack();
 
 }

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\DataType;
 
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Plugin\DataType\Deriver\EntityDeriver;
 use Drupal\Core\Entity\TypedData\EntityDataDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -24,162 +26,175 @@ use Drupal\Core\TypedData\TypedData;
  * @implements \IteratorAggregate<string, \Drupal\Core\TypedData\TypedDataInterface>
  */
 #[DataType(
-  id: "entity",
-  label: new TranslatableMarkup("Entity"),
-  description: new TranslatableMarkup("All kind of entities, e.g. nodes, comments or users."),
-  definition_class: EntityDataDefinition::class,
-  deriver: EntityDeriver::class
+    id: 'entity',
+    label: new TranslatableMarkup('Entity'),
+    description: new TranslatableMarkup('All kind of entities, e.g. nodes, comments or users.'),
+    definition_class: EntityDataDefinition::class,
+    deriver: EntityDeriver::class
 )]
-class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexDataInterface {
+class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexDataInterface
+{
+    /**
+     * The wrapped entity object.
+     *
+     * @var \Drupal\Core\Entity\EntityInterface|null
+     */
+    protected $entity;
 
-  /**
-   * The wrapped entity object.
-   *
-   * @var \Drupal\Core\Entity\EntityInterface|null
-   */
-  protected $entity;
-
-  /**
-   * Creates an instance wrapping the given entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface|null $entity
-   *   The entity object to wrap.
-   */
-  public static function createFromEntity(EntityInterface $entity): static {
-    $definition = EntityDataDefinition::create()
-      ->setEntityTypeId($entity->getEntityTypeId())
-      ->setBundles([$entity->bundle()]);
-    $instance = new static($definition);
-    $instance->setValue($entity);
-    return $instance;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValue() {
-    return $this->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($entity, $notify = TRUE): void {
-    $this->entity = $entity;
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
+    /**
+     * Creates an instance wrapping the given entity.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface|null $entity
+     *   The entity object to wrap.
+     */
+    public static function createFromEntity(EntityInterface $entity): static
+    {
+        $definition = EntityDataDefinition::create()
+          ->setEntityTypeId($entity->getEntityTypeId())
+          ->setBundles([$entity->bundle()]);
+        $instance = new static($definition);
+        $instance->setValue($entity);
+        return $instance;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($property_name) {
-    if (!isset($this->entity)) {
-      throw new MissingDataException("Unable to get property $property_name as no entity has been provided.");
+    /**
+     * {@inheritdoc}
+     */
+    public function getValue()
+    {
+        return $this->entity;
     }
-    if (!$this->entity instanceof FieldableEntityInterface) {
-      throw new \InvalidArgumentException("Unable to get unknown property $property_name.");
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($entity, $notify = true): void
+    {
+        $this->entity = $entity;
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-    // This will throw an exception for unknown fields.
-    return $this->entity->get($property_name);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function set($property_name, $value, $notify = TRUE): static {
-    if (!isset($this->entity)) {
-      throw new MissingDataException("Unable to set property $property_name as no entity has been provided.");
+    /**
+     * {@inheritdoc}
+     */
+    public function get($property_name)
+    {
+        if (!isset($this->entity)) {
+            throw new MissingDataException("Unable to get property $property_name as no entity has been provided.");
+        }
+        if (!$this->entity instanceof FieldableEntityInterface) {
+            throw new \InvalidArgumentException("Unable to get unknown property $property_name.");
+        }
+        // This will throw an exception for unknown fields.
+        return $this->entity->get($property_name);
     }
-    if (!$this->entity instanceof FieldableEntityInterface) {
-      throw new \InvalidArgumentException("Unable to set unknown property $property_name.");
+
+    /**
+     * {@inheritdoc}
+     */
+    public function set($property_name, $value, $notify = true): static
+    {
+        if (!isset($this->entity)) {
+            throw new MissingDataException("Unable to set property $property_name as no entity has been provided.");
+        }
+        if (!$this->entity instanceof FieldableEntityInterface) {
+            throw new \InvalidArgumentException("Unable to set unknown property $property_name.");
+        }
+        // This will throw an exception for unknown fields.
+        $this->entity->set($property_name, $value, $notify);
+        return $this;
     }
-    // This will throw an exception for unknown fields.
-    $this->entity->set($property_name, $value, $notify);
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getProperties($include_computed = FALSE) {
-    if (!isset($this->entity)) {
-      throw new MissingDataException('Unable to get properties as no entity has been provided.');
+    /**
+     * {@inheritdoc}
+     */
+    public function getProperties($include_computed = false)
+    {
+        if (!isset($this->entity)) {
+            throw new MissingDataException('Unable to get properties as no entity has been provided.');
+        }
+        if (!$this->entity instanceof FieldableEntityInterface) {
+            return [];
+        }
+        return $this->entity->getFields($include_computed);
     }
-    if (!$this->entity instanceof FieldableEntityInterface) {
-      return [];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray()
+    {
+        if (!isset($this->entity)) {
+            throw new MissingDataException('Unable to get property values as no entity has been provided.');
+        }
+        return $this->entity->toArray();
     }
-    return $this->entity->getFields($include_computed);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function toArray() {
-    if (!isset($this->entity)) {
-      throw new MissingDataException('Unable to get property values as no entity has been provided.');
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty(): bool
+    {
+        return !isset($this->entity);
     }
-    return $this->entity->toArray();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty(): bool {
-    return !isset($this->entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onChange($property_name): void {
-    if (isset($this->entity) && $this->entity instanceof FieldableEntityInterface) {
-      // Let the entity know of any changes.
-      $this->entity->onChange($property_name);
+    /**
+     * {@inheritdoc}
+     */
+    public function onChange($property_name): void
+    {
+        if (isset($this->entity) && $this->entity instanceof FieldableEntityInterface) {
+            // Let the entity know of any changes.
+            $this->entity->onChange($property_name);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getString() {
-    return isset($this->entity) ? $this->entity->label() : '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyDefaultValue($notify = TRUE): static {
-    // Apply the default value of all properties.
-    foreach ($this->getProperties() as $property) {
-      $property->applyDefaultValue(FALSE);
+    /**
+     * {@inheritdoc}
+     */
+    public function getString()
+    {
+        return isset($this->entity) ? $this->entity->label() : '';
     }
-    return $this;
-  }
 
-  /**
-   * Retrieves the iterator for the object.
-   *
-   * @return \ArrayIterator<string, \Drupal\Core\TypedData\TypedDataInterface>
-   *   The iterator.
-   */
-  public function getIterator(): \ArrayIterator {
-    return $this->entity instanceof \IteratorAggregate ? $this->entity->getIterator() : new \ArrayIterator([]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function applyDefaultValue($notify = true): static
+    {
+        // Apply the default value of all properties.
+        foreach ($this->getProperties() as $property) {
+            $property->applyDefaultValue(false);
+        }
+        return $this;
+    }
 
-  /**
-   * Returns the wrapped entity object.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   The wrapped entity object. If the entity is translatable and a specific
-   *   translation is required, always request it by calling ::getTranslation()
-   *   or ::getUntranslated() as the language of the returned object is not
-   *   defined.
-   */
-  public function getEntity() {
-    return $this->entity;
-  }
+    /**
+     * Retrieves the iterator for the object.
+     *
+     * @return \ArrayIterator<string, \Drupal\Core\TypedData\TypedDataInterface>
+     *   The iterator.
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return $this->entity instanceof \IteratorAggregate ? $this->entity->getIterator() : new \ArrayIterator([]);
+    }
+
+    /**
+     * Returns the wrapped entity object.
+     *
+     * @return \Drupal\Core\Entity\EntityInterface
+     *   The wrapped entity object. If the entity is translatable and a specific
+     *   translation is required, always request it by calling ::getTranslation()
+     *   or ::getUntranslated() as the language of the returned object is not
+     *   defined.
+     */
+    public function getEntity()
+    {
+        return $this->entity;
+    }
 
 }

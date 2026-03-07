@@ -9,13 +9,14 @@ use Drupal\Core\Entity\EntityForm;
 /**
  * Base form for dialog test entity form edit form.
  */
-class DialogTestEntityEditForm extends EntityForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames(): array {
-    return ['dialog_test.settings'];
-  }
+class DialogTestEntityEditForm extends EntityForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames(): array
+    {
+        return ['dialog_test.settings'];
+    }
 
 }

@@ -13,35 +13,36 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class LanguageBlockSettingsVisibilityTest extends BrowserTestBase {
+class LanguageBlockSettingsVisibilityTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block', 'language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block', 'language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests languages displayed in the language switcher.
-   */
-  public function testUnnecessaryLanguageSettingsVisibility(): void {
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-      'administer blocks',
-    ]);
-    $this->drupalLogin($admin_user);
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'hu'], 'Add language');
-    $this->drupalGet('admin/structure/block/add/system_menu_block:admin/stark');
-    $this->assertSession()->fieldNotExists("edit-visibility-language-langcodes-und");
-    $this->assertSession()->fieldNotExists("edit-visibility-language-langcodes-zxx");
-    $this->assertSession()->fieldExists("edit-visibility-language-langcodes-en");
-    $this->assertSession()->fieldExists("edit-visibility-language-langcodes-hu");
-  }
+    /**
+     * Tests languages displayed in the language switcher.
+     */
+    public function testUnnecessaryLanguageSettingsVisibility(): void
+    {
+        $admin_user = $this->drupalCreateUser([
+          'administer languages',
+          'access administration pages',
+          'administer blocks',
+        ]);
+        $this->drupalLogin($admin_user);
+        $this->drupalGet('admin/config/regional/language/add');
+        $this->submitForm(['predefined_langcode' => 'hu'], 'Add language');
+        $this->drupalGet('admin/structure/block/add/system_menu_block:admin/stark');
+        $this->assertSession()->fieldNotExists('edit-visibility-language-langcodes-und');
+        $this->assertSession()->fieldNotExists('edit-visibility-language-langcodes-zxx');
+        $this->assertSession()->fieldExists('edit-visibility-language-langcodes-en');
+        $this->assertSession()->fieldExists('edit-visibility-language-langcodes-hu');
+    }
 
 }

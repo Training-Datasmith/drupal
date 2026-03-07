@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Asset;
 
 /**
@@ -15,34 +17,34 @@ namespace Drupal\Core\Asset;
  * - Two (or more) extensions can still register the same library and use it
  *   without conflicts in case the libraries are loaded on certain pages only.
  */
-interface LibraryDiscoveryInterface {
+interface LibraryDiscoveryInterface
+{
+    /**
+     * Gets all libraries defined by an extension.
+     *
+     * @param string $extension
+     *   The name of the extension that registered a library.
+     *
+     * @return array
+     *   An associative array of libraries registered by $extension is returned
+     *   (which may be empty).
+     *
+     * @see self::getLibraryByName()
+     */
+    public function getLibrariesByExtension($extension);
 
-  /**
-   * Gets all libraries defined by an extension.
-   *
-   * @param string $extension
-   *   The name of the extension that registered a library.
-   *
-   * @return array
-   *   An associative array of libraries registered by $extension is returned
-   *   (which may be empty).
-   *
-   * @see self::getLibraryByName()
-   */
-  public function getLibrariesByExtension($extension);
-
-  /**
-   * Gets a single library defined by an extension by name.
-   *
-   * @param string $extension
-   *   The name of the extension that registered a library.
-   * @param string $name
-   *   The name of a registered library to retrieve.
-   *
-   * @return array|false
-   *   The definition of the requested library, if $name was passed and it
-   *   exists, otherwise FALSE.
-   */
-  public function getLibraryByName($extension, $name);
+    /**
+     * Gets a single library defined by an extension by name.
+     *
+     * @param string $extension
+     *   The name of the extension that registered a library.
+     * @param string $name
+     *   The name of a registered library to retrieve.
+     *
+     * @return array|false
+     *   The definition of the requested library, if $name was passed and it
+     *   exists, otherwise FALSE.
+     */
+    public function getLibraryByName($extension, $name);
 
 }

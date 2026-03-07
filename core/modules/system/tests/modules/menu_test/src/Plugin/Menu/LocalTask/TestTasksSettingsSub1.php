@@ -13,22 +13,24 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Defines a local task plugin with a dynamic title.
  */
-class TestTasksSettingsSub1 extends LocalTaskDefault {
+class TestTasksSettingsSub1 extends LocalTaskDefault
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(?Request $request = null)
+    {
+        return $this->t('Dynamic title for @class', ['@class' => 'TestTasksSettingsSub1']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(?Request $request = NULL) {
-    return $this->t('Dynamic title for @class', ['@class' => 'TestTasksSettingsSub1']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return ['kittens:ragdoll'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags()
+    {
+        return ['kittens:ragdoll'];
+    }
 
 }

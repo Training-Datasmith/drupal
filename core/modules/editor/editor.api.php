@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Documentation for Text Editor API.
@@ -21,9 +23,10 @@ use Drupal\filter\FilterFormatInterface;
  *
  * @see \Drupal\editor\Plugin\EditorBase
  */
-function hook_editor_info_alter(array &$editors): void {
-  $editors['some_other_editor']['label'] = t('A different name');
-  $editors['some_other_editor']['library']['module'] = 'my_editor_override';
+function hook_editor_info_alter(array &$editors): void
+{
+    $editors['some_other_editor']['label'] = t('A different name');
+    $editors['some_other_editor']['library']['module'] = 'my_editor_override';
 }
 
 /**
@@ -33,11 +36,12 @@ function hook_editor_info_alter(array &$editors): void {
  *   All the settings that will be added to the page for the text formats to
  *   which a user has access.
  */
-function hook_editor_js_settings_alter(array &$settings): void {
-  if (isset($settings['editor']['formats']['basic_html'])) {
-    $settings['editor']['formats']['basic_html']['editor'] = 'MyDifferentEditor';
-    $settings['editor']['formats']['basic_html']['editorSettings']['buttons'] = ['strong', 'italic', 'underline'];
-  }
+function hook_editor_js_settings_alter(array &$settings): void
+{
+    if (isset($settings['editor']['formats']['basic_html'])) {
+        $settings['editor']['formats']['basic_html']['editor'] = 'MyDifferentEditor';
+        $settings['editor']['formats']['basic_html']['editorSettings']['buttons'] = ['strong', 'italic', 'underline'];
+    }
 }
 
 /**
@@ -58,11 +62,12 @@ function hook_editor_js_settings_alter(array &$settings): void {
  *
  * @see \Drupal\editor\EditorXssFilterInterface
  */
-function hook_editor_xss_filter_alter(&$editor_xss_filter_class, FilterFormatInterface $format, ?FilterFormatInterface $original_format = NULL): void {
-  $filters = $format->filters()->getAll();
-  if (isset($filters['filter_wysiwyg']) && $filters['filter_wysiwyg']->status) {
-    $editor_xss_filter_class = '\Drupal\filter_wysiwyg\EditorXssFilter\WysiwygFilter';
-  }
+function hook_editor_xss_filter_alter(&$editor_xss_filter_class, FilterFormatInterface $format, ?FilterFormatInterface $original_format = null): void
+{
+    $filters = $format->filters()->getAll();
+    if (isset($filters['filter_wysiwyg']) && $filters['filter_wysiwyg']->status) {
+        $editor_xss_filter_class = '\Drupal\filter_wysiwyg\EditorXssFilter\WysiwygFilter';
+    }
 }
 
 /**

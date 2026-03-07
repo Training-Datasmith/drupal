@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\Entity\Handler;
 
 use Drupal\Core\Entity\EntityHandlerInterface;
@@ -12,20 +14,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class DefaultWorkspaceHandler implements WorkspaceHandlerInterface, EntityHandlerInterface {
+class DefaultWorkspaceHandler implements WorkspaceHandlerInterface, EntityHandlerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isEntitySupported(EntityInterface $entity): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isEntitySupported(EntityInterface $entity): bool
+    {
+        return true;
+    }
 
 }

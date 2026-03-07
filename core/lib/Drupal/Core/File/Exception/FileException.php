@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\File\Exception;
 
 /**
  * Base class for exceptions related to file handling operations.
  */
-class FileException extends \RuntimeException {
+class FileException extends \RuntimeException
+{
 }

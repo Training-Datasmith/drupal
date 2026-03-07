@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 /**
@@ -7,20 +9,22 @@ namespace Drupal\Core\Cache\Context;
  *
  * Cache context ID: 'route.name'.
  */
-class RouteNameCacheContext extends RouteCacheContext {
+class RouteNameCacheContext extends RouteCacheContext
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Route name');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Route name');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext() {
-    return $this->routeMatch->getRouteName();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext()
+    {
+        return $this->routeMatch->getRouteName();
+    }
 
 }

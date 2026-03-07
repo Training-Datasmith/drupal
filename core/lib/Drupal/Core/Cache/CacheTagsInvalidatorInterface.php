@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -11,14 +13,14 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheTagsInvalidatorInterface {
-
-  /**
-   * Marks cache items with any of the specified tags as invalid.
-   *
-   * @param string[] $tags
-   *   The list of tags for which to invalidate cache items.
-   */
-  public function invalidateTags(array $tags);
+interface CacheTagsInvalidatorInterface
+{
+    /**
+     * Marks cache items with any of the specified tags as invalid.
+     *
+     * @param string[] $tags
+     *   The list of tags for which to invalidate cache items.
+     */
+    public function invalidateTags(array $tags);
 
 }

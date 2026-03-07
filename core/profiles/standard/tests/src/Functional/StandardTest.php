@@ -14,12 +14,13 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('standard')]
 #[RunTestsInSeparateProcesses]
-class StandardTest extends BrowserTestBase {
-  use StandardTestTrait;
+class StandardTest extends BrowserTestBase
+{
+    use StandardTestTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'standard';
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'standard';
 
 }

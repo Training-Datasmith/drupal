@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workflows;
 
 /**
@@ -11,61 +13,61 @@ namespace Drupal\workflows;
  *
  * @todo Revisit the need for this in https://www.drupal.org/node/2902309.
  */
-interface TransitionInterface {
+interface TransitionInterface
+{
+    /**
+     * The key of the transition plugin form.
+     */
+    public const PLUGIN_FORM_KEY = 'transition';
 
-  /**
-   * The key of the transition plugin form.
-   */
-  const PLUGIN_FORM_KEY = 'transition';
+    /**
+     * The transition direction from.
+     */
+    public const DIRECTION_FROM = 'from';
 
-  /**
-   * The transition direction from.
-   */
-  const DIRECTION_FROM = 'from';
+    /**
+     * The transition direction to.
+     */
+    public const DIRECTION_TO = 'to';
 
-  /**
-   * The transition direction to.
-   */
-  const DIRECTION_TO = 'to';
+    /**
+     * Gets the transition's ID.
+     *
+     * @return string
+     *   The transition's ID.
+     */
+    public function id();
 
-  /**
-   * Gets the transition's ID.
-   *
-   * @return string
-   *   The transition's ID.
-   */
-  public function id();
+    /**
+     * Gets the transition's label.
+     *
+     * @return string
+     *   The transition's label.
+     */
+    public function label();
 
-  /**
-   * Gets the transition's label.
-   *
-   * @return string
-   *   The transition's label.
-   */
-  public function label();
+    /**
+     * Gets the transition's from states.
+     *
+     * @return \Drupal\workflows\StateInterface[]
+     *   The transition's from states.
+     */
+    public function from();
 
-  /**
-   * Gets the transition's from states.
-   *
-   * @return \Drupal\workflows\StateInterface[]
-   *   The transition's from states.
-   */
-  public function from();
+    /**
+     * Gets the transition's to state.
+     *
+     * @return \Drupal\workflows\StateInterface
+     *   The transition's to state.
+     */
+    public function to();
 
-  /**
-   * Gets the transition's to state.
-   *
-   * @return \Drupal\workflows\StateInterface
-   *   The transition's to state.
-   */
-  public function to();
-
-  /**
-   * Gets the transition's weight.
-   *
-   * @return string
-   *   The transition's weight.
-   */
-  public function weight();
+    /**
+     * Gets the transition's weight.
+     *
+     * @return string
+     *   The transition's weight.
+     */
+    public function weight();
 
 }

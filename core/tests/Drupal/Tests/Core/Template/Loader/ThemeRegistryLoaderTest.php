@@ -14,23 +14,24 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ThemeRegistryLoader::class)]
 #[Group('Template')]
-class ThemeRegistryLoaderTest extends UnitTestCase {
+class ThemeRegistryLoaderTest extends UnitTestCase
+{
+    /**
+     * Tests loader returns false for exists on nonexistent.
+     *
+     * @legacy-covers ::findTemplate
+     */
+    public function testLoaderReturnsFalseForExistsOnNonexistent(): void
+    {
+        $registry = $this->prophesize('Drupal\Core\Theme\Registry');
+        $runtime = $this->prophesize('Drupal\Core\Utility\ThemeRegistry');
+        $runtime->has('foo')
+          ->shouldBeCalled()
+          ->willReturn(false);
+        $registry->getRuntime()->willReturn($runtime);
 
-  /**
-   * Tests loader returns false for exists on nonexistent.
-   *
-   * @legacy-covers ::findTemplate
-   */
-  public function testLoaderReturnsFalseForExistsOnNonexistent(): void {
-    $registry = $this->prophesize('Drupal\Core\Theme\Registry');
-    $runtime = $this->prophesize('Drupal\Core\Utility\ThemeRegistry');
-    $runtime->has('foo')
-      ->shouldBeCalled()
-      ->willReturn(FALSE);
-    $registry->getRuntime()->willReturn($runtime);
-
-    $loader = new ThemeRegistryLoader($registry->reveal());
-    $this->assertFalse($loader->exists('foo'));
-  }
+        $loader = new ThemeRegistryLoader($registry->reveal());
+        $this->assertFalse($loader->exists('foo'));
+    }
 
 }

@@ -16,39 +16,40 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(SettingsForm::class)]
 #[Group('media_library')]
 #[RunTestsInSeparateProcesses]
-class SettingsFormTest extends BrowserTestBase {
+class SettingsFormTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['media_library'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['media_library'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests the Media Library settings form.
+     */
+    public function testSettingsForm(): void
+    {
+        $account = $this->drupalCreateUser([
+          'access administration pages',
+          'administer media',
+        ]);
+        $this->drupalLogin($account);
 
-  /**
-   * Tests the Media Library settings form.
-   */
-  public function testSettingsForm(): void {
-    $account = $this->drupalCreateUser([
-      'access administration pages',
-      'administer media',
-    ]);
-    $this->drupalLogin($account);
+        $page = $this->getSession()->getPage();
+        $assert_session = $this->assertSession();
 
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
-
-    $this->drupalGet('/admin/config');
-    $page->clickLink('Media Library settings');
-    $page->checkField('Enable advanced UI');
-    $page->pressButton('Save configuration');
-    $assert_session->checkboxChecked('Enable advanced UI');
-    $page->uncheckField('Enable advanced UI');
-    $page->pressButton('Save configuration');
-    $assert_session->checkboxNotChecked('Enable advanced UI');
-  }
+        $this->drupalGet('/admin/config');
+        $page->clickLink('Media Library settings');
+        $page->checkField('Enable advanced UI');
+        $page->pressButton('Save configuration');
+        $assert_session->checkboxChecked('Enable advanced UI');
+        $page->uncheckField('Enable advanced UI');
+        $page->pressButton('Save configuration');
+        $assert_session->checkboxNotChecked('Enable advanced UI');
+    }
 
 }

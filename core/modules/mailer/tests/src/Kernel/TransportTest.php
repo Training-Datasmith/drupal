@@ -24,154 +24,162 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 #[CoversClass(TransportServiceFactory::class)]
 #[Group('mailer')]
 #[RunTestsInSeparateProcesses]
-class TransportTest extends KernelTestBase {
+class TransportTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['mailer', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['mailer', 'system'];
+    /**
+     * Sets up a mailer DSN config override.
+     *
+     * @param string $scheme
+     *   The mailer DSN scheme.
+     * @param string $host
+     *   The mailer DSN host.
+     * @param string|null $user
+     *   The mailer DSN username.
+     * @param string|null $password
+     *   The mailer DSN password.
+     * @param int|null $port
+     *   The mailer DSN port.
+     * @param array<string, mixed> $options
+     *   Options for the mailer transport.
+     */
+    protected function setUpMailerDsnConfigOverride(
+        string $scheme,
+        string $host,
+        ?string $user = null,
+        #[\SensitiveParameter] ?string $password = null,
+        ?int $port = null,
+        array $options = [],
+    ): void {
+        $GLOBALS['config']['system.mail']['mailer_dsn'] = [
+          'scheme' => $scheme,
+          'host' => $host,
+          'user' => $user,
+          'password' => $password,
+          'port' => $port,
+          'options' => $options,
+        ];
+    }
 
-  /**
-   * Sets up a mailer DSN config override.
-   *
-   * @param string $scheme
-   *   The mailer DSN scheme.
-   * @param string $host
-   *   The mailer DSN host.
-   * @param string|null $user
-   *   The mailer DSN username.
-   * @param string|null $password
-   *   The mailer DSN password.
-   * @param int|null $port
-   *   The mailer DSN port.
-   * @param array<string, mixed> $options
-   *   Options for the mailer transport.
-   */
-  protected function setUpMailerDsnConfigOverride(
-    string $scheme,
-    string $host,
-    ?string $user = NULL,
-    #[\SensitiveParameter] ?string $password = NULL,
-    ?int $port = NULL,
-    array $options = [],
-  ): void {
-    $GLOBALS['config']['system.mail']['mailer_dsn'] = [
-      'scheme' => $scheme,
-      'host' => $host,
-      'user' => $user,
-      'password' => $password,
-      'port' => $port,
-      'options' => $options,
-    ];
-  }
+    /**
+     * Resets a mailer DSN config override.
+     *
+     * Clean up the globals modified by setUpMailerDsnConfigOverride() during a
+     * test.
+     */
+    #[After]
+    protected function resetMailerDsnConfigOverride(): void
+    {
+        $this->setUpMailerDsnConfigOverride('null', 'null');
+    }
 
-  /**
-   * Resets a mailer DSN config override.
-   *
-   * Clean up the globals modified by setUpMailerDsnConfigOverride() during a
-   * test.
-   */
-  #[After]
-  protected function resetMailerDsnConfigOverride(): void {
-    $this->setUpMailerDsnConfigOverride('null', 'null');
-  }
+    /**
+     * Tests default test mail factory.
+     *
+     * @legacy-covers ::createTransport
+     */
+    public function testDefaultTestMailFactory(): void
+    {
+        $actual = $this->container->get(TransportInterface::class);
+        $this->assertInstanceOf(NullTransport::class, $actual);
+    }
 
-  /**
-   * Tests default test mail factory.
-   *
-   * @legacy-covers ::createTransport
-   */
-  public function testDefaultTestMailFactory(): void {
-    $actual = $this->container->get(TransportInterface::class);
-    $this->assertInstanceOf(NullTransport::class, $actual);
-  }
+    /**
+     * Tests builtin factory.
+     *
+     * @legacy-covers ::createTransport
+     */
+    #[DataProvider('providerTestBuiltinFactory')]
+    public function testBuiltinFactory(string $schema, string $host, string $expected): void
+    {
+        $this->setUpMailerDsnConfigOverride($schema, $host);
 
-  /**
-   * Tests builtin factory.
-   *
-   * @legacy-covers ::createTransport
-   */
-  #[DataProvider('providerTestBuiltinFactory')]
-  public function testBuiltinFactory(string $schema, string $host, string $expected): void {
-    $this->setUpMailerDsnConfigOverride($schema, $host);
+        $actual = $this->container->get(TransportInterface::class);
+        $this->assertInstanceOf($expected, $actual);
+    }
 
-    $actual = $this->container->get(TransportInterface::class);
-    $this->assertInstanceOf($expected, $actual);
-  }
+    /**
+     * Provides test data for testBuiltinFactory().
+     */
+    public static function providerTestBuiltinFactory(): iterable
+    {
+        yield ['null', 'null', NullTransport::class];
+        yield ['sendmail', 'default', SendmailTransport::class];
+        yield ['smtp', 'default', EsmtpTransport::class];
+    }
 
-  /**
-   * Provides test data for testBuiltinFactory().
-   */
-  public static function providerTestBuiltinFactory(): iterable {
-    yield ['null', 'null', NullTransport::class];
-    yield ['sendmail', 'default', SendmailTransport::class];
-    yield ['smtp', 'default', EsmtpTransport::class];
-  }
+    /**
+     * Tests sendmail factory allowed command.
+     *
+     * @legacy-covers ::createTransport
+     * @legacy-covers \Drupal\Core\Mailer\Transport\SendmailCommandValidationTransportFactory::create
+     */
+    public function testSendmailFactoryAllowedCommand(): void
+    {
+        // Test sendmail command allowlist.
+        $settings = Settings::getAll();
+        $settings['mailer_sendmail_commands'] = ['/usr/local/bin/sendmail -bs'];
+        new Settings($settings);
 
-  /**
-   * Tests sendmail factory allowed command.
-   *
-   * @legacy-covers ::createTransport
-   * @legacy-covers \Drupal\Core\Mailer\Transport\SendmailCommandValidationTransportFactory::create
-   */
-  public function testSendmailFactoryAllowedCommand(): void {
-    // Test sendmail command allowlist.
-    $settings = Settings::getAll();
-    $settings['mailer_sendmail_commands'] = ['/usr/local/bin/sendmail -bs'];
-    new Settings($settings);
+        // Test allowlisted command.
+        $this->setUpMailerDsnConfigOverride('sendmail', 'default', options: [
+          'command' => '/usr/local/bin/sendmail -bs',
+        ]);
+        $actual = $this->container->get(TransportInterface::class);
+        $this->assertInstanceOf(SendmailTransport::class, $actual);
+    }
 
-    // Test allowlisted command.
-    $this->setUpMailerDsnConfigOverride('sendmail', 'default', options: [
-      'command' => '/usr/local/bin/sendmail -bs',
-    ]);
-    $actual = $this->container->get(TransportInterface::class);
-    $this->assertInstanceOf(SendmailTransport::class, $actual);
-  }
+    /**
+     * Tests sendmail factory unlisted command.
+     *
+     * @legacy-covers ::createTransport
+     * @legacy-covers \Drupal\Core\Mailer\Transport\SendmailCommandValidationTransportFactory::create
+     */
+    public function testSendmailFactoryUnlistedCommand(): void
+    {
+        // Test sendmail command allowlist.
+        $settings = Settings::getAll();
+        $settings['mailer_sendmail_commands'] = ['/usr/local/bin/sendmail -bs'];
+        new Settings($settings);
 
-  /**
-   * Tests sendmail factory unlisted command.
-   *
-   * @legacy-covers ::createTransport
-   * @legacy-covers \Drupal\Core\Mailer\Transport\SendmailCommandValidationTransportFactory::create
-   */
-  public function testSendmailFactoryUnlistedCommand(): void {
-    // Test sendmail command allowlist.
-    $settings = Settings::getAll();
-    $settings['mailer_sendmail_commands'] = ['/usr/local/bin/sendmail -bs'];
-    new Settings($settings);
+        // Test unlisted command.
+        $this->setUpMailerDsnConfigOverride('sendmail', 'default', options: [
+          'command' => '/usr/bin/bc',
+        ]);
+        $this->expectExceptionMessage('Unsafe sendmail command /usr/bin/bc');
+        $this->container->get(TransportInterface::class);
+    }
 
-    // Test unlisted command.
-    $this->setUpMailerDsnConfigOverride('sendmail', 'default', options: [
-      'command' => '/usr/bin/bc',
-    ]);
-    $this->expectExceptionMessage('Unsafe sendmail command /usr/bin/bc');
-    $this->container->get(TransportInterface::class);
-  }
+    /**
+     * Tests missing factory.
+     *
+     * @legacy-covers ::createTransport
+     */
+    public function testMissingFactory(): void
+    {
+        $this->setUpMailerDsnConfigOverride('drupal.no-transport', 'default');
 
-  /**
-   * Tests missing factory.
-   *
-   * @legacy-covers ::createTransport
-   */
-  public function testMissingFactory(): void {
-    $this->setUpMailerDsnConfigOverride('drupal.no-transport', 'default');
+        $this->expectExceptionMessage('The "drupal.no-transport" scheme is not supported');
+        $this->container->get(TransportInterface::class);
+    }
 
-    $this->expectExceptionMessage('The "drupal.no-transport" scheme is not supported');
-    $this->container->get(TransportInterface::class);
-  }
+    /**
+     * Tests third party factory.
+     *
+     * @legacy-covers ::createTransport
+     */
+    public function testThirdPartyFactory(): void
+    {
+        $this->enableModules(['mailer_transport_factory_kernel_test']);
 
-  /**
-   * Tests third party factory.
-   *
-   * @legacy-covers ::createTransport
-   */
-  public function testThirdPartyFactory(): void {
-    $this->enableModules(['mailer_transport_factory_kernel_test']);
+        $this->setUpMailerDsnConfigOverride('drupal.test-canary', 'default');
 
-    $this->setUpMailerDsnConfigOverride('drupal.test-canary', 'default');
-
-    $actual = $this->container->get(TransportInterface::class);
-    $this->assertInstanceOf(CanaryTransport::class, $actual);
-  }
+        $actual = $this->container->get(TransportInterface::class);
+        $this->assertInstanceOf(CanaryTransport::class, $actual);
+    }
 
 }

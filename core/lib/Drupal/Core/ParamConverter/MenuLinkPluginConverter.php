@@ -1,45 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ParamConverter;
 
-use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Symfony\Component\Routing\Route;
 
 /**
  * Parameter converter for upcasting entity ids to full objects.
  */
-class MenuLinkPluginConverter implements ParamConverterInterface {
-
-  /**
-   * Constructs a new MenuLinkPluginConverter.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
-   *   The menu link plugin manager.
-   */
-  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    if ($value) {
-      try {
-        return $this->menuLinkManager->createInstance($value);
-      }
-      catch (PluginException) {
-        // Suppress the error.
-      }
+class MenuLinkPluginConverter implements ParamConverterInterface
+{
+    /**
+     * Constructs a new MenuLinkPluginConverter.
+     *
+     * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
+     *   The menu link plugin manager.
+     */
+    public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
+    {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route): bool {
-    return (!empty($definition['type']) && $definition['type'] === 'menu_link_plugin');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        if ($value) {
+            try {
+                return $this->menuLinkManager->createInstance($value);
+            } catch (PluginException) {
+                // Suppress the error.
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route): bool
+    {
+        return (!empty($definition['type']) && $definition['type'] === 'menu_link_plugin');
+    }
 
 }

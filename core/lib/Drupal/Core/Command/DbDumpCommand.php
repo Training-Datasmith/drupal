@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Command;
 
 use Drupal\Component\Utility\Variable;
@@ -24,387 +26,393 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @see \Drupal\Core\Command\DbDumpApplication
  */
-class DbDumpCommand extends DbCommandBase {
+class DbDumpCommand extends DbCommandBase
+{
+    /**
+     * An array of table patterns to exclude completely.
+     *
+     * This excludes any lingering tables generated during test runs.
+     *
+     * @var array
+     */
+    protected $excludeTables = ['test[0-9]+'];
 
-  /**
-   * An array of table patterns to exclude completely.
-   *
-   * This excludes any lingering tables generated during test runs.
-   *
-   * @var array
-   */
-  protected $excludeTables = ['test[0-9]+'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function configure(): void {
-    $this->setName('dump-database-d8-mysql')
-      ->setDescription('Dump the current database to a generation script')
-      ->addOption('schema-only', NULL, InputOption::VALUE_OPTIONAL, 'A comma separated list of tables to only export the schema without data.', 'cache.*,sessions,watchdog')
-      ->addOption('insert-count', NULL, InputOption::VALUE_OPTIONAL, ' The number of rows to insert in a single SQL statement.', 1000);
-    parent::configure();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
-    $connection = $this->getDatabaseConnection($input);
-
-    // If not explicitly set, disable ANSI which will break generated php.
-    if ($input->hasParameterOption(['--ansi']) !== TRUE) {
-      $output->setDecorated(FALSE);
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this->setName('dump-database-d8-mysql')
+          ->setDescription('Dump the current database to a generation script')
+          ->addOption('schema-only', null, InputOption::VALUE_OPTIONAL, 'A comma separated list of tables to only export the schema without data.', 'cache.*,sessions,watchdog')
+          ->addOption('insert-count', null, InputOption::VALUE_OPTIONAL, ' The number of rows to insert in a single SQL statement.', 1000);
+        parent::configure();
     }
 
-    $schema_tables = $input->getOption('schema-only');
-    $schema_tables = explode(',', $schema_tables);
-    $insert_count = (int) $input->getOption('insert-count');
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $connection = $this->getDatabaseConnection($input);
 
-    $output->writeln($this->generateScript($connection, $schema_tables, $insert_count), OutputInterface::OUTPUT_RAW);
-    return 0;
-  }
-
-  /**
-   * Generates the database script.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param array $schema_only
-   *   Table patterns for which to only dump the schema, no data.
-   * @param int $insert_count
-   *   The number of rows to insert in a single statement.
-   *
-   * @return string
-   *   The PHP script.
-   */
-  protected function generateScript(Connection $connection, array $schema_only = [], int $insert_count = 1000): string {
-    $tables = '';
-
-    $schema_only_patterns = [];
-    foreach ($schema_only as $match) {
-      $schema_only_patterns[] = '/^' . $match . '$/';
-    }
-
-    foreach ($this->getTables($connection) as $table) {
-      $schema = $this->getTableSchema($connection, $table);
-      // Check for schema only.
-      if (empty($schema_only_patterns) || preg_replace($schema_only_patterns, '', (string) $table)) {
-        $data = $this->getTableData($connection, $table);
-      }
-      else {
-        $data = [];
-      }
-      $tables .= $this->getTableScript($table, $schema, $data, $insert_count);
-    }
-    $script = $this->getTemplate();
-    // Substitute in the version.
-    $script = str_replace('{{VERSION}}', \Drupal::VERSION, $script);
-    // Substitute in the tables.
-    $script = str_replace('{{TABLES}}', trim($tables), $script);
-    return trim($script);
-  }
-
-  /**
-   * Returns a list of tables, not including those set to be excluded.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   *
-   * @return array
-   *   An array of table names.
-   */
-  protected function getTables(Connection $connection): array {
-    $tables = array_values($connection->schema()->findTables('%'));
-
-    foreach ($tables as $key => $table) {
-      // Remove any explicitly excluded tables.
-      foreach ($this->excludeTables as $pattern) {
-        if (preg_match('/^' . $pattern . '$/', (string) $table)) {
-          unset($tables[$key]);
+        // If not explicitly set, disable ANSI which will break generated php.
+        if ($input->hasParameterOption(['--ansi']) !== true) {
+            $output->setDecorated(false);
         }
-      }
+
+        $schema_tables = $input->getOption('schema-only');
+        $schema_tables = explode(',', $schema_tables);
+        $insert_count = (int) $input->getOption('insert-count');
+
+        $output->writeln($this->generateScript($connection, $schema_tables, $insert_count), OutputInterface::OUTPUT_RAW);
+        return 0;
     }
 
-    // Keep the table names sorted alphabetically.
-    asort($tables);
+    /**
+     * Generates the database script.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param array $schema_only
+     *   Table patterns for which to only dump the schema, no data.
+     * @param int $insert_count
+     *   The number of rows to insert in a single statement.
+     *
+     * @return string
+     *   The PHP script.
+     */
+    protected function generateScript(Connection $connection, array $schema_only = [], int $insert_count = 1000): string
+    {
+        $tables = '';
 
-    return $tables;
-  }
+        $schema_only_patterns = [];
+        foreach ($schema_only as $match) {
+            $schema_only_patterns[] = '/^' . $match . '$/';
+        }
 
-  /**
-   * Returns a schema array for a given table.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $table
-   *   The table name.
-   *
-   * @return array
-   *   A schema array (as defined by hook_schema()).
-   *
-   * @todo This implementation is hard-coded for MySQL.
-   */
-  protected function getTableSchema(Connection $connection, string $table): array {
-    // Check this is MySQL.
-    if ($connection->databaseType() !== 'mysql') {
-      throw new \RuntimeException('This script can only be used with MySQL database backends.');
+        foreach ($this->getTables($connection) as $table) {
+            $schema = $this->getTableSchema($connection, $table);
+            // Check for schema only.
+            if (empty($schema_only_patterns) || preg_replace($schema_only_patterns, '', (string) $table)) {
+                $data = $this->getTableData($connection, $table);
+            } else {
+                $data = [];
+            }
+            $tables .= $this->getTableScript($table, $schema, $data, $insert_count);
+        }
+        $script = $this->getTemplate();
+        // Substitute in the version.
+        $script = str_replace('{{VERSION}}', \Drupal::VERSION, $script);
+        // Substitute in the tables.
+        $script = str_replace('{{TABLES}}', trim($tables), $script);
+        return trim($script);
     }
 
-    $query = $connection->query("SHOW FULL COLUMNS FROM {" . $table . "}");
-    $definition = [];
-    while (($row = $query->fetchAssoc()) !== FALSE) {
-      $name = $row['Field'];
-      // Parse out the field type and meta information.
-      preg_match('@([a-z]+)(?:\((\d+)(?:,(\d+))?\))?\s*(unsigned)?@', (string) $row['Type'], $matches);
-      $type = $this->fieldTypeMap($connection, $matches[1]);
-      if ($row['Extra'] === 'auto_increment') {
-        // If this is an auto increment, then the type is 'serial'.
-        $type = 'serial';
-      }
-      $definition['fields'][$name] = [
-        'type' => $type,
-        'not null' => $row['Null'] === 'NO',
-      ];
-      if ($size = $this->fieldSizeMap($connection, $matches[1])) {
-        $definition['fields'][$name]['size'] = $size;
-      }
-      if (isset($matches[2]) && $type === 'numeric') {
-        // Add precision and scale.
-        $definition['fields'][$name]['precision'] = $matches[2];
-        $definition['fields'][$name]['scale'] = $matches[3];
-      }
-      elseif ($type === 'time') {
-        // @todo Core doesn't support these, but copied from `migrate-db.sh` for now.
-        // Convert to varchar.
-        $definition['fields'][$name]['type'] = 'varchar';
-        $definition['fields'][$name]['length'] = '100';
-      }
-      elseif ($type === 'datetime') {
-        // Adjust for other database types.
-        $definition['fields'][$name]['mysql_type'] = 'datetime';
-        $definition['fields'][$name]['pgsql_type'] = 'timestamp without time zone';
-        $definition['fields'][$name]['sqlite_type'] = 'varchar';
-        $definition['fields'][$name]['sqlsrv_type'] = 'smalldatetime';
-      }
-      elseif (!isset($definition['fields'][$name]['size'])) {
-        // Try use the provided length, if it doesn't exist default to 100. It's
-        // not great but good enough for our dumps at this point.
-        $definition['fields'][$name]['length'] = $matches[2] ?? 100;
-      }
+    /**
+     * Returns a list of tables, not including those set to be excluded.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     *
+     * @return array
+     *   An array of table names.
+     */
+    protected function getTables(Connection $connection): array
+    {
+        $tables = array_values($connection->schema()->findTables('%'));
 
-      if (isset($row['Default'])) {
-        $definition['fields'][$name]['default'] = $row['Default'];
-      }
+        foreach ($tables as $key => $table) {
+            // Remove any explicitly excluded tables.
+            foreach ($this->excludeTables as $pattern) {
+                if (preg_match('/^' . $pattern . '$/', (string) $table)) {
+                    unset($tables[$key]);
+                }
+            }
+        }
 
-      if (isset($matches[4])) {
-        $definition['fields'][$name]['unsigned'] = TRUE;
-      }
+        // Keep the table names sorted alphabetically.
+        asort($tables);
 
-      // Check for the 'varchar_ascii' type that should be 'binary'.
-      if (isset($row['Collation']) && $row['Collation'] == 'ascii_bin') {
-        $definition['fields'][$name]['type'] = 'varchar_ascii';
-        $definition['fields'][$name]['binary'] = TRUE;
-      }
-
-      // Check for the non-binary 'varchar_ascii'.
-      if (isset($row['Collation']) && $row['Collation'] == 'ascii_general_ci') {
-        $definition['fields'][$name]['type'] = 'varchar_ascii';
-      }
-
-      // Check for the 'utf8_bin' collation.
-      if (isset($row['Collation']) && $row['Collation'] == 'utf8_bin') {
-        $definition['fields'][$name]['binary'] = TRUE;
-      }
+        return $tables;
     }
 
-    // Set primary key, unique keys, and indexes.
-    $this->getTableIndexes($connection, $table, $definition);
+    /**
+     * Returns a schema array for a given table.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $table
+     *   The table name.
+     *
+     * @return array
+     *   A schema array (as defined by hook_schema()).
+     *
+     * @todo This implementation is hard-coded for MySQL.
+     */
+    protected function getTableSchema(Connection $connection, string $table): array
+    {
+        // Check this is MySQL.
+        if ($connection->databaseType() !== 'mysql') {
+            throw new \RuntimeException('This script can only be used with MySQL database backends.');
+        }
 
-    // Set table collation.
-    $this->getTableCollation($connection, $table, $definition);
+        $query = $connection->query('SHOW FULL COLUMNS FROM {' . $table . '}');
+        $definition = [];
+        while (($row = $query->fetchAssoc()) !== false) {
+            $name = $row['Field'];
+            // Parse out the field type and meta information.
+            preg_match('@([a-z]+)(?:\((\d+)(?:,(\d+))?\))?\s*(unsigned)?@', (string) $row['Type'], $matches);
+            $type = $this->fieldTypeMap($connection, $matches[1]);
+            if ($row['Extra'] === 'auto_increment') {
+                // If this is an auto increment, then the type is 'serial'.
+                $type = 'serial';
+            }
+            $definition['fields'][$name] = [
+              'type' => $type,
+              'not null' => $row['Null'] === 'NO',
+            ];
+            if ($size = $this->fieldSizeMap($connection, $matches[1])) {
+                $definition['fields'][$name]['size'] = $size;
+            }
+            if (isset($matches[2]) && $type === 'numeric') {
+                // Add precision and scale.
+                $definition['fields'][$name]['precision'] = $matches[2];
+                $definition['fields'][$name]['scale'] = $matches[3];
+            } elseif ($type === 'time') {
+                // @todo Core doesn't support these, but copied from `migrate-db.sh` for now.
+                // Convert to varchar.
+                $definition['fields'][$name]['type'] = 'varchar';
+                $definition['fields'][$name]['length'] = '100';
+            } elseif ($type === 'datetime') {
+                // Adjust for other database types.
+                $definition['fields'][$name]['mysql_type'] = 'datetime';
+                $definition['fields'][$name]['pgsql_type'] = 'timestamp without time zone';
+                $definition['fields'][$name]['sqlite_type'] = 'varchar';
+                $definition['fields'][$name]['sqlsrv_type'] = 'smalldatetime';
+            } elseif (!isset($definition['fields'][$name]['size'])) {
+                // Try use the provided length, if it doesn't exist default to 100. It's
+                // not great but good enough for our dumps at this point.
+                $definition['fields'][$name]['length'] = $matches[2] ?? 100;
+            }
 
-    return $definition;
-  }
+            if (isset($row['Default'])) {
+                $definition['fields'][$name]['default'] = $row['Default'];
+            }
 
-  /**
-   * Adds primary key, unique keys, and index information to the schema.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $table
-   *   The table to find indexes for.
-   * @param array &$definition
-   *   The schema definition to modify.
-   */
-  protected function getTableIndexes(Connection $connection, string $table, array &$definition) {
-    // Note, this query doesn't support ordering, so that is worked around
-    // below by keying the array on Seq_in_index.
-    $query = $connection->query("SHOW INDEX FROM {" . $table . "}");
-    while (($row = $query->fetchAssoc()) !== FALSE) {
-      $index_name = $row['Key_name'];
-      $column = $row['Column_name'];
-      // Key the arrays by the index sequence for proper ordering (start at 0).
-      $order = $row['Seq_in_index'] - 1;
+            if (isset($matches[4])) {
+                $definition['fields'][$name]['unsigned'] = true;
+            }
 
-      // If specified, add length to the index.
-      if ($row['Sub_part']) {
-        $column = [$column, $row['Sub_part']];
-      }
+            // Check for the 'varchar_ascii' type that should be 'binary'.
+            if (isset($row['Collation']) && $row['Collation'] == 'ascii_bin') {
+                $definition['fields'][$name]['type'] = 'varchar_ascii';
+                $definition['fields'][$name]['binary'] = true;
+            }
 
-      if ($index_name === 'PRIMARY') {
-        $definition['primary key'][$order] = $column;
-      }
-      elseif ($row['Non_unique'] == 0) {
-        $definition['unique keys'][$index_name][$order] = $column;
-      }
-      else {
-        $definition['indexes'][$index_name][$order] = $column;
-      }
-    }
-  }
+            // Check for the non-binary 'varchar_ascii'.
+            if (isset($row['Collation']) && $row['Collation'] == 'ascii_general_ci') {
+                $definition['fields'][$name]['type'] = 'varchar_ascii';
+            }
 
-  /**
-   * Set the table collation.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $table
-   *   The table to find indexes for.
-   * @param array &$definition
-   *   The schema definition to modify.
-   */
-  protected function getTableCollation(Connection $connection, $table, array &$definition) {
-    // Remove identifier quotes from the table name. See
-    // \Drupal\mysql\Driver\Database\mysql\Connection::$identifierQuotes.
-    $table = trim($connection->prefixTables('{' . $table . '}'), '"');
-    $query = $connection->query("SHOW TABLE STATUS WHERE NAME = :table_name", [':table_name' => $table]);
-    $data = $query->fetchAssoc();
+            // Check for the 'utf8_bin' collation.
+            if (isset($row['Collation']) && $row['Collation'] == 'utf8_bin') {
+                $definition['fields'][$name]['binary'] = true;
+            }
+        }
 
-    // Map the collation to a character set. For example, 'utf8mb4_general_ci'
-    // (MySQL 5) or 'utf8mb4_0900_ai_ci' (MySQL 8) will be mapped to 'utf8mb4'.
-    [$charset] = explode('_', (string) $data['Collation'], 2);
+        // Set primary key, unique keys, and indexes.
+        $this->getTableIndexes($connection, $table, $definition);
 
-    // Set `mysql_character_set`. This will be ignored by other backends.
-    $definition['mysql_character_set'] = $charset;
-  }
+        // Set table collation.
+        $this->getTableCollation($connection, $table, $definition);
 
-  /**
-   * Gets all data from a given table.
-   *
-   * If a table is set to be schema only, and empty array is returned.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $table
-   *   The table to query.
-   *
-   * @return array
-   *   The data from the table as an array.
-   */
-  protected function getTableData(Connection $connection, string $table): array {
-    $order = $this->getFieldOrder($connection, $table);
-    $query = $connection->query("SELECT * FROM {" . $table . "} " . $order);
-    $results = [];
-    while (($row = $query->fetchAssoc()) !== FALSE) {
-      $results[] = $row;
-    }
-    return $results;
-  }
-
-  /**
-   * Given a database field type, return a Drupal type.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $type
-   *   The MySQL field type.
-   *
-   * @return string
-   *   The Drupal schema field type. If there is no mapping, the original field
-   *   type is returned.
-   */
-  protected function fieldTypeMap(Connection $connection, $type) {
-    // Convert everything to lowercase.
-    $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
-    $map = array_flip($map);
-
-    // The MySql map contains type:size. Remove the size part.
-    return isset($map[$type]) ? explode(':', $map[$type])[0] : $type;
-  }
-
-  /**
-   * Given a database field type, return a Drupal size.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $type
-   *   The MySQL field type.
-   *
-   * @return string|null
-   *   The Drupal schema field size.
-   */
-  protected function fieldSizeMap(Connection $connection, $type) {
-    // Convert everything to lowercase.
-    $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
-    $map = array_flip($map);
-
-    // Do nothing if the field type is not defined.
-    if (!isset($map[$type])) {
-      return NULL;
+        return $definition;
     }
 
-    $schema_type = explode(':', $map[$type])[0];
-    // Only specify size on these types.
-    if (in_array($schema_type, ['blob', 'float', 'int', 'text'])) {
-      // The MySql map contains type:size. Remove the type part.
-      return explode(':', $map[$type])[1];
-    }
-  }
+    /**
+     * Adds primary key, unique keys, and index information to the schema.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $table
+     *   The table to find indexes for.
+     * @param array &$definition
+     *   The schema definition to modify.
+     */
+    protected function getTableIndexes(Connection $connection, string $table, array &$definition)
+    {
+        // Note, this query doesn't support ordering, so that is worked around
+        // below by keying the array on Seq_in_index.
+        $query = $connection->query('SHOW INDEX FROM {' . $table . '}');
+        while (($row = $query->fetchAssoc()) !== false) {
+            $index_name = $row['Key_name'];
+            $column = $row['Column_name'];
+            // Key the arrays by the index sequence for proper ordering (start at 0).
+            $order = $row['Seq_in_index'] - 1;
 
-  /**
-   * Gets field ordering for a given table.
-   *
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection to use.
-   * @param string $table
-   *   The table name.
-   *
-   * @return string
-   *   The order string to append to the query.
-   */
-  protected function getFieldOrder(Connection $connection, string $table): string {
-    // @todo this is MySQL only since there are no Database API functions for
-    // table column data.
-    // @todo this code is duplicated in `core/scripts/migrate-db.sh`.
-    $connection_info = $connection->getConnectionOptions();
-    // Order by primary keys.
-    $order = '';
-    $query = "SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS`
+            // If specified, add length to the index.
+            if ($row['Sub_part']) {
+                $column = [$column, $row['Sub_part']];
+            }
+
+            if ($index_name === 'PRIMARY') {
+                $definition['primary key'][$order] = $column;
+            } elseif ($row['Non_unique'] == 0) {
+                $definition['unique keys'][$index_name][$order] = $column;
+            } else {
+                $definition['indexes'][$index_name][$order] = $column;
+            }
+        }
+    }
+
+    /**
+     * Set the table collation.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $table
+     *   The table to find indexes for.
+     * @param array &$definition
+     *   The schema definition to modify.
+     */
+    protected function getTableCollation(Connection $connection, $table, array &$definition)
+    {
+        // Remove identifier quotes from the table name. See
+        // \Drupal\mysql\Driver\Database\mysql\Connection::$identifierQuotes.
+        $table = trim($connection->prefixTables('{' . $table . '}'), '"');
+        $query = $connection->query('SHOW TABLE STATUS WHERE NAME = :table_name', [':table_name' => $table]);
+        $data = $query->fetchAssoc();
+
+        // Map the collation to a character set. For example, 'utf8mb4_general_ci'
+        // (MySQL 5) or 'utf8mb4_0900_ai_ci' (MySQL 8) will be mapped to 'utf8mb4'.
+        [$charset] = explode('_', (string) $data['Collation'], 2);
+
+        // Set `mysql_character_set`. This will be ignored by other backends.
+        $definition['mysql_character_set'] = $charset;
+    }
+
+    /**
+     * Gets all data from a given table.
+     *
+     * If a table is set to be schema only, and empty array is returned.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $table
+     *   The table to query.
+     *
+     * @return array
+     *   The data from the table as an array.
+     */
+    protected function getTableData(Connection $connection, string $table): array
+    {
+        $order = $this->getFieldOrder($connection, $table);
+        $query = $connection->query('SELECT * FROM {' . $table . '} ' . $order);
+        $results = [];
+        while (($row = $query->fetchAssoc()) !== false) {
+            $results[] = $row;
+        }
+        return $results;
+    }
+
+    /**
+     * Given a database field type, return a Drupal type.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $type
+     *   The MySQL field type.
+     *
+     * @return string
+     *   The Drupal schema field type. If there is no mapping, the original field
+     *   type is returned.
+     */
+    protected function fieldTypeMap(Connection $connection, $type)
+    {
+        // Convert everything to lowercase.
+        $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
+        $map = array_flip($map);
+
+        // The MySql map contains type:size. Remove the size part.
+        return isset($map[$type]) ? explode(':', $map[$type])[0] : $type;
+    }
+
+    /**
+     * Given a database field type, return a Drupal size.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $type
+     *   The MySQL field type.
+     *
+     * @return string|null
+     *   The Drupal schema field size.
+     */
+    protected function fieldSizeMap(Connection $connection, $type)
+    {
+        // Convert everything to lowercase.
+        $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
+        $map = array_flip($map);
+
+        // Do nothing if the field type is not defined.
+        if (!isset($map[$type])) {
+            return null;
+        }
+
+        $schema_type = explode(':', $map[$type])[0];
+        // Only specify size on these types.
+        if (in_array($schema_type, ['blob', 'float', 'int', 'text'])) {
+            // The MySql map contains type:size. Remove the type part.
+            return explode(':', $map[$type])[1];
+        }
+    }
+
+    /**
+     * Gets field ordering for a given table.
+     *
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection to use.
+     * @param string $table
+     *   The table name.
+     *
+     * @return string
+     *   The order string to append to the query.
+     */
+    protected function getFieldOrder(Connection $connection, string $table): string
+    {
+        // @todo this is MySQL only since there are no Database API functions for
+        // table column data.
+        // @todo this code is duplicated in `core/scripts/migrate-db.sh`.
+        $connection_info = $connection->getConnectionOptions();
+        // Order by primary keys.
+        $order = '';
+        $query = "SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS`
     WHERE (`TABLE_SCHEMA` = '" . $connection_info['database'] . "')
     AND (`TABLE_NAME` = '{" . $table . "}') AND (`COLUMN_KEY` = 'PRI')
     ORDER BY COLUMN_NAME";
-    $results = $connection->query($query);
-    while (($row = $results->fetchAssoc()) !== FALSE) {
-      $order .= $row['COLUMN_NAME'] . ', ';
+        $results = $connection->query($query);
+        while (($row = $results->fetchAssoc()) !== false) {
+            $order .= $row['COLUMN_NAME'] . ', ';
+        }
+        if (!empty($order)) {
+            return ' ORDER BY ' . rtrim($order, ', ');
+        }
+        return $order;
     }
-    if (!empty($order)) {
-      return ' ORDER BY ' . rtrim($order, ', ');
-    }
-    return $order;
-  }
 
-  /**
-   * The script template.
-   *
-   * @return string
-   *   The template for the generated PHP script.
-   */
-  protected function getTemplate(): string {
-    // The template contains an instruction for the file to be ignored by PHPCS.
-    // This is because the files can be huge and coding standards are
-    // irrelevant.
-    $script = <<<'END_OF_SCRIPT'
+    /**
+     * The script template.
+     *
+     * @return string
+     *   The template for the generated PHP script.
+     */
+    protected function getTemplate(): string
+    {
+        // The template contains an instruction for the file to be ignored by PHPCS.
+        // This is because the files can be huge and coding standards are
+        // irrelevant.
+        $script = <<<'END_OF_SCRIPT'
 <?php
 // phpcs:ignoreFile
 /**
@@ -431,44 +439,45 @@ if ($connection->databaseType() === 'mysql') {
   $connection->query("SET sql_mode = '$sql_mode'");
 }
 END_OF_SCRIPT;
-    return $script;
-  }
+        return $script;
+    }
 
-  /**
-   * The part of the script for each table.
-   *
-   * @param string $table
-   *   Table name.
-   * @param array $schema
-   *   Drupal schema definition.
-   * @param array $data
-   *   Data for the table.
-   * @param int $insert_count
-   *   The number of rows to insert in a single statement.
-   *
-   * @return string
-   *   The table create statement, and if there is data, the insert command.
-   */
-  protected function getTableScript(string $table, array $schema, array $data, int $insert_count = 1000): string {
-    $output = '';
-    $output .= "\$connection->schema()->createTable('" . $table . "', " . Variable::export($schema) . ");\n\n";
-    if (!empty($data)) {
-      $data_chunks = array_chunk($data, $insert_count);
-      foreach ($data_chunks as $data_chunk) {
-        $insert = '';
-        foreach ($data_chunk as $record) {
-          $insert .= "->values(" . Variable::export($record) . ")\n";
-        }
-        $fields = Variable::export(array_keys($schema['fields']));
-        $output .= <<<EOT
+    /**
+     * The part of the script for each table.
+     *
+     * @param string $table
+     *   Table name.
+     * @param array $schema
+     *   Drupal schema definition.
+     * @param array $data
+     *   Data for the table.
+     * @param int $insert_count
+     *   The number of rows to insert in a single statement.
+     *
+     * @return string
+     *   The table create statement, and if there is data, the insert command.
+     */
+    protected function getTableScript(string $table, array $schema, array $data, int $insert_count = 1000): string
+    {
+        $output = '';
+        $output .= "\$connection->schema()->createTable('" . $table . "', " . Variable::export($schema) . ");\n\n";
+        if (!empty($data)) {
+            $data_chunks = array_chunk($data, $insert_count);
+            foreach ($data_chunks as $data_chunk) {
+                $insert = '';
+                foreach ($data_chunk as $record) {
+                    $insert .= '->values(' . Variable::export($record) . ")\n";
+                }
+                $fields = Variable::export(array_keys($schema['fields']));
+                $output .= <<<EOT
 \$connection->insert('$table')
 ->fields($fields)
 {$insert}->execute();
 
 EOT;
-      }
+            }
+        }
+        return $output;
     }
-    return $output;
-  }
 
 }

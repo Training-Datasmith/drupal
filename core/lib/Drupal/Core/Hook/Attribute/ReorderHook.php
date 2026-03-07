@@ -13,28 +13,29 @@ use Drupal\Core\Hook\Order\OrderInterface;
  * on which it is placed.
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class ReorderHook implements HookAttributeInterface {
-
-  /**
-   * Constructs a ReorderHook object.
-   *
-   * @param string $hook
-   *   The hook for which to reorder an implementation.
-   * @param class-string $class
-   *   The class of the targeted hook implementation.
-   * @param string $method
-   *   The method name of the targeted hook implementation.
-   *   If the #[Hook] attribute is on the class itself, this should be
-   *   '__invoke'.
-   * @param \Drupal\Core\Hook\Order\OrderInterface $order
-   *   Specifies a new position for the targeted hook implementation relative to
-   *   other implementations.
-   */
-  public function __construct(
-    public string $hook,
-    public string $class,
-    public string $method,
-    public OrderInterface $order,
-  ) {}
+class ReorderHook implements HookAttributeInterface
+{
+    /**
+     * Constructs a ReorderHook object.
+     *
+     * @param string $hook
+     *   The hook for which to reorder an implementation.
+     * @param class-string $class
+     *   The class of the targeted hook implementation.
+     * @param string $method
+     *   The method name of the targeted hook implementation.
+     *   If the #[Hook] attribute is on the class itself, this should be
+     *   '__invoke'.
+     * @param \Drupal\Core\Hook\Order\OrderInterface $order
+     *   Specifies a new position for the targeted hook implementation relative to
+     *   other implementations.
+     */
+    public function __construct(
+        public string $hook,
+        public string $class,
+        public string $method,
+        public OrderInterface $order,
+    ) {
+    }
 
 }

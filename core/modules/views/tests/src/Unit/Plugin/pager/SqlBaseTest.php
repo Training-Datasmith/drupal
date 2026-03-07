@@ -17,86 +17,88 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[CoversClass(SqlBase::class)]
 #[Group('views')]
-class SqlBaseTest extends UnitTestCase {
+class SqlBaseTest extends UnitTestCase
+{
+    /**
+     * The mock pager plugin instance.
+     *
+     * @var \Drupal\views\Plugin\views\pager\SqlBase|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $pager;
 
-  /**
-   * The mock pager plugin instance.
-   *
-   * @var \Drupal\views\Plugin\views\pager\SqlBase|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $pager;
+    /**
+     * The mock view instance.
+     *
+     * @var \Drupal\views\ViewExecutable|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $view;
 
-  /**
-   * The mock view instance.
-   *
-   * @var \Drupal\views\ViewExecutable|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $view;
+    /**
+     * The mock display plugin instance.
+     *
+     * @var \Drupal\views\Plugin\views\display\DisplayPluginBase|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $display;
 
-  /**
-   * The mock display plugin instance.
-   *
-   * @var \Drupal\views\Plugin\views\display\DisplayPluginBase|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $display;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->pager = $this->getMockBuilder(StubSqlBase::class)
+          ->disableOriginalConstructor()
+          ->onlyMethods([])
+          ->getMock();
 
-    $this->pager = $this->getMockBuilder(StubSqlBase::class)
-      ->disableOriginalConstructor()
-      ->onlyMethods([])
-      ->getMock();
+        $this->view = $this->getMockBuilder('Drupal\views\ViewExecutable')
+          ->disableOriginalConstructor()
+          ->getMock();
 
-    $this->view = $this->getMockBuilder('Drupal\views\ViewExecutable')
-      ->disableOriginalConstructor()
-      ->getMock();
+        $query = $this->getMockBuilder(QueryPluginBase::class)
+          ->disableOriginalConstructor()
+          ->getMock();
 
-    $query = $this->getMockBuilder(QueryPluginBase::class)
-      ->disableOriginalConstructor()
-      ->getMock();
+        $this->view->query = $query;
 
-    $this->view->query = $query;
+        $this->display = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')
+          ->disableOriginalConstructor()
+          ->getMock();
 
-    $this->display = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')
-      ->disableOriginalConstructor()
-      ->getMock();
+        $container = new ContainerBuilder();
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
+    }
 
-    $container = new ContainerBuilder();
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
-  }
+    /**
+     * Tests the query() method.
+     *
+     * @see \Drupal\views\Plugin\views\pager\SqlBase::query()
+     */
+    public function testQuery(): void
+    {
+        $request = new Request([
+          'items_per_page' => 'All',
+        ]);
+        $this->view->expects($this->any())
+          ->method('getRequest')
+          ->willReturn($request);
 
-  /**
-   * Tests the query() method.
-   *
-   * @see \Drupal\views\Plugin\views\pager\SqlBase::query()
-   */
-  public function testQuery(): void {
-    $request = new Request([
-      'items_per_page' => 'All',
-    ]);
-    $this->view->expects($this->any())
-      ->method('getRequest')
-      ->willReturn($request);
+        $options = [];
+        $this->pager->init($this->view, $this->display, $options);
+        $this->pager->query();
+        $this->assertSame(10, $this->pager->options['items_per_page']);
 
-    $options = [];
-    $this->pager->init($this->view, $this->display, $options);
-    $this->pager->query();
-    $this->assertSame(10, $this->pager->options['items_per_page']);
-
-    $options = [
-      'expose' => [
-        'items_per_page' => TRUE,
-        'items_per_page_options_all' => TRUE,
-      ],
-    ];
-    $this->pager->init($this->view, $this->display, $options);
-    $this->pager->query();
-    $this->assertSame(0, $this->pager->options['items_per_page']);
-  }
+        $options = [
+          'expose' => [
+            'items_per_page' => true,
+            'items_per_page_options_all' => true,
+          ],
+        ];
+        $this->pager->init($this->view, $this->display, $options);
+        $this->pager->query();
+        $this->assertSame(0, $this->pager->options['items_per_page']);
+    }
 
 }

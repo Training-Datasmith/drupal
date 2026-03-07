@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -32,21 +34,22 @@ use Drupal\migrate\Row;
  * This plugin will return the equivalent of `foo ?? bar ?? baz`
  */
 #[MigrateProcess('null_coalesce')]
-class NullCoalesce extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if (!is_array($value)) {
-      throw new MigrateException("The input value should be an array.");
+class NullCoalesce extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if (!is_array($value)) {
+            throw new MigrateException('The input value should be an array.');
+        }
+        foreach ($value as $val) {
+            if (null !== $val) {
+                return $val;
+            }
+        }
+        return $this->configuration['default_value'] ?? null;
     }
-    foreach ($value as $val) {
-      if (NULL !== $val) {
-        return $val;
-      }
-    }
-    return $this->configuration['default_value'] ?? NULL;
-  }
 
 }

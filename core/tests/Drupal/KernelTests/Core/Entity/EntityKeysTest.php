@@ -15,46 +15,48 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('entity')]
 #[RunTestsInSeparateProcesses]
-class EntityKeysTest extends EntityKernelTestBase {
+class EntityKeysTest extends EntityKernelTestBase
+{
+    /**
+     * Tests the cache when multiple keys reference a single field.
+     */
+    #[DataProvider('multipleKeysCacheTestCases')]
+    public function testMultipleKeysCache($translatable): void
+    {
+        $this->state->set('entity_test.additional_base_field_definitions', [
+          'test_field' => BaseFieldDefinition::create('string')->setTranslatable($translatable),
+        ]);
+        $this->state->set('entity_test.entity_keys', [
+          'key_1' => 'test_field',
+          'key_2' => 'test_field',
+        ]);
 
-  /**
-   * Tests the cache when multiple keys reference a single field.
-   */
-  #[DataProvider('multipleKeysCacheTestCases')]
-  public function testMultipleKeysCache($translatable): void {
-    $this->state->set('entity_test.additional_base_field_definitions', [
-      'test_field' => BaseFieldDefinition::create('string')->setTranslatable($translatable),
-    ]);
-    $this->state->set('entity_test.entity_keys', [
-      'key_1' => 'test_field',
-      'key_2' => 'test_field',
-    ]);
+        $this->installEntitySchema('entity_test');
 
-    $this->installEntitySchema('entity_test');
+        $entity = EntityTest::create([]);
 
-    $entity = EntityTest::create([]);
+        $entity->set('test_field', 'foo');
+        $this->assertEquals('foo', $entity->getEntityKey('key_1'));
+        $this->assertEquals('foo', $entity->getEntityKey('key_2'));
 
-    $entity->set('test_field', 'foo');
-    $this->assertEquals('foo', $entity->getEntityKey('key_1'));
-    $this->assertEquals('foo', $entity->getEntityKey('key_2'));
+        $entity->set('test_field', 'bar');
+        $this->assertEquals('bar', $entity->getEntityKey('key_1'));
+        $this->assertEquals('bar', $entity->getEntityKey('key_2'));
+    }
 
-    $entity->set('test_field', 'bar');
-    $this->assertEquals('bar', $entity->getEntityKey('key_1'));
-    $this->assertEquals('bar', $entity->getEntityKey('key_2'));
-  }
-
-  /**
-   * Data provider for ::testMultipleKeysCache.
-   */
-  public static function multipleKeysCacheTestCases(): array {
-    return [
-      'translatable Entity Key' => [
-        TRUE,
-      ],
-      'Non-translatable entity key' => [
-        FALSE,
-      ],
-    ];
-  }
+    /**
+     * Data provider for ::testMultipleKeysCache.
+     */
+    public static function multipleKeysCacheTestCases(): array
+    {
+        return [
+          'translatable Entity Key' => [
+            true,
+          ],
+          'Non-translatable entity key' => [
+            false,
+          ],
+        ];
+    }
 
 }

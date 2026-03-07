@@ -19,157 +19,162 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(Messenger::class)]
 #[Group('Messenger')]
 #[RunTestsInSeparateProcesses]
-class MessengerTest extends KernelTestBase {
+class MessengerTest extends KernelTestBase
+{
+    /**
+     * The messenger under test.
+     *
+     * @var \Drupal\Core\Messenger\MessengerInterface
+     */
+    protected $messenger;
 
-  /**
-   * The messenger under test.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->messenger = \Drupal::service('messenger');
-  }
-
-  /**
-   * Tests remove single message.
-   *
-   * @legacy-covers ::addStatus
-   * @legacy-covers ::deleteByType
-   * @legacy-covers ::messagesByType
-   */
-  public function testRemoveSingleMessage(): void {
-
-    // Set two messages.
-    $this->messenger->addStatus('First message (removed).');
-    $this->messenger->addStatus('Second message with <em>markup!</em> (not removed).');
-    $messages = $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS);
-    // Remove the first.
-    unset($messages[0]);
-
-    // Re-add the second.
-    foreach ($messages as $message) {
-      $this->messenger->addStatus($message);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->messenger = \Drupal::service('messenger');
     }
 
-    // Check we only have the second one.
-    $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
-    $this->assertContainsEquals('Second message with <em>markup!</em> (not removed).', $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
+    /**
+     * Tests remove single message.
+     *
+     * @legacy-covers ::addStatus
+     * @legacy-covers ::deleteByType
+     * @legacy-covers ::messagesByType
+     */
+    public function testRemoveSingleMessage(): void
+    {
 
-  }
+        // Set two messages.
+        $this->messenger->addStatus('First message (removed).');
+        $this->messenger->addStatus('Second message with <em>markup!</em> (not removed).');
+        $messages = $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS);
+        // Remove the first.
+        unset($messages[0]);
 
-  /**
-   * Tests we don't add duplicates.
-   *
-   * @legacy-covers ::all
-   * @legacy-covers ::addStatus
-   * @legacy-covers ::addWarning
-   * @legacy-covers ::addError
-   * @legacy-covers ::deleteByType
-   * @legacy-covers ::deleteAll
-   */
-  public function testAddNoDuplicates(): void {
+        // Re-add the second.
+        foreach ($messages as $message) {
+            $this->messenger->addStatus($message);
+        }
 
-    $this->messenger->addStatus('Non Duplicated status message');
-    $this->messenger->addStatus('Non Duplicated status message');
+        // Check we only have the second one.
+        $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
+        $this->assertContainsEquals('Second message with <em>markup!</em> (not removed).', $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
 
-    $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
+    }
 
-    $this->messenger->addWarning('Non Duplicated warning message');
-    $this->messenger->addWarning('Non Duplicated warning message');
+    /**
+     * Tests we don't add duplicates.
+     *
+     * @legacy-covers ::all
+     * @legacy-covers ::addStatus
+     * @legacy-covers ::addWarning
+     * @legacy-covers ::addError
+     * @legacy-covers ::deleteByType
+     * @legacy-covers ::deleteAll
+     */
+    public function testAddNoDuplicates(): void
+    {
 
-    $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_WARNING));
+        $this->messenger->addStatus('Non Duplicated status message');
+        $this->messenger->addStatus('Non Duplicated status message');
 
-    $this->messenger->addError('Non Duplicated error message');
-    $this->messenger->addError('Non Duplicated error message');
+        $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
 
-    $messages = $this->messenger->messagesByType(MessengerInterface::TYPE_ERROR);
-    $this->assertCount(1, $messages);
+        $this->messenger->addWarning('Non Duplicated warning message');
+        $this->messenger->addWarning('Non Duplicated warning message');
 
-    // Check getting all messages.
-    $messages = $this->messenger->all();
-    $this->assertCount(3, $messages);
-    $this->assertArrayHasKey(MessengerInterface::TYPE_STATUS, $messages);
-    $this->assertArrayHasKey(MessengerInterface::TYPE_WARNING, $messages);
-    $this->assertArrayHasKey(MessengerInterface::TYPE_ERROR, $messages);
+        $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_WARNING));
 
-    // Check deletion.
-    $this->messenger->deleteAll();
-    $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
-    $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_WARNING));
-    $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_ERROR));
+        $this->messenger->addError('Non Duplicated error message');
+        $this->messenger->addError('Non Duplicated error message');
 
-  }
+        $messages = $this->messenger->messagesByType(MessengerInterface::TYPE_ERROR);
+        $this->assertCount(1, $messages);
 
-  /**
-   * Tests we do add duplicates with repeat flag.
-   *
-   * @legacy-covers ::addStatus
-   * @legacy-covers ::addWarning
-   * @legacy-covers ::addError
-   * @legacy-covers ::deleteByType
-   */
-  public function testAddWithDuplicates(): void {
+        // Check getting all messages.
+        $messages = $this->messenger->all();
+        $this->assertCount(3, $messages);
+        $this->assertArrayHasKey(MessengerInterface::TYPE_STATUS, $messages);
+        $this->assertArrayHasKey(MessengerInterface::TYPE_WARNING, $messages);
+        $this->assertArrayHasKey(MessengerInterface::TYPE_ERROR, $messages);
 
-    $this->messenger->addStatus('Duplicated status message', TRUE);
-    $this->messenger->addStatus('Duplicated status message', TRUE);
+        // Check deletion.
+        $this->messenger->deleteAll();
+        $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
+        $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_WARNING));
+        $this->assertCount(0, $this->messenger->messagesByType(MessengerInterface::TYPE_ERROR));
 
-    $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
+    }
 
-    $this->messenger->addWarning('Duplicated warning message', TRUE);
-    $this->messenger->addWarning('Duplicated warning message', TRUE);
+    /**
+     * Tests we do add duplicates with repeat flag.
+     *
+     * @legacy-covers ::addStatus
+     * @legacy-covers ::addWarning
+     * @legacy-covers ::addError
+     * @legacy-covers ::deleteByType
+     */
+    public function testAddWithDuplicates(): void
+    {
 
-    $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_WARNING));
+        $this->messenger->addStatus('Duplicated status message', true);
+        $this->messenger->addStatus('Duplicated status message', true);
 
-    $this->messenger->addError('Duplicated error message', TRUE);
-    $this->messenger->addError('Duplicated error message', TRUE);
+        $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
 
-    $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR));
+        $this->messenger->addWarning('Duplicated warning message', true);
+        $this->messenger->addWarning('Duplicated warning message', true);
 
-  }
+        $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_WARNING));
 
-  /**
-   * Tests adding markup.
-   *
-   * @legacy-covers ::addStatus
-   * @legacy-covers ::deleteByType
-   * @legacy-covers ::messagesByType
-   */
-  public function testAddMarkup(): void {
+        $this->messenger->addError('Duplicated error message', true);
+        $this->messenger->addError('Duplicated error message', true);
 
-    // Add a Markup message.
-    $this->messenger->addStatus(Markup::create('Markup with <em>markup!</em>'));
-    // Test duplicate Markup messages.
-    $this->messenger->addStatus(Markup::create('Markup with <em>markup!</em>'));
+        $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR));
 
-    $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
+    }
 
-    // Ensure that multiple Markup messages work.
-    $this->messenger->addStatus(Markup::create('Markup2 with <em>markup!</em>'));
+    /**
+     * Tests adding markup.
+     *
+     * @legacy-covers ::addStatus
+     * @legacy-covers ::deleteByType
+     * @legacy-covers ::messagesByType
+     */
+    public function testAddMarkup(): void
+    {
 
-    $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
+        // Add a Markup message.
+        $this->messenger->addStatus(Markup::create('Markup with <em>markup!</em>'));
+        // Test duplicate Markup messages.
+        $this->messenger->addStatus(Markup::create('Markup with <em>markup!</em>'));
 
-    // Test mixing of types.
-    $this->messenger->addStatus(Markup::create('Non duplicate Markup / string.'));
-    $this->messenger->addStatus('Non duplicate Markup / string.');
-    $this->messenger->addStatus(Markup::create('Duplicate Markup / string.'), TRUE);
-    $this->messenger->addStatus('Duplicate Markup / string.', TRUE);
+        $this->assertCount(1, $this->messenger->messagesByType(MessengerInterface::TYPE_STATUS));
 
-    $this->assertCount(3, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
+        // Ensure that multiple Markup messages work.
+        $this->messenger->addStatus(Markup::create('Markup2 with <em>markup!</em>'));
 
-    $this->messenger->deleteAll();
+        $this->assertCount(2, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
 
-    // Check translatable string is converted to Markup.
-    $this->messenger->addStatus(new TranslatableMarkup('Translatable message'));
-    $messages = $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS);
+        // Test mixing of types.
+        $this->messenger->addStatus(Markup::create('Non duplicate Markup / string.'));
+        $this->messenger->addStatus('Non duplicate Markup / string.');
+        $this->messenger->addStatus(Markup::create('Duplicate Markup / string.'), true);
+        $this->messenger->addStatus('Duplicate Markup / string.', true);
 
-    $this->assertInstanceOf(Markup::class, $messages[0]);
+        $this->assertCount(3, $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS));
 
-  }
+        $this->messenger->deleteAll();
+
+        // Check translatable string is converted to Markup.
+        $this->messenger->addStatus(new TranslatableMarkup('Translatable message'));
+        $messages = $this->messenger->deleteByType(MessengerInterface::TYPE_STATUS);
+
+        $this->assertInstanceOf(Markup::class, $messages[0]);
+
+    }
 
 }

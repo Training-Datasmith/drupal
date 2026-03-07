@@ -11,91 +11,104 @@ use Drupal\Core\Database\Schema as DatabaseSchema;
  *
  * Includes minimal implementations of Schema's abstract methods.
  */
-class StubSchema extends DatabaseSchema {
+class StubSchema extends DatabaseSchema
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldTypeMap(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldTypeMap(): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function renameTable($table, $new_name)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function renameTable($table, $new_name) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function dropTable($table): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function dropTable($table): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addField($table, $field, $spec, $keys_new = [])
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addField($table, $field, $spec, $keys_new = []) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function dropField($table, $field): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function dropField($table, $field): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function indexExists($table, $name): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function indexExists($table, $name): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addPrimaryKey($table, $fields)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addPrimaryKey($table, $fields) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function dropPrimaryKey($table): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function dropPrimaryKey($table): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addUniqueKey($table, $name, $fields)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addUniqueKey($table, $name, $fields) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function dropUniqueKey($table, $name): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function dropUniqueKey($table, $name): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addIndex($table, $name, $fields, array $spec)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function addIndex($table, $name, $fields, array $spec) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function dropIndex($table, $name): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function dropIndex($table, $name): bool {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function changeField($table, $field, $field_new, $spec, $keys_new = []) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function changeField($table, $field, $field_new, $spec, $keys_new = [])
+    {
+    }
 
 }

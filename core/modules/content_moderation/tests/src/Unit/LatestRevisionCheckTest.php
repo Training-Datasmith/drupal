@@ -28,181 +28,184 @@ use Symfony\Component\Routing\Route;
  */
 #[CoversClass(LatestRevisionCheck::class)]
 #[Group('content_moderation')]
-class LatestRevisionCheckTest extends UnitTestCase {
+class LatestRevisionCheckTest extends UnitTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Initialize Drupal container since the cache context manager is needed.
-    $contexts_manager = $this->prophesize(CacheContextsManager::class);
-    $contexts_manager->assertValidTokens(Argument::any())->willReturn(TRUE);
-    $builder = new ContainerBuilder();
-    $builder->set('cache_contexts_manager', $contexts_manager->reveal());
-    \Drupal::setContainer($builder);
-  }
-
-  /**
-   * Tests the access check of the LatestRevisionCheck service.
-   *
-   * @param string $entity_class
-   *   The class of the entity to mock.
-   * @param string $entity_type
-   *   The machine name of the entity to mock.
-   * @param bool $has_pending_revision
-   *   Whether this entity should have a pending revision in the system.
-   * @param array $account_permissions
-   *   An array of permissions the account has.
-   * @param bool $is_owner
-   *   Indicates if the user should be the owner of the entity.
-   * @param string $result_class
-   *   The AccessResult class that should result. One of AccessResultAllowed,
-   *   AccessResultForbidden, AccessResultNeutral.
-   */
-  #[DataProvider('accessSituationProvider')]
-  public function testLatestAccessPermissions($entity_class, $entity_type, $has_pending_revision, array $account_permissions, $is_owner, $result_class): void {
-
-    /** @var \Drupal\Core\Session\AccountInterface $account */
-    $account = $this->prophesize(AccountInterface::class);
-    $possible_permissions = [
-      'view latest version',
-      'view any unpublished content',
-      'view own unpublished content',
-    ];
-    foreach ($possible_permissions as $permission) {
-      $account->hasPermission($permission)->willReturn(in_array($permission, $account_permissions));
-    }
-    $account->id()->willReturn(42);
-
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
-    $entity = $this->prophesize($entity_class);
-    $entity->getCacheContexts()->willReturn([]);
-    $entity->getCacheTags()->willReturn([]);
-    $entity->getCacheMaxAge()->willReturn(0);
-    if (is_subclass_of($entity_class, EntityOwnerInterface::class)) {
-      $entity->getOwnerId()->willReturn($is_owner ? 42 : 3);
+        // Initialize Drupal container since the cache context manager is needed.
+        $contexts_manager = $this->prophesize(CacheContextsManager::class);
+        $contexts_manager->assertValidTokens(Argument::any())->willReturn(true);
+        $builder = new ContainerBuilder();
+        $builder->set('cache_contexts_manager', $contexts_manager->reveal());
+        \Drupal::setContainer($builder);
     }
 
-    /** @var \Drupal\content_moderation\ModerationInformation $mod_info */
-    $mod_info = $this->prophesize(ModerationInformation::class);
-    $mod_info->hasPendingRevision($entity->reveal())->willReturn($has_pending_revision);
+    /**
+     * Tests the access check of the LatestRevisionCheck service.
+     *
+     * @param string $entity_class
+     *   The class of the entity to mock.
+     * @param string $entity_type
+     *   The machine name of the entity to mock.
+     * @param bool $has_pending_revision
+     *   Whether this entity should have a pending revision in the system.
+     * @param array $account_permissions
+     *   An array of permissions the account has.
+     * @param bool $is_owner
+     *   Indicates if the user should be the owner of the entity.
+     * @param string $result_class
+     *   The AccessResult class that should result. One of AccessResultAllowed,
+     *   AccessResultForbidden, AccessResultNeutral.
+     */
+    #[DataProvider('accessSituationProvider')]
+    public function testLatestAccessPermissions($entity_class, $entity_type, $has_pending_revision, array $account_permissions, $is_owner, $result_class): void
+    {
 
-    $route = $this->prophesize(Route::class);
+        /** @var \Drupal\Core\Session\AccountInterface $account */
+        $account = $this->prophesize(AccountInterface::class);
+        $possible_permissions = [
+          'view latest version',
+          'view any unpublished content',
+          'view own unpublished content',
+        ];
+        foreach ($possible_permissions as $permission) {
+            $account->hasPermission($permission)->willReturn(in_array($permission, $account_permissions));
+        }
+        $account->id()->willReturn(42);
 
-    $route->getOption('_content_moderation_entity_type')->willReturn($entity_type);
+        /** @var \Drupal\Core\Entity\EntityInterface $entity */
+        $entity = $this->prophesize($entity_class);
+        $entity->getCacheContexts()->willReturn([]);
+        $entity->getCacheTags()->willReturn([]);
+        $entity->getCacheMaxAge()->willReturn(0);
+        if (is_subclass_of($entity_class, EntityOwnerInterface::class)) {
+            $entity->getOwnerId()->willReturn($is_owner ? 42 : 3);
+        }
 
-    $route_match = $this->prophesize(RouteMatch::class);
-    $route_match->getParameter($entity_type)->willReturn($entity->reveal());
+        /** @var \Drupal\content_moderation\ModerationInformation $mod_info */
+        $mod_info = $this->prophesize(ModerationInformation::class);
+        $mod_info->hasPendingRevision($entity->reveal())->willReturn($has_pending_revision);
 
-    $lrc = new LatestRevisionCheck($mod_info->reveal());
+        $route = $this->prophesize(Route::class);
 
-    /** @var \Drupal\Core\Access\AccessResult $result */
-    $result = $lrc->access($route->reveal(), $route_match->reveal(), $account->reveal());
+        $route->getOption('_content_moderation_entity_type')->willReturn($entity_type);
 
-    $this->assertInstanceOf($result_class, $result);
+        $route_match = $this->prophesize(RouteMatch::class);
+        $route_match->getParameter($entity_type)->willReturn($entity->reveal());
 
-  }
+        $lrc = new LatestRevisionCheck($mod_info->reveal());
 
-  /**
-   * Data provider for testLastAccessPermissions().
-   */
-  public static function accessSituationProvider() {
-    return [
-      // Node with global permissions and latest version.
-      [
-        Node::class,
-        'node',
-        TRUE,
-        ['view latest version', 'view any unpublished content'],
-        FALSE,
-        AccessResultAllowed::class,
-      ],
-      // Node with global permissions and no latest version.
-      [
-        Node::class,
-        'node',
-        FALSE,
-        ['view latest version', 'view any unpublished content'],
-        FALSE,
-        AccessResultForbidden::class,
-      ],
-      // Node with own content permissions and latest version.
-      [
-        Node::class,
-        'node',
-        TRUE,
-        ['view latest version', 'view own unpublished content'],
-        TRUE,
-        AccessResultAllowed::class,
-      ],
-      // Node with own content permissions and no latest version.
-      [
-        Node::class,
-        'node',
-        FALSE,
-        ['view latest version', 'view own unpublished content'],
-        FALSE,
-        AccessResultForbidden::class,
-      ],
-      // Node with own content permissions and latest version, but no perms to
-      // view latest version.
-      [
-        Node::class,
-        'node',
-        TRUE,
-        ['view own unpublished content'],
-        TRUE,
-        AccessResultNeutral::class,
-      ],
-      // Node with own content permissions and no latest version, but no perms
-      // to view latest version.
-      [
-        Node::class,
-        'node',
-        TRUE,
-        ['view own unpublished content'],
-        FALSE,
-        AccessResultNeutral::class,
-      ],
-      // Block with pending revision, and permissions to view any.
-      [
-        BlockContent::class,
-        'block_content',
-        TRUE,
-        ['view latest version', 'view any unpublished content'],
-        FALSE,
-        AccessResultAllowed::class,
-      ],
-      // Block with no pending revision.
-      [
-        BlockContent::class,
-        'block_content',
-        FALSE,
-        ['view latest version', 'view any unpublished content'],
-        FALSE,
-        AccessResultForbidden::class,
-      ],
-      // Block with pending revision, but no permission to view any.
-      [
-        BlockContent::class,
-        'block_content',
-        TRUE,
-        ['view latest version', 'view own unpublished content'],
-        FALSE,
-        AccessResultNeutral::class,
-      ],
-      // Block with no pending revision.
-      [
-        BlockContent::class,
-        'block_content',
-        FALSE,
-        ['view latest version', 'view own unpublished content'],
-        FALSE,
-        AccessResultForbidden::class,
-      ],
-    ];
-  }
+        /** @var \Drupal\Core\Access\AccessResult $result */
+        $result = $lrc->access($route->reveal(), $route_match->reveal(), $account->reveal());
+
+        $this->assertInstanceOf($result_class, $result);
+
+    }
+
+    /**
+     * Data provider for testLastAccessPermissions().
+     */
+    public static function accessSituationProvider()
+    {
+        return [
+          // Node with global permissions and latest version.
+          [
+            Node::class,
+            'node',
+            true,
+            ['view latest version', 'view any unpublished content'],
+            false,
+            AccessResultAllowed::class,
+          ],
+          // Node with global permissions and no latest version.
+          [
+            Node::class,
+            'node',
+            false,
+            ['view latest version', 'view any unpublished content'],
+            false,
+            AccessResultForbidden::class,
+          ],
+          // Node with own content permissions and latest version.
+          [
+            Node::class,
+            'node',
+            true,
+            ['view latest version', 'view own unpublished content'],
+            true,
+            AccessResultAllowed::class,
+          ],
+          // Node with own content permissions and no latest version.
+          [
+            Node::class,
+            'node',
+            false,
+            ['view latest version', 'view own unpublished content'],
+            false,
+            AccessResultForbidden::class,
+          ],
+          // Node with own content permissions and latest version, but no perms to
+          // view latest version.
+          [
+            Node::class,
+            'node',
+            true,
+            ['view own unpublished content'],
+            true,
+            AccessResultNeutral::class,
+          ],
+          // Node with own content permissions and no latest version, but no perms
+          // to view latest version.
+          [
+            Node::class,
+            'node',
+            true,
+            ['view own unpublished content'],
+            false,
+            AccessResultNeutral::class,
+          ],
+          // Block with pending revision, and permissions to view any.
+          [
+            BlockContent::class,
+            'block_content',
+            true,
+            ['view latest version', 'view any unpublished content'],
+            false,
+            AccessResultAllowed::class,
+          ],
+          // Block with no pending revision.
+          [
+            BlockContent::class,
+            'block_content',
+            false,
+            ['view latest version', 'view any unpublished content'],
+            false,
+            AccessResultForbidden::class,
+          ],
+          // Block with pending revision, but no permission to view any.
+          [
+            BlockContent::class,
+            'block_content',
+            true,
+            ['view latest version', 'view own unpublished content'],
+            false,
+            AccessResultNeutral::class,
+          ],
+          // Block with no pending revision.
+          [
+            BlockContent::class,
+            'block_content',
+            false,
+            ['view latest version', 'view own unpublished content'],
+            false,
+            AccessResultForbidden::class,
+          ],
+        ];
+    }
 
 }

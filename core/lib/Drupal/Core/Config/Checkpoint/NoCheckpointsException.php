@@ -10,11 +10,11 @@ namespace Drupal\Core\Config\Checkpoint;
  * @internal
  *   This API is experimental.
  */
-final class NoCheckpointsException extends \RuntimeException {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $message = 'This storage cannot be read because there are no checkpoints';
+final class NoCheckpointsException extends \RuntimeException
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $message = 'This storage cannot be read because there are no checkpoints';
 
 }

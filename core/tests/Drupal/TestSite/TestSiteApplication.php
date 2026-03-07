@@ -18,18 +18,19 @@ use Symfony\Component\Console\Application;
  *
  * @internal
  */
-class TestSiteApplication extends Application {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultCommands(): array {
-    $default_commands = parent::getDefaultCommands();
-    $default_commands[] = new TestSiteInstallCommand();
-    $default_commands[] = new TestSiteTearDownCommand();
-    $default_commands[] = new TestSiteReleaseLocksCommand();
-    $default_commands[] = new TestSiteUserLoginCommand();
-    return $default_commands;
-  }
+class TestSiteApplication extends Application
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultCommands(): array
+    {
+        $default_commands = parent::getDefaultCommands();
+        $default_commands[] = new TestSiteInstallCommand();
+        $default_commands[] = new TestSiteTearDownCommand();
+        $default_commands[] = new TestSiteReleaseLocksCommand();
+        $default_commands[] = new TestSiteUserLoginCommand();
+        return $default_commands;
+    }
 
 }

@@ -27,230 +27,243 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 #[CoversClass(RealEntityRevision::class)]
 #[Group('migrate')]
-class EntityRevisionTest extends UnitTestCase {
+class EntityRevisionTest extends UnitTestCase
+{
+    /**
+     * The migration.
+     *
+     * @var \Drupal\migrate\Plugin\MigrationInterface
+     */
+    protected MigrationInterface $migration;
 
-  /**
-   * The migration.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected MigrationInterface $migration;
+    /**
+     * The destination storage.
+     *
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
+    protected ObjectProphecy $storage;
 
-  /**
-   * The destination storage.
-   *
-   * @var \Prophecy\Prophecy\ObjectProphecy
-   */
-  protected ObjectProphecy $storage;
+    /**
+     * The entity field manager.
+     *
+     * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+     */
+    protected EntityFieldManagerInterface $entityFieldManager;
 
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected EntityFieldManagerInterface $entityFieldManager;
+    /**
+     * The field type manager.
+     *
+     * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
+     */
+    protected FieldTypePluginManagerInterface $fieldTypeManager;
 
-  /**
-   * The field type manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected FieldTypePluginManagerInterface $fieldTypeManager;
+    /**
+     * The account switcher.
+     *
+     * @var \Drupal\Core\Session\AccountSwitcherInterface
+     */
+    protected AccountSwitcherInterface $accountSwitcher;
 
-  /**
-   * The account switcher.
-   *
-   * @var \Drupal\Core\Session\AccountSwitcherInterface
-   */
-  protected AccountSwitcherInterface $accountSwitcher;
+    /**
+     * The entity type bundle information.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+     */
+    protected EntityTypeBundleInfoInterface $entityTypeBundle;
 
-  /**
-   * The entity type bundle information.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected EntityTypeBundleInfoInterface $entityTypeBundle;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Setup mocks to be used when creating a revision destination.
+        $this->migration = $this->prophesize(MigrationInterface::class)->reveal();
+        $this->storage = $this->prophesize(RevisionableStorageInterface::class);
 
-    // Setup mocks to be used when creating a revision destination.
-    $this->migration = $this->prophesize(MigrationInterface::class)->reveal();
-    $this->storage = $this->prophesize(RevisionableStorageInterface::class);
+        $entity_type = $this->prophesize(EntityTypeInterface::class);
+        $entity_type->getSingularLabel()->willReturn('crazy');
+        $entity_type->getPluralLabel()->willReturn('craziness');
+        $entity_type->getKey('id')->willReturn('nid');
+        $entity_type->getKey('revision')->willReturn('vid');
+        $this->storage->getEntityType()->willReturn($entity_type->reveal());
 
-    $entity_type = $this->prophesize(EntityTypeInterface::class);
-    $entity_type->getSingularLabel()->willReturn('crazy');
-    $entity_type->getPluralLabel()->willReturn('craziness');
-    $entity_type->getKey('id')->willReturn('nid');
-    $entity_type->getKey('revision')->willReturn('vid');
-    $this->storage->getEntityType()->willReturn($entity_type->reveal());
+        $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class)->reveal();
+        $this->fieldTypeManager = $this->prophesize(FieldTypePluginManagerInterface::class)->reveal();
+        $this->accountSwitcher = $this->prophesize(AccountSwitcherInterface::class)->reveal();
+        $this->entityTypeBundle = $this->prophesize(EntityTypeBundleInfoInterface::class)->reveal();
+    }
 
-    $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class)->reveal();
-    $this->fieldTypeManager = $this->prophesize(FieldTypePluginManagerInterface::class)->reveal();
-    $this->accountSwitcher = $this->prophesize(AccountSwitcherInterface::class)->reveal();
-    $this->entityTypeBundle = $this->prophesize(EntityTypeBundleInfoInterface::class)->reveal();
-  }
+    /**
+     * Tests that passed old destination values are used by default.
+     */
+    public function testGetEntityDestinationValues(): void
+    {
+        $destination = $this->getEntityRevisionDestination([]);
+        // Return a dummy because we don't care what gets called.
+        $entity = $this->prophesize(RevisionableInterface::class);
+        // Assert that the first ID from the destination values is used to load the
+        // entity.
+        $this->storage->loadRevision(12)
+          ->shouldBeCalled()
+          ->willReturn($entity->reveal());
+        $row = new Row();
+        $this->assertEquals($entity->reveal(), $destination->getEntity($row, [12, 13]));
+    }
 
-  /**
-   * Tests that passed old destination values are used by default.
-   */
-  public function testGetEntityDestinationValues(): void {
-    $destination = $this->getEntityRevisionDestination([]);
-    // Return a dummy because we don't care what gets called.
-    $entity = $this->prophesize(RevisionableInterface::class);
-    // Assert that the first ID from the destination values is used to load the
-    // entity.
-    $this->storage->loadRevision(12)
-      ->shouldBeCalled()
-      ->willReturn($entity->reveal());
-    $row = new Row();
-    $this->assertEquals($entity->reveal(), $destination->getEntity($row, [12, 13]));
-  }
+    /**
+     * Tests that revision updates update.
+     */
+    public function testGetEntityUpdateRevision(): void
+    {
+        $destination = $this->getEntityRevisionDestination([]);
+        $entity = $this->prophesize(RevisionableInterface::class);
 
-  /**
-   * Tests that revision updates update.
-   */
-  public function testGetEntityUpdateRevision(): void {
-    $destination = $this->getEntityRevisionDestination([]);
-    $entity = $this->prophesize(RevisionableInterface::class);
+        // Assert we load the correct revision.
+        $this->storage->loadRevision(2)
+          ->shouldBeCalled()
+          ->willReturn($entity->reveal());
+        // Make sure its set as an update and not the default revision.
+        $entity->setNewRevision(false)->shouldBeCalled();
+        $entity->isDefaultRevision()->shouldNotBeCalled();
 
-    // Assert we load the correct revision.
-    $this->storage->loadRevision(2)
-      ->shouldBeCalled()
-      ->willReturn($entity->reveal());
-    // Make sure its set as an update and not the default revision.
-    $entity->setNewRevision(FALSE)->shouldBeCalled();
-    $entity->isDefaultRevision()->shouldNotBeCalled();
+        $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
+        $row->setDestinationProperty('vid', 2);
+        $this->assertEquals($entity->reveal(), $destination->getEntity($row, []));
+    }
 
-    $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
-    $row->setDestinationProperty('vid', 2);
-    $this->assertEquals($entity->reveal(), $destination->getEntity($row, []));
-  }
+    /**
+     * Tests that new revisions are flagged to be written as new.
+     */
+    public function testGetEntityNewRevision(): void
+    {
+        $destination = $this->getEntityRevisionDestination([]);
+        $entity = $this->prophesize(RevisionableInterface::class);
 
-  /**
-   * Tests that new revisions are flagged to be written as new.
-   */
-  public function testGetEntityNewRevision(): void {
-    $destination = $this->getEntityRevisionDestination([]);
-    $entity = $this->prophesize(RevisionableInterface::class);
+        // Enforce is new should be disabled.
+        $entity->enforceIsNew(false)->shouldBeCalled();
+        // And toggle this as new revision but not the default revision.
+        $entity->setNewRevision(true)->shouldBeCalled();
+        $entity->isDefaultRevision(false)->shouldBeCalled();
 
-    // Enforce is new should be disabled.
-    $entity->enforceIsNew(FALSE)->shouldBeCalled();
-    // And toggle this as new revision but not the default revision.
-    $entity->setNewRevision(TRUE)->shouldBeCalled();
-    $entity->isDefaultRevision(FALSE)->shouldBeCalled();
+        // Assert we load the correct revision.
+        $this->storage->load(1)
+          ->shouldBeCalled()
+          ->willReturn($entity->reveal());
 
-    // Assert we load the correct revision.
-    $this->storage->load(1)
-      ->shouldBeCalled()
-      ->willReturn($entity->reveal());
+        $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
+        $row->setDestinationProperty('nid', 1);
+        $this->assertEquals($entity->reveal(), $destination->getEntity($row, []));
+    }
 
-    $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
-    $row->setDestinationProperty('nid', 1);
-    $this->assertEquals($entity->reveal(), $destination->getEntity($row, []));
-  }
+    /**
+     * Tests entity load failure.
+     */
+    public function testGetEntityLoadFailure(): void
+    {
+        $destination = $this->getEntityRevisionDestination([]);
 
-  /**
-   * Tests entity load failure.
-   */
-  public function testGetEntityLoadFailure(): void {
-    $destination = $this->getEntityRevisionDestination([]);
+        // Return a failed load and make sure we don't fail and we return FALSE.
+        $this->storage->load(1)
+          ->shouldBeCalled()
+          ->willReturn(false);
 
-    // Return a failed load and make sure we don't fail and we return FALSE.
-    $this->storage->load(1)
-      ->shouldBeCalled()
-      ->willReturn(FALSE);
+        $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
+        $row->setDestinationProperty('nid', 1);
+        $this->assertFalse($destination->getEntity($row, []));
+    }
 
-    $row = new Row(['nid' => 1, 'vid' => 2], ['nid' => 1, 'vid' => 2]);
-    $row->setDestinationProperty('nid', 1);
-    $this->assertFalse($destination->getEntity($row, []));
-  }
+    /**
+     * Tests entity revision save.
+     */
+    public function testSave(): void
+    {
+        $entity = $this->prophesize(ContentEntityInterface::class);
+        $entity->save()
+          ->shouldBeCalled();
+        // Syncing should be set once.
+        $entity->setSyncing(Argument::exact(true))
+          ->shouldBeCalledTimes(1);
+        $entity->getRevisionId()
+          ->shouldBeCalled()
+          ->willReturn(1234);
+        $destination = $this->getEntityRevisionDestination();
+        $this->assertEquals([1234], $destination->save($entity->reveal(), []));
+    }
 
-  /**
-   * Tests entity revision save.
-   */
-  public function testSave(): void {
-    $entity = $this->prophesize(ContentEntityInterface::class);
-    $entity->save()
-      ->shouldBeCalled();
-    // Syncing should be set once.
-    $entity->setSyncing(Argument::exact(TRUE))
-      ->shouldBeCalledTimes(1);
-    $entity->getRevisionId()
-      ->shouldBeCalled()
-      ->willReturn(1234);
-    $destination = $this->getEntityRevisionDestination();
-    $this->assertEquals([1234], $destination->save($entity->reveal(), []));
-  }
-
-  /**
-   * Helper method to create an entity revision destination with mock services.
-   *
-   * @param array $configuration
-   *   Configuration for the destination.
-   * @param string $plugin_id
-   *   The plugin id.
-   * @param array $plugin_definition
-   *   The plugin definition.
-   *
-   * @return \Drupal\Tests\migrate\Unit\destination\EntityRevision
-   *   Mocked destination.
-   *
-   * @see \Drupal\Tests\migrate\Unit\Destination\EntityRevision
-   */
-  protected function getEntityRevisionDestination(array $configuration = [], $plugin_id = 'entity_revision', array $plugin_definition = []) {
-    return new EntityRevision($configuration, $plugin_id, $plugin_definition,
-      $this->migration,
-      $this->storage->reveal(),
-      [],
-      $this->entityFieldManager,
-      $this->fieldTypeManager,
-      $this->accountSwitcher,
-      $this->entityTypeBundle,
-    );
-  }
+    /**
+     * Helper method to create an entity revision destination with mock services.
+     *
+     * @param array $configuration
+     *   Configuration for the destination.
+     * @param string $plugin_id
+     *   The plugin id.
+     * @param array $plugin_definition
+     *   The plugin definition.
+     *
+     * @return \Drupal\Tests\migrate\Unit\destination\EntityRevision
+     *   Mocked destination.
+     *
+     * @see \Drupal\Tests\migrate\Unit\Destination\EntityRevision
+     */
+    protected function getEntityRevisionDestination(array $configuration = [], $plugin_id = 'entity_revision', array $plugin_definition = [])
+    {
+        return new EntityRevision(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $this->migration,
+            $this->storage->reveal(),
+            [],
+            $this->entityFieldManager,
+            $this->fieldTypeManager,
+            $this->accountSwitcher,
+            $this->entityTypeBundle,
+        );
+    }
 
 }
 
 /**
  * Mock that exposes from internal methods for testing.
  */
-class EntityRevision extends RealEntityRevision {
+class EntityRevision extends RealEntityRevision
+{
+    /**
+     * Allow public access for testing.
+     */
+    public function getEntity(Row $row, array $old_destination_id_values)
+    {
+        return parent::getEntity($row, $old_destination_id_values);
+    }
 
-  /**
-   * Allow public access for testing.
-   */
-  public function getEntity(Row $row, array $old_destination_id_values) {
-    return parent::getEntity($row, $old_destination_id_values);
-  }
+    /**
+     * Allow public access for testing.
+     */
+    public function save(ContentEntityInterface $entity, array $old_destination_id_values = [])
+    {
+        return parent::save($entity, $old_destination_id_values);
+    }
 
-  /**
-   * Allow public access for testing.
-   */
-  public function save(ContentEntityInterface $entity, array $old_destination_id_values = []) {
-    return parent::save($entity, $old_destination_id_values);
-  }
-
-  /**
-   * Don't test method from base class.
-   *
-   * This method is from the parent and we aren't concerned with the inner
-   * workings of its implementation which would trickle into mock assertions. An
-   * empty implementation avoids this.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to update.
-   * @param \Drupal\migrate\Row $row
-   *   The row object to update from.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   An updated entity from row values.
-   */
-  protected function updateEntity(EntityInterface $entity, Row $row) {
-    return $entity;
-  }
+    /**
+     * Don't test method from base class.
+     *
+     * This method is from the parent and we aren't concerned with the inner
+     * workings of its implementation which would trickle into mock assertions. An
+     * empty implementation avoids this.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface $entity
+     *   The entity to update.
+     * @param \Drupal\migrate\Row $row
+     *   The row object to update from.
+     *
+     * @return \Drupal\Core\Entity\EntityInterface
+     *   An updated entity from row values.
+     */
+    protected function updateEntity(EntityInterface $entity, Row $row)
+    {
+        return $entity;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 use Drupal\Component\Assertion\Inspector;
@@ -14,70 +16,76 @@ use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class ResourceObjectData extends Data implements TopLevelDataInterface {
-
-  /**
-   * ResourceObjectData constructor.
-   *
-   * @param \Drupal\jsonapi\JsonApiResource\ResourceObject[]|\Drupal\jsonapi\Exception\EntityAccessDeniedHttpException[] $data
-   *   Resource objects that are the primary data for the response.
-   * @param int $cardinality
-   *   The number of resources that this collection may contain.
-   *
-   * @see \Drupal\jsonapi\JsonApiResource\Data::__construct
-   */
-  public function __construct(array $data, $cardinality = -1) {
-    assert(Inspector::assertAllObjects($data, ResourceObject::class, EntityAccessDeniedHttpException::class));
-    parent::__construct($data, $cardinality);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getData() {
-    return $this->getAccessible();
-  }
-
-  /**
-   * Gets only data to be exposed.
-   */
-  public function getAccessible(): static {
-    $accessible_data = [];
-    foreach ($this->data as $resource_object) {
-      if (!$resource_object instanceof EntityAccessDeniedHttpException) {
-        $accessible_data[] = $resource_object;
-      }
+class ResourceObjectData extends Data implements TopLevelDataInterface
+{
+    /**
+     * ResourceObjectData constructor.
+     *
+     * @param \Drupal\jsonapi\JsonApiResource\ResourceObject[]|\Drupal\jsonapi\Exception\EntityAccessDeniedHttpException[] $data
+     *   Resource objects that are the primary data for the response.
+     * @param int $cardinality
+     *   The number of resources that this collection may contain.
+     *
+     * @see \Drupal\jsonapi\JsonApiResource\Data::__construct
+     */
+    public function __construct(array $data, $cardinality = -1)
+    {
+        assert(Inspector::assertAllObjects($data, ResourceObject::class, EntityAccessDeniedHttpException::class));
+        parent::__construct($data, $cardinality);
     }
-    return new static($accessible_data, $this->cardinality);
-  }
 
-  /**
-   * Gets only data to be omitted.
-   *
-   * @return static
-   */
-  public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData {
-    $omitted_data = [];
-    foreach ($this->data as $resource_object) {
-      if ($resource_object instanceof EntityAccessDeniedHttpException) {
-        $omitted_data[] = $resource_object;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getData()
+    {
+        return $this->getAccessible();
     }
-    return new OmittedData($omitted_data);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMergedLinks(LinkCollection $top_level_links): LinkCollection {
-    return $top_level_links;
-  }
+    /**
+     * Gets only data to be exposed.
+     */
+    public function getAccessible(): static
+    {
+        $accessible_data = [];
+        foreach ($this->data as $resource_object) {
+            if (!$resource_object instanceof EntityAccessDeniedHttpException) {
+                $accessible_data[] = $resource_object;
+            }
+        }
+        return new static($accessible_data, $this->cardinality);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMergedMeta(array $top_level_meta): array {
-    return $top_level_meta;
-  }
+    /**
+     * Gets only data to be omitted.
+     *
+     * @return static
+     */
+    public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData
+    {
+        $omitted_data = [];
+        foreach ($this->data as $resource_object) {
+            if ($resource_object instanceof EntityAccessDeniedHttpException) {
+                $omitted_data[] = $resource_object;
+            }
+        }
+        return new OmittedData($omitted_data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMergedLinks(LinkCollection $top_level_links): LinkCollection
+    {
+        return $top_level_links;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMergedMeta(array $top_level_meta): array
+    {
+        return $top_level_meta;
+    }
 
 }

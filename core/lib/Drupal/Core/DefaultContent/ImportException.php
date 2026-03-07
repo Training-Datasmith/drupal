@@ -10,5 +10,6 @@ namespace Drupal\Core\DefaultContent;
  * @internal
  *   This API is experimental.
  */
-final class ImportException extends \RuntimeException {
+final class ImportException extends \RuntimeException
+{
 }

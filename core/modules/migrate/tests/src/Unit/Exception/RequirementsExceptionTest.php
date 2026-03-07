@@ -15,45 +15,48 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RequirementsException::class)]
 #[Group('migrate')]
-class RequirementsExceptionTest extends UnitTestCase {
+class RequirementsExceptionTest extends UnitTestCase
+{
+    protected const MISSING_REQUIREMENTS = ['random_jackson_pivot', 'exoplanet'];
 
-  protected const MISSING_REQUIREMENTS = ['random_jackson_pivot', 'exoplanet'];
+    /**
+     * Tests get requirements.
+     */
+    public function testGetRequirements(): void
+    {
+        $exception = new RequirementsException('Missing requirements ', ['requirements' => static::MISSING_REQUIREMENTS]);
+        $this->assertEquals(['requirements' => static::MISSING_REQUIREMENTS], $exception->getRequirements());
+    }
 
-  /**
-   * Tests get requirements.
-   */
-  public function testGetRequirements(): void {
-    $exception = new RequirementsException('Missing requirements ', ['requirements' => static::MISSING_REQUIREMENTS]);
-    $this->assertEquals(['requirements' => static::MISSING_REQUIREMENTS], $exception->getRequirements());
-  }
+    /**
+     * Tests get exception string.
+     *
+     * @legacy-covers ::getRequirementsString
+     */
+    #[DataProvider('getRequirementsProvider')]
+    public function testGetExceptionString($expected, $message, $requirements): void
+    {
+        $exception = new RequirementsException($message, $requirements);
+        $this->assertEquals($expected, $exception->getRequirementsString());
+    }
 
-  /**
-   * Tests get exception string.
-   *
-   * @legacy-covers ::getRequirementsString
-   */
-  #[DataProvider('getRequirementsProvider')]
-  public function testGetExceptionString($expected, $message, $requirements): void {
-    $exception = new RequirementsException($message, $requirements);
-    $this->assertEquals($expected, $exception->getRequirementsString());
-  }
-
-  /**
-   * Provides a list of requirements to test.
-   */
-  public static function getRequirementsProvider() {
-    return [
-      [
-        'requirements: random_jackson_pivot.',
-        'Single Requirement',
-        ['requirements' => static::MISSING_REQUIREMENTS[0]],
-      ],
-      [
-        'requirements: random_jackson_pivot. requirements: exoplanet.',
-        'Multiple Requirements',
-        ['requirements' => static::MISSING_REQUIREMENTS],
-      ],
-    ];
-  }
+    /**
+     * Provides a list of requirements to test.
+     */
+    public static function getRequirementsProvider()
+    {
+        return [
+          [
+            'requirements: random_jackson_pivot.',
+            'Single Requirement',
+            ['requirements' => static::MISSING_REQUIREMENTS[0]],
+          ],
+          [
+            'requirements: random_jackson_pivot. requirements: exoplanet.',
+            'Multiple Requirements',
+            ['requirements' => static::MISSING_REQUIREMENTS],
+          ],
+        ];
+    }
 
 }

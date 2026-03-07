@@ -22,144 +22,149 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Validation')]
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class EntityFormDisplayValidationTest extends ConfigEntityValidationTestBase {
+class EntityFormDisplayValidationTest extends ConfigEntityValidationTestBase
+{
+    use ContentTypeCreationTrait;
 
-  use ContentTypeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected bool $hasLabel = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected bool $hasLabel = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'field', 'node', 'text', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'field', 'node', 'text', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('node');
+        $this->installEntitySchema('user');
+        $this->installConfig('node');
+        $this->createContentType(['type' => 'one']);
+        $this->createContentType(['type' => 'two']);
 
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('user');
-    $this->installConfig('node');
-    $this->createContentType(['type' => 'one']);
-    $this->createContentType(['type' => 'two']);
+        EntityTestBundle::create(['id' => 'one'])->save();
+        EntityTestBundle::create(['id' => 'two'])->save();
 
-    EntityTestBundle::create(['id' => 'one'])->save();
-    EntityTestBundle::create(['id' => 'two'])->save();
+        EntityFormMode::create([
+          'id' => 'node.test',
+          'label' => 'Test',
+          'targetEntityType' => 'node',
+        ])->save();
 
-    EntityFormMode::create([
-      'id' => 'node.test',
-      'label' => 'Test',
-      'targetEntityType' => 'node',
-    ])->save();
+        $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
+          ->getFormDisplay('node', 'one', 'test');
+        $this->entity->save();
+    }
 
-    $this->entity = $this->container->get(EntityDisplayRepositoryInterface::class)
-      ->getFormDisplay('node', 'one', 'test');
-    $this->entity->save();
-  }
+    /**
+     * Tests validation of entity form display component's widget settings.
+     */
+    public function testMultilineTextFieldWidgetTextAreaPlaceholder(): void
+    {
+        // First, create a field for which widget settings exist.
+        $text_field_storage_config = FieldStorageConfig::create([
+          'type' => 'text_long',
+          'field_name' => 'novel',
+          'entity_type' => 'user',
+        ]);
+        $text_field_storage_config->save();
 
-  /**
-   * Tests validation of entity form display component's widget settings.
-   */
-  public function testMultilineTextFieldWidgetTextAreaPlaceholder(): void {
-    // First, create a field for which widget settings exist.
-    $text_field_storage_config = FieldStorageConfig::create([
-      'type' => 'text_long',
-      'field_name' => 'novel',
-      'entity_type' => 'user',
-    ]);
-    $text_field_storage_config->save();
+        $text_field_config = FieldConfig::create([
+          'field_storage' => $text_field_storage_config,
+          'bundle' => 'user',
+          'dependencies' => [
+            'config' => [
+              $text_field_storage_config->getConfigDependencyName(),
+            ],
+          ],
+        ]);
+        $text_field_config->save();
 
-    $text_field_config = FieldConfig::create([
-      'field_storage' => $text_field_storage_config,
-      'bundle' => 'user',
-      'dependencies' => [
-        'config' => [
-          $text_field_storage_config->getConfigDependencyName(),
-        ],
-      ],
-    ]);
-    $text_field_config->save();
+        // Then, configure a form display widget for this field.
+        assert($this->entity instanceof EntityFormDisplayInterface);
+        $this->entity->setComponent('novel', [
+          'type' => 'text_textarea',
+          'region' => 'content',
+          'settings' => [
+            'rows' => 5,
+            'placeholder' => "Multi\nLine",
+          ],
+          'third_party_settings' => [],
+        ]);
 
-    // Then, configure a form display widget for this field.
-    assert($this->entity instanceof EntityFormDisplayInterface);
-    $this->entity->setComponent('novel', [
-      'type' => 'text_textarea',
-      'region' => 'content',
-      'settings' => [
-        'rows' => 5,
-        'placeholder' => "Multi\nLine",
-      ],
-      'third_party_settings' => [],
-    ]);
+        $this->assertValidationErrors([]);
+    }
 
-    $this->assertValidationErrors([]);
-  }
+    /**
+     * Tests validation of entity form display component's widget settings.
+     *
+     * @todo move in https://www.drupal.org/project/drupal/issues/3551650.
+     */
+    public function testMultilineTextFieldWidgetTextAreaSummaryPlaceholder(): void
+    {
+        // First, create a field for which widget settings exist.
+        $text_field_storage_config = FieldStorageConfig::create([
+          'type' => 'text_long',
+          'field_name' => 'novel',
+          'entity_type' => 'user',
+        ]);
+        $text_field_storage_config->save();
 
-  /**
-   * Tests validation of entity form display component's widget settings.
-   *
-   * @todo move in https://www.drupal.org/project/drupal/issues/3551650.
-   */
-  public function testMultilineTextFieldWidgetTextAreaSummaryPlaceholder(): void {
-    // First, create a field for which widget settings exist.
-    $text_field_storage_config = FieldStorageConfig::create([
-      'type' => 'text_long',
-      'field_name' => 'novel',
-      'entity_type' => 'user',
-    ]);
-    $text_field_storage_config->save();
+        $text_field_config = FieldConfig::create([
+          'field_storage' => $text_field_storage_config,
+          'bundle' => 'user',
+          'dependencies' => [
+            'config' => [
+              $text_field_storage_config->getConfigDependencyName(),
+            ],
+          ],
+        ]);
+        $text_field_config->save();
 
-    $text_field_config = FieldConfig::create([
-      'field_storage' => $text_field_storage_config,
-      'bundle' => 'user',
-      'dependencies' => [
-        'config' => [
-          $text_field_storage_config->getConfigDependencyName(),
-        ],
-      ],
-    ]);
-    $text_field_config->save();
+        // Then, configure a form display widget for this field.
+        assert($this->entity instanceof EntityFormDisplayInterface);
+        $this->entity->setComponent('novel', [
+          'type' => 'text_textarea',
+          'region' => 'content',
+          'settings' => [
+            'rows' => 5,
+            'placeholder' => "Multi\nLine",
+          ],
+          'third_party_settings' => [],
+        ]);
 
-    // Then, configure a form display widget for this field.
-    assert($this->entity instanceof EntityFormDisplayInterface);
-    $this->entity->setComponent('novel', [
-      'type' => 'text_textarea',
-      'region' => 'content',
-      'settings' => [
-        'rows' => 5,
-        'placeholder' => "Multi\nLine",
-      ],
-      'third_party_settings' => [],
-    ]);
+        $this->assertValidationErrors([]);
+    }
 
-    $this->assertValidationErrors([]);
-  }
+    /**
+     * Tests that the target bundle of the entity form display is checked.
+     */
+    public function testTargetBundleMustExist(): void
+    {
+        $this->entity->set('bundle', 'superhero');
+        $this->assertValidationErrors([
+          '' => "The 'bundle' property cannot be changed.",
+          'bundle' => "The 'superhero' bundle does not exist on the 'node' entity type.",
+        ]);
+    }
 
-  /**
-   * Tests that the target bundle of the entity form display is checked.
-   */
-  public function testTargetBundleMustExist(): void {
-    $this->entity->set('bundle', 'superhero');
-    $this->assertValidationErrors([
-      '' => "The 'bundle' property cannot be changed.",
-      'bundle' => "The 'superhero' bundle does not exist on the 'node' entity type.",
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testImmutableProperties(array $valid_values = []): void {
-    parent::testImmutableProperties([
-      'id' => 'entity_test_with_bundle.two.default',
-      'targetEntityType' => 'entity_test_with_bundle',
-      'bundle' => 'two',
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testImmutableProperties(array $valid_values = []): void
+    {
+        parent::testImmutableProperties([
+          'id' => 'entity_test_with_bundle.two.default',
+          'targetEntityType' => 'entity_test_with_bundle',
+          'bundle' => 'two',
+        ]);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\State;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -10,167 +12,178 @@ use Drupal\Core\Lock\LockBackendInterface;
 /**
  * Provides the state system using a key value store.
  */
-class State extends CacheCollector implements StateInterface {
+class State extends CacheCollector implements StateInterface
+{
+    /**
+     * Information about all deprecated state, keyed by legacy state key.
+     *
+     * Each entry should be an array that defines the following keys:
+     *   - 'replacement': The new name for the state.
+     *   - 'message': The deprecation message to use for trigger_error().
+     */
+    private static array $deprecatedState = [];
 
-  /**
-   * Information about all deprecated state, keyed by legacy state key.
-   *
-   * Each entry should be an array that defines the following keys:
-   *   - 'replacement': The new name for the state.
-   *   - 'message': The deprecation message to use for trigger_error().
-   */
-  private static array $deprecatedState = [];
+    /**
+     * The key value store to use.
+     *
+     * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
+     */
+    protected $keyValueStore;
 
-  /**
-   * The key value store to use.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
-   */
-  protected $keyValueStore;
+    /**
+     * Tracks keys that have been modified during the request lifecycle.
+     *
+     * An associative array keyed by the state key name, where each value
+     * is an array with the following keys:
+     *   - value: The last value set during the request.
+     *   - original: The initial value at the start of the request.
+     */
+    protected array $keysSetDuringRequest = [];
 
-  /**
-   * Tracks keys that have been modified during the request lifecycle.
-   *
-   * An associative array keyed by the state key name, where each value
-   * is an array with the following keys:
-   *   - value: The last value set during the request.
-   *   - original: The initial value at the start of the request.
-   */
-  protected array $keysSetDuringRequest = [];
-
-  /**
-   * Constructs a State object.
-   *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
-   *   The key value store to use.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache backend.
-   * @param \Drupal\Core\Lock\LockBackendInterface $lock
-   *   The lock backend.
-   */
-  public function __construct(KeyValueFactoryInterface $key_value_factory, CacheBackendInterface $cache, LockBackendInterface $lock) {
-    parent::__construct('state', $cache, $lock);
-    $this->keyValueStore = $key_value_factory->get('state');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($key, $default = NULL) {
-    // If the caller is asking for the value of a deprecated state, trigger a
-    // deprecation message about it.
-    if (isset(self::$deprecatedState[$key])) {
-      // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-      @trigger_error(self::$deprecatedState[$key]['message'], E_USER_DEPRECATED);
-      $key = self::$deprecatedState[$key]['replacement'];
-    }
-    return parent::get($key) ?? $default;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function resolveCacheMiss($key) {
-    $value = $this->keyValueStore->get($key);
-    $this->storage[$key] = $value;
-    $this->persist($key);
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getMultiple(array $keys): array {
-    $values = [];
-    foreach ($keys as $key) {
-      $values[$key] = $this->get($key);
+    /**
+     * Constructs a State object.
+     *
+     * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
+     *   The key value store to use.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+     *   The cache backend.
+     * @param \Drupal\Core\Lock\LockBackendInterface $lock
+     *   The lock backend.
+     */
+    public function __construct(KeyValueFactoryInterface $key_value_factory, CacheBackendInterface $cache, LockBackendInterface $lock)
+    {
+        parent::__construct('state', $cache, $lock);
+        $this->keyValueStore = $key_value_factory->get('state');
     }
 
-    return $values;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($key, $value): void {
-    if (isset(self::$deprecatedState[$key])) {
-      // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-      @trigger_error(self::$deprecatedState[$key]['message'], E_USER_DEPRECATED);
-      $key = self::$deprecatedState[$key]['replacement'];
+    /**
+     * {@inheritdoc}
+     */
+    public function get($key, $default = null)
+    {
+        // If the caller is asking for the value of a deprecated state, trigger a
+        // deprecation message about it.
+        if (isset(self::$deprecatedState[$key])) {
+            // phpcs:ignore Drupal.Semantics.FunctionTriggerError
+            @trigger_error(self::$deprecatedState[$key]['message'], E_USER_DEPRECATED);
+            $key = self::$deprecatedState[$key]['replacement'];
+        }
+        return parent::get($key) ?? $default;
     }
-    $this->registerKeySetDuringRequest($key, $value, parent::get($key));
-    $this->keyValueStore->set($key, $value);
-    // If another request had a cache miss before this request, and also hasn't
-    // written to cache yet, then it may already have read this value from the
-    // database and could write that value to the cache to the end of the
-    // request. To avoid this race condition, write to the cache immediately
-    // after calling parent::set(). This allows the race condition detection in
-    // CacheCollector::set() to work.
-    parent::set($key, $value);
-    $this->persist($key);
-    static::updateCache();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $data): void {
-    $this->keyValueStore->setMultiple($data);
-    foreach ($data as $key => $value) {
-      $this->registerKeySetDuringRequest($key, $value, parent::get($key));
-      parent::set($key, $value);
-      $this->persist($key);
+    /**
+     * {@inheritdoc}
+     */
+    protected function resolveCacheMiss($key)
+    {
+        $value = $this->keyValueStore->get($key);
+        $this->storage[$key] = $value;
+        $this->persist($key);
+        return $value;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($key): void {
-    $this->keyValueStore->delete($key);
-    parent::delete($key);
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getMultiple(array $keys): array
+    {
+        $values = [];
+        foreach ($keys as $key) {
+            $values[$key] = $this->get($key);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $keys): void {
-    $this->keyValueStore->deleteMultiple($keys);
-    foreach ($keys as $key) {
-      parent::delete($key);
+        return $values;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function resetCache(): void {
-    $this->clear();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValuesSetDuringRequest(string $key): ?array {
-    return $this->keysSetDuringRequest[$key] ?? NULL;
-  }
-
-  /**
-   * Registers a key that was set during the request.
-   *
-   * @param string $key
-   *   The key that was set.
-   * @param mixed $value
-   *   The value that was set.
-   * @param mixed $previousValue
-   *   The previous value that was stored.
-   */
-  protected function registerKeySetDuringRequest(string $key, mixed $value, mixed $previousValue): void {
-    $this->keysSetDuringRequest[$key]['value'] = $value;
-    if (!array_key_exists('original', $this->keysSetDuringRequest[$key])) {
-      $this->keysSetDuringRequest[$key]['original'] = $previousValue;
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value): void
+    {
+        if (isset(self::$deprecatedState[$key])) {
+            // phpcs:ignore Drupal.Semantics.FunctionTriggerError
+            @trigger_error(self::$deprecatedState[$key]['message'], E_USER_DEPRECATED);
+            $key = self::$deprecatedState[$key]['replacement'];
+        }
+        $this->registerKeySetDuringRequest($key, $value, parent::get($key));
+        $this->keyValueStore->set($key, $value);
+        // If another request had a cache miss before this request, and also hasn't
+        // written to cache yet, then it may already have read this value from the
+        // database and could write that value to the cache to the end of the
+        // request. To avoid this race condition, write to the cache immediately
+        // after calling parent::set(). This allows the race condition detection in
+        // CacheCollector::set() to work.
+        parent::set($key, $value);
+        $this->persist($key);
+        static::updateCache();
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $data): void
+    {
+        $this->keyValueStore->setMultiple($data);
+        foreach ($data as $key => $value) {
+            $this->registerKeySetDuringRequest($key, $value, parent::get($key));
+            parent::set($key, $value);
+            $this->persist($key);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($key): void
+    {
+        $this->keyValueStore->delete($key);
+        parent::delete($key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $keys): void
+    {
+        $this->keyValueStore->deleteMultiple($keys);
+        foreach ($keys as $key) {
+            parent::delete($key);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function resetCache(): void
+    {
+        $this->clear();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getValuesSetDuringRequest(string $key): ?array
+    {
+        return $this->keysSetDuringRequest[$key] ?? null;
+    }
+
+    /**
+     * Registers a key that was set during the request.
+     *
+     * @param string $key
+     *   The key that was set.
+     * @param mixed $value
+     *   The value that was set.
+     * @param mixed $previousValue
+     *   The previous value that was stored.
+     */
+    protected function registerKeySetDuringRequest(string $key, mixed $value, mixed $previousValue): void
+    {
+        $this->keysSetDuringRequest[$key]['value'] = $value;
+        if (!array_key_exists('original', $this->keysSetDuringRequest[$key])) {
+            $this->keysSetDuringRequest[$key]['original'] = $previousValue;
+        }
+    }
 
 }

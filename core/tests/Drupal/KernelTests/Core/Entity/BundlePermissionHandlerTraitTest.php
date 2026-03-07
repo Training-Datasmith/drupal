@@ -18,70 +18,73 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(BundlePermissionHandlerTrait::class)]
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class BundlePermissionHandlerTraitTest extends KernelTestBase {
-  use BundlePermissionHandlerTrait;
+class BundlePermissionHandlerTraitTest extends KernelTestBase
+{
+    use BundlePermissionHandlerTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'user'];
 
-  /**
-   * Tests generate permissions.
-   */
-  public function testGeneratePermissions(): void {
-    EntityTestBundle::create([
-      'id' => 'test1',
-    ])->save();
-    EntityTestBundle::create([
-      'id' => 'test2',
-    ])->save();
-    $permissions = $this->generatePermissions(EntityTestBundle::loadMultiple(), [$this, 'buildPermissions']);
-    $this->assertSame([
-      'title' => 'Create',
-      'dependencies' => ['config' => ['entity_test.entity_test_bundle.test1']],
-    ], $permissions['create test1']);
-    $this->assertSame([
-      'title' => 'Edit',
-      'dependencies' => [
-        'config' => [
-          'test_module.entity.test1',
-          'entity_test.entity_test_bundle.test1',
-        ],
-        'module' => ['test_module'],
-      ],
-    ], $permissions['edit test1']);
-    $this->assertSame([
-      'title' => 'Create',
-      'dependencies' => ['config' => ['entity_test.entity_test_bundle.test2']],
-    ], $permissions['create test2']);
-    $this->assertSame([
-      'title' => 'Edit',
-      'dependencies' => [
-        'config' => [
-          'test_module.entity.test2',
-          'entity_test.entity_test_bundle.test2',
-        ],
-        'module' => ['test_module'],
-      ],
-    ], $permissions['edit test2']);
-  }
+    /**
+     * Tests generate permissions.
+     */
+    public function testGeneratePermissions(): void
+    {
+        EntityTestBundle::create([
+          'id' => 'test1',
+        ])->save();
+        EntityTestBundle::create([
+          'id' => 'test2',
+        ])->save();
+        $permissions = $this->generatePermissions(EntityTestBundle::loadMultiple(), [$this, 'buildPermissions']);
+        $this->assertSame([
+          'title' => 'Create',
+          'dependencies' => ['config' => ['entity_test.entity_test_bundle.test1']],
+        ], $permissions['create test1']);
+        $this->assertSame([
+          'title' => 'Edit',
+          'dependencies' => [
+            'config' => [
+              'test_module.entity.test1',
+              'entity_test.entity_test_bundle.test1',
+            ],
+            'module' => ['test_module'],
+          ],
+        ], $permissions['edit test1']);
+        $this->assertSame([
+          'title' => 'Create',
+          'dependencies' => ['config' => ['entity_test.entity_test_bundle.test2']],
+        ], $permissions['create test2']);
+        $this->assertSame([
+          'title' => 'Edit',
+          'dependencies' => [
+            'config' => [
+              'test_module.entity.test2',
+              'entity_test.entity_test_bundle.test2',
+            ],
+            'module' => ['test_module'],
+          ],
+        ], $permissions['edit test2']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildPermissions(EntityInterface $bundle): array {
-    return [
-      "create {$bundle->id()}" => [
-        'title' => 'Create',
-      ],
-      "edit {$bundle->id()}" => [
-        'title' => 'Edit',
-        // Ensure it is possible for buildPermissions to add additional
-        // dependencies.
-        'dependencies' => ['config' => ["test_module.entity.{$bundle->id()}"], 'module' => ['test_module']],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildPermissions(EntityInterface $bundle): array
+    {
+        return [
+          "create {$bundle->id()}" => [
+            'title' => 'Create',
+          ],
+          "edit {$bundle->id()}" => [
+            'title' => 'Edit',
+            // Ensure it is possible for buildPermissions to add additional
+            // dependencies.
+            'dependencies' => ['config' => ["test_module.entity.{$bundle->id()}"], 'module' => ['test_module']],
+          ],
+        ];
+    }
 
 }

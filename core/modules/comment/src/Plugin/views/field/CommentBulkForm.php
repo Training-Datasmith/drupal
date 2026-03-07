@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -8,14 +10,15 @@ use Drupal\views\Plugin\views\field\BulkForm;
 /**
  * Defines a comment operations bulk form element.
  */
-#[ViewsField("comment_bulk_form")]
-class CommentBulkForm extends BulkForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Select one or more comments to perform the update on.');
-  }
+#[ViewsField('comment_bulk_form')]
+class CommentBulkForm extends BulkForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Select one or more comments to perform the update on.');
+    }
 
 }

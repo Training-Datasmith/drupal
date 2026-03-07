@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -15,6 +17,6 @@ namespace Drupal\Core\Cache;
  *  - If all active access policies implement this interface,
  *    \Drupal\Core\Session\AccessPolicyProcessor will skip the persistent cache.
  */
-interface CacheOptionalInterface {
-
+interface CacheOptionalInterface
+{
 }

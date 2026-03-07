@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\Core\Url;
@@ -12,33 +14,36 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("comment_link_approve")]
-class LinkApprove extends LinkBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
-    $entity = $this->getEntity($row);
-    if (!$entity) {
-      return NULL;
+#[ViewsField('comment_link_approve')]
+class LinkApprove extends LinkBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url
+    {
+        $entity = $this->getEntity($row);
+        if (!$entity) {
+            return null;
+        }
+        return Url::fromRoute('comment.approve', ['comment' => $entity->id()]);
     }
-    return Url::fromRoute('comment.approve', ['comment' => $entity->id()]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function renderLink(ResultRow $row) {
-    $this->options['alter']['query'] = $this->getDestinationArray();
-    return parent::renderLink($row);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function renderLink(ResultRow $row)
+    {
+        $this->options['alter']['query'] = $this->getDestinationArray();
+        return parent::renderLink($row);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Approve');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Approve');
+    }
 
 }

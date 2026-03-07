@@ -19,70 +19,74 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ContentEntityBase::class)]
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class EntityBundleEntityTest extends EntityKernelTestBase {
+class EntityBundleEntityTest extends EntityKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('entity_test');
+        $this->installEntitySchema('entity_test_with_bundle');
+        $this->installEntitySchema('entity_test_no_bundle_with_label');
+    }
 
-    $this->installEntitySchema('entity_test');
-    $this->installEntitySchema('entity_test_with_bundle');
-    $this->installEntitySchema('entity_test_no_bundle_with_label');
-  }
+    /**
+     * Tests an entity type with config entities for bundles.
+     *
+     * @legacy-covers ::getBundleEntity
+     */
+    public function testWithConfigBundleEntity(): void
+    {
+        $bundleEntity = EntityTestBundle::create([
+          'id' => 'bundle_alpha',
+          'label' => 'Alpha',
+        ]);
+        $bundleEntity->save();
 
-  /**
-   * Tests an entity type with config entities for bundles.
-   *
-   * @legacy-covers ::getBundleEntity
-   */
-  public function testWithConfigBundleEntity(): void {
-    $bundleEntity = EntityTestBundle::create([
-      'id' => 'bundle_alpha',
-      'label' => 'Alpha',
-    ]);
-    $bundleEntity->save();
+        $entity = EntityTestWithBundle::create([
+          'type' => 'bundle_alpha',
+          'name' => 'foo',
+        ]);
+        $entity->save();
+        $this->assertEquals($bundleEntity->id(), $entity->getBundleEntity()->id());
+    }
 
-    $entity = EntityTestWithBundle::create([
-      'type' => 'bundle_alpha',
-      'name' => 'foo',
-    ]);
-    $entity->save();
-    $this->assertEquals($bundleEntity->id(), $entity->getBundleEntity()->id());
-  }
+    /**
+     * Tests an entity type without config entities for bundles.
+     *
+     * EntityTest doesn't have bundles, but does have the bundle entity key.
+     *
+     * @legacy-covers ::getBundleEntity
+     */
+    public function testWithoutBundleEntity(): void
+    {
+        $entity = EntityTest::create([
+          'name' => 'foo',
+        ]);
+        $entity->save();
+        $this->assertNull($entity->getBundleEntity());
+    }
 
-  /**
-   * Tests an entity type without config entities for bundles.
-   *
-   * EntityTest doesn't have bundles, but does have the bundle entity key.
-   *
-   * @legacy-covers ::getBundleEntity
-   */
-  public function testWithoutBundleEntity(): void {
-    $entity = EntityTest::create([
-      'name' => 'foo',
-    ]);
-    $entity->save();
-    $this->assertNull($entity->getBundleEntity());
-  }
-
-  /**
-   * Tests an entity type without the bundle entity key.
-   *
-   * @legacy-covers ::getBundleEntity
-   */
-  public function testWithBundleKeyEntity(): void {
-    $entity = EntityTestNoBundleWithLabel::create([
-      'name' => 'foo',
-    ]);
-    $entity->save();
-    $this->assertNull($entity->getBundleEntity());
-  }
+    /**
+     * Tests an entity type without the bundle entity key.
+     *
+     * @legacy-covers ::getBundleEntity
+     */
+    public function testWithBundleKeyEntity(): void
+    {
+        $entity = EntityTestNoBundleWithLabel::create([
+          'name' => 'foo',
+        ]);
+        $entity->save();
+        $this->assertNull($entity->getBundleEntity());
+    }
 
 }

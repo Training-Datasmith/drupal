@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PathProcessor;
 
 use Drupal\Core\Render\BubbleableMetadata;
@@ -10,20 +12,22 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * This can be used for example in really early installer phases.
  */
-class NullPathProcessorManager implements InboundPathProcessorInterface, OutboundPathProcessorInterface {
+class NullPathProcessorManager implements InboundPathProcessorInterface, OutboundPathProcessorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request)
+    {
+        return $path;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request) {
-    return $path;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processOutbound($path, &$options = [], ?Request $request = NULL, ?BubbleableMetadata $bubbleable_metadata = NULL) {
-    return $path;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function processOutbound($path, &$options = [], ?Request $request = null, ?BubbleableMetadata $bubbleable_metadata = null)
+    {
+        return $path;
+    }
 
 }

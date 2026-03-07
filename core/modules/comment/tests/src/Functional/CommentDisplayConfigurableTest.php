@@ -17,73 +17,77 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('comment')]
 #[RunTestsInSeparateProcesses]
-class CommentDisplayConfigurableTest extends CommentTestBase {
+class CommentDisplayConfigurableTest extends CommentTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'olivero';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'olivero';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Allow anonymous users to see comments.
+        user_role_grant_permissions(RoleInterface::ANONYMOUS_ID, [
+          'access comments',
+          'access content',
+        ]);
+    }
 
-    // Allow anonymous users to see comments.
-    user_role_grant_permissions(RoleInterface::ANONYMOUS_ID, [
-      'access comments',
-      'access content',
-    ]);
-  }
+    /**
+     * Sets base fields to configurable display and check settings are respected.
+     */
+    public function testDisplayConfigurable(): void
+    {
+        // Add a comment.
+        $nid = $this->node->id();
+        /** @var \Drupal\comment\CommentInterface $comment */
+        $comment = Comment::create([
+          'entity_id' => $nid,
+          'entity_type' => 'node',
+          'field_name' => 'comment',
+          'uid' => $this->webUser->id(),
+          'status' => CommentInterface::PUBLISHED,
+          'subject' => $this->randomMachineName(),
+          'language' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
+          'comment_body' => [LanguageInterface::LANGCODE_NOT_SPECIFIED => [$this->randomMachineName()]],
+        ]);
+        $comment->save();
+        $assert = $this->assertSession();
 
-  /**
-   * Sets base fields to configurable display and check settings are respected.
-   */
-  public function testDisplayConfigurable(): void {
-    // Add a comment.
-    $nid = $this->node->id();
-    /** @var \Drupal\comment\CommentInterface $comment */
-    $comment = Comment::create([
-      'entity_id' => $nid,
-      'entity_type' => 'node',
-      'field_name' => 'comment',
-      'uid' => $this->webUser->id(),
-      'status' => CommentInterface::PUBLISHED,
-      'subject' => $this->randomMachineName(),
-      'language' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
-      'comment_body' => [LanguageInterface::LANGCODE_NOT_SPECIFIED => [$this->randomMachineName()]],
-    ]);
-    $comment->save();
-    $assert = $this->assertSession();
+        // Check the comment author with Drupal default non-configurable display.
+        $this->drupalGet('node/' . $nid);
+        $assert->elementExists('css', 'p.comment__author span');
 
-    // Check the comment author with Drupal default non-configurable display.
-    $this->drupalGet('node/' . $nid);
-    $assert->elementExists('css', 'p.comment__author span');
+        // Enable module to make base fields' displays configurable.
+        \Drupal::service('module_installer')->install(['comment_display_configurable_test']);
 
-    // Enable module to make base fields' displays configurable.
-    \Drupal::service('module_installer')->install(['comment_display_configurable_test']);
+        // Configure display.
+        $display = EntityViewDisplay::load('comment.comment.default');
+        $display->setComponent(
+            'uid',
+            [
+            'type' => 'entity_reference_label',
+            'label' => 'above',
+            'settings' => ['link' => false],
+      ]
+        )
+          ->save();
+        // Recheck the comment author with configurable display.
+        $this->drupalGet('node/' . $nid);
+        $assert->elementExists('css', '.field--name-uid .field__item');
 
-    // Configure display.
-    $display = EntityViewDisplay::load('comment.comment.default');
-    $display->setComponent('uid',
-      [
-        'type' => 'entity_reference_label',
-        'label' => 'above',
-        'settings' => ['link' => FALSE],
-      ])
-      ->save();
-    // Recheck the comment author with configurable display.
-    $this->drupalGet('node/' . $nid);
-    $assert->elementExists('css', '.field--name-uid .field__item');
+        // Remove from display.
+        $display->removeComponent('uid')
+          ->removeComponent('created')
+          ->save();
 
-    // Remove from display.
-    $display->removeComponent('uid')
-      ->removeComponent('created')
-      ->save();
-
-    $this->drupalGet('node/' . $this->node->id());
-    $assert->elementNotExists('css', '.field--name-uid .field__item');
-  }
+        $this->drupalGet('node/' . $this->node->id());
+        $assert->elementNotExists('css', '.field--name-uid .field__item');
+    }
 
 }

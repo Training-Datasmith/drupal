@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -11,44 +13,48 @@ use Drupal\Core\Form\FormStateInterface;
  * @internal
  *   Form classes are internal.
  */
-class SettingsForm extends ConfigFormBase {
+class SettingsForm extends ConfigFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getEditableConfigNames(): array
+    {
+        return ['media_library.settings'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEditableConfigNames(): array {
-    return ['media_library.settings'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'media_library_settings_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'media_library_settings_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['advanced_ui'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Enable advanced UI'),
+          '#default_value' => $this->config('media_library.settings')->get('advanced_ui'),
+          '#description' => $this->t('If checked, users creating new media items in the media library will see a summary of their selected media items, and they will be able to insert their selection directly into the media field or text editor.'),
+        ];
+        return parent::buildForm($form, $form_state);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['advanced_ui'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enable advanced UI'),
-      '#default_value' => $this->config('media_library.settings')->get('advanced_ui'),
-      '#description' => $this->t('If checked, users creating new media items in the media library will see a summary of their selected media items, and they will be able to insert their selection directly into the media field or text editor.'),
-    ];
-    return parent::buildForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->config('media_library.settings')
+          ->set('advanced_ui', (bool) $form_state->getValue('advanced_ui'))
+          ->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $this->config('media_library.settings')
-      ->set('advanced_ui', (bool) $form_state->getValue('advanced_ui'))
-      ->save();
-
-    parent::submitForm($form, $form_state);
-  }
+        parent::submitForm($form, $form_state);
+    }
 
 }

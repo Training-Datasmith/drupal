@@ -12,23 +12,25 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a 'baloney_spam' condition.
  */
 #[Condition(
-  id: "baloney_spam",
-  label: new TranslatableMarkup("Baloney spam"),
+    id: 'baloney_spam',
+    label: new TranslatableMarkup('Baloney spam'),
 )]
-class BaloneySpam extends ConditionPluginBase {
+class BaloneySpam extends ConditionPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function evaluate()
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function evaluate() {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function summary() {
-    return 'Summary';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function summary()
+    {
+        return 'Summary';
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\Plugin\media\Source;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -7,8 +9,6 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Image\ImageFactory;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\media\Attribute\MediaSource;
 use Drupal\media\MediaInterface;
@@ -20,131 +20,136 @@ use Drupal\media\MediaTypeInterface;
  * @see \Drupal\Core\Image\ImageInterface
  */
 #[MediaSource(
-  id: "image",
-  label: new TranslatableMarkup("Image"),
-  description: new TranslatableMarkup("A locally hosted image file."),
-  allowed_field_types: ["image"],
-  default_thumbnail_filename: "no-thumbnail.png",
-  thumbnail_alt_metadata_attribute: "thumbnail_alt_value"
+    id: 'image',
+    label: new TranslatableMarkup('Image'),
+    description: new TranslatableMarkup('A locally hosted image file.'),
+    allowed_field_types: ['image'],
+    default_thumbnail_filename: 'no-thumbnail.png',
+    thumbnail_alt_metadata_attribute: 'thumbnail_alt_value'
 )]
-class Image extends File {
+class Image extends File
+{
+    /**
+     * Key for "image width" metadata attribute.
+     *
+     * @var string
+     */
+    public const METADATA_ATTRIBUTE_WIDTH = 'width';
 
-  /**
-   * Key for "image width" metadata attribute.
-   *
-   * @var string
-   */
-  const METADATA_ATTRIBUTE_WIDTH = 'width';
+    /**
+     * Key for "image height" metadata attribute.
+     *
+     * @var string
+     */
+    public const METADATA_ATTRIBUTE_HEIGHT = 'height';
 
-  /**
-   * Key for "image height" metadata attribute.
-   *
-   * @var string
-   */
-  const METADATA_ATTRIBUTE_HEIGHT = 'height';
-
-  /**
-   * Constructs a new class instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
-   *   Entity field manager service.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
-   *   The field type plugin manager service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory service.
-   * @param \Drupal\Core\Image\ImageFactory $imageFactory
-   *   The image factory.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
-   *   The file system service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Image\ImageFactory $imageFactory, protected \Drupal\Core\File\FileSystemInterface $fileSystem) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMetadataAttributes() {
-    $attributes = parent::getMetadataAttributes();
-
-    return $attributes + [
-      static::METADATA_ATTRIBUTE_WIDTH => $this->t('Width'),
-      static::METADATA_ATTRIBUTE_HEIGHT => $this->t('Height'),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMetadata(MediaInterface $media, $name) {
-    // Get the file and image data.
-    /** @var \Drupal\file\FileInterface $file */
-    $file = $media->get($this->configuration['source_field'])->entity;
-    // If the source field is not required, it may be empty.
-    if (!$file) {
-      return parent::getMetadata($media, $name);
+    /**
+     * Constructs a new class instance.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   Entity type manager service.
+     * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+     *   Entity field manager service.
+     * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+     *   The field type plugin manager service.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The config factory service.
+     * @param \Drupal\Core\Image\ImageFactory $imageFactory
+     *   The image factory.
+     * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+     *   The file system service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Image\ImageFactory $imageFactory, protected \Drupal\Core\File\FileSystemInterface $fileSystem)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
     }
 
-    $uri = $file->getFileUri();
-    switch ($name) {
-      case static::METADATA_ATTRIBUTE_WIDTH:
-        $image = $this->imageFactory->get($uri);
-        return $image->getWidth() ?: NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function getMetadataAttributes()
+    {
+        $attributes = parent::getMetadataAttributes();
 
-      case static::METADATA_ATTRIBUTE_HEIGHT:
-        $image = $this->imageFactory->get($uri);
-        return $image->getHeight() ?: NULL;
-
-      case 'thumbnail_uri':
-        return $uri;
-
-      case 'thumbnail_alt_value':
-        return $media->get($this->configuration['source_field'])->alt ?? parent::getMetadata($media, $name);
+        return $attributes + [
+          static::METADATA_ATTRIBUTE_WIDTH => $this->t('Width'),
+          static::METADATA_ATTRIBUTE_HEIGHT => $this->t('Height'),
+        ];
     }
 
-    return parent::getMetadata($media, $name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getMetadata(MediaInterface $media, $name)
+    {
+        // Get the file and image data.
+        /** @var \Drupal\file\FileInterface $file */
+        $file = $media->get($this->configuration['source_field'])->entity;
+        // If the source field is not required, it may be empty.
+        if (!$file) {
+            return parent::getMetadata($media, $name);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createSourceField(MediaTypeInterface $type) {
-    /** @var \Drupal\field\FieldConfigInterface $field */
-    $field = parent::createSourceField($type);
+        $uri = $file->getFileUri();
+        switch ($name) {
+            case static::METADATA_ATTRIBUTE_WIDTH:
+                $image = $this->imageFactory->get($uri);
+                return $image->getWidth() ?: null;
 
-    // Reset the field to its default settings so that we don't inherit the
-    // settings from the parent class' source field.
-    $settings = $this->fieldTypeManager->getDefaultFieldSettings($field->getType());
+            case static::METADATA_ATTRIBUTE_HEIGHT:
+                $image = $this->imageFactory->get($uri);
+                return $image->getHeight() ?: null;
 
-    return $field->set('settings', $settings);
-  }
+            case 'thumbnail_uri':
+                return $uri;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
-    parent::prepareViewDisplay($type, $display);
+            case 'thumbnail_alt_value':
+                return $media->get($this->configuration['source_field'])->alt ?? parent::getMetadata($media, $name);
+        }
 
-    // Use the `large` image style and do not link the image to anything.
-    // This will prevent the out-of-the-box configuration from outputting very
-    // large raw images. If the `large` image style has been deleted, do not
-    // set an image style.
-    $field_name = $this->getSourceFieldDefinition($type)->getName();
-    $component = $display->getComponent($field_name);
-    $component['settings']['image_link'] = '';
-    $component['settings']['image_style'] = '';
-    if ($this->entityTypeManager->getStorage('image_style')->load('large')) {
-      $component['settings']['image_style'] = 'large';
+        return parent::getMetadata($media, $name);
     }
-    $display->setComponent($field_name, $component);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createSourceField(MediaTypeInterface $type)
+    {
+        /** @var \Drupal\field\FieldConfigInterface $field */
+        $field = parent::createSourceField($type);
+
+        // Reset the field to its default settings so that we don't inherit the
+        // settings from the parent class' source field.
+        $settings = $this->fieldTypeManager->getDefaultFieldSettings($field->getType());
+
+        return $field->set('settings', $settings);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void
+    {
+        parent::prepareViewDisplay($type, $display);
+
+        // Use the `large` image style and do not link the image to anything.
+        // This will prevent the out-of-the-box configuration from outputting very
+        // large raw images. If the `large` image style has been deleted, do not
+        // set an image style.
+        $field_name = $this->getSourceFieldDefinition($type)->getName();
+        $component = $display->getComponent($field_name);
+        $component['settings']['image_link'] = '';
+        $component['settings']['image_style'] = '';
+        if ($this->entityTypeManager->getStorage('image_style')->load('large')) {
+            $component['settings']['image_style'] = 'large';
+        }
+        $display->setComponent($field_name, $component);
+    }
 
 }

@@ -11,10 +11,12 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Builds an image toolkit operation.
  */
 #[ImageToolkitOperation(
-  id: "foo",
-  toolkit: "test",
-  operation: "blur",
-  label: new TranslatableMarkup("Blur"),
-  description: new TranslatableMarkup("Foo."),
+    id: 'foo',
+    toolkit: 'test',
+    operation: 'blur',
+    label: new TranslatableMarkup('Blur'),
+    description: new TranslatableMarkup('Foo.'),
 )]
-class Foo extends OperationBase {}
+class Foo extends OperationBase
+{
+}

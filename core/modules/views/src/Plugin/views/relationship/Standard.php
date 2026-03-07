@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\relationship;
 
 use Drupal\views\Attribute\ViewsRelationship;
@@ -9,7 +11,7 @@ use Drupal\views\Attribute\ViewsRelationship;
  *
  * @ingroup views_relationship_handlers
  */
-#[ViewsRelationship("standard")]
-class Standard extends RelationshipPluginBase {
-
+#[ViewsRelationship('standard')]
+class Standard extends RelationshipPluginBase
+{
 }

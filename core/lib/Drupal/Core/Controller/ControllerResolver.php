@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Controller;
 
 use Drupal\Core\Routing\RouteObjectInterface;
@@ -16,38 +18,40 @@ use Symfony\Component\HttpFoundation\Request;
  *    controller by using a service:method notation (Symfony uses the same
  *    convention).
  */
-class ControllerResolver implements ControllerResolverInterface {
-
-  /**
-   * Constructs a new ControllerResolver.
-   *
-   * @param \Drupal\Core\Utility\CallableResolver $callableResolver
-   *   The callable resolver.
-   */
-  public function __construct(protected CallableResolver $callableResolver) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getControllerFromDefinition($controller, $path = '') {
-    try {
-      $callable = $this->callableResolver->getCallableFromDefinition($controller);
+class ControllerResolver implements ControllerResolverInterface
+{
+    /**
+     * Constructs a new ControllerResolver.
+     *
+     * @param \Drupal\Core\Utility\CallableResolver $callableResolver
+     *   The callable resolver.
+     */
+    public function __construct(protected CallableResolver $callableResolver)
+    {
     }
-    catch (\InvalidArgumentException $e) {
-      throw new \InvalidArgumentException(sprintf('The controller for URI "%s" is not callable.', $path), 0, $e);
-    }
-    return $callable;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getController(Request $request): callable|FALSE {
-    if (!$controller = $request->attributes->get(RouteObjectInterface::CONTROLLER_NAME)) {
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function getControllerFromDefinition($controller, $path = '')
+    {
+        try {
+            $callable = $this->callableResolver->getCallableFromDefinition($controller);
+        } catch (\InvalidArgumentException $e) {
+            throw new \InvalidArgumentException(sprintf('The controller for URI "%s" is not callable.', $path), 0, $e);
+        }
+        return $callable;
     }
-    return $this->getControllerFromDefinition($controller, $request->getPathInfo());
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getController(Request $request): callable|false
+    {
+        if (!$controller = $request->attributes->get(RouteObjectInterface::CONTROLLER_NAME)) {
+            return false;
+        }
+        return $this->getControllerFromDefinition($controller, $request->getPathInfo());
+    }
 
 }

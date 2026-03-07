@@ -13,39 +13,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerConfigDirectorySetNoDirectoryTest extends InstallerTestBase {
+class InstallerConfigDirectorySetNoDirectoryTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The sync directory created during the install.
+     *
+     * @var string
+     */
+    protected $syncDirectory;
 
-  /**
-   * The sync directory created during the install.
-   *
-   * @var string
-   */
-  protected $syncDirectory;
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEnvironment(): void
+    {
+        parent::prepareEnvironment();
+        $this->syncDirectory = $this->publicFilesDirectory . '/config_' . Crypt::randomBytesBase64() . '/sync';
+        $this->settings['settings']['config_sync_directory'] = (object) [
+          'value' => $this->syncDirectory,
+          'required' => true,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEnvironment(): void {
-    parent::prepareEnvironment();
-    $this->syncDirectory = $this->publicFilesDirectory . '/config_' . Crypt::randomBytesBase64() . '/sync';
-    $this->settings['settings']['config_sync_directory'] = (object) [
-      'value' => $this->syncDirectory,
-      'required' => TRUE,
-    ];
-  }
-
-  /**
-   * Verifies that installation succeeded.
-   */
-  public function testInstaller(): void {
-    $this->assertSession()->addressEquals('user/1');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertDirectoryExists($this->syncDirectory);
-  }
+    /**
+     * Verifies that installation succeeded.
+     */
+    public function testInstaller(): void
+    {
+        $this->assertSession()->addressEquals('user/1');
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertDirectoryExists($this->syncDirectory);
+    }
 
 }

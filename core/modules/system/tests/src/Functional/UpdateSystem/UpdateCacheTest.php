@@ -15,39 +15,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class UpdateCacheTest extends BrowserTestBase {
-  use RequirementsPageTrait;
+class UpdateCacheTest extends BrowserTestBase
+{
+    use RequirementsPageTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * Tests that caches are cleared during updates.
-   *
-   * @see \Drupal\Core\Update\UpdateServiceProvider
-   * @see \Drupal\Core\Update\UpdateBackend
-   */
-  public function testCaches(): void {
-    \Drupal::cache()->set('will_not_exist_after_update', TRUE);
-    // The site might be broken at the time so logging in using the UI might
-    // not work, so we use the API itself.
-    $this->writeSettings([
-      'settings' => [
-        'update_free_access' => (object) [
-          'value' => TRUE,
-          'required' => TRUE,
-        ],
-      ],
-    ]);
+    /**
+     * Tests that caches are cleared during updates.
+     *
+     * @see \Drupal\Core\Update\UpdateServiceProvider
+     * @see \Drupal\Core\Update\UpdateBackend
+     */
+    public function testCaches(): void
+    {
+        \Drupal::cache()->set('will_not_exist_after_update', true);
+        // The site might be broken at the time so logging in using the UI might
+        // not work, so we use the API itself.
+        $this->writeSettings([
+          'settings' => [
+            'update_free_access' => (object) [
+              'value' => true,
+              'required' => true,
+            ],
+          ],
+        ]);
 
-    // Clicking continue should clear the caches.
-    $this->drupalGet(Url::fromRoute('system.db_update', [], ['path_processing' => FALSE]));
-    $this->updateRequirementsProblem();
-    $this->clickLink('Continue');
+        // Clicking continue should clear the caches.
+        $this->drupalGet(Url::fromRoute('system.db_update', [], ['path_processing' => false]));
+        $this->updateRequirementsProblem();
+        $this->clickLink('Continue');
 
-    $this->assertFalse(\Drupal::cache()->get('will_not_exist_after_update', FALSE));
-  }
+        $this->assertFalse(\Drupal::cache()->get('will_not_exist_after_update', false));
+    }
 
 }

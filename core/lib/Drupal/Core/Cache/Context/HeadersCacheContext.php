@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -11,49 +13,52 @@ use Drupal\Core\Cache\CacheableMetadata;
  * Calculated cache context ID: 'headers:%name', e.g. 'headers:X-Something' (to
  * vary by the 'X-Something' header).
  */
-class HeadersCacheContext extends RequestStackCacheContextBase implements CalculatedCacheContextInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('HTTP headers');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext($header = NULL) {
-    if ($header === NULL) {
-        $headers = $this->requestStack->getCurrentRequest()->headers->all();
-        // Order headers by name to have less cache variations.
-        ksort($headers);
-        $result = '';
-        foreach ($headers as $name => $value) {
-          if ($result) {
-            $result .= '&';
-          }
-          // Sort values to minimize cache variations.
-          sort($value);
-          $result .= $name . '=' . implode(',', $value);
-        }
-        return $result;
+class HeadersCacheContext extends RequestStackCacheContextBase implements CalculatedCacheContextInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('HTTP headers');
     }
-    if ($this->requestStack->getCurrentRequest()->headers->has($header)) {
-        $value = $this->requestStack->getCurrentRequest()->headers->get($header);
-        if ($value !== '') {
-          return $value;
-        }
-        return '?valueless?';
-    }
-    return '';
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($header = NULL): \Drupal\Core\Cache\CacheableMetadata {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext($header = null)
+    {
+        if ($header === null) {
+            $headers = $this->requestStack->getCurrentRequest()->headers->all();
+            // Order headers by name to have less cache variations.
+            ksort($headers);
+            $result = '';
+            foreach ($headers as $name => $value) {
+                if ($result) {
+                    $result .= '&';
+                }
+                // Sort values to minimize cache variations.
+                sort($value);
+                $result .= $name . '=' . implode(',', $value);
+            }
+            return $result;
+        }
+        if ($this->requestStack->getCurrentRequest()->headers->has($header)) {
+            $value = $this->requestStack->getCurrentRequest()->headers->get($header);
+            if ($value !== '') {
+                return $value;
+            }
+            return '?valueless?';
+        }
+        return '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($header = null): \Drupal\Core\Cache\CacheableMetadata
+    {
+        return new CacheableMetadata();
+    }
 
 }

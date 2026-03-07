@@ -17,26 +17,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ModuleHandler::class)]
 #[Group('Extension')]
 #[RunTestsInSeparateProcesses]
-class ModuleHandlerDeprecatedHookUnimplementedTest extends KernelTestBase {
+class ModuleHandlerDeprecatedHookUnimplementedTest extends KernelTestBase
+{
+    /**
+     * Tests unimplemented hooks.
+     *
+     * @legacy-covers ::alterDeprecated
+     * @legacy-covers ::invokeAllDeprecated
+     * @legacy-covers ::invokeDeprecated
+     */
+    public function testUnimplementedHooks(): void
+    {
+        $unimplemented_hook_name = 'unimplemented_hook_name';
 
-  /**
-   * Tests unimplemented hooks.
-   *
-   * @legacy-covers ::alterDeprecated
-   * @legacy-covers ::invokeAllDeprecated
-   * @legacy-covers ::invokeDeprecated
-   */
-  public function testUnimplementedHooks(): void {
-    $unimplemented_hook_name = 'unimplemented_hook_name';
+        /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
+        $module_handler = $this->container->get('module_handler');
+        $this->assertInstanceOf(ModuleHandlerInterface::class, $module_handler);
 
-    /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
-    $module_handler = $this->container->get('module_handler');
-    $this->assertInstanceOf(ModuleHandlerInterface::class, $module_handler);
-
-    $module_handler->invokeDeprecated('Use something else.', 'deprecation_test', $unimplemented_hook_name);
-    $module_handler->invokeAllDeprecated('Use something else.', $unimplemented_hook_name);
-    $data = [];
-    $module_handler->alterDeprecated('Alter something else.', $unimplemented_hook_name, $data);
-  }
+        $module_handler->invokeDeprecated('Use something else.', 'deprecation_test', $unimplemented_hook_name);
+        $module_handler->invokeAllDeprecated('Use something else.', $unimplemented_hook_name);
+        $data = [];
+        $module_handler->alterDeprecated('Alter something else.', $unimplemented_hook_name, $data);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http\Exception;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -9,16 +11,17 @@ use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 /**
  * A cacheable GoneHttpException.
  */
-class CacheableGoneHttpException extends GoneHttpException implements CacheableDependencyInterface {
+class CacheableGoneHttpException extends GoneHttpException implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
 
-  use CacheableDependencyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(CacheableDependencyInterface $cacheability, $message = '', ?\Throwable $previous = NULL, $code = 0) {
-    $this->setCacheability($cacheability);
-    parent::__construct($message, $previous, $code);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(CacheableDependencyInterface $cacheability, $message = '', ?\Throwable $previous = null, $code = 0)
+    {
+        $this->setCacheability($cacheability);
+        parent::__construct($message, $previous, $code);
+    }
 
 }

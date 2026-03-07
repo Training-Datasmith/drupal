@@ -1,14 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\Component\Transliteration\TransliterationInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
-use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\MigrateException;
+use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -60,50 +61,51 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('machine_name')]
-class MachineName extends ProcessPluginBase implements ContainerFactoryPluginInterface {
+class MachineName extends ProcessPluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * The regular expression pattern.
+     *
+     * @var string
+     */
+    protected $replacePattern;
 
-  /**
-   * The regular expression pattern.
-   *
-   * @var string
-   */
-  protected $replacePattern;
+    /**
+     * Constructs a MachineName plugin.
+     *
+     * @param array $configuration
+     *   The plugin configuration.
+     * @param string $plugin_id
+     *   The plugin ID.
+     * @param mixed $plugin_definition
+     *   The plugin definition.
+     * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
+     *   The transliteration service.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        #[Autowire(service: 'transliteration')]
+        protected \Drupal\Component\Transliteration\TransliterationInterface $transliteration,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-  /**
-   * Constructs a MachineName plugin.
-   *
-   * @param array $configuration
-   *   The plugin configuration.
-   * @param string $plugin_id
-   *   The plugin ID.
-   * @param mixed $plugin_definition
-   *   The plugin definition.
-   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
-   *   The transliteration service.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    #[Autowire(service: 'transliteration')]
-    protected \Drupal\Component\Transliteration\TransliterationInterface $transliteration,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->replacePattern = $this->configuration['replace_pattern'] ?? '/[^a-z0-9_]+/';
-    if (!is_string($this->replacePattern)) {
-      throw new MigrateException('The replace pattern should be a string');
+        $this->replacePattern = $this->configuration['replace_pattern'] ?? '/[^a-z0-9_]+/';
+        if (!is_string($this->replacePattern)) {
+            throw new MigrateException('The replace pattern should be a string');
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): ?string {
-    $new_value = $this->transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
-    $new_value = strtolower($new_value);
-    $new_value = preg_replace($this->replacePattern, '_', $new_value);
-    return preg_replace('/_+/', '_', (string) $new_value);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): ?string
+    {
+        $new_value = $this->transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
+        $new_value = strtolower($new_value);
+        $new_value = preg_replace($this->replacePattern, '_', $new_value);
+        return preg_replace('/_+/', '_', (string) $new_value);
+    }
 
 }

@@ -17,55 +17,58 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[CoversClass(AllowToolbarPath::class)]
 #[Group('toolbar')]
-class AllowToolbarPathTest extends UnitTestCase {
+class AllowToolbarPathTest extends UnitTestCase
+{
+    /**
+     * The toolbar path policy under test.
+     *
+     * @var \Drupal\toolbar\PageCache\AllowToolbarPath
+     */
+    protected $policy;
 
-  /**
-   * The toolbar path policy under test.
-   *
-   * @var \Drupal\toolbar\PageCache\AllowToolbarPath
-   */
-  protected $policy;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->policy = new AllowToolbarPath();
+    }
 
-    $this->policy = new AllowToolbarPath();
-  }
+    /**
+     * Asserts that caching is allowed if the request goes to toolbar subtree.
+     *
+     * @legacy-covers ::check
+     */
+    #[DataProvider('providerTestAllowToolbarPath')]
+    public function testAllowToolbarPath($expected_result, $path): void
+    {
+        $request = Request::create($path);
+        $result = $this->policy->check($request);
+        $this->assertSame($expected_result, $result);
+    }
 
-  /**
-   * Asserts that caching is allowed if the request goes to toolbar subtree.
-   *
-   * @legacy-covers ::check
-   */
-  #[DataProvider('providerTestAllowToolbarPath')]
-  public function testAllowToolbarPath($expected_result, $path): void {
-    $request = Request::create($path);
-    $result = $this->policy->check($request);
-    $this->assertSame($expected_result, $result);
-  }
-
-  /**
-   * Provides data and expected results for the test method.
-   *
-   * @return array
-   *   Data and expected results.
-   */
-  public static function providerTestAllowToolbarPath() {
-    return [
-      [NULL, '/'],
-      [NULL, '/other-path?q=/toolbar/subtrees/'],
-      [NULL, '/toolbar/subtrees/'],
-      [NULL, '/toolbar/subtrees/some-hash/langcode/additional-stuff'],
-      [RequestPolicyInterface::ALLOW, '/de/toolbar/subtrees/abcd'],
-      [RequestPolicyInterface::ALLOW, '/en-us/toolbar/subtrees/xyz'],
-      [RequestPolicyInterface::ALLOW, '/en-us/toolbar/subtrees/xyz/de'],
-      [RequestPolicyInterface::ALLOW, '/a/b/c/toolbar/subtrees/xyz/de'],
-      [RequestPolicyInterface::ALLOW, '/toolbar/subtrees/some-hash'],
-      [RequestPolicyInterface::ALLOW, '/toolbar/subtrees/some-hash/en'],
-    ];
-  }
+    /**
+     * Provides data and expected results for the test method.
+     *
+     * @return array
+     *   Data and expected results.
+     */
+    public static function providerTestAllowToolbarPath()
+    {
+        return [
+          [null, '/'],
+          [null, '/other-path?q=/toolbar/subtrees/'],
+          [null, '/toolbar/subtrees/'],
+          [null, '/toolbar/subtrees/some-hash/langcode/additional-stuff'],
+          [RequestPolicyInterface::ALLOW, '/de/toolbar/subtrees/abcd'],
+          [RequestPolicyInterface::ALLOW, '/en-us/toolbar/subtrees/xyz'],
+          [RequestPolicyInterface::ALLOW, '/en-us/toolbar/subtrees/xyz/de'],
+          [RequestPolicyInterface::ALLOW, '/a/b/c/toolbar/subtrees/xyz/de'],
+          [RequestPolicyInterface::ALLOW, '/toolbar/subtrees/some-hash'],
+          [RequestPolicyInterface::ALLOW, '/toolbar/subtrees/some-hash/en'],
+        ];
+    }
 
 }

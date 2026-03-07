@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -14,15 +16,16 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * @see \Drupal|Core\Render\Element\DropButton
  */
 #[RenderElement('operations')]
-class Operations extends Dropbutton {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo() {
-    return [
-      '#theme' => 'links__dropbutton__operations',
-    ] + parent::getInfo();
-  }
+class Operations extends Dropbutton
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo()
+    {
+        return [
+          '#theme' => 'links__dropbutton__operations',
+        ] + parent::getInfo();
+    }
 
 }

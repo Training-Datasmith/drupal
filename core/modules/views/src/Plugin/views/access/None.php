@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\access;
 
 use Drupal\Core\Session\AccountInterface;
@@ -13,32 +15,35 @@ use Symfony\Component\Routing\Route;
  * @ingroup views_access_plugins
  */
 #[ViewsAccess(
-  id: 'none',
-  title: new TranslatableMarkup('Unrestricted'),
-  help: new TranslatableMarkup('Will be available to all users.'),
+    id: 'none',
+    title: new TranslatableMarkup('Unrestricted'),
+    help: new TranslatableMarkup('Will be available to all users.'),
 )]
-class None extends AccessPluginBase {
+class None extends AccessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Unrestricted');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Unrestricted');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function access(AccountInterface $account): bool
+    {
+        // No access control.
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access(AccountInterface $account): bool {
-    // No access control.
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alterRouteDefinition(Route $route): void {
-    $route->setRequirement('_access', 'TRUE');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function alterRouteDefinition(Route $route): void
+    {
+        $route->setRequirement('_access', 'TRUE');
+    }
 
 }

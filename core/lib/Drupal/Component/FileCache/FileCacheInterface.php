@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\FileCache;
 
 /**
@@ -13,47 +15,47 @@ namespace Drupal\Component\FileCache;
  * on the file modification to ensure that cached data is still up to date and
  * does not need to be invalidated externally.
  */
-interface FileCacheInterface {
+interface FileCacheInterface
+{
+    /**
+     * Gets data based on a filename.
+     *
+     * @param string $filepath
+     *   Path of the file that the cached data is based on.
+     *
+     * @return mixed|null
+     *   The data that was persisted with set() or NULL if there is no data
+     *   or the file has been modified.
+     */
+    public function get($filepath);
 
-  /**
-   * Gets data based on a filename.
-   *
-   * @param string $filepath
-   *   Path of the file that the cached data is based on.
-   *
-   * @return mixed|null
-   *   The data that was persisted with set() or NULL if there is no data
-   *   or the file has been modified.
-   */
-  public function get($filepath);
+    /**
+     * Gets data based on filenames.
+     *
+     * @param string[] $filepaths
+     *   List of file paths used as cache identifiers.
+     *
+     * @return array
+     *   List of cached data keyed by the passed in file paths.
+     */
+    public function getMultiple(array $filepaths);
 
-  /**
-   * Gets data based on filenames.
-   *
-   * @param string[] $filepaths
-   *   List of file paths used as cache identifiers.
-   *
-   * @return array
-   *   List of cached data keyed by the passed in file paths.
-   */
-  public function getMultiple(array $filepaths);
+    /**
+     * Stores data based on a filename.
+     *
+     * @param string $filepath
+     *   Path of the file that the cached data is based on.
+     * @param mixed $data
+     *   The data that should be cached.
+     */
+    public function set($filepath, $data);
 
-  /**
-   * Stores data based on a filename.
-   *
-   * @param string $filepath
-   *   Path of the file that the cached data is based on.
-   * @param mixed $data
-   *   The data that should be cached.
-   */
-  public function set($filepath, $data);
-
-  /**
-   * Deletes data from the cache.
-   *
-   * @param string $filepath
-   *   Path of the file that the cached data is based on.
-   */
-  public function delete($filepath);
+    /**
+     * Deletes data from the cache.
+     *
+     * @param string $filepath
+     *   Path of the file that the cached data is based on.
+     */
+    public function delete($filepath);
 
 }

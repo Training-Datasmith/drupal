@@ -22,77 +22,82 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Connection::class)]
 #[Group('Database')]
-class DatabaseEventsTest extends UnitTestCase {
+class DatabaseEventsTest extends UnitTestCase
+{
+    /**
+     * A database connection.
+     */
+    protected Connection $connection;
 
-  /**
-   * A database connection.
-   */
-  protected Connection $connection;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->connection = new StubConnection($this->createMock(StubPDO::class), []);
+    }
 
-    $this->connection = new StubConnection($this->createMock(StubPDO::class), []);
-  }
+    /**
+     * Tests event enabling and disabling.
+     *
+     * @legacy-covers ::isEventEnabled
+     * @legacy-covers ::enableEvents
+     * @legacy-covers ::disableEvents
+     */
+    public function testEventEnablingAndDisabling(): void
+    {
+        $this->connection->enableEvents(StatementEvent::all());
+        $this->assertTrue($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
+        $this->assertTrue($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
+        $this->assertTrue($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
+        $this->connection->disableEvents([
+          StatementExecutionEndEvent::class,
+        ]);
+        $this->assertTrue($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
+        $this->assertFalse($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
+        $this->assertTrue($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
+        $this->connection->disableEvents(StatementEvent::all());
+        $this->assertFalse($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
+        $this->assertFalse($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
+        $this->assertFalse($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
+    }
 
-  /**
-   * Tests event enabling and disabling.
-   *
-   * @legacy-covers ::isEventEnabled
-   * @legacy-covers ::enableEvents
-   * @legacy-covers ::disableEvents
-   */
-  public function testEventEnablingAndDisabling(): void {
-    $this->connection->enableEvents(StatementEvent::all());
-    $this->assertTrue($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
-    $this->assertTrue($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
-    $this->assertTrue($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
-    $this->connection->disableEvents([
-      StatementExecutionEndEvent::class,
-    ]);
-    $this->assertTrue($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
-    $this->assertFalse($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
-    $this->assertTrue($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
-    $this->connection->disableEvents(StatementEvent::all());
-    $this->assertFalse($this->connection->isEventEnabled(StatementExecutionStartEvent::class));
-    $this->assertFalse($this->connection->isEventEnabled(StatementExecutionEndEvent::class));
-    $this->assertFalse($this->connection->isEventEnabled(StatementExecutionFailureEvent::class));
-  }
+    /**
+     * Tests enable invalid event.
+     *
+     * @legacy-covers ::enableEvents
+     */
+    public function testEnableInvalidEvent(): void
+    {
+        $this->expectException(\AssertionError::class);
+        $this->expectExceptionMessage('Event class foo does not exist');
+        $this->connection->enableEvents(['foo']);
+    }
 
-  /**
-   * Tests enable invalid event.
-   *
-   * @legacy-covers ::enableEvents
-   */
-  public function testEnableInvalidEvent(): void {
-    $this->expectException(\AssertionError::class);
-    $this->expectExceptionMessage('Event class foo does not exist');
-    $this->connection->enableEvents(['foo']);
-  }
+    /**
+     * Tests disable invalid event.
+     *
+     * @legacy-covers ::disableEvents
+     */
+    public function testDisableInvalidEvent(): void
+    {
+        $this->expectException(\AssertionError::class);
+        $this->expectExceptionMessage('Event class bar does not exist');
+        $this->connection->disableEvents(['bar']);
+    }
 
-  /**
-   * Tests disable invalid event.
-   *
-   * @legacy-covers ::disableEvents
-   */
-  public function testDisableInvalidEvent(): void {
-    $this->expectException(\AssertionError::class);
-    $this->expectExceptionMessage('Event class bar does not exist');
-    $this->connection->disableEvents(['bar']);
-  }
-
-  /**
-   * Tests event dispatching when no container available.
-   *
-   * @legacy-covers ::dispatchEvent
-   */
-  public function testEventDispatchingWhenNoContainerAvailable(): void {
-    $this->expectException(EventException::class);
-    $this->expectExceptionMessage('The event dispatcher service is not available. Database API events can only be fired if the container is initialized');
-    $this->connection->dispatchEvent($this->createMock(DatabaseEvent::class));
-  }
+    /**
+     * Tests event dispatching when no container available.
+     *
+     * @legacy-covers ::dispatchEvent
+     */
+    public function testEventDispatchingWhenNoContainerAvailable(): void
+    {
+        $this->expectException(EventException::class);
+        $this->expectExceptionMessage('The event dispatcher service is not available. Database API events can only be fired if the container is initialized');
+        $this->connection->dispatchEvent($this->createMock(DatabaseEvent::class));
+    }
 
 }

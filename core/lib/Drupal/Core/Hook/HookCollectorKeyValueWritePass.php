@@ -18,31 +18,32 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *
  * @see \Drupal\Core\Hook\HookCollectorPass::writeToContainer
  */
-class HookCollectorKeyValueWritePass implements CompilerPassInterface {
+class HookCollectorKeyValueWritePass implements CompilerPassInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
+    {
+        $hookData = $container->getParameter('.hook_data');
+        if ($container->hasParameter('.theme_hook_data')) {
+            $themeHookData = $container->getParameter('.theme_hook_data');
+            $hookData = array_merge($hookData, $themeHookData);
+            $hookData['preprocess_for_suggestions'] = array_merge($hookData['preprocess_for_suggestions'], $hookData['theme_preprocess_for_suggestions']);
+        }
+        $keyvalue = $container->get('keyvalue')->get('hook_data');
+        assert($keyvalue instanceof KeyValueStoreInterface);
+        $keyvalue->setMultiple($hookData);
+        $container->get('cache.bootstrap')->deleteMultiple(['hook_data', 'theme_hook_data']);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process(ContainerBuilder $container): void {
-    $hookData = $container->getParameter('.hook_data');
-    if ($container->hasParameter('.theme_hook_data')) {
-      $themeHookData = $container->getParameter('.theme_hook_data');
-      $hookData = array_merge($hookData, $themeHookData);
-      $hookData['preprocess_for_suggestions'] = array_merge($hookData['preprocess_for_suggestions'], $hookData['theme_preprocess_for_suggestions']);
+        // Remove converted flags, they are only needed while building the
+        // container.
+        $parameters = $container->getParameterBag();
+        foreach ($parameters->all() as $name => $value) {
+            if (str_ends_with((string) $name, '.skip_procedural_hook_scan')) {
+                $parameters->remove($name);
+            }
+        }
     }
-    $keyvalue = $container->get('keyvalue')->get('hook_data');
-    assert($keyvalue instanceof KeyValueStoreInterface);
-    $keyvalue->setMultiple($hookData);
-    $container->get('cache.bootstrap')->deleteMultiple(['hook_data', 'theme_hook_data']);
-
-    // Remove converted flags, they are only needed while building the
-    // container.
-    $parameters = $container->getParameterBag();
-    foreach ($parameters->all() as $name => $value) {
-      if (str_ends_with((string) $name, '.skip_procedural_hook_scan')) {
-        $parameters->remove($name);
-      }
-    }
-  }
 
 }

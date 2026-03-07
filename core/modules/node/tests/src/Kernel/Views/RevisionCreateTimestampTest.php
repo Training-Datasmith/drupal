@@ -17,65 +17,67 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class RevisionCreateTimestampTest extends ViewsKernelTestBase {
+class RevisionCreateTimestampTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node_test_views', 'node', 'views', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node_test_views', 'node', 'views', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_node_revision_timestamp'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_node_revision_timestamp'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installSchema('node', 'node_access');
+        $this->installEntitySchema('node');
+        $this->installEntitySchema('user');
 
-    $this->installSchema('node', 'node_access');
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('user');
-
-    if ($import_test_views) {
-      ViewTestData::createTestViews(static::class, ['node_test_views']);
+        if ($import_test_views) {
+            ViewTestData::createTestViews(static::class, ['node_test_views']);
+        }
     }
-  }
 
-  /**
-   * Tests the revision create timestamp view.
-   */
-  public function testRevisionCreateTimestampView(): void {
-    $node_type = NodeType::create([
-      'type' => 'article',
-      'name' => 'Article',
-    ]);
-    $node_type->save();
-    $node = Node::create([
-      'title' => 'Test node',
-      'type' => 'article',
-      'revision_timestamp' => 1000,
-    ]);
-    $node->save();
+    /**
+     * Tests the revision create timestamp view.
+     */
+    public function testRevisionCreateTimestampView(): void
+    {
+        $node_type = NodeType::create([
+          'type' => 'article',
+          'name' => 'Article',
+        ]);
+        $node_type->save();
+        $node = Node::create([
+          'title' => 'Test node',
+          'type' => 'article',
+          'revision_timestamp' => 1000,
+        ]);
+        $node->save();
 
-    $node->setRevisionCreationTime(1200);
-    $node->setNewRevision(TRUE);
-    $node->save();
+        $node->setRevisionCreationTime(1200);
+        $node->setNewRevision(true);
+        $node->save();
 
-    $node->setRevisionCreationTime(1400);
-    $node->setNewRevision(TRUE);
-    $node->save();
+        $node->setRevisionCreationTime(1400);
+        $node->setNewRevision(true);
+        $node->save();
 
-    $view = Views::getView('test_node_revision_timestamp');
-    $this->executeView($view);
+        $view = Views::getView('test_node_revision_timestamp');
+        $this->executeView($view);
 
-    $this->assertIdenticalResultset($view, [
-      ['vid' => 3, 'revision_timestamp' => 1400],
-      ['vid' => 2, 'revision_timestamp' => 1200],
-      ['vid' => 1, 'revision_timestamp' => 1000],
-    ], ['vid' => 'vid', 'revision_timestamp' => 'revision_timestamp']);
-  }
+        $this->assertIdenticalResultset($view, [
+          ['vid' => 3, 'revision_timestamp' => 1400],
+          ['vid' => 2, 'revision_timestamp' => 1200],
+          ['vid' => 1, 'revision_timestamp' => 1000],
+        ], ['vid' => 'vid', 'revision_timestamp' => 'revision_timestamp']);
+    }
 
 }

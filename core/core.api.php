@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Documentation landing page and topics, plus core library hooks.
@@ -2083,38 +2085,39 @@
  *
  * @see queue
  */
-function hook_cron(): void {
-  // Short-running operation example, not using a queue:
-  // Delete all expired records since the last cron run.
-  $expires = \Drupal::state()->get('my_module.last_check', 0);
-  $request_time = \Drupal::time()->getRequestTime();
-  \Drupal::database()->delete('my_module_table')
-    ->condition('expires', $expires, '>=')
-    ->execute();
-  \Drupal::state()->set('my_module.last_check', $request_time);
+function hook_cron(): void
+{
+    // Short-running operation example, not using a queue:
+    // Delete all expired records since the last cron run.
+    $expires = \Drupal::state()->get('my_module.last_check', 0);
+    $request_time = \Drupal::time()->getRequestTime();
+    \Drupal::database()->delete('my_module_table')
+      ->condition('expires', $expires, '>=')
+      ->execute();
+    \Drupal::state()->set('my_module.last_check', $request_time);
 
-  // Long-running operation example, leveraging a queue:
-  // Queue news feeds for updates once their refresh interval has elapsed.
-  $queue = \Drupal::queue('my_module.feeds');
-  $ids = \Drupal::entityTypeManager()->getStorage('my_module_feed')->getFeedIdsToRefresh();
-  foreach (Feed::loadMultiple($ids) as $feed) {
-    if ($queue->createItem($feed)) {
-      // Add timestamp to avoid queueing item more than once.
-      $feed->setQueuedTime($request_time);
-      $feed->save();
+    // Long-running operation example, leveraging a queue:
+    // Queue news feeds for updates once their refresh interval has elapsed.
+    $queue = \Drupal::queue('my_module.feeds');
+    $ids = \Drupal::entityTypeManager()->getStorage('my_module_feed')->getFeedIdsToRefresh();
+    foreach (Feed::loadMultiple($ids) as $feed) {
+        if ($queue->createItem($feed)) {
+            // Add timestamp to avoid queueing item more than once.
+            $feed->setQueuedTime($request_time);
+            $feed->save();
+        }
     }
-  }
-  $ids = \Drupal::entityQuery('my_module_feed')
-    ->accessCheck(FALSE)
-    ->condition('queued', $request_time - (3600 * 6), '<')
-    ->execute();
-  if ($ids) {
-    $feeds = Feed::loadMultiple($ids);
-    foreach ($feeds as $feed) {
-      $feed->setQueuedTime(0);
-      $feed->save();
+    $ids = \Drupal::entityQuery('my_module_feed')
+      ->accessCheck(false)
+      ->condition('queued', $request_time - (3600 * 6), '<')
+      ->execute();
+    if ($ids) {
+        $feeds = Feed::loadMultiple($ids);
+        foreach ($feeds as $feed) {
+            $feed->setQueuedTime(0);
+            $feed->save();
+        }
     }
-  }
 }
 
 /**
@@ -2125,8 +2128,9 @@ function hook_cron(): void {
  *
  * @see hook_data_type_info()
  */
-function hook_data_type_info_alter(array &$data_types): void {
-  $data_types['email']['class'] = '\Drupal\my_module\Type\Email';
+function hook_data_type_info_alter(array &$data_types): void
+{
+    $data_types['email']['class'] = '\Drupal\my_module\Type\Email';
 }
 
 /**
@@ -2144,10 +2148,11 @@ function hook_data_type_info_alter(array &$data_types): void {
  *
  * @ingroup queue
  */
-function hook_queue_info_alter(array &$queues): void {
-  // This site has many feeds so let's spend 90 seconds on each cron run
-  // updating feeds instead of the default 60.
-  $queues['my_module_feeds']['cron']['time'] = 90;
+function hook_queue_info_alter(array &$queues): void
+{
+    // This site has many feeds so let's spend 90 seconds on each cron run
+    // updating feeds instead of the default 60.
+    $queues['my_module_feeds']['cron']['time'] = 90;
 }
 
 /**
@@ -2156,12 +2161,13 @@ function hook_queue_info_alter(array &$queues): void {
  * @param array $definitions
  *   The array of condition definitions.
  */
-function hook_condition_info_alter(array &$definitions): void {
-  // Add custom or modify existing condition definitions.
-  if (isset($definitions['node_type']) && $definitions['node_type']['class'] == 'Drupal\node\Plugin\Condition\NodeType') {
-    // If the node_type's class is unaltered, use a custom implementation.
-    $definitions['node_type']['class'] = 'Drupal\my_module\Plugin\Condition\NodeType';
-  }
+function hook_condition_info_alter(array &$definitions): void
+{
+    // Add custom or modify existing condition definitions.
+    if (isset($definitions['node_type']) && $definitions['node_type']['class'] == 'Drupal\node\Plugin\Condition\NodeType') {
+        // If the node_type's class is unaltered, use a custom implementation.
+        $definitions['node_type']['class'] = 'Drupal\my_module\Plugin\Condition\NodeType';
+    }
 }
 
 /**
@@ -2210,16 +2216,17 @@ function hook_condition_info_alter(array &$definitions): void {
  *
  * @see \Drupal\Core\Mail\MailManagerInterface::mail()
  */
-function hook_mail_alter(array &$message): void {
-  if ($message['id'] == 'modulename_messagekey') {
-    if (!example_notifications_optin($message['to'], $message['id'])) {
-      // If the recipient has opted to not receive such messages, cancel
-      // sending.
-      $message['send'] = FALSE;
-      return;
+function hook_mail_alter(array &$message): void
+{
+    if ($message['id'] == 'modulename_messagekey') {
+        if (!example_notifications_optin($message['to'], $message['id'])) {
+            // If the recipient has opted to not receive such messages, cancel
+            // sending.
+            $message['send'] = false;
+            return;
+        }
+        $message['body'][] = "--\nMail sent out from " . \Drupal::config('system.site')->get('name');
     }
-    $message['body'][] = "--\nMail sent out from " . \Drupal::config('system.site')->get('name');
-  }
 }
 
 /**
@@ -2258,43 +2265,44 @@ function hook_mail_alter(array &$message): void {
  *
  * @see \Drupal\Core\Mail\MailManagerInterface::mail()
  */
-function hook_mail($key, array &$message, array $params): void {
-  $account = $params['account'];
-  $context = $params['context'];
-  $variables = [
-    '%site_name' => \Drupal::config('system.site')->get('name'),
-    '%username' => $account->getDisplayName(),
-  ];
-  if ($context['hook'] == 'taxonomy') {
-    $entity = $params['entity'];
-    $vocabulary = Vocabulary::load($entity->id());
-    $variables += [
-      '%term_name' => $entity->name,
-      '%term_description' => $entity->description,
-      '%term_id' => $entity->id(),
-      '%vocabulary_name' => $vocabulary->label(),
-      '%vocabulary_description' => $vocabulary->getDescription(),
-      '%vocabulary_id' => $vocabulary->id(),
+function hook_mail($key, array &$message, array $params): void
+{
+    $account = $params['account'];
+    $context = $params['context'];
+    $variables = [
+      '%site_name' => \Drupal::config('system.site')->get('name'),
+      '%username' => $account->getDisplayName(),
     ];
-  }
+    if ($context['hook'] == 'taxonomy') {
+        $entity = $params['entity'];
+        $vocabulary = Vocabulary::load($entity->id());
+        $variables += [
+          '%term_name' => $entity->name,
+          '%term_description' => $entity->description,
+          '%term_id' => $entity->id(),
+          '%vocabulary_name' => $vocabulary->label(),
+          '%vocabulary_description' => $vocabulary->getDescription(),
+          '%vocabulary_id' => $vocabulary->id(),
+        ];
+    }
 
-  // Node-based variable translation is only available if we have a node.
-  if (isset($params['node'])) {
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $params['node'];
-    $variables += [
-      '%uid' => $node->getOwnerId(),
-      '%url' => $node->toUrl('canonical', ['absolute' => TRUE])->toString(),
-      '%node_type' => $node->getBundleEntity()->label(),
-      '%title' => $node->getTitle(),
-      '%teaser' => $node->teaser,
-      '%body' => $node->body,
-    ];
-  }
-  $subject = strtr($context['subject'], $variables);
-  $body = strtr($context['message'], $variables);
-  $message['subject'] .= str_replace(["\r", "\n"], '', $subject);
-  $message['body'][] = MailFormatHelper::htmlToText($body);
+    // Node-based variable translation is only available if we have a node.
+    if (isset($params['node'])) {
+        /** @var \Drupal\node\NodeInterface $node */
+        $node = $params['node'];
+        $variables += [
+          '%uid' => $node->getOwnerId(),
+          '%url' => $node->toUrl('canonical', ['absolute' => true])->toString(),
+          '%node_type' => $node->getBundleEntity()->label(),
+          '%title' => $node->getTitle(),
+          '%teaser' => $node->teaser,
+          '%body' => $node->body,
+        ];
+    }
+    $subject = strtr($context['subject'], $variables);
+    $body = strtr($context['message'], $variables);
+    $message['subject'] .= str_replace(["\r", "\n"], '', $subject);
+    $message['body'][] = MailFormatHelper::htmlToText($body);
 }
 
 /**
@@ -2306,8 +2314,9 @@ function hook_mail($key, array &$message, array $params): void {
  * @see \Drupal\Core\Annotation\Mail
  * @see \Drupal\Core\Mail\MailManager
  */
-function hook_mail_backend_info_alter(array &$info): void {
-  unset($info['test_mail_collector']);
+function hook_mail_backend_info_alter(array &$info): void
+{
+    unset($info['test_mail_collector']);
 }
 
 /**
@@ -2318,9 +2327,10 @@ function hook_mail_backend_info_alter(array &$info): void {
  *
  * @see \Drupal\Core\Locale\CountryManager::getList()
  */
-function hook_countries_alter(array &$countries): void {
-  // Elbonia is now independent, so add it to the country list.
-  $countries['EB'] = 'Elbonia';
+function hook_countries_alter(array &$countries): void
+{
+    // Elbonia is now independent, so add it to the country list.
+    $countries['EB'] = 'Elbonia';
 }
 
 /**
@@ -2332,8 +2342,9 @@ function hook_countries_alter(array &$countries): void {
  * @see \Drupal\Core\Display\VariantManager
  * @see \Drupal\Core\Display\Attribute\DisplayVariant
  */
-function hook_display_variant_plugin_alter(array &$definitions): void {
-  $definitions['full_page']['admin_label'] = t('Block layout');
+function hook_display_variant_plugin_alter(array &$definitions): void
+{
+    $definitions['full_page']['admin_label'] = t('Block layout');
 }
 
 /**
@@ -2342,9 +2353,10 @@ function hook_display_variant_plugin_alter(array &$definitions): void {
  * @param \Drupal\Core\Layout\LayoutDefinition[] $definitions
  *   The array of layout definitions, keyed by plugin ID.
  */
-function hook_layout_alter(array &$definitions): void {
-  // Remove a layout.
-  unset($definitions['twocol']);
+function hook_layout_alter(array &$definitions): void
+{
+    // Remove a layout.
+    unset($definitions['twocol']);
 }
 
 /**
@@ -2367,10 +2379,11 @@ function hook_layout_alter(array &$definitions): void {
  * @see drupal_flush_all_caches()
  * @see hook_rebuild()
  */
-function hook_cache_flush(): void {
-  if (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'update') {
-    _update_cache_clear();
-  }
+function hook_cache_flush(): void
+{
+    if (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'update') {
+        _update_cache_clear();
+    }
 }
 
 /**
@@ -2388,11 +2401,12 @@ function hook_cache_flush(): void {
  * @see hook_cache_flush()
  * @see drupal_flush_all_caches()
  */
-function hook_rebuild(): void {
-  $themes = \Drupal::service('theme_handler')->listInfo();
-  foreach ($themes as $theme) {
-    _block_rehash($theme->getName());
-  }
+function hook_rebuild(): void
+{
+    $themes = \Drupal::service('theme_handler')->listInfo();
+    foreach ($themes as $theme) {
+        _block_rehash($theme->getName());
+    }
 }
 
 /**
@@ -2416,11 +2430,12 @@ function hook_rebuild(): void {
  * @see callback_batch_operation()
  * @see \Drupal\Core\Config\ConfigImporter::initialize()
  */
-function hook_config_import_steps_alter(&$sync_steps, \Drupal\Core\Config\ConfigImporter $config_importer): void {
-  $deletes = $config_importer->getUnprocessedConfiguration('delete');
-  if (isset($deletes['field.storage.node.body'])) {
-    $sync_steps[] = '_additional_configuration_step';
-  }
+function hook_config_import_steps_alter(&$sync_steps, \Drupal\Core\Config\ConfigImporter $config_importer): void
+{
+    $deletes = $config_importer->getUnprocessedConfiguration('delete');
+    if (isset($deletes['field.storage.node.body'])) {
+        $sync_steps[] = '_additional_configuration_step';
+    }
 }
 
 /**
@@ -2445,12 +2460,13 @@ function hook_config_import_steps_alter(&$sync_steps, \Drupal\Core\Config\Config
  * @see \Drupal\Core\Config\TypedConfigManager
  * @see \Drupal\Core\Config\Schema\ConfigSchemaAlterException
  */
-function hook_config_schema_info_alter(array &$definitions): void {
-  // Enhance the text and date type definitions with classes to generate proper
-  // form elements in ConfigTranslationFormBase. Other translatable types will
-  // appear as a one line textfield.
-  $definitions['text']['form_element_class'] = \Drupal\config_translation\FormElement\Textarea::class;
-  $definitions['date_format']['form_element_class'] = \Drupal\config_translation\FormElement\DateFormat::class;
+function hook_config_schema_info_alter(array &$definitions): void
+{
+    // Enhance the text and date type definitions with classes to generate proper
+    // form elements in ConfigTranslationFormBase. Other translatable types will
+    // appear as a one line textfield.
+    $definitions['text']['form_element_class'] = \Drupal\config_translation\FormElement\Textarea::class;
+    $definitions['date_format']['form_element_class'] = \Drupal\config_translation\FormElement\DateFormat::class;
 }
 
 /**
@@ -2462,8 +2478,9 @@ function hook_config_schema_info_alter(array &$definitions): void {
  * @see \Drupal\Core\Validation\ConstraintManager
  * @see \Drupal\Core\Validation\Attribute\Constraint
  */
-function hook_validation_constraint_alter(array &$definitions): void {
-  $definitions['Null']['class'] = '\Drupal\my_module\Plugin\Validation\Constraints\MyClass';
+function hook_validation_constraint_alter(array &$definitions): void
+{
+    $definitions['Null']['class'] = '\Drupal\my_module\Plugin\Validation\Constraints\MyClass';
 }
 
 /**

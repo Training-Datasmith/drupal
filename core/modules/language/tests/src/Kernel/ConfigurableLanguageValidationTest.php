@@ -16,21 +16,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class ConfigurableLanguageValidationTest extends ConfigEntityValidationTestBase {
+class ConfigurableLanguageValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = ConfigurableLanguage::createFromLangcode('fr');
-    $this->entity->save();
-  }
+        $this->entity = ConfigurableLanguage::createFromLangcode('fr');
+        $this->entity->save();
+    }
 
 }

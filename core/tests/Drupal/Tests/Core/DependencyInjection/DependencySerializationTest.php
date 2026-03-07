@@ -17,79 +17,83 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[CoversClass(DependencySerializationTrait::class)]
 #[Group('DependencyInjection')]
-class DependencySerializationTest extends UnitTestCase {
+class DependencySerializationTest extends UnitTestCase
+{
+    /**
+     * Tests serialization.
+     *
+     * @legacy-covers ::__sleep
+     * @legacy-covers ::__wakeup
+     */
+    public function testSerialization(): void
+    {
+        // Create a pseudo service and dependency injected object.
+        $service = new \stdClass();
+        $container = TestKernel::setContainerWithKernel();
+        $container->set('test_service', $service);
+        $this->assertSame($container, $container->get('service_container'));
 
-  /**
-   * Tests serialization.
-   *
-   * @legacy-covers ::__sleep
-   * @legacy-covers ::__wakeup
-   */
-  public function testSerialization(): void {
-    // Create a pseudo service and dependency injected object.
-    $service = new \stdClass();
-    $container = TestKernel::setContainerWithKernel();
-    $container->set('test_service', $service);
-    $this->assertSame($container, $container->get('service_container'));
+        $dependencySerialization = new DependencySerializationTestDummy($service);
+        $dependencySerialization->setContainer($container);
 
-    $dependencySerialization = new DependencySerializationTestDummy($service);
-    $dependencySerialization->setContainer($container);
+        $string = serialize($dependencySerialization);
+        /** @var \Drupal\Tests\Core\DependencyInjection\DependencySerializationTestDummy $dependencySerialization */
+        $dependencySerialization = unserialize($string);
 
-    $string = serialize($dependencySerialization);
-    /** @var \Drupal\Tests\Core\DependencyInjection\DependencySerializationTestDummy $dependencySerialization */
-    $dependencySerialization = unserialize($string);
-
-    $this->assertTrue($container->has(ReverseContainer::class));
-    $this->assertSame($service, $dependencySerialization->service);
-    $this->assertSame($container, $dependencySerialization->container);
-    $this->assertEmpty($dependencySerialization->getServiceIds());
-  }
+        $this->assertTrue($container->has(ReverseContainer::class));
+        $this->assertSame($service, $dependencySerialization->service);
+        $this->assertSame($container, $dependencySerialization->container);
+        $this->assertEmpty($dependencySerialization->getServiceIds());
+    }
 
 }
 
 /**
  * Defines a test class which has a single service as dependency.
  */
-class DependencySerializationTestDummy {
+class DependencySerializationTestDummy
+{
+    use DependencySerializationTrait;
 
-  use DependencySerializationTrait;
+    /**
+     * A test service.
+     *
+     * @var object
+     */
+    public $service;
 
-  /**
-   * A test service.
-   *
-   * @var object
-   */
-  public $service;
+    /**
+     * The container.
+     *
+     * @var \Symfony\Component\DependencyInjection\ContainerInterface
+     */
+    public $container;
 
-  /**
-   * The container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  public $container;
+    /**
+     * Constructs a new TestClass object.
+     *
+     * @param object $service
+     *   A test service.
+     */
+    public function __construct(\stdClass $service)
+    {
+        $this->service = $service;
+    }
 
-  /**
-   * Constructs a new TestClass object.
-   *
-   * @param object $service
-   *   A test service.
-   */
-  public function __construct(\stdClass $service) {
-    $this->service = $service;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setContainer(?ContainerInterface $container): void
+    {
+        $this->container = $container;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setContainer(?ContainerInterface $container): void {
-    $this->container = $container;
-  }
-
-  /**
-   * Gets the stored service IDs.
-   */
-  public function getServiceIds() {
-    return $this->_serviceIds;
-  }
+    /**
+     * Gets the stored service IDs.
+     */
+    public function getServiceIds()
+    {
+        return $this->_serviceIds;
+    }
 
 }

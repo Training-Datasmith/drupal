@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\Field\FieldWidget;
 
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
@@ -14,93 +16,95 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a default comment widget.
  */
 #[FieldWidget(
-  id: 'comment_default',
-  label: new TranslatableMarkup('Comment'),
-  field_types: ['comment'],
+    id: 'comment_default',
+    label: new TranslatableMarkup('Comment'),
+    field_types: ['comment'],
 )]
-class CommentWidget extends WidgetBase {
+class CommentWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array
+    {
+        $entity = $items->getEntity();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
-    $entity = $items->getEntity();
+        $element['status'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Comments'),
+          '#title_display' => 'invisible',
+          '#default_value' => $items->status,
+          '#required ' => true,
+          '#options' => [
+            CommentItemInterface::OPEN => $this->t('Open'),
+            CommentItemInterface::CLOSED => $this->t('Closed'),
+            CommentItemInterface::HIDDEN => $this->t('Hidden'),
+          ],
+          CommentItemInterface::OPEN => [
+            '#description' => $this->t('Users with the "Post comments" permission can post comments.'),
+          ],
+          CommentItemInterface::CLOSED => [
+            '#description' => $this->t('Users cannot post comments, but existing comments will be displayed.'),
+          ],
+          CommentItemInterface::HIDDEN => [
+            '#description' => $this->t('Comments and the comment form are hidden from view.'),
+          ],
+        ];
 
-    $element['status'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Comments'),
-      '#title_display' => 'invisible',
-      '#default_value' => $items->status,
-      '#required ' => TRUE,
-      '#options' => [
-        CommentItemInterface::OPEN => $this->t('Open'),
-        CommentItemInterface::CLOSED => $this->t('Closed'),
-        CommentItemInterface::HIDDEN => $this->t('Hidden'),
-      ],
-      CommentItemInterface::OPEN => [
-        '#description' => $this->t('Users with the "Post comments" permission can post comments.'),
-      ],
-      CommentItemInterface::CLOSED => [
-        '#description' => $this->t('Users cannot post comments, but existing comments will be displayed.'),
-      ],
-      CommentItemInterface::HIDDEN => [
-        '#description' => $this->t('Comments and the comment form are hidden from view.'),
-      ],
-    ];
+        // If the entity doesn't have any comments, the "Closed" option makes no
+        // sense, so don't even bother presenting it to the user unless this is the
+        // default value widget on the field settings form.
+        if (!$this->isDefaultValueWidget($form_state) && !$items->comment_count) {
+            // Only hide the option when it's not the currently selected option.
+            if ($element['status']['#default_value'] !== CommentItemInterface::CLOSED) {
+                $element['status'][CommentItemInterface::CLOSED]['#access'] = false;
+            }
+        }
+        // If the advanced settings tabs-set is available (normally rendered in the
+        // second column on wide-resolutions), place the field as a details element
+        // in this tab-set.
+        if (isset($form['advanced'])) {
+            // Get default value from the field.
+            $field_default_values = $this->fieldDefinition->getDefaultValue($entity);
 
-    // If the entity doesn't have any comments, the "Closed" option makes no
-    // sense, so don't even bother presenting it to the user unless this is the
-    // default value widget on the field settings form.
-    if (!$this->isDefaultValueWidget($form_state) && !$items->comment_count) {
-      // Only hide the option when it's not the currently selected option.
-      if ($element['status']['#default_value'] !== CommentItemInterface::CLOSED) {
-        $element['status'][CommentItemInterface::CLOSED]['#access'] = FALSE;
-      }
+            // Override widget title to be helpful for end users.
+            $element['#title'] = $this->t('Comment settings');
+
+            $element += [
+              '#type' => 'details',
+              // Open the details when the selected value is different to the stored
+              // default values for the field.
+              '#open' => ($items->status != $field_default_values[0]['status']),
+              '#group' => 'advanced',
+              '#attributes' => [
+                'class' => ['comment-' . Html::getClass($entity->getEntityTypeId()) . '-settings-form'],
+              ],
+              '#attached' => [
+                'library' => ['comment/drupal.comment'],
+              ],
+            ];
+        }
+
+        return $element;
     }
-    // If the advanced settings tabs-set is available (normally rendered in the
-    // second column on wide-resolutions), place the field as a details element
-    // in this tab-set.
-    if (isset($form['advanced'])) {
-      // Get default value from the field.
-      $field_default_values = $this->fieldDefinition->getDefaultValue($entity);
 
-      // Override widget title to be helpful for end users.
-      $element['#title'] = $this->t('Comment settings');
-
-      $element += [
-        '#type' => 'details',
-        // Open the details when the selected value is different to the stored
-        // default values for the field.
-        '#open' => ($items->status != $field_default_values[0]['status']),
-        '#group' => 'advanced',
-        '#attributes' => [
-          'class' => ['comment-' . Html::getClass($entity->getEntityTypeId()) . '-settings-form'],
-        ],
-        '#attached' => [
-          'library' => ['comment/drupal.comment'],
-        ],
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array
+    {
+        // Add default values for statistics properties because we don't want to
+        // have them in form.
+        foreach ($values as &$value) {
+            $value += [
+              'cid' => 0,
+              'last_comment_timestamp' => 0,
+              'last_comment_name' => '',
+              'last_comment_uid' => 0,
+              'comment_count' => 0,
+            ];
+        }
+        return $values;
     }
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
-    // Add default values for statistics properties because we don't want to
-    // have them in form.
-    foreach ($values as &$value) {
-      $value += [
-        'cid' => 0,
-        'last_comment_timestamp' => 0,
-        'last_comment_name' => '',
-        'last_comment_uid' => 0,
-        'comment_count' => 0,
-      ];
-    }
-    return $values;
-  }
 
 }

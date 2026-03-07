@@ -20,30 +20,32 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class SettingsValidator implements EventSubscriberInterface {
+final class SettingsValidator implements EventSubscriberInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Checks that Drupal's settings are valid for Package Manager.
-   */
-  public function validate(SandboxValidationEvent $event): void {
-    if (Settings::get('update_fetch_with_http_fallback')) {
-      $event->addError([
-        $this->t('The <code>update_fetch_with_http_fallback</code> setting must be disabled.'),
-      ]);
+    /**
+     * Checks that Drupal's settings are valid for Package Manager.
+     */
+    public function validate(SandboxValidationEvent $event): void
+    {
+        if (Settings::get('update_fetch_with_http_fallback')) {
+            $event->addError([
+              $this->t('The <code>update_fetch_with_http_fallback</code> setting must be disabled.'),
+            ]);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      PreCreateEvent::class => 'validate',
-      PreApplyEvent::class => 'validate',
-      StatusCheckEvent::class => 'validate',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          PreCreateEvent::class => 'validate',
+          PreApplyEvent::class => 'validate',
+          StatusCheckEvent::class => 'validate',
+        ];
+    }
 
 }

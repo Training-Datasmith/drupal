@@ -16,48 +16,51 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class FieldStorageConfigValidationTest extends ConfigEntityValidationTestBase {
+class FieldStorageConfigValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'node', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'node', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
+        $this->entity = FieldStorageConfig::create([
+          'type' => 'boolean',
+          'field_name' => 'test',
+          'entity_type' => 'user',
+        ]);
+        $this->entity->save();
+    }
 
-    $this->entity = FieldStorageConfig::create([
-      'type' => 'boolean',
-      'field_name' => 'test',
-      'entity_type' => 'user',
-    ]);
-    $this->entity->save();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testImmutableProperties(array $valid_values = []): void
+    {
+        $valid_values['type'] = 'string';
+        parent::testImmutableProperties($valid_values);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function testImmutableProperties(array $valid_values = []): void {
-    $valid_values['type'] = 'string';
-    parent::testImmutableProperties($valid_values);
-  }
+    /**
+     * Tests that the field type plugin's existence is validated.
+     */
+    public function testFieldTypePluginIsValidated(): void
+    {
+        // The `type` property is immutable, so we need to clone the entity in
+        // order to cleanly change its immutable properties.
+        $this->entity = $this->entity->createDuplicate()
+          ->set('type', 'invalid');
 
-  /**
-   * Tests that the field type plugin's existence is validated.
-   */
-  public function testFieldTypePluginIsValidated(): void {
-    // The `type` property is immutable, so we need to clone the entity in
-    // order to cleanly change its immutable properties.
-    $this->entity = $this->entity->createDuplicate()
-      ->set('type', 'invalid');
-
-    $this->assertValidationErrors([
-      'type' => "The 'invalid' plugin does not exist.",
-    ]);
-  }
+        $this->assertValidationErrors([
+          'type' => "The 'invalid' plugin does not exist.",
+        ]);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,21 +14,22 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\media\Entity\MediaType
  */
-class MediaTypeAccessControlHandler extends EntityAccessControlHandler {
+class MediaTypeAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $viewLabelOperation = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $viewLabelOperation = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    if ($operation === 'view label') {
-      return AccessResult::allowedIfHasPermission($account, 'view media');
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        if ($operation === 'view label') {
+            return AccessResult::allowedIfHasPermission($account, 'view media');
+        }
+        return parent::checkAccess($entity, $operation, $account);
     }
-    return parent::checkAccess($entity, $operation, $account);
-  }
 
 }

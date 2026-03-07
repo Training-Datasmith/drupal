@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\core_fake\Driver\Database\CoreFake\Install;
 
 use Drupal\Core\Database\Install\Tasks as InstallTasks;
@@ -7,13 +9,14 @@ use Drupal\Core\Database\Install\Tasks as InstallTasks;
 /**
  * Specifies installation tasks for CoreFake.
  */
-class Tasks extends InstallTasks {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function name(): string {
-    return 'CoreFake';
-  }
+class Tasks extends InstallTasks
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function name(): string
+    {
+        return 'CoreFake';
+    }
 
 }

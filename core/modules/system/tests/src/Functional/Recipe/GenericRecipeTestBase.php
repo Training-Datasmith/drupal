@@ -10,46 +10,49 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Runs a series of generic tests for one recipe.
  */
-abstract class GenericRecipeTestBase extends BrowserTestBase {
+abstract class GenericRecipeTestBase extends BrowserTestBase
+{
+    use RecipeTestTrait;
 
-  use RecipeTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'minimal';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'minimal';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Returns the path of the recipe under test.
+     *
+     * @return string
+     *   The absolute path of the recipe that contains this test.
+     */
+    protected function getRecipePath(): string
+    {
+        // Assume this test in located in RECIPE_DIR/tests/src/Functional.
+        return dirname((new \ReflectionObject($this))->getFileName(), 4);
+    }
 
-  /**
-   * Returns the path of the recipe under test.
-   *
-   * @return string
-   *   The absolute path of the recipe that contains this test.
-   */
-  protected function getRecipePath(): string {
-    // Assume this test in located in RECIPE_DIR/tests/src/Functional.
-    return dirname((new \ReflectionObject($this))->getFileName(), 4);
-  }
+    /**
+     * Applies the recipe under test.
+     */
+    protected function doApply(): void
+    {
+        $this->applyRecipe($this->getRecipePath());
+    }
 
-  /**
-   * Applies the recipe under test.
-   */
-  protected function doApply(): void {
-    $this->applyRecipe($this->getRecipePath());
-  }
-
-  /**
-   * Tests that this recipe can be applied multiple times.
-   */
-  public function testRecipeCanBeApplied(): void {
-    $this->setUpCurrentUser(admin: TRUE);
-    $this->doApply();
-    // Apply the recipe again to prove that it is idempotent.
-    $this->doApply();
-  }
+    /**
+     * Tests that this recipe can be applied multiple times.
+     */
+    public function testRecipeCanBeApplied(): void
+    {
+        $this->setUpCurrentUser(admin: true);
+        $this->doApply();
+        // Apply the recipe again to prove that it is idempotent.
+        $this->doApply();
+    }
 
 }

@@ -11,41 +11,45 @@ use Drupal\test_htmx\Controller\HtmxTestAttachmentsController;
 /**
  * A small form used to insert an HTMX powered element using ajax API.
  */
-class HtmxTestAjaxForm extends FormBase {
+class HtmxTestAjaxForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'htmx_test_ajax_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'htmx_test_ajax_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $build = [
-      'ajax-button' => [
-        '#type' => 'button',
-        '#value' => 'Trigger Ajax',
-        '#submit_button' => FALSE,
-        '#ajax' => [
-          'callback' => [
-            HtmxTestAttachmentsController::class,
-            'replaceWithAjax',
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $build = [
+          'ajax-button' => [
+            '#type' => 'button',
+            '#value' => 'Trigger Ajax',
+            '#submit_button' => false,
+            '#ajax' => [
+              'callback' => [
+                HtmxTestAttachmentsController::class,
+                'replaceWithAjax',
+              ],
+              'wrapper' => 'ajax-test-container',
+            ],
           ],
-          'wrapper' => 'ajax-test-container',
-        ],
-      ],
-      '#suffix' => '<div id="ajax-test-container"></div>',
-    ];
+          '#suffix' => '<div id="ajax-test-container"></div>',
+        ];
 
-    return $build;
-  }
+        return $build;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {}
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+    }
 
 }

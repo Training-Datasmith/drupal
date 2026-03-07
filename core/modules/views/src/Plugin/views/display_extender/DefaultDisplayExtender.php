@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\display_extender;
 
-use Drupal\views\Attribute\ViewsDisplayExtender;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Attribute\ViewsDisplayExtender;
 
 /**
  * Default display extender plugin; does nothing.
@@ -14,8 +16,8 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
     id: 'default',
     title: new TranslatableMarkup('Empty display extender'),
     help: new TranslatableMarkup('Default settings for this view.'),
-    no_ui: TRUE
+    no_ui: true
 )]
-class DefaultDisplayExtender extends DisplayExtenderPluginBase {
-
+class DefaultDisplayExtender extends DisplayExtenderPluginBase
+{
 }

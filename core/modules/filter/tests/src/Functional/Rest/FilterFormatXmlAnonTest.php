@@ -14,24 +14,24 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class FilterFormatXmlAnonTest extends FilterFormatResourceTestBase {
+class FilterFormatXmlAnonTest extends FilterFormatResourceTestBase
+{
+    use AnonResourceTestTrait;
+    use XmlEntityNormalizationQuirksTrait;
 
-  use AnonResourceTestTrait;
-  use XmlEntityNormalizationQuirksTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'xml';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'xml';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'text/xml; charset=utf-8';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'text/xml; charset=utf-8';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

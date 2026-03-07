@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\help;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -15,34 +17,34 @@ use Drupal\Core\Cache\CacheableDependencyInterface;
  * class that may be helpful:
  * \Drupal\help\Plugin\HelpSection\HelpSectionPluginBase.
  */
-interface HelpSectionPluginInterface extends PluginInspectionInterface, CacheableDependencyInterface {
+interface HelpSectionPluginInterface extends PluginInspectionInterface, CacheableDependencyInterface
+{
+    /**
+     * Returns the title of the help section.
+     *
+     * @return string
+     *   The title text, which could be a plain string or an object that can be
+     *   cast to a string.
+     */
+    public function getTitle();
 
-  /**
-   * Returns the title of the help section.
-   *
-   * @return string
-   *   The title text, which could be a plain string or an object that can be
-   *   cast to a string.
-   */
-  public function getTitle();
+    /**
+     * Returns the description text for the help section.
+     *
+     * @return string
+     *   The description text, which could be a plain string or an object that
+     *   can be cast to a string.
+     */
+    public function getDescription();
 
-  /**
-   * Returns the description text for the help section.
-   *
-   * @return string
-   *   The description text, which could be a plain string or an object that
-   *   can be cast to a string.
-   */
-  public function getDescription();
-
-  /**
-   * Returns a list of topics to show in the help section.
-   *
-   * @return array
-   *   A sorted list of topic links or render arrays for topic links. The links
-   *   will be shown in the help section; if the returned array of links is
-   *   empty, the section will be shown with some generic empty text.
-   */
-  public function listTopics();
+    /**
+     * Returns a list of topics to show in the help section.
+     *
+     * @return array
+     *   A sorted list of topic links or render arrays for topic links. The links
+     *   will be shown in the help section; if the returned array of links is
+     *   empty, the section will be shown with some generic empty text.
+     */
+    public function listTopics();
 
 }

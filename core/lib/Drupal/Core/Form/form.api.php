@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Callbacks and hooks related to form system.
@@ -53,45 +55,46 @@
  *   It is discouraged to type hint this parameter as an array, to allow an
  *   object implement \ArrayAccess to be passed.
  */
-function callback_batch_operation($multiple_params, &$context): void {
-  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
-  $database = \Drupal::database();
+function callback_batch_operation($multiple_params, &$context): void
+{
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $database = \Drupal::database();
 
-  if (!isset($context['sandbox']['progress'])) {
-    $context['sandbox']['progress'] = 0;
-    $context['sandbox']['current_node'] = 0;
-    $context['sandbox']['max'] = $database->query('SELECT COUNT(DISTINCT [nid]) FROM {node}')->fetchField();
-  }
+    if (!isset($context['sandbox']['progress'])) {
+        $context['sandbox']['progress'] = 0;
+        $context['sandbox']['current_node'] = 0;
+        $context['sandbox']['max'] = $database->query('SELECT COUNT(DISTINCT [nid]) FROM {node}')->fetchField();
+    }
 
-  // For this example, we decide that we can safely process
-  // 5 nodes at a time without a timeout.
-  $limit = 5;
+    // For this example, we decide that we can safely process
+    // 5 nodes at a time without a timeout.
+    $limit = 5;
 
-  // With each pass through the callback, retrieve the next group of nids.
-  $result = $database->queryRange("SELECT [nid] FROM {node} WHERE [nid] > :nid ORDER BY [nid] ASC", 0, $limit, [':nid' => $context['sandbox']['current_node']]);
-  foreach ($result as $row) {
+    // With each pass through the callback, retrieve the next group of nids.
+    $result = $database->queryRange('SELECT [nid] FROM {node} WHERE [nid] > :nid ORDER BY [nid] ASC', 0, $limit, [':nid' => $context['sandbox']['current_node']]);
+    foreach ($result as $row) {
 
-    // Here we actually perform our processing on the current node.
-    $node_storage->resetCache([$row['nid']]);
-    $node = $node_storage->load($row['nid']);
-    $node->value1 = $options1;
-    $node->value2 = $options2;
-    node_save($node);
+        // Here we actually perform our processing on the current node.
+        $node_storage->resetCache([$row['nid']]);
+        $node = $node_storage->load($row['nid']);
+        $node->value1 = $options1;
+        $node->value2 = $options2;
+        node_save($node);
 
-    // Store some result for post-processing in the finished callback.
-    $context['results'][] = $node->title;
+        // Store some result for post-processing in the finished callback.
+        $context['results'][] = $node->title;
 
-    // Update our progress information.
-    $context['sandbox']['progress']++;
-    $context['sandbox']['current_node'] = $node->nid;
-    $context['message'] = t('Now processing %node', ['%node' => $node->title]);
-  }
+        // Update our progress information.
+        $context['sandbox']['progress']++;
+        $context['sandbox']['current_node'] = $node->nid;
+        $context['message'] = t('Now processing %node', ['%node' => $node->title]);
+    }
 
-  // Inform the batch engine that we are not finished,
-  // and provide an estimation of the completion level we reached.
-  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
-    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
-  }
+    // Inform the batch engine that we are not finished,
+    // and provide an estimation of the completion level we reached.
+    if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+        $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+    }
 }
 
 /**
@@ -112,30 +115,30 @@ function callback_batch_operation($multiple_params, &$context): void {
  *   A string representing the elapsed time for the batch process, e.g.,
  *   '1 min 30 secs'.
  */
-function callback_batch_finished($success, $results, $operations, $elapsed): void {
-  if ($success) {
-    // Here we do something meaningful with the results.
-    $message = t("@count items were processed (@elapsed).", [
-      '@count' => count($results),
-      '@elapsed' => $elapsed,
-    ]);
-    $list = [
-      '#theme' => 'item_list',
-      '#items' => $results,
-    ];
-    $message .= \Drupal::service('renderer')->render($list);
-    \Drupal::messenger()->addStatus($message);
-  }
-  else {
-    // An error occurred.
-    // $operations contains the operations that remained unprocessed.
-    $error_operation = reset($operations);
-    $message = t('An error occurred while processing %error_operation with arguments: @arguments', [
-      '%error_operation' => $error_operation[0],
-      '@arguments' => print_r($error_operation[1], TRUE),
-    ]);
-    \Drupal::messenger()->addError($message);
-  }
+function callback_batch_finished($success, $results, $operations, $elapsed): void
+{
+    if ($success) {
+        // Here we do something meaningful with the results.
+        $message = t('@count items were processed (@elapsed).', [
+          '@count' => count($results),
+          '@elapsed' => $elapsed,
+        ]);
+        $list = [
+          '#theme' => 'item_list',
+          '#items' => $results,
+        ];
+        $message .= \Drupal::service('renderer')->render($list);
+        \Drupal::messenger()->addStatus($message);
+    } else {
+        // An error occurred.
+        // $operations contains the operations that remained unprocessed.
+        $error_operation = reset($operations);
+        $message = t('An error occurred while processing %error_operation with arguments: @arguments', [
+          '%error_operation' => $error_operation[0],
+          '@arguments' => print_r($error_operation[1], true),
+        ]);
+        \Drupal::messenger()->addError($message);
+    }
 }
 
 /**
@@ -153,11 +156,12 @@ function callback_batch_finished($success, $results, $operations, $elapsed): voi
  * @param \Drupal\Core\Ajax\CommandInterface[] $data
  *   An array of all the rendered commands that will be sent to the client.
  */
-function hook_ajax_render_alter(array &$data): void {
-  // Inject any new status messages into the content area.
-  $status_messages = ['#type' => 'status_messages'];
-  $command = new \Drupal\Core\Ajax\PrependCommand('#block-system-main .content', \Drupal::service('renderer')->renderRoot($status_messages));
-  $data[] = $command->render();
+function hook_ajax_render_alter(array &$data): void
+{
+    // Inject any new status messages into the content area.
+    $status_messages = ['#type' => 'status_messages'];
+    $command = new \Drupal\Core\Ajax\PrependCommand('#block-system-main .content', \Drupal::service('renderer')->renderRoot($status_messages));
+    $data[] = $command->render();
 }
 
 /**
@@ -201,19 +205,20 @@ function hook_ajax_render_alter(array &$data): void {
  *
  * @ingroup form_api
  */
-function hook_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
-  if (isset($form['type']) && $form['type']['#value'] . '_node_settings' == $form_id) {
-    $upload_enabled_types = \Drupal::config('my_module.settings')->get('upload_enabled_types');
-    $form['workflow']['upload_' . $form['type']['#value']] = [
-      '#type' => 'radios',
-      '#title' => t('Attachments'),
-      '#default_value' => in_array($form['type']['#value'], $upload_enabled_types) ? 1 : 0,
-      '#options' => [t('Disabled'), t('Enabled')],
-    ];
-    // Add a custom submit handler to save the array of types back to the config
-    // file.
-    $form['actions']['submit']['#submit'][] = 'my_module_upload_enabled_types_submit';
-  }
+function hook_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void
+{
+    if (isset($form['type']) && $form['type']['#value'] . '_node_settings' == $form_id) {
+        $upload_enabled_types = \Drupal::config('my_module.settings')->get('upload_enabled_types');
+        $form['workflow']['upload_' . $form['type']['#value']] = [
+          '#type' => 'radios',
+          '#title' => t('Attachments'),
+          '#default_value' => in_array($form['type']['#value'], $upload_enabled_types) ? 1 : 0,
+          '#options' => [t('Disabled'), t('Enabled')],
+        ];
+        // Add a custom submit handler to save the array of types back to the config
+        // file.
+        $form['actions']['submit']['#submit'][] = 'my_module_upload_enabled_types_submit';
+    }
 }
 
 /**
@@ -252,17 +257,18 @@ function hook_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $for
  *
  * @ingroup form_api
  */
-function hook_form_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
-  // Modification for the form with the given form ID goes here. For example, if
-  // FORM_ID is "user_register_form" this code would run only on the user
-  // registration form.
+function hook_form_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void
+{
+    // Modification for the form with the given form ID goes here. For example, if
+    // FORM_ID is "user_register_form" this code would run only on the user
+    // registration form.
 
-  // Add a checkbox to registration form about agreeing to terms of use.
-  $form['terms_of_use'] = [
-    '#type' => 'checkbox',
-    '#title' => t("I agree with the website's terms and conditions."),
-    '#required' => TRUE,
-  ];
+    // Add a checkbox to registration form about agreeing to terms of use.
+    $form['terms_of_use'] = [
+      '#type' => 'checkbox',
+      '#title' => t("I agree with the website's terms and conditions."),
+      '#required' => true,
+    ];
 }
 
 /**
@@ -308,17 +314,18 @@ function hook_form_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterf
  *
  * @ingroup form_api
  */
-function hook_form_BASE_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
-  // Modification for the form with the given BASE_FORM_ID goes here. For
-  // example, if BASE_FORM_ID is "node_form", this code would run on every
-  // node form, regardless of node type.
+function hook_form_BASE_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void
+{
+    // Modification for the form with the given BASE_FORM_ID goes here. For
+    // example, if BASE_FORM_ID is "node_form", this code would run on every
+    // node form, regardless of node type.
 
-  // Add a checkbox to the node form about agreeing to terms of use.
-  $form['terms_of_use'] = [
-    '#type' => 'checkbox',
-    '#title' => t("I agree with the website's terms and conditions."),
-    '#required' => TRUE,
-  ];
+    // Add a checkbox to the node form about agreeing to terms of use.
+    $form['terms_of_use'] = [
+      '#type' => 'checkbox',
+      '#title' => t("I agree with the website's terms and conditions."),
+      '#required' => true,
+    ];
 }
 
 /**
@@ -336,7 +343,8 @@ function hook_form_BASE_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateI
  *
  * @ingroup batch
  */
-function hook_batch_alter(&$batch): void {
+function hook_batch_alter(&$batch): void
+{
 }
 
 /**

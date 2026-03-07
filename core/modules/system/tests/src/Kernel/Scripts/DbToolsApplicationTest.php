@@ -17,25 +17,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('console')]
 #[RunTestsInSeparateProcesses]
-class DbToolsApplicationTest extends KernelTestBase {
+class DbToolsApplicationTest extends KernelTestBase
+{
+    /**
+     * Tests that the dump command is correctly registered.
+     */
+    public function testDumpCommandRegistration(): void
+    {
+        $application = new DbToolsApplication();
+        $command = $application->find('dump');
+        $this->assertInstanceOf('\Drupal\Core\Command\DbDumpCommand', $command);
+        $this->assertSame(\Drupal::VERSION, $application->getVersion());
+    }
 
-  /**
-   * Tests that the dump command is correctly registered.
-   */
-  public function testDumpCommandRegistration(): void {
-    $application = new DbToolsApplication();
-    $command = $application->find('dump');
-    $this->assertInstanceOf('\Drupal\Core\Command\DbDumpCommand', $command);
-    $this->assertSame(\Drupal::VERSION, $application->getVersion());
-  }
-
-  /**
-   * Tests that the dump command is correctly registered.
-   */
-  public function testImportCommandRegistration(): void {
-    $application = new DbToolsApplication();
-    $command = $application->find('import');
-    $this->assertInstanceOf('\Drupal\Core\Command\DbImportCommand', $command);
-  }
+    /**
+     * Tests that the dump command is correctly registered.
+     */
+    public function testImportCommandRegistration(): void
+    {
+        $application = new DbToolsApplication();
+        $command = $application->find('import');
+        $this->assertInstanceOf('\Drupal\Core\Command\DbImportCommand', $command);
+    }
 
 }

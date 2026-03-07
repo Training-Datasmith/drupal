@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -18,64 +20,64 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class EntityReferenceSelection extends Plugin {
+class EntityReferenceSelection extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * There are some implementation bugs that make the plugin available only if
+     * the ID follows a specific pattern. It must be either identical to group or
+     * prefixed with the group. E.g. if the group is "foo" the ID must be either
+     * "foo" or "foo:bar".
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * There are some implementation bugs that make the plugin available only if
-   * the ID follows a specific pattern. It must be either identical to group or
-   * prefixed with the group. E.g. if the group is "foo" the ID must be either
-   * "foo" or "foo:bar".
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the selection plugin.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the selection plugin.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * The selection plugin group.
+     *
+     * @var string
+     * This property is used to allow selection plugins to target a specific
+     * entity type while also inheriting the code of an existing selection plugin.
+     * For example, if we want to override the NodeSelection from the 'default'
+     * selection type, we can define the annotation of a new plugin as follows:
+     * @code
+     * id = "default:node_advanced",
+     * entity_types = {"node"},
+     * group = "default",
+     * weight = 5
+     * @endcode
+     */
+    public $group;
 
-  /**
-   * The selection plugin group.
-   *
-   * @var string
-   * This property is used to allow selection plugins to target a specific
-   * entity type while also inheriting the code of an existing selection plugin.
-   * For example, if we want to override the NodeSelection from the 'default'
-   * selection type, we can define the annotation of a new plugin as follows:
-   * @code
-   * id = "default:node_advanced",
-   * entity_types = {"node"},
-   * group = "default",
-   * weight = 5
-   * @endcode
-   */
-  public $group;
+    /**
+     * An array of entity types that can be referenced by this plugin.
+     *
+     * Defaults to all entity types.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var array
+     */
+    public $entity_types = [];
 
-  /**
-   * An array of entity types that can be referenced by this plugin.
-   *
-   * Defaults to all entity types.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var array
-   */
-  public $entity_types = [];
-
-  /**
-   * The weight of the plugin in its group.
-   *
-   * This property is used to select the "best" plugin within a group.
-   *
-   * @var int
-   */
-  public $weight;
+    /**
+     * The weight of the plugin in its group.
+     *
+     * This property is used to select the "best" plugin within a group.
+     *
+     * @var int
+     */
+    public $weight;
 
 }

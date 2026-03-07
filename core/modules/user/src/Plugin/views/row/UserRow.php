@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\views\row;
 
 use Drupal\views\Attribute\ViewsRow;
@@ -10,17 +12,18 @@ use Drupal\views\Plugin\views\row\EntityRow;
  *
  * @ingroup views_row_plugins
  */
-#[ViewsRow("entity:user")]
-class UserRow extends EntityRow {
+#[ViewsRow('entity:user')]
+class UserRow extends EntityRow
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['view_mode']['default'] = 'full';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['view_mode']['default'] = 'full';
-
-    return $options;
-  }
+        return $options;
+    }
 
 }

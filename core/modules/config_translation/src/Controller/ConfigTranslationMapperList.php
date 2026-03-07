@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\config_translation\Controller;
 
 use Drupal\config_translation\ConfigMapperInterface;
@@ -11,115 +13,119 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * Groups all defined configuration mapper instances by weight.
  */
-class ConfigTranslationMapperList extends ControllerBase {
-
-  /**
-   * Constructs a new ConfigTranslationMapperList object.
-   *
-   * @param \Drupal\config_translation\ConfigMapperInterface[] $mappers
-   *   The configuration mapper manager.
-   */
-  public function __construct(
-      /**
-       * An array of configuration mapper instances.
-       */
-      protected array $mappers
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('plugin.manager.config_translation.mapper')->getMappers()
-    );
-  }
-
-  /**
-   * Builds the mappers as a renderable array for table.html.twig.
-   *
-   * @return array
-   *   Renderable array with config translation mappers.
-   */
-  public function render(): array {
-    $build = [
-      '#type' => 'table',
-      '#header' => $this->buildHeader(),
-      '#rows' => [],
-    ];
-
-    $mappers = [];
-
-    foreach ($this->mappers as $mapper) {
-      if ($row = $this->buildRow($mapper)) {
-        $mappers[$mapper->getWeight()][] = $row;
-      }
+class ConfigTranslationMapperList extends ControllerBase
+{
+    /**
+     * Constructs a new ConfigTranslationMapperList object.
+     *
+     * @param \Drupal\config_translation\ConfigMapperInterface[] $mappers
+     *   The configuration mapper manager.
+     */
+    public function __construct(
+        /**
+         * An array of configuration mapper instances.
+         */
+        protected array $mappers
+    ) {
     }
 
-    // Group by mapper weight and sort by label.
-    ksort($mappers);
-    foreach ($mappers as $weight => $mapper) {
-      usort($mapper, function (array $a, array $b): int {
-        $a_title = $a['label'] ?? '';
-        $b_title = $b['label'] ?? '';
-        return strnatcasecmp($a_title, $b_title);
-      });
-      $mappers[$weight] = $mapper;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('plugin.manager.config_translation.mapper')->getMappers()
+        );
     }
 
-    $build['#rows'] = array_merge(...$mappers);
+    /**
+     * Builds the mappers as a renderable array for table.html.twig.
+     *
+     * @return array
+     *   Renderable array with config translation mappers.
+     */
+    public function render(): array
+    {
+        $build = [
+          '#type' => 'table',
+          '#header' => $this->buildHeader(),
+          '#rows' => [],
+        ];
 
-    return $build;
-  }
+        $mappers = [];
 
-  /**
-   * Builds a row for a mapper in the mapper listing.
-   *
-   * @param \Drupal\config_translation\ConfigMapperInterface $mapper
-   *   The mapper.
-   *
-   * @return array
-   *   A render array structure of fields for this mapper.
-   */
-  public function buildRow(ConfigMapperInterface $mapper) {
-    $row['label'] = $mapper->getTypeLabel();
-    $row['operations']['data'] = $this->buildOperations($mapper);
-    return $row;
-  }
+        foreach ($this->mappers as $mapper) {
+            if ($row = $this->buildRow($mapper)) {
+                $mappers[$mapper->getWeight()][] = $row;
+            }
+        }
 
-  /**
-   * Builds the header row for the mapper listing.
-   *
-   * @return array
-   *   A render array structure of header strings.
-   */
-  public function buildHeader() {
-    $row['Label'] = $this->t('Label');
-    $row['operations'] = $this->t('Operations');
-    return $row;
-  }
+        // Group by mapper weight and sort by label.
+        ksort($mappers);
+        foreach ($mappers as $weight => $mapper) {
+            usort($mapper, function (array $a, array $b): int {
+                $a_title = $a['label'] ?? '';
+                $b_title = $b['label'] ?? '';
+                return strnatcasecmp($a_title, $b_title);
+            });
+            $mappers[$weight] = $mapper;
+        }
 
-  /**
-   * Builds a renderable list of operation links for the entity.
-   *
-   * @param \Drupal\config_translation\ConfigMapperInterface $mapper
-   *   The mapper.
-   *
-   * @return array
-   *   A renderable array of operation links.
-   *
-   * @see \Drupal\Core\Entity\EntityList::buildOperations()
-   */
-  protected function buildOperations(ConfigMapperInterface $mapper): array {
-    // Retrieve and sort operations.
-    $operations = $mapper->getOperations();
-    uasort($operations, Drupal\Component\Utility\SortArray::sortByWeightElement(...));
-    return [
-      '#type' => 'operations',
-      '#links' => $operations,
-    ];
-  }
+        $build['#rows'] = array_merge(...$mappers);
+
+        return $build;
+    }
+
+    /**
+     * Builds a row for a mapper in the mapper listing.
+     *
+     * @param \Drupal\config_translation\ConfigMapperInterface $mapper
+     *   The mapper.
+     *
+     * @return array
+     *   A render array structure of fields for this mapper.
+     */
+    public function buildRow(ConfigMapperInterface $mapper)
+    {
+        $row['label'] = $mapper->getTypeLabel();
+        $row['operations']['data'] = $this->buildOperations($mapper);
+        return $row;
+    }
+
+    /**
+     * Builds the header row for the mapper listing.
+     *
+     * @return array
+     *   A render array structure of header strings.
+     */
+    public function buildHeader()
+    {
+        $row['Label'] = $this->t('Label');
+        $row['operations'] = $this->t('Operations');
+        return $row;
+    }
+
+    /**
+     * Builds a renderable list of operation links for the entity.
+     *
+     * @param \Drupal\config_translation\ConfigMapperInterface $mapper
+     *   The mapper.
+     *
+     * @return array
+     *   A renderable array of operation links.
+     *
+     * @see \Drupal\Core\Entity\EntityList::buildOperations()
+     */
+    protected function buildOperations(ConfigMapperInterface $mapper): array
+    {
+        // Retrieve and sort operations.
+        $operations = $mapper->getOperations();
+        uasort($operations, Drupal\Component\Utility\SortArray::sortByWeightElement(...));
+        return [
+          '#type' => 'operations',
+          '#links' => $operations,
+        ];
+    }
 
 }

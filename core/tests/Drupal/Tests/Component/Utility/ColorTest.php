@@ -13,200 +13,208 @@ use PHPUnit\Framework\TestCase;
  * Tests Color utility class conversions.
  */
 #[Group('Utility')]
-class ColorTest extends TestCase {
-
-  /**
-   *
-   * @param bool $expected
-   *   The expected result of validation.
-   * @param string $value
-   *   The hex color value.
-   * @legacy-covers \Drupal\Component\Utility\Color::validateHex
-   */
-  #[DataProvider('providerTestValidateHex')]
-  public function testValidateHex($expected, $value): void {
-    $this->assertSame($expected, Color::validateHex($value));
-  }
-
-  /**
-   * Provides data for testValidateHex().
-   */
-  public static function providerTestValidateHex(): array {
-    return [
-      // Tests length.
-      [FALSE, ''],
-      [FALSE, '#'],
-      [FALSE, '1'],
-      [FALSE, '#1'],
-      [FALSE, '12'],
-      [FALSE, '#12'],
-      [TRUE, '123'],
-      [TRUE, '#123'],
-      [FALSE, '1234'],
-      [FALSE, '#1234'],
-      [FALSE, '12345'],
-      [FALSE, '#12345'],
-      [TRUE, '123456'],
-      [TRUE, '#123456'],
-      [FALSE, '1234567'],
-      [FALSE, '#1234567'],
-      // Tests valid hex value.
-      [TRUE, 'abcdef'],
-      [TRUE, 'ABCDEF'],
-      [TRUE, 'A0F1B1'],
-      [FALSE, 'WWW'],
-      [FALSE, '#123##'],
-      [FALSE, '@a0055'],
-      // Tests the data type.
-      [FALSE, 123456],
-      // Tests multiple hash prefix.
-      [FALSE, '###F00'],
-      // Tests spaces.
-      [FALSE, ' #123456'],
-      [FALSE, '123456 '],
-      [FALSE, '#12 3456'],
-    ];
-  }
-
-  /**
-   * Tests Color::hexToRgb().
-   *
-   * @param string $value
-   *   The hex color value.
-   * @param string $expected
-   *   The expected rgb color value.
-   * @param bool $invalid
-   *   Whether this value is invalid and exception should be expected.
-   */
-  #[DataProvider('providerTestHexToRgb')]
-  public function testHexToRgb($value, $expected, $invalid = FALSE): void {
-    if ($invalid) {
-      $this->expectException('InvalidArgumentException');
+class ColorTest extends TestCase
+{
+    /**
+     *
+     * @param bool $expected
+     *   The expected result of validation.
+     * @param string $value
+     *   The hex color value.
+     * @legacy-covers \Drupal\Component\Utility\Color::validateHex
+     */
+    #[DataProvider('providerTestValidateHex')]
+    public function testValidateHex($expected, $value): void
+    {
+        $this->assertSame($expected, Color::validateHex($value));
     }
-    $this->assertSame($expected, Color::hexToRgb($value));
-  }
 
-  /**
-   * Data provider for testHexToRgb().
-   *
-   * @see testHexToRgb()
-   *
-   * @return array
-   *   An array of arrays containing:
-   *     - The hex color value.
-   *     - The rgb color array value.
-   *     - (optional) Boolean indicating invalid status. Defaults to FALSE.
-   */
-  public static function providerTestHexToRgb(): array {
-    $invalid = [];
-    // Any invalid arguments should throw an exception.
-    foreach (['', '-1', '1', '12', '12345', '1234567', '123456789', '123456789a', 'foo'] as $value) {
-      $invalid[] = [$value, '', TRUE];
+    /**
+     * Provides data for testValidateHex().
+     */
+    public static function providerTestValidateHex(): array
+    {
+        return [
+          // Tests length.
+          [false, ''],
+          [false, '#'],
+          [false, '1'],
+          [false, '#1'],
+          [false, '12'],
+          [false, '#12'],
+          [true, '123'],
+          [true, '#123'],
+          [false, '1234'],
+          [false, '#1234'],
+          [false, '12345'],
+          [false, '#12345'],
+          [true, '123456'],
+          [true, '#123456'],
+          [false, '1234567'],
+          [false, '#1234567'],
+          // Tests valid hex value.
+          [true, 'abcdef'],
+          [true, 'ABCDEF'],
+          [true, 'A0F1B1'],
+          [false, 'WWW'],
+          [false, '#123##'],
+          [false, '@a0055'],
+          // Tests the data type.
+          [false, 123456],
+          // Tests multiple hash prefix.
+          [false, '###F00'],
+          // Tests spaces.
+          [false, ' #123456'],
+          [false, '123456 '],
+          [false, '#12 3456'],
+        ];
     }
-    // Duplicate all invalid value tests with additional '#' prefix.
-    // The '#' prefix inherently turns the data type into a string.
-    foreach ($invalid as $value) {
-      $invalid[] = ['#' . $value[0], '', TRUE];
+
+    /**
+     * Tests Color::hexToRgb().
+     *
+     * @param string $value
+     *   The hex color value.
+     * @param string $expected
+     *   The expected rgb color value.
+     * @param bool $invalid
+     *   Whether this value is invalid and exception should be expected.
+     */
+    #[DataProvider('providerTestHexToRgb')]
+    public function testHexToRgb($value, $expected, $invalid = false): void
+    {
+        if ($invalid) {
+            $this->expectException('InvalidArgumentException');
+        }
+        $this->assertSame($expected, Color::hexToRgb($value));
     }
-    // Add invalid data types (hex value must be a string).
-    foreach ([
-      1, 12, 1234, 12345, 123456, 1234567, 12345678, 123456789, 123456789,
-      -1, PHP_INT_MAX, PHP_INT_MAX + 1, -PHP_INT_MAX, 0x0, 0x010,
-    ] as $value) {
-      $invalid[] = [$value, '', TRUE];
+
+    /**
+     * Data provider for testHexToRgb().
+     *
+     * @see testHexToRgb()
+     *
+     * @return array
+     *   An array of arrays containing:
+     *     - The hex color value.
+     *     - The rgb color array value.
+     *     - (optional) Boolean indicating invalid status. Defaults to FALSE.
+     */
+    public static function providerTestHexToRgb(): array
+    {
+        $invalid = [];
+        // Any invalid arguments should throw an exception.
+        foreach (['', '-1', '1', '12', '12345', '1234567', '123456789', '123456789a', 'foo'] as $value) {
+            $invalid[] = [$value, '', true];
+        }
+        // Duplicate all invalid value tests with additional '#' prefix.
+        // The '#' prefix inherently turns the data type into a string.
+        foreach ($invalid as $value) {
+            $invalid[] = ['#' . $value[0], '', true];
+        }
+        // Add invalid data types (hex value must be a string).
+        foreach ([
+          1, 12, 1234, 12345, 123456, 1234567, 12345678, 123456789, 123456789,
+          -1, PHP_INT_MAX, PHP_INT_MAX + 1, -PHP_INT_MAX, 0x0, 0x010,
+        ] as $value) {
+            $invalid[] = [$value, '', true];
+        }
+        // And some valid values.
+        $valid = [
+          // Shorthands without alpha.
+          ['value' => '#000', 'expected' => ['red' => 0, 'green' => 0, 'blue' => 0]],
+          ['value' => '#fff', 'expected' => ['red' => 255, 'green' => 255, 'blue' => 255]],
+          ['value' => '#abc', 'expected' => ['red' => 170, 'green' => 187, 'blue' => 204]],
+          ['value' => 'cba', 'expected' => ['red' => 204, 'green' => 187, 'blue' => 170]],
+          // Full without alpha.
+          ['value' => '#000000', 'expected' => ['red' => 0, 'green' => 0, 'blue' => 0]],
+          ['value' => '#ffffff', 'expected' => ['red' => 255, 'green' => 255, 'blue' => 255]],
+          ['value' => '#010203', 'expected' => ['red' => 1, 'green' => 2, 'blue' => 3]],
+        ];
+        return array_merge($invalid, $valid);
     }
-    // And some valid values.
-    $valid = [
-      // Shorthands without alpha.
-      ['value' => '#000', 'expected' => ['red' => 0, 'green' => 0, 'blue' => 0]],
-      ['value' => '#fff', 'expected' => ['red' => 255, 'green' => 255, 'blue' => 255]],
-      ['value' => '#abc', 'expected' => ['red' => 170, 'green' => 187, 'blue' => 204]],
-      ['value' => 'cba', 'expected' => ['red' => 204, 'green' => 187, 'blue' => 170]],
-      // Full without alpha.
-      ['value' => '#000000', 'expected' => ['red' => 0, 'green' => 0, 'blue' => 0]],
-      ['value' => '#ffffff', 'expected' => ['red' => 255, 'green' => 255, 'blue' => 255]],
-      ['value' => '#010203', 'expected' => ['red' => 1, 'green' => 2, 'blue' => 3]],
-    ];
-    return array_merge($invalid, $valid);
-  }
 
-  /**
-   * Tests Color::rgbToHex().
-   *
-   * @param string $value
-   *   The rgb color value.
-   * @param string $expected
-   *   The expected hex color value.
-   */
-  #[DataProvider('providerTestRbgToHex')]
-  public function testRgbToHex($value, $expected): void {
-    $this->assertSame($expected, Color::rgbToHex($value));
-  }
-
-  /**
-   * Data provider for testRgbToHex().
-   *
-   * @see testRgbToHex()
-   *
-   * @return array
-   *   An array of arrays containing:
-   *     - The rgb color array value.
-   *     - The hex color value.
-   */
-  public static function providerTestRbgToHex() {
-    // Input using named RGB array (e.g., as returned by Color::hexToRgb()).
-    $tests = [
-      [['red' => 0, 'green' => 0, 'blue' => 0], '#000000'],
-      [['red' => 255, 'green' => 255, 'blue' => 255], '#ffffff'],
-      [['red' => 119, 'green' => 119, 'blue' => 119], '#777777'],
-      [['red' => 1, 'green' => 2, 'blue' => 3], '#010203'],
-    ];
-    // Input using indexed RGB array (e.g.: [10, 10, 10]).
-    foreach ($tests as $test) {
-      $tests[] = [array_values($test[0]), $test[1]];
+    /**
+     * Tests Color::rgbToHex().
+     *
+     * @param string $value
+     *   The rgb color value.
+     * @param string $expected
+     *   The expected hex color value.
+     */
+    #[DataProvider('providerTestRbgToHex')]
+    public function testRgbToHex($value, $expected): void
+    {
+        $this->assertSame($expected, Color::rgbToHex($value));
     }
-    // Input using CSS RGB string notation (e.g.: 10, 10, 10).
-    foreach ($tests as $test) {
-      $tests[] = [implode(', ', $test[0]), $test[1]];
+
+    /**
+     * Data provider for testRgbToHex().
+     *
+     * @see testRgbToHex()
+     *
+     * @return array
+     *   An array of arrays containing:
+     *     - The rgb color array value.
+     *     - The hex color value.
+     */
+    public static function providerTestRbgToHex()
+    {
+        // Input using named RGB array (e.g., as returned by Color::hexToRgb()).
+        $tests = [
+          [['red' => 0, 'green' => 0, 'blue' => 0], '#000000'],
+          [['red' => 255, 'green' => 255, 'blue' => 255], '#ffffff'],
+          [['red' => 119, 'green' => 119, 'blue' => 119], '#777777'],
+          [['red' => 1, 'green' => 2, 'blue' => 3], '#010203'],
+        ];
+        // Input using indexed RGB array (e.g.: [10, 10, 10]).
+        foreach ($tests as $test) {
+            $tests[] = [array_values($test[0]), $test[1]];
+        }
+        // Input using CSS RGB string notation (e.g.: 10, 10, 10).
+        foreach ($tests as $test) {
+            $tests[] = [implode(', ', $test[0]), $test[1]];
+        }
+        return $tests;
     }
-    return $tests;
-  }
 
-  /**
-   * Data provider for testNormalizeHexLength().
-   *
-   * @see testNormalizeHexLength()
-   *
-   * @return array
-   *   An array of arrays containing:
-   *     - The hex color value.
-   *     - The 6 character length hex color value.
-   */
-  public static function providerTestNormalizeHexLength(): array {
-    $data = [
-      ['#000', '#000000'],
-      ['#FFF', '#FFFFFF'],
-      ['#abc', '#aabbcc'],
-      ['cba', '#ccbbaa'],
-      ['#000000', '#000000'],
-      ['ffffff', '#ffffff'],
-      ['#010203', '#010203'],
-    ];
+    /**
+     * Data provider for testNormalizeHexLength().
+     *
+     * @see testNormalizeHexLength()
+     *
+     * @return array
+     *   An array of arrays containing:
+     *     - The hex color value.
+     *     - The 6 character length hex color value.
+     */
+    public static function providerTestNormalizeHexLength(): array
+    {
+        $data = [
+          ['#000', '#000000'],
+          ['#FFF', '#FFFFFF'],
+          ['#abc', '#aabbcc'],
+          ['cba', '#ccbbaa'],
+          ['#000000', '#000000'],
+          ['ffffff', '#ffffff'],
+          ['#010203', '#010203'],
+        ];
 
-    return $data;
-  }
+        return $data;
+    }
 
-  /**
-   * Tests Color::normalizeHexLength().
-   *
-   * @param string $value
-   *   The input hex color value.
-   * @param string $expected
-   *   The expected normalized hex color value.
-   */
-  #[DataProvider('providerTestNormalizeHexLength')]
-  public function testNormalizeHexLength($value, $expected): void {
-    $this->assertSame($expected, Color::normalizeHexLength($value));
-  }
+    /**
+     * Tests Color::normalizeHexLength().
+     *
+     * @param string $value
+     *   The input hex color value.
+     * @param string $expected
+     *   The expected normalized hex color value.
+     */
+    #[DataProvider('providerTestNormalizeHexLength')]
+    public function testNormalizeHexLength($value, $expected): void
+    {
+        $this->assertSame($expected, Color::normalizeHexLength($value));
+    }
 
 }

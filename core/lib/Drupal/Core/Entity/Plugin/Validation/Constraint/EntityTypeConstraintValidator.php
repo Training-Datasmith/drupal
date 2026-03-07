@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Validation\Constraint;
 
 use Symfony\Component\Validator\Constraint;
@@ -8,20 +10,21 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the EntityType constraint.
  */
-class EntityTypeConstraintValidator extends ConstraintValidator {
+class EntityTypeConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($entity, Constraint $constraint): void
+    {
+        if (!isset($entity)) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($entity, Constraint $constraint): void {
-    if (!isset($entity)) {
-      return;
+        /** @var \Drupal\Core\Entity\EntityInterface $entity */
+        if ($entity->getEntityTypeId() != $constraint->type) {
+            $this->context->addViolation($constraint->message, ['%type' => $constraint->type]);
+        }
     }
-
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
-    if ($entity->getEntityTypeId() != $constraint->type) {
-      $this->context->addViolation($constraint->message, ['%type' => $constraint->type]);
-    }
-  }
 
 }

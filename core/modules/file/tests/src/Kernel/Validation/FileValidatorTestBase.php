@@ -12,48 +12,49 @@ use Drupal\KernelTests\KernelTestBase;
 /**
  * Provides a base file constraint validator test.
  */
-abstract class FileValidatorTestBase extends KernelTestBase {
+abstract class FileValidatorTestBase extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['file', 'user', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['file', 'user', 'system'];
+    /**
+     * The file.
+     *
+     * @var \Drupal\file\FileInterface
+     */
+    protected FileInterface $file;
 
-  /**
-   * The file.
-   *
-   * @var \Drupal\file\FileInterface
-   */
-  protected FileInterface $file;
+    /**
+     * The file validator.
+     *
+     * @var \Drupal\file\Validation\FileValidatorInterface
+     */
+    protected FileValidatorInterface $validator;
 
-  /**
-   * The file validator.
-   *
-   * @var \Drupal\file\Validation\FileValidatorInterface
-   */
-  protected FileValidatorInterface $validator;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installConfig(['system']);
+        $this->installEntitySchema('file');
+        $this->installEntitySchema('user');
+        $this->installSchema('file', ['file_usage']);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installConfig(['system']);
-    $this->installEntitySchema('file');
-    $this->installEntitySchema('user');
-    $this->installSchema('file', ['file_usage']);
+        $uri = 'public://druplicon.txt';
+        $this->file = File::create([
+          'uid' => 1,
+          'uri' => $uri,
+          'filename' => 'druplicon.txt',
+          'filemime' => 'text/plain',
+          'filesize' => 1000,
+        ]);
+        $this->file->setPermanent();
+        $this->validator = $this->container->get('file.validator');
 
-    $uri = 'public://druplicon.txt';
-    $this->file = File::create([
-      'uid' => 1,
-      'uri' => $uri,
-      'filename' => 'druplicon.txt',
-      'filemime' => 'text/plain',
-      'filesize' => 1000,
-    ]);
-    $this->file->setPermanent();
-    $this->validator = $this->container->get('file.validator');
-
-  }
+    }
 
 }

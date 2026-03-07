@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Plugin\migrate\destination;
 
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -12,23 +14,24 @@ use Drupal\migrate\Row;
  * Provides a destination plugin for the default langcode config.
  */
 #[MigrateDestination('default_langcode')]
-class DefaultLangcode extends Config {
+class DefaultLangcode extends Config
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = []): array
+    {
+        $destination = $row->getDestination();
+        $langcode = $destination['default_langcode'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []): array {
-    $destination = $row->getDestination();
-    $langcode = $destination['default_langcode'];
+        // Check if the language exists.
+        if (ConfigurableLanguage::load($langcode) === null) {
+            throw new MigrateException("The language '$langcode' does not exist on this site.");
+        }
 
-    // Check if the language exists.
-    if (ConfigurableLanguage::load($langcode) === NULL) {
-      throw new MigrateException("The language '$langcode' does not exist on this site.");
+        $this->config->set('default_langcode', $destination['default_langcode']);
+        $this->config->save();
+        return [$this->config->getName()];
     }
-
-    $this->config->set('default_langcode', $destination['default_langcode']);
-    $this->config->save();
-    return [$this->config->getName()];
-  }
 
 }

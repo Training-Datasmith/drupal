@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin\Discovery;
 
 use Drupal\Component\Plugin\Discovery\DerivativeDiscoveryDecorator;
@@ -9,27 +11,27 @@ use Drupal\Component\Plugin\Discovery\DerivativeDiscoveryDecorator;
  *
  * @see \Drupal\Core\Plugin\Discovery\ContainerDeriverInterface
  */
-class ContainerDerivativeDiscoveryDecorator extends DerivativeDiscoveryDecorator {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeriver($base_plugin_id, $base_definition) {
-    if (!isset($this->derivers[$base_plugin_id])) {
-      $this->derivers[$base_plugin_id] = FALSE;
-      $class = $this->getDeriverClass($base_definition);
-      if ($class) {
-        // If the deriver provides a factory method, pass the container to it.
-        if (is_subclass_of($class, \Drupal\Core\Plugin\Discovery\ContainerDeriverInterface::class)) {
-          /** @var \Drupal\Core\Plugin\Discovery\ContainerDeriverInterface $class */
-          $this->derivers[$base_plugin_id] = $class::create(\Drupal::getContainer(), $base_plugin_id);
+class ContainerDerivativeDiscoveryDecorator extends DerivativeDiscoveryDecorator
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeriver($base_plugin_id, $base_definition)
+    {
+        if (!isset($this->derivers[$base_plugin_id])) {
+            $this->derivers[$base_plugin_id] = false;
+            $class = $this->getDeriverClass($base_definition);
+            if ($class) {
+                // If the deriver provides a factory method, pass the container to it.
+                if (is_subclass_of($class, \Drupal\Core\Plugin\Discovery\ContainerDeriverInterface::class)) {
+                    /** @var \Drupal\Core\Plugin\Discovery\ContainerDeriverInterface $class */
+                    $this->derivers[$base_plugin_id] = $class::create(\Drupal::getContainer(), $base_plugin_id);
+                } else {
+                    $this->derivers[$base_plugin_id] = new $class($base_plugin_id);
+                }
+            }
         }
-        else {
-          $this->derivers[$base_plugin_id] = new $class($base_plugin_id);
-        }
-      }
+        return $this->derivers[$base_plugin_id] ?: null;
     }
-    return $this->derivers[$base_plugin_id] ?: NULL;
-  }
 
 }

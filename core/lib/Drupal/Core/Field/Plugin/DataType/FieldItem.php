@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\DataType;
 
 use Drupal\Core\Field\FieldItemList;
@@ -14,11 +16,11 @@ use Drupal\Core\TypedData\Attribute\DataType;
  * \Drupal\Core\Field\FieldItemBase is available for use as base class.
  */
 #[DataType(
-  id: "field_item",
-  label: new TranslatableMarkup("Field item"),
-  list_class: FieldItemList::class,
-  deriver: FieldItemDeriver::class
+    id: 'field_item',
+    label: new TranslatableMarkup('Field item'),
+    list_class: FieldItemList::class,
+    deriver: FieldItemDeriver::class
 )]
-abstract class FieldItem {
-
+abstract class FieldItem
+{
 }

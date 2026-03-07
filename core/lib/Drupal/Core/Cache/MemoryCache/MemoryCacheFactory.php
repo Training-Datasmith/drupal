@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\MemoryCache;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -8,32 +10,34 @@ use Drupal\Core\Cache\CacheFactoryInterface;
 /**
  * The memory cache factory.
  */
-class MemoryCacheFactory implements CacheFactoryInterface {
+class MemoryCacheFactory implements CacheFactoryInterface
+{
+    /**
+     * Instantiated memory cache bins.
+     *
+     * @var \Drupal\Core\Cache\MemoryBackend[]
+     */
+    protected $bins = [];
 
-  /**
-   * Instantiated memory cache bins.
-   *
-   * @var \Drupal\Core\Cache\MemoryBackend[]
-   */
-  protected $bins = [];
-
-  /**
-   * Constructs a MemoryCounterBackendFactory object.
-   *
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(protected TimeInterface $time) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($bin) {
-    if (!isset($this->bins[$bin])) {
-      $this->bins[$bin] = new MemoryCache($this->time);
+    /**
+     * Constructs a MemoryCounterBackendFactory object.
+     *
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(protected TimeInterface $time)
+    {
     }
-    return $this->bins[$bin];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($bin)
+    {
+        if (!isset($this->bins[$bin])) {
+            $this->bins[$bin] = new MemoryCache($this->time);
+        }
+        return $this->bins[$bin];
+    }
 
 }

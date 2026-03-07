@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\EventSubscriber;
 
 use Drupal\Core\Routing\CacheableRouteProviderInterface;
@@ -14,34 +16,37 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * @internal
  */
-class WorkspaceRequestSubscriber implements EventSubscriberInterface {
-
-  public function __construct(
-    protected readonly RouteProviderInterface $routeProvider,
-    protected readonly WorkspaceManagerInterface $workspaceManager,
-  ) {}
-
-  /**
-   * Adds the active workspace as a cache key part to the route provider.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   An event object.
-   */
-  public function onKernelRequest(RequestEvent $event): void {
-    if ($this->workspaceManager->hasActiveWorkspace() && $this->routeProvider instanceof CacheableRouteProviderInterface) {
-      $this->routeProvider->addExtraCacheKeyPart('workspace', $this->workspaceManager->getActiveWorkspace()->id());
+class WorkspaceRequestSubscriber implements EventSubscriberInterface
+{
+    public function __construct(
+        protected readonly RouteProviderInterface $routeProvider,
+        protected readonly WorkspaceManagerInterface $workspaceManager,
+    ) {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Use a priority of 33 in order to run before Symfony's router listener.
-    // @see \Symfony\Component\HttpKernel\EventListener\RouterListener::getSubscribedEvents()
-    $events[KernelEvents::REQUEST][] = ['onKernelRequest', 33];
+    /**
+     * Adds the active workspace as a cache key part to the route provider.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+     *   An event object.
+     */
+    public function onKernelRequest(RequestEvent $event): void
+    {
+        if ($this->workspaceManager->hasActiveWorkspace() && $this->routeProvider instanceof CacheableRouteProviderInterface) {
+            $this->routeProvider->addExtraCacheKeyPart('workspace', $this->workspaceManager->getActiveWorkspace()->id());
+        }
+    }
 
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Use a priority of 33 in order to run before Symfony's router listener.
+        // @see \Symfony\Component\HttpKernel\EventListener\RouterListener::getSubscribedEvents()
+        $events[KernelEvents::REQUEST][] = ['onKernelRequest', 33];
+
+        return $events;
+    }
 
 }

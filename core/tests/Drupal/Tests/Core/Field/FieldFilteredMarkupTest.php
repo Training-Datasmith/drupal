@@ -17,49 +17,52 @@ use Prophecy\Prophet;
  */
 #[CoversClass(FieldFilteredMarkup::class)]
 #[Group('Field')]
-class FieldFilteredMarkupTest extends UnitTestCase {
+class FieldFilteredMarkupTest extends UnitTestCase
+{
+    /**
+     * Tests create.
+     */
+    #[DataProvider('providerTestCreate')]
+    public function testCreate($string, $expected, $instance_of_check): void
+    {
+        $filtered_string = FieldFilteredMarkup::create($string);
 
-  /**
-   * Tests create.
-   */
-  #[DataProvider('providerTestCreate')]
-  public function testCreate($string, $expected, $instance_of_check): void {
-    $filtered_string = FieldFilteredMarkup::create($string);
-
-    if ($instance_of_check) {
-      $this->assertInstanceOf(FieldFilteredMarkup::class, $filtered_string);
+        if ($instance_of_check) {
+            $this->assertInstanceOf(FieldFilteredMarkup::class, $filtered_string);
+        }
+        $this->assertSame($expected, (string) $filtered_string);
     }
-    $this->assertSame($expected, (string) $filtered_string);
-  }
 
-  /**
-   * Provides data for testCreate().
-   */
-  public static function providerTestCreate(): array {
-    $data = [];
-    $data[] = ['', '', FALSE];
-    // Certain tags are filtered.
-    $data[] = ['<script>test string</script>', 'test string', TRUE];
-    // Certain tags are not filtered.
-    $data[] = ['<em>test string</em>', '<em>test string</em>', TRUE];
-    // HTML will be normalized.
-    $data[] = ['<em>test string', '<em>test string</em>', TRUE];
+    /**
+     * Provides data for testCreate().
+     */
+    public static function providerTestCreate(): array
+    {
+        $data = [];
+        $data[] = ['', '', false];
+        // Certain tags are filtered.
+        $data[] = ['<script>test string</script>', 'test string', true];
+        // Certain tags are not filtered.
+        $data[] = ['<em>test string</em>', '<em>test string</em>', true];
+        // HTML will be normalized.
+        $data[] = ['<em>test string', '<em>test string</em>', true];
 
-    // Even safe strings will be escaped.
-    $safe_string = (new Prophet())->prophesize(MarkupInterface::class);
-    $safe_string->__toString()->willReturn('<script>test string</script>');
-    $data[] = [$safe_string->reveal(), 'test string', TRUE];
+        // Even safe strings will be escaped.
+        $safe_string = (new Prophet())->prophesize(MarkupInterface::class);
+        $safe_string->__toString()->willReturn('<script>test string</script>');
+        $data[] = [$safe_string->reveal(), 'test string', true];
 
-    return $data;
-  }
+        return $data;
+    }
 
-  /**
-   * Tests display allowed tags.
-   */
-  public function testDisplayAllowedTags(): void {
-    $expected = '<a> <b> <big> <code> <del> <em> <i> <ins> <pre> <q> <small> <span> <strong> <sub> <sup> <tt> <ol> <ul> <li> <p> <br> <img>';
+    /**
+     * Tests display allowed tags.
+     */
+    public function testDisplayAllowedTags(): void
+    {
+        $expected = '<a> <b> <big> <code> <del> <em> <i> <ins> <pre> <q> <small> <span> <strong> <sub> <sup> <tt> <ol> <ul> <li> <p> <br> <img>';
 
-    $this->assertSame($expected, FieldFilteredMarkup::displayAllowedTags());
-  }
+        $this->assertSame($expected, FieldFilteredMarkup::displayAllowedTags());
+    }
 
 }

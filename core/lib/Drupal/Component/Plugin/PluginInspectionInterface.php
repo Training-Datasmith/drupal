@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin;
 
 /**
@@ -10,23 +12,23 @@ namespace Drupal\Component\Plugin;
  *
  * @ingroup plugin_api
  */
-interface PluginInspectionInterface {
+interface PluginInspectionInterface
+{
+    /**
+     * Gets the plugin ID of the plugin instance.
+     *
+     * @return string
+     *   The plugin ID of the plugin instance.
+     */
+    public function getPluginId();
 
-  /**
-   * Gets the plugin ID of the plugin instance.
-   *
-   * @return string
-   *   The plugin ID of the plugin instance.
-   */
-  public function getPluginId();
-
-  /**
-   * Gets the definition of the plugin implementation.
-   *
-   * @return \Drupal\Component\Plugin\Definition\PluginDefinitionInterface|array
-   *   The plugin definition, as returned by the discovery object used by the
-   *   plugin manager.
-   */
-  public function getPluginDefinition();
+    /**
+     * Gets the definition of the plugin implementation.
+     *
+     * @return \Drupal\Component\Plugin\Definition\PluginDefinitionInterface|array
+     *   The plugin definition, as returned by the discovery object used by the
+     *   plugin manager.
+     */
+    public function getPluginDefinition();
 
 }

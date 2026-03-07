@@ -13,19 +13,20 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a block with multiple forms.
  */
 #[Block(
-  id: "test_multiple_forms_block",
-  forms: [
+    id: 'test_multiple_forms_block',
+    forms: [
     'secondary' => EmptyBlockForm::class,
   ],
-  admin_label: new TranslatableMarkup("Multiple forms test block"),
+    admin_label: new TranslatableMarkup('Multiple forms test block'),
 )]
-class TestMultipleFormsBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return [];
-  }
+class TestMultipleFormsBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return [];
+    }
 
 }

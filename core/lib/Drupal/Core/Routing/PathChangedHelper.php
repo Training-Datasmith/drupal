@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 use Drupal\Core\Url;
@@ -33,74 +35,78 @@ use Symfony\Component\HttpFoundation\Request;
  * return $helper->redirect();
  * @endcode
  */
-class PathChangedHelper {
+class PathChangedHelper
+{
+    /**
+     * The URL object for the route whose path has changed.
+     */
+    protected Url $newUrl;
 
-  /**
-   * The URL object for the route whose path has changed.
-   */
-  protected Url $newUrl;
+    /**
+     * The URL object for the BC route.
+     */
+    protected Url $oldUrl;
 
-  /**
-   * The URL object for the BC route.
-   */
-  protected Url $oldUrl;
+    /**
+     * Constructs a PathChangedHelper object.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+     *   A route match object, used for the route name and the parameters.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   A request object, used for the query parameters.
+     *
+     * @throws \InvalidArgumentException
+     *   The route name from $route_match must end with ".bc".
+     */
+    public function __construct(RouteMatchInterface $route_match, Request $request)
+    {
+        $bc_route_name = $route_match->getRouteName();
+        if (!str_ends_with((string) $bc_route_name, '.bc')) {
+            throw new \InvalidArgumentException(self::class . ' expects a route name that ends with ".bc".');
+        }
+        // Strip '.bc' from the end of the route name.
+        $route_name = substr((string) $bc_route_name, 0, -3);
+        $args = $route_match->getRawParameters()->all();
+        $options = [
+          'absolute' => true,
+          'query' => array_diff_key($request->query->all(), ['destination' => '']),
+        ];
 
-  /**
-   * Constructs a PathChangedHelper object.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   A route match object, used for the route name and the parameters.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   A request object, used for the query parameters.
-   *
-   * @throws \InvalidArgumentException
-   *   The route name from $route_match must end with ".bc".
-   */
-  public function __construct(RouteMatchInterface $route_match, Request $request) {
-    $bc_route_name = $route_match->getRouteName();
-    if (!str_ends_with((string) $bc_route_name, '.bc')) {
-      throw new \InvalidArgumentException(self::class . ' expects a route name that ends with ".bc".');
+        $this->newUrl = Url::fromRoute($route_name, $args, $options);
+        $this->oldUrl = Url::fromRoute($bc_route_name, $args, $options);
     }
-    // Strip '.bc' from the end of the route name.
-    $route_name = substr((string) $bc_route_name, 0, -3);
-    $args = $route_match->getRawParameters()->all();
-    $options = [
-      'absolute' => TRUE,
-      'query' => array_diff_key($request->query->all(), ['destination' => '']),
-    ];
 
-    $this->newUrl = Url::fromRoute($route_name, $args, $options);
-    $this->oldUrl = Url::fromRoute($bc_route_name, $args, $options);
-  }
+    /**
+     * Returns the deprecated path.
+     *
+     * @return string
+     *   The internal path of the old URL.
+     */
+    public function oldPath(): string
+    {
+        return $this->oldUrl->getInternalPath();
+    }
 
-  /**
-   * Returns the deprecated path.
-   *
-   * @return string
-   *   The internal path of the old URL.
-   */
-  public function oldPath(): string {
-    return $this->oldUrl->getInternalPath();
-  }
+    /**
+     * Returns the updated path.
+     *
+     * @return string
+     *   The internal path of the new URL.
+     */
+    public function newPath(): string
+    {
+        return $this->newUrl->getInternalPath();
+    }
 
-  /**
-   * Returns the updated path.
-   *
-   * @return string
-   *   The internal path of the new URL.
-   */
-  public function newPath(): string {
-    return $this->newUrl->getInternalPath();
-  }
-
-  /**
-   * Returns a redirect to the new path.
-   *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   A redirect response.
-   */
-  public function redirect(): RedirectResponse {
-    return new RedirectResponse($this->newUrl->toString(), 301);
-  }
+    /**
+     * Returns a redirect to the new path.
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     *   A redirect response.
+     */
+    public function redirect(): RedirectResponse
+    {
+        return new RedirectResponse($this->newUrl->toString(), 301);
+    }
 
 }

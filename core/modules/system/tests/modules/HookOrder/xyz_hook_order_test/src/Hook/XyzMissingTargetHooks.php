@@ -23,36 +23,42 @@ use Drupal\Core\Hook\Order\Order;
  *
  * @see \Drupal\KernelTests\Core\Hook\HookOrderTest::testReorderMissingTarget()
  */
-class XyzMissingTargetHooks {
+class XyzMissingTargetHooks
+{
+    /**
+     * Hook order attributes that target possibly non-existing implementations.
+     *
+     * The targeted methods only exist if module B is installed.
+     */
+    #[ReorderHook('test_ab_hook', BMissingTargetHooks::class, 'testABHookReorderedFirstByXyz', Order::First)]
+    #[RemoveHook('test_ab_hook', BMissingTargetHooks::class, 'testABHookRemovedByXyz')]
+    public function targetABHook(): void
+    {
+    }
 
-  /**
-   * Hook order attributes that target possibly non-existing implementations.
-   *
-   * The targeted methods only exist if module B is installed.
-   */
-  #[ReorderHook('test_ab_hook', BMissingTargetHooks::class, 'testABHookReorderedFirstByXyz', Order::First)]
-  #[RemoveHook('test_ab_hook', BMissingTargetHooks::class, 'testABHookRemovedByXyz')]
-  public function targetABHook(): void {}
+    /**
+     * Hook order attributes that target a hook with possibly no implementations.
+     *
+     * The target hook has implementations only if module B is installed.
+     */
+    #[ReorderHook('test_b_hook', BMissingTargetHooks::class, 'testBHookReorderedFirstByXyz', Order::First)]
+    #[RemoveHook('test_b_hook', BMissingTargetHooks::class, 'testBHookRemovedByXyz')]
+    public function targetBHook(): void
+    {
+    }
 
-  /**
-   * Hook order attributes that target a hook with possibly no implementations.
-   *
-   * The target hook has implementations only if module B is installed.
-   */
-  #[ReorderHook('test_b_hook', BMissingTargetHooks::class, 'testBHookReorderedFirstByXyz', Order::First)]
-  #[RemoveHook('test_b_hook', BMissingTargetHooks::class, 'testBHookRemovedByXyz')]
-  public function targetBHook(): void {}
-
-  /**
-   * Hook order attributes where the target method implements a different hook.
-   *
-   * For non-alter hooks, such attributes have no effect.
-   *
-   * This scenario can be relevant if the target method is registered for
-   * different hooks in different versions of the target module.
-   */
-  #[ReorderHook('test_b_hook', AMissingTargetHooks::class, 'testUnrelatedHookReorderedLastForHookB', Order::Last)]
-  #[RemoveHook('test_b_hook', AMissingTargetHooks::class, 'testUnrelatedHookRemovedForHookB')]
-  public function targetUnrelatedHookForBHook(): void {}
+    /**
+     * Hook order attributes where the target method implements a different hook.
+     *
+     * For non-alter hooks, such attributes have no effect.
+     *
+     * This scenario can be relevant if the target method is registered for
+     * different hooks in different versions of the target module.
+     */
+    #[ReorderHook('test_b_hook', AMissingTargetHooks::class, 'testUnrelatedHookReorderedLastForHookB', Order::Last)]
+    #[RemoveHook('test_b_hook', AMissingTargetHooks::class, 'testUnrelatedHookRemovedForHookB')]
+    public function targetUnrelatedHookForBHook(): void
+    {
+    }
 
 }

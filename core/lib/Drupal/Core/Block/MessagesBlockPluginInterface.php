@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Block;
 
 /**
@@ -11,4 +13,6 @@ namespace Drupal\Core\Block;
  *
  * @ingroup block_api
  */
-interface MessagesBlockPluginInterface extends BlockPluginInterface {}
+interface MessagesBlockPluginInterface extends BlockPluginInterface
+{
+}

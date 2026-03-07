@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -14,113 +16,120 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class ImageToolkitForm extends ConfigFormBase {
+class ImageToolkitForm extends ConfigFormBase
+{
+    /**
+     * An array containing currently available toolkits.
+     *
+     * @var \Drupal\Core\ImageToolkit\ImageToolkitInterface[]
+     */
+    protected $availableToolkits = [];
 
-  /**
-   * An array containing currently available toolkits.
-   *
-   * @var \Drupal\Core\ImageToolkit\ImageToolkitInterface[]
-   */
-  protected $availableToolkits = [];
+    /**
+     * Constructs an ImageToolkitForm object.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The factory for configuration objects.
+     * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+     *   The typed config manager.
+     * @param \Drupal\Core\ImageToolkit\ImageToolkitManager $manager
+     *   The image toolkit plugin manager.
+     */
+    public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, ImageToolkitManager $manager)
+    {
+        parent::__construct($config_factory, $typedConfigManager);
 
-  /**
-   * Constructs an ImageToolkitForm object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
-   *   The typed config manager.
-   * @param \Drupal\Core\ImageToolkit\ImageToolkitManager $manager
-   *   The image toolkit plugin manager.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, ImageToolkitManager $manager) {
-    parent::__construct($config_factory, $typedConfigManager);
-
-    foreach ($manager->getAvailableToolkits() as $id => $definition) {
-      $this->availableToolkits[$id] = $manager->createInstance($id);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('config.typed'),
-      $container->get('image.toolkit.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'system_image_toolkit_settings';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames(): array {
-    return ['system.image'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['image_toolkit'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Select an image processing toolkit'),
-      '#config_target' => 'system.image:toolkit',
-      '#options' => [],
-    ];
-
-    // If we have more than one image toolkit, allow the user to select the one
-    // to use, and load each of the toolkits' settings form.
-    foreach ($this->availableToolkits as $id => $toolkit) {
-      $definition = $toolkit->getPluginDefinition();
-      $form['image_toolkit']['#options'][$id] = $definition['title'];
-      $form['image_toolkit_settings'][$id] = [
-        '#type' => 'details',
-        '#title' => $this->t('@toolkit settings', ['@toolkit' => $definition['title']]),
-        '#open' => TRUE,
-        '#tree' => TRUE,
-        '#states' => [
-          'visible' => [
-            ':radio[name="image_toolkit"]' => ['value' => $id],
-          ],
-        ],
-      ];
-      $form['image_toolkit_settings'][$id] += $toolkit->buildConfigurationForm([], $form_state);
+        foreach ($manager->getAvailableToolkits() as $id => $definition) {
+            $this->availableToolkits[$id] = $manager->createInstance($id);
+        }
     }
 
-    return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
-    parent::validateForm($form, $form_state);
-
-    // Call the form validation handler for each of the toolkits.
-    foreach ($this->availableToolkits as $toolkit) {
-      $toolkit->validateConfigurationForm($form, $form_state);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Call the form submit handler for each of the toolkits.
-    foreach ($this->availableToolkits as $toolkit) {
-      $toolkit->submitConfigurationForm($form, $form_state);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('config.factory'),
+            $container->get('config.typed'),
+            $container->get('image.toolkit.manager')
+        );
     }
 
-    parent::submitForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'system_image_toolkit_settings';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames(): array
+    {
+        return ['system.image'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['image_toolkit'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Select an image processing toolkit'),
+          '#config_target' => 'system.image:toolkit',
+          '#options' => [],
+        ];
+
+        // If we have more than one image toolkit, allow the user to select the one
+        // to use, and load each of the toolkits' settings form.
+        foreach ($this->availableToolkits as $id => $toolkit) {
+            $definition = $toolkit->getPluginDefinition();
+            $form['image_toolkit']['#options'][$id] = $definition['title'];
+            $form['image_toolkit_settings'][$id] = [
+              '#type' => 'details',
+              '#title' => $this->t('@toolkit settings', ['@toolkit' => $definition['title']]),
+              '#open' => true,
+              '#tree' => true,
+              '#states' => [
+                'visible' => [
+                  ':radio[name="image_toolkit"]' => ['value' => $id],
+                ],
+              ],
+            ];
+            $form['image_toolkit_settings'][$id] += $toolkit->buildConfigurationForm([], $form_state);
+        }
+
+        return parent::buildForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state): void
+    {
+        parent::validateForm($form, $form_state);
+
+        // Call the form validation handler for each of the toolkits.
+        foreach ($this->availableToolkits as $toolkit) {
+            $toolkit->validateConfigurationForm($form, $form_state);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        // Call the form submit handler for each of the toolkits.
+        foreach ($this->availableToolkits as $toolkit) {
+            $toolkit->submitConfigurationForm($form, $form_state);
+        }
+
+        parent::submitForm($form, $form_state);
+    }
 
 }

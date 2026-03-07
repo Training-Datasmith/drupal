@@ -14,19 +14,21 @@ use Drupal\Core\Hook\Attribute\Hook;
  * result may include an embedded form with buttons like "Add to cart" for each
  * individual product (node) listed in the search results.
  */
-class SearchEmbeddedFormThemeHooks {
+class SearchEmbeddedFormThemeHooks
+{
+    public function __construct(
+        protected FormBuilderInterface $formBuilder,
+    ) {
+    }
 
-  public function __construct(
-    protected FormBuilderInterface $formBuilder,
-  ) {}
-
-  /**
-   * Implements hook_preprocess_HOOK().
-   */
-  #[Hook('preprocess_search_result')]
-  public function preprocessSearchResult(&$variables): void {
-    $form = $this->formBuilder->getForm('Drupal\search_embedded_form\Form\SearchEmbeddedForm');
-    $variables['snippet'] = array_merge($variables['snippet'], $form);
-  }
+    /**
+     * Implements hook_preprocess_HOOK().
+     */
+    #[Hook('preprocess_search_result')]
+    public function preprocessSearchResult(&$variables): void
+    {
+        $form = $this->formBuilder->getForm('Drupal\search_embedded_form\Form\SearchEmbeddedForm');
+        $variables['snippet'] = array_merge($variables['snippet'], $form);
+    }
 
 }

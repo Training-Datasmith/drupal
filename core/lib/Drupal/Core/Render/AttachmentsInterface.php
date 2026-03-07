@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render;
 
 /**
@@ -37,34 +39,34 @@ namespace Drupal\Core\Render;
  *
  * @see \Drupal\Core\Render\AttachmentsTrait
  */
-interface AttachmentsInterface {
+interface AttachmentsInterface
+{
+    /**
+     * Gets this object's attached collection.
+     *
+     * @return array
+     *   The attachments array.
+     */
+    public function getAttachments();
 
-  /**
-   * Gets this object's attached collection.
-   *
-   * @return array
-   *   The attachments array.
-   */
-  public function getAttachments();
+    /**
+     * Merges an array of attached data into this object's collection.
+     *
+     * @param array $attachments
+     *   The attachments to add.
+     *
+     * @return $this
+     */
+    public function addAttachments(array $attachments);
 
-  /**
-   * Merges an array of attached data into this object's collection.
-   *
-   * @param array $attachments
-   *   The attachments to add.
-   *
-   * @return $this
-   */
-  public function addAttachments(array $attachments);
-
-  /**
-   * Replaces this object's attached data with the provided array.
-   *
-   * @param array $attachments
-   *   The attachments to set.
-   *
-   * @return $this
-   */
-  public function setAttachments(array $attachments);
+    /**
+     * Replaces this object's attached data with the provided array.
+     *
+     * @param array $attachments
+     *   The attachments to set.
+     *
+     * @return $this
+     */
+    public function setAttachments(array $attachments);
 
 }

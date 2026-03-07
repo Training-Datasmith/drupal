@@ -7,6 +7,7 @@ namespace Drupal\Tests\Core\Render;
 use Drupal\Core\Render\Renderer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+
 use function preg_replace;
 
 /**
@@ -14,35 +15,37 @@ use function preg_replace;
  */
 #[CoversClass(Renderer::class)]
 #[Group('Render')]
-class RendererDebugTest extends RendererTestBase {
+class RendererDebugTest extends RendererTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->rendererConfig['debug'] = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->rendererConfig['debug'] = TRUE;
+        parent::setUp();
+    }
 
-    parent::setUp();
-  }
+    /**
+     * Test render debug output.
+     */
+    public function testDebugOutput(): void
+    {
+        $this->setUpRequest();
+        $this->setUpMemoryCache();
 
-  /**
-   * Test render debug output.
-   */
-  public function testDebugOutput(): void {
-    $this->setUpRequest();
-    $this->setUpMemoryCache();
+        $element = [
+          '#cache' => [
+            'keys' => ['render_cache_test_key'],
+            'tags' => ['render_cache_test_tag', 'render_cache_test_tag1'],
+            'max-age' => 10,
+          ],
+          '#markup' => 'Test 1',
+        ];
+        $markup = $this->renderer->renderRoot($element);
 
-    $element = [
-      '#cache' => [
-        'keys' => ['render_cache_test_key'],
-        'tags' => ['render_cache_test_tag', 'render_cache_test_tag1'],
-        'max-age' => 10,
-      ],
-      '#markup' => 'Test 1',
-    ];
-    $markup = $this->renderer->renderRoot($element);
-
-    $expected = <<<EOF
+        $expected = <<<EOF
 <!-- START RENDERER -->
 <!-- CACHE-HIT: No -->
 <!-- CACHE TAGS:
@@ -73,19 +76,19 @@ class RendererDebugTest extends RendererTestBase {
 Test 1
 <!-- END RENDERER -->
 EOF;
-    $this->assertSame($expected, preg_replace('/RENDERING TIME: \d{1}.\d{9}/', 'RENDERING TIME: 0.123456789', $markup->__toString()));
+        $this->assertSame($expected, preg_replace('/RENDERING TIME: \d{1}.\d{9}/', 'RENDERING TIME: 0.123456789', $markup->__toString()));
 
-    $element = [
-      '#cache' => [
-        'keys' => ['render_cache_test_key'],
-        'tags' => ['render_cache_test_tag', 'render_cache_test_tag1'],
-        'max-age' => 10,
-      ],
-      '#markup' => 'Test 1',
-    ];
-    $markup = $this->renderer->renderRoot($element);
+        $element = [
+          '#cache' => [
+            'keys' => ['render_cache_test_key'],
+            'tags' => ['render_cache_test_tag', 'render_cache_test_tag1'],
+            'max-age' => 10,
+          ],
+          '#markup' => 'Test 1',
+        ];
+        $markup = $this->renderer->renderRoot($element);
 
-    $this->assertStringContainsString('CACHE-HIT: Yes', $markup->__toString());
-  }
+        $this->assertStringContainsString('CACHE-HIT: Yes', $markup->__toString());
+    }
 
 }

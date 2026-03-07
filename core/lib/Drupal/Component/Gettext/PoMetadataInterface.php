@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Gettext;
 
 /**
@@ -8,38 +10,38 @@ namespace Drupal\Component\Gettext;
  * @see \Drupal\Component\Gettext\PoReaderInterface
  * @see \Drupal\Component\Gettext\PoWriterInterface
  */
-interface PoMetadataInterface {
+interface PoMetadataInterface
+{
+    /**
+     * Set language code.
+     *
+     * @param string $langcode
+     *   Language code string.
+     */
+    public function setLangcode($langcode);
 
-  /**
-   * Set language code.
-   *
-   * @param string $langcode
-   *   Language code string.
-   */
-  public function setLangcode($langcode);
+    /**
+     * Get language code.
+     *
+     * @return string
+     *   Language code string.
+     */
+    public function getLangcode();
 
-  /**
-   * Get language code.
-   *
-   * @return string
-   *   Language code string.
-   */
-  public function getLangcode();
+    /**
+     * Set header metadata.
+     *
+     * @param \Drupal\Component\Gettext\PoHeader $header
+     *   Header object representing metadata in a PO header.
+     */
+    public function setHeader(PoHeader $header);
 
-  /**
-   * Set header metadata.
-   *
-   * @param \Drupal\Component\Gettext\PoHeader $header
-   *   Header object representing metadata in a PO header.
-   */
-  public function setHeader(PoHeader $header);
-
-  /**
-   * Get header metadata.
-   *
-   * @return \Drupal\Component\Gettext\PoHeader
-   *   Header instance representing metadata in a PO header.
-   */
-  public function getHeader();
+    /**
+     * Get header metadata.
+     *
+     * @return \Drupal\Component\Gettext\PoHeader
+     *   Header instance representing metadata in a PO header.
+     */
+    public function getHeader();
 
 }

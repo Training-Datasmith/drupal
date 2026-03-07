@@ -16,72 +16,75 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class ThemeSettingsFormTest extends WebDriverTestBase {
+class ThemeSettingsFormTest extends WebDriverTestBase
+{
+    use TestFileCreationTrait;
 
-  use TestFileCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['file'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['file'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $admin = $this->drupalCreateUser(['administer themes']);
+        $this->drupalLogin($admin);
+    }
 
-    $admin = $this->drupalCreateUser(['administer themes']);
-    $this->drupalLogin($admin);
-  }
+    /**
+     * Tests that submission handler works correctly.
+     */
+    #[DataProvider('providerTestFormSettingsSubmissionHandler')]
+    public function testFormSettingsSubmissionHandler($theme): void
+    {
 
-  /**
-   * Tests that submission handler works correctly.
-   */
-  #[DataProvider('providerTestFormSettingsSubmissionHandler')]
-  public function testFormSettingsSubmissionHandler($theme): void {
+        \Drupal::service('theme_installer')->install([$theme]);
 
-    \Drupal::service('theme_installer')->install([$theme]);
+        $page = $this->getSession()->getPage();
+        $assert_session = $this->assertSession();
 
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
+        $this->drupalGet("admin/appearance/settings/$theme");
 
-    $this->drupalGet("admin/appearance/settings/$theme");
+        // Add a new managed file.
+        $file = current($this->getTestFiles('image'));
+        $image_file_path = \Drupal::service('file_system')->realpath($file->uri);
+        $page->attachFileToField('files[custom_logo]', $image_file_path);
+        $assert_session->waitForButton('custom_logo_remove_button');
 
-    // Add a new managed file.
-    $file = current($this->getTestFiles('image'));
-    $image_file_path = \Drupal::service('file_system')->realpath($file->uri);
-    $page->attachFileToField('files[custom_logo]', $image_file_path);
-    $assert_session->waitForButton('custom_logo_remove_button');
+        // Assert the new file is uploaded as temporary. This file should not be
+        // saved as permanent if settings are not submitted.
+        $image_field = $this->assertSession()->hiddenFieldExists('custom_logo[fids]');
+        $file = File::load($image_field->getValue());
+        $this->assertFalse($file->isPermanent());
 
-    // Assert the new file is uploaded as temporary. This file should not be
-    // saved as permanent if settings are not submitted.
-    $image_field = $this->assertSession()->hiddenFieldExists('custom_logo[fids]');
-    $file = File::load($image_field->getValue());
-    $this->assertFalse($file->isPermanent());
+        $page->pressButton('Save configuration');
+        \Drupal::entityTypeManager()->getStorage('file')->resetCache();
 
-    $page->pressButton('Save configuration');
-    \Drupal::entityTypeManager()->getStorage('file')->resetCache();
+        // Assert the uploaded file is saved as permanent.
+        $image_field = $this->assertSession()->hiddenFieldExists('custom_logo[fids]');
+        $file = File::load($image_field->getValue());
+        $this->assertTrue($file->isPermanent());
+    }
 
-    // Assert the uploaded file is saved as permanent.
-    $image_field = $this->assertSession()->hiddenFieldExists('custom_logo[fids]');
-    $file = File::load($image_field->getValue());
-    $this->assertTrue($file->isPermanent());
-  }
-
-  /**
-   * Provides test data for ::testFormSettingsSubmissionHandler().
-   */
-  public static function providerTestFormSettingsSubmissionHandler() {
-    return [
-      'test theme.theme' => ['test_theme_theme'],
-      'test theme-settings.php' => ['test_theme_settings'],
-    ];
-  }
+    /**
+     * Provides test data for ::testFormSettingsSubmissionHandler().
+     */
+    public static function providerTestFormSettingsSubmissionHandler()
+    {
+        return [
+          'test theme.theme' => ['test_theme_theme'],
+          'test theme-settings.php' => ['test_theme_settings'],
+        ];
+    }
 
 }

@@ -10,9 +10,9 @@ namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
  */
 final class AnnotationEnum
 {
-    const ONE   = 'ONE';
-    const TWO   = 'TWO';
-    const THREE = 'THREE';
+    public const ONE   = 'ONE';
+    public const TWO   = 'TWO';
+    public const THREE = 'THREE';
 
     /**
      * @var mixed

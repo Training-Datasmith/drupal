@@ -16,64 +16,66 @@ use Drupal\workspaces\WorkspaceManagerInterface;
  *
  * @internal
  */
-final class WorkspacesLazyBuilder {
+final class WorkspacesLazyBuilder
+{
+    use RedirectDestinationTrait;
+    use StringTranslationTrait;
 
-  use RedirectDestinationTrait;
-  use StringTranslationTrait;
+    public function __construct(
+        protected WorkspaceManagerInterface $workspaceManager,
+    ) {
+    }
 
-  public function __construct(
-    protected WorkspaceManagerInterface $workspaceManager,
-  ) {}
+    /**
+     * Lazy builder callback for rendering navigation links.
+     *
+     * @return array
+     *   A renderable array as expected by the renderer service.
+     */
+    #[TrustedCallback]
+    public function renderNavigationLinks(): array
+    {
+        $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-  /**
-   * Lazy builder callback for rendering navigation links.
-   *
-   * @return array
-   *   A renderable array as expected by the renderer service.
-   */
-  #[TrustedCallback]
-  public function renderNavigationLinks(): array {
-    $active_workspace = $this->workspaceManager->getActiveWorkspace();
-
-    $url = Url::fromRoute('entity.workspace.collection', [], ['query' => $this->getDestinationArray()]);
-    $url->setOption('attributes', [
-      'class' => [
-        $active_workspace ? 'toolbar-button--workspaces' : 'toolbar-button--workspaces--live',
-        'use-ajax',
-      ],
-      'data-dialog-type' => 'dialog',
-      'data-dialog-renderer' => 'off_canvas_top',
-      'data-dialog-options' => Json::encode([
-        'height' => 161,
-        'classes' => [
-          'ui-dialog' => 'workspaces-dialog',
-        ],
-      ]),
-    ]);
-
-    return [
-      '#theme' => 'navigation_menu',
-      '#title' => $this->t('Workspace'),
-      '#items' => [
-        [
-          'title' => $active_workspace ? $active_workspace->label() : $this->t('Live'),
-          'url' => $url,
-          'class' => 'workspaces',
-          'icon' => [
-            'icon_id' => 'workspaces',
+        $url = Url::fromRoute('entity.workspace.collection', [], ['query' => $this->getDestinationArray()]);
+        $url->setOption('attributes', [
+          'class' => [
+            $active_workspace ? 'toolbar-button--workspaces' : 'toolbar-button--workspaces--live',
+            'use-ajax',
           ],
-        ],
-      ],
-      '#attached' => [
-        'library' => [
-          'navigation/internal.navigation-workspaces',
-          'workspaces/drupal.workspaces_ui.off-canvas',
-        ],
-      ],
-      '#cache' => [
-        'max-age' => 0,
-      ],
-    ];
-  }
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'off_canvas_top',
+          'data-dialog-options' => Json::encode([
+            'height' => 161,
+            'classes' => [
+              'ui-dialog' => 'workspaces-dialog',
+            ],
+          ]),
+        ]);
+
+        return [
+          '#theme' => 'navigation_menu',
+          '#title' => $this->t('Workspace'),
+          '#items' => [
+            [
+              'title' => $active_workspace ? $active_workspace->label() : $this->t('Live'),
+              'url' => $url,
+              'class' => 'workspaces',
+              'icon' => [
+                'icon_id' => 'workspaces',
+              ],
+            ],
+          ],
+          '#attached' => [
+            'library' => [
+              'navigation/internal.navigation-workspaces',
+              'workspaces/drupal.workspaces_ui.off-canvas',
+            ],
+          ],
+          '#cache' => [
+            'max-age' => 0,
+          ],
+        ];
+    }
 
 }

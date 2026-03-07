@@ -15,37 +15,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class TermCacheTagsTest extends EntityWithUriCacheTagsTestBase {
+class TermCacheTagsTest extends EntityWithUriCacheTagsTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['taxonomy'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['taxonomy'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Camelids" vocabulary.
+        $vocabulary = Vocabulary::create([
+          'name' => 'Camelids',
+          'vid' => 'camelids',
+        ]);
+        $vocabulary->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Camelids" vocabulary.
-    $vocabulary = Vocabulary::create([
-      'name' => 'Camelids',
-      'vid' => 'camelids',
-    ]);
-    $vocabulary->save();
+        // Create a "Llama" taxonomy term.
+        $term = Term::create([
+          'name' => 'Llama',
+          'vid' => $vocabulary->id(),
+        ]);
+        $term->save();
 
-    // Create a "Llama" taxonomy term.
-    $term = Term::create([
-      'name' => 'Llama',
-      'vid' => $vocabulary->id(),
-    ]);
-    $term->save();
-
-    return $term;
-  }
+        return $term;
+    }
 
 }

@@ -14,67 +14,71 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RequiredModuleUninstallValidator::class)]
 #[Group('Extension')]
-class RequiredModuleUninstallValidatorTest extends UnitTestCase {
+class RequiredModuleUninstallValidatorTest extends UnitTestCase
+{
+    /**
+     * @var \Drupal\Core\Extension\RequiredModuleUninstallValidator|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $uninstallValidator;
 
-  /**
-   * @var \Drupal\Core\Extension\RequiredModuleUninstallValidator|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $uninstallValidator;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->uninstallValidator = $this->getMockBuilder('Drupal\Core\Extension\RequiredModuleUninstallValidator')
+          ->disableOriginalConstructor()
+          ->onlyMethods(['getModuleInfoByModule'])
+          ->getMock();
+        $this->uninstallValidator->setStringTranslation($this->getStringTranslationStub());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->uninstallValidator = $this->getMockBuilder('Drupal\Core\Extension\RequiredModuleUninstallValidator')
-      ->disableOriginalConstructor()
-      ->onlyMethods(['getModuleInfoByModule'])
-      ->getMock();
-    $this->uninstallValidator->setStringTranslation($this->getStringTranslationStub());
-  }
+    /**
+     * Tests validate no module.
+     */
+    public function testValidateNoModule(): void
+    {
+        $this->uninstallValidator->expects($this->once())
+          ->method('getModuleInfoByModule')
+          ->willReturn([]);
 
-  /**
-   * Tests validate no module.
-   */
-  public function testValidateNoModule(): void {
-    $this->uninstallValidator->expects($this->once())
-      ->method('getModuleInfoByModule')
-      ->willReturn([]);
+        $module = $this->randomMachineName();
+        $expected = [];
+        $reasons = $this->uninstallValidator->validate($module);
+        $this->assertSame($expected, $reasons);
+    }
 
-    $module = $this->randomMachineName();
-    $expected = [];
-    $reasons = $this->uninstallValidator->validate($module);
-    $this->assertSame($expected, $reasons);
-  }
+    /**
+     * Tests validate not required.
+     */
+    public function testValidateNotRequired(): void
+    {
+        $module = $this->randomMachineName();
 
-  /**
-   * Tests validate not required.
-   */
-  public function testValidateNotRequired(): void {
-    $module = $this->randomMachineName();
+        $this->uninstallValidator->expects($this->once())
+          ->method('getModuleInfoByModule')
+          ->willReturn(['required' => false, 'name' => $module]);
 
-    $this->uninstallValidator->expects($this->once())
-      ->method('getModuleInfoByModule')
-      ->willReturn(['required' => FALSE, 'name' => $module]);
+        $expected = [];
+        $reasons = $this->uninstallValidator->validate($module);
+        $this->assertSame($expected, $reasons);
+    }
 
-    $expected = [];
-    $reasons = $this->uninstallValidator->validate($module);
-    $this->assertSame($expected, $reasons);
-  }
+    /**
+     * Tests validate required.
+     */
+    public function testValidateRequired(): void
+    {
+        $module = $this->randomMachineName();
 
-  /**
-   * Tests validate required.
-   */
-  public function testValidateRequired(): void {
-    $module = $this->randomMachineName();
+        $this->uninstallValidator->expects($this->once())
+          ->method('getModuleInfoByModule')
+          ->willReturn(['required' => true, 'name' => $module]);
 
-    $this->uninstallValidator->expects($this->once())
-      ->method('getModuleInfoByModule')
-      ->willReturn(['required' => TRUE, 'name' => $module]);
-
-    $expected = ["The $module module is required"];
-    $reasons = $this->uninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
-  }
+        $expected = ["The $module module is required"];
+        $reasons = $this->uninstallValidator->validate($module);
+        $this->assertEquals($expected, $reasons);
+    }
 
 }

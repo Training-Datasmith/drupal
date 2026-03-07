@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\ResourceType;
 
 /**
@@ -13,4 +15,6 @@ namespace Drupal\jsonapi\ResourceType;
  *
  * @see \Drupal\jsonapi\ResourceType\ResourceTypeRepository
  */
-class ResourceTypeAttribute extends ResourceTypeField {}
+class ResourceTypeAttribute extends ResourceTypeField
+{
+}

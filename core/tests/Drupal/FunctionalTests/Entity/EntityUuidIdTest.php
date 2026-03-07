@@ -15,59 +15,61 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class EntityUuidIdTest extends BrowserTestBase {
+class EntityUuidIdTest extends BrowserTestBase
+{
+    use ContentTranslationTestTrait;
 
-  use ContentTranslationTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block', 'content_translation', 'entity_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block', 'content_translation', 'entity_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->createLanguageFromLangcode('af');
+        $this->enableContentTranslation('entity_test_uuid_id', 'entity_test_uuid_id');
+        $this->drupalPlaceBlock('page_title_block');
+        $this->drupalPlaceBlock('local_tasks_block');
+    }
 
-    $this->createLanguageFromLangcode('af');
-    $this->enableContentTranslation('entity_test_uuid_id', 'entity_test_uuid_id');
-    $this->drupalPlaceBlock('page_title_block');
-    $this->drupalPlaceBlock('local_tasks_block');
-  }
+    /**
+     * Tests the user interface for the test entity.
+     */
+    public function testUi(): void
+    {
+        $this->drupalLogin($this->createUser([
+          'administer entity_test content',
+          'create content translations',
+          'translate entity_test_uuid_id',
+          'view test entity',
+        ]));
 
-  /**
-   * Tests the user interface for the test entity.
-   */
-  public function testUi(): void {
-    $this->drupalLogin($this->createUser([
-      'administer entity_test content',
-      'create content translations',
-      'translate entity_test_uuid_id',
-      'view test entity',
-    ]));
+        // Test adding an entity.
+        $this->drupalGet('/entity_test_uuid_id/add');
+        $this->submitForm([
+          'Name' => 'Test entity with UUID ID',
+        ], 'Save');
+        $this->assertSession()->elementTextEquals('css', 'h1', 'Edit Test entity with UUID ID');
+        $this->assertSession()->addressMatches('#^/entity_test_uuid_id/manage/' . Uuid::VALID_PATTERN . '/edit$#');
 
-    // Test adding an entity.
-    $this->drupalGet('/entity_test_uuid_id/add');
-    $this->submitForm([
-      'Name' => 'Test entity with UUID ID',
-    ], 'Save');
-    $this->assertSession()->elementTextEquals('css', 'h1', 'Edit Test entity with UUID ID');
-    $this->assertSession()->addressMatches('#^/entity_test_uuid_id/manage/' . Uuid::VALID_PATTERN . '/edit$#');
-
-    // Test translating an entity.
-    $this->clickLink('Translate');
-    $this->clickLink('Add');
-    $this->submitForm([
-      'Name' => 'Afrikaans translation of test entity with UUID ID',
-    ], 'Save');
-    $this->assertSession()->elementTextEquals('css', 'h1', 'Afrikaans translation of test entity with UUID ID [Afrikaans translation]');
-    $this->assertSession()->addressMatches('#^/af/entity_test_uuid_id/manage/' . Uuid::VALID_PATTERN . '/edit$#');
-  }
+        // Test translating an entity.
+        $this->clickLink('Translate');
+        $this->clickLink('Add');
+        $this->submitForm([
+          'Name' => 'Afrikaans translation of test entity with UUID ID',
+        ], 'Save');
+        $this->assertSession()->elementTextEquals('css', 'h1', 'Afrikaans translation of test entity with UUID ID [Afrikaans translation]');
+        $this->assertSession()->addressMatches('#^/af/entity_test_uuid_id/manage/' . Uuid::VALID_PATTERN . '/edit$#');
+    }
 
 }

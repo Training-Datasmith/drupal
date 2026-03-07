@@ -19,57 +19,59 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class TestSiteUserLoginCommand extends Command {
+class TestSiteUserLoginCommand extends Command
+{
+    /**
+     * The class loader to use for installation and initialization of setup.
+     *
+     * @var \Composer\Autoload\ClassLoader
+     */
+    protected $classLoader;
 
-  /**
-   * The class loader to use for installation and initialization of setup.
-   *
-   * @var \Composer\Autoload\ClassLoader
-   */
-  protected $classLoader;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function configure(): void {
-    $this->setName('user-login')
-      ->setDescription('Generate a one time login link for an user.')
-      ->addArgument('uid', InputArgument::REQUIRED, 'The ID of the user for whom the link will be generated')
-      ->addOption('site-path', NULL, InputOption::VALUE_REQUIRED, 'The path for the test site.');
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
-   */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
-    $root = dirname(__DIR__, 5);
-    chdir($root);
-
-    $this->classLoader = require 'autoload.php';
-    $kernel = new DrupalKernel('prod', $this->classLoader, FALSE);
-    $kernel::bootEnvironment();
-    $kernel->setSitePath($input->getOption('site-path'));
-    Settings::initialize($kernel->getAppRoot(), $kernel->getSitePath(), $this->classLoader);
-
-    $request = Request::createFromGlobals();
-
-    $kernel->boot();
-    $kernel->preHandle($request);
-
-    $container = $kernel->getContainer();
-    $uid = $input->getArgument('uid');
-    if (!is_numeric($uid)) {
-      throw new InvalidArgumentException(sprintf('The "uid" argument needs to be an integer, but it is "%s".', $uid));
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this->setName('user-login')
+          ->setDescription('Generate a one time login link for an user.')
+          ->addArgument('uid', InputArgument::REQUIRED, 'The ID of the user for whom the link will be generated')
+          ->addOption('site-path', null, InputOption::VALUE_REQUIRED, 'The path for the test site.');
     }
-    $userEntity = $container->get('entity_type.manager')
-      ->getStorage('user')
-      ->load($uid);
-    $url = user_pass_reset_url($userEntity) . '/login';
-    $output->writeln($url);
 
-    return 0;
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $root = dirname(__DIR__, 5);
+        chdir($root);
+
+        $this->classLoader = require 'autoload.php';
+        $kernel = new DrupalKernel('prod', $this->classLoader, false);
+        $kernel::bootEnvironment();
+        $kernel->setSitePath($input->getOption('site-path'));
+        Settings::initialize($kernel->getAppRoot(), $kernel->getSitePath(), $this->classLoader);
+
+        $request = Request::createFromGlobals();
+
+        $kernel->boot();
+        $kernel->preHandle($request);
+
+        $container = $kernel->getContainer();
+        $uid = $input->getArgument('uid');
+        if (!is_numeric($uid)) {
+            throw new InvalidArgumentException(sprintf('The "uid" argument needs to be an integer, but it is "%s".', $uid));
+        }
+        $userEntity = $container->get('entity_type.manager')
+          ->getStorage('user')
+          ->load($uid);
+        $url = user_pass_reset_url($userEntity) . '/login';
+        $output->writeln($url);
+
+        return 0;
+    }
 
 }

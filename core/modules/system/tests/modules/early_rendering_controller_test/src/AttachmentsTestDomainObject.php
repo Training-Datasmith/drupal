@@ -10,8 +10,8 @@ use Drupal\Core\Render\AttachmentsTrait;
 /**
  * Test domain class with implemented AttachmentsInterface.
  */
-class AttachmentsTestDomainObject extends TestDomainObject implements AttachmentsInterface {
-
-  use AttachmentsTrait;
+class AttachmentsTestDomainObject extends TestDomainObject implements AttachmentsInterface
+{
+    use AttachmentsTrait;
 
 }

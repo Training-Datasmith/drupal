@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -15,106 +16,108 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * small amount of analysis tools, but more could easily be added either
  * by modules or as patches to Views itself.
  */
-class Analyzer {
+class Analyzer
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs an Analyzer object.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler that invokes the 'views_analyze' hook.
-   */
-  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
-  {
-  }
-
-  /**
-   * Analyzes a review and return the results.
-   *
-   * @param \Drupal\views\ViewExecutable $view
-   *   The view to analyze.
-   *
-   * @return array
-   *   An array of analyze results organized into arrays keyed by 'ok',
-   *   'warning' and 'error'.
-   */
-  public function getMessages(ViewExecutable $view) {
-    $view->initDisplay();
-
-    return $this->moduleHandler->invokeAll('views_analyze', [$view]);
-  }
-
-  /**
-   * Formats the analyze result into a message string.
-   *
-   * This is based upon the format of
-   * \Drupal\Core\Messenger\MessengerInterface::addMessage() which uses separate
-   * boxes for "ok", "warning" and "error".
-   */
-  public function formatMessages(array $messages): string {
-    if (empty($messages)) {
-      $messages = [static::formatMessage($this->t('View analysis can find nothing to report.'), 'ok')];
+    /**
+     * Constructs an Analyzer object.
+     *
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler that invokes the 'views_analyze' hook.
+     */
+    public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+    {
     }
 
-    $types = ['ok' => [], 'warning' => [], 'error' => []];
-    foreach ($messages as $message) {
-      if (empty($types[$message['type']])) {
-        $types[$message['type']] = [];
-      }
-      $types[$message['type']][] = $message['message'];
+    /**
+     * Analyzes a review and return the results.
+     *
+     * @param \Drupal\views\ViewExecutable $view
+     *   The view to analyze.
+     *
+     * @return array
+     *   An array of analyze results organized into arrays keyed by 'ok',
+     *   'warning' and 'error'.
+     */
+    public function getMessages(ViewExecutable $view)
+    {
+        $view->initDisplay();
+
+        return $this->moduleHandler->invokeAll('views_analyze', [$view]);
     }
 
-    $output = '';
-    foreach ($types as $type => $messages) {
-      $type .= ' messages';
-      $message = '';
-      if (count($messages) > 1) {
-        $item_list = [
-          '#theme' => 'item_list',
-          '#items' => $messages,
-        ];
-        $message = \Drupal::service('renderer')->render($item_list);
-      }
-      elseif ($messages) {
-        $message = array_shift($messages);
-      }
+    /**
+     * Formats the analyze result into a message string.
+     *
+     * This is based upon the format of
+     * \Drupal\Core\Messenger\MessengerInterface::addMessage() which uses separate
+     * boxes for "ok", "warning" and "error".
+     */
+    public function formatMessages(array $messages): string
+    {
+        if (empty($messages)) {
+            $messages = [static::formatMessage($this->t('View analysis can find nothing to report.'), 'ok')];
+        }
 
-      if ($message) {
-        $output .= "<div class=\"$type\">$message</div>";
-      }
+        $types = ['ok' => [], 'warning' => [], 'error' => []];
+        foreach ($messages as $message) {
+            if (empty($types[$message['type']])) {
+                $types[$message['type']] = [];
+            }
+            $types[$message['type']][] = $message['message'];
+        }
+
+        $output = '';
+        foreach ($types as $type => $messages) {
+            $type .= ' messages';
+            $message = '';
+            if (count($messages) > 1) {
+                $item_list = [
+                  '#theme' => 'item_list',
+                  '#items' => $messages,
+                ];
+                $message = \Drupal::service('renderer')->render($item_list);
+            } elseif ($messages) {
+                $message = array_shift($messages);
+            }
+
+            if ($message) {
+                $output .= "<div class=\"$type\">$message</div>";
+            }
+        }
+
+        return $output;
     }
 
-    return $output;
-  }
-
-  /**
-   * Formats an analysis message.
-   *
-   * This tool should be called by any module responding to the analyze hook
-   * to properly format the message. It is usually used in the form:
-   * @code
-   *   $ret[] = Analyzer::formatMessage(t('This is the message'), 'ok');
-   * @endcode
-   *
-   * The 'ok' status should be used to provide information about things
-   * that are acceptable. In general analysis isn't interested in 'ok'
-   * messages, but instead the 'warning', which is a category for items
-   * that may be broken unless the user knows what they are doing, and 'error'
-   * for items that are definitely broken are much more useful.
-   *
-   * @param string $message
-   *   The message.
-   * @param string $type
-   *   The type of message. This should be "ok", "warning" or "error". Other
-   *   values can be used but how they are treated by the output routine
-   *   is undefined.
-   *
-   * @return array
-   *   A single formatted message, consisting of a key message and a key type.
-   */
-  public static function formatMessage($message, $type = 'error'): array {
-    return ['message' => $message, 'type' => $type];
-  }
+    /**
+     * Formats an analysis message.
+     *
+     * This tool should be called by any module responding to the analyze hook
+     * to properly format the message. It is usually used in the form:
+     * @code
+     *   $ret[] = Analyzer::formatMessage(t('This is the message'), 'ok');
+     * @endcode
+     *
+     * The 'ok' status should be used to provide information about things
+     * that are acceptable. In general analysis isn't interested in 'ok'
+     * messages, but instead the 'warning', which is a category for items
+     * that may be broken unless the user knows what they are doing, and 'error'
+     * for items that are definitely broken are much more useful.
+     *
+     * @param string $message
+     *   The message.
+     * @param string $type
+     *   The type of message. This should be "ok", "warning" or "error". Other
+     *   values can be used but how they are treated by the output routine
+     *   is undefined.
+     *
+     * @return array
+     *   A single formatted message, consisting of a key message and a key type.
+     */
+    public static function formatMessage($message, $type = 'error'): array
+    {
+        return ['message' => $message, 'type' => $type];
+    }
 
 }

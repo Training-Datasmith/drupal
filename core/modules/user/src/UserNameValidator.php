@@ -14,23 +14,25 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
  * This validator re-uses the UserName constraint plugin but does not require a
  * User entity.
  */
-class UserNameValidator {
+class UserNameValidator
+{
+    public function __construct(
+        protected readonly BasicRecursiveValidatorFactory $validatorFactory,
+        protected readonly ConstraintManager $constraintManager,
+    ) {
+    }
 
-  public function __construct(
-    protected readonly BasicRecursiveValidatorFactory $validatorFactory,
-    protected readonly ConstraintManager $constraintManager,
-  ) {}
-
-  /**
-   * Validates a user name.
-   *
-   * @return \Symfony\Component\Validator\ConstraintViolationListInterface
-   *   The list of constraint violations.
-   */
-  public function validateName(string $name): ConstraintViolationListInterface {
-    $validator = $this->validatorFactory->createValidator();
-    $constraint = $this->constraintManager->create('UserName', []);
-    return $validator->validate($name, $constraint);
-  }
+    /**
+     * Validates a user name.
+     *
+     * @return \Symfony\Component\Validator\ConstraintViolationListInterface
+     *   The list of constraint violations.
+     */
+    public function validateName(string $name): ConstraintViolationListInterface
+    {
+        $validator = $this->validatorFactory->createValidator();
+        $constraint = $this->constraintManager->create('UserName', []);
+        return $validator->validate($name, $constraint);
+    }
 
 }

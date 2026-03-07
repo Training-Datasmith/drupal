@@ -17,45 +17,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class ManagedFileTest extends FileManagedUnitTestBase implements FormInterface {
+class ManagedFileTest extends FileManagedUnitTestBase implements FormInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_managed_file';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_managed_file';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['managed_file'] = [
+          '#type' => 'managed_file',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['managed_file'] = [
-      '#type' => 'managed_file',
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * Tests that managed file elements can be programmatically submitted.
-   */
-  public function testManagedFileElement(): void {
-    $form_state = new FormState();
-    $values['managed_file'] = NULL;
-    $form_state->setValues($values);
-    $this->container->get('form_builder')->submitForm($this, $form_state);
-    // Should submit without any errors.
-    $this->assertEquals(0, count($form_state->getErrors()));
-  }
+    /**
+     * Tests that managed file elements can be programmatically submitted.
+     */
+    public function testManagedFileElement(): void
+    {
+        $form_state = new FormState();
+        $values['managed_file'] = null;
+        $form_state->setValues($values);
+        $this->container->get('form_builder')->submitForm($this, $form_state);
+        // Should submit without any errors.
+        $this->assertEquals(0, count($form_state->getErrors()));
+    }
 
 }

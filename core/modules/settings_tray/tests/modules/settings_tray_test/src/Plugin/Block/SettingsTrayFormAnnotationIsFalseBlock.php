@@ -12,19 +12,20 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Block that explicitly provides no "settings_tray" form, thus opting out.
  */
 #[Block(
-  id: "settings_tray_test_false",
-  admin_label: new TranslatableMarkup("Settings Tray test block: forms[settings_tray]=FALSE"),
-  forms: [
-    'settings_tray' => FALSE,
+    id: 'settings_tray_test_false',
+    admin_label: new TranslatableMarkup('Settings Tray test block: forms[settings_tray]=FALSE'),
+    forms: [
+    'settings_tray' => false,
   ]
 )]
-class SettingsTrayFormAnnotationIsFalseBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return ['#markup' => '<span>FALSE</span>'];
-  }
+class SettingsTrayFormAnnotationIsFalseBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return ['#markup' => '<span>FALSE</span>'];
+    }
 
 }

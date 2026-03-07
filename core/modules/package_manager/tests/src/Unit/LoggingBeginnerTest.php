@@ -19,46 +19,47 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('package_manager')]
 #[CoversClass(LoggingBeginner::class)]
-class LoggingBeginnerTest extends UnitTestCase {
+class LoggingBeginnerTest extends UnitTestCase
+{
+    /**
+     * Tests the output of LoggingBeginner().
+     */
+    public function testDecoratedBeginnerIsCalled(): void
+    {
+        $decorated = $this->createMock(BeginnerInterface::class);
 
-  /**
-   * Tests the output of LoggingBeginner().
-   */
-  public function testDecoratedBeginnerIsCalled(): void {
-    $decorated = $this->createMock(BeginnerInterface::class);
+        $activeDir = $this->createStub(PathInterface::class);
+        $stagingDir = $this->createStub(PathInterface::class);
+        $stagingDir
+          ->method('absolute')
+          ->willReturn('staging-dir');
 
-    $activeDir = $this->createStub(PathInterface::class);
-    $stagingDir = $this->createStub(PathInterface::class);
-    $stagingDir
-      ->method('absolute')
-      ->willReturn('staging-dir');
+        $decorated->expects($this->once())
+          ->method('begin')
+          ->with(
+              $activeDir,
+              $stagingDir,
+              null,
+              $this->isInstanceOf(FileProcessOutputCallback::class),
+          );
 
-    $decorated->expects($this->once())
-      ->method('begin')
-      ->with(
-        $activeDir,
-        $stagingDir,
-        NULL,
-        $this->isInstanceOf(FileProcessOutputCallback::class),
-      );
+        $config_factory = $this->getConfigFactoryStub([
+          'package_manager.settings' => ['log' => 'php://memory'],
+        ]);
+        $time = $this->createMock(TimeInterface::class);
+        $time->expects($this->atLeast(2))
+          ->method('getCurrentMicroTime')
+          ->willReturnOnConsecutiveCalls(1, 2.5);
 
-    $config_factory = $this->getConfigFactoryStub([
-      'package_manager.settings' => ['log' => 'php://memory'],
-    ]);
-    $time = $this->createMock(TimeInterface::class);
-    $time->expects($this->atLeast(2))
-      ->method('getCurrentMicroTime')
-      ->willReturnOnConsecutiveCalls(1, 2.5);
+        $callback = new ProcessOutputCallback();
 
-    $callback = new ProcessOutputCallback();
+        (new LoggingBeginner($decorated, $config_factory, $time))
+          ->begin($activeDir, $stagingDir, callback: $callback);
 
-    (new LoggingBeginner($decorated, $config_factory, $time))
-      ->begin($activeDir, $stagingDir, callback: $callback);
-
-    $this->assertSame([
-      "### Beginning in staging-dir\n",
-      "### Finished in 1.500 seconds\n",
-    ], $callback->getOutput());
-  }
+        $this->assertSame([
+          "### Beginning in staging-dir\n",
+          "### Finished in 1.500 seconds\n",
+        ], $callback->getOutput());
+    }
 
 }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -25,14 +27,14 @@
 
 namespace Drupal\Component\Annotation\Doctrine;
 
+use function ctype_alpha;
+
 use Doctrine\Common\Lexer\AbstractLexer;
 
-use function ctype_alpha;
 use function is_numeric;
 use function str_replace;
 use function stripos;
 use function strlen;
-use function strpos;
 use function strtolower;
 use function substr;
 

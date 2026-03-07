@@ -1,18 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StreamWrapper\LocalStream;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
-use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Row;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -50,184 +50,190 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('file_copy')]
-class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a file_copy process plugin.
-   *
-   * @param array $configuration
-   *   The plugin configuration.
-   * @param string $plugin_id
-   *   The plugin ID.
-   * @param array $plugin_definition
-   *   The plugin definition.
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
-   *   The stream wrapper manager service.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
-   *   The file system service.
-   * @param \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin
-   *   An instance of the download plugin for handling remote URIs.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager, protected \Drupal\Core\File\FileSystemInterface $fileSystem, protected \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin) {
-    $configuration += [
-      'move' => FALSE,
-    ];
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('stream_wrapper_manager'),
-      $container->get('file_system'),
-      $container->get('plugin.manager.migrate.process')->createInstance('download', $configuration)
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    // If we're stubbing a file entity, return a URI of NULL so it will get
-    // stubbed by the general process.
-    if ($row->isStub()) {
-      return NULL;
-    }
-    [$source, $destination] = $value;
-
-    // If the source path or URI represents a remote resource, delegate to the
-    // download plugin.
-    if (!$this->isLocalUri($source)) {
-      return $this->downloadPlugin->transform($value, $migrate_executable, $row, $destination_property);
+class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a file_copy process plugin.
+     *
+     * @param array $configuration
+     *   The plugin configuration.
+     * @param string $plugin_id
+     *   The plugin ID.
+     * @param array $plugin_definition
+     *   The plugin definition.
+     * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
+     *   The stream wrapper manager service.
+     * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+     *   The file system service.
+     * @param \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin
+     *   An instance of the download plugin for handling remote URIs.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager, protected \Drupal\Core\File\FileSystemInterface $fileSystem, protected \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin)
+    {
+        $configuration += [
+          'move' => false,
+        ];
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    // Ensure the source file exists, if it's a local URI or path.
-    if (!file_exists($source)) {
-      throw new MigrateException("File '$source' does not exist");
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $container->get('stream_wrapper_manager'),
+            $container->get('file_system'),
+            $container->get('plugin.manager.migrate.process')->createInstance('download', $configuration)
+        );
     }
 
-    // If the start and end file is exactly the same, there is nothing to do.
-    if ($this->isLocationUnchanged($source, $destination)) {
-      return $destination;
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        // If we're stubbing a file entity, return a URI of NULL so it will get
+        // stubbed by the general process.
+        if ($row->isStub()) {
+            return null;
+        }
+        [$source, $destination] = $value;
+
+        // If the source path or URI represents a remote resource, delegate to the
+        // download plugin.
+        if (!$this->isLocalUri($source)) {
+            return $this->downloadPlugin->transform($value, $migrate_executable, $row, $destination_property);
+        }
+
+        // Ensure the source file exists, if it's a local URI or path.
+        if (!file_exists($source)) {
+            throw new MigrateException("File '$source' does not exist");
+        }
+
+        // If the start and end file is exactly the same, there is nothing to do.
+        if ($this->isLocationUnchanged($source, $destination)) {
+            return $destination;
+        }
+
+        // Check if a writable directory exists, and if not try to create it.
+        $dir = $this->getDirectory($destination);
+        // If the directory exists and is writable, avoid
+        // \Drupal\Core\File\FileSystemInterface::prepareDirectory() call and write
+        // the file to destination.
+        if (!is_dir($dir) || !is_writable($dir)) {
+            if (!$this->fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
+                throw new MigrateException("Could not create or write to directory '$dir'");
+            }
+        }
+
+        $final_destination = $this->writeFile($source, $destination, $this->configuration['file_exists']);
+        if ($final_destination) {
+            return $final_destination;
+        }
+        throw new MigrateException("File $source could not be copied to $destination");
     }
 
-    // Check if a writable directory exists, and if not try to create it.
-    $dir = $this->getDirectory($destination);
-    // If the directory exists and is writable, avoid
-    // \Drupal\Core\File\FileSystemInterface::prepareDirectory() call and write
-    // the file to destination.
-    if (!is_dir($dir) || !is_writable($dir)) {
-      if (!$this->fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
-        throw new MigrateException("Could not create or write to directory '$dir'");
-      }
+    /**
+     * Tries to move or copy a file.
+     *
+     * @param string $source
+     *   The source path or URI.
+     * @param string $destination
+     *   The destination path or URI.
+     * @param \Drupal\Core\File\FileExists $fileExists
+     *   (optional) FileExists::Replace (default) or
+     *   FileExists::Rename.
+     *
+     * @return string|false
+     *   File destination on success, FALSE on failure.
+     */
+    protected function writeFile($source, $destination, FileExists $fileExists = FileExists::Replace)
+    {
+        // Check if there is a destination available for copying. If there isn't,
+        // it already exists at the destination and the replace flag tells us to not
+        // replace it. In that case, return the original destination.
+        if ($this->fileSystem->getDestinationFilename($destination, $fileExists) === false) {
+            return $destination;
+        }
+        try {
+            if ($this->configuration['move']) {
+                return $this->fileSystem->move($source, $destination, $fileExists);
+            }
+            return $this->fileSystem->copy($source, $destination, $fileExists);
+        } catch (FileException) {
+            return false;
+        }
     }
 
-    $final_destination = $this->writeFile($source, $destination, $this->configuration['file_exists']);
-    if ($final_destination) {
-      return $final_destination;
+    /**
+     * Returns the directory component of a URI or path.
+     *
+     * For URIs like public://foo.txt, the full physical path of public://
+     * will be returned, since a scheme by itself will trip up certain file
+     * API functions (such as
+     * \Drupal\Core\File\FileSystemInterface::prepareDirectory()).
+     *
+     * @param string $uri
+     *   The URI or path.
+     *
+     * @return string|false
+     *   The directory component of the path or URI, or FALSE if it could not
+     *   be determined.
+     */
+    protected function getDirectory($uri)
+    {
+        $dir = $this->fileSystem->dirname($uri);
+        if (str_ends_with($dir, '://')) {
+            return $this->fileSystem->realpath($dir);
+        }
+        return $dir;
     }
-    throw new MigrateException("File $source could not be copied to $destination");
-  }
 
-  /**
-   * Tries to move or copy a file.
-   *
-   * @param string $source
-   *   The source path or URI.
-   * @param string $destination
-   *   The destination path or URI.
-   * @param \Drupal\Core\File\FileExists $fileExists
-   *   (optional) FileExists::Replace (default) or
-   *   FileExists::Rename.
-   *
-   * @return string|false
-   *   File destination on success, FALSE on failure.
-   */
-  protected function writeFile($source, $destination, FileExists $fileExists = FileExists::Replace) {
-    // Check if there is a destination available for copying. If there isn't,
-    // it already exists at the destination and the replace flag tells us to not
-    // replace it. In that case, return the original destination.
-    if ($this->fileSystem->getDestinationFilename($destination, $fileExists) === FALSE) {
-      return $destination;
+    /**
+     * Determines if the source and destination URIs represent identical paths.
+     *
+     * @param string $source
+     *   The source URI.
+     * @param string $destination
+     *   The destination URI.
+     *
+     * @return bool
+     *   TRUE if the source and destination URIs refer to the same physical path,
+     *   otherwise FALSE.
+     */
+    protected function isLocationUnchanged($source, $destination): bool
+    {
+        return $this->fileSystem->realpath($source) === $this->fileSystem->realpath($destination);
     }
-    try {
-      if ($this->configuration['move']) {
-        return $this->fileSystem->move($source, $destination, $fileExists);
-      }
-      return $this->fileSystem->copy($source, $destination, $fileExists);
-    }
-    catch (FileException) {
-      return FALSE;
-    }
-  }
 
-  /**
-   * Returns the directory component of a URI or path.
-   *
-   * For URIs like public://foo.txt, the full physical path of public://
-   * will be returned, since a scheme by itself will trip up certain file
-   * API functions (such as
-   * \Drupal\Core\File\FileSystemInterface::prepareDirectory()).
-   *
-   * @param string $uri
-   *   The URI or path.
-   *
-   * @return string|false
-   *   The directory component of the path or URI, or FALSE if it could not
-   *   be determined.
-   */
-  protected function getDirectory($uri) {
-    $dir = $this->fileSystem->dirname($uri);
-    if (str_ends_with($dir, '://')) {
-      return $this->fileSystem->realpath($dir);
+    /**
+     * Determines if the given URI or path is considered local.
+     *
+     * A URI or path is considered local if it either has no scheme component,
+     * or the scheme is implemented by a stream wrapper which extends
+     * \Drupal\Core\StreamWrapper\LocalStream.
+     *
+     * @param string $uri
+     *   The URI or path to test.
+     *
+     * @return bool
+     *   TRUE if the URI is local, FALSE otherwise.
+     */
+    protected function isLocalUri($uri): bool
+    {
+        $scheme = StreamWrapperManager::getScheme($uri);
+
+        // The vfs scheme is vfsStream, which is used in testing. vfsStream is a
+        // simulated file system that exists only in memory, but should be treated
+        // as a local resource.
+        if ($scheme == 'vfs') {
+            $scheme = false;
+        }
+        return $scheme === false || $this->streamWrapperManager->getViaScheme($scheme) instanceof LocalStream;
     }
-    return $dir;
-  }
-
-  /**
-   * Determines if the source and destination URIs represent identical paths.
-   *
-   * @param string $source
-   *   The source URI.
-   * @param string $destination
-   *   The destination URI.
-   *
-   * @return bool
-   *   TRUE if the source and destination URIs refer to the same physical path,
-   *   otherwise FALSE.
-   */
-  protected function isLocationUnchanged($source, $destination): bool {
-    return $this->fileSystem->realpath($source) === $this->fileSystem->realpath($destination);
-  }
-
-  /**
-   * Determines if the given URI or path is considered local.
-   *
-   * A URI or path is considered local if it either has no scheme component,
-   * or the scheme is implemented by a stream wrapper which extends
-   * \Drupal\Core\StreamWrapper\LocalStream.
-   *
-   * @param string $uri
-   *   The URI or path to test.
-   *
-   * @return bool
-   *   TRUE if the URI is local, FALSE otherwise.
-   */
-  protected function isLocalUri($uri): bool {
-    $scheme = StreamWrapperManager::getScheme($uri);
-
-    // The vfs scheme is vfsStream, which is used in testing. vfsStream is a
-    // simulated file system that exists only in memory, but should be treated
-    // as a local resource.
-    if ($scheme == 'vfs') {
-      $scheme = FALSE;
-    }
-    return $scheme === FALSE || $this->streamWrapperManager->getViaScheme($scheme) instanceof LocalStream;
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Language\LanguageInterface;
@@ -15,16 +17,17 @@ use Drupal\Core\Render\Attribute\FormElement;
  * @see language_element_info_alter()
  */
 #[FormElement('language_select')]
-class LanguageSelect extends FormElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#default_value' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
-    ];
-  }
+class LanguageSelect extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#default_value' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
+        ];
+    }
 
 }

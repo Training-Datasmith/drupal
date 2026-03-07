@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\DependencyInjection\Dumper;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,58 +18,62 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\Component\DependencyInjection\PhpArrayContainer
  */
-class PhpArrayDumper extends OptimizedPhpArrayDumper {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getArray() {
-    $this->serialize = FALSE;
-    return parent::getArray();
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  protected function dumpCollection($collection, &$resolve = FALSE): array {
-    $code = [];
-
-    foreach ($collection as $key => $value) {
-      if (is_array($value)) {
-        $code[$key] = $this->dumpCollection($value);
-      }
-      else {
-        $code[$key] = $this->dumpValue($value);
-      }
+class PhpArrayDumper extends OptimizedPhpArrayDumper
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getArray()
+    {
+        $this->serialize = false;
+        return parent::getArray();
     }
 
-    return $code;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    protected function dumpCollection($collection, &$resolve = false): array
+    {
+        $code = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string {
-    if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
-      return '@?' . $id;
+        foreach ($collection as $key => $value) {
+            if (is_array($value)) {
+                $code[$key] = $this->dumpCollection($value);
+            } else {
+                $code[$key] = $this->dumpValue($value);
+            }
+        }
+
+        return $code;
     }
 
-    return '@' . $id;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string
+    {
+        if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
+            return '@?' . $id;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getParameterCall($name): string {
-    return '%' . $name . '%';
-  }
+        return '@' . $id;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function supportsMachineFormat(): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getParameterCall($name): string
+    {
+        return '%' . $name . '%';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function supportsMachineFormat(): bool
+    {
+        return false;
+    }
 
 }

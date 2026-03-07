@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\shortcut;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -11,41 +13,44 @@ use Drupal\Core\Entity\EntityInterface;
  *
  * @see \Drupal\shortcut\Entity\ShortcutSet
  */
-class ShortcutSetListBuilder extends ConfigEntityListBuilder {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['name'] = $this->t('Name');
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $operations = parent::getDefaultOperations($entity, $cacheability);
-
-    if (isset($operations['edit'])) {
-      $operations['edit']['title'] = $this->t('Edit shortcut set');
+class ShortcutSetListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['name'] = $this->t('Name');
+        return $header + parent::buildHeader();
     }
 
-    $operations['list'] = [
-      'title' => $this->t('List links'),
-      'url' => $entity->toUrl('customize-form'),
-    ];
-    return $operations;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $operations = parent::getDefaultOperations($entity, $cacheability);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['name'] = $entity->label();
-    return $row + parent::buildRow($entity);
-  }
+        if (isset($operations['edit'])) {
+            $operations['edit']['title'] = $this->t('Edit shortcut set');
+        }
+
+        $operations['list'] = [
+          'title' => $this->t('List links'),
+          'url' => $entity->toUrl('customize-form'),
+        ];
+        return $operations;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['name'] = $entity->label();
+        return $row + parent::buildRow($entity);
+    }
 
 }

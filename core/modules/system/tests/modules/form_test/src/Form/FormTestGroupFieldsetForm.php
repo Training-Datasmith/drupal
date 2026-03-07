@@ -12,44 +12,47 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestGroupFieldsetForm extends FormBase {
+class FormTestGroupFieldsetForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_group_fieldset';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_group_fieldset';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $required = false)
+    {
+        $form['fieldset'] = [
+          '#type' => 'fieldset',
+          '#title' => 'Fieldset',
+          '#required' => !empty($required),
+        ];
+        $form['meta'] = [
+          '#type' => 'container',
+          '#title' => 'Group element',
+          '#group' => 'fieldset',
+        ];
+        $form['meta']['element'] = [
+          '#type' => 'textfield',
+          '#title' => 'Nest in container element',
+        ];
+        $form['fieldset_zero'] = [
+          '#type' => 'fieldset',
+          '#title' => 0,
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $required = FALSE) {
-    $form['fieldset'] = [
-      '#type' => 'fieldset',
-      '#title' => 'Fieldset',
-      '#required' => !empty($required),
-    ];
-    $form['meta'] = [
-      '#type' => 'container',
-      '#title' => 'Group element',
-      '#group' => 'fieldset',
-    ];
-    $form['meta']['element'] = [
-      '#type' => 'textfield',
-      '#title' => 'Nest in container element',
-    ];
-    $form['fieldset_zero'] = [
-      '#type' => 'fieldset',
-      '#title' => 0,
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

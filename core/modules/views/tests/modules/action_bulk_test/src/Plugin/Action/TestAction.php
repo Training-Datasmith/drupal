@@ -15,24 +15,26 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Test action.
  */
 #[Action(
-  id: 'test_action',
-  label: new TranslatableMarkup('Test action'),
-  type: 'node',
-  confirm_form_route_name: 'action_bulk_test.action.confirm'
+    id: 'test_action',
+    label: new TranslatableMarkup('Test action'),
+    type: 'node',
+    confirm_form_route_name: 'action_bulk_test.action.confirm'
 )]
-class TestAction extends ActionBase {
+class TestAction extends ActionBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false): bool|AccessResultInterface
+    {
+        return $return_as_object ? AccessResult::allowed() : true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE): bool|AccessResultInterface {
-    return $return_as_object ? AccessResult::allowed() : TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function execute(?object $object = NULL): void {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(?object $object = null): void
+    {
+    }
 
 }

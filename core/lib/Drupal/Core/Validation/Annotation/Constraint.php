@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -19,35 +21,35 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class Constraint extends Plugin {
+class Constraint extends Plugin
+{
+    /**
+     * The constraint plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The constraint plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the constraint plugin.
+     *
+     * @var string|\Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the constraint plugin.
-   *
-   * @var string|\Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
-
-  /**
-   * DataType plugin IDs for which this constraint applies.
-   *
-   * Valid values are any types registered by the typed data API, or an array
-   * of multiple type names. For supporting all types, FALSE may be specified.
-   * The key defaults to an empty array, which indicates no types are supported.
-   *
-   * @var string|string[]|false
-   *
-   * @see \Drupal\Core\TypedData\Annotation\DataType
-   */
-  public $type = [];
+    /**
+     * DataType plugin IDs for which this constraint applies.
+     *
+     * Valid values are any types registered by the typed data API, or an array
+     * of multiple type names. For supporting all types, FALSE may be specified.
+     * The key defaults to an empty array, which indicates no types are supported.
+     *
+     * @var string|string[]|false
+     *
+     * @see \Drupal\Core\TypedData\Annotation\DataType
+     */
+    public $type = [];
 
 }

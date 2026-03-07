@@ -13,28 +13,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class RestResourceConfigJsonCookieTest extends RestResourceConfigResourceTestBase {
+class RestResourceConfigJsonCookieTest extends RestResourceConfigResourceTestBase
+{
+    use CookieResourceTestTrait;
 
-  use CookieResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'cookie';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'cookie';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\ConfigurablePluginBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\RemovableDependentPluginReturn;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -18,141 +19,152 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * @see \Drupal\image\ImageEffectManager
  * @see plugin_api
  */
-abstract class ImageEffectBase extends ConfigurablePluginBase implements ImageEffectInterface, ContainerFactoryPluginInterface {
-
-  /**
-   * The image effect ID.
-   *
-   * @var string
-   */
-  protected $uuid;
-
-  /**
-   * The weight of the image effect.
-   *
-   * @var int|string
-   */
-  protected $weight = '';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
+abstract class ImageEffectBase extends ConfigurablePluginBase implements ImageEffectInterface, ContainerFactoryPluginInterface
+{
     /**
-     * A logger instance.
+     * The image effect ID.
+     *
+     * @var string
      */
-    #[Autowire(service: 'logger.channel.image')]
-    protected \Psr\Log\LoggerInterface $logger,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+    protected $uuid;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transformDimensions(array &$dimensions, $uri): void {
-    // Most image effects will not change the dimensions. This base
-    // implementation represents this behavior. Override this method if your
-    // image effect does change the dimensions.
-  }
+    /**
+     * The weight of the image effect.
+     *
+     * @var int|string
+     */
+    protected $weight = '';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeExtension($extension) {
-    // Most image effects will not change the extension. This base
-    // implementation represents this behavior. Override this method if your
-    // image effect does change the extension.
-    return $extension;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        /**
+         * A logger instance.
+         */
+        #[Autowire(service: 'logger.channel.image')]
+        protected \Psr\Log\LoggerInterface $logger,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSummary() {
-    return [
-      '#markup' => '',
-      '#effect' => [
-        'id' => $this->pluginDefinition['id'],
-        'label' => $this->label(),
-        'description' => $this->pluginDefinition['description'],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function transformDimensions(array &$dimensions, $uri): void
+    {
+        // Most image effects will not change the dimensions. This base
+        // implementation represents this behavior. Override this method if your
+        // image effect does change the dimensions.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->pluginDefinition['label'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeExtension($extension)
+    {
+        // Most image effects will not change the extension. This base
+        // implementation represents this behavior. Override this method if your
+        // image effect does change the extension.
+        return $extension;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getUuid() {
-    return $this->uuid;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSummary()
+    {
+        return [
+          '#markup' => '',
+          '#effect' => [
+            'id' => $this->pluginDefinition['id'],
+            'label' => $this->label(),
+            'description' => $this->pluginDefinition['description'],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setWeight($weight) {
-    $this->weight = $weight;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->pluginDefinition['label'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight() {
-    return $this->weight;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getUuid()
+    {
+        return $this->uuid;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration() {
-    return [
-      'uuid' => $this->getUuid(),
-      'id' => $this->getPluginId(),
-      'weight' => $this->getWeight(),
-      'data' => $this->configuration,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setWeight($weight)
+    {
+        $this->weight = $weight;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setConfiguration(array $configuration) {
-    $configuration += [
-      'data' => [],
-      'uuid' => '',
-      'weight' => '',
-    ];
-    $this->configuration = $configuration['data'] + $this->defaultConfiguration();
-    $this->uuid = $configuration['uuid'];
-    $this->weight = $configuration['weight'];
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getWeight()
+    {
+        return $this->weight;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration()
+    {
+        return [
+          'uuid' => $this->getUuid(),
+          'id' => $this->getPluginId(),
+          'weight' => $this->getWeight(),
+          'data' => $this->configuration,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onCollectionDependencyRemoval(array $dependencies): RemovableDependentPluginReturn {
-    // If the module that provides the image effect plugin is uninstalled,
-    // the plugin instance should be removed from the collection.
-    return in_array($this->getPluginDefinition()['provider'], $dependencies['module'] ?? []) ? RemovableDependentPluginReturn::Remove : RemovableDependentPluginReturn::Unchanged;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setConfiguration(array $configuration)
+    {
+        $configuration += [
+          'data' => [],
+          'uuid' => '',
+          'weight' => '',
+        ];
+        $this->configuration = $configuration['data'] + $this->defaultConfiguration();
+        $this->uuid = $configuration['uuid'];
+        $this->weight = $configuration['weight'];
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onCollectionDependencyRemoval(array $dependencies): RemovableDependentPluginReturn
+    {
+        // If the module that provides the image effect plugin is uninstalled,
+        // the plugin instance should be removed from the collection.
+        return in_array($this->getPluginDefinition()['provider'], $dependencies['module'] ?? []) ? RemovableDependentPluginReturn::Remove : RemovableDependentPluginReturn::Unchanged;
+    }
 
 }

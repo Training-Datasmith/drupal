@@ -16,24 +16,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Field')]
 #[RunTestsInSeparateProcesses]
-class FieldStorageGetPropertyDefinitionTest extends KernelTestBase {
+class FieldStorageGetPropertyDefinitionTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'field_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'field_test'];
+    /**
+     * Tests getPropertyDefinition().
+     */
+    public function testGetPropertyDefinition(): void
+    {
+        $this->assertInstanceOf(DataDefinitionInterface::class, BaseFieldDefinition::create('string')->getFieldStorageDefinition()->getPropertyDefinition('value'));
 
-  /**
-   * Tests getPropertyDefinition().
-   */
-  public function testGetPropertyDefinition(): void {
-    $this->assertInstanceOf(DataDefinitionInterface::class, BaseFieldDefinition::create('string')->getFieldStorageDefinition()->getPropertyDefinition('value'));
-
-    $this->assertInstanceOf(DataDefinitionInterface::class, FieldStorageConfig::create([
-      'field_name' => 'test_field',
-      'entity_type' => 'entity_test',
-      'type' => 'test_field',
-    ])->getPropertyDefinition('value'));
-  }
+        $this->assertInstanceOf(DataDefinitionInterface::class, FieldStorageConfig::create([
+          'field_name' => 'test_field',
+          'entity_type' => 'entity_test',
+          'type' => 'test_field',
+        ])->getPropertyDefinition('value'));
+    }
 
 }

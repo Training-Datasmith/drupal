@@ -14,144 +14,146 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class FormElementsRenderTest extends KernelTestBase {
+class FormElementsRenderTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['common_test', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['common_test', 'system'];
+    /**
+     * Tests rendering form elements without using doBuildForm().
+     *
+     * @see \Drupal\Core\Form\FormBuilderInterface::doBuildForm()
+     */
+    public function testDrupalRenderFormElements(): void
+    {
+        // Define a series of form elements.
+        $element = [
+          '#type' => 'button',
+          '#value' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'submit']);
 
-  /**
-   * Tests rendering form elements without using doBuildForm().
-   *
-   * @see \Drupal\Core\Form\FormBuilderInterface::doBuildForm()
-   */
-  public function testDrupalRenderFormElements(): void {
-    // Define a series of form elements.
-    $element = [
-      '#type' => 'button',
-      '#value' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'submit']);
+        $element = [
+          '#type' => 'textfield',
+          '#title' => $this->randomMachineName(),
+          '#value' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'text']);
 
-    $element = [
-      '#type' => 'textfield',
-      '#title' => $this->randomMachineName(),
-      '#value' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'text']);
+        $element = [
+          '#type' => 'password',
+          '#title' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'password']);
 
-    $element = [
-      '#type' => 'password',
-      '#title' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'password']);
+        $element = [
+          '#type' => 'textarea',
+          '#title' => $this->randomMachineName(),
+          '#value' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//textarea');
 
-    $element = [
-      '#type' => 'textarea',
-      '#title' => $this->randomMachineName(),
-      '#value' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//textarea');
+        $element = [
+          '#type' => 'radio',
+          '#title' => $this->randomMachineName(),
+          '#value' => false,
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'radio']);
 
-    $element = [
-      '#type' => 'radio',
-      '#title' => $this->randomMachineName(),
-      '#value' => FALSE,
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'radio']);
+        $element = [
+          '#type' => 'checkbox',
+          '#title' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'checkbox']);
 
-    $element = [
-      '#type' => 'checkbox',
-      '#title' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'checkbox']);
+        $element = [
+          '#type' => 'select',
+          '#title' => $this->randomMachineName(),
+          '#options' => [
+            0 => $this->randomMachineName(),
+            1 => $this->randomMachineName(),
+          ],
+        ];
+        $this->assertRenderedElement($element, '//select');
 
-    $element = [
-      '#type' => 'select',
-      '#title' => $this->randomMachineName(),
-      '#options' => [
-        0 => $this->randomMachineName(),
-        1 => $this->randomMachineName(),
-      ],
-    ];
-    $this->assertRenderedElement($element, '//select');
+        $element = [
+          '#type' => 'file',
+          '#title' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'file']);
 
-    $element = [
-      '#type' => 'file',
-      '#title' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'file']);
+        $element = [
+          '#type' => 'item',
+          '#title' => $this->randomMachineName(),
+          '#markup' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//div[contains(@class, :class) and contains(., :markup)]/label[contains(., :label)]', [
+          ':class' => 'js-form-type-item',
+          ':markup' => $element['#markup'],
+          ':label' => $element['#title'],
+        ]);
 
-    $element = [
-      '#type' => 'item',
-      '#title' => $this->randomMachineName(),
-      '#markup' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//div[contains(@class, :class) and contains(., :markup)]/label[contains(., :label)]', [
-      ':class' => 'js-form-type-item',
-      ':markup' => $element['#markup'],
-      ':label' => $element['#title'],
-    ]);
+        $element = [
+          '#type' => 'hidden',
+          '#title' => $this->randomMachineName(),
+          '#value' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'hidden']);
 
-    $element = [
-      '#type' => 'hidden',
-      '#title' => $this->randomMachineName(),
-      '#value' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//input[@type=:type]', [':type' => 'hidden']);
+        $element = [
+          '#type' => 'link',
+          '#title' => $this->randomMachineName(),
+          '#url' => Url::fromRoute('common_test.destination'),
+          '#options' => [
+            'absolute' => true,
+          ],
+        ];
+        $this->assertRenderedElement($element, '//a[@href=:href and contains(., :title)]', [
+          ':href' => URL::fromRoute('common_test.destination')->setAbsolute()->toString(),
+          ':title' => $element['#title'],
+        ]);
 
-    $element = [
-      '#type' => 'link',
-      '#title' => $this->randomMachineName(),
-      '#url' => Url::fromRoute('common_test.destination'),
-      '#options' => [
-        'absolute' => TRUE,
-      ],
-    ];
-    $this->assertRenderedElement($element, '//a[@href=:href and contains(., :title)]', [
-      ':href' => URL::fromRoute('common_test.destination')->setAbsolute()->toString(),
-      ':title' => $element['#title'],
-    ]);
+        $element = [
+          '#type' => 'details',
+          '#open' => true,
+          '#title' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//details/summary[contains(., :title)]', [
+          ':title' => $element['#title'],
+        ]);
 
-    $element = [
-      '#type' => 'details',
-      '#open' => TRUE,
-      '#title' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//details/summary[contains(., :title)]', [
-      ':title' => $element['#title'],
-    ]);
+        $element = [
+          '#type' => 'details',
+          '#open' => true,
+          '#title' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//details');
 
-    $element = [
-      '#type' => 'details',
-      '#open' => TRUE,
-      '#title' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//details');
+        $element['item'] = [
+          '#type' => 'item',
+          '#title' => $this->randomMachineName(),
+          '#markup' => $this->randomMachineName(),
+        ];
+        $this->assertRenderedElement($element, '//details/div[contains(@class, :class) and contains(., :markup)]', [
+          ':class' => 'js-form-type-item',
+          ':markup' => $element['item']['#markup'],
+        ]);
+    }
 
-    $element['item'] = [
-      '#type' => 'item',
-      '#title' => $this->randomMachineName(),
-      '#markup' => $this->randomMachineName(),
-    ];
-    $this->assertRenderedElement($element, '//details/div[contains(@class, :class) and contains(., :markup)]', [
-      ':class' => 'js-form-type-item',
-      ':markup' => $element['item']['#markup'],
-    ]);
-  }
+    /**
+     * Tests that elements are rendered properly.
+     *
+     * @internal
+     */
+    protected function assertRenderedElement(array $element, string $xpath, array $xpath_args = []): void
+    {
+        $this->render($element);
 
-  /**
-   * Tests that elements are rendered properly.
-   *
-   * @internal
-   */
-  protected function assertRenderedElement(array $element, string $xpath, array $xpath_args = []): void {
-    $this->render($element);
-
-    $xpath = $this->buildXPathQuery($xpath, $xpath_args);
-    $element += ['#value' => NULL];
-    $this->assertFieldByXPath($xpath, $element['#value'], '#type ' . var_export($element['#type'], TRUE) . ' was properly rendered.');
-  }
+        $xpath = $this->buildXPathQuery($xpath, $xpath_args);
+        $element += ['#value' => null];
+        $this->assertFieldByXPath($xpath, $element['#value'], '#type ' . var_export($element['#type'], true) . ' was properly rendered.');
+    }
 
 }

@@ -14,28 +14,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('layout_builder')]
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderEntityViewDisplayJsonCookieTest extends LayoutBuilderEntityViewDisplayResourceTestBase {
+class LayoutBuilderEntityViewDisplayJsonCookieTest extends LayoutBuilderEntityViewDisplayResourceTestBase
+{
+    use CookieResourceTestTrait;
 
-  use CookieResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'cookie';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'cookie';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

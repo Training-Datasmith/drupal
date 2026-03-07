@@ -16,40 +16,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class EntityReverseJoinTest extends RelationshipJoinTestBase {
+class EntityReverseJoinTest extends RelationshipJoinTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Tests that the EntityReverse plugin loads the correct join plugin.
+     */
+    public function testJoinThroughRelationship(): void
+    {
+        $relationship_manager = $this->container->get('plugin.manager.views.relationship');
+        // Setup a simple join and test the result sql.
+        $view = Views::getView('test_view');
+        $view->initDisplay();
+        $view->initQuery();
 
-  /**
-   * Tests that the EntityReverse plugin loads the correct join plugin.
-   */
-  public function testJoinThroughRelationship(): void {
-    $relationship_manager = $this->container->get('plugin.manager.views.relationship');
-    // Setup a simple join and test the result sql.
-    $view = Views::getView('test_view');
-    $view->initDisplay();
-    $view->initQuery();
+        $configuration = [
+          'id' => 'entity_reverse',
+          'base' => 'users_field_data',
+          'table' => 'users_field_data',
+          'field table' => 'users_field_data',
+          'field field' => 'uid',
+          'base field' => 'uid',
+          'field_name' => 'uid',
+          'join_id' => 'join_test',
+        ];
 
-    $configuration = [
-      'id' => 'entity_reverse',
-      'base' => 'users_field_data',
-      'table' => 'users_field_data',
-      'field table' => 'users_field_data',
-      'field field' => 'uid',
-      'base field' => 'uid',
-      'field_name' => 'uid',
-      'join_id' => 'join_test',
-    ];
-
-    $relationship = $relationship_manager->createInstance('entity_reverse', $configuration);
-    $relationship->tableAlias = 'users_field_data';
-    $relationship->table = 'users_field_data';
-    $relationship->query = $view->getQuery();
-    $relationship->query();
-    $this->assertInstanceOf(JoinTest::class, $relationship->query->getTableQueue()[$relationship->alias]['join']);
-  }
+        $relationship = $relationship_manager->createInstance('entity_reverse', $configuration);
+        $relationship->tableAlias = 'users_field_data';
+        $relationship->table = 'users_field_data';
+        $relationship->query = $view->getQuery();
+        $relationship->query();
+        $this->assertInstanceOf(JoinTest::class, $relationship->query->getTableQueue()[$relationship->alias]['join']);
+    }
 
 }

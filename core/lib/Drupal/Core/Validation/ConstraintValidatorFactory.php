@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation;
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
@@ -13,30 +15,31 @@ use Symfony\Component\Validator\ConstraintValidatorInterface;
  * @todo Decide what to do with this class or how to reuse constraint
  * validators in https://drupal.org/project/drupal/issues/3097071
  */
-class ConstraintValidatorFactory extends BaseConstraintValidatorFactory {
+class ConstraintValidatorFactory extends BaseConstraintValidatorFactory
+{
+    /**
+     * Constructs a new ConstraintValidatorFactory.
+     *
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver.
+     */
+    public function __construct(protected ClassResolverInterface $classResolver)
+    {
+    }
 
-  /**
-   * Constructs a new ConstraintValidatorFactory.
-   *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver.
-   */
-  public function __construct(protected ClassResolverInterface $classResolver)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInstance(Constraint $constraint): ConstraintValidatorInterface {
-    $class_name = $constraint->validatedBy();
-    // Constraint validator instances should always be initialized newly and
-    // never shared, because the current validation context is getting injected
-    // into them through setter injection and in a case of a recursive
-    // validation where a validator triggers a validation chain leading to the
-    // same validator the context of the first call would be exchanged with the
-    // one of the subsequent validation chain.
-    return $this->classResolver->getInstanceFromDefinition($class_name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getInstance(Constraint $constraint): ConstraintValidatorInterface
+    {
+        $class_name = $constraint->validatedBy();
+        // Constraint validator instances should always be initialized newly and
+        // never shared, because the current validation context is getting injected
+        // into them through setter injection and in a case of a recursive
+        // validation where a validator triggers a validation chain leading to the
+        // same validator the context of the first call would be exchanged with the
+        // one of the subsequent validation chain.
+        return $this->classResolver->getInstanceFromDefinition($class_name);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -21,31 +23,31 @@ use Drupal\Core\Ajax\CommandInterface;
  *   This is an internal part of Media Library and may be subject to change in
  *   minor releases. External code should not instantiate or extend this class.
  */
-class UpdateSelectionCommand implements CommandInterface {
+class UpdateSelectionCommand implements CommandInterface
+{
+    /**
+     * Constructs an UpdateSelectionCommand object.
+     *
+     * @param int[] $mediaIds
+     *   An array of media IDs to add to the current selection.
+     */
+    public function __construct(
+        /**
+         * An array of media IDs to add to the current selection.
+         */
+        protected array $mediaIds
+    ) {
+    }
 
-  /**
-   * Constructs an UpdateSelectionCommand object.
-   *
-   * @param int[] $mediaIds
-   *   An array of media IDs to add to the current selection.
-   */
-  public function __construct(
-      /**
-       * An array of media IDs to add to the current selection.
-       */
-      protected array $mediaIds
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'updateMediaLibrarySelection',
-      'mediaIds' => $this->mediaIds,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'updateMediaLibrarySelection',
+          'mediaIds' => $this->mediaIds,
+        ];
+    }
 
 }

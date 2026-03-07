@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Rebuilds all Drupal caches even when Drupal itself does not work.
@@ -13,9 +15,9 @@
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Site\Settings;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 // Change the directory to the Drupal root.
 chdir('..');
@@ -28,28 +30,28 @@ $request = Request::createFromGlobals();
 DrupalKernel::bootEnvironment();
 
 try {
-  Settings::initialize(dirname(__DIR__), DrupalKernel::findSitePath($request), $autoloader);
-}
-catch (HttpExceptionInterface $e) {
-  $response = new Response('', $e->getStatusCode());
-  $response->prepare($request)->send();
-  exit;
+    Settings::initialize(dirname(__DIR__), DrupalKernel::findSitePath($request), $autoloader);
+} catch (HttpExceptionInterface $e) {
+    $response = new Response('', $e->getStatusCode());
+    $response->prepare($request)->send();
+    exit;
 }
 
-if (Settings::get('rebuild_access', FALSE) ||
-  ($request->query->get('token') && $request->query->get('timestamp') &&
+if (Settings::get('rebuild_access', false) ||
+  (
+      $request->query->get('token') && $request->query->get('timestamp') &&
     (($request->server->getInt('REQUEST_TIME') - $request->query->get('timestamp')) < 300) &&
     hash_equals(Crypt::hmacBase64($request->query->get('timestamp'), Settings::get('hash_salt')), $request->query->get('token'))
   )) {
-  // Clear user cache for all major platforms.
-  $user_caches = [
-    'apcu_clear_cache',
-    'wincache_ucache_clear',
-  ];
-  array_map(call_user_func(...), array_filter($user_caches, is_callable(...)));
+    // Clear user cache for all major platforms.
+    $user_caches = [
+      'apcu_clear_cache',
+      'wincache_ucache_clear',
+    ];
+    array_map(call_user_func(...), array_filter($user_caches, is_callable(...)));
 
-  drupal_rebuild($autoloader, $request);
-  \Drupal::messenger()->addStatus('Cache rebuild complete.');
+    drupal_rebuild($autoloader, $request);
+    \Drupal::messenger()->addStatus('Cache rebuild complete.');
 }
 $base_path = dirname((string) $request->getBaseUrl(), 2);
 header('Location: ' . $request->getSchemeAndHttpHost() . $base_path);

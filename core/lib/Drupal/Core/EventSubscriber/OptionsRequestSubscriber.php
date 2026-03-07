@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
-use Drupal\Core\Routing\RouteProviderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -16,46 +17,48 @@ use Symfony\Component\Routing\Route;
  * providing an Allow header listing all the HTTP methods allowed for the
  * requested routes.
  */
-class OptionsRequestSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Creates a new OptionsRequestSubscriber instance.
-   *
-   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
-   *   The route provider.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider)
-  {
-  }
-
-  /**
-   * Tries to handle the options request.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The request event.
-   */
-  public function onRequest(RequestEvent $event): void {
-    if ($event->getRequest()->isMethod('OPTIONS')) {
-      $routes = $this->routeProvider->getRouteCollectionForRequest($event->getRequest());
-      // In case we don't have any routes, a 403 should be thrown by the normal
-      // request handling.
-      if (count($routes) > 0) {
-        // Flatten and unique the available methods.
-        $methods = array_reduce($routes->all(), fn(array $methods, Route $route) => array_merge($methods, $route->getMethods()), []);
-        $methods = array_unique($methods);
-        $response = new Response('', 200, ['Allow' => implode(', ', $methods)]);
-        $event->setResponse($response);
-      }
+class OptionsRequestSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Creates a new OptionsRequestSubscriber instance.
+     *
+     * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
+     *   The route provider.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider)
+    {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Set a high priority so it is executed before routing.
-    $events[KernelEvents::REQUEST][] = ['onRequest', 1000];
-    return $events;
-  }
+    /**
+     * Tries to handle the options request.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+     *   The request event.
+     */
+    public function onRequest(RequestEvent $event): void
+    {
+        if ($event->getRequest()->isMethod('OPTIONS')) {
+            $routes = $this->routeProvider->getRouteCollectionForRequest($event->getRequest());
+            // In case we don't have any routes, a 403 should be thrown by the normal
+            // request handling.
+            if (count($routes) > 0) {
+                // Flatten and unique the available methods.
+                $methods = array_reduce($routes->all(), fn (array $methods, Route $route) => array_merge($methods, $route->getMethods()), []);
+                $methods = array_unique($methods);
+                $response = new Response('', 200, ['Allow' => implode(', ', $methods)]);
+                $event->setResponse($response);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Set a high priority so it is executed before routing.
+        $events[KernelEvents::REQUEST][] = ['onRequest', 1000];
+        return $events;
+    }
 
 }

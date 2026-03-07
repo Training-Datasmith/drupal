@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form;
 
 /**
@@ -39,14 +41,14 @@ namespace Drupal\Core\Form;
  *
  * @see \Drupal\Core\Plugin\PluginFormInterface::buildConfigurationForm()
  */
-interface SubformStateInterface extends FormStateInterface {
-
-  /**
-   * Gets the complete form state.
-   *
-   * @return \Drupal\Core\Form\FormStateInterface
-   *   The form state.
-   */
-  public function getCompleteFormState();
+interface SubformStateInterface extends FormStateInterface
+{
+    /**
+     * Gets the complete form state.
+     *
+     * @return \Drupal\Core\Form\FormStateInterface
+     *   The form state.
+     */
+    public function getCompleteFormState();
 
 }

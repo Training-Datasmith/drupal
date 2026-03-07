@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableResponseInterface;
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -22,66 +22,68 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * @see \Drupal\Core\Render\MainContent\MainContentRendererInterface
  * @see \Drupal\Core\Render\MainContentControllerPass
  */
-class MainContentViewSubscriber implements EventSubscriberInterface {
+class MainContentViewSubscriber implements EventSubscriberInterface
+{
+    /**
+     * URL query attribute to indicate the wrapper used to render a request.
+     *
+     * The wrapper format determines how the HTML is wrapped, for example in a
+     * modal dialog.
+     */
+    public const WRAPPER_FORMAT = '_wrapper_format';
 
-  /**
-   * URL query attribute to indicate the wrapper used to render a request.
-   *
-   * The wrapper format determines how the HTML is wrapped, for example in a
-   * modal dialog.
-   */
-  const WRAPPER_FORMAT = '_wrapper_format';
-
-  /**
-   * Constructs a new MainContentViewSubscriber object.
-   *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver service.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match.
-   * @param array $mainContentRenderers
-   *   The available main content renderer service IDs, keyed by format.
-   */
-  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected array $mainContentRenderers)
-  {
-  }
-
-  /**
-   * Sets a response given a (main content) render array.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
-   *   The event to process.
-   */
-  public function onViewRenderArray(ViewEvent $event): void {
-    $request = $event->getRequest();
-    $result = $event->getControllerResult();
-
-    // Render the controller result into a response if it's a render array.
-    if (is_array($result) && ($request->query->has(static::WRAPPER_FORMAT) || $request->getRequestFormat() == 'html')) {
-      $wrapper = $request->query->get(static::WRAPPER_FORMAT, 'html');
-
-      // Fall back to HTML if the requested wrapper envelope is not available.
-      $wrapper = isset($this->mainContentRenderers[$wrapper]) ? $wrapper : 'html';
-
-      $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers[$wrapper]);
-      $response = $renderer->renderResponse($result, $request, $this->routeMatch);
-      // The main content render array is rendered into a different Response
-      // object, depending on the specified wrapper format.
-      if ($response instanceof CacheableResponseInterface) {
-        $main_content_view_subscriber_cacheability = (new CacheableMetadata())->setCacheContexts(['url.query_args:' . static::WRAPPER_FORMAT]);
-        $response->addCacheableDependency($main_content_view_subscriber_cacheability);
-      }
-      $event->setResponse($response);
+    /**
+     * Constructs a new MainContentViewSubscriber object.
+     *
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver service.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match.
+     * @param array $mainContentRenderers
+     *   The available main content renderer service IDs, keyed by format.
+     */
+    public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected array $mainContentRenderers)
+    {
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[KernelEvents::VIEW][] = ['onViewRenderArray'];
+    /**
+     * Sets a response given a (main content) render array.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
+     *   The event to process.
+     */
+    public function onViewRenderArray(ViewEvent $event): void
+    {
+        $request = $event->getRequest();
+        $result = $event->getControllerResult();
 
-    return $events;
-  }
+        // Render the controller result into a response if it's a render array.
+        if (is_array($result) && ($request->query->has(static::WRAPPER_FORMAT) || $request->getRequestFormat() == 'html')) {
+            $wrapper = $request->query->get(static::WRAPPER_FORMAT, 'html');
+
+            // Fall back to HTML if the requested wrapper envelope is not available.
+            $wrapper = isset($this->mainContentRenderers[$wrapper]) ? $wrapper : 'html';
+
+            $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers[$wrapper]);
+            $response = $renderer->renderResponse($result, $request, $this->routeMatch);
+            // The main content render array is rendered into a different Response
+            // object, depending on the specified wrapper format.
+            if ($response instanceof CacheableResponseInterface) {
+                $main_content_view_subscriber_cacheability = (new CacheableMetadata())->setCacheContexts(['url.query_args:' . static::WRAPPER_FORMAT]);
+                $response->addCacheableDependency($main_content_view_subscriber_cacheability);
+            }
+            $event->setResponse($response);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[KernelEvents::VIEW][] = ['onViewRenderArray'];
+
+        return $events;
+    }
 
 }

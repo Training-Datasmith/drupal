@@ -15,75 +15,78 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class ArbitraryRebuildTest extends BrowserTestBase {
+class ArbitraryRebuildTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['text', 'form_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['text', 'form_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Auto-create a field for testing.
+        FieldStorageConfig::create([
+          'entity_type' => 'user',
+          'field_name' => 'test_multiple',
+          'type' => 'text',
+          'cardinality' => -1,
+          'translatable' => false,
+        ])->save();
+        FieldConfig::create([
+          'entity_type' => 'user',
+          'field_name' => 'test_multiple',
+          'bundle' => 'user',
+          'label' => 'Test a multiple valued field',
+        ])->save();
+        \Drupal::service('entity_display.repository')
+          ->getFormDisplay('user', 'user', 'register')
+          ->setComponent('test_multiple', [
+            'type' => 'text_textfield',
+            'weight' => 0,
+          ])
+          ->save();
+    }
 
-    // Auto-create a field for testing.
-    FieldStorageConfig::create([
-      'entity_type' => 'user',
-      'field_name' => 'test_multiple',
-      'type' => 'text',
-      'cardinality' => -1,
-      'translatable' => FALSE,
-    ])->save();
-    FieldConfig::create([
-      'entity_type' => 'user',
-      'field_name' => 'test_multiple',
-      'bundle' => 'user',
-      'label' => 'Test a multiple valued field',
-    ])->save();
-    \Drupal::service('entity_display.repository')
-      ->getFormDisplay('user', 'user', 'register')
-      ->setComponent('test_multiple', [
-        'type' => 'text_textfield',
-        'weight' => 0,
-      ])
-      ->save();
-  }
+    /**
+     * Tests a basic rebuild with the user registration form.
+     */
+    public function testUserRegistrationRebuild(): void
+    {
+        $edit = [
+          'name' => 'foo',
+          'mail' => 'bar@example.com',
+        ];
+        $this->drupalGet('user/register');
+        $this->submitForm($edit, 'Rebuild');
+        $this->assertSession()->pageTextContains('Form rebuilt.');
+        $this->assertSession()->fieldValueEquals('name', 'foo');
+        $this->assertSession()->fieldValueEquals('mail', 'bar@example.com');
+    }
 
-  /**
-   * Tests a basic rebuild with the user registration form.
-   */
-  public function testUserRegistrationRebuild(): void {
-    $edit = [
-      'name' => 'foo',
-      'mail' => 'bar@example.com',
-    ];
-    $this->drupalGet('user/register');
-    $this->submitForm($edit, 'Rebuild');
-    $this->assertSession()->pageTextContains('Form rebuilt.');
-    $this->assertSession()->fieldValueEquals('name', 'foo');
-    $this->assertSession()->fieldValueEquals('mail', 'bar@example.com');
-  }
-
-  /**
-   * Tests a rebuild caused by a multiple value field.
-   */
-  public function testUserRegistrationMultipleField(): void {
-    $edit = [
-      'name' => 'foo',
-      'mail' => 'bar@example.com',
-    ];
-    $this->drupalGet('user/register');
-    $this->submitForm($edit, 'Add another item');
-    $this->assertSession()->pageTextContains('Test a multiple valued field');
-    $this->assertSession()->fieldValueEquals('name', 'foo');
-    $this->assertSession()->fieldValueEquals('mail', 'bar@example.com');
-  }
+    /**
+     * Tests a rebuild caused by a multiple value field.
+     */
+    public function testUserRegistrationMultipleField(): void
+    {
+        $edit = [
+          'name' => 'foo',
+          'mail' => 'bar@example.com',
+        ];
+        $this->drupalGet('user/register');
+        $this->submitForm($edit, 'Add another item');
+        $this->assertSession()->pageTextContains('Test a multiple valued field');
+        $this->assertSession()->fieldValueEquals('name', 'foo');
+        $this->assertSession()->fieldValueEquals('mail', 'bar@example.com');
+    }
 
 }

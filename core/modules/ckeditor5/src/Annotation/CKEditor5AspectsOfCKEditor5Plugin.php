@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Annotation;
 
@@ -20,24 +20,24 @@ use Drupal\Component\Annotation\Plugin;
  * @see \Drupal\ckeditor5\Annotation\CKEditor5Plugin
  * @see \Drupal\ckeditor5\Annotation\DrupalPartsOfCKEditor5Plugin
  */
-class CKEditor5AspectsOfCKEditor5Plugin extends Plugin {
+class CKEditor5AspectsOfCKEditor5Plugin extends Plugin
+{
+    /**
+     * The CKEditor 5 plugin classes provided.
+     *
+     * Found in the CKEditor5 global js object as {package.Class}.
+     *
+     * @var string[]
+     */
+    public $plugins;
 
-  /**
-   * The CKEditor 5 plugin classes provided.
-   *
-   * Found in the CKEditor5 global js object as {package.Class}.
-   *
-   * @var string[]
-   */
-  public $plugins;
-
-  /**
-   * A keyed array of additional values for the CKEditor 5 configuration.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var array[]
-   */
-  public $config = [];
+    /**
+     * A keyed array of additional values for the CKEditor 5 configuration.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var array[]
+     */
+    public $config = [];
 
 }

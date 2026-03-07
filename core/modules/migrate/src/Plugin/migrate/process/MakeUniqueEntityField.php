@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -79,58 +80,61 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('make_unique_entity_field')]
-class MakeUniqueEntityField extends MakeUniqueBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+class MakeUniqueEntityField extends MakeUniqueBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
    * The current migration.
    */
-  protected \Drupal\migrate\Plugin\MigrationInterface $migration, /**
+        protected \Drupal\migrate\Plugin\MigrationInterface $migration, /**
    * The entity type manager.
    */
-  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function exists($value) {
-    // Plugins are cached so for every run we need a new query object.
-    $query = $this
-      ->entityTypeManager
-      ->getStorage($this->configuration['entity_type'])
-      ->getQuery()
-      ->accessCheck(FALSE)
-      ->condition($this->configuration['field'], $value);
-    if (!empty($this->configuration['migrated'])) {
-      // Check if each entity is in the ID map.
-      $idMap = $this->migration->getIdMap();
-      foreach ($query->execute() as $id) {
-        $dest_id_values[$this->configuration['field']] = $id;
-        if ($idMap->lookupSourceId($dest_id_values)) {
-          return TRUE;
-        }
-      }
-      return FALSE;
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    // Just check if any such entity exists.
-    return $query->count()->execute();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('entity_type.manager')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function exists($value)
+    {
+        // Plugins are cached so for every run we need a new query object.
+        $query = $this
+          ->entityTypeManager
+          ->getStorage($this->configuration['entity_type'])
+          ->getQuery()
+          ->accessCheck(false)
+          ->condition($this->configuration['field'], $value);
+        if (!empty($this->configuration['migrated'])) {
+            // Check if each entity is in the ID map.
+            $idMap = $this->migration->getIdMap();
+            foreach ($query->execute() as $id) {
+                $dest_id_values[$this->configuration['field']] = $id;
+                if ($idMap->lookupSourceId($dest_id_values)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // Just check if any such entity exists.
+        return $query->count()->execute();
+    }
 
 }

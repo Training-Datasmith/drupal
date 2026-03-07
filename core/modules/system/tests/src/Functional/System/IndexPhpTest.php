@@ -13,24 +13,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class IndexPhpTest extends BrowserTestBase {
+class IndexPhpTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests index.php handling.
+     */
+    public function testIndexPhpHandling(): void
+    {
+        $index_php = $GLOBALS['base_url'] . '/index.php';
 
-  /**
-   * Tests index.php handling.
-   */
-  public function testIndexPhpHandling(): void {
-    $index_php = $GLOBALS['base_url'] . '/index.php';
+        $this->drupalGet($index_php, ['external' => true]);
+        $this->assertSession()->statusCodeEquals(200);
 
-    $this->drupalGet($index_php, ['external' => TRUE]);
-    $this->assertSession()->statusCodeEquals(200);
-
-    $this->drupalGet($index_php . '/user', ['external' => TRUE]);
-    $this->assertSession()->statusCodeEquals(200);
-  }
+        $this->drupalGet($index_php . '/user', ['external' => true]);
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

@@ -17,43 +17,46 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(EntityConditionGroup::class)]
 #[Group('jsonapi')]
-class EntityConditionGroupTest extends UnitTestCase {
+class EntityConditionGroupTest extends UnitTestCase
+{
+    /**
+     * Tests construct.
+     *
+     * @legacy-covers ::__construct
+     */
+    #[DataProvider('constructProvider')]
+    public function testConstruct($case): void
+    {
+        $group = new EntityConditionGroup($case['conjunction'], $case['members']);
 
-  /**
-   * Tests construct.
-   *
-   * @legacy-covers ::__construct
-   */
-  #[DataProvider('constructProvider')]
-  public function testConstruct($case): void {
-    $group = new EntityConditionGroup($case['conjunction'], $case['members']);
+        $this->assertEquals($case['conjunction'], $group->conjunction());
 
-    $this->assertEquals($case['conjunction'], $group->conjunction());
-
-    foreach ($group->members() as $key => $condition) {
-      $this->assertEquals($case['members'][$key]['path'], $condition->field());
-      $this->assertEquals($case['members'][$key]['value'], $condition->value());
+        foreach ($group->members() as $key => $condition) {
+            $this->assertEquals($case['members'][$key]['path'], $condition->field());
+            $this->assertEquals($case['members'][$key]['value'], $condition->value());
+        }
     }
-  }
 
-  /**
-   * Tests construct exception.
-   *
-   * @legacy-covers ::__construct
-   */
-  public function testConstructException(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    new EntityConditionGroup('NOT_ALLOWED', []);
-  }
+    /**
+     * Tests construct exception.
+     *
+     * @legacy-covers ::__construct
+     */
+    public function testConstructException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new EntityConditionGroup('NOT_ALLOWED', []);
+    }
 
-  /**
-   * Data provider for testConstruct.
-   */
-  public static function constructProvider() {
-    return [
-      [['conjunction' => 'AND', 'members' => []]],
-      [['conjunction' => 'OR', 'members' => []]],
-    ];
-  }
+    /**
+     * Data provider for testConstruct.
+     */
+    public static function constructProvider()
+    {
+        return [
+          [['conjunction' => 'AND', 'members' => []]],
+          [['conjunction' => 'OR', 'members' => []]],
+        ];
+    }
 
 }

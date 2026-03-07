@@ -16,117 +16,121 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('jsonapi')]
 #[Group('path')]
 #[RunTestsInSeparateProcesses]
-class PathAliasTest extends ResourceTestBase {
+class PathAliasTest extends ResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['path'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['path'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'path_alias';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'path_alias';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'path_alias--path_alias';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'path_alias--path_alias';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeIsVersionable = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeIsVersionable = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $patchProtectedFieldNames = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $patchProtectedFieldNames = [];
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\user\RoleInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\user\RoleInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer url aliases']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer url aliases']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $path_alias = PathAlias::create([
+          'alias' => '/frontpage1',
+          'path' => '/<front>',
+          'langcode' => 'en',
+        ]);
+        $path_alias->save();
+        return $path_alias;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $path_alias = PathAlias::create([
-      'alias' => '/frontpage1',
-      'path' => '/<front>',
-      'langcode' => 'en',
-    ]);
-    $path_alias->save();
-    return $path_alias;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $base_url = Url::fromUri('base:/jsonapi/path_alias/path_alias/' . $this->entity->uuid())->setAbsolute();
-    $self_url = clone $base_url;
-    $version_identifier = 'id:' . $this->entity->getRevisionId();
-    $self_url = $self_url->setOption('query', ['resourceVersion' => $version_identifier]);
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $base_url = Url::fromUri('base:/jsonapi/path_alias/path_alias/' . $this->entity->uuid())->setAbsolute();
+        $self_url = clone $base_url;
+        $version_identifier = 'id:' . $this->entity->getRevisionId();
+        $self_url = $self_url->setOption('query', ['resourceVersion' => $version_identifier]);
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
           ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $base_url->toString()],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => static::$resourceTypeName,
-        'links' => [
-          'self' => ['href' => $self_url->toString()],
-        ],
-        'attributes' => [
-          'alias' => '/frontpage1',
-          'path' => '/<front>',
-          'langcode' => 'en',
-          'status' => TRUE,
-          'drupal_internal__id' => 1,
-          'drupal_internal__revision_id' => 1,
-        ],
-      ],
-    ];
-  }
+          'links' => [
+            'self' => ['href' => $base_url->toString()],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => static::$resourceTypeName,
+            'links' => [
+              'self' => ['href' => $self_url->toString()],
+            ],
+            'attributes' => [
+              'alias' => '/frontpage1',
+              'path' => '/<front>',
+              'langcode' => 'en',
+              'status' => true,
+              'drupal_internal__id' => 1,
+              'drupal_internal__revision_id' => 1,
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    return [
-      'data' => [
-        'type' => static::$resourceTypeName,
-        'attributes' => [
-          'alias' => '/frontpage1',
-          'path' => '/<front>',
-          'langcode' => 'en',
-        ],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        return [
+          'data' => [
+            'type' => static::$resourceTypeName,
+            'attributes' => [
+              'alias' => '/frontpage1',
+              'path' => '/<front>',
+              'langcode' => 'en',
+            ],
+          ],
+        ];
+    }
 
 }

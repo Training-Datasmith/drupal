@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -16,31 +18,31 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class RemoveCommand implements CommandInterface {
+class RemoveCommand implements CommandInterface
+{
+    /**
+     * Constructs a RemoveCommand object.
+     *
+     * @param string $selector
+     *   The selector.
+     */
+    public function __construct(
+        /**
+         * The CSS selector for the element(s) to be removed.
+         */
+        protected $selector
+    ) {
+    }
 
-  /**
-   * Constructs a RemoveCommand object.
-   *
-   * @param string $selector
-   *   The selector.
-   */
-  public function __construct(
-      /**
-       * The CSS selector for the element(s) to be removed.
-       */
-      protected $selector
-  )
-  {
-  }
-
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-    return [
-      'command' => 'remove',
-      'selector' => $this->selector,
-    ];
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'remove',
+          'selector' => $this->selector,
+        ];
+    }
 
 }

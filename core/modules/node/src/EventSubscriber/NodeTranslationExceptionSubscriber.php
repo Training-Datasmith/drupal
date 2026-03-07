@@ -1,12 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\EventSubscriber;
 
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\ParamConverter\ParamNotConvertedException;
-use Drupal\Core\Routing\UrlGeneratorInterface;
-use Drupal\Core\State\StateInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -28,70 +26,72 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * @see \Drupal\node\NodeServiceProvider
  * @see \Drupal\node\EventSubscriber\NodeTranslationMigrateSubscriber
  */
-class NodeTranslationExceptionSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Constructs the NodeTranslationExceptionSubscriber.
-   *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
-   *   The key value factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
-   *   The URL generator.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service.
-   */
-  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, protected \Drupal\Core\State\StateInterface $state)
-  {
-  }
-
-  /**
-   * Redirects not found node translations using the key value collection.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The exception event.
-   */
-  public function onException(ExceptionEvent $event): void {
-    $exception = $event->getThrowable();
-
-    // If this is not a 404, we don't need to check for a redirection.
-    if (!($exception instanceof NotFoundHttpException)) {
-      return;
+class NodeTranslationExceptionSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs the NodeTranslationExceptionSubscriber.
+     *
+     * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
+     *   The key value factory.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
+     *   The URL generator.
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state service.
+     */
+    public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, protected \Drupal\Core\State\StateInterface $state)
+    {
     }
 
-    $previous_exception = $exception->getPrevious();
-    if ($previous_exception instanceof ParamNotConvertedException) {
-      $route_name = $previous_exception->getRouteName();
-      $parameters = $previous_exception->getRawParameters();
-      if ($route_name === 'entity.node.canonical' && isset($parameters['node'])) {
-        // If the node_translation_redirect state is not set, we don't need to
-        // check for a redirection.
-        if (!$this->state->get('node_translation_redirect')) {
-          return;
+    /**
+     * Redirects not found node translations using the key value collection.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+     *   The exception event.
+     */
+    public function onException(ExceptionEvent $event): void
+    {
+        $exception = $event->getThrowable();
+
+        // If this is not a 404, we don't need to check for a redirection.
+        if (!($exception instanceof NotFoundHttpException)) {
+            return;
         }
-        $old_nid = $parameters['node'];
-        $collection = $this->keyValue->get('node_translation_redirect');
-        if ($old_nid && $value = $collection->get($old_nid)) {
-          [$nid, $langcode] = $value;
-          $language = $this->languageManager->getLanguage($langcode);
-          $url = $this->urlGenerator->generateFromRoute('entity.node.canonical', ['node' => $nid], ['language' => $language]);
-          $response = new RedirectResponse($url, 301);
-          $event->setResponse($response);
+
+        $previous_exception = $exception->getPrevious();
+        if ($previous_exception instanceof ParamNotConvertedException) {
+            $route_name = $previous_exception->getRouteName();
+            $parameters = $previous_exception->getRawParameters();
+            if ($route_name === 'entity.node.canonical' && isset($parameters['node'])) {
+                // If the node_translation_redirect state is not set, we don't need to
+                // check for a redirection.
+                if (!$this->state->get('node_translation_redirect')) {
+                    return;
+                }
+                $old_nid = $parameters['node'];
+                $collection = $this->keyValue->get('node_translation_redirect');
+                if ($old_nid && $value = $collection->get($old_nid)) {
+                    [$nid, $langcode] = $value;
+                    $language = $this->languageManager->getLanguage($langcode);
+                    $url = $this->urlGenerator->generateFromRoute('entity.node.canonical', ['node' => $nid], ['language' => $language]);
+                    $response = new RedirectResponse($url, 301);
+                    $event->setResponse($response);
+                }
+            }
         }
-      }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events = [];
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events = [];
 
-    $events[KernelEvents::EXCEPTION] = ['onException'];
+        $events[KernelEvents::EXCEPTION] = ['onException'];
 
-    return $events;
-  }
+        return $events;
+    }
 
 }

@@ -15,44 +15,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Entity')]
 #[RunTestsInSeparateProcesses]
-class EntityNonRevisionableTranslatableFieldTest extends EntityKernelTestBase {
+class EntityNonRevisionableTranslatableFieldTest extends EntityKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'entity_test',
+      'language',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'entity_test',
-    'language',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('entity_test_mulrev');
 
-    $this->installEntitySchema('entity_test_mulrev');
+        ConfigurableLanguage::createFromLangcode('es')->save();
+    }
 
-    ConfigurableLanguage::createFromLangcode('es')->save();
-  }
+    /**
+     * Tests translating a non-revisionable field.
+     */
+    public function testTranslatingNonRevisionableField(): void
+    {
+        /** @var \Drupal\Core\Entity\ContentEntityBase $entity */
+        $entity = EntityTestMulRev::create();
+        $entity->set('non_rev_field', 'Hello');
+        $entity->save();
 
-  /**
-   * Tests translating a non-revisionable field.
-   */
-  public function testTranslatingNonRevisionableField(): void {
-    /** @var \Drupal\Core\Entity\ContentEntityBase $entity */
-    $entity = EntityTestMulRev::create();
-    $entity->set('non_rev_field', 'Hello');
-    $entity->save();
+        $translation = $entity->addTranslation('es');
+        $translation->set('non_rev_field', 'Hola');
+        $translation->save();
 
-    $translation = $entity->addTranslation('es');
-    $translation->set('non_rev_field', 'Hola');
-    $translation->save();
+        $reloaded = EntityTestMulRev::load($entity->id());
+        $this->assertEquals('Hello', $reloaded->getTranslation('en')->get('non_rev_field')->value);
 
-    $reloaded = EntityTestMulRev::load($entity->id());
-    $this->assertEquals('Hello', $reloaded->getTranslation('en')->get('non_rev_field')->value);
-
-    $this->assertEquals('Hola', $reloaded->getTranslation('es')->get('non_rev_field')->value);
-  }
+        $this->assertEquals('Hola', $reloaded->getTranslation('es')->get('non_rev_field')->value);
+    }
 
 }

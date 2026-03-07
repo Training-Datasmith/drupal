@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Contains a fake database update function for testing.
@@ -10,5 +12,6 @@
  *
  * The schema version is the maximum possible value for a 32-bit integer.
  */
-function package_manager_update_2147483647(): void {
+function package_manager_update_2147483647(): void
+{
 }

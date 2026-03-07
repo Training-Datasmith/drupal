@@ -18,153 +18,156 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('media_library')]
 #[RunTestsInSeparateProcesses]
-class EmbeddedFormWidgetTest extends WebDriverTestBase {
+class EmbeddedFormWidgetTest extends WebDriverTestBase
+{
+    use TestFileCreationTrait;
 
-  use TestFileCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'media_library',
+      'media_library_test',
+      'media_library_test_widget',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'media_library',
-    'media_library_test',
-    'media_library_test_widget',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $display_repository = $this->container->get('entity_display.repository');
 
-    $display_repository = $this->container->get('entity_display.repository');
-
-    FieldStorageConfig::create([
-      'field_name' => 'media_image_field',
-      'entity_type' => 'node',
-      'type' => 'entity_reference',
-      'settings' => [
-        'target_type' => 'media',
-        'required' => TRUE,
-      ],
-    ])->save();
-
-    FieldConfig::create([
-      'label' => 'A Media Image Field',
-      'field_name' => 'media_image_field',
-      'entity_type' => 'node',
-      'bundle' => 'basic_page',
-      'field_type' => 'entity_reference',
-      'required' => TRUE,
-      'settings' => [
-        'handler_settings' => [
-          'target_bundles' => [
-            'type_three' => 'type_three',
+        FieldStorageConfig::create([
+          'field_name' => 'media_image_field',
+          'entity_type' => 'node',
+          'type' => 'entity_reference',
+          'settings' => [
+            'target_type' => 'media',
+            'required' => true,
           ],
-        ],
-      ],
-    ])->save();
+        ])->save();
 
-    $display_repository->getFormDisplay('node', 'basic_page')
-      ->setComponent('media_image_field', [
-        'type' => 'media_library_widget',
-        'region' => 'content',
-        'settings' => [
-          'media_types' => ['type_three'],
-        ],
-      ])
-      ->save();
+        FieldConfig::create([
+          'label' => 'A Media Image Field',
+          'field_name' => 'media_image_field',
+          'entity_type' => 'node',
+          'bundle' => 'basic_page',
+          'field_type' => 'entity_reference',
+          'required' => true,
+          'settings' => [
+            'handler_settings' => [
+              'target_bundles' => [
+                'type_three' => 'type_three',
+              ],
+            ],
+          ],
+        ])->save();
 
-    $this->config('media_library.settings')
-      ->set('advanced_ui', TRUE)
-      ->save();
+        $display_repository->getFormDisplay('node', 'basic_page')
+          ->setComponent('media_image_field', [
+            'type' => 'media_library_widget',
+            'region' => 'content',
+            'settings' => [
+              'media_types' => ['type_three'],
+            ],
+          ])
+          ->save();
 
-    $user = $this->drupalCreateUser([
-      'access content',
-      'access media overview',
-      'edit own basic_page content',
-      'create basic_page content',
-      'create media',
-      'view media',
-    ]);
-    $this->drupalLogin($user);
-  }
+        $this->config('media_library.settings')
+          ->set('advanced_ui', true)
+          ->save();
 
-  /**
-   * Tests media inside another widget that validates too enthusiastically.
-   */
-  #[DataProvider('insertionReselectionProvider')]
-  public function testInsertionAndReselection($widget): void {
-    $this->container
-      ->get('entity_display.repository')
-      ->getFormDisplay('node', 'basic_page')
-      ->setComponent('media_image_field', [
-        'type' => $widget,
-        'region' => 'content',
-        'settings' => [
-          'media_types' => ['type_three'],
-        ],
-      ])
-      ->save();
-
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
-
-    foreach ($this->getTestFiles('image') as $image) {
-      $extension = pathinfo($image->filename, PATHINFO_EXTENSION);
-      if ($extension === 'jpg') {
-        $jpg_image = $image;
-        break;
-      }
+        $user = $this->drupalCreateUser([
+          'access content',
+          'access media overview',
+          'edit own basic_page content',
+          'create basic_page content',
+          'create media',
+          'view media',
+        ]);
+        $this->drupalLogin($user);
     }
 
-    $this->drupalGet('node/add/basic_page');
-    $wrapper = $assert_session->elementExists('css', '#media_image_field-media-library-wrapper');
-    $wrapper->pressButton('Add media');
-    $this->assertNotNull($assert_session->waitForText('Add or select media'));
-    $page->attachFileToField('Add file', $this->container->get('file_system')->realpath($jpg_image->uri));
-    $this->assertNotNull($assert_session->waitForText('Alternative text'));
-    $page->fillField('Alternative text', $this->randomString());
-    $assert_session->elementExists('css', '.ui-dialog-buttonpane')->pressButton('Save and insert');
-    $first_item_locator = "(//div[@data-drupal-selector='edit-media-image-field-selection-0'])[1]";
-    $this->assertNotNull($first_item = $assert_session->waitForElementVisible('xpath', $first_item_locator));
-    $first_item->pressButton('Remove');
-    $assert_session->waitForElementRemoved('xpath', $first_item_locator);
-    $page->waitFor(10, function () use ($wrapper) {
-      return $wrapper->hasButton('Add media');
-    });
-    // Test reinserting the same selection.
-    $media_items = Media::loadMultiple();
-    $added_media = array_pop($media_items);
-    $added_media_id = $added_media->id();
-    $wrapper->pressButton('Add media');
-    $this->assertNotNull($assert_session->waitForText('Add or select media'));
-    $assert_session->elementExists('xpath', "(//div[contains(@class, 'media-library-item')])[1]")->click();
-    $assert_session->checkboxChecked("media_library_select_form[$added_media_id]");
-    $assert_session->elementExists('css', '.ui-dialog-buttonpane')->pressButton('Insert selected');
-    $this->assertNotNull($assert_session->waitForElementVisible('xpath', $first_item_locator));
-  }
+    /**
+     * Tests media inside another widget that validates too enthusiastically.
+     */
+    #[DataProvider('insertionReselectionProvider')]
+    public function testInsertionAndReselection($widget): void
+    {
+        $this->container
+          ->get('entity_display.repository')
+          ->getFormDisplay('node', 'basic_page')
+          ->setComponent('media_image_field', [
+            'type' => $widget,
+            'region' => 'content',
+            'settings' => [
+              'media_types' => ['type_three'],
+            ],
+          ])
+          ->save();
 
-  /**
-   * Data provider for ::testInsertionAndReselection().
-   *
-   * @return array
-   *   Test data.
-   */
-  public static function insertionReselectionProvider() {
-    return [
-      'using media_library_widget' => [
-        'widget' => 'media_library_widget',
-      ],
-      'using media_library_inception_widget' => [
-        'widget' => 'media_library_inception_widget',
-      ],
-    ];
-  }
+        $page = $this->getSession()->getPage();
+        $assert_session = $this->assertSession();
+
+        foreach ($this->getTestFiles('image') as $image) {
+            $extension = pathinfo($image->filename, PATHINFO_EXTENSION);
+            if ($extension === 'jpg') {
+                $jpg_image = $image;
+                break;
+            }
+        }
+
+        $this->drupalGet('node/add/basic_page');
+        $wrapper = $assert_session->elementExists('css', '#media_image_field-media-library-wrapper');
+        $wrapper->pressButton('Add media');
+        $this->assertNotNull($assert_session->waitForText('Add or select media'));
+        $page->attachFileToField('Add file', $this->container->get('file_system')->realpath($jpg_image->uri));
+        $this->assertNotNull($assert_session->waitForText('Alternative text'));
+        $page->fillField('Alternative text', $this->randomString());
+        $assert_session->elementExists('css', '.ui-dialog-buttonpane')->pressButton('Save and insert');
+        $first_item_locator = "(//div[@data-drupal-selector='edit-media-image-field-selection-0'])[1]";
+        $this->assertNotNull($first_item = $assert_session->waitForElementVisible('xpath', $first_item_locator));
+        $first_item->pressButton('Remove');
+        $assert_session->waitForElementRemoved('xpath', $first_item_locator);
+        $page->waitFor(10, function () use ($wrapper) {
+            return $wrapper->hasButton('Add media');
+        });
+        // Test reinserting the same selection.
+        $media_items = Media::loadMultiple();
+        $added_media = array_pop($media_items);
+        $added_media_id = $added_media->id();
+        $wrapper->pressButton('Add media');
+        $this->assertNotNull($assert_session->waitForText('Add or select media'));
+        $assert_session->elementExists('xpath', "(//div[contains(@class, 'media-library-item')])[1]")->click();
+        $assert_session->checkboxChecked("media_library_select_form[$added_media_id]");
+        $assert_session->elementExists('css', '.ui-dialog-buttonpane')->pressButton('Insert selected');
+        $this->assertNotNull($assert_session->waitForElementVisible('xpath', $first_item_locator));
+    }
+
+    /**
+     * Data provider for ::testInsertionAndReselection().
+     *
+     * @return array
+     *   Test data.
+     */
+    public static function insertionReselectionProvider()
+    {
+        return [
+          'using media_library_widget' => [
+            'widget' => 'media_library_widget',
+          ],
+          'using media_library_inception_widget' => [
+            'widget' => 'media_library_inception_widget',
+          ],
+        ];
+    }
 
 }

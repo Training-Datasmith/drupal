@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime_range\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -16,65 +18,68 @@ use Drupal\datetime_range\DateTimeRangeTrait;
  * configurable date format using the PHP date syntax and separator.
  */
 #[FieldFormatter(
-  id: 'daterange_custom',
-  label: new TranslatableMarkup('Custom'),
-  field_types: [
+    id: 'daterange_custom',
+    label: new TranslatableMarkup('Custom'),
+    field_types: [
     'daterange',
   ],
 )]
-class DateRangeCustomFormatter extends DateTimeCustomFormatter {
+class DateRangeCustomFormatter extends DateTimeCustomFormatter
+{
+    use DateTimeRangeTrait;
 
-  use DateTimeRangeTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return static::dateTimeRangeDefaultSettings() + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode): array {
-    // @todo Evaluate removing this method in
-    // https://www.drupal.org/node/2793143 to determine if the behavior and
-    // markup in the base class implementation can be used instead.
-    $elements = [];
-    $separator = $this->getSetting('separator');
-
-    foreach ($items as $delta => $item) {
-      if (!empty($item->start_date) && !empty($item->end_date)) {
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
-        $start_date = $item->start_date;
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $end_date */
-        $end_date = $item->end_date;
-
-        if ($start_date->getTimestamp() !== $end_date->getTimestamp()) {
-          $elements[$delta] = $this->renderStartEnd($start_date, $separator, $end_date);
-        }
-        else {
-          $elements[$delta] = $this->buildDate($start_date);
-        }
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return static::dateTimeRangeDefaultSettings() + parent::defaultSettings();
     }
 
-    return $elements;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode): array
+    {
+        // @todo Evaluate removing this method in
+        // https://www.drupal.org/node/2793143 to determine if the behavior and
+        // markup in the base class implementation can be used instead.
+        $elements = [];
+        $separator = $this->getSetting('separator');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state): array {
-    $form = parent::settingsForm($form, $form_state);
-    return $this->dateTimeRangeSettingsForm($form);
-  }
+        foreach ($items as $delta => $item) {
+            if (!empty($item->start_date) && !empty($item->end_date)) {
+                /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
+                $start_date = $item->start_date;
+                /** @var \Drupal\Core\Datetime\DrupalDateTime $end_date */
+                $end_date = $item->end_date;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary(): array {
-    return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
-  }
+                if ($start_date->getTimestamp() !== $end_date->getTimestamp()) {
+                    $elements[$delta] = $this->renderStartEnd($start_date, $separator, $end_date);
+                } else {
+                    $elements[$delta] = $this->buildDate($start_date);
+                }
+            }
+        }
+
+        return $elements;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state): array
+    {
+        $form = parent::settingsForm($form, $form_state);
+        return $this->dateTimeRangeSettingsForm($form);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary(): array
+    {
+        return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
+    }
 
 }

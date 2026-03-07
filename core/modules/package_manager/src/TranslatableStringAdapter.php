@@ -24,30 +24,32 @@ use PhpTuf\ComposerStager\API\Translation\Value\TranslationParametersInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class TranslatableStringAdapter extends TranslatableMarkup implements TranslatableInterface, TranslationParametersInterface {
+final class TranslatableStringAdapter extends TranslatableMarkup implements TranslatableInterface, TranslationParametersInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getAll(): array
+    {
+        return $this->getArguments();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAll(): array {
-    return $this->getArguments();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function trans(?TranslatorInterface $translator = NULL, ?string $locale = NULL): string {
-    // This method is NEVER used by Drupal to translate the underlying string;
-    // it exists solely for Composer Stager's translation system to
-    // transparently translate Drupal strings using its own architecture.
-    return $translator->trans(
-      $this->getUntranslatedString(),
-      $this,
-      // The 'context' option is the closest analogue to the Symfony-inspired
-      // concept of translation domains.
-      $this->getOption('context'),
-      $locale ?? $this->getOption('langcode'),
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function trans(?TranslatorInterface $translator = null, ?string $locale = null): string
+    {
+        // This method is NEVER used by Drupal to translate the underlying string;
+        // it exists solely for Composer Stager's translation system to
+        // transparently translate Drupal strings using its own architecture.
+        return $translator->trans(
+            $this->getUntranslatedString(),
+            $this,
+            // The 'context' option is the closest analogue to the Symfony-inspired
+            // concept of translation domains.
+            $this->getOption('context'),
+            $locale ?? $this->getOption('langcode'),
+        );
+    }
 
 }

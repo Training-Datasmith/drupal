@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config;
 
 /**
@@ -18,34 +20,38 @@ namespace Drupal\Core\Config;
  *
  * @ingroup config_api
  */
-class ImmutableConfig extends Config {
+class ImmutableConfig extends Config
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value): never
+    {
+        throw new ImmutableConfigException("Can not set values on immutable configuration {$this->getName()}:$key. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function set($key, $value): never {
-    throw new ImmutableConfigException("Can not set values on immutable configuration {$this->getName()}:$key. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function clear($key): never
+    {
+        throw new ImmutableConfigException("Can not clear $key key in immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clear($key): never {
-    throw new ImmutableConfigException("Can not clear $key key in immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save($has_trusted_data = false): never
+    {
+        throw new ImmutableConfigException("Can not save immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save($has_trusted_data = FALSE): never {
-    throw new ImmutableConfigException("Can not save immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): never {
-    throw new ImmutableConfigException("Can not delete immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(): never
+    {
+        throw new ImmutableConfigException("Can not delete immutable configuration {$this->getName()}. Use \\Drupal\\Core\\Config\\ConfigFactoryInterface::getEditable() to retrieve a mutable configuration object");
+    }
 
 }

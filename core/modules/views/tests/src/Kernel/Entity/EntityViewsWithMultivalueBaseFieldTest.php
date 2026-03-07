@@ -16,44 +16,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class EntityViewsWithMultivalueBaseFieldTest extends ViewsKernelTestBase {
+class EntityViewsWithMultivalueBaseFieldTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test'];
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_entity_multivalue_basefield'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_entity_multivalue_basefield'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installEntitySchema('entity_test_multivalue_basefield');
+    }
 
-    $this->installEntitySchema('entity_test_multivalue_basefield');
-  }
+    /**
+     * Tests entity views with multivalue base fields.
+     */
+    public function testView(): void
+    {
+        EntityTestMultiValueBaseField::create([
+          'name' => 'test',
+        ])->save();
+        EntityTestMultiValueBaseField::create([
+          'name' => ['test2', 'test3'],
+        ])->save();
 
-  /**
-   * Tests entity views with multivalue base fields.
-   */
-  public function testView(): void {
-    EntityTestMultiValueBaseField::create([
-      'name' => 'test',
-    ])->save();
-    EntityTestMultiValueBaseField::create([
-      'name' => ['test2', 'test3'],
-    ])->save();
-
-    $view = Views::getView('test_entity_multivalue_basefield');
-    $view->execute();
-    $this->assertIdenticalResultset($view, [
-      ['name' => ['test']],
-      ['name' => ['test2', 'test3']],
-    ], ['name' => 'name']);
-  }
+        $view = Views::getView('test_entity_multivalue_basefield');
+        $view->execute();
+        $this->assertIdenticalResultset($view, [
+          ['name' => ['test']],
+          ['name' => ['test2', 'test3']],
+        ], ['name' => 'name']);
+    }
 
 }

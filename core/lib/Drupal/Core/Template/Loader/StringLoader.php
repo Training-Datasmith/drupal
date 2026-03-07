@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template\Loader;
 
 use Twig\Loader\LoaderInterface;
@@ -23,37 +25,41 @@ use Twig\Source;
  * @see \Drupal\Core\Render\Element\InlineTemplate
  * @see \Drupal\Core\Template\TwigThemeEngine::renderTemplate()
  */
-class StringLoader implements LoaderInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function exists($name): bool {
-    if (str_starts_with((string) $name, '{# inline_template_start #}')) {
-      return TRUE;
+class StringLoader implements LoaderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function exists($name): bool
+    {
+        if (str_starts_with((string) $name, '{# inline_template_start #}')) {
+            return true;
+        }
+        return false;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheKey(string $name): string {
-    return $name;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheKey(string $name): string
+    {
+        return $name;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isFresh(string $name, int $time): bool {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isFresh(string $name, int $time): bool
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSourceContext(string $name): Source {
-    return new Source($name, $name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSourceContext(string $name): Source
+    {
+        return new Source($name, $name);
+    }
 
 }

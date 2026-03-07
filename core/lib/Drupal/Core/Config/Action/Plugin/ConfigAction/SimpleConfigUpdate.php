@@ -18,48 +18,51 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   This API is experimental.
  */
 #[ConfigAction(
-  id: 'simpleConfigUpdate',
-  admin_label: new TranslatableMarkup('Simple configuration update'),
+    id: 'simpleConfigUpdate',
+    admin_label: new TranslatableMarkup('Simple configuration update'),
 )]
-final readonly class SimpleConfigUpdate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
-
-  public function __construct(
-    private ConfigFactoryInterface $configFactory,
-    private ConfigManagerInterface $configManager,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $container->get(ConfigFactoryInterface::class),
-      $container->get(ConfigManagerInterface::class),
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function apply(string $configName, mixed $value): void {
-    if ($this->configManager->getEntityTypeIdByName($configName)) {
-      // @todo Make this an exception in https://www.drupal.org/node/3515544.
-      @trigger_error('Using the simpleConfigUpdate config action on config entities is deprecated in drupal:11.2.0 and throws an exception in drupal:12.0.0. Use the setProperties action instead. See https://www.drupal.org/node/3515543', E_USER_DEPRECATED);
+final readonly class SimpleConfigUpdate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface
+{
+    public function __construct(
+        private ConfigFactoryInterface $configFactory,
+        private ConfigManagerInterface $configManager,
+    ) {
     }
 
-    $config = $this->configFactory->getEditable($configName);
-    if ($config->isNew()) {
-      throw new ConfigActionException(sprintf('Config %s does not exist so can not be updated', $configName));
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $container->get(ConfigFactoryInterface::class),
+            $container->get(ConfigManagerInterface::class),
+        );
     }
 
-    // Expect $value to be an array whose keys are the config keys to update.
-    if (!is_array($value)) {
-      throw new ConfigActionException(sprintf('Config %s can not be updated because $value is not an array', $configName));
+    /**
+     * {@inheritdoc}
+     */
+    public function apply(string $configName, mixed $value): void
+    {
+        if ($this->configManager->getEntityTypeIdByName($configName)) {
+            // @todo Make this an exception in https://www.drupal.org/node/3515544.
+            @trigger_error('Using the simpleConfigUpdate config action on config entities is deprecated in drupal:11.2.0 and throws an exception in drupal:12.0.0. Use the setProperties action instead. See https://www.drupal.org/node/3515543', E_USER_DEPRECATED);
+        }
+
+        $config = $this->configFactory->getEditable($configName);
+        if ($config->isNew()) {
+            throw new ConfigActionException(sprintf('Config %s does not exist so can not be updated', $configName));
+        }
+
+        // Expect $value to be an array whose keys are the config keys to update.
+        if (!is_array($value)) {
+            throw new ConfigActionException(sprintf('Config %s can not be updated because $value is not an array', $configName));
+        }
+        foreach ($value as $key => $value) {
+            $config->set($key, $value);
+        }
+        $config->save();
     }
-    foreach ($value as $key => $value) {
-      $config->set($key, $value);
-    }
-    $config->save();
-  }
 
 }

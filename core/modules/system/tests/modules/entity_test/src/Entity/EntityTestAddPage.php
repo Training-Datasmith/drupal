@@ -13,16 +13,16 @@ use Drupal\entity_test\EntityTestForm;
  * Test entity class routes.
  */
 #[ContentEntityType(
-  id: 'entity_test_add_page',
-  label: new TranslatableMarkup('Entity test route add page'),
-  render_cache: FALSE,
-  entity_keys: [
+    id: 'entity_test_add_page',
+    label: new TranslatableMarkup('Entity test route add page'),
+    render_cache: false,
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
     'label' => 'name',
   ],
-  handlers: [
+    handlers: [
     'form' => [
       'default' => EntityTestForm::class,
     ],
@@ -30,12 +30,13 @@ use Drupal\entity_test\EntityTestForm;
       'html' => DefaultHtmlRouteProvider::class,
     ],
   ],
-  links: [
+    links: [
     'add-page' => '/entity_test_add_page/{user}/add',
     'add-form' => '/entity_test_add_page/add/{type}/{user}/form',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_add_page',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_add_page',
 )]
-class EntityTestAddPage extends EntityTest {
+class EntityTestAddPage extends EntityTest
+{
 }

@@ -15,106 +15,110 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldCustomTest extends ViewsKernelTestBase {
+class FieldCustomTest extends ViewsKernelTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * {@inheritdoc}
+     */
+    public function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['name']['field']['id'] = 'custom';
+        return $data;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['name']['field']['id'] = 'custom';
-    return $data;
-  }
+    /**
+     * Ensure that custom fields work and doesn't escape unnecessary markup.
+     */
+    public function testFieldCustom(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Ensure that custom fields work and doesn't escape unnecessary markup.
-   */
-  public function testFieldCustom(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        // Alter the text of the field to a random string.
+        $random = '<div>' . $this->randomMachineName() . '</div>';
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'name' => [
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+            'alter' => [
+              'text' => $random,
+            ],
+          ],
+        ]);
 
-    // Alter the text of the field to a random string.
-    $random = '<div>' . $this->randomMachineName() . '</div>';
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'name' => [
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-        'alter' => [
-          'text' => $random,
-        ],
-      ],
-    ]);
+        $this->executeView($view);
 
-    $this->executeView($view);
+        $this->assertSame($random, (string) $view->style_plugin->getField(0, 'name'));
+    }
 
-    $this->assertSame($random, (string) $view->style_plugin->getField(0, 'name'));
-  }
+    /**
+     * Ensure that custom fields can use tokens.
+     */
+    public function testFieldCustomTokens(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Ensure that custom fields can use tokens.
-   */
-  public function testFieldCustomTokens(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'age' => [
+            'id' => 'age',
+            'exclude' => true,
+            'table' => 'views_test_data',
+            'field' => 'age',
+          ],
+          'name' => [
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+            'alter' => [
+              'text' => 'Amount of kittens: {{ age }}',
+            ],
+          ],
+        ]);
 
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'age' => [
-        'id' => 'age',
-        'exclude' => TRUE,
-        'table' => 'views_test_data',
-        'field' => 'age',
-      ],
-      'name' => [
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-        'alter' => [
-          'text' => 'Amount of kittens: {{ age }}',
-        ],
-      ],
-    ]);
+        /** @var \Drupal\Core\Render\RendererInterface $renderer */
+        $renderer = \Drupal::service('renderer');
+        $preview = $view->preview();
+        $output = $renderer->renderRoot($preview);
 
-    /** @var \Drupal\Core\Render\RendererInterface $renderer */
-    $renderer = \Drupal::service('renderer');
-    $preview = $view->preview();
-    $output = $renderer->renderRoot($preview);
+        $expected_text = 'Amount of kittens: ' . $view->style_plugin->getField(0, 'age');
+        $this->assertStringContainsString($expected_text, (string) $output, 'The views token has been successfully replaced.');
+    }
 
-    $expected_text = 'Amount of kittens: ' . $view->style_plugin->getField(0, 'age');
-    $this->assertStringContainsString($expected_text, (string) $output, 'The views token has been successfully replaced.');
-  }
+    /**
+     * Ensure that custom field content is XSS filtered.
+     */
+    public function testCustomFieldXss(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Ensure that custom field content is XSS filtered.
-   */
-  public function testCustomFieldXss(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
-
-    // Alter the text of the field to include XSS.
-    $text = '<script>alert("kittens")</script>';
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'name' => [
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-        'alter' => [
-          'text' => $text,
-        ],
-      ],
-    ]);
-    $this->executeView($view);
-    $this->assertEquals(Xss::filter($text), $view->style_plugin->getField(0, 'name'));
-  }
+        // Alter the text of the field to include XSS.
+        $text = '<script>alert("kittens")</script>';
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'name' => [
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+            'alter' => [
+              'text' => $text,
+            ],
+          ],
+        ]);
+        $this->executeView($view);
+        $this->assertEquals(Xss::filter($text), $view->style_plugin->getField(0, 'name'));
+    }
 
 }

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Transliteration;
 
 use Drupal\Component\Transliteration\PhpTransliteration as BaseTransliteration;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Enhances PhpTransliteration with an alter hook.
@@ -11,32 +12,34 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
  * @ingroup transliteration
  * @see hook_transliteration_overrides_alter()
  */
-class PhpTransliteration extends BaseTransliteration {
+class PhpTransliteration extends BaseTransliteration
+{
+    /**
+     * Constructs a PhpTransliteration object.
+     *
+     * @param string|null $data_directory
+     *   The directory where data files reside. If NULL, defaults to subdirectory
+     *   'data' underneath the directory where the class's PHP file resides.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler to execute the transliteration_overrides alter hook.
+     */
+    public function __construct($data_directory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+    {
+        parent::__construct($data_directory);
+    }
 
-  /**
-   * Constructs a PhpTransliteration object.
-   *
-   * @param string|null $data_directory
-   *   The directory where data files reside. If NULL, defaults to subdirectory
-   *   'data' underneath the directory where the class's PHP file resides.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler to execute the transliteration_overrides alter hook.
-   */
-  public function __construct($data_directory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
-    parent::__construct($data_directory);
-  }
+    /**
+     * Overrides \Drupal\Component\Transliteration\PhpTransliteration::readLanguageOverrides().
+     *
+     * Allows modules to alter the language-specific $overrides array by invoking
+     * hook_transliteration_overrides_alter().
+     */
+    protected function readLanguageOverrides($langcode)
+    {
+        parent::readLanguageOverrides($langcode);
 
-  /**
-   * Overrides \Drupal\Component\Transliteration\PhpTransliteration::readLanguageOverrides().
-   *
-   * Allows modules to alter the language-specific $overrides array by invoking
-   * hook_transliteration_overrides_alter().
-   */
-  protected function readLanguageOverrides($langcode) {
-    parent::readLanguageOverrides($langcode);
-
-    // Let modules alter the language-specific overrides.
-    $this->moduleHandler->alter('transliteration_overrides', $this->languageOverrides[$langcode], $langcode);
-  }
+        // Let modules alter the language-specific overrides.
+        $this->moduleHandler->alter('transliteration_overrides', $this->languageOverrides[$langcode], $langcode);
+    }
 
 }

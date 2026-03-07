@@ -11,43 +11,47 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Implements a test form that has a validation error.
  */
-class ViewsTestDataErrorForm implements FormInterface {
+class ViewsTestDataErrorForm implements FormInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'views_test_data_error_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'views_test_data_error_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['text'] = [
+          '#type' => 'textfield',
+        ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Submit'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['text'] = [
-      '#type' => 'textfield',
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit'),
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+        $form_state->setErrorByName('text', $this->t('Form validation error'));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setErrorByName('text', $this->t('Form validation error'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

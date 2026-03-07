@@ -16,43 +16,45 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[CoversClass(XdebugRequestTrait::class)]
 #[Group('Test')]
-class XdebugRequestTraitTest extends UnitTestCase {
+class XdebugRequestTraitTest extends UnitTestCase
+{
+    use XdebugRequestTrait;
 
-  use XdebugRequestTrait;
+    /**
+     * Tests that Xdebug cookies are extracted from a request correctly.
+     *
+     * @param array $server
+     *   The request server array.
+     * @param array $expected_cookies
+     *   The expected cookies for the request.
+     */
+    #[DataProvider('extractCookiesDataProvider')]
+    public function testExtractCookiesFromRequest(array $server, array $expected_cookies): void
+    {
+        $request = new Request([], [], [], [], [], $server);
+        $this->assertSame($expected_cookies, $this->extractCookiesFromRequest($request));
+    }
 
-  /**
-   * Tests that Xdebug cookies are extracted from a request correctly.
-   *
-   * @param array $server
-   *   The request server array.
-   * @param array $expected_cookies
-   *   The expected cookies for the request.
-   */
-  #[DataProvider('extractCookiesDataProvider')]
-  public function testExtractCookiesFromRequest(array $server, array $expected_cookies): void {
-    $request = new Request([], [], [], [], [], $server);
-    $this->assertSame($expected_cookies, $this->extractCookiesFromRequest($request));
-  }
-
-  /**
-   * Provides data to test extracting Xdebug cookies from a request.
-   *
-   * @return iterable
-   *   Test scenarios.
-   */
-  public static function extractCookiesDataProvider() {
-    yield 'no XDEBUG_CONFIG' => [[], []];
-    yield 'empty string XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => ''], []];
-    yield 'only space string XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => ' '], []];
-    yield 'invalid XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => 'invalid_config'], []];
-    yield 'idekey XDEBUG_CONFIG' => [
-      ['XDEBUG_CONFIG' => 'idekey=XDEBUG_KEY'],
-      ['XDEBUG_SESSION' => ['XDEBUG_KEY']],
-    ];
-    yield 'idekey with another key XDEBUG_CONFIG' => [
-      ['XDEBUG_CONFIG' => 'foo=bar  idekey=XDEBUG_KEY '],
-      ['XDEBUG_SESSION' => ['XDEBUG_KEY']],
-    ];
-  }
+    /**
+     * Provides data to test extracting Xdebug cookies from a request.
+     *
+     * @return iterable
+     *   Test scenarios.
+     */
+    public static function extractCookiesDataProvider()
+    {
+        yield 'no XDEBUG_CONFIG' => [[], []];
+        yield 'empty string XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => ''], []];
+        yield 'only space string XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => ' '], []];
+        yield 'invalid XDEBUG_CONFIG' => [['XDEBUG_CONFIG' => 'invalid_config'], []];
+        yield 'idekey XDEBUG_CONFIG' => [
+          ['XDEBUG_CONFIG' => 'idekey=XDEBUG_KEY'],
+          ['XDEBUG_SESSION' => ['XDEBUG_KEY']],
+        ];
+        yield 'idekey with another key XDEBUG_CONFIG' => [
+          ['XDEBUG_CONFIG' => 'foo=bar  idekey=XDEBUG_KEY '],
+          ['XDEBUG_SESSION' => ['XDEBUG_KEY']],
+        ];
+    }
 
 }

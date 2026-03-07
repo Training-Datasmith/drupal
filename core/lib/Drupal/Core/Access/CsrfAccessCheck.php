@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Access;
 
 use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\Routing\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 
 /**
  * Access protection against CSRF attacks.
@@ -22,43 +24,43 @@ use Symfony\Component\HttpFoundation\Request;
  * @see \Drupal\Core\Access\CsrfTokenGenerator
  * @see https://www.drupal.org/docs/8/api/routing-system/access-checking-on-routes/csrf-access-checking
  */
-class CsrfAccessCheck implements RoutingAccessInterface {
+class CsrfAccessCheck implements RoutingAccessInterface
+{
+    use RoutePathGenerationTrait;
 
-  use RoutePathGenerationTrait;
-
-  /**
-   * Constructs a CsrfAccessCheck object.
-   *
-   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfToken
-   *   The CSRF token generator.
-   */
-  public function __construct(protected CsrfTokenGenerator $csrfToken)
-  {
-  }
-
-  /**
-   * Checks access based on a CSRF token for the request.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route to check against.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request object.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The route match object.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function access(Route $route, Request $request, RouteMatchInterface $route_match) {
-    $path = $this->generateRoutePath($route, $route_match->getRawParameters()->all());
-    if ($this->csrfToken->validate($request->query->get('token', ''), $path)) {
-      $result = AccessResult::allowed();
+    /**
+     * Constructs a CsrfAccessCheck object.
+     *
+     * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfToken
+     *   The CSRF token generator.
+     */
+    public function __construct(protected CsrfTokenGenerator $csrfToken)
+    {
     }
-    else {
-      $result = AccessResult::forbidden($request->query->has('token') ? "'csrf_token' URL query argument is invalid." : "'csrf_token' URL query argument is missing.");
+
+    /**
+     * Checks access based on a CSRF token for the request.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route to check against.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request object.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+     *   The route match object.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function access(Route $route, Request $request, RouteMatchInterface $route_match)
+    {
+        $path = $this->generateRoutePath($route, $route_match->getRawParameters()->all());
+        if ($this->csrfToken->validate($request->query->get('token', ''), $path)) {
+            $result = AccessResult::allowed();
+        } else {
+            $result = AccessResult::forbidden($request->query->has('token') ? "'csrf_token' URL query argument is invalid." : "'csrf_token' URL query argument is missing.");
+        }
+        // Not cacheable because the CSRF token is highly dynamic.
+        return $result->setCacheMaxAge(0);
     }
-    // Not cacheable because the CSRF token is highly dynamic.
-    return $result->setCacheMaxAge(0);
-  }
 
 }

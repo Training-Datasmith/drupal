@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -21,176 +23,184 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  *
  * @internal
  */
-class WorkspacePublisher implements WorkspacePublisherInterface {
+class WorkspacePublisher implements WorkspacePublisherInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected Connection $database,
-    protected WorkspaceManagerInterface $workspaceManager,
-    protected WorkspaceTrackerInterface $workspaceTracker,
-    protected EventDispatcherInterface $eventDispatcher,
-    protected WorkspaceInterface $sourceWorkspace,
-    protected LoggerInterface $logger,
-    protected TimeInterface $time,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function publish(): void {
-    if ($this->sourceWorkspace->hasParent()) {
-      throw new WorkspacePublishException('Only top-level workspaces can be published.');
+    public function __construct(
+        protected EntityTypeManagerInterface $entityTypeManager,
+        protected Connection $database,
+        protected WorkspaceManagerInterface $workspaceManager,
+        protected WorkspaceTrackerInterface $workspaceTracker,
+        protected EventDispatcherInterface $eventDispatcher,
+        protected WorkspaceInterface $sourceWorkspace,
+        protected LoggerInterface $logger,
+        protected TimeInterface $time,
+    ) {
     }
 
-    if ($this->checkConflictsOnTarget()) {
-      throw new WorkspaceConflictException();
-    }
-
-    $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
-    $event = new WorkspacePrePublishEvent($this->sourceWorkspace, $tracked_entities);
-    $this->eventDispatcher->dispatch($event);
-
-    if ($event->isPublishingStopped()) {
-      throw new WorkspacePublishException((string) $event->getPublishingStoppedReason());
-    }
-
-    try {
-      $transaction = $this->database->startTransaction();
-      $this->workspaceManager->executeOutsideWorkspace(function () use ($tracked_entities): void {
-        $max_execution_time = ini_get('max_execution_time');
-        $step_size = Settings::get('entity_update_batch_size', 50);
-        $counter = 0;
-
-        foreach ($tracked_entities as $entity_type_id => $revision_difference) {
-          $entity_revisions = $this->entityTypeManager->getStorage($entity_type_id)
-            ->loadMultipleRevisions(array_keys($revision_difference));
-
-          /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-          foreach ($entity_revisions as $entity) {
-            // We might be saving a lot of entities during workspace publishing,
-            // so we set the original entity manually for performance.
-            $entity->setOriginal(clone $entity);
-
-            // When pushing workspace-specific revisions to the default
-            // workspace (Live), we simply need to mark them as default
-            // revisions.
-            $entity->setSyncing(TRUE);
-            $entity->isDefaultRevision(TRUE);
-
-            // Update the changed time of the entity to be the publishing time.
-            if ($entity instanceof EntityChangedInterface) {
-              $entity->setChangedTime($this->time->getRequestTime());
-            }
-
-            // The default revision is not workspace-specific anymore.
-            $field_name = $entity->getEntityType()->getRevisionMetadataKey('workspace');
-            $entity->{$field_name}->target_id = NULL;
-
-            $entity->save();
-            $counter++;
-
-            // Extend the execution time in order to allow processing workspaces
-            // that contain a large number of items.
-            if ((int) ($counter / $step_size) >= 1) {
-              set_time_limit((int) $max_execution_time);
-              $counter = 0;
-            }
-          }
+    /**
+     * {@inheritdoc}
+     */
+    public function publish(): void
+    {
+        if ($this->sourceWorkspace->hasParent()) {
+            throw new WorkspacePublishException('Only top-level workspaces can be published.');
         }
-      });
+
+        if ($this->checkConflictsOnTarget()) {
+            throw new WorkspaceConflictException();
+        }
+
+        $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
+        $event = new WorkspacePrePublishEvent($this->sourceWorkspace, $tracked_entities);
+        $this->eventDispatcher->dispatch($event);
+
+        if ($event->isPublishingStopped()) {
+            throw new WorkspacePublishException((string) $event->getPublishingStoppedReason());
+        }
+
+        try {
+            $transaction = $this->database->startTransaction();
+            $this->workspaceManager->executeOutsideWorkspace(function () use ($tracked_entities): void {
+                $max_execution_time = ini_get('max_execution_time');
+                $step_size = Settings::get('entity_update_batch_size', 50);
+                $counter = 0;
+
+                foreach ($tracked_entities as $entity_type_id => $revision_difference) {
+                    $entity_revisions = $this->entityTypeManager->getStorage($entity_type_id)
+                      ->loadMultipleRevisions(array_keys($revision_difference));
+
+                    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+                    foreach ($entity_revisions as $entity) {
+                        // We might be saving a lot of entities during workspace publishing,
+                        // so we set the original entity manually for performance.
+                        $entity->setOriginal(clone $entity);
+
+                        // When pushing workspace-specific revisions to the default
+                        // workspace (Live), we simply need to mark them as default
+                        // revisions.
+                        $entity->setSyncing(true);
+                        $entity->isDefaultRevision(true);
+
+                        // Update the changed time of the entity to be the publishing time.
+                        if ($entity instanceof EntityChangedInterface) {
+                            $entity->setChangedTime($this->time->getRequestTime());
+                        }
+
+                        // The default revision is not workspace-specific anymore.
+                        $field_name = $entity->getEntityType()->getRevisionMetadataKey('workspace');
+                        $entity->{$field_name}->target_id = null;
+
+                        $entity->save();
+                        $counter++;
+
+                        // Extend the execution time in order to allow processing workspaces
+                        // that contain a large number of items.
+                        if ((int) ($counter / $step_size) >= 1) {
+                            set_time_limit((int) $max_execution_time);
+                            $counter = 0;
+                        }
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            if (isset($transaction)) {
+                $transaction->rollBack();
+            }
+            Error::logException($this->logger, $e);
+            throw $e;
+        }
+
+        $event = new WorkspacePostPublishEvent($this->sourceWorkspace, $tracked_entities);
+        $this->eventDispatcher->dispatch($event);
     }
-    catch (\Exception $e) {
-      if (isset($transaction)) {
-        $transaction->rollBack();
-      }
-      Error::logException($this->logger, $e);
-      throw $e;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSourceLabel()
+    {
+        return $this->sourceWorkspace->label();
     }
 
-    $event = new WorkspacePostPublishEvent($this->sourceWorkspace, $tracked_entities);
-    $this->eventDispatcher->dispatch($event);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSourceLabel() {
-    return $this->sourceWorkspace->label();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTargetLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Live');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function checkConflictsOnTarget(): void {
-    // Nothing to do for now, we can not get to a conflicting state because an
-    // entity which is being edited in a workspace can not be edited in any
-    // other workspace.
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return non-empty-array[]
-   */
-  public function getDifferringRevisionIdsOnTarget(): array {
-    $target_revision_difference = [];
-
-    $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
-    foreach ($tracked_entities as $entity_type_id => $tracked_revisions) {
-      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-
-      // Get the latest revision IDs for all the entities that are tracked by
-      // the source workspace.
-      $query = $this->entityTypeManager
-        ->getStorage($entity_type_id)
-        ->getQuery()
-        ->accessCheck(FALSE)
-        ->condition($entity_type->getKey('id'), $tracked_revisions, 'IN')
-        ->latestRevision();
-      $result = $query->execute();
-
-      // Now we compare the revision IDs which are tracked by the source
-      // workspace to the latest revision IDs of those entities and the
-      // difference between these two arrays gives us all the entities which
-      // have been modified on the target.
-      if ($revision_difference = array_diff_key($result, $tracked_revisions)) {
-        $target_revision_difference[$entity_type_id] = $revision_difference;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTargetLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Live');
     }
 
-    return $target_revision_difference;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function checkConflictsOnTarget(): void
+    {
+        // Nothing to do for now, we can not get to a conflicting state because an
+        // entity which is being edited in a workspace can not be edited in any
+        // other workspace.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDifferringRevisionIdsOnSource(): array {
-    // Get the tracked revisions that haven't been published.
-    return $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
-  }
+    /**
+     * {@inheritdoc}
+     * @return non-empty-array[]
+     */
+    public function getDifferringRevisionIdsOnTarget(): array
+    {
+        $target_revision_difference = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getNumberOfChangesOnTarget(): int {
-    $total_changes = $this->getDifferringRevisionIdsOnTarget();
-    return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
-  }
+        $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
+        foreach ($tracked_entities as $entity_type_id => $tracked_revisions) {
+            $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getNumberOfChangesOnSource(): int {
-    $total_changes = $this->getDifferringRevisionIdsOnSource();
-    return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
-  }
+            // Get the latest revision IDs for all the entities that are tracked by
+            // the source workspace.
+            $query = $this->entityTypeManager
+              ->getStorage($entity_type_id)
+              ->getQuery()
+              ->accessCheck(false)
+              ->condition($entity_type->getKey('id'), $tracked_revisions, 'IN')
+              ->latestRevision();
+            $result = $query->execute();
+
+            // Now we compare the revision IDs which are tracked by the source
+            // workspace to the latest revision IDs of those entities and the
+            // difference between these two arrays gives us all the entities which
+            // have been modified on the target.
+            if ($revision_difference = array_diff_key($result, $tracked_revisions)) {
+                $target_revision_difference[$entity_type_id] = $revision_difference;
+            }
+        }
+
+        return $target_revision_difference;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDifferringRevisionIdsOnSource(): array
+    {
+        // Get the tracked revisions that haven't been published.
+        return $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getNumberOfChangesOnTarget(): int
+    {
+        $total_changes = $this->getDifferringRevisionIdsOnTarget();
+        return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getNumberOfChangesOnSource(): int
+    {
+        $total_changes = $this->getDifferringRevisionIdsOnSource();
+        return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
+    }
 
 }

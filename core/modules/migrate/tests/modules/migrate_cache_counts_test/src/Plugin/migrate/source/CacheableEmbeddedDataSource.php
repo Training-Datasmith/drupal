@@ -12,20 +12,22 @@ use Drupal\migrate\Plugin\migrate\source\SourcePluginBase;
  * A copy of embedded_data which allows caching the count.
  */
 #[MigrateSource('cacheable_embedded_data')]
-class CacheableEmbeddedDataSource extends EmbeddedDataSource {
+class CacheableEmbeddedDataSource extends EmbeddedDataSource
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function count($refresh = false): int
+    {
+        return SourcePluginBase::count($refresh);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function count($refresh = FALSE): int {
-    return SourcePluginBase::count($refresh);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function doCount() {
-    return parent::count(TRUE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function doCount()
+    {
+        return parent::count(true);
+    }
 
 }

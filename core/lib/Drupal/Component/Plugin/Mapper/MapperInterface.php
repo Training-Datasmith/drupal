@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin\Mapper;
 
 /**
@@ -11,20 +13,20 @@ namespace Drupal\Component\Plugin\Mapper;
  * Mapper objects incorporate the best practices of retrieving configurations,
  * type information, and factory instantiation.
  */
-interface MapperInterface {
-
-  /**
-   * Gets or creates a plugin instance that satisfies the given options.
-   *
-   * @param array $options
-   *   An array of options that can be used to determine a suitable plugin to
-   *   instantiate and how to configure it.
-   *
-   * @return object|false
-   *   A fully configured plugin instance. The interface of the plugin instance
-   *   will depend on the plugin type. If no instance can be retrieved, FALSE
-   *   will be returned.
-   */
-  public function getInstance(array $options);
+interface MapperInterface
+{
+    /**
+     * Gets or creates a plugin instance that satisfies the given options.
+     *
+     * @param array $options
+     *   An array of options that can be used to determine a suitable plugin to
+     *   instantiate and how to configure it.
+     *
+     * @return object|false
+     *   A fully configured plugin instance. The interface of the plugin instance
+     *   will depend on the plugin type. If no instance can be retrieved, FALSE
+     *   will be returned.
+     */
+    public function getInstance(array $options);
 
 }

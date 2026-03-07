@@ -20,45 +20,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('package_manager')]
 #[CoversClass(ComposerMinimumStabilityValidator::class)]
 #[RunTestsInSeparateProcesses]
-class ComposerMinimumStabilityValidatorTest extends PackageManagerKernelTestBase {
+class ComposerMinimumStabilityValidatorTest extends PackageManagerKernelTestBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Tests error if requested version is less stable than the minimum: stable.
+     */
+    public function testPreRequireEvent(): void
+    {
+        $stage = $this->createStage();
+        $stage->create();
+        $result = ValidationResult::createError([
+          $this->t("<code>drupal/core</code>'s requested version 9.8.1-beta1 is less stable (beta) than the minimum stability (stable) required in <PROJECT_ROOT>/composer.json."),
+        ]);
+        try {
+            $stage->require(['drupal/core:9.8.1-beta1']);
+            $this->fail('Able to require a package even though it did not meet minimum stability.');
+        } catch (SandboxEventException $exception) {
+            $this->assertValidationResultsEqual([$result], $exception->event->getResults());
+        }
+        $stage->destroy();
 
-  /**
-   * Tests error if requested version is less stable than the minimum: stable.
-   */
-  public function testPreRequireEvent(): void {
-    $stage = $this->createStage();
-    $stage->create();
-    $result = ValidationResult::createError([
-      $this->t("<code>drupal/core</code>'s requested version 9.8.1-beta1 is less stable (beta) than the minimum stability (stable) required in <PROJECT_ROOT>/composer.json."),
-    ]);
-    try {
-      $stage->require(['drupal/core:9.8.1-beta1']);
-      $this->fail('Able to require a package even though it did not meet minimum stability.');
-    }
-    catch (SandboxEventException $exception) {
-      $this->assertValidationResultsEqual([$result], $exception->event->getResults());
-    }
-    $stage->destroy();
+        // Specifying a stability flag bypasses this check.
+        $stage->create();
+        $stage->require(['drupal/core:9.8.1-beta1@dev']);
+        $stage->destroy();
 
-    // Specifying a stability flag bypasses this check.
-    $stage->create();
-    $stage->require(['drupal/core:9.8.1-beta1@dev']);
-    $stage->destroy();
-
-    // Dev packages are also checked.
-    $stage->create();
-    $result = ValidationResult::createError([
-      $this->t("<code>drupal/core-dev</code>'s requested version 9.8.x-dev is less stable (dev) than the minimum stability (stable) required in <PROJECT_ROOT>/composer.json."),
-    ]);
-    try {
-      $stage->require([], ['drupal/core-dev:9.8.x-dev']);
-      $this->fail('Able to require a package even though it did not meet minimum stability.');
+        // Dev packages are also checked.
+        $stage->create();
+        $result = ValidationResult::createError([
+          $this->t("<code>drupal/core-dev</code>'s requested version 9.8.x-dev is less stable (dev) than the minimum stability (stable) required in <PROJECT_ROOT>/composer.json."),
+        ]);
+        try {
+            $stage->require([], ['drupal/core-dev:9.8.x-dev']);
+            $this->fail('Able to require a package even though it did not meet minimum stability.');
+        } catch (SandboxEventException $exception) {
+            $this->assertValidationResultsEqual([$result], $exception->event->getResults());
+        }
     }
-    catch (SandboxEventException $exception) {
-      $this->assertValidationResultsEqual([$result], $exception->event->getResults());
-    }
-  }
 
 }

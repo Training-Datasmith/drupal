@@ -18,208 +18,211 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class CacheTagTest extends ViewTestBase {
+class CacheTagTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_tag_cache'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_tag_cache'];
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  protected static $modules = ['node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The node storage.
+     *
+     * @var \Drupal\node\NodeStorage
+     */
+    protected $nodeStorage;
 
-  /**
-   * The node storage.
-   *
-   * @var \Drupal\node\NodeStorage
-   */
-  protected $nodeStorage;
+    /**
+     * The node view builder.
+     *
+     * @var \Drupal\node\NodeViewBuilder
+     */
+    protected $nodeViewBuilder;
 
-  /**
-   * The node view builder.
-   *
-   * @var \Drupal\node\NodeViewBuilder
-   */
-  protected $nodeViewBuilder;
+    /**
+     * The user view builder.
+     *
+     * @var \Drupal\Core\Entity\EntityViewBuilder
+     */
+    protected $userViewBuilder;
 
-  /**
-   * The user view builder.
-   *
-   * @var \Drupal\Core\Entity\EntityViewBuilder
-   */
-  protected $userViewBuilder;
+    /**
+     * An array of page nodes.
+     *
+     * @var \Drupal\node\NodeInterface[]
+     */
+    protected $pages;
 
-  /**
-   * An array of page nodes.
-   *
-   * @var \Drupal\node\NodeInterface[]
-   */
-  protected $pages;
+    /**
+     * An article node.
+     *
+     * @var \Drupal\node\NodeInterface
+     */
+    protected $article;
 
-  /**
-   * An article node.
-   *
-   * @var \Drupal\node\NodeInterface
-   */
-  protected $article;
+    /**
+     * A test user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $user;
 
-  /**
-   * A test user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $user;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
+        $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
 
-    $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
-    $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+        $this->nodeStorage = $this->container->get('entity_type.manager')->getStorage('node');
+        $this->nodeViewBuilder = $this->container->get('entity_type.manager')->getViewBuilder('node');
+        $this->userViewBuilder = $this->container->get('entity_type.manager')->getViewBuilder('user');
 
-    $this->nodeStorage = $this->container->get('entity_type.manager')->getStorage('node');
-    $this->nodeViewBuilder = $this->container->get('entity_type.manager')->getViewBuilder('node');
-    $this->userViewBuilder = $this->container->get('entity_type.manager')->getViewBuilder('user');
+        for ($i = 1; $i <= 5; $i++) {
+            $this->pages[] = $this->drupalCreateNode(['title' => "Test $i", 'type' => 'page']);
+        }
+        $this->article = $this->drupalCreateNode(['title' => 'Test article', 'type' => 'article']);
+        $this->user = $this->drupalCreateUser();
 
-    for ($i = 1; $i <= 5; $i++) {
-      $this->pages[] = $this->drupalCreateNode(['title' => "Test $i", 'type' => 'page']);
+        // Mark the current request safe, in order to make render cache working, see
+        // \Drupal\Core\Render\RenderCache::get.
+        \Drupal::request()->setMethod('GET');
     }
-    $this->article = $this->drupalCreateNode(['title' => "Test article", 'type' => 'article']);
-    $this->user = $this->drupalCreateUser();
 
-    // Mark the current request safe, in order to make render cache working, see
-    // \Drupal\Core\Render\RenderCache::get.
-    \Drupal::request()->setMethod('GET');
-  }
+    /**
+     * Gets the render cache for a given view.
+     *
+     * @param \Drupal\views\ViewExecutable $view
+     *   The view.
+     *
+     * @return array|false
+     *   The render cache result or FALSE if not existent.
+     */
+    protected function getRenderCache(ViewExecutable $view)
+    {
+        /** @var \Drupal\Core\Render\RenderCacheInterface $render_cache */
+        $render_cache = \Drupal::service('render_cache');
+        $view->element = ['#cache' => []];
+        $build = $view->buildRenderable();
+        $build['#cache']['contexts'] = Cache::mergeContexts($build['#cache']['contexts'], $this->container->getParameter('renderer.config')['required_cache_contexts']);
 
-  /**
-   * Gets the render cache for a given view.
-   *
-   * @param \Drupal\views\ViewExecutable $view
-   *   The view.
-   *
-   * @return array|false
-   *   The render cache result or FALSE if not existent.
-   */
-  protected function getRenderCache(ViewExecutable $view) {
-    /** @var \Drupal\Core\Render\RenderCacheInterface $render_cache */
-    $render_cache = \Drupal::service('render_cache');
-    $view->element = ['#cache' => []];
-    $build = $view->buildRenderable();
-    $build['#cache']['contexts'] = Cache::mergeContexts($build['#cache']['contexts'], $this->container->getParameter('renderer.config')['required_cache_contexts']);
+        return $render_cache->get($build);
+    }
 
-    return $render_cache->get($build);
-  }
+    /**
+     * Tests the tag cache plugin.
+     */
+    public function testTagCaching(): void
+    {
+        /** @var \Drupal\Core\Render\RendererInterface $renderer */
+        $renderer = \Drupal::service('renderer');
+        $view = Views::getView('test_tag_cache');
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-  /**
-   * Tests the tag cache plugin.
-   */
-  public function testTagCaching(): void {
-    /** @var \Drupal\Core\Render\RendererInterface $renderer */
-    $renderer = \Drupal::service('renderer');
-    $view = Views::getView('test_tag_cache');
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Saving the view should invalidate the tags.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Saving the view should invalidate the tags.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $view->storage->save();
 
-    $view->storage->save();
+        $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after the view is saved.');
+        $this->assertFalse($this->getRenderCache($view), 'Output cache empty after the view is saved.');
 
-    $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after the view is saved.');
-    $this->assertFalse($this->getRenderCache($view), 'Output cache empty after the view is saved.');
+        $view->destroy();
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-    $view->destroy();
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Test invalidating the nodes in this view invalidates the cache.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Test invalidating the nodes in this view invalidates the cache.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $this->nodeViewBuilder->resetCache($this->pages);
 
-    $this->nodeViewBuilder->resetCache($this->pages);
+        $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after resetCache is called with pages.');
+        $this->assertFalse($this->getRenderCache($view), 'Output cache empty after resetCache is called with pages.');
 
-    $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after resetCache is called with pages.');
-    $this->assertFalse($this->getRenderCache($view), 'Output cache empty after resetCache is called with pages.');
+        $view->destroy();
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-    $view->destroy();
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Test saving a node in this view invalidates the cache.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Test saving a node in this view invalidates the cache.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $node = reset($this->pages);
+        $node->save();
 
-    $node = reset($this->pages);
-    $node->save();
+        $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after a page node is saved.');
+        $this->assertFalse($this->getRenderCache($view), 'Output cache empty after a page node is saved.');
 
-    $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after a page node is saved.');
-    $this->assertFalse($this->getRenderCache($view), 'Output cache empty after a page node is saved.');
+        $view->destroy();
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-    $view->destroy();
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Test saving a node not in this view invalidates the cache too.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Test saving a node not in this view invalidates the cache too.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $this->article->save();
 
-    $this->article->save();
+        $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after an article node is saved.');
+        $this->assertFalse($this->getRenderCache($view), 'Output cache empty after an article node is saved.');
 
-    $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after an article node is saved.');
-    $this->assertFalse($this->getRenderCache($view), 'Output cache empty after an article node is saved.');
+        $view->destroy();
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-    $view->destroy();
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Test that invalidating a tag for a user, does not invalidate the cache,
+        // as the user entity type will not be contained in the views cache tags.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Test that invalidating a tag for a user, does not invalidate the cache,
-    // as the user entity type will not be contained in the views cache tags.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $this->userViewBuilder->resetCache([$this->user]);
 
-    $this->userViewBuilder->resetCache([$this->user]);
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found after a user is invalidated.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found after a user is invalidated.');
 
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found after a user is invalidated.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found after a user is invalidated.');
+        $view->destroy();
+        // Invalidate the views cache tags in order to invalidate the render
+        // caching.
+        \Drupal::service('cache_tags.invalidator')->invalidateTags($view->storage->getCacheTagsToInvalidate());
+        $build = $view->buildRenderable();
+        $renderer->renderInIsolation($build);
 
-    $view->destroy();
-    // Invalidate the views cache tags in order to invalidate the render
-    // caching.
-    \Drupal::service('cache_tags.invalidator')->invalidateTags($view->storage->getCacheTagsToInvalidate());
-    $build = $view->buildRenderable();
-    $renderer->renderInIsolation($build);
+        // Test the cacheFlush method invalidates the cache.
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
+        $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
 
-    // Test the cacheFlush method invalidates the cache.
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertTrue($cache_plugin->cacheGet('results'), 'Results cache found.');
-    $this->assertNotEmpty($this->getRenderCache($view), 'Output cache found.');
+        $cache_plugin->cacheFlush();
 
-    $cache_plugin->cacheFlush();
-
-    $cache_plugin = $view->display_handler->getPlugin('cache');
-    $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after the cacheFlush() method is called.');
-    $this->assertFalse($this->getRenderCache($view), 'Output cache empty after the cacheFlush() method is called.');
-  }
+        $cache_plugin = $view->display_handler->getPlugin('cache');
+        $this->assertFalse($cache_plugin->cacheGet('results'), 'Results cache empty after the cacheFlush() method is called.');
+        $this->assertFalse($this->getRenderCache($view), 'Output cache empty after the cacheFlush() method is called.');
+    }
 
 }

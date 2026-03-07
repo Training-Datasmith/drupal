@@ -14,17 +14,18 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * the related updates.
  */
 #[ContentEntityType(
-  id: 'entity_test_new',
-  label: new TranslatableMarkup('New test entity'),
-  entity_keys: [
+    id: 'entity_test_new',
+    label: new TranslatableMarkup('New test entity'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_new',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_new',
 )]
-class EntityTestNew extends EntityTest {
+class EntityTestNew extends EntityTest
+{
 }

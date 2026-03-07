@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Post update functions for Language module.
@@ -8,8 +10,9 @@
 /**
  * Implements hook_removed_post_updates().
  */
-function language_removed_post_updates(): array {
-  return [
-    'language_post_update_language_select_widget' => '9.0.0',
-  ];
+function language_removed_post_updates(): array
+{
+    return [
+      'language_post_update_language_select_widget' => '9.0.0',
+    ];
 }

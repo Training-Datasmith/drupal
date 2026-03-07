@@ -15,20 +15,21 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('field')]
 #[RunTestsInSeparateProcesses]
-class UuidItemTest extends FieldKernelTestBase {
+class UuidItemTest extends FieldKernelTestBase
+{
+    /**
+     * Tests 'uuid' random values.
+     */
+    public function testSampleValue(): void
+    {
+        $entity = EntityTest::create([]);
+        $entity->save();
 
-  /**
-   * Tests 'uuid' random values.
-   */
-  public function testSampleValue(): void {
-    $entity = EntityTest::create([]);
-    $entity->save();
+        $uuid_field = $entity->get('uuid');
 
-    $uuid_field = $entity->get('uuid');
-
-    // Test the generateSampleValue() method.
-    $uuid_field->generateSampleItems();
-    $this->assertTrue(Uuid::isValid($uuid_field->value));
-  }
+        // Test the generateSampleValue() method.
+        $uuid_field->generateSampleItems();
+        $this->assertTrue(Uuid::isValid($uuid_field->value));
+    }
 
 }

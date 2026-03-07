@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system;
 
 use Drupal\Core\Config\ConfigCrudEvent;
 use Drupal\Core\Config\ConfigEvents;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountEvents;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -17,75 +18,78 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * @see date_default_timezone_set()
  */
-class TimeZoneResolver implements EventSubscriberInterface {
-
-  /**
-   * TimeZoneResolver constructor.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   */
-  public function __construct(
-      /**
-       * The current user.
-       */
-      private readonly AccountInterface $currentUser,
-      protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-  )
-  {
-  }
-
-  /**
-   * Sets the default time zone.
-   */
-  public function setDefaultTimeZone(): void {
-    if ($time_zone = $this->getTimeZone()) {
-      date_default_timezone_set($time_zone);
+class TimeZoneResolver implements EventSubscriberInterface
+{
+    /**
+     * TimeZoneResolver constructor.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $currentUser
+     *   The current user.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     */
+    public function __construct(
+        /**
+         * The current user.
+         */
+        private readonly AccountInterface $currentUser,
+        protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+    ) {
     }
-  }
 
-  /**
-   * Updates the default time zone when time zone config changes.
-   *
-   * @param \Drupal\Core\Config\ConfigCrudEvent $event
-   *   The config crud event.
-   */
-  public function onConfigSave(ConfigCrudEvent $event): void {
-    $saved_config = $event->getConfig();
-    if ($saved_config->getName() === 'system.date' && ($event->isChanged('timezone.default') || $event->isChanged('timezone.user.configurable'))) {
-      $this->setDefaultTimeZone();
+    /**
+     * Sets the default time zone.
+     */
+    public function setDefaultTimeZone(): void
+    {
+        if ($time_zone = $this->getTimeZone()) {
+            date_default_timezone_set($time_zone);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[ConfigEvents::SAVE][] = ['onConfigSave', 0];
-    // The priority for this must run directly after the authentication
-    // subscriber.
-    $events[KernelEvents::REQUEST][] = ['setDefaultTimeZone', 299];
-    $events[AccountEvents::SET_USER][] = ['setDefaultTimeZone'];
-    return $events;
-  }
+    /**
+     * Updates the default time zone when time zone config changes.
+     *
+     * @param \Drupal\Core\Config\ConfigCrudEvent $event
+     *   The config crud event.
+     */
+    public function onConfigSave(ConfigCrudEvent $event): void
+    {
+        $saved_config = $event->getConfig();
+        if ($saved_config->getName() === 'system.date' && ($event->isChanged('timezone.default') || $event->isChanged('timezone.user.configurable'))) {
+            $this->setDefaultTimeZone();
+        }
+    }
 
-  /**
-   * Gets the time zone based on site and user configuration.
-   *
-   * @return string|null
-   *   The time zone, or NULL if nothing is set.
-   */
-  protected function getTimeZone() {
-    $config = $this->configFactory->get('system.date');
-    if ($config->get('timezone.user.configurable') && $this->currentUser->isAuthenticated() && $this->currentUser->getTimezone()) {
-        return $this->currentUser->getTimeZone();
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[ConfigEvents::SAVE][] = ['onConfigSave', 0];
+        // The priority for this must run directly after the authentication
+        // subscriber.
+        $events[KernelEvents::REQUEST][] = ['setDefaultTimeZone', 299];
+        $events[AccountEvents::SET_USER][] = ['setDefaultTimeZone'];
+        return $events;
     }
-    if ($default_timezone = $config->get('timezone.default')) {
-        return $default_timezone;
+
+    /**
+     * Gets the time zone based on site and user configuration.
+     *
+     * @return string|null
+     *   The time zone, or NULL if nothing is set.
+     */
+    protected function getTimeZone()
+    {
+        $config = $this->configFactory->get('system.date');
+        if ($config->get('timezone.user.configurable') && $this->currentUser->isAuthenticated() && $this->currentUser->getTimezone()) {
+            return $this->currentUser->getTimeZone();
+        }
+        if ($default_timezone = $config->get('timezone.default')) {
+            return $default_timezone;
+        }
+        return null;
     }
-    return NULL;
-  }
 
 }

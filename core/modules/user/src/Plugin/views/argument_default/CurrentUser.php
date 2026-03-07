@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\views\argument_default;
 
 use Drupal\Core\Cache\Cache;
@@ -15,50 +17,54 @@ use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
  * This plugin actually has no options so it does not need to do a great deal.
  */
 #[ViewsArgumentDefault(
-  id: 'current_user',
-  title: new TranslatableMarkup('User ID from logged in user'),
+    id: 'current_user',
+    title: new TranslatableMarkup('User ID from logged in user'),
 )]
-class CurrentUser extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
-
-  /**
-   * CurrentUser constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Session\AccountInterface|null $currentUser
-   *   The current user.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected ?AccountInterface $currentUser = NULL) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    if ($this->currentUser === NULL) {
-      @trigger_error('Calling ' . self::class . '::__construct() without the $currentUser argument is deprecated in drupal:11.2.0 and is required in drupal:12.0.0. See https://www.drupal.org/node/3347878', E_USER_DEPRECATED);
-      $this->currentUser = \Drupal::currentUser();
+class CurrentUser extends ArgumentDefaultPluginBase implements CacheableDependencyInterface
+{
+    /**
+     * CurrentUser constructor.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin_id for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Session\AccountInterface|null $currentUser
+     *   The current user.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected ?AccountInterface $currentUser = null)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        if ($this->currentUser === null) {
+            @trigger_error('Calling ' . self::class . '::__construct() without the $currentUser argument is deprecated in drupal:11.2.0 and is required in drupal:12.0.0. See https://www.drupal.org/node/3347878', E_USER_DEPRECATED);
+            $this->currentUser = \Drupal::currentUser();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getArgument() {
-    return $this->currentUser->id();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getArgument()
+    {
+        return $this->currentUser->id();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge(): int {
-    return Cache::PERMANENT;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge(): int
+    {
+        return Cache::PERMANENT;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts(): array {
-    return ['user'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts(): array
+    {
+        return ['user'];
+    }
 
 }

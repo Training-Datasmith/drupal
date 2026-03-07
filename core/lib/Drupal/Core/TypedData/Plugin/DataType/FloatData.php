@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -15,17 +17,18 @@ use Drupal\Core\TypedData\Type\FloatInterface;
  * any PHP variable that casts to a float may be passed.
  */
 #[DataType(
-  id: "float",
-  label: new TranslatableMarkup("Float")
+    id: 'float',
+    label: new TranslatableMarkup('Float')
 )]
-class FloatData extends PrimitiveBase implements FloatInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'number'])]
-  public function getCastedValue(): float {
-    return (float) $this->value;
-  }
+class FloatData extends PrimitiveBase implements FloatInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'number'])]
+    public function getCastedValue(): float
+    {
+        return (float) $this->value;
+    }
 
 }

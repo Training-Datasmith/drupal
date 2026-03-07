@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -17,20 +19,21 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class ReplaceCommand extends InsertCommand {
+class ReplaceCommand extends InsertCommand
+{
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'insert',
-      'method' => 'replaceWith',
-      'selector' => $this->selector,
-      'data' => $this->getRenderedContent(),
-      'settings' => $this->settings,
-    ];
-  }
+        return [
+          'command' => 'insert',
+          'method' => 'replaceWith',
+          'selector' => $this->selector,
+          'data' => $this->getRenderedContent(),
+          'settings' => $this->settings,
+        ];
+    }
 
 }

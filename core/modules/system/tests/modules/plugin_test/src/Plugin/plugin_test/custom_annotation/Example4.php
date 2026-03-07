@@ -15,8 +15,10 @@ use Drupal\plugin_test\Plugin\Attribute\PluginExample;
  * @see \Drupal\Component\Annotation\Doctrine\StaticReflectionParser::parse()
  */
 #[PluginExample(
-  id: "example_4",
-  custom: "Example 4"
+    id: 'example_4',
+    custom: 'Example 4'
 )]
 #[\Attribute]
-class Example4 {}
+class Example4
+{
+}

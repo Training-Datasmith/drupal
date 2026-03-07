@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,110 +25,110 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class MediaSource extends Plugin {
+class MediaSource extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the media source.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the media source.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * A brief description of the media source.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description = '';
 
-  /**
-   * A brief description of the media source.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description = '';
+    /**
+     * The field types that can be used as a source field for this media source.
+     *
+     * @var string[]
+     */
+    public $allowed_field_types = [];
 
-  /**
-   * The field types that can be used as a source field for this media source.
-   *
-   * @var string[]
-   */
-  public $allowed_field_types = [];
+    /**
+     * The classes used to define media source-specific forms.
+     *
+     * An array of form class names, keyed by ID. The ID represents the operation
+     * the form is used for.
+     *
+     * @var string[]
+     */
+    public $forms = [];
 
-  /**
-   * The classes used to define media source-specific forms.
-   *
-   * An array of form class names, keyed by ID. The ID represents the operation
-   * the form is used for.
-   *
-   * @var string[]
-   */
-  public $forms = [];
+    /**
+     * A filename for the default thumbnail.
+     *
+     * The thumbnails are placed in the directory defined by the config setting
+     * 'media.settings.icon_base_uri'. When using custom icons, make sure the
+     * module provides a hook_install() implementation to copy the custom icons
+     * to this directory. The media_install() function provides a clear example
+     * of how to do this.
+     *
+     * @var string
+     *
+     * @see media_install()
+     */
+    public $default_thumbnail_filename = 'generic.png';
 
-  /**
-   * A filename for the default thumbnail.
-   *
-   * The thumbnails are placed in the directory defined by the config setting
-   * 'media.settings.icon_base_uri'. When using custom icons, make sure the
-   * module provides a hook_install() implementation to copy the custom icons
-   * to this directory. The media_install() function provides a clear example
-   * of how to do this.
-   *
-   * @var string
-   *
-   * @see media_install()
-   */
-  public $default_thumbnail_filename = 'generic.png';
+    /**
+     * The metadata attribute name to provide the thumbnail URI.
+     *
+     * @var string
+     */
+    public $thumbnail_uri_metadata_attribute = 'thumbnail_uri';
 
-  /**
-   * The metadata attribute name to provide the thumbnail URI.
-   *
-   * @var string
-   */
-  public $thumbnail_uri_metadata_attribute = 'thumbnail_uri';
+    /**
+     * The metadata attribute name to provide the thumbnail width.
+     *
+     * @var string
+     */
+    public $thumbnail_width_metadata_attribute = 'thumbnail_width';
 
-  /**
-   * The metadata attribute name to provide the thumbnail width.
-   *
-   * @var string
-   */
-  public $thumbnail_width_metadata_attribute = 'thumbnail_width';
+    /**
+     * The metadata attribute name to provide the thumbnail height.
+     *
+     * @var string
+     */
+    public $thumbnail_height_metadata_attribute = 'thumbnail_height';
 
-  /**
-   * The metadata attribute name to provide the thumbnail height.
-   *
-   * @var string
-   */
-  public $thumbnail_height_metadata_attribute = 'thumbnail_height';
+    /**
+     * The metadata attribute name to provide the thumbnail alt.
+     *
+     * "Thumbnail" will be used if the attribute name is not provided.
+     *
+     * @var string|null
+     */
+    public $thumbnail_alt_metadata_attribute;
 
-  /**
-   * The metadata attribute name to provide the thumbnail alt.
-   *
-   * "Thumbnail" will be used if the attribute name is not provided.
-   *
-   * @var string|null
-   */
-  public $thumbnail_alt_metadata_attribute;
+    /**
+     * The metadata attribute name to provide the thumbnail title.
+     *
+     * The name of the media item will be used if the attribute name is not
+     * provided.
+     *
+     * @var string|null
+     */
+    public $thumbnail_title_metadata_attribute;
 
-  /**
-   * The metadata attribute name to provide the thumbnail title.
-   *
-   * The name of the media item will be used if the attribute name is not
-   * provided.
-   *
-   * @var string|null
-   */
-  public $thumbnail_title_metadata_attribute;
-
-  /**
-   * The metadata attribute name to provide the default name.
-   *
-   * @var string
-   */
-  public $default_name_metadata_attribute = 'default_name';
+    /**
+     * The metadata attribute name to provide the default name.
+     *
+     * @var string
+     */
+    public $default_name_metadata_attribute = 'default_name';
 
 }

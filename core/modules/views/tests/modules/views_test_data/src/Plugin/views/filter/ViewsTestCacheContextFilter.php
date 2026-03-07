@@ -10,26 +10,28 @@ use Drupal\views\Plugin\views\filter\FilterPluginBase;
 /**
  * Provides a test filter plugin with a custom cache context.
  */
-#[ViewsFilter("views_test_test_cache_context")]
-class ViewsTestCacheContextFilter extends FilterPluginBase {
+#[ViewsFilter('views_test_test_cache_context')]
+class ViewsTestCacheContextFilter extends FilterPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query()
+    {
+        $this->value = \Drupal::state()->get('views_test_cache_context', 'George');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query() {
-    $this->value = \Drupal::state()->get('views_test_cache_context', 'George');
+        parent::query();
+    }
 
-    parent::query();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts()
+    {
+        $cache_contexts = parent::getCacheContexts();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    $cache_contexts = parent::getCacheContexts();
-
-    $cache_contexts[] = 'views_test_cache_context';
-    return $cache_contexts;
-  }
+        $cache_contexts[] = 'views_test_cache_context';
+        return $cache_contexts;
+    }
 
 }

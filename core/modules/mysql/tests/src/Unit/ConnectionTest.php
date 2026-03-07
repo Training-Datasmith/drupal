@@ -17,111 +17,114 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 #[CoversClass(Connection::class)]
 #[Group('Database')]
-class ConnectionTest extends UnitTestCase {
+class ConnectionTest extends UnitTestCase
+{
+    /**
+     * A mocked MySql connection.
+     *
+     * @var \Drupal\mysql\Driver\Database\mysql\Connection&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private Connection&MockObject $connection;
 
-  /**
-   * A mocked MySql connection.
-   *
-   * @var \Drupal\mysql\Driver\Database\mysql\Connection&\PHPUnit\Framework\MockObject\MockObject
-   */
-  private Connection&MockObject $connection;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->connection = $this->getMockBuilder(Connection::class)
+          ->setConstructorArgs([$this->createMock(Mysql::class), []])
+          ->onlyMethods(['getServerVersion'])
+          ->getMock();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->connection = $this->getMockBuilder(Connection::class)
-      ->setConstructorArgs([$this->createMock(Mysql::class), []])
-      ->onlyMethods(['getServerVersion'])
-      ->getMock();
-  }
+    /**
+     * Tests version and is maria db.
+     *
+     * @legacy-covers ::version
+     * @legacy-covers ::isMariaDb
+     */
+    #[DataProvider('providerVersionAndIsMariaDb')]
+    public function testVersionAndIsMariaDb(bool $expected_is_mariadb, string $server_version, string $expected_version): void
+    {
+        $this->connection
+          ->method('getServerVersion')
+          ->willReturn($server_version);
 
-  /**
-   * Tests version and is maria db.
-   *
-   * @legacy-covers ::version
-   * @legacy-covers ::isMariaDb
-   */
-  #[DataProvider('providerVersionAndIsMariaDb')]
-  public function testVersionAndIsMariaDb(bool $expected_is_mariadb, string $server_version, string $expected_version): void {
-    $this->connection
-      ->method('getServerVersion')
-      ->willReturn($server_version);
+        $is_mariadb = $this->connection->isMariaDb();
+        $version = $this->connection->version();
 
-    $is_mariadb = $this->connection->isMariaDb();
-    $version = $this->connection->version();
+        $this->assertSame($expected_is_mariadb, $is_mariadb);
+        $this->assertSame($expected_version, $version);
+    }
 
-    $this->assertSame($expected_is_mariadb, $is_mariadb);
-    $this->assertSame($expected_version, $version);
-  }
-
-  /**
-   * Provides test data.
-   *
-   * @return array
-   *   An array of test data.
-   */
-  public static function providerVersionAndIsMariaDb(): array {
-    return [
-      // MariaDB.
-      [
-        TRUE,
-        '10.2.0-MariaDB',
-        '10.2.0-MariaDB',
-      ],
-      [
-        TRUE,
-        '10.2.1-MARIADB',
-        '10.2.1-MARIADB',
-      ],
-      [
-        TRUE,
-        '10.2.2-alphaX-MARIADB',
-        '10.2.2-alphaX-MARIADB',
-      ],
-      [
-        TRUE,
-        '5.5.5-10.2.20-MariaDB-1:10.2.20+maria~bionic',
-        '10.2.20-MariaDB-1:10.2.20+maria~bionic',
-      ],
-      [
-        TRUE,
-        '5.5.5-10.3.22-MariaDB-0+deb10u1',
-        '10.3.22-MariaDB-0+deb10u1',
-      ],
-      [
-        TRUE,
-        '5.5.5-10.3.22-buzz+-MariaDB-0+deb10u1',
-        '10.3.22-buzz+-MariaDB-0+deb10u1',
-      ],
-      // MySQL.
-      [
-        FALSE,
-        '5.5.5-10.2.20-notMariaDB',
-        '5.5.5-10.2.20-notMariaDB',
-      ],
-      [
-        FALSE,
-        '5.5.5',
-        '5.5.5',
-      ],
-      [
-        FALSE,
-        '5.5.5-',
-        '5.5.5-',
-      ],
-      [
-        FALSE,
-        '5.7.28',
-        '5.7.28',
-      ],
-      [
-        FALSE,
-        '5.7.28-31',
-        '5.7.28-31',
-      ],
-    ];
-  }
+    /**
+     * Provides test data.
+     *
+     * @return array
+     *   An array of test data.
+     */
+    public static function providerVersionAndIsMariaDb(): array
+    {
+        return [
+          // MariaDB.
+          [
+            true,
+            '10.2.0-MariaDB',
+            '10.2.0-MariaDB',
+          ],
+          [
+            true,
+            '10.2.1-MARIADB',
+            '10.2.1-MARIADB',
+          ],
+          [
+            true,
+            '10.2.2-alphaX-MARIADB',
+            '10.2.2-alphaX-MARIADB',
+          ],
+          [
+            true,
+            '5.5.5-10.2.20-MariaDB-1:10.2.20+maria~bionic',
+            '10.2.20-MariaDB-1:10.2.20+maria~bionic',
+          ],
+          [
+            true,
+            '5.5.5-10.3.22-MariaDB-0+deb10u1',
+            '10.3.22-MariaDB-0+deb10u1',
+          ],
+          [
+            true,
+            '5.5.5-10.3.22-buzz+-MariaDB-0+deb10u1',
+            '10.3.22-buzz+-MariaDB-0+deb10u1',
+          ],
+          // MySQL.
+          [
+            false,
+            '5.5.5-10.2.20-notMariaDB',
+            '5.5.5-10.2.20-notMariaDB',
+          ],
+          [
+            false,
+            '5.5.5',
+            '5.5.5',
+          ],
+          [
+            false,
+            '5.5.5-',
+            '5.5.5-',
+          ],
+          [
+            false,
+            '5.7.28',
+            '5.7.28',
+          ],
+          [
+            false,
+            '5.7.28-31',
+            '5.7.28-31',
+          ],
+        ];
+    }
 
 }

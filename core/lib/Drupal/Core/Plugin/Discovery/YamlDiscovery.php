@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin\Discovery;
 
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
@@ -18,88 +20,91 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * should be marked as safe, strings coming from dynamic plugin definitions
  * potentially containing user input should not.
  */
-class YamlDiscovery implements DiscoveryInterface {
+class YamlDiscovery implements DiscoveryInterface
+{
+    use DiscoveryTrait;
 
-  use DiscoveryTrait;
+    /**
+     * YAML file discovery and parsing handler.
+     */
+    protected \Drupal\Core\Discovery\YamlDiscovery $discovery;
 
-  /**
-   * YAML file discovery and parsing handler.
-   */
-  protected \Drupal\Core\Discovery\YamlDiscovery $discovery;
+    /**
+     * Contains an array of translatable properties passed along to t().
+     *
+     * @var array
+     *
+     * @see \Drupal\Core\Plugin\Discovery\YamlDiscovery::addTranslatableProperty()
+     */
+    protected $translatableProperties = [];
 
-  /**
-   * Contains an array of translatable properties passed along to t().
-   *
-   * @var array
-   *
-   * @see \Drupal\Core\Plugin\Discovery\YamlDiscovery::addTranslatableProperty()
-   */
-  protected $translatableProperties = [];
-
-  /**
-   * Construct a YamlDiscovery object.
-   *
-   * @param string $name
-   *   The file name suffix to use for discovery; for example, 'test' will
-   *   become 'MODULE.test.yml'.
-   * @param array $directories
-   *   An array of directories to scan.
-   */
-  public function __construct($name, array $directories) {
-    $this->discovery = new CoreYamlDiscovery($name, $directories);
-  }
-
-  /**
-   * Set one of the YAML values as being translatable.
-   *
-   * @param string $value_key
-   *   The key corresponding to the value in the YAML that contains a
-   *   translatable string.
-   * @param string $context_key
-   *   (Optional) the translation context for the value specified by the
-   *   $value_key.
-   *
-   * @return $this
-   */
-  public function addTranslatableProperty($value_key, $context_key = ''): static {
-    $this->translatableProperties[$value_key] = $context_key;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return non-empty-array[]
-   */
-  public function getDefinitions(): array {
-    $plugins = $this->discovery->findAll();
-
-    // Flatten definitions into what's expected from plugins.
-    $definitions = [];
-    foreach ($plugins as $provider => $list) {
-      foreach ($list as $id => $definition) {
-        // Add TranslatableMarkup.
-        foreach ($this->translatableProperties as $property => $context_key) {
-          if (isset($definition[$property])) {
-            $options = [];
-            // Move the t() context from the definition to the translation
-            // wrapper.
-            if ($context_key && isset($definition[$context_key])) {
-              $options['context'] = $definition[$context_key];
-              unset($definition[$context_key]);
-            }
-            // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-            $definition[$property] = new TranslatableMarkup($definition[$property], [], $options);
-          }
-        }
-        // Add ID and provider.
-        $definitions[$id] = $definition + [
-          'provider' => $provider,
-          'id' => $id,
-        ];
-      }
+    /**
+     * Construct a YamlDiscovery object.
+     *
+     * @param string $name
+     *   The file name suffix to use for discovery; for example, 'test' will
+     *   become 'MODULE.test.yml'.
+     * @param array $directories
+     *   An array of directories to scan.
+     */
+    public function __construct($name, array $directories)
+    {
+        $this->discovery = new CoreYamlDiscovery($name, $directories);
     }
 
-    return $definitions;
-  }
+    /**
+     * Set one of the YAML values as being translatable.
+     *
+     * @param string $value_key
+     *   The key corresponding to the value in the YAML that contains a
+     *   translatable string.
+     * @param string $context_key
+     *   (Optional) the translation context for the value specified by the
+     *   $value_key.
+     *
+     * @return $this
+     */
+    public function addTranslatableProperty($value_key, $context_key = ''): static
+    {
+        $this->translatableProperties[$value_key] = $context_key;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return non-empty-array[]
+     */
+    public function getDefinitions(): array
+    {
+        $plugins = $this->discovery->findAll();
+
+        // Flatten definitions into what's expected from plugins.
+        $definitions = [];
+        foreach ($plugins as $provider => $list) {
+            foreach ($list as $id => $definition) {
+                // Add TranslatableMarkup.
+                foreach ($this->translatableProperties as $property => $context_key) {
+                    if (isset($definition[$property])) {
+                        $options = [];
+                        // Move the t() context from the definition to the translation
+                        // wrapper.
+                        if ($context_key && isset($definition[$context_key])) {
+                            $options['context'] = $definition[$context_key];
+                            unset($definition[$context_key]);
+                        }
+                        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+                        $definition[$property] = new TranslatableMarkup($definition[$property], [], $options);
+                    }
+                }
+                // Add ID and provider.
+                $definitions[$id] = $definition + [
+                  'provider' => $provider,
+                  'id' => $id,
+                ];
+            }
+        }
+
+        return $definitions;
+    }
 
 }

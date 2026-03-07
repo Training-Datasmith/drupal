@@ -15,24 +15,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class ViewsTest extends DriverSpecificDatabaseTestBase {
+class ViewsTest extends DriverSpecificDatabaseTestBase
+{
+    /**
+     * Tests views service.
+     */
+    public function testViewsService(): void
+    {
+        $this->assertFalse($this->container->has('views.cast_sql'));
+        $this->enableModules(['views']);
+        $this->assertInstanceOf(MysqlCastSql::class, $this->container->get('views.cast_sql'));
+        $this->assertFalse($this->container->has('mysql.views.cast_sql'));
+    }
 
-  /**
-   * Tests views service.
-   */
-  public function testViewsService(): void {
-    $this->assertFalse($this->container->has('views.cast_sql'));
-    $this->enableModules(['views']);
-    $this->assertInstanceOf(MysqlCastSql::class, $this->container->get('views.cast_sql'));
-    $this->assertFalse($this->container->has('mysql.views.cast_sql'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
-    $this->assertSame($container->hasDefinition('mysql.views.cast_sql'), isset($container->getParameter('container.modules')['views']));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
+        $this->assertSame($container->hasDefinition('mysql.views.cast_sql'), isset($container->getParameter('container.modules')['views']));
+    }
 
 }

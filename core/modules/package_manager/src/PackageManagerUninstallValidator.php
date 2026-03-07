@@ -23,44 +23,47 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class PackageManagerUninstallValidator implements ModuleUninstallValidatorInterface {
+final class PackageManagerUninstallValidator implements ModuleUninstallValidatorInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  public function __construct(
-    private readonly PathLocator $pathLocator,
-    private readonly BeginnerInterface $beginner,
-    private readonly StagerInterface $stager,
-    private readonly CommitterInterface $committer,
-    private readonly QueueFactory $queueFactory,
-    private readonly EventDispatcherInterface $eventDispatcher,
-    private readonly SharedTempStoreFactory $sharedTempStoreFactory,
-    private readonly TimeInterface $time,
-    private readonly PathFactoryInterface $pathFactory,
-    private readonly FailureMarker $failureMarker,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
-   */
-  public function validate($module): array {
-    $sandbox_manager = new class(
-      $this->pathLocator,
-      $this->beginner,
-      $this->stager,
-      $this->committer,
-      $this->queueFactory,
-      $this->eventDispatcher,
-      $this->sharedTempStoreFactory,
-      $this->time,
-      $this->pathFactory,
-      $this->failureMarker) extends SandboxManagerBase {};
-    $reasons = [];
-    if (!$sandbox_manager->isAvailable() && $sandbox_manager->isApplying()) {
-      $reasons[] = $this->t('Modules cannot be uninstalled while Package Manager is applying staged changes to the active code base.');
+    public function __construct(
+        private readonly PathLocator $pathLocator,
+        private readonly BeginnerInterface $beginner,
+        private readonly StagerInterface $stager,
+        private readonly CommitterInterface $committer,
+        private readonly QueueFactory $queueFactory,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SharedTempStoreFactory $sharedTempStoreFactory,
+        private readonly TimeInterface $time,
+        private readonly PathFactoryInterface $pathFactory,
+        private readonly FailureMarker $failureMarker,
+    ) {
     }
-    return $reasons;
-  }
+
+    /**
+     * {@inheritdoc}
+     * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
+     */
+    public function validate($module): array
+    {
+        $sandbox_manager = new class (
+            $this->pathLocator,
+            $this->beginner,
+            $this->stager,
+            $this->committer,
+            $this->queueFactory,
+            $this->eventDispatcher,
+            $this->sharedTempStoreFactory,
+            $this->time,
+            $this->pathFactory,
+            $this->failureMarker
+        ) extends SandboxManagerBase {};
+        $reasons = [];
+        if (!$sandbox_manager->isAvailable() && $sandbox_manager->isApplying()) {
+            $reasons[] = $this->t('Modules cannot be uninstalled while Package Manager is applying staged changes to the active code base.');
+        }
+        return $reasons;
+    }
 
 }

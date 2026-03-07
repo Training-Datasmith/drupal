@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\text\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
@@ -13,42 +15,44 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  * Plugin implementation of the 'text_textfield' widget.
  */
 #[FieldWidget(
-  id: 'text_textfield',
-  label: new TranslatableMarkup('Text field'),
-  field_types: ['text'],
+    id: 'text_textfield',
+    label: new TranslatableMarkup('Text field'),
+    field_types: ['text'],
 )]
-class TextfieldWidget extends StringTextfieldWidget {
+class TextfieldWidget extends StringTextfieldWidget
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array
+    {
+        $main_widget = parent::formElement($items, $delta, $element, $form, $form_state);
+        $allowed_formats = $this->getFieldSetting('allowed_formats');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
-    $main_widget = parent::formElement($items, $delta, $element, $form, $form_state);
-    $allowed_formats = $this->getFieldSetting('allowed_formats');
+        $element = $main_widget['value'];
+        $element['#type'] = 'text_format';
+        $element['#format'] = $items[$delta]->format ?? null;
+        $element['#base_type'] = $main_widget['value']['#type'];
 
-    $element = $main_widget['value'];
-    $element['#type'] = 'text_format';
-    $element['#format'] = $items[$delta]->format ?? NULL;
-    $element['#base_type'] = $main_widget['value']['#type'];
+        if ($allowed_formats && !$this->isDefaultValueWidget($form_state)) {
+            $element['#allowed_formats'] = $allowed_formats;
+        }
 
-    if ($allowed_formats && !$this->isDefaultValueWidget($form_state)) {
-      $element['#allowed_formats'] = $allowed_formats;
+        return $element;
     }
 
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state): false|array {
-    if (isset($element['format']['#access']) && !$element['format']['#access'] && preg_match('/^[0-9]*\.format$/', $violation->getPropertyPath())) {
-      // Ignore validation errors for formats that may not be changed,
-      // such as when existing formats become invalid.
-      // See \Drupal\filter\Element\TextFormat::processFormat().
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function errorElement(array $element, ConstraintViolationInterface $violation, array $form, FormStateInterface $form_state): false|array
+    {
+        if (isset($element['format']['#access']) && !$element['format']['#access'] && preg_match('/^[0-9]*\.format$/', $violation->getPropertyPath())) {
+            // Ignore validation errors for formats that may not be changed,
+            // such as when existing formats become invalid.
+            // See \Drupal\filter\Element\TextFormat::processFormat().
+            return false;
+        }
+        return $element;
     }
-    return $element;
-  }
 
 }

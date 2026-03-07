@@ -19,242 +19,248 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Icon::class)]
 #[Group('icon')]
-class IconTest extends UnitTestCase {
+class IconTest extends UnitTestCase
+{
+    use IconTestTrait;
 
-  use IconTestTrait;
+    /**
+     * The container.
+     *
+     * @var \Drupal\Core\DependencyInjection\ContainerBuilder
+     */
+    private ContainerBuilder $container;
 
-  /**
-   * The container.
-   *
-   * @var \Drupal\Core\DependencyInjection\ContainerBuilder
-   */
-  private ContainerBuilder $container;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->container = new ContainerBuilder();
+        \Drupal::setContainer($this->container);
+    }
 
-    $this->container = new ContainerBuilder();
-    \Drupal::setContainer($this->container);
-  }
+    /**
+     * Test the Icon::getInfo method.
+     */
+    public function testGetInfo(): void
+    {
+        $icon = new Icon([], 'test', 'test');
+        $info = $icon->getInfo();
 
-  /**
-   * Test the Icon::getInfo method.
-   */
-  public function testGetInfo(): void {
-    $icon = new Icon([], 'test', 'test');
-    $info = $icon->getInfo();
+        $this->assertArrayHasKey('#pre_render', $info);
+        $this->assertArrayHasKey('#pack_id', $info);
+        $this->assertArrayHasKey('#icon_id', $info);
+        $this->assertArrayHasKey('#settings', $info);
 
-    $this->assertArrayHasKey('#pre_render', $info);
-    $this->assertArrayHasKey('#pack_id', $info);
-    $this->assertArrayHasKey('#icon_id', $info);
-    $this->assertArrayHasKey('#settings', $info);
+        $this->assertSame([['Drupal\Core\Render\Element\Icon', 'preRenderIcon']], $info['#pre_render']);
+        $this->assertSame([], $info['#settings']);
+    }
 
-    $this->assertSame([['Drupal\Core\Render\Element\Icon', 'preRenderIcon']], $info['#pre_render']);
-    $this->assertSame([], $info['#settings']);
-  }
+    /**
+     * Data provider for ::testPreRenderIcon().
+     *
+     * @return \Generator
+     *   Provide test data as:
+     *   - array of information for the icon
+     *   - result array of render element
+     */
+    public static function providerPreRenderIcon(): iterable
+    {
+        yield 'minimum icon' => [
+          [
+            'pack_id' => 'pack_id',
+            'icon_id' => 'icon_id',
+            'source' => '/foo/bar',
+            'template' => 'my_template',
+          ],
+          [
+            '#type' => 'inline_template',
+            '#template' => 'my_template',
+            '#context' => [
+              'icon_id' => 'icon_id',
+              'source' => '/foo/bar',
+              'attributes' => new Attribute(),
+            ],
+          ],
+        ];
 
-  /**
-   * Data provider for ::testPreRenderIcon().
-   *
-   * @return \Generator
-   *   Provide test data as:
-   *   - array of information for the icon
-   *   - result array of render element
-   */
-  public static function providerPreRenderIcon(): iterable {
-    yield 'minimum icon' => [
-      [
-        'pack_id' => 'pack_id',
-        'icon_id' => 'icon_id',
-        'source' => '/foo/bar',
-        'template' => 'my_template',
-      ],
-      [
-        '#type' => 'inline_template',
-        '#template' => 'my_template',
-        '#context' => [
-          'icon_id' => 'icon_id',
-          'source' => '/foo/bar',
-          'attributes' => new Attribute(),
-        ],
-      ],
-    ];
+        yield 'icon with library' => [
+          [
+            'pack_id' => 'pack_id',
+            'icon_id' => 'icon_id',
+            'source' => '/foo/bar',
+            'template' => 'my_template',
+            // Special library will be transformed to #attached.
+            'library' => 'my_theme/my_library',
+          ],
+          [
+            '#type' => 'inline_template',
+            '#template' => 'my_template',
+            '#attached' => ['library' => ['my_theme/my_library']],
+            '#context' => [
+              'icon_id' => 'icon_id',
+              'source' => '/foo/bar',
+              'attributes' => new Attribute(),
+              'library' => 'my_theme/my_library',
+            ],
+          ],
+        ];
 
-    yield 'icon with library' => [
-      [
-        'pack_id' => 'pack_id',
-        'icon_id' => 'icon_id',
-        'source' => '/foo/bar',
-        'template' => 'my_template',
-        // Special library will be transformed to #attached.
-        'library' => 'my_theme/my_library',
-      ],
-      [
-        '#type' => 'inline_template',
-        '#template' => 'my_template',
-        '#attached' => ['library' => ['my_theme/my_library']],
-        '#context' => [
-          'icon_id' => 'icon_id',
-          'source' => '/foo/bar',
-          'attributes' => new Attribute(),
-          'library' => 'my_theme/my_library',
-        ],
-      ],
-    ];
-
-    yield 'icon with library and data without attributes.' => [
-      [
-        'pack_id' => 'pack_id',
-        'icon_id' => 'icon_id',
-        'template' => 'my_template',
-        'source' => '/foo/bar',
-        'group' => 'test_group',
-        // Special library will be transformed to #attached.
-        'library' => 'my_theme/my_library',
-        // Icon data will moved to Twig #context.
-        'content' => 'test_content',
-        'baz' => 'qux',
-      ],
-      [
-        '#type' => 'inline_template',
-        '#template' => 'my_template',
-        '#attached' => ['library' => ['my_theme/my_library']],
-        '#context' => [
-          'icon_id' => 'icon_id',
-          'source' => '/foo/bar',
-          'content' => 'test_content',
-          'baz' => 'qux',
-          'attributes' => new Attribute(),
-          'library' => 'my_theme/my_library',
-        ],
-      ],
-    ];
-
-    yield 'icon with attributes.' => [
-      [
-        'pack_id' => 'pack_id',
-        'icon_id' => 'icon_id',
-        'source' => '/foo/bar',
-        'template' => 'my_template',
-        'attributes' => new Attribute([
-          'foo' => 'bar',
-          'baz' => 'qux',
-        ]),
-      ],
-      [
-        '#type' => 'inline_template',
-        '#template' => 'my_template',
-        '#context' => [
-          'icon_id' => 'icon_id',
-          'source' => '/foo/bar',
-          'attributes' => new Attribute([
-            'foo' => 'bar',
+        yield 'icon with library and data without attributes.' => [
+          [
+            'pack_id' => 'pack_id',
+            'icon_id' => 'icon_id',
+            'template' => 'my_template',
+            'source' => '/foo/bar',
+            'group' => 'test_group',
+            // Special library will be transformed to #attached.
+            'library' => 'my_theme/my_library',
+            // Icon data will moved to Twig #context.
+            'content' => 'test_content',
             'baz' => 'qux',
-          ]),
-        ],
-      ],
-    ];
+          ],
+          [
+            '#type' => 'inline_template',
+            '#template' => 'my_template',
+            '#attached' => ['library' => ['my_theme/my_library']],
+            '#context' => [
+              'icon_id' => 'icon_id',
+              'source' => '/foo/bar',
+              'content' => 'test_content',
+              'baz' => 'qux',
+              'attributes' => new Attribute(),
+              'library' => 'my_theme/my_library',
+            ],
+          ],
+        ];
 
-    yield 'icon with data and enabled removed.' => [
-      [
-        'pack_id' => 'pack_id',
-        'icon_id' => 'icon_id',
-        'source' => '/foo/bar',
-        'template' => 'my_template',
-        // Icon data will moved to Twig #context.
-        'enabled' => 'foo',
-        'foo' => 'bar',
-      ],
-      [
-        '#type' => 'inline_template',
-        '#template' => 'my_template',
-        '#context' => [
-          'icon_id' => 'icon_id',
-          'source' => '/foo/bar',
-          'attributes' => new Attribute(),
-          'foo' => 'bar',
-          'enabled' => 'foo',
-        ],
-      ],
-    ];
-  }
+        yield 'icon with attributes.' => [
+          [
+            'pack_id' => 'pack_id',
+            'icon_id' => 'icon_id',
+            'source' => '/foo/bar',
+            'template' => 'my_template',
+            'attributes' => new Attribute([
+              'foo' => 'bar',
+              'baz' => 'qux',
+            ]),
+          ],
+          [
+            '#type' => 'inline_template',
+            '#template' => 'my_template',
+            '#context' => [
+              'icon_id' => 'icon_id',
+              'source' => '/foo/bar',
+              'attributes' => new Attribute([
+                'foo' => 'bar',
+                'baz' => 'qux',
+              ]),
+            ],
+          ],
+        ];
 
-  /**
-   * Test the Icon::preRenderIcon method.
-   *
-   * @param array $data
-   *   The icon data.
-   * @param array $expected
-   *   The result expected.
-   */
-  #[DataProvider('providerPreRenderIcon')]
-  public function testPreRenderIcon(array $data, array $expected): void {
-    $icon = $this->createTestIcon($data);
-    $icon_full_id = IconDefinition::createIconId($data['pack_id'], $data['icon_id']);
+        yield 'icon with data and enabled removed.' => [
+          [
+            'pack_id' => 'pack_id',
+            'icon_id' => 'icon_id',
+            'source' => '/foo/bar',
+            'template' => 'my_template',
+            // Icon data will moved to Twig #context.
+            'enabled' => 'foo',
+            'foo' => 'bar',
+          ],
+          [
+            '#type' => 'inline_template',
+            '#template' => 'my_template',
+            '#context' => [
+              'icon_id' => 'icon_id',
+              'source' => '/foo/bar',
+              'attributes' => new Attribute(),
+              'foo' => 'bar',
+              'enabled' => 'foo',
+            ],
+          ],
+        ];
+    }
 
-    $prophecy = $this->prophesize(IconPackManagerInterface::class);
-    $prophecy->getIcon($icon_full_id)
-      ->willReturn($icon);
+    /**
+     * Test the Icon::preRenderIcon method.
+     *
+     * @param array $data
+     *   The icon data.
+     * @param array $expected
+     *   The result expected.
+     */
+    #[DataProvider('providerPreRenderIcon')]
+    public function testPreRenderIcon(array $data, array $expected): void
+    {
+        $icon = $this->createTestIcon($data);
+        $icon_full_id = IconDefinition::createIconId($data['pack_id'], $data['icon_id']);
 
-    $pluginManagerIconPack = $prophecy->reveal();
-    $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
+        $prophecy = $this->prophesize(IconPackManagerInterface::class);
+        $prophecy->getIcon($icon_full_id)
+          ->willReturn($icon);
 
-    $element = [
-      '#type' => 'icon',
-      '#pack_id' => $data['pack_id'],
-      '#icon_id' => $data['icon_id'],
-      '#settings' => $data['icon_settings'] ?? [],
-    ];
+        $pluginManagerIconPack = $prophecy->reveal();
+        $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
 
-    $actual = Icon::preRenderIcon($element);
+        $element = [
+          '#type' => 'icon',
+          '#pack_id' => $data['pack_id'],
+          '#icon_id' => $data['icon_id'],
+          '#settings' => $data['icon_settings'] ?? [],
+        ];
 
-    $this->assertEquals($expected, $actual['inline-template']);
-  }
+        $actual = Icon::preRenderIcon($element);
 
-  /**
-   * Test the Icon::preRenderIcon method.
-   */
-  public function testPreRenderIconEmptyValues(): void {
-    $element = [
-      '#type' => 'icon',
-      '#pack_id' => '',
-      '#icon_id' => '',
-    ];
+        $this->assertEquals($expected, $actual['inline-template']);
+    }
 
-    $prophecy = $this->prophesize(IconPackManagerInterface::class);
-    $prophecy->getIcon(':')
-      ->willReturn(NULL);
+    /**
+     * Test the Icon::preRenderIcon method.
+     */
+    public function testPreRenderIconEmptyValues(): void
+    {
+        $element = [
+          '#type' => 'icon',
+          '#pack_id' => '',
+          '#icon_id' => '',
+        ];
 
-    $pluginManagerIconPack = $prophecy->reveal();
-    $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
+        $prophecy = $this->prophesize(IconPackManagerInterface::class);
+        $prophecy->getIcon(':')
+          ->willReturn(null);
 
-    $actual = Icon::preRenderIcon($element);
+        $pluginManagerIconPack = $prophecy->reveal();
+        $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
 
-    $this->assertEquals($element, $actual);
-  }
+        $actual = Icon::preRenderIcon($element);
 
-  /**
-   * Test the Icon::preRenderIcon method.
-   */
-  public function testPreRenderIconNoIcon(): void {
-    $prophecy = $this->prophesize(IconPackManagerInterface::class);
-    $prophecy->getIcon('foo:bar')->willReturn(NULL);
+        $this->assertEquals($element, $actual);
+    }
 
-    $pluginManagerIconPack = $prophecy->reveal();
-    $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
+    /**
+     * Test the Icon::preRenderIcon method.
+     */
+    public function testPreRenderIconNoIcon(): void
+    {
+        $prophecy = $this->prophesize(IconPackManagerInterface::class);
+        $prophecy->getIcon('foo:bar')->willReturn(null);
 
-    $element = [
-      '#type' => 'icon',
-      '#pack_id' => 'foo',
-      '#icon_id' => 'bar',
-    ];
+        $pluginManagerIconPack = $prophecy->reveal();
+        $this->container->set('plugin.manager.icon_pack', $pluginManagerIconPack);
 
-    $actual = Icon::preRenderIcon($element);
+        $element = [
+          '#type' => 'icon',
+          '#pack_id' => 'foo',
+          '#icon_id' => 'bar',
+        ];
 
-    $this->assertEquals($element, $actual);
-  }
+        $actual = Icon::preRenderIcon($element);
+
+        $this->assertEquals($element, $actual);
+    }
 
 }

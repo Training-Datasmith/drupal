@@ -13,20 +13,21 @@ use Drupal\navigation\TopBarRegion;
  * Provides a top bar item plugin for testing the top bar.
  */
 #[TopBarItem(
-  id: 'test_item',
-  region: TopBarRegion::Actions,
-  label: new TranslatableMarkup('Test Item'),
-  weight: 0,
+    id: 'test_item',
+    region: TopBarRegion::Actions,
+    label: new TranslatableMarkup('Test Item'),
+    weight: 0,
 )]
-class TopBarItemInstantiation extends TopBarItemBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return [
-      '#markup' => 'Top Bar Item',
-    ];
-  }
+class TopBarItemInstantiation extends TopBarItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return [
+          '#markup' => 'Top Bar Item',
+        ];
+    }
 
 }

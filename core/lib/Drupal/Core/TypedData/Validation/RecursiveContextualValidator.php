@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Validation;
 
 use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
@@ -31,244 +33,251 @@ use Symfony\Component\Validator\Util\PropertyPath;
  * @see \Drupal\Core\TypedData\Validation\RecursiveValidator::startContext()
  * @see \Drupal\Core\TypedData\Validation\RecursiveValidator::inContext()
  */
-class RecursiveContextualValidator implements ContextualValidatorInterface {
+class RecursiveContextualValidator implements ContextualValidatorInterface
+{
+    /**
+     * The execution context.
+     *
+     * @var \Symfony\Component\Validator\Context\ExecutionContextInterface
+     */
+    protected $context;
 
-  /**
-   * The execution context.
-   *
-   * @var \Symfony\Component\Validator\Context\ExecutionContextInterface
-   */
-  protected $context;
+    /**
+     * The metadata factory.
+     *
+     * @var \Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface
+     */
+    protected $metadataFactory;
 
-  /**
-   * The metadata factory.
-   *
-   * @var \Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface
-   */
-  protected $metadataFactory;
+    /**
+     * The constraint validator factory.
+     *
+     * @var \Symfony\Component\Validator\ConstraintValidatorFactoryInterface
+     */
+    protected $constraintValidatorFactory;
 
-  /**
-   * The constraint validator factory.
-   *
-   * @var \Symfony\Component\Validator\ConstraintValidatorFactoryInterface
-   */
-  protected $constraintValidatorFactory;
-
-  /**
-   * Creates a validator for the given context.
-   *
-   * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
-   *   The factory for creating new contexts.
-   * @param \Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface $metadata_factory
-   *   The metadata factory.
-   * @param \Symfony\Component\Validator\ConstraintValidatorFactoryInterface $validator_factory
-   *   The constraint validator factory.
-   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager
-   *   The typed data manager.
-   */
-  public function __construct(ExecutionContextInterface $context, MetadataFactoryInterface $metadata_factory, ConstraintValidatorFactoryInterface $validator_factory, protected TypedDataManagerInterface $typedDataManager) {
-    $this->context = $context;
-    $this->metadataFactory = $metadata_factory;
-    $this->constraintValidatorFactory = $validator_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function atPath($path): static {
-    // @todo This method is not used at the moment, see
-    //   https://www.drupal.org/node/2482527
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($data, $constraints = NULL, $groups = NULL, $is_root_call = TRUE): static {
-    if (isset($groups) && $groups !== Constraint::DEFAULT_GROUP) {
-      throw new \LogicException('Passing custom groups is not supported.');
+    /**
+     * Creates a validator for the given context.
+     *
+     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
+     *   The factory for creating new contexts.
+     * @param \Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface $metadata_factory
+     *   The metadata factory.
+     * @param \Symfony\Component\Validator\ConstraintValidatorFactoryInterface $validator_factory
+     *   The constraint validator factory.
+     * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager
+     *   The typed data manager.
+     */
+    public function __construct(ExecutionContextInterface $context, MetadataFactoryInterface $metadata_factory, ConstraintValidatorFactoryInterface $validator_factory, protected TypedDataManagerInterface $typedDataManager)
+    {
+        $this->context = $context;
+        $this->metadataFactory = $metadata_factory;
+        $this->constraintValidatorFactory = $validator_factory;
     }
 
-    if ($this->context instanceof ExecutionContext && $this->context->getConstraint() instanceof Composite) {
-      $is_root_call = FALSE;
-    }
-    // Convert to TypedDataInterface if it matches the context object's value
-    if (!$data instanceof TypedDataInterface) {
-      $context_object = $this->context->getObject();
-
-      if ($context_object instanceof TypedDataInterface && $data === $context_object->getValue()) {
-        $data = $context_object;
-      }
-      else {
-        throw new \InvalidArgumentException('The passed value must be a typed data object.');
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function atPath($path): static
+    {
+        // @todo This method is not used at the moment, see
+        //   https://www.drupal.org/node/2482527
+        return $this;
     }
 
-    // You can pass a single constraint or an array of constraints.
-    // Make sure to deal with an array in the rest of the code.
-    if (isset($constraints) && !is_array($constraints)) {
-      $constraints = [$constraints];
-    }
-
-    $this->validateNode($data, $constraints, $is_root_call);
-    return $this;
-  }
-
-  /**
-   * Validates a Typed Data node in the validation tree.
-   *
-   * If no constraints are passed, the data is validated against the
-   * constraints specified in its data definition. If the data is complex or a
-   * list and no constraints are passed, the contained properties or list items
-   * are validated recursively.
-   *
-   * @param \Drupal\Core\TypedData\TypedDataInterface $data
-   *   The data to validated.
-   * @param \Symfony\Component\Validator\Constraint[]|null $constraints
-   *   (optional) If set, an array of constraints to validate.
-   * @param bool $is_root_call
-   *   (optional) Whether its the most upper call in the type data tree.
-   *
-   * @return $this
-   */
-  protected function validateNode(TypedDataInterface $data, $constraints = NULL, $is_root_call = FALSE): static {
-    $previous_value = $this->context->getValue();
-    $previous_object = $this->context->getObject();
-    $previous_metadata = $this->context->getMetadata();
-    $previous_path = $this->context->getPropertyPath();
-    $previous_constraint = $this->context instanceof ExecutionContext ? $this->context->getConstraint() : NULL;
-
-    $metadata = $this->metadataFactory->getMetadataFor($data);
-    $cache_key = spl_object_hash($data);
-    $property_path = match(TRUE) {
-      $is_root_call => '',
-      $previous_constraint instanceof Composite => $previous_path,
-      default => PropertyPath::append($previous_path, $data->getName())
-    };
-
-    // Prefer a specific instance of the typed data manager stored by the data
-    // if it is available. This is necessary for specialized typed data objects,
-    // for example those using the typed config subclass of the manager.
-    $typed_data_manager = method_exists($data, 'getTypedDataManager') ? $data->getTypedDataManager() : $this->typedDataManager;
-
-    // Pass the canonical representation of the data as validated value to
-    // constraint validators, such that they do not have to care about Typed
-    // Data.
-    $value = $typed_data_manager->getCanonicalRepresentation($data);
-    $constraints_given = isset($constraints);
-    $this->context->setNode($value, $data, $metadata, $property_path);
-
-    if (isset($constraints) || !$this->context->isGroupValidated($cache_key, Constraint::DEFAULT_GROUP)) {
-      if (!isset($constraints)) {
-        $this->context->markGroupAsValidated($cache_key, Constraint::DEFAULT_GROUP);
-        $constraints = $metadata->findConstraints(Constraint::DEFAULT_GROUP);
-      }
-      $this->validateConstraints($value, $cache_key, $constraints);
-    }
-
-    if (
-      // If the call is the root call or there are no constraints are given, we
-      // recurse. These are calls that should go into the values and find the
-      // relevant constraints per value.
-      ($is_root_call === TRUE || $constraints_given === FALSE) &&
-
-      // If the data is a list or complex data, validate the contained list
-      // items or properties. However, do not recurse if the data is empty.
-      ($data instanceof ListInterface || $data instanceof ComplexDataInterface) && !$data->isEmpty() &&
-
-      // Next, we do not recurse if given constraints are validated against an
-      // entity, since we should determine whether the entity matches the
-      // constraints and not whether the entity validates.
-      !($data instanceof EntityAdapter && $constraints_given)) {
-      foreach ($data as $property) {
-        $this->validateNode($property);
-      }
-    }
-
-    $this->context->setNode($previous_value, $previous_object, $previous_metadata, $previous_path);
-    if ($previous_constraint) {
-      $this->context->setConstraint($previous_constraint);
-    }
-
-    return $this;
-  }
-
-  /**
-   * Validates a node's value against all constraints in the given group.
-   *
-   * @param mixed $value
-   *   The validated value.
-   * @param string $cache_key
-   *   The cache key used internally to ensure we don't validate the same
-   *   constraint twice.
-   * @param \Symfony\Component\Validator\Constraint[] $constraints
-   *   The constraints which should be ensured for the given value.
-   */
-  protected function validateConstraints($value, $cache_key, $constraints) {
-    foreach ($constraints as $constraint) {
-      // Prevent duplicate validation of constraints, in the case
-      // that constraints belong to multiple validated groups.
-      if (isset($cache_key)) {
-        $constraint_hash = spl_object_hash($constraint);
-
-        if ($this->context->isConstraintValidated($cache_key, $constraint_hash)) {
-          continue;
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($data, $constraints = null, $groups = null, $is_root_call = true): static
+    {
+        if (isset($groups) && $groups !== Constraint::DEFAULT_GROUP) {
+            throw new \LogicException('Passing custom groups is not supported.');
         }
 
-        $this->context->markConstraintAsValidated($cache_key, $constraint_hash);
-      }
+        if ($this->context instanceof ExecutionContext && $this->context->getConstraint() instanceof Composite) {
+            $is_root_call = false;
+        }
+        // Convert to TypedDataInterface if it matches the context object's value
+        if (!$data instanceof TypedDataInterface) {
+            $context_object = $this->context->getObject();
 
-      $this->context->setConstraint($constraint);
+            if ($context_object instanceof TypedDataInterface && $data === $context_object->getValue()) {
+                $data = $context_object;
+            } else {
+                throw new \InvalidArgumentException('The passed value must be a typed data object.');
+            }
+        }
 
-      $validator = $this->constraintValidatorFactory->getInstance($constraint);
-      $validator->initialize($this->context);
-      $validator->validate($value, $constraint);
-    }
-  }
+        // You can pass a single constraint or an array of constraints.
+        // Make sure to deal with an array in the rest of the code.
+        if (isset($constraints) && !is_array($constraints)) {
+            $constraints = [$constraints];
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getViolations(): ConstraintViolationListInterface {
-    return $this->context->getViolations();
-  }
+        $this->validateNode($data, $constraints, $is_root_call);
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateProperty($object, $propertyName, $groups = NULL): static {
-    if (isset($groups)) {
-      throw new \LogicException('Passing custom groups is not supported.');
-    }
-    if (!is_object($object)) {
-        throw new \InvalidArgumentException('Passing class name is not supported.');
-    }
-    if (!$object instanceof TypedDataInterface) {
-        throw new \InvalidArgumentException('The passed in object has to be typed data.');
-    }
-    if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
-        throw new \InvalidArgumentException('Passed data does not contain properties.');
-    }
-    return $this->validateNode($object->get($propertyName), NULL, TRUE);
-  }
+    /**
+     * Validates a Typed Data node in the validation tree.
+     *
+     * If no constraints are passed, the data is validated against the
+     * constraints specified in its data definition. If the data is complex or a
+     * list and no constraints are passed, the contained properties or list items
+     * are validated recursively.
+     *
+     * @param \Drupal\Core\TypedData\TypedDataInterface $data
+     *   The data to validated.
+     * @param \Symfony\Component\Validator\Constraint[]|null $constraints
+     *   (optional) If set, an array of constraints to validate.
+     * @param bool $is_root_call
+     *   (optional) Whether its the most upper call in the type data tree.
+     *
+     * @return $this
+     */
+    protected function validateNode(TypedDataInterface $data, $constraints = null, $is_root_call = false): static
+    {
+        $previous_value = $this->context->getValue();
+        $previous_object = $this->context->getObject();
+        $previous_metadata = $this->context->getMetadata();
+        $previous_path = $this->context->getPropertyPath();
+        $previous_constraint = $this->context instanceof ExecutionContext ? $this->context->getConstraint() : null;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validatePropertyValue($object, $property_name, $value, $groups = NULL): static {
-    if (!is_object($object)) {
-        throw new \InvalidArgumentException('Passing class name is not supported.');
+        $metadata = $this->metadataFactory->getMetadataFor($data);
+        $cache_key = spl_object_hash($data);
+        $property_path = match(true) {
+            $is_root_call => '',
+            $previous_constraint instanceof Composite => $previous_path,
+            default => PropertyPath::append($previous_path, $data->getName())
+        };
+
+        // Prefer a specific instance of the typed data manager stored by the data
+        // if it is available. This is necessary for specialized typed data objects,
+        // for example those using the typed config subclass of the manager.
+        $typed_data_manager = method_exists($data, 'getTypedDataManager') ? $data->getTypedDataManager() : $this->typedDataManager;
+
+        // Pass the canonical representation of the data as validated value to
+        // constraint validators, such that they do not have to care about Typed
+        // Data.
+        $value = $typed_data_manager->getCanonicalRepresentation($data);
+        $constraints_given = isset($constraints);
+        $this->context->setNode($value, $data, $metadata, $property_path);
+
+        if (isset($constraints) || !$this->context->isGroupValidated($cache_key, Constraint::DEFAULT_GROUP)) {
+            if (!isset($constraints)) {
+                $this->context->markGroupAsValidated($cache_key, Constraint::DEFAULT_GROUP);
+                $constraints = $metadata->findConstraints(Constraint::DEFAULT_GROUP);
+            }
+            $this->validateConstraints($value, $cache_key, $constraints);
+        }
+
+        if (
+            // If the call is the root call or there are no constraints are given, we
+            // recurse. These are calls that should go into the values and find the
+            // relevant constraints per value.
+            ($is_root_call === true || $constraints_given === false) &&
+
+            // If the data is a list or complex data, validate the contained list
+            // items or properties. However, do not recurse if the data is empty.
+            ($data instanceof ListInterface || $data instanceof ComplexDataInterface) && !$data->isEmpty() &&
+
+            // Next, we do not recurse if given constraints are validated against an
+            // entity, since we should determine whether the entity matches the
+            // constraints and not whether the entity validates.
+            !($data instanceof EntityAdapter && $constraints_given)) {
+            foreach ($data as $property) {
+                $this->validateNode($property);
+            }
+        }
+
+        $this->context->setNode($previous_value, $previous_object, $previous_metadata, $previous_path);
+        if ($previous_constraint) {
+            $this->context->setConstraint($previous_constraint);
+        }
+
+        return $this;
     }
-    if (!$object instanceof TypedDataInterface) {
-        throw new \InvalidArgumentException('The passed in object has to be typed data.');
+
+    /**
+     * Validates a node's value against all constraints in the given group.
+     *
+     * @param mixed $value
+     *   The validated value.
+     * @param string $cache_key
+     *   The cache key used internally to ensure we don't validate the same
+     *   constraint twice.
+     * @param \Symfony\Component\Validator\Constraint[] $constraints
+     *   The constraints which should be ensured for the given value.
+     */
+    protected function validateConstraints($value, $cache_key, $constraints)
+    {
+        foreach ($constraints as $constraint) {
+            // Prevent duplicate validation of constraints, in the case
+            // that constraints belong to multiple validated groups.
+            if (isset($cache_key)) {
+                $constraint_hash = spl_object_hash($constraint);
+
+                if ($this->context->isConstraintValidated($cache_key, $constraint_hash)) {
+                    continue;
+                }
+
+                $this->context->markConstraintAsValidated($cache_key, $constraint_hash);
+            }
+
+            $this->context->setConstraint($constraint);
+
+            $validator = $this->constraintValidatorFactory->getInstance($constraint);
+            $validator->initialize($this->context);
+            $validator->validate($value, $constraint);
+        }
     }
-    if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
-        throw new \InvalidArgumentException('Passed data does not contain properties.');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getViolations(): ConstraintViolationListInterface
+    {
+        return $this->context->getViolations();
     }
-    $data = $object->get($property_name);
-    $metadata = $this->metadataFactory->getMetadataFor($data);
-    $constraints = $metadata->findConstraints(Constraint::DEFAULT_GROUP);
-    return $this->validate($value, $constraints, $groups, TRUE);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateProperty($object, $propertyName, $groups = null): static
+    {
+        if (isset($groups)) {
+            throw new \LogicException('Passing custom groups is not supported.');
+        }
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException('Passing class name is not supported.');
+        }
+        if (!$object instanceof TypedDataInterface) {
+            throw new \InvalidArgumentException('The passed in object has to be typed data.');
+        }
+        if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
+            throw new \InvalidArgumentException('Passed data does not contain properties.');
+        }
+        return $this->validateNode($object->get($propertyName), null, true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validatePropertyValue($object, $property_name, $value, $groups = null): static
+    {
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException('Passing class name is not supported.');
+        }
+        if (!$object instanceof TypedDataInterface) {
+            throw new \InvalidArgumentException('The passed in object has to be typed data.');
+        }
+        if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
+            throw new \InvalidArgumentException('Passed data does not contain properties.');
+        }
+        $data = $object->get($property_name);
+        $metadata = $this->metadataFactory->getMetadataFor($data);
+        $constraints = $metadata->findConstraints(Constraint::DEFAULT_GROUP);
+        return $this->validate($value, $constraints, $groups, true);
+    }
 
 }

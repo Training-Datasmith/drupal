@@ -17,151 +17,155 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class VocabularyCrudTest extends KernelTestBase {
+class VocabularyCrudTest extends KernelTestBase
+{
+    use TaxonomyTestTrait;
 
-  use TaxonomyTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'field',
+      'filter',
+      'taxonomy',
+      'taxonomy_crud',
+      'text',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'field',
-    'filter',
-    'taxonomy',
-    'taxonomy_crud',
-    'text',
-    'user',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installSchema('user', ['users_data']);
-    $this->installEntitySchema('taxonomy_term');
-  }
-
-  /**
-   * Tests deleting a taxonomy that contains terms.
-   */
-  public function testTaxonomyVocabularyDeleteWithTerms(): void {
-    $vocabulary = $this->createVocabulary();
-    $query = \Drupal::entityQuery('taxonomy_term')->accessCheck(FALSE)->count();
-
-    // Assert that there are no terms left.
-    $this->assertEquals(0, $query->execute());
-
-    $terms = [];
-    for ($i = 0; $i < 5; $i++) {
-      $terms[$i] = $this->createTerm($vocabulary);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installSchema('user', ['users_data']);
+        $this->installEntitySchema('taxonomy_term');
     }
 
-    // Set up hierarchy. term 2 is a child of 1 and 4 a child of 1 and 2.
-    $terms[2]->parent = [$terms[1]->id()];
-    $terms[2]->save();
-    $terms[4]->parent = [$terms[1]->id(), $terms[2]->id()];
-    $terms[4]->save();
+    /**
+     * Tests deleting a taxonomy that contains terms.
+     */
+    public function testTaxonomyVocabularyDeleteWithTerms(): void
+    {
+        $vocabulary = $this->createVocabulary();
+        $query = \Drupal::entityQuery('taxonomy_term')->accessCheck(false)->count();
 
-    // Assert that there are now 5 terms.
-    $this->assertEquals(5, $query->execute());
+        // Assert that there are no terms left.
+        $this->assertEquals(0, $query->execute());
 
-    $vocabulary->delete();
+        $terms = [];
+        for ($i = 0; $i < 5; $i++) {
+            $terms[$i] = $this->createTerm($vocabulary);
+        }
 
-    // Assert that there are no terms left.
-    $this->assertEquals(0, $query->execute());
-  }
+        // Set up hierarchy. term 2 is a child of 1 and 4 a child of 1 and 2.
+        $terms[2]->parent = [$terms[1]->id()];
+        $terms[2]->save();
+        $terms[4]->parent = [$terms[1]->id(), $terms[2]->id()];
+        $terms[4]->save();
 
-  /**
-   * Tests for loading multiple vocabularies.
-   */
-  public function testTaxonomyVocabularyLoadMultiple(): void {
-    // Ensure there are no vocabularies.
-    $this->assertEmpty(Vocabulary::loadMultiple());
+        // Assert that there are now 5 terms.
+        $this->assertEquals(5, $query->execute());
 
-    // Create some vocabularies and assign weights.
-    $vocabulary1 = $this->createVocabulary();
-    $vocabulary1->set('weight', 0);
-    $vocabulary1->save();
-    $vocabulary2 = $this->createVocabulary();
-    $vocabulary2->set('weight', 1);
-    $vocabulary2->save();
-    $vocabulary3 = $this->createVocabulary();
-    $vocabulary3->set('weight', 2);
-    $vocabulary3->save();
+        $vocabulary->delete();
 
-    // Check if third party settings exist.
-    $this->assertEquals('bar', $vocabulary1->getThirdPartySetting('taxonomy_crud', 'foo'));
-    $this->assertEquals('bar', $vocabulary2->getThirdPartySetting('taxonomy_crud', 'foo'));
-    $this->assertEquals('bar', $vocabulary3->getThirdPartySetting('taxonomy_crud', 'foo'));
+        // Assert that there are no terms left.
+        $this->assertEquals(0, $query->execute());
+    }
 
-    // Fetch the vocabularies with Vocabulary::loadMultiple(), specifying IDs.
-    // Ensure they are returned in the same order as the original array.
-    $vocabularies = Vocabulary::loadMultiple([
-      $vocabulary3->id(),
-      $vocabulary2->id(),
-      $vocabulary1->id(),
-    ]);
-    $loaded_order = array_keys($vocabularies);
-    $expected_order = [
-      $vocabulary3->id(),
-      $vocabulary2->id(),
-      $vocabulary1->id(),
-    ];
-    $this->assertSame($expected_order, $loaded_order);
+    /**
+     * Tests for loading multiple vocabularies.
+     */
+    public function testTaxonomyVocabularyLoadMultiple(): void
+    {
+        // Ensure there are no vocabularies.
+        $this->assertEmpty(Vocabulary::loadMultiple());
 
-    // Test loading vocabularies by their properties.
-    $storage = $this->container->get('entity_type.manager')->getStorage('taxonomy_vocabulary');
-    // Fetch vocabulary 1 by name.
-    $vocabulary = current($storage->loadByProperties(['name' => $vocabulary1->label()]));
-    $this->assertEquals($vocabulary1->id(), $vocabulary->id());
+        // Create some vocabularies and assign weights.
+        $vocabulary1 = $this->createVocabulary();
+        $vocabulary1->set('weight', 0);
+        $vocabulary1->save();
+        $vocabulary2 = $this->createVocabulary();
+        $vocabulary2->set('weight', 1);
+        $vocabulary2->save();
+        $vocabulary3 = $this->createVocabulary();
+        $vocabulary3->set('weight', 2);
+        $vocabulary3->save();
 
-    // Fetch vocabulary 2 by name and ID.
-    $vocabulary = current($storage->loadByProperties([
-      'name' => $vocabulary2->label(),
-      'vid' => $vocabulary2->id(),
-    ]));
-    $this->assertEquals($vocabulary2->id(), $vocabulary->id());
-  }
+        // Check if third party settings exist.
+        $this->assertEquals('bar', $vocabulary1->getThirdPartySetting('taxonomy_crud', 'foo'));
+        $this->assertEquals('bar', $vocabulary2->getThirdPartySetting('taxonomy_crud', 'foo'));
+        $this->assertEquals('bar', $vocabulary3->getThirdPartySetting('taxonomy_crud', 'foo'));
 
-  /**
-   * Tests uninstall and reinstall of the taxonomy module.
-   */
-  public function testUninstallReinstall(): void {
-    $vocabulary = $this->createVocabulary();
-    // Field storages and fields attached to taxonomy term bundles should be
-    // removed when the module is uninstalled.
-    $field_name = $this->randomMachineName() . '_field_name';
-    $storage_definition = [
-      'field_name' => $field_name,
-      'entity_type' => 'taxonomy_term',
-      'type' => 'text',
-      'cardinality' => 4,
-    ];
-    FieldStorageConfig::create($storage_definition)->save();
-    $field_definition = [
-      'field_name' => $field_name,
-      'entity_type' => 'taxonomy_term',
-      'bundle' => $vocabulary->id(),
-      'label' => $this->randomMachineName() . '_label',
-    ];
-    FieldConfig::create($field_definition)->save();
+        // Fetch the vocabularies with Vocabulary::loadMultiple(), specifying IDs.
+        // Ensure they are returned in the same order as the original array.
+        $vocabularies = Vocabulary::loadMultiple([
+          $vocabulary3->id(),
+          $vocabulary2->id(),
+          $vocabulary1->id(),
+        ]);
+        $loaded_order = array_keys($vocabularies);
+        $expected_order = [
+          $vocabulary3->id(),
+          $vocabulary2->id(),
+          $vocabulary1->id(),
+        ];
+        $this->assertSame($expected_order, $loaded_order);
 
-    // Remove the third party setting from the memory copy of the vocabulary.
-    // We keep this invalid copy around while the taxonomy module is not even
-    // installed for testing below.
-    $vocabulary->unsetThirdPartySetting('taxonomy_crud', 'foo');
+        // Test loading vocabularies by their properties.
+        $storage = $this->container->get('entity_type.manager')->getStorage('taxonomy_vocabulary');
+        // Fetch vocabulary 1 by name.
+        $vocabulary = current($storage->loadByProperties(['name' => $vocabulary1->label()]));
+        $this->assertEquals($vocabulary1->id(), $vocabulary->id());
 
-    $this->container->get('module_installer')->uninstall(['taxonomy']);
-    $this->container->get('module_installer')->install(['taxonomy']);
+        // Fetch vocabulary 2 by name and ID.
+        $vocabulary = current($storage->loadByProperties([
+          'name' => $vocabulary2->label(),
+          'vid' => $vocabulary2->id(),
+        ]));
+        $this->assertEquals($vocabulary2->id(), $vocabulary->id());
+    }
 
-    // Now create a vocabulary with the same name. All fields connected to this
-    // vocabulary name should have been removed when the module was uninstalled.
-    // Creating a new field with the same name and an instance of this field on
-    // the same bundle name should be successful.
-    $vocabulary->enforceIsNew()->save();
-    FieldStorageConfig::create($storage_definition)->save();
-    FieldConfig::create($field_definition)->save();
-  }
+    /**
+     * Tests uninstall and reinstall of the taxonomy module.
+     */
+    public function testUninstallReinstall(): void
+    {
+        $vocabulary = $this->createVocabulary();
+        // Field storages and fields attached to taxonomy term bundles should be
+        // removed when the module is uninstalled.
+        $field_name = $this->randomMachineName() . '_field_name';
+        $storage_definition = [
+          'field_name' => $field_name,
+          'entity_type' => 'taxonomy_term',
+          'type' => 'text',
+          'cardinality' => 4,
+        ];
+        FieldStorageConfig::create($storage_definition)->save();
+        $field_definition = [
+          'field_name' => $field_name,
+          'entity_type' => 'taxonomy_term',
+          'bundle' => $vocabulary->id(),
+          'label' => $this->randomMachineName() . '_label',
+        ];
+        FieldConfig::create($field_definition)->save();
+
+        // Remove the third party setting from the memory copy of the vocabulary.
+        // We keep this invalid copy around while the taxonomy module is not even
+        // installed for testing below.
+        $vocabulary->unsetThirdPartySetting('taxonomy_crud', 'foo');
+
+        $this->container->get('module_installer')->uninstall(['taxonomy']);
+        $this->container->get('module_installer')->install(['taxonomy']);
+
+        // Now create a vocabulary with the same name. All fields connected to this
+        // vocabulary name should have been removed when the module was uninstalled.
+        // Creating a new field with the same name and an instance of this field on
+        // the same bundle name should be successful.
+        $vocabulary->enforceIsNew()->save();
+        FieldStorageConfig::create($storage_definition)->save();
+        FieldConfig::create($field_definition)->save();
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core;
 
 /**
@@ -9,11 +11,11 @@ namespace Drupal\Core;
  * buttons for forms. This class is for putting a button in a list of links
  * such as a multi-level menu.
  */
-class GeneratedButton extends GeneratedLink {
-
-  /**
-   * {@inheritdoc}
-   */
-  const TAG = 'button';
+class GeneratedButton extends GeneratedLink
+{
+    /**
+     * {@inheritdoc}
+     */
+    public const TAG = 'button';
 
 }

@@ -9,8 +9,8 @@ use Drupal\Core\Installer\InstallerRedirectTrait;
 /**
  * A class using the InstallerRedirectTrait for mocking purposes.
  */
-class InstallerRedirectTraitMockableClass {
-
-  use InstallerRedirectTrait;
+class InstallerRedirectTraitMockableClass
+{
+    use InstallerRedirectTrait;
 
 }

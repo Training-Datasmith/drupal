@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Annotation;
 
 /**
@@ -11,49 +13,49 @@ namespace Drupal\views\Annotation;
  *
  * @Annotation
  */
-class ViewsQuery extends ViewsPluginAnnotationBase {
+class ViewsQuery extends ViewsPluginAnnotationBase
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The plugin title used in the views UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title = '';
 
-  /**
-   * The plugin title used in the views UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title = '';
+    /**
+     * An optional short title used in the views UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $short_title = '';
 
-  /**
-   * An optional short title used in the views UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $short_title = '';
+    /**
+     * A short help string; this is displayed in the views UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $help = '';
 
-  /**
-   * A short help string; this is displayed in the views UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $help = '';
-
-  /**
-   * Whether the plugin should be not selectable in the UI.
-   *
-   * If it's set to TRUE, you can still use it via the API in config files.
-   *
-   * @var bool
-   */
-  public $no_ui;
+    /**
+     * Whether the plugin should be not selectable in the UI.
+     *
+     * If it's set to TRUE, you can still use it via the API in config files.
+     *
+     * @var bool
+     */
+    public $no_ui;
 
 }

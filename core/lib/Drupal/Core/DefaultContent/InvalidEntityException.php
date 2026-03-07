@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DefaultContent;
 
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
@@ -11,17 +13,18 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  * @internal
  *   This API is experimental.
  */
-final class InvalidEntityException extends \RuntimeException {
+final class InvalidEntityException extends \RuntimeException
+{
+    public function __construct(public readonly EntityConstraintViolationListInterface $violations, public readonly string $filePath)
+    {
+        $messages = [];
 
-  public function __construct(public readonly EntityConstraintViolationListInterface $violations, public readonly string $filePath) {
-    $messages = [];
-
-    foreach ($violations as $violation) {
-      assert($violation instanceof ConstraintViolationInterface);
-      $messages[] = $violation->getPropertyPath() . '=' . $violation->getMessage();
+        foreach ($violations as $violation) {
+            assert($violation instanceof ConstraintViolationInterface);
+            $messages[] = $violation->getPropertyPath() . '=' . $violation->getMessage();
+        }
+        // Example: "/path/to/file.yml: field_a=Violation 1., field_b=Violation 2.".
+        parent::__construct("$filePath: " . implode('||', $messages));
     }
-    // Example: "/path/to/file.yml: field_a=Violation 1., field_b=Violation 2.".
-    parent::__construct("$filePath: " . implode('||', $messages));
-  }
 
 }

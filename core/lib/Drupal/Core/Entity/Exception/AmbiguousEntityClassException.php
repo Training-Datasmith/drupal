@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Exception;
 
 /**
@@ -7,17 +9,18 @@ namespace Drupal\Core\Entity\Exception;
  *
  * @see hook_entity_info_alter()
  */
-class AmbiguousEntityClassException extends \Exception {
-
-  /**
-   * Constructs an AmbiguousEntityClassException.
-   *
-   * @param string $class
-   *   The entity parent class.
-   */
-  public function __construct($class) {
-    $message = sprintf('Multiple entity types found for %s.', $class);
-    parent::__construct($message);
-  }
+class AmbiguousEntityClassException extends \Exception
+{
+    /**
+     * Constructs an AmbiguousEntityClassException.
+     *
+     * @param string $class
+     *   The entity parent class.
+     */
+    public function __construct($class)
+    {
+        $message = sprintf('Multiple entity types found for %s.', $class);
+        parent::__construct($message);
+    }
 
 }

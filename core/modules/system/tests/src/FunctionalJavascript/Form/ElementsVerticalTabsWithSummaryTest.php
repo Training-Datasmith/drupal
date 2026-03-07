@@ -13,27 +13,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class ElementsVerticalTabsWithSummaryTest extends WebDriverTestBase {
+class ElementsVerticalTabsWithSummaryTest extends WebDriverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['form_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['form_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Check that vertical tabs title and summaries are set correctly.
-   */
-  public function testDynamicSummary(): void {
-    $this->drupalGet('form_test/vertical-tabs-with-summary');
-    $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.first .vertical-tabs__menu-item-title', 'Tab 1');
-    $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.first .vertical-tabs__menu-item-summary', 'Summary 1');
-    $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.last .vertical-tabs__menu-item-title', 'Tab 2');
-    $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.last .vertical-tabs__menu-item-summary', 'Summary 2');
-  }
+    /**
+     * Check that vertical tabs title and summaries are set correctly.
+     */
+    public function testDynamicSummary(): void
+    {
+        $this->drupalGet('form_test/vertical-tabs-with-summary');
+        $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.first .vertical-tabs__menu-item-title', 'Tab 1');
+        $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.first .vertical-tabs__menu-item-summary', 'Summary 1');
+        $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.last .vertical-tabs__menu-item-title', 'Tab 2');
+        $this->assertSession()->elementTextEquals('css', '.vertical-tabs__menu-item.last .vertical-tabs__menu-item-summary', 'Summary 2');
+    }
 
 }

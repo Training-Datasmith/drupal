@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Audit;
 
 /**
@@ -13,14 +15,14 @@ namespace Drupal\migrate\Audit;
  * When implemented by an ID map, getHighestId() should return the highest
  * migrated ID of the destination entity type.
  */
-interface HighestIdInterface {
-
-  /**
-   * Returns the highest ID tracked by the implementing plugin.
-   *
-   * @return int
-   *   The highest ID.
-   */
-  public function getHighestId();
+interface HighestIdInterface
+{
+    /**
+     * Returns the highest ID tracked by the implementing plugin.
+     *
+     * @return int
+     *   The highest ID.
+     */
+    public function getHighestId();
 
 }

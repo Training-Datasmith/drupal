@@ -14,6 +14,6 @@ use Drupal\Component\Plugin\Attribute\PluginID;
  * @ingroup views_filter_handlers
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ViewsFilter extends PluginID {
-
+class ViewsFilter extends PluginID
+{
 }

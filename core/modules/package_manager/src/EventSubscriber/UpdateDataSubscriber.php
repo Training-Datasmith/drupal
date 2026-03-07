@@ -16,30 +16,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class UpdateDataSubscriber implements EventSubscriberInterface {
+final readonly class UpdateDataSubscriber implements EventSubscriberInterface
+{
+    public function __construct(private UpdateManagerInterface $updateManager)
+    {
+    }
 
-  public function __construct(private UpdateManagerInterface $updateManager) {
-  }
+    /**
+     * Clears stale update data.
+     *
+     * This will always run after any stage directory changes are applied to the
+     * active directory, since it's likely that core and/or multiple extensions
+     * have been added, removed, or updated.
+     */
+    public function clearData(): void
+    {
+        $this->updateManager->refreshUpdateData();
+        update_storage_clear();
+    }
 
-  /**
-   * Clears stale update data.
-   *
-   * This will always run after any stage directory changes are applied to the
-   * active directory, since it's likely that core and/or multiple extensions
-   * have been added, removed, or updated.
-   */
-  public function clearData(): void {
-    $this->updateManager->refreshUpdateData();
-    update_storage_clear();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      PostApplyEvent::class => ['clearData', 1000],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          PostApplyEvent::class => ['clearData', 1000],
+        ];
+    }
 
 }

@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('update')]
 #[RunTestsInSeparateProcesses]
-class UpdateSemverCoreSecurityAvailabilityTest extends UpdateSemverCoreTestBase {
-
-  use UpdateSemverTestSecurityAvailabilityTrait;
+class UpdateSemverCoreSecurityAvailabilityTest extends UpdateSemverCoreTestBase
+{
+    use UpdateSemverTestSecurityAvailabilityTrait;
 
 }

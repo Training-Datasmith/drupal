@@ -12,34 +12,35 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views_ui')]
 #[RunTestsInSeparateProcesses]
-class ReportTest extends UITestBase {
+class ReportTest extends UITestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['views', 'views_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['views', 'views_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Stores an admin user used by the different tests.
+     *
+     * @var \Drupal\user\Entity\User
+     */
+    protected $adminUser;
 
-  /**
-   * Stores an admin user used by the different tests.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected $adminUser;
+    /**
+     * Tests the existence of the views plugin report.
+     */
+    public function testReport(): void
+    {
+        $this->drupalLogin($this->adminUser);
 
-  /**
-   * Tests the existence of the views plugin report.
-   */
-  public function testReport(): void {
-    $this->drupalLogin($this->adminUser);
-
-    // Test the report page.
-    $this->drupalGet('admin/reports/views-plugins');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+        // Test the report page.
+        $this->drupalGet('admin/reports/views-plugins');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

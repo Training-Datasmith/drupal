@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Drupal\Core\Template\Attribute;
 
 /**
@@ -18,4 +19,6 @@ namespace Drupal\Core\Template\Attribute;
  * permissions.
  */
 #[\Attribute(\Attribute::TARGET_METHOD)]
-final class TwigAllowed {}
+final class TwigAllowed
+{
+}

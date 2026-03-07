@@ -16,51 +16,53 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('filter')]
 #[RunTestsInSeparateProcesses]
-class FilterCaptionTwigDebugTest extends KernelTestBase {
+class FilterCaptionTwigDebugTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['filter'];
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
+        // Enable Twig debugging.
+        $parameters = $container->getParameter('twig.config');
+        $parameters['debug'] = true;
+        $container->setParameter('twig.config', $parameters);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
-    // Enable Twig debugging.
-    $parameters = $container->getParameter('twig.config');
-    $parameters['debug'] = TRUE;
-    $container->setParameter('twig.config', $parameters);
-  }
+    /**
+     * Tests the caption filter with Twig debugging on.
+     */
+    public function testCaptionFilter(): void
+    {
+        $manager = $this->container->get('plugin.manager.filter');
+        $bag = new FilterPluginCollection($manager, []);
+        $filter = $bag->get('filter_caption');
 
-  /**
-   * Tests the caption filter with Twig debugging on.
-   */
-  public function testCaptionFilter(): void {
-    $manager = $this->container->get('plugin.manager.filter');
-    $bag = new FilterPluginCollection($manager, []);
-    $filter = $bag->get('filter_caption');
+        $renderer = $this->container->get('renderer');
 
-    $renderer = $this->container->get('renderer');
+        $test = function ($input) use ($filter, $renderer) {
+            return $renderer->executeInRenderContext(new RenderContext(), function () use ($input, $filter) {
+                return $filter->process($input, 'und');
+            });
+        };
 
-    $test = function ($input) use ($filter, $renderer) {
-      return $renderer->executeInRenderContext(new RenderContext(), function () use ($input, $filter) {
-        return $filter->process($input, 'und');
-      });
-    };
+        // No data-caption attribute.
+        $input = '<img src="llama.jpg" />';
+        $expected = $input;
+        $this->assertEquals($expected, $test($input)->getProcessedText());
 
-    // No data-caption attribute.
-    $input = '<img src="llama.jpg" />';
-    $expected = $input;
-    $this->assertEquals($expected, $test($input)->getProcessedText());
-
-    // Data-caption attribute.
-    $input = '<img src="llama.jpg" data-caption="Loquacious llama!" />';
-    $expected = '<img src="llama.jpg">' . "\n" . '<figcaption>Loquacious llama!</figcaption>';
-    $output = $test($input)->getProcessedText();
-    $this->assertStringContainsString($expected, $output);
-    $this->assertStringContainsString("<!-- THEME HOOK: 'filter_caption' -->", $output);
-  }
+        // Data-caption attribute.
+        $input = '<img src="llama.jpg" data-caption="Loquacious llama!" />';
+        $expected = '<img src="llama.jpg">' . "\n" . '<figcaption>Loquacious llama!</figcaption>';
+        $output = $test($input)->getProcessedText();
+        $this->assertStringContainsString($expected, $output);
+        $this->assertStringContainsString("<!-- THEME HOOK: 'filter_caption' -->", $output);
+    }
 
 }

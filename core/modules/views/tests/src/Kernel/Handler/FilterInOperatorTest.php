@@ -18,269 +18,277 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FilterInOperatorTest extends ViewsKernelTestBase {
-  use StringTranslationTrait;
+class FilterInOperatorTest extends ViewsKernelTestBase
+{
+    use StringTranslationTrait;
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Map column names.
-   *
-   * @var array
-   */
-  protected $columnMap = [
-    'views_test_data_name' => 'name',
-    'views_test_data_age' => 'age',
-  ];
-
-  /**
-   * Defines Views data for the custom entity.
-   */
-  public function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['age']['filter']['id'] = 'in_operator';
-    return $data;
-  }
-
-  /**
-   * Tests filtering using the "IN" and "NOT IN" operators on the age field.
-   */
-  public function testFilterInOperatorSimple(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
-
-    // Add an in_operator ordering.
-    $view->displayHandlers->get('default')->overrideOption('filters', [
-      'age' => [
-        'id' => 'age',
-        'field' => 'age',
-        'table' => 'views_test_data',
-        'value' => [26, 30],
-        'operator' => 'in',
-      ],
-    ]);
-
-    $this->executeView($view);
-
-    $expected_result = [
-      [
-        'name' => 'Paul',
-        'age' => 26,
-      ],
-      [
-        'name' => 'Meredith',
-        'age' => 30,
-      ],
+    /**
+     * Map column names.
+     *
+     * @var array
+     */
+    protected $columnMap = [
+      'views_test_data_name' => 'name',
+      'views_test_data_age' => 'age',
     ];
 
-    $this->assertCount(2, $view->result);
-    $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
+    /**
+     * Defines Views data for the custom entity.
+     */
+    public function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['age']['filter']['id'] = 'in_operator';
+        return $data;
+    }
 
-    $view->destroy();
-    $view->setDisplay();
+    /**
+     * Tests filtering using the "IN" and "NOT IN" operators on the age field.
+     */
+    public function testFilterInOperatorSimple(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-    // Add an in_operator ordering.
-    $view->displayHandlers->get('default')->overrideOption('filters', [
-      'age' => [
-        'id' => 'age',
-        'field' => 'age',
-        'table' => 'views_test_data',
-        'value' => [26, 30],
-        'operator' => 'not in',
-      ],
-    ]);
+        // Add an in_operator ordering.
+        $view->displayHandlers->get('default')->overrideOption('filters', [
+          'age' => [
+            'id' => 'age',
+            'field' => 'age',
+            'table' => 'views_test_data',
+            'value' => [26, 30],
+            'operator' => 'in',
+          ],
+        ]);
 
-    $this->executeView($view);
+        $this->executeView($view);
 
-    $expected_result = [
-      [
-        'name' => 'John',
-        'age' => 25,
-      ],
-      [
-        'name' => 'George',
-        'age' => 27,
-      ],
-      [
-        'name' => 'Ringo',
-        'age' => 28,
-      ],
-    ];
+        $expected_result = [
+          [
+            'name' => 'Paul',
+            'age' => 26,
+          ],
+          [
+            'name' => 'Meredith',
+            'age' => 30,
+          ],
+        ];
 
-    $this->assertCount(3, $view->result);
-    $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-  }
+        $this->assertCount(2, $view->result);
+        $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
 
-  /**
-   * Tests filtering with grouped exposed filters using the "IN" operator.
-   */
-  public function testFilterInOperatorGroupedExposedSimple(): void {
-    $filters = $this->getGroupedExposedFilters();
-    $view = Views::getView('test_view');
+        $view->destroy();
+        $view->setDisplay();
 
-    // Filter: Age, Operator: in, Value: 26, 30.
-    $filters['age']['group_info']['default_group'] = 1;
-    $view->setDisplay();
-    $view->displayHandlers->get('default')->overrideOption('filters', $filters);
+        // Add an in_operator ordering.
+        $view->displayHandlers->get('default')->overrideOption('filters', [
+          'age' => [
+            'id' => 'age',
+            'field' => 'age',
+            'table' => 'views_test_data',
+            'value' => [26, 30],
+            'operator' => 'not in',
+          ],
+        ]);
 
-    $this->executeView($view);
+        $this->executeView($view);
 
-    $expected_result = [
-      [
-        'name' => 'Paul',
-        'age' => 26,
-      ],
-      [
-        'name' => 'Meredith',
-        'age' => 30,
-      ],
-    ];
+        $expected_result = [
+          [
+            'name' => 'John',
+            'age' => 25,
+          ],
+          [
+            'name' => 'George',
+            'age' => 27,
+          ],
+          [
+            'name' => 'Ringo',
+            'age' => 28,
+          ],
+        ];
 
-    $this->assertCount(2, $view->result);
-    $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-  }
+        $this->assertCount(3, $view->result);
+        $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
+    }
 
-  /**
-   * Tests filtering with grouped exposed filters using the "NOT IN" operator.
-   */
-  public function testFilterNotInOperatorGroupedExposedSimple(): void {
-    $filters = $this->getGroupedExposedFilters();
-    $view = Views::getView('test_view');
+    /**
+     * Tests filtering with grouped exposed filters using the "IN" operator.
+     */
+    public function testFilterInOperatorGroupedExposedSimple(): void
+    {
+        $filters = $this->getGroupedExposedFilters();
+        $view = Views::getView('test_view');
 
-    // Filter: Age, Operator: in, Value: 26, 30.
-    $filters['age']['group_info']['default_group'] = 2;
-    $view->setDisplay();
-    $view->displayHandlers->get('default')->overrideOption('filters', $filters);
+        // Filter: Age, Operator: in, Value: 26, 30.
+        $filters['age']['group_info']['default_group'] = 1;
+        $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('filters', $filters);
 
-    $this->executeView($view);
+        $this->executeView($view);
 
-    $expected_result = [
-      [
-        'name' => 'John',
-        'age' => 25,
-      ],
-      [
-        'name' => 'George',
-        'age' => 27,
-      ],
-      [
-        'name' => 'Ringo',
-        'age' => 28,
-      ],
-    ];
+        $expected_result = [
+          [
+            'name' => 'Paul',
+            'age' => 26,
+          ],
+          [
+            'name' => 'Meredith',
+            'age' => 30,
+          ],
+        ];
 
-    $this->assertCount(3, $view->result);
-    $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-  }
+        $this->assertCount(2, $view->result);
+        $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
+    }
 
-  /**
-   * Tests that we can safely change the identifier on a grouped filter.
-   */
-  public function testFilterGroupedChangedIdentifier(): void {
-    $filters = $this->getGroupedExposedFilters();
-    $view = Views::getView('test_view');
+    /**
+     * Tests filtering with grouped exposed filters using the "NOT IN" operator.
+     */
+    public function testFilterNotInOperatorGroupedExposedSimple(): void
+    {
+        $filters = $this->getGroupedExposedFilters();
+        $view = Views::getView('test_view');
 
-    $filters['age']['group_info']['default_group'] = 2;
-    $filters['age']['group_info']['identifier'] = 'not-age';
-    $view->setDisplay();
-    $view->displayHandlers->get('default')->overrideOption('filters', $filters);
+        // Filter: Age, Operator: in, Value: 26, 30.
+        $filters['age']['group_info']['default_group'] = 2;
+        $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('filters', $filters);
 
-    $this->executeView($view);
+        $this->executeView($view);
 
-    $expected_result = [
-      [
-        'name' => 'John',
-        'age' => 25,
-      ],
-      [
-        'name' => 'George',
-        'age' => 27,
-      ],
-      [
-        'name' => 'Ringo',
-        'age' => 28,
-      ],
-    ];
+        $expected_result = [
+          [
+            'name' => 'John',
+            'age' => 25,
+          ],
+          [
+            'name' => 'George',
+            'age' => 27,
+          ],
+          [
+            'name' => 'Ringo',
+            'age' => 28,
+          ],
+        ];
 
-    $this->assertCount(3, $view->result);
-    $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-  }
+        $this->assertCount(3, $view->result);
+        $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
+    }
 
-  /**
-   * Returns grouped exposed filter definitions for Views.
-   *
-   * @return array
-   *   An array of grouped exposed filters.
-   */
-  protected function getGroupedExposedFilters(): array {
-    $filters = [
-      'age' => [
-        'id' => 'age',
-        'table' => 'views_test_data',
-        'field' => 'age',
-        'relationship' => 'none',
-        'exposed' => TRUE,
-        'expose' => [
-          'operator' => 'age_op',
-          'label' => 'age',
-          'identifier' => 'age',
-        ],
-        'is_grouped' => TRUE,
-        'group_info' => [
-          'label' => 'age',
-          'identifier' => 'age',
-          'default_group' => 'All',
-          'group_items' => [
-            1 => [
-              'title' => 'Age is one of 26, 30',
-              'operator' => 'in',
-              'value' => [26, 30],
+    /**
+     * Tests that we can safely change the identifier on a grouped filter.
+     */
+    public function testFilterGroupedChangedIdentifier(): void
+    {
+        $filters = $this->getGroupedExposedFilters();
+        $view = Views::getView('test_view');
+
+        $filters['age']['group_info']['default_group'] = 2;
+        $filters['age']['group_info']['identifier'] = 'not-age';
+        $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('filters', $filters);
+
+        $this->executeView($view);
+
+        $expected_result = [
+          [
+            'name' => 'John',
+            'age' => 25,
+          ],
+          [
+            'name' => 'George',
+            'age' => 27,
+          ],
+          [
+            'name' => 'Ringo',
+            'age' => 28,
+          ],
+        ];
+
+        $this->assertCount(3, $view->result);
+        $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
+    }
+
+    /**
+     * Returns grouped exposed filter definitions for Views.
+     *
+     * @return array
+     *   An array of grouped exposed filters.
+     */
+    protected function getGroupedExposedFilters(): array
+    {
+        $filters = [
+          'age' => [
+            'id' => 'age',
+            'table' => 'views_test_data',
+            'field' => 'age',
+            'relationship' => 'none',
+            'exposed' => true,
+            'expose' => [
+              'operator' => 'age_op',
+              'label' => 'age',
+              'identifier' => 'age',
             ],
-            2 => [
-              'title' => 'Age is not one of 26, 30',
-              'operator' => 'not in',
-              'value' => [26, 30],
+            'is_grouped' => true,
+            'group_info' => [
+              'label' => 'age',
+              'identifier' => 'age',
+              'default_group' => 'All',
+              'group_items' => [
+                1 => [
+                  'title' => 'Age is one of 26, 30',
+                  'operator' => 'in',
+                  'value' => [26, 30],
+                ],
+                2 => [
+                  'title' => 'Age is not one of 26, 30',
+                  'operator' => 'not in',
+                  'value' => [26, 30],
+                ],
+              ],
             ],
           ],
-        ],
-      ],
-    ];
-    return $filters;
-  }
+        ];
+        return $filters;
+    }
 
-  /**
-   * Tests that the InOperator filter can handle TranslatableMarkup.
-   */
-  public function testFilterOptionAsMarkup(): void {
-    $view = $this->prophesize(ViewExecutable::class);
-    $display = $this->prophesize(DisplayPluginBase::class);
-    $display->getOption('relationships')->willReturn(FALSE);
-    $view->display_handler = $display->reveal();
+    /**
+     * Tests that the InOperator filter can handle TranslatableMarkup.
+     */
+    public function testFilterOptionAsMarkup(): void
+    {
+        $view = $this->prophesize(ViewExecutable::class);
+        $display = $this->prophesize(DisplayPluginBase::class);
+        $display->getOption('relationships')->willReturn(false);
+        $view->display_handler = $display->reveal();
 
-    /** @var \Drupal\views\Plugin\ViewsHandlerManager $manager */
-    $manager = $this->container->get('plugin.manager.views.filter');
-    /** @var \Drupal\views\Plugin\views\filter\InOperator $operator */
-    $operator = $manager->createInstance('in_operator');
-    $options = ['value' => ['foo' => [], 'baz' => []]];
-    $operator->init($view->reveal(), $display->reveal(), $options);
+        /** @var \Drupal\views\Plugin\ViewsHandlerManager $manager */
+        $manager = $this->container->get('plugin.manager.views.filter');
+        /** @var \Drupal\views\Plugin\views\filter\InOperator $operator */
+        $operator = $manager->createInstance('in_operator');
+        $options = ['value' => ['foo' => [], 'baz' => []]];
+        $operator->init($view->reveal(), $display->reveal(), $options);
 
-    $input_options = [
-      'foo' => 'bar',
-      'baz' => $this->t('qux'),
-      'foobar' => (object) ['option' => ['foobar' => 'dog']],
-    ];
-    $reduced_values = $operator->reduceValueOptions($input_options);
+        $input_options = [
+          'foo' => 'bar',
+          'baz' => $this->t('qux'),
+          'foobar' => (object) ['option' => ['foobar' => 'dog']],
+        ];
+        $reduced_values = $operator->reduceValueOptions($input_options);
 
-    $this->assertSame(['foo', 'baz'], array_keys($reduced_values));
-    $this->assertInstanceOf(TranslatableMarkup::class, $reduced_values['baz']);
-    $this->assertSame('qux', (string) $reduced_values['baz']);
-    $this->assertSame('bar', $reduced_values['foo']);
+        $this->assertSame(['foo', 'baz'], array_keys($reduced_values));
+        $this->assertInstanceOf(TranslatableMarkup::class, $reduced_values['baz']);
+        $this->assertSame('qux', (string) $reduced_values['baz']);
+        $this->assertSame('bar', $reduced_values['foo']);
 
-  }
+    }
 
 }

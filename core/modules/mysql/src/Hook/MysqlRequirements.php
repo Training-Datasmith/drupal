@@ -12,27 +12,28 @@ use Drupal\mysql\RequirementsTrait;
 /**
  * Requirements for the MySQL module.
  */
-class MysqlRequirements {
+class MysqlRequirements
+{
+    use RequirementsTrait;
+    use StringTranslationTrait;
 
-  use RequirementsTrait;
-  use StringTranslationTrait;
+    /**
+     * Implements hook_runtime_requirements().
+     */
+    #[Hook('runtime_requirements')]
+    public function runtime(): array
+    {
+        if (!Database::isActiveConnection()) {
+            return [];
+        }
 
-  /**
-   * Implements hook_runtime_requirements().
-   */
-  #[Hook('runtime_requirements')]
-  public function runtime(): array {
-    if (!Database::isActiveConnection()) {
-      return [];
+        $connection = Database::getConnection();
+        // Only show requirements when MySQL is the default database connection.
+        if (!($connection->driver() === 'mysql' && $connection->getProvider() === 'mysql')) {
+            return [];
+        }
+
+        return $this->getRuntimeRequirements($connection);
     }
-
-    $connection = Database::getConnection();
-    // Only show requirements when MySQL is the default database connection.
-    if (!($connection->driver() === 'mysql' && $connection->getProvider() === 'mysql')) {
-      return [];
-    }
-
-    return $this->getRuntimeRequirements($connection);
-  }
 
 }

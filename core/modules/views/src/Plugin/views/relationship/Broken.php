@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\relationship;
 
 use Drupal\views\Attribute\ViewsRelationship;
@@ -10,8 +12,9 @@ use Drupal\views\Plugin\views\BrokenHandlerTrait;
  *
  * @ingroup views_relationship_handlers
  */
-#[ViewsRelationship("broken")]
-class Broken extends RelationshipPluginBase {
-  use BrokenHandlerTrait;
+#[ViewsRelationship('broken')]
+class Broken extends RelationshipPluginBase
+{
+    use BrokenHandlerTrait;
 
 }

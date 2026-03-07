@@ -18,7 +18,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('ckeditor5')]
 #[Group('#slow')]
 #[RunTestsInSeparateProcesses]
-class ImageTestProviderTest extends ImageTestTestBase {
-  use ImageTestProviderTrait;
+class ImageTestProviderTest extends ImageTestTestBase
+{
+    use ImageTestProviderTrait;
 
 }

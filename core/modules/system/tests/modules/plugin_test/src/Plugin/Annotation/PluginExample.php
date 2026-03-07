@@ -11,32 +11,33 @@ use Drupal\Component\Annotation\AnnotationBase;
  *
  * @Annotation
  */
-class PluginExample extends AnnotationBase {
+class PluginExample extends AnnotationBase
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * Another plugin metadata.
+     *
+     * @var string
+     */
+    public $custom;
 
-  /**
-   * Another plugin metadata.
-   *
-   * @var string
-   */
-  public $custom;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get() {
-    return [
-      'id' => $this->id,
-      'custom' => $this->custom,
-      'class' => $this->class,
-      'provider' => $this->provider,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get()
+    {
+        return [
+          'id' => $this->id,
+          'custom' => $this->custom,
+          'class' => $this->class,
+          'provider' => $this->provider,
+        ];
+    }
 
 }

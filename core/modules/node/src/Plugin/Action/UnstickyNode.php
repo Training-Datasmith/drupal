@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\Action;
 
 use Drupal\Core\Action\Attribute\Action;
@@ -11,17 +13,18 @@ use Drupal\node\NodeInterface;
  * Makes a node not sticky.
  */
 #[Action(
-  id: 'node_make_unsticky_action',
-  label: new TranslatableMarkup('Make selected content not sticky'),
-  type: 'node'
+    id: 'node_make_unsticky_action',
+    label: new TranslatableMarkup('Make selected content not sticky'),
+    type: 'node'
 )]
-class UnstickyNode extends FieldUpdateActionBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getFieldsToUpdate(): array {
-    return ['sticky' => NodeInterface::NOT_STICKY];
-  }
+class UnstickyNode extends FieldUpdateActionBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getFieldsToUpdate(): array
+    {
+        return ['sticky' => NodeInterface::NOT_STICKY];
+    }
 
 }

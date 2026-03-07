@@ -11,7 +11,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a derivative of TestToolkit.
  */
 #[ImageToolkit(
-  id: "test:derived_toolkit",
-  title: new TranslatableMarkup("A dummy toolkit, derivative of 'test'."),
+    id: 'test:derived_toolkit',
+    title: new TranslatableMarkup("A dummy toolkit, derivative of 'test'."),
 )]
-class DerivedToolkit extends TestToolkit {}
+class DerivedToolkit extends TestToolkit
+{
+}

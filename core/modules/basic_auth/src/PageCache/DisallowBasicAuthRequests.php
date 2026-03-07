@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\basic_auth\PageCache;
 
 use Drupal\Core\PageCache\RequestPolicyInterface;
@@ -12,17 +14,18 @@ use Symfony\Component\HttpFoundation\Request;
  * reasons. Otherwise responses for authenticated requests can get into the
  * page cache and could be delivered to unprivileged users.
  */
-class DisallowBasicAuthRequests implements RequestPolicyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    $username = $request->headers->get('PHP_AUTH_USER');
-    $password = $request->headers->get('PHP_AUTH_PW');
-    if (isset($username) && isset($password)) {
-      return self::DENY;
+class DisallowBasicAuthRequests implements RequestPolicyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        $username = $request->headers->get('PHP_AUTH_USER');
+        $password = $request->headers->get('PHP_AUTH_PW');
+        if (isset($username) && isset($password)) {
+            return self::DENY;
+        }
     }
-  }
 
 }

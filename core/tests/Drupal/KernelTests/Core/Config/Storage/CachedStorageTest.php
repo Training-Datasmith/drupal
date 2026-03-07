@@ -15,72 +15,78 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class CachedStorageTest extends ConfigStorageTestBase {
+class CachedStorageTest extends ConfigStorageTestBase
+{
+    /**
+     * The cache backend the cached storage is using.
+     *
+     * @var \Drupal\Core\Cache\CacheBackendInterface
+     */
+    protected $cache;
 
-  /**
-   * The cache backend the cached storage is using.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
+    /**
+     * The file storage the cached storage is using.
+     *
+     * @var \Drupal\Core\Config\FileStorage
+     */
+    protected $fileStorage;
 
-  /**
-   * The file storage the cached storage is using.
-   *
-   * @var \Drupal\Core\Config\FileStorage
-   */
-  protected $fileStorage;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Create a directory.
+        $dir = PublicStream::basePath() . '/config';
+        $this->fileStorage = new FileStorage($dir);
+        $this->storage = new CachedStorage($this->fileStorage, \Drupal::service('cache.config'));
+        $this->cache = \Drupal::service('cache_factory')->get('config');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    // Create a directory.
-    $dir = PublicStream::basePath() . '/config';
-    $this->fileStorage = new FileStorage($dir);
-    $this->storage = new CachedStorage($this->fileStorage, \Drupal::service('cache.config'));
-    $this->cache = \Drupal::service('cache_factory')->get('config');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testInvalidStorage(): void
+    {
+        $this->markTestSkipped('No-op as this test does not make sense');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function testInvalidStorage(): void {
-    $this->markTestSkipped('No-op as this test does not make sense');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function read($name)
+    {
+        $data = $this->cache->get($name);
+        // Cache misses fall through to the underlying storage.
+        return $data ? $data->data : $this->fileStorage->read($name);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function read($name) {
-    $data = $this->cache->get($name);
-    // Cache misses fall through to the underlying storage.
-    return $data ? $data->data : $this->fileStorage->read($name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function insert($name, $data): void
+    {
+        $this->fileStorage->write($name, $data);
+        $this->cache->set($name, $data);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function insert($name, $data): void {
-    $this->fileStorage->write($name, $data);
-    $this->cache->set($name, $data);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function update($name, $data): void
+    {
+        $this->fileStorage->write($name, $data);
+        $this->cache->set($name, $data);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function update($name, $data): void {
-    $this->fileStorage->write($name, $data);
-    $this->cache->set($name, $data);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function delete($name): void {
-    $this->cache->delete($name);
-    unlink($this->fileStorage->getFilePath($name));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function delete($name): void
+    {
+        $this->cache->delete($name);
+        unlink($this->fileStorage->getFilePath($name));
+    }
 
 }

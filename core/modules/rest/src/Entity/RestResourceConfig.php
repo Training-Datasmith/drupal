@@ -1,266 +1,284 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\rest\Entity;
 
-use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\DefaultSingleLazyPluginCollection;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\rest\RestResourceConfigInterface;
 
 /**
  * Defines a RestResourceConfig configuration entity class.
  */
 #[ConfigEntityType(
-  id: 'rest_resource_config',
-  label: new TranslatableMarkup('REST resource configuration'),
-  label_collection: new TranslatableMarkup('REST resource configurations'),
-  label_singular: new TranslatableMarkup('REST resource configuration'),
-  label_plural: new TranslatableMarkup('REST resource configurations'),
-  config_prefix: 'resource',
-  entity_keys: [
+    id: 'rest_resource_config',
+    label: new TranslatableMarkup('REST resource configuration'),
+    label_collection: new TranslatableMarkup('REST resource configurations'),
+    label_singular: new TranslatableMarkup('REST resource configuration'),
+    label_plural: new TranslatableMarkup('REST resource configurations'),
+    config_prefix: 'resource',
+    entity_keys: [
     'id' => 'id',
   ],
-  admin_permission: 'administer rest resources',
-  label_count: [
+    admin_permission: 'administer rest resources',
+    label_count: [
     'singular' => '@count REST resource configuration',
     'plural' => '@count REST resource configurations',
   ],
-  config_export: [
+    config_export: [
     'id',
     'plugin_id',
     'granularity',
     'configuration',
   ],
 )]
-class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigInterface {
+class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigInterface
+{
+    /**
+     * The REST resource config id.
+     *
+     * @var string
+     */
+    protected $id;
 
-  /**
-   * The REST resource config id.
-   *
-   * @var string
-   */
-  protected $id;
+    /**
+     * The REST resource plugin id.
+     *
+     * @var string
+     */
+    protected $plugin_id;
 
-  /**
-   * The REST resource plugin id.
-   *
-   * @var string
-   */
-  protected $plugin_id;
+    /**
+     * The REST resource configuration granularity.
+     *
+     * Currently either:
+     * - \Drupal\rest\RestResourceConfigInterface::METHOD_GRANULARITY
+     * - \Drupal\rest\RestResourceConfigInterface::RESOURCE_GRANULARITY
+     *
+     * @var string
+     */
+    protected $granularity;
 
-  /**
-   * The REST resource configuration granularity.
-   *
-   * Currently either:
-   * - \Drupal\rest\RestResourceConfigInterface::METHOD_GRANULARITY
-   * - \Drupal\rest\RestResourceConfigInterface::RESOURCE_GRANULARITY
-   *
-   * @var string
-   */
-  protected $granularity;
+    /**
+     * The REST resource configuration.
+     *
+     * @var array
+     */
+    protected $configuration;
 
-  /**
-   * The REST resource configuration.
-   *
-   * @var array
-   */
-  protected $configuration;
+    /**
+     * The rest resource plugin manager.
+     *
+     * @var \Drupal\Component\Plugin\PluginManagerInterface
+     */
+    protected $pluginManager;
 
-  /**
-   * The rest resource plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $pluginManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $values, $entity_type) {
-    parent::__construct($values, $entity_type);
-    // The config entity id looks like the plugin id but uses __ instead of :
-    // because : is not valid for config entities.
-    if (!isset($this->plugin_id) && isset($this->id)) {
-      // Generate plugin_id on first entity creation.
-      $this->plugin_id = str_replace('.', ':', $this->id);
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $values, $entity_type)
+    {
+        parent::__construct($values, $entity_type);
+        // The config entity id looks like the plugin id but uses __ instead of :
+        // because : is not valid for config entities.
+        if (!isset($this->plugin_id) && isset($this->id)) {
+            // Generate plugin_id on first entity creation.
+            $this->plugin_id = str_replace('.', ':', $this->id);
+        }
     }
-  }
 
-  /**
-   * Returns the resource plugin manager.
-   *
-   * @return \Drupal\Component\Plugin\PluginManagerInterface
-   *   The REST plugin manager service.
-   */
-  protected function getResourcePluginManager() {
-    if (!isset($this->pluginManager)) {
-      $this->pluginManager = \Drupal::service('plugin.manager.rest');
+    /**
+     * Returns the resource plugin manager.
+     *
+     * @return \Drupal\Component\Plugin\PluginManagerInterface
+     *   The REST plugin manager service.
+     */
+    protected function getResourcePluginManager()
+    {
+        if (!isset($this->pluginManager)) {
+            $this->pluginManager = \Drupal::service('plugin.manager.rest');
+        }
+        return $this->pluginManager;
     }
-    return $this->pluginManager;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getResourcePlugin() {
-    return $this->getPluginCollections()['resource']->get($this->plugin_id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMethods() {
-    return match ($this->granularity) {
-        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getMethodsForMethodGranularity(),
-        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['methods'],
-        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
-    };
-  }
-
-  /**
-   * Retrieves a list of supported HTTP methods for this resource.
-   *
-   * @return string[]
-   *   A list of supported HTTP methods.
-   */
-  protected function getMethodsForMethodGranularity(): array {
-    $methods = array_keys($this->configuration);
-    return array_map($this->normalizeRestMethod(...), $methods);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAuthenticationProviders($method) {
-    return match ($this->granularity) {
-        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getAuthenticationProvidersForMethodGranularity($method),
-        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['authentication'],
-        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
-    };
-  }
-
-  /**
-   * Retrieves a list of supported authentication providers.
-   *
-   * @param string $method
-   *   The request method e.g GET or POST.
-   *
-   * @return string[]
-   *   A list of supported authentication provider IDs.
-   */
-  public function getAuthenticationProvidersForMethodGranularity($method) {
-    $method = $this->normalizeRestMethod($method);
-    if (in_array($method, $this->getMethods()) && isset($this->configuration[$method]['supported_auth'])) {
-      return $this->configuration[$method]['supported_auth'];
+    /**
+     * {@inheritdoc}
+     */
+    public function getResourcePlugin()
+    {
+        return $this->getPluginCollections()['resource']->get($this->plugin_id);
     }
-    return [];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormats($method) {
-    return match ($this->granularity) {
-        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getFormatsForMethodGranularity($method),
-        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['formats'],
-        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
-    };
-  }
-
-  /**
-   * Retrieves a list of supported response formats.
-   *
-   * @param string $method
-   *   The request method e.g GET or POST.
-   *
-   * @return string[]
-   *   A list of supported format IDs.
-   */
-  protected function getFormatsForMethodGranularity($method) {
-    $method = $this->normalizeRestMethod($method);
-    if (in_array($method, $this->getMethods()) && isset($this->configuration[$method]['supported_formats'])) {
-      return $this->configuration[$method]['supported_formats'];
+    /**
+     * {@inheritdoc}
+     */
+    public function getMethods()
+    {
+        return match ($this->granularity) {
+            RestResourceConfigInterface::METHOD_GRANULARITY => $this->getMethodsForMethodGranularity(),
+            RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['methods'],
+            default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+        };
     }
-    return [];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPluginCollections(): array {
-    return [
-      'resource' => new DefaultSingleLazyPluginCollection($this->getResourcePluginManager(), $this->plugin_id, []),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies(): static {
-    parent::calculateDependencies();
-
-    foreach ($this->getRestResourceDependencies()->calculateDependencies($this) as $type => $dependencies) {
-      foreach ($dependencies as $dependency) {
-        $this->addDependency($type, $dependency);
-      }
+    /**
+     * Retrieves a list of supported HTTP methods for this resource.
+     *
+     * @return string[]
+     *   A list of supported HTTP methods.
+     */
+    protected function getMethodsForMethodGranularity(): array
+    {
+        $methods = array_keys($this->configuration);
+        return array_map($this->normalizeRestMethod(...), $methods);
     }
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onDependencyRemoval(array $dependencies): bool {
-    $parent = parent::onDependencyRemoval($dependencies);
+    /**
+     * {@inheritdoc}
+     */
+    public function getAuthenticationProviders($method)
+    {
+        return match ($this->granularity) {
+            RestResourceConfigInterface::METHOD_GRANULARITY => $this->getAuthenticationProvidersForMethodGranularity($method),
+            RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['authentication'],
+            default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+        };
+    }
 
-    // If the dependency problems are not marked as fixed at this point they
-    // should be related to the resource plugin and the config entity should
-    // be deleted.
-    $changed = $this->getRestResourceDependencies()->onDependencyRemoval($this, $dependencies);
-    return $parent || $changed;
-  }
+    /**
+     * Retrieves a list of supported authentication providers.
+     *
+     * @param string $method
+     *   The request method e.g GET or POST.
+     *
+     * @return string[]
+     *   A list of supported authentication provider IDs.
+     */
+    public function getAuthenticationProvidersForMethodGranularity($method)
+    {
+        $method = $this->normalizeRestMethod($method);
+        if (in_array($method, $this->getMethods()) && isset($this->configuration[$method]['supported_auth'])) {
+            return $this->configuration[$method]['supported_auth'];
+        }
+        return [];
+    }
 
-  /**
-   * Returns the REST resource dependencies.
-   *
-   * @return \Drupal\rest\Entity\ConfigDependencies
-   *   The REST resource dependencies.
-   */
-  protected function getRestResourceDependencies() {
-    return \Drupal::service('class_resolver')->getInstanceFromDefinition(ConfigDependencies::class);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormats($method)
+    {
+        return match ($this->granularity) {
+            RestResourceConfigInterface::METHOD_GRANULARITY => $this->getFormatsForMethodGranularity($method),
+            RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['formats'],
+            default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+        };
+    }
 
-  /**
-   * Normalizes the method.
-   *
-   * @param string $method
-   *   The request method.
-   *
-   * @return string
-   *   The normalized request method.
-   */
-  protected function normalizeRestMethod($method): string {
-    return strtoupper($method);
-  }
+    /**
+     * Retrieves a list of supported response formats.
+     *
+     * @param string $method
+     *   The request method e.g GET or POST.
+     *
+     * @return string[]
+     *   A list of supported format IDs.
+     */
+    protected function getFormatsForMethodGranularity($method)
+    {
+        $method = $this->normalizeRestMethod($method);
+        if (in_array($method, $this->getMethods()) && isset($this->configuration[$method]['supported_formats'])) {
+            return $this->configuration[$method]['supported_formats'];
+        }
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage, $update);
+    /**
+     * {@inheritdoc}
+     */
+    public function getPluginCollections(): array
+    {
+        return [
+          'resource' => new DefaultSingleLazyPluginCollection($this->getResourcePluginManager(), $this->plugin_id, []),
+        ];
+    }
 
-    \Drupal::service('router.builder')->setRebuildNeeded();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies(): static
+    {
+        parent::calculateDependencies();
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::postDelete($storage, $entities);
+        foreach ($this->getRestResourceDependencies()->calculateDependencies($this) as $type => $dependencies) {
+            foreach ($dependencies as $dependency) {
+                $this->addDependency($type, $dependency);
+            }
+        }
+        return $this;
+    }
 
-    \Drupal::service('router.builder')->setRebuildNeeded();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function onDependencyRemoval(array $dependencies): bool
+    {
+        $parent = parent::onDependencyRemoval($dependencies);
+
+        // If the dependency problems are not marked as fixed at this point they
+        // should be related to the resource plugin and the config entity should
+        // be deleted.
+        $changed = $this->getRestResourceDependencies()->onDependencyRemoval($this, $dependencies);
+        return $parent || $changed;
+    }
+
+    /**
+     * Returns the REST resource dependencies.
+     *
+     * @return \Drupal\rest\Entity\ConfigDependencies
+     *   The REST resource dependencies.
+     */
+    protected function getRestResourceDependencies()
+    {
+        return \Drupal::service('class_resolver')->getInstanceFromDefinition(ConfigDependencies::class);
+    }
+
+    /**
+     * Normalizes the method.
+     *
+     * @param string $method
+     *   The request method.
+     *
+     * @return string
+     *   The normalized request method.
+     */
+    protected function normalizeRestMethod($method): string
+    {
+        return strtoupper($method);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave(EntityStorageInterface $storage, $update = true): void
+    {
+        parent::postSave($storage, $update);
+
+        \Drupal::service('router.builder')->setRebuildNeeded();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::postDelete($storage, $entities);
+
+        \Drupal::service('router.builder')->setRebuildNeeded();
+    }
 
 }

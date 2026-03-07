@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -13,31 +15,32 @@ use Symfony\Component\Validator\Constraints\EmailValidator;
  * Overrides the symfony constraint to use the strict setting.
  */
 #[Constraint(
-  id: 'Email',
-  label: new TranslatableMarkup('Email', [], ['context' => 'Validation'])
+    id: 'Email',
+    label: new TranslatableMarkup('Email', [], ['context' => 'Validation'])
 )]
-class EmailConstraint extends Email {
+class EmailConstraint extends Email
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(
+        ?array $options = null,
+        ?string $message = null,
+        ?string $mode = null,
+        ?callable $normalizer = null,
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $message, $mode, $normalizer, $groups, $payload);
+        $this->mode = static::VALIDATION_MODE_STRICT;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    ?array $options = NULL,
-    ?string $message = NULL,
-    ?string $mode = NULL,
-    ?callable $normalizer = NULL,
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $message, $mode, $normalizer, $groups, $payload);
-    $this->mode = static::VALIDATION_MODE_STRICT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validatedBy(): string {
-    return EmailValidator::class;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy(): string
+    {
+        return EmailValidator::class;
+    }
 
 }

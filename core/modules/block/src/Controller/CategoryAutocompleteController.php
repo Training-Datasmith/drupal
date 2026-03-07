@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block\Controller;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,45 +13,47 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Returns autocomplete responses for block categories.
  */
-class CategoryAutocompleteController implements ContainerInjectionInterface {
-
-  /**
-   * Constructs a new CategoryAutocompleteController.
-   *
-   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
-   *   The block manager.
-   */
-  public function __construct(protected \Drupal\Core\Block\BlockManagerInterface $blockManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('plugin.manager.block')
-    );
-  }
-
-  /**
-   * Retrieves suggestions for block category autocompletion.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The current request.
-   *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   A JSON response containing autocomplete suggestions.
-   */
-  public function autocomplete(Request $request) {
-    $typed_category = $request->query->get('q');
-    $matches = [];
-    foreach ($this->blockManager->getCategories() as $category) {
-      if (stripos($category, (string) $typed_category) === 0) {
-        $matches[] = ['value' => $category, 'label' => Html::escape($category)];
-      }
+class CategoryAutocompleteController implements ContainerInjectionInterface
+{
+    /**
+     * Constructs a new CategoryAutocompleteController.
+     *
+     * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
+     *   The block manager.
+     */
+    public function __construct(protected \Drupal\Core\Block\BlockManagerInterface $blockManager)
+    {
     }
-    return new JsonResponse($matches);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('plugin.manager.block')
+        );
+    }
+
+    /**
+     * Retrieves suggestions for block category autocompletion.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The current request.
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     *   A JSON response containing autocomplete suggestions.
+     */
+    public function autocomplete(Request $request)
+    {
+        $typed_category = $request->query->get('q');
+        $matches = [];
+        foreach ($this->blockManager->getCategories() as $category) {
+            if (stripos($category, (string) $typed_category) === 0) {
+                $matches[] = ['value' => $category, 'label' => Html::escape($category)];
+            }
+        }
+        return new JsonResponse($matches);
+    }
 
 }

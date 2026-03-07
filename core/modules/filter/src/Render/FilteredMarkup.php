@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Render;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -19,7 +21,8 @@ use Drupal\Component\Render\MarkupTrait;
  *
  * @see \Drupal\Core\Render\Markup
  */
-final class FilteredMarkup implements MarkupInterface, \Countable {
-  use MarkupTrait;
+final class FilteredMarkup implements MarkupInterface, \Countable
+{
+    use MarkupTrait;
 
 }

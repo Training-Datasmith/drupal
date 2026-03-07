@@ -18,18 +18,19 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 #[CoversClass(Router::class)]
 #[Group('Routing')]
 #[IgnoreDeprecations]
-class RouterUnsupportedTest extends UnitTestCase {
-
-  /**
-   * Tests generate unsupported.
-   */
-  public function testGenerateUnsupported(): void {
-    $this->expectException(\BadMethodCallException::class);
-    $route_provider = $this->prophesize(RouteProviderInterface::class);
-    $current_path_stack = $this->prophesize(CurrentPathStack::class);
-    $route_name = 'test.route';
-    $router = new Router($route_provider->reveal(), $current_path_stack->reveal());
-    $router->generate($route_name);
-  }
+class RouterUnsupportedTest extends UnitTestCase
+{
+    /**
+     * Tests generate unsupported.
+     */
+    public function testGenerateUnsupported(): void
+    {
+        $this->expectException(\BadMethodCallException::class);
+        $route_provider = $this->prophesize(RouteProviderInterface::class);
+        $current_path_stack = $this->prophesize(CurrentPathStack::class);
+        $route_name = 'test.route';
+        $router = new Router($route_provider->reveal(), $current_path_stack->reveal());
+        $router->generate($route_name);
+    }
 
 }

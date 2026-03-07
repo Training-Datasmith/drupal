@@ -17,105 +17,110 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 #[CoversClass(CachePreWarmer::class)]
 #[Group('PreWarm')]
-class CachePreWarmerTest extends UnitTestCase {
+class CachePreWarmerTest extends UnitTestCase
+{
+    /**
+     * @var \Drupal\Core\DependencyInjection\ClassResolverInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected MockObject|ClassResolverInterface $classResolver;
 
-  /**
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected MockObject|ClassResolverInterface $classResolver;
+    /**
+     * @var \SplObjectStorage<\Drupal\Core\PreWarm\PreWarmableInterface|\PHPUnit\Framework\MockObject\MockObject>
+     */
+    protected \SplObjectStorage $warmedMap;
 
-  /**
-   * @var \SplObjectStorage<\Drupal\Core\PreWarm\PreWarmableInterface|\PHPUnit\Framework\MockObject\MockObject>
-   */
-  protected \SplObjectStorage $warmedMap;
+    public function testNoServices(): void
+    {
+        $classResolver = $this->createMock(ClassResolverInterface::class);
+        $classResolver->expects($this->never())
+          ->method('getInstanceFromDefinition');
 
-  public function testNoServices(): void {
-    $classResolver = $this->createMock(ClassResolverInterface::class);
-    $classResolver->expects($this->never())
-      ->method('getInstanceFromDefinition');
+        $prewarmer = new CachePreWarmer($classResolver, []);
 
-    $prewarmer = new CachePreWarmer($classResolver, []);
-
-    $this->assertFalse($prewarmer->preWarmOneCache());
-    $this->assertFalse($prewarmer->preWarmAllCaches());
-  }
-
-  protected function setupCacheServices(): void {
-    $this->classResolver = $this->createMock(ClassResolverInterface::class);
-    $this->warmedMap = new \SplObjectStorage();
-
-    for ($i = 0; $i < 4; $i++) {
-      $serviceId = 'service' . $i;
-      $serviceMock = $this->createMock(PrewarmableInterface::class);
-      $this->warmedMap[$serviceMock] = 0;
-
-      $serviceMock->method('preWarm')
-        ->willReturnCallback(function () use ($serviceMock): void {
-          $this->warmedMap[$serviceMock] = 1 + $this->warmedMap[$serviceMock];
-        });
-
-      $returnMap[] = [$serviceId, $serviceMock];
+        $this->assertFalse($prewarmer->preWarmOneCache());
+        $this->assertFalse($prewarmer->preWarmAllCaches());
     }
 
-    $this->classResolver->method('getInstanceFromDefinition')
-      ->willReturnMap($returnMap);
-  }
+    protected function setupCacheServices(): void
+    {
+        $this->classResolver = $this->createMock(ClassResolverInterface::class);
+        $this->warmedMap = new \SplObjectStorage();
 
-  /**
-   * Tests pre warm only one.
-   *
-   * @legacy-covers ::preWarmOneCache
-   */
-  public function testPreWarmOnlyOne(): void {
-    $this->setupCacheServices();
+        for ($i = 0; $i < 4; $i++) {
+            $serviceId = 'service' . $i;
+            $serviceMock = $this->createMock(PrewarmableInterface::class);
+            $this->warmedMap[$serviceMock] = 0;
 
-    $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
+            $serviceMock->method('preWarm')
+              ->willReturnCallback(function () use ($serviceMock): void {
+                  $this->warmedMap[$serviceMock] = 1 + $this->warmedMap[$serviceMock];
+              });
 
-    $this->assertTrue($preWarmer->preWarmOneCache());
+            $returnMap[] = [$serviceId, $serviceMock];
+        }
 
-    $warmed = 0;
-    foreach ($this->warmedMap as $service) {
-      $warmed += $this->warmedMap[$service];
-    }
-    $this->assertEquals(1, $warmed);
-  }
-
-  /**
-   * Tests pre warm by one.
-   *
-   * @legacy-covers ::preWarmOneCache
-   */
-  public function testPreWarmByOne(): void {
-    $this->setupCacheServices();
-
-    $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
-
-    while ($preWarmer->preWarmOneCache()) {
-
+        $this->classResolver->method('getInstanceFromDefinition')
+          ->willReturnMap($returnMap);
     }
 
-    foreach ($this->warmedMap as $service) {
-      $this->assertEquals(1, $this->warmedMap[$service]);
+    /**
+     * Tests pre warm only one.
+     *
+     * @legacy-covers ::preWarmOneCache
+     */
+    public function testPreWarmOnlyOne(): void
+    {
+        $this->setupCacheServices();
+
+        $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
+
+        $this->assertTrue($preWarmer->preWarmOneCache());
+
+        $warmed = 0;
+        foreach ($this->warmedMap as $service) {
+            $warmed += $this->warmedMap[$service];
+        }
+        $this->assertEquals(1, $warmed);
     }
-  }
 
-  /**
-   * Tests pre warm all.
-   *
-   * @legacy-covers ::preWarmAllCaches
-   */
-  public function testPreWarmAll(): void {
-    $this->setupCacheServices();
+    /**
+     * Tests pre warm by one.
+     *
+     * @legacy-covers ::preWarmOneCache
+     */
+    public function testPreWarmByOne(): void
+    {
+        $this->setupCacheServices();
 
-    $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
+        $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
 
-    $this->assertTrue($preWarmer->preWarmAllCaches());
+        while ($preWarmer->preWarmOneCache()) {
 
-    foreach ($this->warmedMap as $service) {
-      $this->assertEquals(1, $this->warmedMap[$service]);
+        }
+
+        foreach ($this->warmedMap as $service) {
+            $this->assertEquals(1, $this->warmedMap[$service]);
+        }
     }
 
-    $this->assertFalse($preWarmer->preWarmAllCaches());
-  }
+    /**
+     * Tests pre warm all.
+     *
+     * @legacy-covers ::preWarmAllCaches
+     */
+    public function testPreWarmAll(): void
+    {
+        $this->setupCacheServices();
+
+        $preWarmer = new CachePreWarmer($this->classResolver, ['service0', 'service1', 'service2', 'service3']);
+
+        $this->assertTrue($preWarmer->preWarmAllCaches());
+
+        foreach ($this->warmedMap as $service) {
+            $this->assertEquals(1, $this->warmedMap[$service]);
+        }
+
+        $this->assertFalse($preWarmer->preWarmAllCaches());
+    }
 
 }

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\Menu\Form;
 
-use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Menu\Form\MenuLinkDefaultForm;
+use Drupal\Core\Url;
 
 /**
  * Provides a form to edit Views menu links.
@@ -14,70 +16,71 @@ use Drupal\Core\Menu\Form\MenuLinkDefaultForm;
  *
  * @see \Drupal\views\Plugin\Menu\ViewsMenuLink
  */
-class ViewsMenuLinkForm extends MenuLinkDefaultForm {
+class ViewsMenuLinkForm extends MenuLinkDefaultForm
+{
+    /**
+     * The edited views menu link.
+     *
+     * @var \Drupal\views\Plugin\Menu\ViewsMenuLink
+     */
+    protected $menuLink;
 
-  /**
-   * The edited views menu link.
-   *
-   * @var \Drupal\views\Plugin\Menu\ViewsMenuLink
-   */
-  protected $menuLink;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+        // Put the title field first.
+        $form['title'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Title'),
+          // @todo Ensure that the view is not loaded with a localized title.
+          //   https://www.drupal.org/node/2309507
+          '#default_value' => $this->menuLink->getTitle(),
+          '#weight' => -10,
+        ];
 
-    // Put the title field first.
-    $form['title'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Title'),
-      // @todo Ensure that the view is not loaded with a localized title.
-      //   https://www.drupal.org/node/2309507
-      '#default_value' => $this->menuLink->getTitle(),
-      '#weight' => -10,
-    ];
+        $form['description'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Description'),
+          '#description' => $this->t('Shown when hovering over the menu link.'),
+          // @todo Ensure that the view is not loaded with a localized description.
+          //   https://www.drupal.org/node/2309507
+          '#default_value' => $this->menuLink->getDescription(),
+          '#weight' => -5,
+        ];
 
-    $form['description'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Description'),
-      '#description' => $this->t('Shown when hovering over the menu link.'),
-      // @todo Ensure that the view is not loaded with a localized description.
-      //   https://www.drupal.org/node/2309507
-      '#default_value' => $this->menuLink->getDescription(),
-      '#weight' => -5,
-    ];
+        $form += parent::buildConfigurationForm($form, $form_state);
 
-    $form += parent::buildConfigurationForm($form, $form_state);
+        $form['info']['#weight'] = -8;
+        $form['path']['#weight'] = -7;
 
-    $form['info']['#weight'] = -8;
-    $form['path']['#weight'] = -7;
-
-    $view = $this->menuLink->loadView();
-    $id = $view->storage->id();
-    $label = $view->storage->label();
-    if ($this->moduleHandler->moduleExists('views_ui')) {
-      $message = $this->t('This link is provided by the Views module. The path can be changed by editing the view <a href=":url">@label</a>', [
-        ':url' => Url::fromRoute('entity.view.edit_form', ['view' => $id])->toString(),
-        '@label' => $label,
-      ]);
+        $view = $this->menuLink->loadView();
+        $id = $view->storage->id();
+        $label = $view->storage->label();
+        if ($this->moduleHandler->moduleExists('views_ui')) {
+            $message = $this->t('This link is provided by the Views module. The path can be changed by editing the view <a href=":url">@label</a>', [
+              ':url' => Url::fromRoute('entity.view.edit_form', ['view' => $id])->toString(),
+              '@label' => $label,
+            ]);
+        } else {
+            $message = $this->t('This link is provided by the Views module from view %label.', ['%label' => $label]);
+        }
+        $form['info']['#title'] = $message;
+        return $form;
     }
-    else {
-      $message = $this->t('This link is provided by the Views module from view %label.', ['%label' => $label]);
+
+    /**
+     * {@inheritdoc}
+     */
+    public function extractFormValues(array &$form, FormStateInterface $form_state)
+    {
+        $definition = parent::extractFormValues($form, $form_state);
+        $definition['title'] = $form_state->getValue('title');
+        $definition['description'] = $form_state->getValue('description');
+
+        return $definition;
     }
-    $form['info']['#title'] = $message;
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function extractFormValues(array &$form, FormStateInterface $form_state) {
-    $definition = parent::extractFormValues($form, $form_state);
-    $definition['title'] = $form_state->getValue('title');
-    $definition['description'] = $form_state->getValue('description');
-
-    return $definition;
-  }
 
 }

@@ -14,29 +14,31 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
  *
  * Redirects CSRF 403 exceptions to a _csrf_confirm_form_route.
  */
-class CsrfExceptionSubscriber extends HttpExceptionSubscriberBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getHandledFormats(): array {
-    return ['html'];
-  }
-
-  /**
-   * Handles a 403 error for HTML.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The event to process.
-   */
-  public function on403(ExceptionEvent $event): void {
-    $request = $event->getRequest();
-    $routeMatch = RouteMatch::createFromRequest($request);
-    $route = $routeMatch->getRouteObject();
-    if (!$route->hasRequirement('_csrf_token') || empty($route->getOption('_csrf_confirm_form_route'))) {
-      return;
+class CsrfExceptionSubscriber extends HttpExceptionSubscriberBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getHandledFormats(): array
+    {
+        return ['html'];
     }
-    $event->setResponse(new RedirectResponse(Url::fromRoute($route->getOption('_csrf_confirm_form_route'))->toString()));
-  }
+
+    /**
+     * Handles a 403 error for HTML.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+     *   The event to process.
+     */
+    public function on403(ExceptionEvent $event): void
+    {
+        $request = $event->getRequest();
+        $routeMatch = RouteMatch::createFromRequest($request);
+        $route = $routeMatch->getRouteObject();
+        if (!$route->hasRequirement('_csrf_token') || empty($route->getOption('_csrf_confirm_form_route'))) {
+            return;
+        }
+        $event->setResponse(new RedirectResponse(Url::fromRoute($route->getOption('_csrf_confirm_form_route'))->toString()));
+    }
 
 }

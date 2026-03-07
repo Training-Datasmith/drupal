@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Attribute\EntityReferenceSelection;
@@ -11,56 +13,59 @@ use Drupal\file\FileInterface;
  * Provides specific access control for the file entity type.
  */
 #[EntityReferenceSelection(
-  id: "default:file",
-  label: new TranslatableMarkup("File selection"),
-  entity_types: ["file"],
-  group: "default",
-  weight: 1
+    id: 'default:file',
+    label: new TranslatableMarkup('File selection'),
+    entity_types: ['file'],
+    group: 'default',
+    weight: 1
 )]
-class FileSelection extends DefaultSelection {
+class FileSelection extends DefaultSelection
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildEntityQuery($match = null, $match_operator = 'CONTAINS')
+    {
+        $query = parent::buildEntityQuery($match, $match_operator);
+        // Allow referencing :
+        // - files with status "permanent"
+        // - or files uploaded by the current user (since newly uploaded files only
+        //   become "permanent" after the containing entity gets validated and
+        //   saved.)
+        $query->condition($query->orConditionGroup()
+          ->condition('status', FileInterface::STATUS_PERMANENT)
+          ->condition('uid', $this->currentUser->id()));
+        return $query;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
-    $query = parent::buildEntityQuery($match, $match_operator);
-    // Allow referencing :
-    // - files with status "permanent"
-    // - or files uploaded by the current user (since newly uploaded files only
-    //   become "permanent" after the containing entity gets validated and
-    //   saved.)
-    $query->condition($query->orConditionGroup()
-      ->condition('status', FileInterface::STATUS_PERMANENT)
-      ->condition('uid', $this->currentUser->id()));
-    return $query;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function createNewEntity($entity_type_id, $bundle, $label, $uid)
+    {
+        $file = parent::createNewEntity($entity_type_id, $bundle, $label, $uid);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createNewEntity($entity_type_id, $bundle, $label, $uid) {
-    $file = parent::createNewEntity($entity_type_id, $bundle, $label, $uid);
-
-    // In order to create a referenceable file, it needs to have a "permanent"
-    // status.
-    /** @var \Drupal\file\FileInterface $file */
-    $file->setPermanent();
-
-    return $file;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateReferenceableNewEntities(array $entities): array {
-    $entities = parent::validateReferenceableNewEntities($entities);
-    return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $file): bool {
+        // In order to create a referenceable file, it needs to have a "permanent"
+        // status.
         /** @var \Drupal\file\FileInterface $file */
-        if ($file->isPermanent()) {
-            return true;
-        }
-        return $file->getOwnerId() === $this->currentUser->id();
-    });
-  }
+        $file->setPermanent();
+
+        return $file;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateReferenceableNewEntities(array $entities): array
+    {
+        $entities = parent::validateReferenceableNewEntities($entities);
+        return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $file): bool {
+            /** @var \Drupal\file\FileInterface $file */
+            if ($file->isPermanent()) {
+                return true;
+            }
+            return $file->getOwnerId() === $this->currentUser->id();
+        });
+    }
 
 }

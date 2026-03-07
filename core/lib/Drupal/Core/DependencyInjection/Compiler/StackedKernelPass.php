@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection\Compiler;
 
 use Drupal\Core\StackMiddleware\StackedHttpKernel;
@@ -43,71 +45,73 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @see \Drupal\Core\StackMiddleware\StackedHttpKernel
  */
-class StackedKernelPass extends AbstractRecursivePass implements CompilerPassInterface {
+class StackedKernelPass extends AbstractRecursivePass implements CompilerPassInterface
+{
+    use PriorityTaggedServiceTrait;
 
-  use PriorityTaggedServiceTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
+    {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process(ContainerBuilder $container): void {
+        if (!$container->hasDefinition('http_kernel')) {
+            return;
+        }
 
-    if (!$container->hasDefinition('http_kernel')) {
-      return;
+        $stacked_kernel = $container->getDefinition('http_kernel');
+
+        // Return now if this is not a stacked kernel.
+        if ($stacked_kernel->getClass() !== StackedHttpKernel::class) {
+            return;
+        }
+
+        $decorated_id = 'http_kernel.basic';
+        $middlewares_param = [new Reference($decorated_id)];
+
+        foreach (array_reverse($this->findAndSortTaggedServices('http_middleware', $container)) as $ref) {
+            // Prepend a reference to the middlewares container parameter.
+            array_unshift($middlewares_param, $ref);
+
+            // Setup an alias on the outer middleware pointing to the inner one.
+            $decorator_id = (string) $ref;
+            $container->setAlias($decorator_id . '.http_middleware_inner', $decorated_id);
+            $decorated_id = $decorator_id;
+        }
+
+        $arguments = [new Reference($decorated_id), new IteratorArgument($middlewares_param)];
+        $stacked_kernel->setArguments($arguments);
+
+        parent::process($container);
     }
 
-    $stacked_kernel = $container->getDefinition('http_kernel');
+    /**
+     * {@inheritdoc}
+     */
+    protected function processValue(mixed $value, bool $isRoot = false): mixed
+    {
+        $value = parent::processValue($value, $isRoot);
 
-    // Return now if this is not a stacked kernel.
-    if ($stacked_kernel->getClass() !== StackedHttpKernel::class) {
-      return;
+        if (!$value instanceof Definition || !$value->hasTag('http_middleware')) {
+            return $value;
+        }
+
+        $constructor = $this->getConstructor($value, true);
+        $params = $constructor->getParameters();
+        $innerType = $params[0]->getType();
+        $innerParamTypes = ($innerType instanceof \ReflectionUnionType || $innerType instanceof \ReflectionIntersectionType) ? $innerType->getTypes() : [$innerType];
+        $paramTypeNames = array_map(fn ($param): string => (string) $param, $innerParamTypes);
+
+        $inner = new Reference($this->currentId . '.http_middleware_inner');
+        if (in_array(\Closure::class, $paramTypeNames, true)) {
+            $inner = new ServiceClosureArgument($inner);
+        }
+
+        $arguments = $value->getArguments();
+        array_unshift($arguments, $inner);
+        $value->setArguments($arguments);
+
+        return $value;
     }
-
-    $decorated_id = 'http_kernel.basic';
-    $middlewares_param = [new Reference($decorated_id)];
-
-    foreach (array_reverse($this->findAndSortTaggedServices('http_middleware', $container)) as $ref) {
-      // Prepend a reference to the middlewares container parameter.
-      array_unshift($middlewares_param, $ref);
-
-      // Setup an alias on the outer middleware pointing to the inner one.
-      $decorator_id = (string) $ref;
-      $container->setAlias($decorator_id . '.http_middleware_inner', $decorated_id);
-      $decorated_id = $decorator_id;
-    }
-
-    $arguments = [new Reference($decorated_id), new IteratorArgument($middlewares_param)];
-    $stacked_kernel->setArguments($arguments);
-
-    parent::process($container);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function processValue(mixed $value, bool $isRoot = FALSE): mixed {
-    $value = parent::processValue($value, $isRoot);
-
-    if (!$value instanceof Definition || !$value->hasTag('http_middleware')) {
-      return $value;
-    }
-
-    $constructor = $this->getConstructor($value, TRUE);
-    $params = $constructor->getParameters();
-    $innerType = $params[0]->getType();
-    $innerParamTypes = ($innerType instanceof \ReflectionUnionType || $innerType instanceof \ReflectionIntersectionType) ? $innerType->getTypes() : [$innerType];
-    $paramTypeNames = array_map(fn ($param): string => (string) $param, $innerParamTypes);
-
-    $inner = new Reference($this->currentId . '.http_middleware_inner');
-    if (in_array(\Closure::class, $paramTypeNames, TRUE)) {
-      $inner = new ServiceClosureArgument($inner);
-    }
-
-    $arguments = $value->getArguments();
-    array_unshift($arguments, $inner);
-    $value->setArguments($arguments);
-
-    return $value;
-  }
 
 }

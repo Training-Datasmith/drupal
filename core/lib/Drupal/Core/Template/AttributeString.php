@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Drupal\Component\Utility\Html;
@@ -19,13 +21,14 @@ use Drupal\Component\Utility\Html;
  *
  * @see \Drupal\Core\Template\Attribute
  */
-class AttributeString extends AttributeValueBase {
-
-  /**
-   * Implements the magic __toString() method.
-   */
-  public function __toString(): string {
-    return Html::escape((string) $this->value);
-  }
+class AttributeString extends AttributeValueBase
+{
+    /**
+     * Implements the magic __toString() method.
+     */
+    public function __toString(): string
+    {
+        return Html::escape((string) $this->value);
+    }
 
 }

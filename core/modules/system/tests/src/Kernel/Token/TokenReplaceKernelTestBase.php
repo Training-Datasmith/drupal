@@ -9,32 +9,33 @@ use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 /**
  * Base class for token replacement tests.
  */
-abstract class TokenReplaceKernelTestBase extends EntityKernelTestBase {
+abstract class TokenReplaceKernelTestBase extends EntityKernelTestBase
+{
+    /**
+     * The interface language.
+     *
+     * @var \Drupal\Core\Language\LanguageInterface
+     */
+    protected $interfaceLanguage;
 
-  /**
-   * The interface language.
-   *
-   * @var \Drupal\Core\Language\LanguageInterface
-   */
-  protected $interfaceLanguage;
+    /**
+     * Token service.
+     *
+     * @var \Drupal\Core\Utility\Token
+     */
+    protected $tokenService;
 
-  /**
-   * Token service.
-   *
-   * @var \Drupal\Core\Utility\Token
-   */
-  protected $tokenService;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Install default system configuration.
+        $this->installConfig(['system']);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    // Install default system configuration.
-    $this->installConfig(['system']);
-
-    $this->interfaceLanguage = \Drupal::languageManager()->getCurrentLanguage();
-    $this->tokenService = \Drupal::token();
-  }
+        $this->interfaceLanguage = \Drupal::languageManager()->getCurrentLanguage();
+        $this->tokenService = \Drupal::token();
+    }
 
 }

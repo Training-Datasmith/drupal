@@ -19,69 +19,71 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class TaxonomyFieldTidTest extends ViewsKernelTestBase {
+class TaxonomyFieldTidTest extends ViewsKernelTestBase
+{
+    use TaxonomyTestTrait;
+    use UserCreationTrait;
 
-  use TaxonomyTestTrait;
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'taxonomy',
+      'taxonomy_test_views',
+      'text',
+      'filter',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'taxonomy',
-    'taxonomy_test_views',
-    'text',
-    'filter',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_taxonomy_tid_field'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_taxonomy_tid_field'];
+    /**
+     * A taxonomy term to use in this test.
+     *
+     * @var \Drupal\taxonomy\TermInterface
+     */
+    protected $term1;
 
-  /**
-   * A taxonomy term to use in this test.
-   *
-   * @var \Drupal\taxonomy\TermInterface
-   */
-  protected $term1;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installEntitySchema('taxonomy_term');
+        $this->installEntitySchema('user');
+        $this->installConfig(['filter']);
+        $this->setUpCurrentUser(permissions: [
+          'access content',
+        ]);
 
-    $this->installEntitySchema('taxonomy_term');
-    $this->installEntitySchema('user');
-    $this->installConfig(['filter']);
-    $this->setUpCurrentUser(permissions: [
-      'access content',
-    ]);
+        /** @var \Drupal\taxonomy\Entity\Vocabulary $vocabulary */
+        $vocabulary = $this->createVocabulary();
+        $this->term1 = $this->createTerm($vocabulary);
 
-    /** @var \Drupal\taxonomy\Entity\Vocabulary $vocabulary */
-    $vocabulary = $this->createVocabulary();
-    $this->term1 = $this->createTerm($vocabulary);
+        ViewTestData::createTestViews(static::class, ['taxonomy_test_views']);
+    }
 
-    ViewTestData::createTestViews(static::class, ['taxonomy_test_views']);
-  }
+    /**
+     * Tests the taxonomy field handler.
+     */
+    public function testViewsHandlerTidField(): void
+    {
+        /** @var \Drupal\Core\Render\RendererInterface $renderer */
+        $renderer = \Drupal::service('renderer');
 
-  /**
-   * Tests the taxonomy field handler.
-   */
-  public function testViewsHandlerTidField(): void {
-    /** @var \Drupal\Core\Render\RendererInterface $renderer */
-    $renderer = \Drupal::service('renderer');
+        $view = Views::getView('test_taxonomy_tid_field');
+        $this->executeView($view);
 
-    $view = Views::getView('test_taxonomy_tid_field');
-    $this->executeView($view);
+        $actual = $renderer->executeInRenderContext(new RenderContext(), function () use ($view) {
+            return $view->field['name']->advancedRender($view->result[0]);
+        });
+        $expected = Link::fromTextAndUrl($this->term1->label(), $this->term1->toUrl());
 
-    $actual = $renderer->executeInRenderContext(new RenderContext(), function () use ($view) {
-      return $view->field['name']->advancedRender($view->result[0]);
-    });
-    $expected = Link::fromTextAndUrl($this->term1->label(), $this->term1->toUrl());
-
-    $this->assertEquals($expected->toString(), $actual);
-  }
+        $this->assertEquals($expected->toString(), $actual);
+    }
 
 }

@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\Attribute\ViewsArgument;
 
@@ -25,109 +25,114 @@ use Drupal\views\Attribute\ViewsArgument;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'date',
+    id: 'date',
 )]
-class Date extends Formula implements ContainerFactoryPluginInterface {
+class Date extends Formula implements ContainerFactoryPluginInterface
+{
+    /**
+     * The date format used in the title.
+     *
+     * @var string
+     */
+    protected $format;
 
-  /**
-   * The date format used in the title.
-   *
-   * @var string
-   */
-  protected $format;
+    /**
+     * The date format used in the query.
+     *
+     * @var string
+     */
+    protected $argFormat = 'Y-m-d';
 
-  /**
-   * The date format used in the query.
-   *
-   * @var string
-   */
-  protected $argFormat = 'Y-m-d';
-
-  /**
-   * Constructs a new Date instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The route match.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
-    protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter,
-    protected TimeInterface $time,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * Add an option to set the default value to the current date.
-   */
-  public function defaultArgumentForm(&$form, FormStateInterface $form_state): void {
-    parent::defaultArgumentForm($form, $form_state);
-    $form['default_argument_type']['#options'] += [
-      'date' => $this->t('Current date'),
-      'node_created' => $this->t("Current node's creation time"),
-      'node_changed' => $this->t("Current node's update time"),
-    ];
-  }
-
-  /**
-   * Gets the date default argument, formatted appropriately for this argument.
-   */
-  public function getDefaultArgument($raw = FALSE) {
-    if (!$raw && $this->options['default_argument_type'] == 'date') {
-        return date($this->argFormat, $this->time->getRequestTime());
-    }
-    if (!$raw && in_array($this->options['default_argument_type'], ['node_created', 'node_changed'])) {
-        $node = $this->routeMatch->getParameter('node');
-        if (!($node instanceof NodeInterface)) {
-            return parent::getDefaultArgument();
-        }
-        if ($this->options['default_argument_type'] == 'node_created') {
-            return date($this->argFormat, $node->getCreatedTime());
-        }
-        if ($this->options['default_argument_type'] == 'node_changed') {
-            return date($this->argFormat, $node->getChangedTime());
-        }
+    /**
+     * Constructs a new Date instance.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The route match.
+     * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+     *   The date formatter service.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
+        protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter,
+        protected TimeInterface $time,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    return parent::getDefaultArgument();
-  }
+    /**
+     * Add an option to set the default value to the current date.
+     */
+    public function defaultArgumentForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::defaultArgumentForm($form, $form_state);
+        $form['default_argument_type']['#options'] += [
+          'date' => $this->t('Current date'),
+          'node_created' => $this->t("Current node's creation time"),
+          'node_changed' => $this->t("Current node's update time"),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Date', [], ['context' => 'Sort order']);
-  }
+    /**
+     * Gets the date default argument, formatted appropriately for this argument.
+     */
+    public function getDefaultArgument($raw = false)
+    {
+        if (!$raw && $this->options['default_argument_type'] == 'date') {
+            return date($this->argFormat, $this->time->getRequestTime());
+        }
+        if (!$raw && in_array($this->options['default_argument_type'], ['node_created', 'node_changed'])) {
+            $node = $this->routeMatch->getParameter('node');
+            if (!($node instanceof NodeInterface)) {
+                return parent::getDefaultArgument();
+            }
+            if ($this->options['default_argument_type'] == 'node_created') {
+                return date($this->argFormat, $node->getCreatedTime());
+            }
+            if ($this->options['default_argument_type'] == 'node_changed') {
+                return date($this->argFormat, $node->getChangedTime());
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormula(): string {
-    $this->formula = $this->getDateFormat($this->argFormat);
-    return parent::getFormula();
-  }
+        return parent::getDefaultArgument();
+    }
 
-  /**
-   * Returns the date format used in the query in a form usable by PHP.
-   *
-   * @return string
-   *   The date format used in the query.
-   */
-  public function getArgFormat(): string {
-    return $this->argFormat;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Date', [], ['context' => 'Sort order']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormula(): string
+    {
+        $this->formula = $this->getDateFormat($this->argFormat);
+        return parent::getFormula();
+    }
+
+    /**
+     * Returns the date format used in the query in a form usable by PHP.
+     *
+     * @return string
+     *   The date format used in the query.
+     */
+    public function getArgFormat(): string
+    {
+        return $this->argFormat;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,21 +14,21 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Verifies that referenced entities are valid.
  */
 #[Constraint(
-  id: 'ValidReference',
-  label: new TranslatableMarkup('Entity Reference valid reference', [], ['context' => 'Validation'])
+    id: 'ValidReference',
+    label: new TranslatableMarkup('Entity Reference valid reference', [], ['context' => 'Validation'])
 )]
-class ValidReferenceConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'This entity (%type: %id) cannot be referenced.',
-    public $nonExistingMessage = 'The referenced entity (%type: %id) does not exist.',
-    public $invalidAutocreateMessage = 'This entity (%type: %label) cannot be referenced.',
-    public $nullMessage = 'This value should not be null.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class ValidReferenceConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'This entity (%type: %id) cannot be referenced.',
+        public $nonExistingMessage = 'The referenced entity (%type: %id) does not exist.',
+        public $invalidAutocreateMessage = 'This entity (%type: %label) cannot be referenced.',
+        public $nullMessage = 'This value should not be null.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

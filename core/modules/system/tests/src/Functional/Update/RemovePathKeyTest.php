@@ -13,26 +13,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class RemovePathKeyTest extends UpdatePathTestBase {
+class RemovePathKeyTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
-
-  /**
-   * Tests the upgrade path for removing system.file.path key.
-   */
-  public function testRunUpdates(): void {
-    $this->assertIsArray(\Drupal::config('system.file')->get('path'));
-    $this->runUpdates();
-    $this->assertNull(\Drupal::config('system.file')->get('path'));
-  }
+    /**
+     * Tests the upgrade path for removing system.file.path key.
+     */
+    public function testRunUpdates(): void
+    {
+        $this->assertIsArray(\Drupal::config('system.file')->get('path'));
+        $this->runUpdates();
+        $this->assertNull(\Drupal::config('system.file')->get('path'));
+    }
 
 }

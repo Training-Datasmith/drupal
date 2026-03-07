@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the Language module.
@@ -34,18 +36,19 @@
  * @see hook_language_types_info_alter()
  * @ingroup language_negotiation
  */
-function hook_language_types_info(): array {
-  return [
-    'custom_language_type' => [
-      'name' => t('Custom language'),
-      'description' => t('A custom language type.'),
-      'locked' => FALSE,
-    ],
-    'fixed_custom_language_type' => [
-      'locked' => TRUE,
-      'fixed' => ['custom_language_negotiation_method'],
-    ],
-  ];
+function hook_language_types_info(): array
+{
+    return [
+      'custom_language_type' => [
+        'name' => t('Custom language'),
+        'description' => t('A custom language type.'),
+        'locked' => false,
+      ],
+      'fixed_custom_language_type' => [
+        'locked' => true,
+        'fixed' => ['custom_language_negotiation_method'],
+      ],
+    ];
 }
 
 /**
@@ -57,10 +60,11 @@ function hook_language_types_info(): array {
  * @see hook_language_types_info()
  * @ingroup language_negotiation
  */
-function hook_language_types_info_alter(array &$language_types): void {
-  if (isset($language_types['custom_language_type'])) {
-    $language_types['custom_language_type_custom']['description'] = t('A far better description.');
-  }
+function hook_language_types_info_alter(array &$language_types): void
+{
+    if (isset($language_types['custom_language_type'])) {
+        $language_types['custom_language_type_custom']['description'] = t('A far better description.');
+    }
 }
 
 /**
@@ -71,10 +75,11 @@ function hook_language_types_info_alter(array &$language_types): void {
  *
  * @ingroup language_negotiation
  */
-function hook_language_negotiation_info_alter(array &$negotiation_info): void {
-  if (isset($negotiation_info['custom_language_method'])) {
-    $negotiation_info['custom_language_method']['config'] = 'admin/config/regional/language/detection/custom-language-method';
-  }
+function hook_language_negotiation_info_alter(array &$negotiation_info): void
+{
+    if (isset($negotiation_info['custom_language_method'])) {
+        $negotiation_info['custom_language_method']['config'] = 'admin/config/regional/language/detection/custom-language-method';
+    }
 }
 
 /**
@@ -88,8 +93,9 @@ function hook_language_negotiation_info_alter(array &$negotiation_info): void {
  *
  * @see \Drupal\Core\Language\LanguageManagerInterface::getFallbackCandidates()
  */
-function hook_language_fallback_candidates_alter(array &$candidates, array $context): void {
-  $candidates = array_reverse($candidates);
+function hook_language_fallback_candidates_alter(array &$candidates, array $context): void
+{
+    $candidates = array_reverse($candidates);
 }
 
 /**
@@ -103,12 +109,13 @@ function hook_language_fallback_candidates_alter(array &$candidates, array $cont
  *
  * @see \Drupal\Core\Language\LanguageManagerInterface::getFallbackCandidates()
  */
-function hook_language_fallback_candidates_OPERATION_alter(array &$candidates, array $context): void {
-  // We know that the current OPERATION deals with entities so no need to check
-  // here.
-  if ($context['data']->getEntityTypeId() == 'node') {
-    $candidates = array_reverse($candidates);
-  }
+function hook_language_fallback_candidates_OPERATION_alter(array &$candidates, array $context): void
+{
+    // We know that the current OPERATION deals with entities so no need to check
+    // here.
+    if ($context['data']->getEntityTypeId() == 'node') {
+        $candidates = array_reverse($candidates);
+    }
 }
 
 /**

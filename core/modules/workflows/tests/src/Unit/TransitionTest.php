@@ -16,43 +16,45 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Transition::class)]
 #[Group('workflows')]
-class TransitionTest extends UnitTestCase {
+class TransitionTest extends UnitTestCase
+{
+    /**
+     * Tests getters.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::id
+     * @legacy-covers ::label
+     */
+    public function testGetters(): void
+    {
+        $state = new Transition(
+            $this->prophesize(WorkflowTypeInterface::class)->reveal(),
+            'draft_published',
+            'Publish',
+            ['draft'],
+            'published'
+        );
+        $this->assertEquals('draft_published', $state->id());
+        $this->assertEquals('Publish', $state->label());
+    }
 
-  /**
-   * Tests getters.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::id
-   * @legacy-covers ::label
-   */
-  public function testGetters(): void {
-    $state = new Transition(
-      $this->prophesize(WorkflowTypeInterface::class)->reveal(),
-      'draft_published',
-      'Publish',
-      ['draft'],
-      'published'
-    );
-    $this->assertEquals('draft_published', $state->id());
-    $this->assertEquals('Publish', $state->label());
-  }
-
-  /**
-   * Tests from and to.
-   *
-   * @legacy-covers ::from
-   * @legacy-covers ::to
-   */
-  public function testFromAndTo(): void {
-    $workflow = new TestType([], '', []);
-    $workflow
-      ->addState('draft', 'Draft')
-      ->addState('published', 'Published')
-      ->addTransition('publish', 'Publish', ['draft'], 'published');
-    $state = $workflow->getState('draft');
-    $transition = $state->getTransitionTo('published');
-    $this->assertEquals($state, $transition->from()['draft']);
-    $this->assertEquals($workflow->getState('published'), $transition->to());
-  }
+    /**
+     * Tests from and to.
+     *
+     * @legacy-covers ::from
+     * @legacy-covers ::to
+     */
+    public function testFromAndTo(): void
+    {
+        $workflow = new TestType([], '', []);
+        $workflow
+          ->addState('draft', 'Draft')
+          ->addState('published', 'Published')
+          ->addTransition('publish', 'Publish', ['draft'], 'published');
+        $state = $workflow->getState('draft');
+        $transition = $state->getTransitionTo('published');
+        $this->assertEquals($state, $transition->from()['draft']);
+        $this->assertEquals($workflow->getState('published'), $transition->to());
+    }
 
 }

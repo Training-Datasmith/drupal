@@ -10,10 +10,11 @@ use Symfony\Contracts\EventDispatcher\Event;
 /**
  * Event that is fired when the MIME type map is loaded.
  */
-final class MimeTypeMapLoadedEvent extends Event {
-
-  public function __construct(
-    public readonly MimeTypeMapInterface $map,
-  ) {}
+final class MimeTypeMapLoadedEvent extends Event
+{
+    public function __construct(
+        public readonly MimeTypeMapInterface $map,
+    ) {
+    }
 
 }

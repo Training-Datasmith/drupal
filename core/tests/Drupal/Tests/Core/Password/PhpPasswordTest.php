@@ -16,125 +16,131 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PhpPassword::class)]
 #[Group('System')]
-class PhpPasswordTest extends UnitTestCase {
+class PhpPasswordTest extends UnitTestCase
+{
+    /**
+     * The raw password.
+     */
+    protected string $password;
 
-  /**
-   * The raw password.
-   */
-  protected string $password;
+    /**
+     * The hashed password.
+     */
+    protected string $passwordHash;
 
-  /**
-   * The hashed password.
-   */
-  protected string $passwordHash;
+    /**
+     * The password hasher under test.
+     */
+    protected PasswordInterface $passwordHasher;
 
-  /**
-   * The password hasher under test.
-   */
-  protected PasswordInterface $passwordHasher;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->password = $this->randomMachineName();
-    $this->passwordHasher = new PhpPassword(PASSWORD_BCRYPT, ['cost' => 5]);
-    $this->passwordHash = $this->passwordHasher->hash($this->password);
-  }
-
-  /**
-   * Tests a password needs update.
-   *
-   * @legacy-covers ::hash
-   * @legacy-covers ::needsRehash
-   */
-  public function testPasswordNeedsUpdate(): void {
-    $weakHash = (new PhpPassword(PASSWORD_BCRYPT, ['cost' => 4]))->hash($this->password);
-    $this->assertTrue($this->passwordHasher->needsRehash($weakHash), 'Password hash with weak cost settings needs a new hash.');
-  }
-
-  /**
-   * Tests password hashing.
-   *
-   * @legacy-covers ::check
-   * @legacy-covers ::needsRehash
-   */
-  public function testPasswordChecking(): void {
-    $this->assertTrue($this->passwordHasher->check($this->password, $this->passwordHash), 'Password check succeeds.');
-    $this->assertFalse($this->passwordHasher->needsRehash($this->passwordHash), 'Does not need a new hash.');
-  }
-
-  /**
-   * Tests password rehashing.
-   *
-   * @legacy-covers ::hash
-   * @legacy-covers ::check
-   * @legacy-covers ::needsRehash
-   */
-  public function testPasswordRehashing(): void {
-    // Increment the cost by one.
-    $strongHasher = new PhpPassword(PASSWORD_BCRYPT, ['cost' => 6]);
-    $this->assertTrue($strongHasher->needsRehash($this->passwordHash), 'Needs a new hash after incrementing the cost option.');
-    // Re-hash the password.
-    $rehashedPassword = $strongHasher->hash($this->password);
-    $this->assertNotEquals($rehashedPassword, $this->passwordHash, 'Password hash changed again.');
-
-    // Now the hash should be OK.
-    $this->assertFalse($strongHasher->needsRehash($rehashedPassword), 'Re-hashed password does not need a new hash.');
-    $this->assertTrue($strongHasher->check($this->password, $rehashedPassword), 'Password check succeeds with re-hashed password.');
-    $this->assertTrue($this->passwordHasher->check($this->password, $rehashedPassword), 'Password check succeeds with re-hashed password with original hasher.');
-  }
-
-  /**
-   * Verifies that passwords longer than 512 bytes are not hashed.
-   *
-   * @legacy-covers ::hash
-   */
-  #[DataProvider('providerLongPasswords')]
-  public function testLongPassword($password, $allowed): void {
-
-    $passwordHash = $this->passwordHasher->hash($password);
-
-    if ($allowed) {
-      $this->assertNotFalse($passwordHash);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->password = $this->randomMachineName();
+        $this->passwordHasher = new PhpPassword(PASSWORD_BCRYPT, ['cost' => 5]);
+        $this->passwordHash = $this->passwordHasher->hash($this->password);
     }
-    else {
-      $this->assertFalse($passwordHash);
+
+    /**
+     * Tests a password needs update.
+     *
+     * @legacy-covers ::hash
+     * @legacy-covers ::needsRehash
+     */
+    public function testPasswordNeedsUpdate(): void
+    {
+        $weakHash = (new PhpPassword(PASSWORD_BCRYPT, ['cost' => 4]))->hash($this->password);
+        $this->assertTrue($this->passwordHasher->needsRehash($weakHash), 'Password hash with weak cost settings needs a new hash.');
     }
-  }
 
-  /**
-   * Provides the test matrix for testLongPassword().
-   */
-  public static function providerLongPasswords(): array {
-    // '512 byte long password is allowed.'
-    $passwords['allowed'] = [str_repeat('x', PasswordInterface::PASSWORD_MAX_LENGTH), TRUE];
-    // 513 byte long password is not allowed.
-    $passwords['too_long'] = [str_repeat('x', PasswordInterface::PASSWORD_MAX_LENGTH + 1), FALSE];
+    /**
+     * Tests password hashing.
+     *
+     * @legacy-covers ::check
+     * @legacy-covers ::needsRehash
+     */
+    public function testPasswordChecking(): void
+    {
+        $this->assertTrue($this->passwordHasher->check($this->password, $this->passwordHash), 'Password check succeeds.');
+        $this->assertFalse($this->passwordHasher->needsRehash($this->passwordHash), 'Does not need a new hash.');
+    }
 
-    // Check a string of 3-byte UTF-8 characters, 510 byte long password is
-    // allowed.
-    $len = (int) floor(PasswordInterface::PASSWORD_MAX_LENGTH / 3);
-    $diff = PasswordInterface::PASSWORD_MAX_LENGTH % 3;
-    $passwords['utf8'] = [str_repeat('€', $len), TRUE];
-    // 512 byte long password is allowed.
-    $passwords['ut8_extended'] = [$passwords['utf8'][0] . str_repeat('x', $diff), TRUE];
+    /**
+     * Tests password rehashing.
+     *
+     * @legacy-covers ::hash
+     * @legacy-covers ::check
+     * @legacy-covers ::needsRehash
+     */
+    public function testPasswordRehashing(): void
+    {
+        // Increment the cost by one.
+        $strongHasher = new PhpPassword(PASSWORD_BCRYPT, ['cost' => 6]);
+        $this->assertTrue($strongHasher->needsRehash($this->passwordHash), 'Needs a new hash after incrementing the cost option.');
+        // Re-hash the password.
+        $rehashedPassword = $strongHasher->hash($this->password);
+        $this->assertNotEquals($rehashedPassword, $this->passwordHash, 'Password hash changed again.');
 
-    // Check a string of 3-byte UTF-8 characters, 513 byte long password is
-    // allowed.
-    $passwords['utf8_too_long'] = [str_repeat('€', $len + 1), FALSE];
-    return $passwords;
-  }
+        // Now the hash should be OK.
+        $this->assertFalse($strongHasher->needsRehash($rehashedPassword), 'Re-hashed password does not need a new hash.');
+        $this->assertTrue($strongHasher->check($this->password, $rehashedPassword), 'Password check succeeds with re-hashed password.');
+        $this->assertTrue($this->passwordHasher->check($this->password, $rehashedPassword), 'Password check succeeds with re-hashed password with original hasher.');
+    }
 
-  /**
-   * Tests password check in case provided hash is NULL.
-   *
-   * @legacy-covers ::check
-   */
-  public function testEmptyHash(): void {
-    $this->assertFalse($this->passwordHasher->check($this->password, NULL));
-    $this->assertFalse($this->passwordHasher->check($this->password, ''));
-  }
+    /**
+     * Verifies that passwords longer than 512 bytes are not hashed.
+     *
+     * @legacy-covers ::hash
+     */
+    #[DataProvider('providerLongPasswords')]
+    public function testLongPassword($password, $allowed): void
+    {
+
+        $passwordHash = $this->passwordHasher->hash($password);
+
+        if ($allowed) {
+            $this->assertNotFalse($passwordHash);
+        } else {
+            $this->assertFalse($passwordHash);
+        }
+    }
+
+    /**
+     * Provides the test matrix for testLongPassword().
+     */
+    public static function providerLongPasswords(): array
+    {
+        // '512 byte long password is allowed.'
+        $passwords['allowed'] = [str_repeat('x', PasswordInterface::PASSWORD_MAX_LENGTH), true];
+        // 513 byte long password is not allowed.
+        $passwords['too_long'] = [str_repeat('x', PasswordInterface::PASSWORD_MAX_LENGTH + 1), false];
+
+        // Check a string of 3-byte UTF-8 characters, 510 byte long password is
+        // allowed.
+        $len = (int) floor(PasswordInterface::PASSWORD_MAX_LENGTH / 3);
+        $diff = PasswordInterface::PASSWORD_MAX_LENGTH % 3;
+        $passwords['utf8'] = [str_repeat('€', $len), true];
+        // 512 byte long password is allowed.
+        $passwords['ut8_extended'] = [$passwords['utf8'][0] . str_repeat('x', $diff), true];
+
+        // Check a string of 3-byte UTF-8 characters, 513 byte long password is
+        // allowed.
+        $passwords['utf8_too_long'] = [str_repeat('€', $len + 1), false];
+        return $passwords;
+    }
+
+    /**
+     * Tests password check in case provided hash is NULL.
+     *
+     * @legacy-covers ::check
+     */
+    public function testEmptyHash(): void
+    {
+        $this->assertFalse($this->passwordHasher->check($this->password, null));
+        $this->assertFalse($this->passwordHasher->check($this->password, ''));
+    }
 
 }

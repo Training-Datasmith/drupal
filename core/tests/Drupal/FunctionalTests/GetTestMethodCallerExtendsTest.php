@@ -13,28 +13,29 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('browsertestbase')]
 #[RunTestsInSeparateProcesses]
-class GetTestMethodCallerExtendsTest extends GetTestMethodCallerTest {
+class GetTestMethodCallerExtendsTest extends GetTestMethodCallerTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * A test method that is not present in the parent class.
-   */
-  public function testGetTestMethodCallerChildClass(): void {
-    $method_caller = $this->getTestMethodCaller();
-    $expected = [
-      'file' => __FILE__,
-      'line' => 27,
-      'function' => __CLASS__ . '->' . __FUNCTION__ . '()',
-      'class' => BrowserTestBase::class,
-      'object' => $this,
-      'type' => '->',
-      'args' => [],
-    ];
-    $this->assertEquals($expected, $method_caller);
-  }
+    /**
+     * A test method that is not present in the parent class.
+     */
+    public function testGetTestMethodCallerChildClass(): void
+    {
+        $method_caller = $this->getTestMethodCaller();
+        $expected = [
+          'file' => __FILE__,
+          'line' => 27,
+          'function' => __CLASS__ . '->' . __FUNCTION__ . '()',
+          'class' => BrowserTestBase::class,
+          'object' => $this,
+          'type' => '->',
+          'args' => [],
+        ];
+        $this->assertEquals($expected, $method_caller);
+    }
 
 }

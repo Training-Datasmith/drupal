@@ -19,79 +19,82 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ComputedFileUrl::class)]
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class ComputedFileUrlTest extends KernelTestBase {
+class ComputedFileUrlTest extends KernelTestBase
+{
+    /**
+     * The test URL to use.
+     *
+     * @var string
+     */
+    protected $testUrl = 'public://druplicon.txt';
 
-  /**
-   * The test URL to use.
-   *
-   * @var string
-   */
-  protected $testUrl = 'public://druplicon.txt';
+    /**
+     * Tests get value.
+     */
+    public function testGetValue(): void
+    {
+        $entity = $this->prophesize(FileInterface::class);
+        $entity->getFileUri()
+          ->willReturn($this->testUrl);
 
-  /**
-   * Tests get value.
-   */
-  public function testGetValue(): void {
-    $entity = $this->prophesize(FileInterface::class);
-    $entity->getFileUri()
-      ->willReturn($this->testUrl);
+        $parent = $this->prophesize(FieldItemInterface::class);
+        $parent->getEntity()
+          ->shouldBeCalledTimes(2)
+          ->willReturn($entity->reveal());
 
-    $parent = $this->prophesize(FieldItemInterface::class);
-    $parent->getEntity()
-      ->shouldBeCalledTimes(2)
-      ->willReturn($entity->reveal());
+        $definition = $this->prophesize(DataDefinitionInterface::class);
 
-    $definition = $this->prophesize(DataDefinitionInterface::class);
+        $typed_data = new ComputedFileUrl($definition->reveal(), $this->randomMachineName(), $parent->reveal());
 
-    $typed_data = new ComputedFileUrl($definition->reveal(), $this->randomMachineName(), $parent->reveal());
+        $expected = base_path() . $this->siteDirectory . '/files/druplicon.txt';
 
-    $expected = base_path() . $this->siteDirectory . '/files/druplicon.txt';
+        $this->assertSame($expected, $typed_data->getValue());
+        // Do this a second time to confirm the same value is returned but the value
+        // isn't retrieved from the parent entity again.
+        $this->assertSame($expected, $typed_data->getValue());
+    }
 
-    $this->assertSame($expected, $typed_data->getValue());
-    // Do this a second time to confirm the same value is returned but the value
-    // isn't retrieved from the parent entity again.
-    $this->assertSame($expected, $typed_data->getValue());
-  }
+    /**
+     * Tests set value.
+     */
+    public function testSetValue(): void
+    {
+        $name = $this->randomMachineName();
+        $parent = $this->prophesize(FieldItemInterface::class);
+        $parent->onChange($name)
+          ->shouldBeCalled();
 
-  /**
-   * Tests set value.
-   */
-  public function testSetValue(): void {
-    $name = $this->randomMachineName();
-    $parent = $this->prophesize(FieldItemInterface::class);
-    $parent->onChange($name)
-      ->shouldBeCalled();
+        $definition = $this->prophesize(DataDefinitionInterface::class);
+        $typed_data = new ComputedFileUrl($definition->reveal(), $name, $parent->reveal());
 
-    $definition = $this->prophesize(DataDefinitionInterface::class);
-    $typed_data = new ComputedFileUrl($definition->reveal(), $name, $parent->reveal());
+        // Setting the value explicitly should mean the parent entity is never
+        // called into.
+        $typed_data->setValue($this->testUrl);
 
-    // Setting the value explicitly should mean the parent entity is never
-    // called into.
-    $typed_data->setValue($this->testUrl);
+        $this->assertSame($this->testUrl, $typed_data->getValue());
+        // Do this a second time to confirm the same value is returned but the value
+        // isn't retrieved from the parent entity again.
+        $this->assertSame($this->testUrl, $typed_data->getValue());
+    }
 
-    $this->assertSame($this->testUrl, $typed_data->getValue());
-    // Do this a second time to confirm the same value is returned but the value
-    // isn't retrieved from the parent entity again.
-    $this->assertSame($this->testUrl, $typed_data->getValue());
-  }
+    /**
+     * Tests set value no notify.
+     */
+    public function testSetValueNoNotify(): void
+    {
+        $name = $this->randomMachineName();
+        $parent = $this->prophesize(FieldItemInterface::class);
+        $parent->onChange($name)
+          ->shouldNotBeCalled();
 
-  /**
-   * Tests set value no notify.
-   */
-  public function testSetValueNoNotify(): void {
-    $name = $this->randomMachineName();
-    $parent = $this->prophesize(FieldItemInterface::class);
-    $parent->onChange($name)
-      ->shouldNotBeCalled();
+        $definition = $this->prophesize(DataDefinitionInterface::class);
+        $typed_data = new ComputedFileUrl($definition->reveal(), $name, $parent->reveal());
 
-    $definition = $this->prophesize(DataDefinitionInterface::class);
-    $typed_data = new ComputedFileUrl($definition->reveal(), $name, $parent->reveal());
+        // Setting the value should explicitly should mean the parent entity is
+        // never called into.
+        $typed_data->setValue($this->testUrl, false);
 
-    // Setting the value should explicitly should mean the parent entity is
-    // never called into.
-    $typed_data->setValue($this->testUrl, FALSE);
-
-    $this->assertSame($this->testUrl, $typed_data->getValue());
-  }
+        $this->assertSame($this->testUrl, $typed_data->getValue());
+    }
 
 }

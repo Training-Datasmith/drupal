@@ -16,61 +16,63 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldUrlTest extends ViewsKernelTestBase {
+class FieldUrlTest extends ViewsKernelTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Defines the Views data for the test entity.
+     */
+    public function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['name']['field']['id'] = 'url';
+        return $data;
+    }
 
-  /**
-   * Defines the Views data for the test entity.
-   */
-  public function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['name']['field']['id'] = 'url';
-    return $data;
-  }
+    /**
+     * Tests the rendering of a field as a plain text value and as a link.
+     */
+    public function testFieldUrl(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests the rendering of a field as a plain text value and as a link.
-   */
-  public function testFieldUrl(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'name' => [
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+            'display_as_link' => false,
+          ],
+        ]);
 
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'name' => [
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-        'display_as_link' => FALSE,
-      ],
-    ]);
+        $this->executeView($view);
 
-    $this->executeView($view);
+        $this->assertEquals('John', $view->field['name']->advancedRender($view->result[0]));
 
-    $this->assertEquals('John', $view->field['name']->advancedRender($view->result[0]));
+        // Make the URL a link.
+        $view->destroy();
+        $view->setDisplay();
 
-    // Make the URL a link.
-    $view->destroy();
-    $view->setDisplay();
+        $view->displayHandlers->get('default')->overrideOption('fields', [
+          'name' => [
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+          ],
+        ]);
 
-    $view->displayHandlers->get('default')->overrideOption('fields', [
-      'name' => [
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-      ],
-    ]);
+        $this->executeView($view);
 
-    $this->executeView($view);
-
-    $this->assertEquals(Link::fromTextAndUrl('John', Url::fromUri('base:John'))->toString(), $view->field['name']->advancedRender($view->result[0]));
-  }
+        $this->assertEquals(Link::fromTextAndUrl('John', Url::fromUri('base:John'))->toString(), $view->field['name']->advancedRender($view->result[0]));
+    }
 
 }

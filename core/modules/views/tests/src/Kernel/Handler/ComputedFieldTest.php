@@ -17,43 +17,45 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class ComputedFieldTest extends ViewsKernelTestBase {
+class ComputedFieldTest extends ViewsKernelTestBase
+{
+    /**
+     * Views to be enabled.
+     *
+     * @var array
+     */
+    public static $testViews = ['computed_field_view'];
 
-  /**
-   * Views to be enabled.
-   *
-   * @var array
-   */
-  public static $testViews = ['computed_field_view'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installEntitySchema('entity_test_computed_field');
+    }
 
-    $this->installEntitySchema('entity_test_computed_field');
-  }
+    /**
+     * Tests the computed field handler.
+     */
+    public function testComputedFieldHandler(): void
+    {
+        \Drupal::state()->set('entity_test_computed_field_item_list_value', ['computed string']);
 
-  /**
-   * Tests the computed field handler.
-   */
-  public function testComputedFieldHandler(): void {
-    \Drupal::state()->set('entity_test_computed_field_item_list_value', ['computed string']);
+        $entity = EntityTestComputedField::create([]);
+        $entity->save();
 
-    $entity = EntityTestComputedField::create([]);
-    $entity->save();
+        $view = Views::getView('computed_field_view');
 
-    $view = Views::getView('computed_field_view');
-
-    $rendered_view = $view->preview();
-    $output = $this->container->get('renderer')->renderRoot($rendered_view);
-    $this->assertStringContainsString('computed string', (string) $output);
-  }
+        $rendered_view = $view->preview();
+        $output = $this->container->get('renderer')->renderRoot($rendered_view);
+        $this->assertStringContainsString('computed string', (string) $output);
+    }
 
 }

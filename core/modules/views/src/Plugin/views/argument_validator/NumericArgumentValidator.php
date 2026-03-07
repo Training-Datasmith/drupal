@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument_validator;
 
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -12,23 +14,25 @@ use Drupal\views\Attribute\ViewsArgumentValidator;
  * @ingroup views_argument_validate_plugins
  */
 #[ViewsArgumentValidator(
-  id: 'numeric',
-  title: new TranslatableMarkup('Numeric')
+    id: 'numeric',
+    title: new TranslatableMarkup('Numeric')
 )]
-class NumericArgumentValidator extends ArgumentValidatorPluginBase {
+class NumericArgumentValidator extends ArgumentValidatorPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validateArgument($argument): bool
+    {
+        return is_numeric($argument);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateArgument($argument): bool {
-    return is_numeric($argument);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextDefinition(): \Drupal\Core\Plugin\Context\ContextDefinition {
-    return new ContextDefinition('integer', $this->argument->adminLabel(), FALSE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextDefinition(): \Drupal\Core\Plugin\Context\ContextDefinition
+    {
+        return new ContextDefinition('integer', $this->argument->adminLabel(), false);
+    }
 
 }

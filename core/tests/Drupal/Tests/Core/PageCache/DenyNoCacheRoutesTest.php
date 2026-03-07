@@ -21,76 +21,79 @@ use Symfony\Component\Routing\Route;
 #[CoversClass(DenyNoCacheRoutes::class)]
 #[Group('PageCache')]
 #[Group('Route')]
-class DenyNoCacheRoutesTest extends UnitTestCase {
+class DenyNoCacheRoutesTest extends UnitTestCase
+{
+    /**
+     * The response policy under test.
+     *
+     * @var \Drupal\Core\PageCache\ResponsePolicy\DenyNoCacheRoutes
+     */
+    protected $policy;
 
-  /**
-   * The response policy under test.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicy\DenyNoCacheRoutes
-   */
-  protected $policy;
+    /**
+     * A request object.
+     *
+     * @var \Symfony\Component\HttpFoundation\Request
+     */
+    protected $request;
 
-  /**
-   * A request object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $request;
+    /**
+     * A response object.
+     *
+     * @var \Symfony\Component\HttpFoundation\Response
+     */
+    protected $response;
 
-  /**
-   * A response object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Response
-   */
-  protected $response;
+    /**
+     * The current route match.
+     *
+     * @var \Drupal\Core\Routing\RouteMatch|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $routeMatch;
 
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatch|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $routeMatch;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->routeMatch = $this->createMock(RouteMatchInterface::class);
+        $this->policy = new DenyNoCacheRoutes($this->routeMatch);
+        $this->response = new Response();
+        $this->request = new Request();
+    }
 
-    $this->routeMatch = $this->createMock(RouteMatchInterface::class);
-    $this->policy = new DenyNoCacheRoutes($this->routeMatch);
-    $this->response = new Response();
-    $this->request = new Request();
-  }
+    /**
+     * Asserts that caching is denied on the node preview route.
+     *
+     * @legacy-covers ::check
+     */
+    #[DataProvider('providerDenyNoCacheRoutesPolicy')]
+    public function testDenyNoCacheRoutesPolicy($expected_result, ?Route $route): void
+    {
+        $this->routeMatch->expects($this->once())
+          ->method('getRouteObject')
+          ->willReturn($route);
 
-  /**
-   * Asserts that caching is denied on the node preview route.
-   *
-   * @legacy-covers ::check
-   */
-  #[DataProvider('providerDenyNoCacheRoutesPolicy')]
-  public function testDenyNoCacheRoutesPolicy($expected_result, ?Route $route): void {
-    $this->routeMatch->expects($this->once())
-      ->method('getRouteObject')
-      ->willReturn($route);
+        $actual_result = $this->policy->check($this->response, $this->request);
+        $this->assertSame($expected_result, $actual_result);
+    }
 
-    $actual_result = $this->policy->check($this->response, $this->request);
-    $this->assertSame($expected_result, $actual_result);
-  }
-
-  /**
-   * Provides data and expected results for the test method.
-   *
-   * @return array
-   *   Data and expected results.
-   */
-  public static function providerDenyNoCacheRoutesPolicy(): array {
-    $no_cache_route = new Route('', [], [], ['no_cache' => TRUE]);
-    return [
-      [ResponsePolicyInterface::DENY, $no_cache_route],
-      [NULL, new Route('')],
-      [NULL, NULL],
-    ];
-  }
+    /**
+     * Provides data and expected results for the test method.
+     *
+     * @return array
+     *   Data and expected results.
+     */
+    public static function providerDenyNoCacheRoutesPolicy(): array
+    {
+        $no_cache_route = new Route('', [], [], ['no_cache' => true]);
+        return [
+          [ResponsePolicyInterface::DENY, $no_cache_route],
+          [null, new Route('')],
+          [null, null],
+        ];
+    }
 
 }

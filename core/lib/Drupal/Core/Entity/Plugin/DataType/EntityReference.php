@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\DataType;
 
 use Drupal\Core\Entity\EntityInterface;
@@ -29,101 +31,104 @@ use Drupal\Core\TypedData\DataReferenceDefinition;
  * @endcode
  */
 #[DataType(
-  id: "entity_reference",
-  label: new TranslatableMarkup("Entity reference"),
-  definition_class: DataReferenceDefinition::class,
+    id: 'entity_reference',
+    label: new TranslatableMarkup('Entity reference'),
+    definition_class: DataReferenceDefinition::class,
 )]
-class EntityReference extends DataReferenceBase {
+class EntityReference extends DataReferenceBase
+{
+    /**
+     * The entity ID.
+     *
+     * @var int|string
+     */
+    protected $id;
 
-  /**
-   * The entity ID.
-   *
-   * @var int|string
-   */
-  protected $id;
+    /**
+     * Gets the definition of the referenced entity.
+     *
+     * @return \Drupal\Core\Entity\TypedData\EntityDataDefinitionInterface
+     *   The reference target's definition.
+     */
+    public function getTargetDefinition()
+    {
+        return $this->definition->getTargetDefinition();
+    }
 
-  /**
-   * Gets the definition of the referenced entity.
-   *
-   * @return \Drupal\Core\Entity\TypedData\EntityDataDefinitionInterface
-   *   The reference target's definition.
-   */
-  public function getTargetDefinition() {
-    return $this->definition->getTargetDefinition();
-  }
+    /**
+     * Checks whether the target entity has not been saved yet.
+     *
+     * @return bool
+     *   TRUE if the entity is new, FALSE otherwise.
+     */
+    public function isTargetNew(): bool
+    {
+        // If only an ID is given, the reference cannot be a new entity.
+        return !isset($this->id) && isset($this->target) && $this->target->getValue()->isNew();
+    }
 
-  /**
-   * Checks whether the target entity has not been saved yet.
-   *
-   * @return bool
-   *   TRUE if the entity is new, FALSE otherwise.
-   */
-  public function isTargetNew(): bool {
-    // If only an ID is given, the reference cannot be a new entity.
-    return !isset($this->id) && isset($this->target) && $this->target->getValue()->isNew();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTarget()
+    {
+        if (!isset($this->target) && isset($this->id)) {
+            // If we have a valid reference, return the entity's TypedData adapter.
+            $entity = \Drupal::entityTypeManager()
+              ->getStorage($this->getTargetDefinition()->getEntityTypeId())
+              ->load($this->id);
+            $this->target = isset($entity) ? $entity->getTypedData() : null;
+        }
+        return $this->target;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTarget() {
-    if (!isset($this->target) && isset($this->id)) {
-      // If we have a valid reference, return the entity's TypedData adapter.
-      $entity = \Drupal::entityTypeManager()
-        ->getStorage($this->getTargetDefinition()->getEntityTypeId())
-        ->load($this->id);
-      $this->target = isset($entity) ? $entity->getTypedData() : NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function getTargetIdentifier()
+    {
+        if (isset($this->id)) {
+            return $this->id;
+        }
+        if ($entity = $this->getValue()) {
+            return $entity->id();
+        }
     }
-    return $this->target;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTargetIdentifier() {
-    if (isset($this->id)) {
-        return $this->id;
-    }
-    if ($entity = $this->getValue()) {
-        return $entity->id();
-    }
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($value, $notify = true): void
+    {
+        unset($this->target);
+        unset($this->id);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($value, $notify = TRUE): void {
-    unset($this->target);
-    unset($this->id);
+        // Both the entity ID and the entity object may be passed as value. The
+        // reference may also be unset by passing NULL as value.
+        if (!isset($value)) {
+            $this->target = null;
+        } elseif ($value instanceof EntityInterface) {
+            $this->target = $value->getTypedData();
+        } elseif (!is_scalar($value) || $this->getTargetDefinition()->getEntityTypeId() === null) {
+            throw new \InvalidArgumentException('Value is not a valid entity.');
+        } else {
+            $this->id = $value;
+        }
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
+    }
 
-    // Both the entity ID and the entity object may be passed as value. The
-    // reference may also be unset by passing NULL as value.
-    if (!isset($value)) {
-      $this->target = NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function getString()
+    {
+        if ($entity = $this->getValue()) {
+            return $entity->label();
+        }
+        return '';
     }
-    elseif ($value instanceof EntityInterface) {
-      $this->target = $value->getTypedData();
-    }
-    elseif (!is_scalar($value) || $this->getTargetDefinition()->getEntityTypeId() === NULL) {
-      throw new \InvalidArgumentException('Value is not a valid entity.');
-    }
-    else {
-      $this->id = $value;
-    }
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getString() {
-    if ($entity = $this->getValue()) {
-      return $entity->label();
-    }
-    return '';
-  }
 
 }

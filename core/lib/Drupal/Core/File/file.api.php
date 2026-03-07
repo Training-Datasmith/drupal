@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks related to the File management system.
@@ -30,16 +32,17 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *
  * @see \Drupal\system\FileDownloadController::download()
  */
-function hook_file_download($uri): ?array {
-  // Check to see if this is a config download.
-  $scheme = StreamWrapperManager::getScheme($uri);
-  $target = StreamWrapperManager::getTarget($uri);
-  if ($scheme == 'temporary' && $target == 'config.tar.gz') {
-    return [
-      'Content-disposition' => 'attachment; filename="config.tar.gz"',
-    ];
-  }
-  return NULL;
+function hook_file_download($uri): ?array
+{
+    // Check to see if this is a config download.
+    $scheme = StreamWrapperManager::getScheme($uri);
+    $target = StreamWrapperManager::getTarget($uri);
+    if ($scheme == 'temporary' && $target == 'config.tar.gz') {
+        return [
+          'Content-disposition' => 'attachment; filename="config.tar.gz"',
+        ];
+    }
+    return null;
 }
 
 /**
@@ -57,52 +60,52 @@ function hook_file_download($uri): ?array {
  *   The URI to a file for which we need an external URL, or the path to a
  *   shipped file.
  */
-function hook_file_url_alter(&$uri): void {
-  $user = \Drupal::currentUser();
+function hook_file_url_alter(&$uri): void
+{
+    $user = \Drupal::currentUser();
 
-  // User 1 will always see the local file in this example.
-  if ($user->id() == 1) {
-    return;
-  }
-
-  $cdn1 = 'http://cdn1.example.com';
-  $cdn2 = 'http://cdn2.example.com';
-  $cdn_extensions = ['css', 'js', 'gif', 'jpg', 'jpeg', 'png'];
-
-  // Most CDNs don't support private file transfers without a lot of hassle,
-  // so don't support this in the common case.
-  $schemes = ['public'];
-
-  /** @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager */
-  $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
-
-  $scheme = $stream_wrapper_manager::getScheme($uri);
-
-  // Only serve shipped files and public created files from the CDN.
-  if (!$scheme || in_array($scheme, $schemes)) {
-    // Shipped files.
-    if (!$scheme) {
-      $path = $uri;
-    }
-    // Public created files.
-    else {
-      $wrapper = $stream_wrapper_manager->getViaScheme($scheme);
-      $path = $wrapper->getDirectoryPath() . '/' . $stream_wrapper_manager::getTarget($uri);
+    // User 1 will always see the local file in this example.
+    if ($user->id() == 1) {
+        return;
     }
 
-    // Clean up Windows paths.
-    $path = str_replace('\\', '/', $path);
+    $cdn1 = 'http://cdn1.example.com';
+    $cdn2 = 'http://cdn2.example.com';
+    $cdn_extensions = ['css', 'js', 'gif', 'jpg', 'jpeg', 'png'];
 
-    // Serve files with one of the CDN extensions from CDN 1, all others from
-    // CDN 2.
-    $pathinfo = pathinfo($path);
-    if (isset($pathinfo['extension']) && in_array($pathinfo['extension'], $cdn_extensions)) {
-      $uri = $cdn1 . '/' . $path;
+    // Most CDNs don't support private file transfers without a lot of hassle,
+    // so don't support this in the common case.
+    $schemes = ['public'];
+
+    /** @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager */
+    $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
+
+    $scheme = $stream_wrapper_manager::getScheme($uri);
+
+    // Only serve shipped files and public created files from the CDN.
+    if (!$scheme || in_array($scheme, $schemes)) {
+        // Shipped files.
+        if (!$scheme) {
+            $path = $uri;
+        }
+        // Public created files.
+        else {
+            $wrapper = $stream_wrapper_manager->getViaScheme($scheme);
+            $path = $wrapper->getDirectoryPath() . '/' . $stream_wrapper_manager::getTarget($uri);
+        }
+
+        // Clean up Windows paths.
+        $path = str_replace('\\', '/', $path);
+
+        // Serve files with one of the CDN extensions from CDN 1, all others from
+        // CDN 2.
+        $pathinfo = pathinfo($path);
+        if (isset($pathinfo['extension']) && in_array($pathinfo['extension'], $cdn_extensions)) {
+            $uri = $cdn1 . '/' . $path;
+        } else {
+            $uri = $cdn2 . '/' . $path;
+        }
     }
-    else {
-      $uri = $cdn2 . '/' . $path;
-    }
-  }
 }
 
 /**

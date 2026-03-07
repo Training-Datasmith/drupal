@@ -11,30 +11,33 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * Normalizes boolean data weirdly: renders them as 👍 (TRUE) or 👎 (FALSE).
  */
-class BooleanNormalizer extends NormalizerBase implements DenormalizerInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    return $object->getValue() ? '👍' : '👎';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function denormalize($data, $class, $format = NULL, array $context = []): mixed {
-    if (!in_array($data, ['👍', '👎'], TRUE)) {
-      throw new \UnexpectedValueException('Only 👍 and 👎 are acceptable values.');
+class BooleanNormalizer extends NormalizerBase implements DenormalizerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        return $object->getValue() ? '👍' : '👎';
     }
-    return $data === '👍';
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [BooleanData::class => TRUE];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function denormalize($data, $class, $format = null, array $context = []): mixed
+    {
+        if (!in_array($data, ['👍', '👎'], true)) {
+            throw new \UnexpectedValueException('Only 👍 and 👎 are acceptable values.');
+        }
+        return $data === '👍';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [BooleanData::class => true];
+    }
 
 }

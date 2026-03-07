@@ -23,114 +23,114 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[CoversClass(InstallerRedirectTrait::class)]
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerRedirectTraitTest extends KernelTestBase {
+class InstallerRedirectTraitTest extends KernelTestBase
+{
+    /**
+     * Data provider for testShouldRedirectToInstaller().
+     *
+     * @return array
+     *   - Expected result from shouldRedirectToInstaller().
+     *   - Exceptions to be handled by shouldRedirectToInstaller()
+     *   - Whether or not there is a database connection.
+     *   - Whether or not there is database connection info.
+     *   - Whether or not the key_value table exists in the database.
+     */
+    public static function providerShouldRedirectToInstaller(): array
+    {
+        return [
+          [true, DatabaseNotFoundException::class, false, false],
+          [true, DatabaseNotFoundException::class, true, false],
+          [true, DatabaseNotFoundException::class, false, true],
+          [true, DatabaseNotFoundException::class, true, true],
+          [true, DatabaseNotFoundException::class, true, true, false],
 
-  /**
-   * Data provider for testShouldRedirectToInstaller().
-   *
-   * @return array
-   *   - Expected result from shouldRedirectToInstaller().
-   *   - Exceptions to be handled by shouldRedirectToInstaller()
-   *   - Whether or not there is a database connection.
-   *   - Whether or not there is database connection info.
-   *   - Whether or not the key_value table exists in the database.
-   */
-  public static function providerShouldRedirectToInstaller(): array {
-    return [
-      [TRUE, DatabaseNotFoundException::class, FALSE, FALSE],
-      [TRUE, DatabaseNotFoundException::class, TRUE, FALSE],
-      [TRUE, DatabaseNotFoundException::class, FALSE, TRUE],
-      [TRUE, DatabaseNotFoundException::class, TRUE, TRUE],
-      [TRUE, DatabaseNotFoundException::class, TRUE, TRUE, FALSE],
+          [true, \PDOException::class, false, false],
+          [true, \PDOException::class, true, false],
+          [false, \PDOException::class, false, true],
+          [false, \PDOException::class, true, true],
+          [true, \PDOException::class, true, true, false],
 
-      [TRUE, \PDOException::class, FALSE, FALSE],
-      [TRUE, \PDOException::class, TRUE, FALSE],
-      [FALSE, \PDOException::class, FALSE, TRUE],
-      [FALSE, \PDOException::class, TRUE, TRUE],
-      [TRUE, \PDOException::class, TRUE, TRUE, FALSE],
+          [true, DatabaseExceptionWrapper::class, false, false],
+          [true, DatabaseExceptionWrapper::class, true, false],
+          [false, DatabaseExceptionWrapper::class, false, true],
+          [false, DatabaseExceptionWrapper::class, true, true],
+          [true, DatabaseExceptionWrapper::class, true, true, false],
 
-      [TRUE, DatabaseExceptionWrapper::class, FALSE, FALSE],
-      [TRUE, DatabaseExceptionWrapper::class, TRUE, FALSE],
-      [FALSE, DatabaseExceptionWrapper::class, FALSE, TRUE],
-      [FALSE, DatabaseExceptionWrapper::class, TRUE, TRUE],
-      [TRUE, DatabaseExceptionWrapper::class, TRUE, TRUE, FALSE],
+          [true, NotFoundHttpException::class, false, false],
+          [true, NotFoundHttpException::class, true, false],
+          [false, NotFoundHttpException::class, false, true],
+          [false, NotFoundHttpException::class, true, true],
+          [true, NotFoundHttpException::class, true, true, false],
 
-      [TRUE, NotFoundHttpException::class, FALSE, FALSE],
-      [TRUE, NotFoundHttpException::class, TRUE, FALSE],
-      [FALSE, NotFoundHttpException::class, FALSE, TRUE],
-      [FALSE, NotFoundHttpException::class, TRUE, TRUE],
-      [TRUE, NotFoundHttpException::class, TRUE, TRUE, FALSE],
-
-      [FALSE, \Exception::class, FALSE, FALSE],
-      [FALSE, \Exception::class, TRUE, FALSE],
-      [FALSE, \Exception::class, FALSE, TRUE],
-      [FALSE, \Exception::class, TRUE, TRUE],
-      [FALSE, \Exception::class, TRUE, TRUE, FALSE],
-    ];
-  }
-
-  /**
-   * Tests should redirect to installer.
-   */
-  #[DataProvider('providerShouldRedirectToInstaller')]
-  public function testShouldRedirectToInstaller(bool $expected, string $exception, bool $connection, bool $connection_info, bool $key_value_table_exists = TRUE): void {
-    // Mock the trait.
-    $trait = $this->getMockBuilder(InstallerRedirectTraitMockableClass::class)
-      ->onlyMethods(['isCli'])
-      ->getMock();
-
-    // Make sure that the method thinks we are not using the cli.
-    $trait->expects($this->any())
-      ->method('isCli')
-      ->willReturn(FALSE);
-
-    // If testing no connection info, we need to make the 'default' key not
-    // visible.
-    if (!$connection_info) {
-      Database::renameConnection('default', __METHOD__);
+          [false, \Exception::class, false, false],
+          [false, \Exception::class, true, false],
+          [false, \Exception::class, false, true],
+          [false, \Exception::class, true, true],
+          [false, \Exception::class, true, true, false],
+        ];
     }
 
-    if ($connection) {
-      // Mock the database connection.
-      $connection = $this->getMockBuilder(StubConnection::class)
-        ->disableOriginalConstructor()
-        ->onlyMethods(['schema'])
-        ->getMock();
-
-      if ($connection_info) {
-        // Mock the database schema class.
-        $schema = $this->getMockBuilder(StubSchema::class)
-          ->disableOriginalConstructor()
-          ->onlyMethods(['tableExists'])
+    /**
+     * Tests should redirect to installer.
+     */
+    #[DataProvider('providerShouldRedirectToInstaller')]
+    public function testShouldRedirectToInstaller(bool $expected, string $exception, bool $connection, bool $connection_info, bool $key_value_table_exists = true): void
+    {
+        // Mock the trait.
+        $trait = $this->getMockBuilder(InstallerRedirectTraitMockableClass::class)
+          ->onlyMethods(['isCli'])
           ->getMock();
 
-        $schema->expects($this->any())
-          ->method('tableExists')
-          ->with('key_value')
-          ->willReturn($key_value_table_exists);
+        // Make sure that the method thinks we are not using the cli.
+        $trait->expects($this->any())
+          ->method('isCli')
+          ->willReturn(false);
 
-        $connection->expects($this->any())
-          ->method('schema')
-          ->willReturn($schema);
-      }
-    }
-    else {
-      // Set the database connection if there is none.
-      $connection = NULL;
-    }
+        // If testing no connection info, we need to make the 'default' key not
+        // visible.
+        if (!$connection_info) {
+            Database::renameConnection('default', __METHOD__);
+        }
 
-    try {
-      throw new $exception();
-    }
-    catch (\Exception $e) {
-      // Call shouldRedirectToInstaller.
-      $method_ref = new \ReflectionMethod($trait, 'shouldRedirectToInstaller');
-      $this->assertSame($expected, $method_ref->invoke($trait, $e, $connection));
-    }
+        if ($connection) {
+            // Mock the database connection.
+            $connection = $this->getMockBuilder(StubConnection::class)
+              ->disableOriginalConstructor()
+              ->onlyMethods(['schema'])
+              ->getMock();
 
-    if (!$connection_info) {
-      Database::renameConnection(__METHOD__, 'default');
+            if ($connection_info) {
+                // Mock the database schema class.
+                $schema = $this->getMockBuilder(StubSchema::class)
+                  ->disableOriginalConstructor()
+                  ->onlyMethods(['tableExists'])
+                  ->getMock();
+
+                $schema->expects($this->any())
+                  ->method('tableExists')
+                  ->with('key_value')
+                  ->willReturn($key_value_table_exists);
+
+                $connection->expects($this->any())
+                  ->method('schema')
+                  ->willReturn($schema);
+            }
+        } else {
+            // Set the database connection if there is none.
+            $connection = null;
+        }
+
+        try {
+            throw new $exception();
+        } catch (\Exception $e) {
+            // Call shouldRedirectToInstaller.
+            $method_ref = new \ReflectionMethod($trait, 'shouldRedirectToInstaller');
+            $this->assertSame($expected, $method_ref->invoke($trait, $e, $connection));
+        }
+
+        if (!$connection_info) {
+            Database::renameConnection(__METHOD__, 'default');
+        }
     }
-  }
 
 }

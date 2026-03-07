@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Form;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\content_moderation\ModerationInformationInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\HtmlCommand;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -22,200 +21,206 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @internal
  */
-class ContentModerationConfigureEntityTypesForm extends FormBase {
+class ContentModerationConfigureEntityTypesForm extends FormBase
+{
+    /**
+     * The workflow entity object.
+     *
+     * @var \Drupal\workflows\WorkflowInterface
+     */
+    protected $workflow;
 
-  /**
-   * The workflow entity object.
-   *
-   * @var \Drupal\workflows\WorkflowInterface
-   */
-  protected $workflow;
+    /**
+     * The entity type definition object.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeInterface
+     */
+    protected $entityType;
 
-  /**
-   * The entity type definition object.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  protected $entityType;
+    /**
+     * The Messenger service.
+     *
+     * @var \Drupal\Core\Messenger\MessengerInterface
+     */
+    protected $messenger;
 
-  /**
-   * The Messenger service.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity_type.manager'),
+            $container->get('entity_type.bundle.info'),
+            $container->get('content_moderation.moderation_information'),
+            $container->get('messenger')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('content_moderation.moderation_information'),
-      $container->get('messenger')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(/**
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(/**
    * The entity type manager service.
    */
-  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
    * The entity type bundle information service.
    */
-  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, /**
+        protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, /**
    * The moderation information service.
    */
-  protected \Drupal\content_moderation\ModerationInformationInterface $moderationInformation, MessengerInterface $messenger) {
-    $this->messenger = $messenger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'workflow_type_edit_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?WorkflowInterface $workflow = NULL, $entity_type_id = NULL): array {
-    $this->workflow = $workflow;
-    try {
-      $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
-    }
-    catch (PluginNotFoundException) {
-      throw new NotFoundHttpException();
+        protected \Drupal\content_moderation\ModerationInformationInterface $moderationInformation,
+        MessengerInterface $messenger
+    ) {
+        $this->messenger = $messenger;
     }
 
-    $options = $defaults = [];
-    foreach ($this->bundleInfo->getBundleInfo($this->entityType->id()) as $bundle_id => $bundle) {
-      // Check if moderation is enabled for this bundle on any workflow.
-      $moderation_enabled = $this->moderationInformation->shouldModerateEntitiesOfBundle($this->entityType, $bundle_id);
-      // Check if moderation is enabled for this bundle on this workflow.
-      $workflow_moderation_enabled = $this->workflow->getTypePlugin()->appliesToEntityTypeAndBundle($this->entityType->id(), $bundle_id);
-      // Only show bundles that are not enabled anywhere, or enabled on this
-      // workflow.
-      if (!$moderation_enabled || $workflow_moderation_enabled) {
-        // Add the bundle to the options if it's not enabled on a workflow,
-        // unless the workflow it's enabled on is this one.
-        $options[$bundle_id] = [
-          'title' => ['data' => ['#title' => $bundle['label']]],
-          'type' => $bundle['label'],
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'workflow_type_edit_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?WorkflowInterface $workflow = null, $entity_type_id = null): array
+    {
+        $this->workflow = $workflow;
+        try {
+            $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
+        } catch (PluginNotFoundException) {
+            throw new NotFoundHttpException();
+        }
+
+        $options = $defaults = [];
+        foreach ($this->bundleInfo->getBundleInfo($this->entityType->id()) as $bundle_id => $bundle) {
+            // Check if moderation is enabled for this bundle on any workflow.
+            $moderation_enabled = $this->moderationInformation->shouldModerateEntitiesOfBundle($this->entityType, $bundle_id);
+            // Check if moderation is enabled for this bundle on this workflow.
+            $workflow_moderation_enabled = $this->workflow->getTypePlugin()->appliesToEntityTypeAndBundle($this->entityType->id(), $bundle_id);
+            // Only show bundles that are not enabled anywhere, or enabled on this
+            // workflow.
+            if (!$moderation_enabled || $workflow_moderation_enabled) {
+                // Add the bundle to the options if it's not enabled on a workflow,
+                // unless the workflow it's enabled on is this one.
+                $options[$bundle_id] = [
+                  'title' => ['data' => ['#title' => $bundle['label']]],
+                  'type' => $bundle['label'],
+                ];
+                // Add the bundle to the list of default values if it's enabled on this
+                // workflow.
+                $defaults[$bundle_id] = $workflow_moderation_enabled;
+            }
+        }
+
+        if (!empty($options)) {
+            $bundles_header = $this->t('All @entity_type types', ['@entity_type' => $this->entityType->getLabel()]);
+            if ($bundle_entity_type_id = $this->entityType->getBundleEntityType()) {
+                $bundles_header = $this->t('All @entity_type_plural_label', ['@entity_type_plural_label' => $this->entityTypeManager->getDefinition($bundle_entity_type_id)->getPluralLabel()]);
+            }
+            $form['bundles'] = [
+              '#type' => 'tableselect',
+              '#header' => [
+                'type' => $bundles_header,
+              ],
+              '#options' => $options,
+              '#default_value' => $defaults,
+              '#attributes' => ['class' => ['no-highlight']],
+            ];
+        }
+
+        // Get unsupported features for this entity type.
+        $warnings = $this->moderationInformation->getUnsupportedFeatures($this->entityType);
+        // Display message into the Ajax form returned.
+        if ($this->getRequest()->query->get(MainContentViewSubscriber::WRAPPER_FORMAT) == 'drupal_modal' && !empty($warnings)) {
+            $form['warnings'] = ['#type' => 'status_messages', '#weight' => -1];
+        }
+        // Set warning message.
+        foreach ($warnings as $warning) {
+            $this->messenger->addWarning($warning);
+        }
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#button_type' => 'primary',
+          '#value' => $this->t('Save'),
+          '#ajax' => [
+            'callback' => $this->ajaxCallback(...),
+          ],
         ];
-        // Add the bundle to the list of default values if it's enabled on this
-        // workflow.
-        $defaults[$bundle_id] = $workflow_moderation_enabled;
-      }
+        $form['actions']['cancel'] = [
+          '#type' => 'button',
+          '#value' => $this->t('Cancel'),
+          '#ajax' => [
+            'callback' => $this->ajaxCallback(...),
+          ],
+        ];
+
+        return $form;
     }
 
-    if (!empty($options)) {
-      $bundles_header = $this->t('All @entity_type types', ['@entity_type' => $this->entityType->getLabel()]);
-      if ($bundle_entity_type_id = $this->entityType->getBundleEntityType()) {
-        $bundles_header = $this->t('All @entity_type_plural_label', ['@entity_type_plural_label' => $this->entityTypeManager->getDefinition($bundle_entity_type_id)->getPluralLabel()]);
-      }
-      $form['bundles'] = [
-        '#type' => 'tableselect',
-        '#header' => [
-          'type' => $bundles_header,
-        ],
-        '#options' => $options,
-        '#default_value' => $defaults,
-        '#attributes' => ['class' => ['no-highlight']],
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        foreach ($form_state->getValue('bundles') as $bundle_id => $checked) {
+            if ($checked) {
+                $this->workflow->getTypePlugin()->addEntityTypeAndBundle($this->entityType->id(), $bundle_id);
+            } else {
+                $this->workflow->getTypePlugin()->removeEntityTypeAndBundle($this->entityType->id(), $bundle_id);
+            }
+        }
+        $this->workflow->save();
     }
 
-    // Get unsupported features for this entity type.
-    $warnings = $this->moderationInformation->getUnsupportedFeatures($this->entityType);
-    // Display message into the Ajax form returned.
-    if ($this->getRequest()->query->get(MainContentViewSubscriber::WRAPPER_FORMAT) == 'drupal_modal' && !empty($warnings)) {
-      $form['warnings'] = ['#type' => 'status_messages', '#weight' => -1];
-    }
-    // Set warning message.
-    foreach ($warnings as $warning) {
-      $this->messenger->addWarning($warning);
-    }
-
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#button_type' => 'primary',
-      '#value' => $this->t('Save'),
-      '#ajax' => [
-        'callback' => $this->ajaxCallback(...),
-      ],
-    ];
-    $form['actions']['cancel'] = [
-      '#type' => 'button',
-      '#value' => $this->t('Cancel'),
-      '#ajax' => [
-        'callback' => $this->ajaxCallback(...),
-      ],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    foreach ($form_state->getValue('bundles') as $bundle_id => $checked) {
-      if ($checked) {
-        $this->workflow->getTypePlugin()->addEntityTypeAndBundle($this->entityType->id(), $bundle_id);
-      }
-      else {
-        $this->workflow->getTypePlugin()->removeEntityTypeAndBundle($this->entityType->id(), $bundle_id);
-      }
-    }
-    $this->workflow->save();
-  }
-
-  /**
-   * Ajax callback to close the modal and update the selected text.
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   *   An ajax response object.
-   */
-  public function ajaxCallback(): \Drupal\Core\Ajax\AjaxResponse {
-    $selected_bundles = [];
-    foreach ($this->bundleInfo->getBundleInfo($this->entityType->id()) as $bundle_id => $bundle) {
-      if ($this->workflow->getTypePlugin()->appliesToEntityTypeAndBundle($this->entityType->id(), $bundle_id)) {
-        $selected_bundles[$bundle_id] = $bundle['label'];
-      }
-    }
-    $selected_bundles_list = [
-      '#theme' => 'item_list',
-      '#items' => $selected_bundles,
-      '#context' => ['list_style' => 'comma-list'],
-      '#empty' => $this->t('none'),
-    ];
-    $response = new AjaxResponse();
-    $response->addCommand(new CloseDialogCommand());
-    $response->addCommand(new HtmlCommand('#selected-' . $this->entityType->id(), $selected_bundles_list));
-    return $response;
-  }
-
-  /**
-   * Route title callback.
-   */
-  public function getTitle(WorkflowInterface $workflow, $entity_type_id): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
-    if ($bundle_entity_type_id = $this->entityType->getBundleEntityType()) {
-      return $this->t('Select the @entity_type_plural_label for the @workflow workflow', [
-        '@entity_type_plural_label' => $this->entityTypeManager->getDefinition($bundle_entity_type_id)->getPluralLabel(),
-        '@workflow' => $workflow->label(),
-      ]);
+    /**
+     * Ajax callback to close the modal and update the selected text.
+     *
+     * @return \Drupal\Core\Ajax\AjaxResponse
+     *   An ajax response object.
+     */
+    public function ajaxCallback(): \Drupal\Core\Ajax\AjaxResponse
+    {
+        $selected_bundles = [];
+        foreach ($this->bundleInfo->getBundleInfo($this->entityType->id()) as $bundle_id => $bundle) {
+            if ($this->workflow->getTypePlugin()->appliesToEntityTypeAndBundle($this->entityType->id(), $bundle_id)) {
+                $selected_bundles[$bundle_id] = $bundle['label'];
+            }
+        }
+        $selected_bundles_list = [
+          '#theme' => 'item_list',
+          '#items' => $selected_bundles,
+          '#context' => ['list_style' => 'comma-list'],
+          '#empty' => $this->t('none'),
+        ];
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand());
+        $response->addCommand(new HtmlCommand('#selected-' . $this->entityType->id(), $selected_bundles_list));
+        return $response;
     }
 
-    return $this->t('Select the @entity_type types for the @workflow workflow', [
-      '@entity_type' => $this->entityType->getLabel(),
-      '@workflow' => $workflow->label(),
-    ]);
-  }
+    /**
+     * Route title callback.
+     */
+    public function getTitle(WorkflowInterface $workflow, $entity_type_id): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
+        if ($bundle_entity_type_id = $this->entityType->getBundleEntityType()) {
+            return $this->t('Select the @entity_type_plural_label for the @workflow workflow', [
+              '@entity_type_plural_label' => $this->entityTypeManager->getDefinition($bundle_entity_type_id)->getPluralLabel(),
+              '@workflow' => $workflow->label(),
+            ]);
+        }
+
+        return $this->t('Select the @entity_type types for the @workflow workflow', [
+          '@entity_type' => $this->entityType->getLabel(),
+          '@workflow' => $workflow->label(),
+        ]);
+    }
 
 }

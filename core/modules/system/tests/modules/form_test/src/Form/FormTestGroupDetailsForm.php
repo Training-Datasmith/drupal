@@ -12,54 +12,57 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestGroupDetailsForm extends FormBase {
+class FormTestGroupDetailsForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_group_details';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_group_details';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $required = false)
+    {
+        $form['details'] = [
+          '#type' => 'details',
+          '#title' => 'Root element',
+          '#open' => true,
+          '#required' => !empty($required),
+        ];
+        $form['meta'] = [
+          '#type' => 'details',
+          '#title' => 'Group element',
+          '#open' => true,
+          '#group' => 'details',
+        ];
+        $form['meta']['element'] = [
+          '#type' => 'textfield',
+          '#title' => 'Nest in details element',
+        ];
+        $form['summary_attributes'] = [
+          '#type' => 'details',
+          '#title' => 'Details element with summary attributes',
+          '#summary_attributes' => [
+            'data-summary-attribute' => 'test',
+          ],
+        ];
+        $form['description_attributes'] = [
+          '#type' => 'details',
+          '#title' => 'Details element with description',
+          '#description' => 'I am a details description',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $required = FALSE) {
-    $form['details'] = [
-      '#type' => 'details',
-      '#title' => 'Root element',
-      '#open' => TRUE,
-      '#required' => !empty($required),
-    ];
-    $form['meta'] = [
-      '#type' => 'details',
-      '#title' => 'Group element',
-      '#open' => TRUE,
-      '#group' => 'details',
-    ];
-    $form['meta']['element'] = [
-      '#type' => 'textfield',
-      '#title' => 'Nest in details element',
-    ];
-    $form['summary_attributes'] = [
-      '#type' => 'details',
-      '#title' => 'Details element with summary attributes',
-      '#summary_attributes' => [
-        'data-summary-attribute' => 'test',
-      ],
-    ];
-    $form['description_attributes'] = [
-      '#type' => 'details',
-      '#title' => 'Details element with description',
-      '#description' => 'I am a details description',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

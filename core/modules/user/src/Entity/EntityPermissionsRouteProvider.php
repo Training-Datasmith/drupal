@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Entity;
 
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Routing\EntityRouteProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
@@ -16,89 +17,92 @@ use Symfony\Component\Routing\RouteCollection;
  * Use this class as a route provider for an entity type such as Vocabulary. It
  * will provide routes for the entity permissions form.
  */
-class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface {
-
-  /**
-   * Constructs a new EntityPermissionsRouteProvider.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
-    $collection = new RouteCollection();
-
-    $entity_type_id = $entity_type->id();
-
-    if ($entity_permissions_route = $this->getEntityPermissionsRoute($entity_type)) {
-      $collection->add("entity.$entity_type_id.entity_permissions_form", $entity_permissions_route);
+class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface
+{
+    /**
+     * Constructs a new EntityPermissionsRouteProvider.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
 
-    return $collection;
-  }
-
-  /**
-   * Gets the entity permissions route.
-   *
-   * Built only for entity types that are bundles of other entity types and
-   * define the 'entity-permissions-form' link template.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
-   */
-  protected function getEntityPermissionsRoute(EntityTypeInterface $entity_type): ?Route {
-    if (!$entity_type->hasLinkTemplate('entity-permissions-form')) {
-      return NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $container->get('entity_type.manager')
+        );
     }
 
-    if (!$bundle_of_id = $entity_type->getBundleOf()) {
-      return NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection
+    {
+        $collection = new RouteCollection();
+
+        $entity_type_id = $entity_type->id();
+
+        if ($entity_permissions_route = $this->getEntityPermissionsRoute($entity_type)) {
+            $collection->add("entity.$entity_type_id.entity_permissions_form", $entity_permissions_route);
+        }
+
+        return $collection;
     }
 
-    $entity_type_id = $entity_type->id();
+    /**
+     * Gets the entity permissions route.
+     *
+     * Built only for entity types that are bundles of other entity types and
+     * define the 'entity-permissions-form' link template.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     *
+     * @return \Symfony\Component\Routing\Route|null
+     *   The generated route, if available.
+     */
+    protected function getEntityPermissionsRoute(EntityTypeInterface $entity_type): ?Route
+    {
+        if (!$entity_type->hasLinkTemplate('entity-permissions-form')) {
+            return null;
+        }
 
-    return new Route(
-      $entity_type->getLinkTemplate('entity-permissions-form'),
-      [
-        '_title' => 'Manage permissions',
-        '_form' => \Drupal\user\Form\EntityPermissionsForm::class,
-        'entity_type_id' => $bundle_of_id,
-        'bundle_entity_type' => $entity_type_id,
+        if (!$bundle_of_id = $entity_type->getBundleOf()) {
+            return null;
+        }
+
+        $entity_type_id = $entity_type->id();
+
+        return new Route(
+            $entity_type->getLinkTemplate('entity-permissions-form'),
+            [
+            '_title' => 'Manage permissions',
+            '_form' => \Drupal\user\Form\EntityPermissionsForm::class,
+            'entity_type_id' => $bundle_of_id,
+            'bundle_entity_type' => $entity_type_id,
       ],
-      [
-        '_permission' => 'administer permissions',
+            [
+            '_permission' => 'administer permissions',
       ],
-      [
-        // Indicate that Drupal\Core\Entity\Enhancer\EntityBundleRouteEnhancer
-        // should set the bundle parameter.
-        '_field_ui' => TRUE,
-        'parameters' => [
-          $entity_type_id => [
-            'type' => "entity:$entity_type_id",
-            'with_config_overrides' => TRUE,
-          ],
-        ],
-        '_admin_route' => TRUE,
+            [
+            // Indicate that Drupal\Core\Entity\Enhancer\EntityBundleRouteEnhancer
+            // should set the bundle parameter.
+            '_field_ui' => true,
+            'parameters' => [
+              $entity_type_id => [
+                'type' => "entity:$entity_type_id",
+                'with_config_overrides' => true,
+              ],
+            ],
+            '_admin_route' => true,
       ]
-    );
-  }
+        );
+    }
 
 }

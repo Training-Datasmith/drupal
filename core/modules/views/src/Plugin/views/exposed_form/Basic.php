@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\exposed_form;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -11,10 +13,10 @@ use Drupal\views\Attribute\ViewsExposedForm;
  * @ingroup views_exposed_form_plugins
  */
 #[ViewsExposedForm(
-  id: 'basic',
-  title: new TranslatableMarkup('Basic'),
-  help: new TranslatableMarkup('Basic exposed form')
+    id: 'basic',
+    title: new TranslatableMarkup('Basic'),
+    help: new TranslatableMarkup('Basic exposed form')
 )]
-class Basic extends ExposedFormPluginBase {
-
+class Basic extends ExposedFormPluginBase
+{
 }

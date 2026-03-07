@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\Core\File\FileExists;
@@ -16,28 +18,29 @@ use Drupal\migrate\ProcessPluginBase;
  *     unique.
  *   - 'use existing' - Do nothing and return FALSE.
  */
-abstract class FileProcessBase extends ProcessPluginBase {
-
-  /**
-   * Constructs a file process plugin.
-   *
-   * @param array $configuration
-   *   The plugin configuration.
-   * @param string $plugin_id
-   *   The plugin ID.
-   * @param array $plugin_definition
-   *   The plugin definition.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
-    if (array_key_exists('file_exists', $configuration)) {
-      $configuration['file_exists'] = match ($configuration['file_exists']) {
-          'use existing' => FileExists::Error,
-          'rename' => FileExists::Rename,
-          default => FileExists::Replace,
-      };
+abstract class FileProcessBase extends ProcessPluginBase
+{
+    /**
+     * Constructs a file process plugin.
+     *
+     * @param array $configuration
+     *   The plugin configuration.
+     * @param string $plugin_id
+     *   The plugin ID.
+     * @param array $plugin_definition
+     *   The plugin definition.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition)
+    {
+        if (array_key_exists('file_exists', $configuration)) {
+            $configuration['file_exists'] = match ($configuration['file_exists']) {
+                'use existing' => FileExists::Error,
+                'rename' => FileExists::Rename,
+                default => FileExists::Replace,
+            };
+        }
+        $configuration += ['file_exists' => FileExists::Replace];
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    $configuration += ['file_exists' => FileExists::Replace];
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
 
 }

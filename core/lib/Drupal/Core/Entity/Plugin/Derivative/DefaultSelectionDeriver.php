@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,52 +18,55 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
  * @see plugin_api
  */
-class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInterface {
-  use StringTranslationTrait;
+class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * Creates a DefaultSelectionDeriver object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      $this->derivatives[$entity_type_id] = $base_plugin_definition;
-      $this->derivatives[$entity_type_id]['entity_types'] = [$entity_type_id];
-      $this->derivatives[$entity_type_id]['label'] = $this->t('@entity_type selection', ['@entity_type' => $entity_type->getLabel()]);
-      $this->derivatives[$entity_type_id]['base_plugin_label'] = (string) $base_plugin_definition['label'];
-
-      // If the entity type doesn't provide a 'label' key in its plugin
-      // definition, we have to use the alternate PhpSelection class as default
-      // plugin, which allows filtering the target entities by their label()
-      // method. The major downside of PhpSelection is that it is more expensive
-      // performance-wise than DefaultSelection because it has to load all the
-      // target entities in order to perform the filtering process, regardless
-      // of whether a limit has been passed.
-      // @see \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection
-      if (!$entity_type->hasKey('label')) {
-        $this->derivatives[$entity_type_id]['class'] = \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection::class;
-      }
+    /**
+     * Creates a DefaultSelectionDeriver object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
 
-    return parent::getDerivativeDefinitions($base_plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get('entity_type.manager')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
+            $this->derivatives[$entity_type_id] = $base_plugin_definition;
+            $this->derivatives[$entity_type_id]['entity_types'] = [$entity_type_id];
+            $this->derivatives[$entity_type_id]['label'] = $this->t('@entity_type selection', ['@entity_type' => $entity_type->getLabel()]);
+            $this->derivatives[$entity_type_id]['base_plugin_label'] = (string) $base_plugin_definition['label'];
+
+            // If the entity type doesn't provide a 'label' key in its plugin
+            // definition, we have to use the alternate PhpSelection class as default
+            // plugin, which allows filtering the target entities by their label()
+            // method. The major downside of PhpSelection is that it is more expensive
+            // performance-wise than DefaultSelection because it has to load all the
+            // target entities in order to perform the filtering process, regardless
+            // of whether a limit has been passed.
+            // @see \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection
+            if (!$entity_type->hasKey('label')) {
+                $this->derivatives[$entity_type_id]['class'] = \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection::class;
+            }
+        }
+
+        return parent::getDerivativeDefinitions($base_plugin_definition);
+    }
 
 }

@@ -16,58 +16,62 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PluralTranslation::class)]
 #[Group('Annotation')]
-class PluralTranslationTest extends UnitTestCase {
+class PluralTranslationTest extends UnitTestCase
+{
+    /**
+     * Tests get.
+     */
+    #[DataProvider('providerTestGet')]
+    public function testGet(array $values): void
+    {
+        $annotation = new PluralTranslation($values);
 
-  /**
-   * Tests get.
-   */
-  #[DataProvider('providerTestGet')]
-  public function testGet(array $values): void {
-    $annotation = new PluralTranslation($values);
+        $default_values = [
+          'context' => null,
+        ];
+        $this->assertEquals($values + $default_values, $annotation->get());
+    }
 
-    $default_values = [
-      'context' => NULL,
-    ];
-    $this->assertEquals($values + $default_values, $annotation->get());
-  }
+    /**
+     * Provides data to self::testGet().
+     */
+    public static function providerTestGet(): array
+    {
+        $data = [];
+        $data[] = [
+          [
+            'singular' => Random::machineName(),
+            'plural' => Random::machineName(),
+            'context' => Random::machineName(),
+          ],
+        ];
+        $data[] = [
+          [
+            'singular' => Random::machineName(),
+            'plural' => Random::machineName(),
+          ],
+        ];
 
-  /**
-   * Provides data to self::testGet().
-   */
-  public static function providerTestGet(): array {
-    $data = [];
-    $data[] = [
-      [
-        'singular' => Random::machineName(),
-        'plural' => Random::machineName(),
-        'context' => Random::machineName(),
-      ],
-    ];
-    $data[] = [
-      [
-        'singular' => Random::machineName(),
-        'plural' => Random::machineName(),
-      ],
-    ];
+        return $data;
+    }
 
-    return $data;
-  }
-
-  /**
+    /**
  * Tests missing data.
  */
-  #[DataProvider('providerTestMissingData')]
-  public function testMissingData($data): void {
-    $this->expectException(\InvalidArgumentException::class);
-    new PluralTranslation($data);
-  }
+    #[DataProvider('providerTestMissingData')]
+    public function testMissingData($data): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new PluralTranslation($data);
+    }
 
-  public static function providerTestMissingData(): array {
-    $data = [];
-    $data['all-missing'] = [[]];
-    $data['singular-missing'] = [['plural' => 'muh']];
-    $data['plural-missing'] = [['singular' => 'muh']];
-    return $data;
-  }
+    public static function providerTestMissingData(): array
+    {
+        $data = [];
+        $data['all-missing'] = [[]];
+        $data['singular-missing'] = [['plural' => 'muh']];
+        $data['plural-missing'] = [['singular' => 'muh']];
+        return $data;
+    }
 
 }

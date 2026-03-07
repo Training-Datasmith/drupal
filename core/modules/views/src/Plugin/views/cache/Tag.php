@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\cache;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -12,31 +14,34 @@ use Drupal\views\Attribute\ViewsCache;
  * @ingroup views_cache_plugins
  */
 #[ViewsCache(
-  id: 'tag',
-  title: new TranslatableMarkup('Tag based'),
-  help: new TranslatableMarkup('Tag based caching of data. Caches will persist until any related cache tags are invalidated.'),
+    id: 'tag',
+    title: new TranslatableMarkup('Tag based'),
+    help: new TranslatableMarkup('Tag based caching of data. Caches will persist until any related cache tags are invalidated.'),
 )]
-class Tag extends CachePluginBase {
+class Tag extends CachePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Tag');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Tag');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function cacheExpire($type): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function cacheExpire($type): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultCacheMaxAge(): int {
-    return CacheBackendInterface::CACHE_PERMANENT;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultCacheMaxAge(): int
+    {
+        return CacheBackendInterface::CACHE_PERMANENT;
+    }
 
 }

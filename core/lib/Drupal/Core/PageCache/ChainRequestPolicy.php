@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PageCache;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -18,43 +20,44 @@ use Symfony\Component\HttpFoundation\Request;
  *   <li>Otherwise returns NULL</li>
  * </ol>
  */
-class ChainRequestPolicy implements ChainRequestPolicyInterface {
+class ChainRequestPolicy implements ChainRequestPolicyInterface
+{
+    /**
+     * A list of policy rules to apply when this policy is evaluated.
+     *
+     * @var \Drupal\Core\PageCache\RequestPolicyInterface[]
+     */
+    protected $rules = [];
 
-  /**
-   * A list of policy rules to apply when this policy is evaluated.
-   *
-   * @var \Drupal\Core\PageCache\RequestPolicyInterface[]
-   */
-  protected $rules = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        $final_result = null;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    $final_result = NULL;
+        foreach ($this->rules as $rule) {
+            $result = $rule->check($request);
+            if ($result === static::DENY) {
+                return $result;
+            }
+            if ($result === static::ALLOW) {
+                $final_result = $result;
+            } elseif (isset($result)) {
+                throw new \UnexpectedValueException('Return value of RequestPolicyInterface::check() must be one of RequestPolicyInterface::ALLOW, RequestPolicyInterface::DENY or NULL');
+            }
+        }
 
-    foreach ($this->rules as $rule) {
-      $result = $rule->check($request);
-      if ($result === static::DENY) {
-          return $result;
-      }
-      if ($result === static::ALLOW) {
-          $final_result = $result;
-      }
-      elseif (isset($result)) {
-        throw new \UnexpectedValueException('Return value of RequestPolicyInterface::check() must be one of RequestPolicyInterface::ALLOW, RequestPolicyInterface::DENY or NULL');
-      }
+        return $final_result;
     }
 
-    return $final_result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addPolicy(RequestPolicyInterface $policy): static {
-    $this->rules[] = $policy;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function addPolicy(RequestPolicyInterface $policy): static
+    {
+        $this->rules[] = $policy;
+        return $this;
+    }
 
 }

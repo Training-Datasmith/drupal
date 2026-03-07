@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\Plugin\media\Source;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -13,29 +15,31 @@ use Drupal\media\MediaTypeInterface;
  * @see \Drupal\file\FileInterface
  */
 #[MediaSource(
-  id: "video_file",
-  label: new TranslatableMarkup("Video file"),
-  description: new TranslatableMarkup("Use video files for reusable media."),
-  allowed_field_types: ["file"],
-  default_thumbnail_filename: "video.png"
+    id: 'video_file',
+    label: new TranslatableMarkup('Video file'),
+    description: new TranslatableMarkup('Use video files for reusable media.'),
+    allowed_field_types: ['file'],
+    default_thumbnail_filename: 'video.png'
 )]
-class VideoFile extends File {
+class VideoFile extends File
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function createSourceField(MediaTypeInterface $type)
+    {
+        return parent::createSourceField($type)->set('settings', ['file_extensions' => 'mp4']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createSourceField(MediaTypeInterface $type) {
-    return parent::createSourceField($type)->set('settings', ['file_extensions' => 'mp4']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
-    $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
-      'type' => 'file_video',
-      'label' => 'visually_hidden',
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void
+    {
+        $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
+          'type' => 'file_video',
+          'label' => 'visually_hidden',
+        ]);
+    }
 
 }

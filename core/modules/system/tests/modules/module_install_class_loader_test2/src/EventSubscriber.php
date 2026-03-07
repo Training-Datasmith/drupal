@@ -9,13 +9,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * An event subscriber that does nothing.
  */
-class EventSubscriber implements EventSubscriberInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [];
-  }
+class EventSubscriber implements EventSubscriberInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [];
+    }
 
 }

@@ -14,24 +14,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class SchemaConfigListenerTest extends KernelTestBase {
+class SchemaConfigListenerTest extends KernelTestBase
+{
+    use SchemaConfigListenerTestTrait;
 
-  use SchemaConfigListenerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['config_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['config_test'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    // Install configuration provided by the module so that the order of the
-    // config keys is the same as
-    // \Drupal\FunctionalTests\Core\Config\SchemaConfigListenerTest.
-    $this->installConfig(['config_test']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Install configuration provided by the module so that the order of the
+        // config keys is the same as
+        // \Drupal\FunctionalTests\Core\Config\SchemaConfigListenerTest.
+        $this->installConfig(['config_test']);
+    }
 
 }

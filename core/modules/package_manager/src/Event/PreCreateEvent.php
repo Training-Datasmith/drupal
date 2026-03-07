@@ -11,25 +11,26 @@ use PhpTuf\ComposerStager\API\Path\Value\PathListInterface;
 /**
  * Event fired before a stage directory is created.
  */
-final class PreCreateEvent extends SandboxValidationEvent {
+final class PreCreateEvent extends SandboxValidationEvent
+{
+    /**
+     * The list of paths to exclude from the stage directory.
+     */
+    public readonly ImmutablePathList $excludedPaths;
 
-  /**
-   * The list of paths to exclude from the stage directory.
-   */
-  public readonly ImmutablePathList $excludedPaths;
-
-  /**
-   * Constructs a PreCreateEvent object.
-   *
-   * @param \Drupal\package_manager\SandboxManagerBase $sandboxManager
-   *   The stage which fired this event.
-   * @param \PhpTuf\ComposerStager\API\Path\Value\PathListInterface $excluded_paths
-   *   The list of paths to exclude. These will not be copied into the stage
-   *   directory when it is created.
-   */
-  public function __construct(SandboxManagerBase $sandboxManager, PathListInterface $excluded_paths) {
-    parent::__construct($sandboxManager);
-    $this->excludedPaths = new ImmutablePathList($excluded_paths);
-  }
+    /**
+     * Constructs a PreCreateEvent object.
+     *
+     * @param \Drupal\package_manager\SandboxManagerBase $sandboxManager
+     *   The stage which fired this event.
+     * @param \PhpTuf\ComposerStager\API\Path\Value\PathListInterface $excluded_paths
+     *   The list of paths to exclude. These will not be copied into the stage
+     *   directory when it is created.
+     */
+    public function __construct(SandboxManagerBase $sandboxManager, PathListInterface $excluded_paths)
+    {
+        parent::__construct($sandboxManager);
+        $this->excludedPaths = new ImmutablePathList($excluded_paths);
+    }
 
 }

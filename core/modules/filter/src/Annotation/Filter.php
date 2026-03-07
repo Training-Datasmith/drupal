@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -18,69 +20,69 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class Filter extends Plugin {
+class Filter extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The name of the provider that owns the filter.
+     *
+     * @var string
+     */
+    public $provider;
 
-  /**
-   * The name of the provider that owns the filter.
-   *
-   * @var string
-   */
-  public $provider;
+    /**
+     * The human-readable name of the filter.
+     *
+     * This is used as an administrative summary of what the filter does.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title;
 
-  /**
-   * The human-readable name of the filter.
-   *
-   * This is used as an administrative summary of what the filter does.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title;
+    /**
+     * Additional administrative information about the filter's behavior.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description = '';
 
-  /**
-   * Additional administrative information about the filter's behavior.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description = '';
+    /**
+     * A default weight for the filter in new text formats.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var int
+     */
+    public $weight = 0;
 
-  /**
-   * A default weight for the filter in new text formats.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var int
-   */
-  public $weight = 0;
+    /**
+     * Whether this filter is enabled or disabled by default.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var bool
+     */
+    public $status = false;
 
-  /**
-   * Whether this filter is enabled or disabled by default.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var bool
-   */
-  public $status = FALSE;
-
-  /**
-   * The default settings for the filter.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var array
-   */
-  public $settings = [];
+    /**
+     * The default settings for the filter.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var array
+     */
+    public $settings = [];
 
 }

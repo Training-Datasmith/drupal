@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks related to the Database system and the Schema API.
@@ -482,10 +484,11 @@ use Drupal\Core\Database\Query\SelectInterface;
  *
  * @ingroup database
  */
-function hook_query_alter(Drupal\Core\Database\Query\AlterableInterface $query): void {
-  if ($query->hasTag('micro_limit')) {
-    $query->range(0, 2);
-  }
+function hook_query_alter(Drupal\Core\Database\Query\AlterableInterface $query): void
+{
+    if ($query->hasTag('micro_limit')) {
+        $query->range(0, 2);
+    }
 }
 
 /**
@@ -507,43 +510,44 @@ function hook_query_alter(Drupal\Core\Database\Query\AlterableInterface $query):
  *
  * @ingroup database
  */
-function hook_query_TAG_alter(Drupal\Core\Database\Query\AlterableInterface $query): void {
-  // This is an example of a possible hook_query_media_access_alter()
-  // implementation. In other words, alter queries of media entities that
-  // require access control (have the 'media_access' query tag).
+function hook_query_TAG_alter(Drupal\Core\Database\Query\AlterableInterface $query): void
+{
+    // This is an example of a possible hook_query_media_access_alter()
+    // implementation. In other words, alter queries of media entities that
+    // require access control (have the 'media_access' query tag).
 
-  // Determine which media entities we want to remove from the query. In this
-  // example, we hard-code some media IDs.
-  $media_entities_to_hide = [1, 3];
+    // Determine which media entities we want to remove from the query. In this
+    // example, we hard-code some media IDs.
+    $media_entities_to_hide = [1, 3];
 
-  // In this example, we're only interested in applying our media access
-  // restrictions to SELECT queries. hook_media_access() can be used to apply
-  // access control to 'update' and 'delete' operations.
-  if (!($query instanceof SelectInterface)) {
-    return;
-  }
-
-  // The tables in the query. This can include media entity tables and other
-  // tables. Tables might be joined more than once, with aliases.
-  $query_tables = $query->getTables();
-
-  // The tables belonging to media entity storage.
-  $table_mapping = \Drupal::entityTypeManager()->getStorage('media')->getTableMapping();
-  $media_tables = $table_mapping->getTableNames();
-
-  // For each table in the query, if it's a media entity storage table, add a
-  // condition to filter out records belonging to a media entity that we wish
-  // to hide.
-  foreach ($query_tables as $alias => $info) {
-    // Skip over subqueries.
-    if ($info['table'] instanceof SelectInterface) {
-      continue;
+    // In this example, we're only interested in applying our media access
+    // restrictions to SELECT queries. hook_media_access() can be used to apply
+    // access control to 'update' and 'delete' operations.
+    if (!($query instanceof SelectInterface)) {
+        return;
     }
-    $real_table_name = $info['table'];
-    if (in_array($real_table_name, $media_tables)) {
-      $query->condition("$alias.mid", $media_entities_to_hide, 'NOT IN');
+
+    // The tables in the query. This can include media entity tables and other
+    // tables. Tables might be joined more than once, with aliases.
+    $query_tables = $query->getTables();
+
+    // The tables belonging to media entity storage.
+    $table_mapping = \Drupal::entityTypeManager()->getStorage('media')->getTableMapping();
+    $media_tables = $table_mapping->getTableNames();
+
+    // For each table in the query, if it's a media entity storage table, add a
+    // condition to filter out records belonging to a media entity that we wish
+    // to hide.
+    foreach ($query_tables as $alias => $info) {
+        // Skip over subqueries.
+        if ($info['table'] instanceof SelectInterface) {
+            continue;
+        }
+        $real_table_name = $info['table'];
+        if (in_array($real_table_name, $media_tables)) {
+            $query->condition("$alias.mid", $media_entities_to_hide, 'NOT IN');
+        }
     }
-  }
 }
 
 /**
@@ -577,63 +581,64 @@ function hook_query_TAG_alter(Drupal\Core\Database\Query\AlterableInterface $que
  *
  * @ingroup schemaapi
  */
-function hook_schema(): array {
-  $schema['users_data'] = [
-    'description' => 'Stores module data as key/value pairs per user.',
-    'fields' => [
-      'uid' => [
-        'description' => 'The {users}.uid this record affects.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ],
-      'module' => [
-        'description' => 'The name of the module declaring the variable.',
-        'type' => 'varchar_ascii',
-        'length' => DRUPAL_EXTENSION_NAME_MAX_LENGTH,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'name' => [
-        'description' => 'The identifier of the data.',
-        'type' => 'varchar_ascii',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'value' => [
-        'description' => 'The value.',
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big',
-      ],
-      'serialized' => [
-        'description' => 'Whether value is serialized.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'default' => 0,
-      ],
-    ],
-    'primary key' => ['uid', 'module', 'name'],
-    'indexes' => [
-      'module' => ['module'],
-      'name' => ['name'],
-    ],
-    // For documentation purposes only; foreign keys are not created in the
-    // database.
-    'foreign keys' => [
-      'data_user' => [
-        'table' => 'users',
-        'columns' => [
-          'uid' => 'uid',
+function hook_schema(): array
+{
+    $schema['users_data'] = [
+      'description' => 'Stores module data as key/value pairs per user.',
+      'fields' => [
+        'uid' => [
+          'description' => 'The {users}.uid this record affects.',
+          'type' => 'int',
+          'unsigned' => true,
+          'not null' => true,
+          'default' => 0,
+        ],
+        'module' => [
+          'description' => 'The name of the module declaring the variable.',
+          'type' => 'varchar_ascii',
+          'length' => DRUPAL_EXTENSION_NAME_MAX_LENGTH,
+          'not null' => true,
+          'default' => '',
+        ],
+        'name' => [
+          'description' => 'The identifier of the data.',
+          'type' => 'varchar_ascii',
+          'length' => 128,
+          'not null' => true,
+          'default' => '',
+        ],
+        'value' => [
+          'description' => 'The value.',
+          'type' => 'blob',
+          'not null' => false,
+          'size' => 'big',
+        ],
+        'serialized' => [
+          'description' => 'Whether value is serialized.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'unsigned' => true,
+          'default' => 0,
         ],
       ],
-    ],
-  ];
+      'primary key' => ['uid', 'module', 'name'],
+      'indexes' => [
+        'module' => ['module'],
+        'name' => ['name'],
+      ],
+      // For documentation purposes only; foreign keys are not created in the
+      // database.
+      'foreign keys' => [
+        'data_user' => [
+          'table' => 'users',
+          'columns' => [
+            'uid' => 'uid',
+          ],
+        ],
+      ],
+    ];
 
-  return $schema;
+    return $schema;
 }
 
 /**

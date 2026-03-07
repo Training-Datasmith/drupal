@@ -15,47 +15,49 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserViewsDataTest extends KernelTestBase {
+class UserViewsDataTest extends KernelTestBase
+{
+    /**
+     * The views data service.
+     *
+     * @var \Drupal\views\ViewsData
+     */
+    protected $viewsData;
 
-  /**
-   * The views data service.
-   *
-   * @var \Drupal\views\ViewsData
-   */
-  protected $viewsData;
+    /**
+     * The entity field manager.
+     *
+     * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+     */
+    protected $entityFieldManager;
 
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'user',
+      'views',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'user',
-    'views',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->viewsData = $this->container->get('views.views_data');
+        $this->entityFieldManager = $this->container->get('entity_field.manager');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->viewsData = $this->container->get('views.views_data');
-    $this->entityFieldManager = $this->container->get('entity_field.manager');
-  }
-
-  /**
-   * Tests if user views data object doesn't contain pass field.
-   */
-  public function testUserPasswordFieldNotAvailableToViews(): void {
-    $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions('user');
-    $this->assertArrayHasKey('pass', $field_definitions);
-    $this->assertArrayNotHasKey('pass', $this->viewsData->get('users_field_data'));
-  }
+    /**
+     * Tests if user views data object doesn't contain pass field.
+     */
+    public function testUserPasswordFieldNotAvailableToViews(): void
+    {
+        $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions('user');
+        $this->assertArrayHasKey('pass', $field_definitions);
+        $this->assertArrayNotHasKey('pass', $this->viewsData->get('users_field_data'));
+    }
 
 }

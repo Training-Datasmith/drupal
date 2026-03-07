@@ -17,135 +17,138 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeFieldMultilingualTest extends BrowserTestBase {
+class NodeFieldMultilingualTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Create Basic page node type.
+        $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
 
-    // Create Basic page node type.
-    $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
+        // Setup users.
+        $admin_user = $this->drupalCreateUser([
+          'administer languages',
+          'administer content types',
+          'access administration pages',
+          'create page content',
+          'edit own page content',
+        ]);
+        $this->drupalLogin($admin_user);
 
-    // Setup users.
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'administer content types',
-      'access administration pages',
-      'create page content',
-      'edit own page content',
-    ]);
-    $this->drupalLogin($admin_user);
+        // Add a new language.
+        ConfigurableLanguage::createFromLangcode('it')->save();
 
-    // Add a new language.
-    ConfigurableLanguage::createFromLangcode('it')->save();
+        // Enable URL language detection and selection.
+        $this->config('language.types')->set('negotiation.language_interface.enabled', [
+          'language-url' => -8,
+          'language-selected' => 12,
+        ])->save();
 
-    // Enable URL language detection and selection.
-    $this->config('language.types')->set('negotiation.language_interface.enabled', [
-      'language-url' => -8,
-      'language-selected' => 12,
-    ])->save();
+        // Set "Basic page" content type to use multilingual support.
+        \Drupal::entityTypeManager()->getStorage('language_content_settings')->create([
+          'target_entity_type_id' => 'node',
+          'target_bundle' => 'page',
+          'language_alterable' => true,
+        ])->save();
 
-    // Set "Basic page" content type to use multilingual support.
-    \Drupal::entityTypeManager()->getStorage('language_content_settings')->create([
-      'target_entity_type_id' => 'node',
-      'target_bundle' => 'page',
-      'language_alterable' => TRUE,
-    ])->save();
+        // Make node body translatable.
+        $field_storage = FieldStorageConfig::loadByName('node', 'body');
+        $field_storage->setTranslatable(true);
+        $field_storage->save();
+    }
 
-    // Make node body translatable.
-    $field_storage = FieldStorageConfig::loadByName('node', 'body');
-    $field_storage->setTranslatable(TRUE);
-    $field_storage->save();
-  }
+    /**
+     * Tests whether field languages are correctly set through the node form.
+     */
+    public function testMultilingualNodeForm(): void
+    {
+        // Create "Basic page" content.
+        $langcode = language_get_default_langcode('node', 'page');
+        $title_key = 'title[0][value]';
+        $title_value = $this->randomMachineName(8);
+        $body_key = 'body[0][value]';
+        $body_value = $this->randomMachineName(16);
 
-  /**
-   * Tests whether field languages are correctly set through the node form.
-   */
-  public function testMultilingualNodeForm(): void {
-    // Create "Basic page" content.
-    $langcode = language_get_default_langcode('node', 'page');
-    $title_key = 'title[0][value]';
-    $title_value = $this->randomMachineName(8);
-    $body_key = 'body[0][value]';
-    $body_value = $this->randomMachineName(16);
+        // Create node to edit.
+        $edit = [];
+        $edit[$title_key] = $title_value;
+        $edit[$body_key] = $body_value;
+        $this->drupalGet('node/add/page');
+        $this->submitForm($edit, 'Save');
 
-    // Create node to edit.
-    $edit = [];
-    $edit[$title_key] = $title_value;
-    $edit[$body_key] = $body_value;
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Save');
+        // Check that the node exists in the database.
+        $node = $this->drupalGetNodeByTitle($edit[$title_key]);
+        $this->assertNotEmpty($node, 'Node found in database.');
+        $this->assertSame($langcode, $node->language()->getId());
+        $this->assertSame($body_value, $node->body->value);
 
-    // Check that the node exists in the database.
-    $node = $this->drupalGetNodeByTitle($edit[$title_key]);
-    $this->assertNotEmpty($node, 'Node found in database.');
-    $this->assertSame($langcode, $node->language()->getId());
-    $this->assertSame($body_value, $node->body->value);
+        // Change node language.
+        $langcode = 'it';
+        $this->drupalGet("node/{$node->id()}/edit");
+        $edit = [
+          $title_key => $this->randomMachineName(8),
+          'langcode[0][value]' => $langcode,
+        ];
+        $this->submitForm($edit, 'Save');
+        $node = $this->drupalGetNodeByTitle($edit[$title_key], true);
+        $this->assertNotEmpty($node, 'Node found in database.');
+        $this->assertSame($langcode, $node->language()->getId());
+        $this->assertSame($body_value, $node->body->value);
 
-    // Change node language.
-    $langcode = 'it';
-    $this->drupalGet("node/{$node->id()}/edit");
-    $edit = [
-      $title_key => $this->randomMachineName(8),
-      'langcode[0][value]' => $langcode,
-    ];
-    $this->submitForm($edit, 'Save');
-    $node = $this->drupalGetNodeByTitle($edit[$title_key], TRUE);
-    $this->assertNotEmpty($node, 'Node found in database.');
-    $this->assertSame($langcode, $node->language()->getId());
-    $this->assertSame($body_value, $node->body->value);
+        // Enable content language URL detection.
+        $this->container->get('language_negotiator')->saveConfiguration(LanguageInterface::TYPE_CONTENT, [LanguageNegotiationUrl::METHOD_ID => 0]);
 
-    // Enable content language URL detection.
-    $this->container->get('language_negotiator')->saveConfiguration(LanguageInterface::TYPE_CONTENT, [LanguageNegotiationUrl::METHOD_ID => 0]);
+        // Test multilingual field language fallback logic.
+        $this->drupalGet("it/node/{$node->id()}");
+        // Verify that body is correctly displayed using Italian as requested
+        // language.
+        $this->assertSession()->pageTextContains($body_value);
 
-    // Test multilingual field language fallback logic.
-    $this->drupalGet("it/node/{$node->id()}");
-    // Verify that body is correctly displayed using Italian as requested
-    // language.
-    $this->assertSession()->pageTextContains($body_value);
+        $this->drupalGet("node/{$node->id()}");
+        // Verify that body is correctly displayed using English as requested
+        // language.
+        $this->assertSession()->pageTextContains($body_value);
+    }
 
-    $this->drupalGet("node/{$node->id()}");
-    // Verify that body is correctly displayed using English as requested
-    // language.
-    $this->assertSession()->pageTextContains($body_value);
-  }
+    /**
+     * Tests multilingual field display settings.
+     */
+    public function testMultilingualDisplaySettings(): void
+    {
+        // Create "Basic page" content.
+        $title_key = 'title[0][value]';
+        $title_value = $this->randomMachineName(8);
+        $body_key = 'body[0][value]';
+        $body_value = $this->randomMachineName(16);
 
-  /**
-   * Tests multilingual field display settings.
-   */
-  public function testMultilingualDisplaySettings(): void {
-    // Create "Basic page" content.
-    $title_key = 'title[0][value]';
-    $title_value = $this->randomMachineName(8);
-    $body_key = 'body[0][value]';
-    $body_value = $this->randomMachineName(16);
+        // Create node to edit.
+        $edit = [];
+        $edit[$title_key] = $title_value;
+        $edit[$body_key] = $body_value;
+        $this->drupalGet('node/add/page');
+        $this->submitForm($edit, 'Save');
 
-    // Create node to edit.
-    $edit = [];
-    $edit[$title_key] = $title_value;
-    $edit[$body_key] = $body_value;
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Save');
+        // Check that the node exists in the database.
+        $node = $this->drupalGetNodeByTitle($edit[$title_key]);
+        $this->assertNotEmpty($node, 'Node found in database.');
 
-    // Check that the node exists in the database.
-    $node = $this->drupalGetNodeByTitle($edit[$title_key]);
-    $this->assertNotEmpty($node, 'Node found in database.');
-
-    // Check if node body is showed.
-    $this->drupalGet('node/' . $node->id());
-    $this->assertSession()->elementTextEquals('xpath', "//article/div//p", $node->body->value);
-  }
+        // Check if node body is showed.
+        $this->drupalGet('node/' . $node->id());
+        $this->assertSession()->elementTextEquals('xpath', '//article/div//p', $node->body->value);
+    }
 
 }

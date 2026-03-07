@@ -13,15 +13,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function preUninstallSteps(): void {
-    $storage = \Drupal::entityTypeManager()->getStorage('workspace');
-    $workspaces = $storage->loadMultiple();
-    $storage->delete($workspaces);
-  }
+class GenericTest extends GenericModuleTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function preUninstallSteps(): void
+    {
+        $storage = \Drupal::entityTypeManager()->getStorage('workspace');
+        $workspaces = $storage->loadMultiple();
+        $storage->delete($workspaces);
+    }
 
 }

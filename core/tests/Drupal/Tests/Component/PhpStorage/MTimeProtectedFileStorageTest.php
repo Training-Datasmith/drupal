@@ -16,23 +16,23 @@ use PHPUnit\Framework\Attributes\Medium;
 #[Group('Drupal')]
 #[Group('PhpStorage')]
 #[Medium]
-class MTimeProtectedFileStorageTest extends MTimeProtectedFileStorageBase {
+class MTimeProtectedFileStorageTest extends MTimeProtectedFileStorageBase
+{
+    /**
+     * The expected test results for the security test.
+     *
+     * The default implementation protects against even the filemtime change so
+     * both iterations will return FALSE.
+     *
+     * @var bool[]
+     */
+    protected array $expected = [false, false];
 
-  /**
-   * The expected test results for the security test.
-   *
-   * The default implementation protects against even the filemtime change so
-   * both iterations will return FALSE.
-   *
-   * @var bool[]
-   */
-  protected array $expected = [FALSE, FALSE];
-
-  /**
-   * The PHP storage class to test.
-   *
-   * @var class-string
-   */
-  protected $storageClass = 'Drupal\Component\PhpStorage\MTimeProtectedFileStorage';
+    /**
+     * The PHP storage class to test.
+     *
+     * @var class-string
+     */
+    protected $storageClass = 'Drupal\Component\PhpStorage\MTimeProtectedFileStorage';
 
 }

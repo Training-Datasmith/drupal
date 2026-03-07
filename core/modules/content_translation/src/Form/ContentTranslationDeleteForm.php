@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_translation\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -11,23 +13,25 @@ use Drupal\Core\Language\LanguageInterface;
  *
  * @internal
  */
-class ContentTranslationDeleteForm extends ContentEntityDeleteForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'content_translation_delete_confirm';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?LanguageInterface $language = NULL) {
-    if ($language) {
-      $form_state->set('langcode', $language->getId());
+class ContentTranslationDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'content_translation_delete_confirm';
     }
-    return parent::buildForm($form, $form_state);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?LanguageInterface $language = null)
+    {
+        if ($language) {
+            $form_state->set('langcode', $language->getId());
+        }
+        return parent::buildForm($form, $form_state);
+    }
 
 }

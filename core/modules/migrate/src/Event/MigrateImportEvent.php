@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Event;
 
 /**
  * Wraps a pre- or post-import event for event listeners.
  */
-class MigrateImportEvent extends EventBase {}
+class MigrateImportEvent extends EventBase
+{
+}

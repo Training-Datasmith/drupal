@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Theme;
 
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -11,50 +12,51 @@ use Drupal\Core\Routing\RouteMatchInterface;
  * It therefore uses ThemeNegotiatorInterface objects which are passed in
  * using the 'theme_negotiator' tag.
  */
-class ThemeNegotiator implements ThemeNegotiatorInterface {
-
-  /**
-   * Constructs a new ThemeNegotiator.
-   *
-   * @param \Drupal\Core\Theme\ThemeAccessCheck $themeAccess
-   *   The access checker for themes.
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver.
-   * @param string[] $negotiators
-   *   An array of negotiator IDs.
-   */
-  public function __construct(
-      protected \Drupal\Core\Theme\ThemeAccessCheck $themeAccess,
-      protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver,
-      /**
-       * Holds an array of theme negotiator IDs, sorted by priority.
-       */
-      protected array $negotiators
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(RouteMatchInterface $route_match): bool {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function determineActiveTheme(RouteMatchInterface $route_match) {
-    foreach ($this->negotiators as $negotiator_id) {
-      $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
-
-      if ($negotiator->applies($route_match)) {
-        $theme = $negotiator->determineActiveTheme($route_match);
-        if ($theme !== NULL && $this->themeAccess->checkAccess($theme)) {
-          return $theme;
-        }
-      }
+class ThemeNegotiator implements ThemeNegotiatorInterface
+{
+    /**
+     * Constructs a new ThemeNegotiator.
+     *
+     * @param \Drupal\Core\Theme\ThemeAccessCheck $themeAccess
+     *   The access checker for themes.
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver.
+     * @param string[] $negotiators
+     *   An array of negotiator IDs.
+     */
+    public function __construct(
+        protected \Drupal\Core\Theme\ThemeAccessCheck $themeAccess,
+        protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver,
+        /**
+         * Holds an array of theme negotiator IDs, sorted by priority.
+         */
+        protected array $negotiators
+    ) {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(RouteMatchInterface $route_match): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function determineActiveTheme(RouteMatchInterface $route_match)
+    {
+        foreach ($this->negotiators as $negotiator_id) {
+            $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
+
+            if ($negotiator->applies($route_match)) {
+                $theme = $negotiator->determineActiveTheme($route_match);
+                if ($theme !== null && $this->themeAccess->checkAccess($theme)) {
+                    return $theme;
+                }
+            }
+        }
+    }
 
 }

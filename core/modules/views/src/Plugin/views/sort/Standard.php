@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\sort;
 
 use Drupal\views\Attribute\ViewsSort;
@@ -9,7 +11,7 @@ use Drupal\views\Attribute\ViewsSort;
  *
  * @ingroup views_sort_handlers
  */
-#[ViewsSort("standard")]
-class Standard extends SortPluginBase {
-
+#[ViewsSort('standard')]
+class Standard extends SortPluginBase
+{
 }

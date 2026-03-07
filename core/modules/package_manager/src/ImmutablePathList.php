@@ -14,22 +14,26 @@ use PhpTuf\ComposerStager\API\Path\Value\PathListInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class ImmutablePathList implements PathListInterface {
+final readonly class ImmutablePathList implements PathListInterface
+{
+    public function __construct(private PathListInterface $decorated)
+    {
+    }
 
-  public function __construct(private PathListInterface $decorated) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function add(string ...$paths): never
+    {
+        throw new \LogicException('Immutable path lists cannot be changed.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function add(string ...$paths): never {
-    throw new \LogicException('Immutable path lists cannot be changed.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAll(): array {
-    return $this->decorated->getAll();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAll(): array
+    {
+        return $this->decorated->getAll();
+    }
 
 }

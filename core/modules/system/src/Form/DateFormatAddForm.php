@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -9,15 +11,16 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class DateFormatAddForm extends DateFormatFormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function actions(array $form, FormStateInterface $form_state) {
-    $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Add format');
-    return $actions;
-  }
+class DateFormatAddForm extends DateFormatFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function actions(array $form, FormStateInterface $form_state)
+    {
+        $actions = parent::actions($form, $form_state);
+        $actions['submit']['#value'] = $this->t('Add format');
+        return $actions;
+    }
 
 }

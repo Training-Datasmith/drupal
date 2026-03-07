@@ -23,75 +23,83 @@ use PhpTuf\ComposerStager\API\Translation\Value\TranslatableInterface;
  *    at any time without warning. External code should not interact with this
  *    class.
  */
-final class DirectWritePreconditionBypass implements ActiveAndStagingDirsAreDifferentInterface, RsyncIsAvailableInterface {
+final class DirectWritePreconditionBypass implements ActiveAndStagingDirsAreDifferentInterface, RsyncIsAvailableInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Whether or not the decorated precondition is being bypassed.
+     */
+    private static bool $isBypassed = false;
 
-  /**
-   * Whether or not the decorated precondition is being bypassed.
-   */
-  private static bool $isBypassed = FALSE;
-
-  public function __construct(
-    private readonly ActiveAndStagingDirsAreDifferentInterface|RsyncIsAvailableInterface $decorated,
-  ) {}
-
-  /**
-   * Bypasses the decorated precondition.
-   */
-  public static function activate(): void {
-    static::$isBypassed = TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getName(): TranslatableInterface {
-    return $this->decorated->getName();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): TranslatableInterface {
-    return $this->decorated->getDescription();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStatusMessage(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): TranslatableInterface {
-    if (static::$isBypassed) {
-      return new TranslatableStringAdapter('This precondition has been skipped because it is not needed in direct-write mode.');
+    public function __construct(
+        private readonly ActiveAndStagingDirsAreDifferentInterface|RsyncIsAvailableInterface $decorated,
+    ) {
     }
-    return $this->decorated->getStatusMessage($activeDir, $stagingDir, $exclusions, $timeout);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isFulfilled(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): bool {
-    if (static::$isBypassed) {
-      return TRUE;
+    /**
+     * Bypasses the decorated precondition.
+     */
+    public static function activate(): void
+    {
+        static::$isBypassed = true;
     }
-    return $this->decorated->isFulfilled($activeDir, $stagingDir, $exclusions, $timeout);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function assertIsFulfilled(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    if (static::$isBypassed) {
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function getName(): TranslatableInterface
+    {
+        return $this->decorated->getName();
     }
-    $this->decorated->assertIsFulfilled($activeDir, $stagingDir, $exclusions, $timeout);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLeaves(): array {
-    return [$this];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): TranslatableInterface
+    {
+        return $this->decorated->getDescription();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatusMessage(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): TranslatableInterface
+    {
+        if (static::$isBypassed) {
+            return new TranslatableStringAdapter('This precondition has been skipped because it is not needed in direct-write mode.');
+        }
+        return $this->decorated->getStatusMessage($activeDir, $stagingDir, $exclusions, $timeout);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isFulfilled(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): bool
+    {
+        if (static::$isBypassed) {
+            return true;
+        }
+        return $this->decorated->isFulfilled($activeDir, $stagingDir, $exclusions, $timeout);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function assertIsFulfilled(PathInterface $activeDir, PathInterface $stagingDir, ?PathListInterface $exclusions = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        if (static::$isBypassed) {
+            return;
+        }
+        $this->decorated->assertIsFulfilled($activeDir, $stagingDir, $exclusions, $timeout);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLeaves(): array
+    {
+        return [$this];
+    }
 
 }

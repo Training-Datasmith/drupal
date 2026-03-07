@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin;
 
@@ -16,25 +16,27 @@ use Drupal\editor\EditorInterface;
  *
  * @see @see \Drupal\ckeditor5\Annotation\DrupalAspectsOfCKEditor5Plugin::$class
  */
-class CKEditor5PluginDefault extends PluginBase implements CKEditor5PluginInterface {
+class CKEditor5PluginDefault extends PluginBase implements CKEditor5PluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    // Ensure the configuration is set as expected for configurable plugins.
-    if ($this instanceof CKEditor5PluginConfigurableInterface) {
-      $this->setConfiguration($configuration);
+        // Ensure the configuration is set as expected for configurable plugins.
+        if ($this instanceof CKEditor5PluginConfigurableInterface) {
+            $this->setConfiguration($configuration);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDynamicPluginConfig(array $static_plugin_config, EditorInterface $editor): array {
-    return $static_plugin_config;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDynamicPluginConfig(array $static_plugin_config, EditorInterface $editor): array
+    {
+        return $static_plugin_config;
+    }
 
 }

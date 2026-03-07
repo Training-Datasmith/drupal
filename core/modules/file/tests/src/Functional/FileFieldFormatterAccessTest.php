@@ -12,31 +12,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class FileFieldFormatterAccessTest extends FileFieldTestBase {
+class FileFieldFormatterAccessTest extends FileFieldTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'file', 'field_ui', 'file_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'file', 'field_ui', 'file_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests the custom access handler is invoked.
-   */
-  public function testFileAccessHandler(): void {
-    $type_name = 'article';
-    $field_name = $this->randomMachineName();
-    $this->createFileField($field_name, 'node', $type_name);
-    \Drupal::state()->set('file_test_alternate_access_handler', TRUE);
-    \Drupal::entityTypeManager()->clearCachedDefinitions();
-    $test_file = $this->getTestFile('text');
-    $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
-    $this->drupalGet('node/' . $nid);
-    $this->assertTrue(\Drupal::state()->get('file_access_formatter_check', FALSE));
-  }
+    /**
+     * Tests the custom access handler is invoked.
+     */
+    public function testFileAccessHandler(): void
+    {
+        $type_name = 'article';
+        $field_name = $this->randomMachineName();
+        $this->createFileField($field_name, 'node', $type_name);
+        \Drupal::state()->set('file_test_alternate_access_handler', true);
+        \Drupal::entityTypeManager()->clearCachedDefinitions();
+        $test_file = $this->getTestFile('text');
+        $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
+        $this->drupalGet('node/' . $nid);
+        $this->assertTrue(\Drupal::state()->get('file_access_formatter_check', false));
+    }
 
 }

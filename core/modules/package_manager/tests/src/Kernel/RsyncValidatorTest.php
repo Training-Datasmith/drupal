@@ -25,70 +25,74 @@ use Symfony\Component\DependencyInjection\Reference;
 #[Group('package_manager')]
 #[CoversClass(RsyncValidator::class)]
 #[RunTestsInSeparateProcesses]
-class RsyncValidatorTest extends PackageManagerKernelTestBase {
+class RsyncValidatorTest extends PackageManagerKernelTestBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The mocked executable finder.
+     *
+     * @var \PhpTuf\ComposerStager\API\Finder\Service\ExecutableFinderInterface
+     */
+    private $executableFinder;
 
-  /**
-   * The mocked executable finder.
-   *
-   * @var \PhpTuf\ComposerStager\API\Finder\Service\ExecutableFinderInterface
-   */
-  private $executableFinder;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        // Set up a mocked executable finder which will always be re-injected into
+        // the validator when the container is rebuilt.
+        $this->executableFinder = $this->prophesize(ExecutableFinderInterface::class);
+        $this->executableFinder->find('rsync')->willReturn('/path/to/rsync');
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    // Set up a mocked executable finder which will always be re-injected into
-    // the validator when the container is rebuilt.
-    $this->executableFinder = $this->prophesize(ExecutableFinderInterface::class);
-    $this->executableFinder->find('rsync')->willReturn('/path/to/rsync');
+        parent::setUp();
+    }
 
-    parent::setUp();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
+        $container->set('mock_executable_finder', $this->executableFinder->reveal());
 
-    $container->set('mock_executable_finder', $this->executableFinder->reveal());
+        $container->getDefinition(RsyncValidator::class)
+          ->setArgument('$executableFinder', new Reference('mock_executable_finder'));
+    }
 
-    $container->getDefinition(RsyncValidator::class)
-      ->setArgument('$executableFinder', new Reference('mock_executable_finder'));
-  }
+    /**
+     * Tests that the stage cannot be created if rsync is selected, but not found.
+     */
+    public function testPreCreateFailsIfRsyncNotFound(): void
+    {
+        /** @var \PhpTuf\ComposerStager\API\Translation\Factory\TranslatableFactoryInterface $translatable_factory */
+        $translatable_factory = $this->container->get(TranslatableFactoryInterface::class);
+        $message = $translatable_factory->createTranslatableMessage('Nope!');
+        $this->executableFinder->find('rsync')->willThrow(new LogicException($message));
 
-  /**
-   * Tests that the stage cannot be created if rsync is selected, but not found.
-   */
-  public function testPreCreateFailsIfRsyncNotFound(): void {
-    /** @var \PhpTuf\ComposerStager\API\Translation\Factory\TranslatableFactoryInterface $translatable_factory */
-    $translatable_factory = $this->container->get(TranslatableFactoryInterface::class);
-    $message = $translatable_factory->createTranslatableMessage('Nope!');
-    $this->executableFinder->find('rsync')->willThrow(new LogicException($message));
+        $result = ValidationResult::createError([
+          $this->t('<code>rsync</code> is not available.'),
+        ]);
+        $this->assertResults([$result], PreCreateEvent::class);
 
-    $result = ValidationResult::createError([
-      $this->t('<code>rsync</code> is not available.'),
-    ]);
-    $this->assertResults([$result], PreCreateEvent::class);
+        $this->enableModules(['help']);
 
-    $this->enableModules(['help']);
+        $result = ValidationResult::createError([
+          $this->t('<code>rsync</code> is not available. See the <a href="/admin/help/package_manager#package-manager-faq-rsync">Package Manager help</a> for more information on how to resolve this.'),
+        ]);
+        $this->assertResults([$result], PreCreateEvent::class);
+    }
 
-    $result = ValidationResult::createError([
-      $this->t('<code>rsync</code> is not available. See the <a href="/admin/help/package_manager#package-manager-faq-rsync">Package Manager help</a> for more information on how to resolve this.'),
-    ]);
-    $this->assertResults([$result], PreCreateEvent::class);
-  }
-
-  /**
-   * Tests that the presence of rsync is not checked in direct-write mode.
-   */
-  public function testRsyncNotNeededForDirectWrite(): void {
-    $this->executableFinder->find('rsync')->shouldNotBeCalled();
-    $this->setSetting('package_manager_allow_direct_write', TRUE);
-    $this->createStage(TestDirectWriteSandboxManager::class)->create();
-  }
+    /**
+     * Tests that the presence of rsync is not checked in direct-write mode.
+     */
+    public function testRsyncNotNeededForDirectWrite(): void
+    {
+        $this->executableFinder->find('rsync')->shouldNotBeCalled();
+        $this->setSetting('package_manager_allow_direct_write', true);
+        $this->createStage(TestDirectWriteSandboxManager::class)->create();
+    }
 
 }

@@ -15,26 +15,28 @@ use Drupal\Core\Hook\Attribute\Hook;
  *
  * @see \Drupal\KernelTests\Core\Hook\HookAlterOrderTest
  */
-class CAlterHooks {
+class CAlterHooks
+{
+    /**
+     * Implements hook_test_alter().
+     *
+     * This implementation has no ordering modifications.
+     */
+    #[Hook('test_alter')]
+    public function testAlter(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
-  /**
-   * Implements hook_test_alter().
-   *
-   * This implementation has no ordering modifications.
-   */
-  #[Hook('test_alter')]
-  public function testAlter(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
-
-  /**
-   * Implements hook_test_subtype_alter().
-   *
-   * This implementation has no ordering modifications.
-   */
-  #[Hook('test_subtype_alter')]
-  public function testSubtypeAlter(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
+    /**
+     * Implements hook_test_subtype_alter().
+     *
+     * This implementation has no ordering modifications.
+     */
+    #[Hook('test_subtype_alter')]
+    public function testSubtypeAlter(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
 }

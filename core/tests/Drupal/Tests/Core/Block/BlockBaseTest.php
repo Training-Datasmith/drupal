@@ -17,45 +17,47 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(BlockBase::class)]
 #[Group('block')]
-class BlockBaseTest extends UnitTestCase {
+class BlockBaseTest extends UnitTestCase
+{
+    /**
+     * Tests the machine name suggestion.
+     *
+     * @param string $label
+     *   The block label.
+     * @param string $expected
+     *   The expected machine name.
+     *
+     * @see \Drupal\Core\Block\BlockBase::getMachineNameSuggestion()
+     */
+    #[DataProvider('providerTestGetMachineNameSuggestion')]
+    public function testGetMachineNameSuggestion($label, $expected): void
+    {
+        $module_handler = $this->createMock('Drupal\Core\Extension\ModuleHandlerInterface');
+        $transliteration = $this->getMockBuilder('Drupal\Core\Transliteration\PhpTransliteration')
+          ->setConstructorArgs([null, $module_handler])
+          ->onlyMethods(['readLanguageOverrides'])
+          ->getMock();
 
-  /**
-   * Tests the machine name suggestion.
-   *
-   * @param string $label
-   *   The block label.
-   * @param string $expected
-   *   The expected machine name.
-   *
-   * @see \Drupal\Core\Block\BlockBase::getMachineNameSuggestion()
-   */
-  #[DataProvider('providerTestGetMachineNameSuggestion')]
-  public function testGetMachineNameSuggestion($label, $expected): void {
-    $module_handler = $this->createMock('Drupal\Core\Extension\ModuleHandlerInterface');
-    $transliteration = $this->getMockBuilder('Drupal\Core\Transliteration\PhpTransliteration')
-      ->setConstructorArgs([NULL, $module_handler])
-      ->onlyMethods(['readLanguageOverrides'])
-      ->getMock();
+        $config = [];
+        $definition = [
+          'admin_label' => $label,
+          'provider' => 'block_test',
+        ];
+        $block_base = new TestBlockInstantiation($config, 'test_block_instantiation', $definition);
+        $block_base->setTransliteration($transliteration);
+        $this->assertEquals($expected, $block_base->getMachineNameSuggestion());
+    }
 
-    $config = [];
-    $definition = [
-      'admin_label' => $label,
-      'provider' => 'block_test',
-    ];
-    $block_base = new TestBlockInstantiation($config, 'test_block_instantiation', $definition);
-    $block_base->setTransliteration($transliteration);
-    $this->assertEquals($expected, $block_base->getMachineNameSuggestion());
-  }
-
-  /**
-   * Provides data for testGetMachineNameSuggestion().
-   */
-  public static function providerTestGetMachineNameSuggestion(): array {
-    return [
-      ['Admin label', 'adminlabel'],
-      // cspell:disable-next-line
-      ['über åwesome', 'uberawesome'],
-    ];
-  }
+    /**
+     * Provides data for testGetMachineNameSuggestion().
+     */
+    public static function providerTestGetMachineNameSuggestion(): array
+    {
+        return [
+          ['Admin label', 'adminlabel'],
+          // cspell:disable-next-line
+          ['über åwesome', 'uberawesome'],
+        ];
+    }
 
 }

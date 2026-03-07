@@ -15,58 +15,62 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(FilterPluginBase::class)]
 #[Group('views')]
-class FilterPluginBaseTest extends UnitTestCase {
+class FilterPluginBaseTest extends UnitTestCase
+{
+    /**
+     * Tests accept exposed input.
+     */
+    #[DataProvider('acceptExposedInputProvider')]
+    public function testAcceptExposedInput(bool $expected_result, array $options, array $input): void
+    {
+        $definition = [
+          'title' => 'Accept exposed input Test',
+          'group' => 'Test',
+        ];
+        $filter = new FilterPluginBaseStub([], 'stub', $definition);
+        $filter->options = $options;
+        $this->assertSame($expected_result, $filter->acceptExposedInput($input));
+    }
 
-  /**
-   * Tests accept exposed input.
-   */
-  #[DataProvider('acceptExposedInputProvider')]
-  public function testAcceptExposedInput(bool $expected_result, array $options, array $input): void {
-    $definition = [
-      'title' => 'Accept exposed input Test',
-      'group' => 'Test',
-    ];
-    $filter = new FilterPluginBaseStub([], 'stub', $definition);
-    $filter->options = $options;
-    $this->assertSame($expected_result, $filter->acceptExposedInput($input));
-  }
-
-  /**
-   * The data provider for testAcceptExposedInput.
-   *
-   * @return array
-   *   The data set.
-   */
-  public static function acceptExposedInputProvider() {
-    return [
-      'not-exposed' => [TRUE, ['exposed' => FALSE], []],
-      'exposed-no-input' => [TRUE, ['exposed' => TRUE], []],
-      'exposed-zero-input' => [FALSE, [
-        'exposed' => TRUE,
-        'is_grouped' => FALSE,
-        'expose' => [
-          'use_operator' => TRUE,
-          'operator_id' => '=',
-          'identifier' => 'identifier',
-        ],
-      ], ['identifier' => 0],
-      ],
-      'exposed-empty-array-input' => [FALSE, [
-        'exposed' => TRUE,
-        'is_grouped' => FALSE,
-        'expose' => [
-          'use_operator' => TRUE,
-          'operator_id' => '=',
-          'identifier' => 'identifier',
-        ],
-      ], ['identifier' => []],
-      ],
-    ];
-  }
+    /**
+     * The data provider for testAcceptExposedInput.
+     *
+     * @return array
+     *   The data set.
+     */
+    public static function acceptExposedInputProvider()
+    {
+        return [
+          'not-exposed' => [true, ['exposed' => false], []],
+          'exposed-no-input' => [true, ['exposed' => true], []],
+          'exposed-zero-input' => [false, [
+            'exposed' => true,
+            'is_grouped' => false,
+            'expose' => [
+              'use_operator' => true,
+              'operator_id' => '=',
+              'identifier' => 'identifier',
+            ],
+          ], ['identifier' => 0],
+          ],
+          'exposed-empty-array-input' => [false, [
+            'exposed' => true,
+            'is_grouped' => false,
+            'expose' => [
+              'use_operator' => true,
+              'operator_id' => '=',
+              'identifier' => 'identifier',
+            ],
+          ], ['identifier' => []],
+          ],
+        ];
+    }
 
 }
 
 /**
  * Empty class to support testing filter plugins.
  */
-class FilterPluginBaseStub extends FilterPluginBase {}
+class FilterPluginBaseStub extends FilterPluginBase
+{
+}

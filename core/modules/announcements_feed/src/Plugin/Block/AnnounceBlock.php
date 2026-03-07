@@ -19,39 +19,43 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @internal
  */
 #[Block(
-  id: 'announce_block',
-  admin_label: new TranslatableMarkup('Announcements Feed')),
+    id: 'announce_block',
+    admin_label: new TranslatableMarkup('Announcements Feed')
+),
 ]
-class AnnounceBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class AnnounceBlock extends BlockBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a new AnnouncementsFeedBlock instance.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\announcements_feed\AnnounceRenderer $announceRenderer
+     *   The AnnounceRenderer service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected AnnounceRenderer $announceRenderer)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * Constructs a new AnnouncementsFeedBlock instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\announcements_feed\AnnounceRenderer $announceRenderer
-   *   The AnnounceRenderer service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected AnnounceRenderer $announceRenderer) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function blockAccess(AccountInterface $account): AccessResultInterface
+    {
+        return AccessResult::allowedIfHasPermission($account, 'access announcements');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function blockAccess(AccountInterface $account): AccessResultInterface {
-    return AccessResult::allowedIfHasPermission($account, 'access announcements');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return $this->announceRenderer->render();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return $this->announceRenderer->render();
+    }
 
 }

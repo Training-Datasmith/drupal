@@ -13,41 +13,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class AggregationTest extends ViewsKernelTestBase {
+class AggregationTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['views.view.test_aggregation'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['views.view.test_aggregation'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['views_test_aggregation', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['views_test_aggregation', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        $this->installConfig('views_test_aggregation');
 
-    $this->installConfig('views_test_aggregation');
+        $this->installEntitySchema('user');
+    }
 
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests a trivial result set.
+     */
+    public function testSimpleResultSet(): void
+    {
+        $view = Views::getView('test_aggregation');
+        $view->setDisplay();
 
-  /**
-   * Tests a trivial result set.
-   */
-  public function testSimpleResultSet(): void {
-    $view = Views::getView('test_aggregation');
-    $view->setDisplay();
+        // Execute the view.
+        $this->executeView($view);
 
-    // Execute the view.
-    $this->executeView($view);
-
-    // Verify the result.
-    $this->assertCount(1, $view->result, 'The number of returned rows match.');
-  }
+        // Verify the result.
+        $this->assertCount(1, $view->result, 'The number of returned rows match.');
+    }
 
 }

@@ -10,21 +10,23 @@ use Drupal\Core\Render\BareHtmlPageRendererInterface;
 /**
  * Implements hook_page_attachments() for the system module.
  */
-final readonly class PageAttachmentsHook {
+final readonly class PageAttachmentsHook
+{
+    public function __construct(
+        private BareHtmlPageRendererInterface $bareHtmlPageRenderer,
+    ) {
+    }
 
-  public function __construct(
-    private BareHtmlPageRendererInterface $bareHtmlPageRenderer,
-  ) {}
-
-  /**
-   * Implements hook_page_attachments().
-   *
-   * @see \Drupal\Core\Theme\ThemePreprocess::preprocessMaintenancePage()
-   * @see \Drupal\Core\EventSubscriber\ActiveLinkResponseFilter
-   */
-  #[Hook('page_attachments')]
-  public function pageAttachments(array &$page): void {
-    $this->bareHtmlPageRenderer->systemPageAttachments($page);
-  }
+    /**
+     * Implements hook_page_attachments().
+     *
+     * @see \Drupal\Core\Theme\ThemePreprocess::preprocessMaintenancePage()
+     * @see \Drupal\Core\EventSubscriber\ActiveLinkResponseFilter
+     */
+    #[Hook('page_attachments')]
+    public function pageAttachments(array &$page): void
+    {
+        $this->bareHtmlPageRenderer->systemPageAttachments($page);
+    }
 
 }

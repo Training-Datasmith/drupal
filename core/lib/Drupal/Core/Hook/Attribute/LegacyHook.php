@@ -21,6 +21,6 @@ namespace Drupal\Core\Hook\Attribute;
  * For more information, see https://www.drupal.org/node/3442349.
  */
 #[\Attribute(\Attribute::TARGET_FUNCTION)]
-class LegacyHook {
-
+class LegacyHook
+{
 }

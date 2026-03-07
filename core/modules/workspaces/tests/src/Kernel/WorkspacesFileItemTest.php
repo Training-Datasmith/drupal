@@ -16,57 +16,60 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspacesFileItemTest extends FileItemTest {
+class WorkspacesFileItemTest extends FileItemTest
+{
+    use UserCreationTrait;
+    use WorkspaceTestTrait;
 
-  use UserCreationTrait;
-  use WorkspaceTestTrait;
+    /**
+     * The entity type manager.
+     */
+    protected EntityTypeManagerInterface $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'workspaces',
+      'workspaces_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'workspaces',
-    'workspaces_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entityTypeManager = \Drupal::entityTypeManager();
 
-    $this->entityTypeManager = \Drupal::entityTypeManager();
+        $this->installEntitySchema('workspace');
+        $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
 
-    $this->installEntitySchema('workspace');
-    $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
+        // Create a new workspace and activate it.
+        Workspace::create(['id' => 'stage', 'label' => 'Stage'])->save();
+        $this->switchToWorkspace('stage');
+    }
 
-    // Create a new workspace and activate it.
-    Workspace::create(['id' => 'stage', 'label' => 'Stage'])->save();
-    $this->switchToWorkspace('stage');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testFileItem(): void
+    {
+        // Ignore entity types that are not being tested, in order to fully re-use
+        // the parent test method.
+        $this->ignoreEntityType('entity_test');
+        $this->ignoreEntityType('entity_view_display');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function testFileItem(): void {
-    // Ignore entity types that are not being tested, in order to fully re-use
-    // the parent test method.
-    $this->ignoreEntityType('entity_test');
-    $this->ignoreEntityType('entity_view_display');
+        parent::testFileItem();
+    }
 
-    parent::testFileItem();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testGenerateSampleValue(): void {
-    $this->markTestSkipped("This is already implemented and tested in base class. We don't require in child class.");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function testGenerateSampleValue(): void
+    {
+        $this->markTestSkipped("This is already implemented and tested in base class. We don't require in child class.");
+    }
 
 }

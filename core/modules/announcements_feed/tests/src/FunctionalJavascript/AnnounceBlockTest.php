@@ -18,67 +18,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('announcements_feed')]
 #[RunTestsInSeparateProcesses]
-class AnnounceBlockTest extends WebDriverTestBase {
+class AnnounceBlockTest extends WebDriverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'announcements_feed',
+      'block',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'announcements_feed',
-    'block',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The announce block instance.
+     *
+     * @var \Drupal\block\BlockInterface
+     */
+    protected BlockInterface $announceBlock;
 
-  /**
-   * The announce block instance.
-   *
-   * @var \Drupal\block\BlockInterface
-   */
-  protected BlockInterface $announceBlock;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        AnnounceTestHttpClientMiddleware::setAnnounceTestEndpoint('/announce-feed-json/community-feeds');
+        $this->announceBlock = $this->placeBlock('announce_block', [
+          'label' => 'Announcements Feed',
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    AnnounceTestHttpClientMiddleware::setAnnounceTestEndpoint('/announce-feed-json/community-feeds');
-    $this->announceBlock = $this->placeBlock('announce_block', [
-      'label' => 'Announcements Feed',
-    ]);
-  }
+    /**
+     * Testing announce feed block visibility.
+     */
+    public function testAnnounceWithoutPermission(): void
+    {
+        // User with "access announcements" permission and anonymous session.
+        $account = $this->drupalCreateUser([
+          'access announcements',
+        ]);
+        $anonymous_account = new AnonymousUserSession();
 
-  /**
-   * Testing announce feed block visibility.
-   */
-  public function testAnnounceWithoutPermission(): void {
-    // User with "access announcements" permission and anonymous session.
-    $account = $this->drupalCreateUser([
-      'access announcements',
-    ]);
-    $anonymous_account = new AnonymousUserSession();
+        $this->drupalLogin($account);
+        $this->drupalGet('<front>');
 
-    $this->drupalLogin($account);
-    $this->drupalGet('<front>');
+        $assert_session = $this->assertSession();
 
-    $assert_session = $this->assertSession();
+        // Block should be visible for the user.
+        $assert_session->pageTextContains('Announcements Feed');
 
-    // Block should be visible for the user.
-    $assert_session->pageTextContains('Announcements Feed');
+        // Block is not accessible without permission.
+        $this->drupalLogout();
+        $assert_session->pageTextNotContains('Announcements Feed');
 
-    // Block is not accessible without permission.
-    $this->drupalLogout();
-    $assert_session->pageTextNotContains('Announcements Feed');
+        // Test access() method return type.
+        $this->assertTrue($this->announceBlock->getPlugin()->access($account));
+        $this->assertInstanceOf(AccessResultAllowed::class, $this->announceBlock->getPlugin()->access($account, true));
 
-    // Test access() method return type.
-    $this->assertTrue($this->announceBlock->getPlugin()->access($account));
-    $this->assertInstanceOf(AccessResultAllowed::class, $this->announceBlock->getPlugin()->access($account, TRUE));
-
-    $this->assertFalse($this->announceBlock->getPlugin()->access($anonymous_account));
-    $this->assertInstanceOf(AccessResultNeutral::class, $this->announceBlock->getPlugin()->access($anonymous_account, TRUE));
-  }
+        $this->assertFalse($this->announceBlock->getPlugin()->access($anonymous_account));
+        $this->assertInstanceOf(AccessResultNeutral::class, $this->announceBlock->getPlugin()->access($anonymous_account, true));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field_ui\Form;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -14,142 +16,153 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class EntityFormDisplayEditForm extends EntityDisplayFormBase {
+class EntityFormDisplayEditForm extends EntityDisplayFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $displayContext = 'form';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $displayContext = 'form';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('plugin.manager.field.field_type'),
-      $container->get('plugin.manager.field.widget'),
-      $container->get('entity_display.repository'),
-      $container->get('entity_field.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildFieldRow(FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state) {
-    $field_row = parent::buildFieldRow($field_definition, $form, $form_state);
-
-    $field_name = $field_definition->getName();
-
-    // Update the (invisible) title of the 'plugin' column.
-    $field_row['plugin']['#title'] = $this->t('Formatter for @title', ['@title' => $field_definition->getLabel()]);
-    if (!empty($field_row['plugin']['settings_edit_form']) && ($plugin = $this->entity->getRenderer($field_name))) {
-      $plugin_type_info = $plugin->getPluginDefinition();
-      $field_row['plugin']['settings_edit_form']['label']['#markup'] = $this->t('Widget settings:') . ' <span class="plugin-name">' . $plugin_type_info['label'] . '</span>';
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('plugin.manager.field.field_type'),
+            $container->get('plugin.manager.field.widget'),
+            $container->get('entity_display.repository'),
+            $container->get('entity_field.manager')
+        );
     }
 
-    return $field_row;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildFieldRow(FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state)
+    {
+        $field_row = parent::buildFieldRow($field_definition, $form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityDisplay($entity_type_id, $bundle, $mode) {
-    return $this->entityDisplayRepository->getFormDisplay($entity_type_id, $bundle, $mode);
-  }
+        $field_name = $field_definition->getName();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultPlugin($field_type) {
-    return $this->fieldTypes[$field_type]['default_widget'] ?? NULL;
-  }
+        // Update the (invisible) title of the 'plugin' column.
+        $field_row['plugin']['#title'] = $this->t('Formatter for @title', ['@title' => $field_definition->getLabel()]);
+        if (!empty($field_row['plugin']['settings_edit_form']) && ($plugin = $this->entity->getRenderer($field_name))) {
+            $plugin_type_info = $plugin->getPluginDefinition();
+            $field_row['plugin']['settings_edit_form']['label']['#markup'] = $this->t('Widget settings:') . ' <span class="plugin-name">' . $plugin_type_info['label'] . '</span>';
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDisplayModes() {
-    return $this->entityDisplayRepository->getFormModes($this->entity->getTargetEntityTypeId());
-  }
+        return $field_row;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDisplayModeOptions() {
-    return $this->entityDisplayRepository->getFormModeOptions($this->entity->getTargetEntityTypeId());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityDisplay($entity_type_id, $bundle, $mode)
+    {
+        return $this->entityDisplayRepository->getFormDisplay($entity_type_id, $bundle, $mode);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDisplayModesLink(): array {
-    return [
-      '#type' => 'link',
-      '#title' => $this->t('Manage form modes'),
-      '#url' => Url::fromRoute('entity.entity_form_mode.collection'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultPlugin($field_type)
+    {
+        return $this->fieldTypes[$field_type]['default_widget'] ?? null;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getTableHeader(): array {
-    return [
-      $this->t('Field'),
-      [
-        'data' => $this->t('Machine name'),
-        'class' => [RESPONSIVE_PRIORITY_MEDIUM, 'machine-name'],
-      ],
-      $this->t('Weight'),
-      $this->t('Parent'),
-      $this->t('Region'),
-      ['data' => $this->t('Widget'), 'colspan' => 3],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDisplayModes()
+    {
+        return $this->entityDisplayRepository->getFormModes($this->entity->getTargetEntityTypeId());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getOverviewUrl($mode): \Drupal\Core\Url {
-    $entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
-    return Url::fromRoute('entity.entity_form_display.' . $this->entity->getTargetEntityTypeId() . '.form_mode', [
-      'form_mode_name' => $mode,
-    ] + FieldUI::getRouteBundleParameter($entity_type, $this->entity->getTargetBundle()));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDisplayModeOptions()
+    {
+        return $this->entityDisplayRepository->getFormModeOptions($this->entity->getTargetEntityTypeId());
+    }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[][]
-   */
-  protected function thirdPartySettingsForm(PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state): array {
-    $settings_form = [];
-    // Invoke hook_field_widget_third_party_settings_form(), keying resulting
-    // subforms by module name.
-    $this->moduleHandler->invokeAllWith(
-      'field_widget_third_party_settings_form',
-      function (callable $hook, string $module) use (&$settings_form, $plugin, $field_definition, &$form, $form_state): void {
-        $settings_form[$module] = ($settings_form[$module] ?? []) + ($hook(
-          $plugin,
-          $field_definition,
-          $this->entity->getMode(),
-          $form,
-          $form_state
-        ) ?? []);
-      }
-    );
-    return $settings_form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDisplayModesLink(): array
+    {
+        return [
+          '#type' => 'link',
+          '#title' => $this->t('Manage form modes'),
+          '#url' => Url::fromRoute('entity.entity_form_mode.collection'),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function alterSettingsSummary(array &$summary, PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition) {
-    $context = [
-      'widget' => $plugin,
-      'field_definition' => $field_definition,
-      'form_mode' => $this->entity->getMode(),
-    ];
-    $this->moduleHandler->alter('field_widget_settings_summary', $summary, $context);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getTableHeader(): array
+    {
+        return [
+          $this->t('Field'),
+          [
+            'data' => $this->t('Machine name'),
+            'class' => [RESPONSIVE_PRIORITY_MEDIUM, 'machine-name'],
+          ],
+          $this->t('Weight'),
+          $this->t('Parent'),
+          $this->t('Region'),
+          ['data' => $this->t('Widget'), 'colspan' => 3],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getOverviewUrl($mode): \Drupal\Core\Url
+    {
+        $entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
+        return Url::fromRoute('entity.entity_form_display.' . $this->entity->getTargetEntityTypeId() . '.form_mode', [
+          'form_mode_name' => $mode,
+        ] + FieldUI::getRouteBundleParameter($entity_type, $this->entity->getTargetBundle()));
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[][]
+     */
+    protected function thirdPartySettingsForm(PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state): array
+    {
+        $settings_form = [];
+        // Invoke hook_field_widget_third_party_settings_form(), keying resulting
+        // subforms by module name.
+        $this->moduleHandler->invokeAllWith(
+            'field_widget_third_party_settings_form',
+            function (callable $hook, string $module) use (&$settings_form, $plugin, $field_definition, &$form, $form_state): void {
+                $settings_form[$module] = ($settings_form[$module] ?? []) + ($hook(
+                    $plugin,
+                    $field_definition,
+                    $this->entity->getMode(),
+                    $form,
+                    $form_state
+                ) ?? []);
+            }
+        );
+        return $settings_form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function alterSettingsSummary(array &$summary, PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition)
+    {
+        $context = [
+          'widget' => $plugin,
+          'field_definition' => $field_definition,
+          'form_mode' => $this->entity->getMode(),
+        ];
+        $this->moduleHandler->alter('field_widget_settings_summary', $summary, $context);
+    }
 
 }

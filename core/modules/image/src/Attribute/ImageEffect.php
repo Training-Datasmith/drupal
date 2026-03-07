@@ -25,26 +25,27 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ImageEffect extends Plugin {
-
-  /**
-   * Constructs an ImageEffect attribute.
-   *
-   * @param string $id
-   *   The plugin ID.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $label
-   *   The human-readable name of the image effect.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $description
-   *   (optional) A brief description of the image effect. This will be shown
-   *   when adding or configuring this image effect.
-   * @param class-string|null $deriver
-   *   (optional) The deriver class.
-   */
-  public function __construct(
-    public readonly string $id,
-    public readonly TranslatableMarkup $label,
-    public readonly ?TranslatableMarkup $description = NULL,
-    public readonly ?string $deriver = NULL,
-  ) {}
+class ImageEffect extends Plugin
+{
+    /**
+     * Constructs an ImageEffect attribute.
+     *
+     * @param string $id
+     *   The plugin ID.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup $label
+     *   The human-readable name of the image effect.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $description
+     *   (optional) A brief description of the image effect. This will be shown
+     *   when adding or configuring this image effect.
+     * @param class-string|null $deriver
+     *   (optional) The deriver class.
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly TranslatableMarkup $label,
+        public readonly ?TranslatableMarkup $description = null,
+        public readonly ?string $deriver = null,
+    ) {
+    }
 
 }

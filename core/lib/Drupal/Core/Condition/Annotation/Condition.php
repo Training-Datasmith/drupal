@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Condition\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,47 +25,47 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class Condition extends Plugin {
+class Condition extends Plugin
+{
+    /**
+     * The condition plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The condition plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the condition.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the condition.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * The name of the module providing the type.
+     *
+     * @var string
+     */
+    public $module;
 
-  /**
-   * The name of the module providing the type.
-   *
-   * @var string
-   */
-  public $module;
+    /**
+     * An array of context definitions describing the context used by the plugin.
+     *
+     * The array is keyed by context names.
+     *
+     * @var \Drupal\Core\Annotation\ContextDefinition[]
+     */
+    public $context_definitions = [];
 
-  /**
-   * An array of context definitions describing the context used by the plugin.
-   *
-   * The array is keyed by context names.
-   *
-   * @var \Drupal\Core\Annotation\ContextDefinition[]
-   */
-  public $context_definitions = [];
-
-  /**
-   * The category under which the condition should listed in the UI.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $category;
+    /**
+     * The category under which the condition should listed in the UI.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $category;
 
 }

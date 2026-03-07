@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue;
 
 /**
@@ -10,11 +12,11 @@ namespace Drupal\Core\Queue;
  *
  * @see system_cron()
  */
-interface QueueGarbageCollectionInterface {
-
-  /**
-   * Cleans queues of garbage.
-   */
-  public function garbageCollection();
+interface QueueGarbageCollectionInterface
+{
+    /**
+     * Cleans queues of garbage.
+     */
+    public function garbageCollection();
 
 }

@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\Discovery\ContainerDerivativeDiscoveryDecorator;
 use Drupal\Core\Plugin\Discovery\YamlDiscovery;
@@ -44,220 +45,224 @@ use Drupal\Core\StringTranslation\TranslationInterface;
  * @see \Drupal\breakpoint\BreakpointInterface
  * @see plugin_api
  */
-class BreakpointManager extends DefaultPluginManager implements BreakpointManagerInterface {
-  use StringTranslationTrait;
+class BreakpointManager extends DefaultPluginManager implements BreakpointManagerInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaults = [
-    // Human readable label for breakpoint.
-    'label' => '',
-    // The media query for the breakpoint.
-    'mediaQuery' => '',
-    // Weight used for ordering breakpoints.
-    'weight' => 0,
-    // Breakpoint multipliers.
-    'multipliers' => [],
-    // The breakpoint group.
-    'group' => '',
-    // Default class for breakpoint implementations.
-    'class' => \Drupal\breakpoint\Breakpoint::class,
-    // The plugin id. Set by the plugin system based on the top-level YAML key.
-    'id' => '',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaults = [
+      // Human readable label for breakpoint.
+      'label' => '',
+      // The media query for the breakpoint.
+      'mediaQuery' => '',
+      // Weight used for ordering breakpoints.
+      'weight' => 0,
+      // Breakpoint multipliers.
+      'multipliers' => [],
+      // The breakpoint group.
+      'group' => '',
+      // Default class for breakpoint implementations.
+      'class' => \Drupal\breakpoint\Breakpoint::class,
+      // The plugin id. Set by the plugin system based on the top-level YAML key.
+      'id' => '',
+    ];
 
-  /**
-   * Static cache of breakpoints keyed by group.
-   *
-   * @var array
-   */
-  protected $breakpointsByGroup;
+    /**
+     * Static cache of breakpoints keyed by group.
+     *
+     * @var array
+     */
+    protected $breakpointsByGroup;
 
-  /**
-   * The plugin instances.
-   *
-   * @var array
-   */
-  protected $instances = [];
+    /**
+     * The plugin instances.
+     *
+     * @var array
+     */
+    protected $instances = [];
 
-  /**
-   * Constructs a new BreakpointManager instance.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
-   *   The theme handler.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   The cache backend.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
-   *   The module extension list.
-   */
-  public function __construct(ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, CacheBackendInterface $cache_backend, TranslationInterface $string_translation, ModuleExtensionList $module_extension_list) {
-    $this->factory = new ContainerFactory($this);
-    $this->moduleHandler = $module_handler;
-    $this->moduleExtensionList = $module_extension_list;
-    $this->setStringTranslation($string_translation);
-    $this->alterInfo('breakpoints');
-    $this->setCacheBackend($cache_backend, 'breakpoints', ['breakpoints']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDiscovery() {
-    if (!isset($this->discovery)) {
-      $this->discovery = new YamlDiscovery('breakpoints', $this->moduleHandler->getModuleDirectories() + $this->themeHandler->getThemeDirectories());
-      $this->discovery = new ContainerDerivativeDiscoveryDecorator($this->discovery);
+    /**
+     * Constructs a new BreakpointManager instance.
+     *
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler.
+     * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+     *   The theme handler.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   The cache backend.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation service.
+     * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
+     *   The module extension list.
+     */
+    public function __construct(ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, CacheBackendInterface $cache_backend, TranslationInterface $string_translation, ModuleExtensionList $module_extension_list)
+    {
+        $this->factory = new ContainerFactory($this);
+        $this->moduleHandler = $module_handler;
+        $this->moduleExtensionList = $module_extension_list;
+        $this->setStringTranslation($string_translation);
+        $this->alterInfo('breakpoints');
+        $this->setCacheBackend($cache_backend, 'breakpoints', ['breakpoints']);
     }
-    return $this->discovery;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function processDefinition(&$definition, $plugin_id): void {
-    parent::processDefinition($definition, $plugin_id);
-    // Allow custom groups and therefore more than one group per extension.
-    if (empty($definition['group'])) {
-      $definition['group'] = $definition['provider'];
-    }
-    // Ensure a 1x multiplier exists.
-    if (!in_array('1x', $definition['multipliers'])) {
-      $definition['multipliers'][] = '1x';
-    }
-    // Ensure that multipliers are sorted numerically so 1x, 1.5x and 2x
-    // come out in that order instead of 1.5x, 1x, 2x.
-    sort($definition['multipliers'], SORT_NUMERIC);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function providerExists($provider): bool
-  {
-      if ($this->moduleHandler->moduleExists($provider)) {
-          return true;
-      }
-      return $this->themeHandler->themeExists($provider);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getBreakpointsByGroup($group): array {
-    if (!isset($this->breakpointsByGroup[$group])) {
-      if ($cache = $this->cacheBackend->get($this->cacheKey . ':' . $group)) {
-        $this->breakpointsByGroup[$group] = $cache->data;
-      }
-      else {
-        $breakpoints = [];
-        foreach ($this->getDefinitions() as $plugin_id => $plugin_definition) {
-          if ($plugin_definition['group'] == $group) {
-            $breakpoints[$plugin_id] = $plugin_definition;
-          }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDiscovery()
+    {
+        if (!isset($this->discovery)) {
+            $this->discovery = new YamlDiscovery('breakpoints', $this->moduleHandler->getModuleDirectories() + $this->themeHandler->getThemeDirectories());
+            $this->discovery = new ContainerDerivativeDiscoveryDecorator($this->discovery);
         }
-        uasort($breakpoints, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
-        $this->cacheBackend->set($this->cacheKey . ':' . $group, $breakpoints, Cache::PERMANENT, ['breakpoints']);
-        $this->breakpointsByGroup[$group] = $breakpoints;
-      }
+        return $this->discovery;
     }
 
-    $instances = [];
-    foreach ($this->breakpointsByGroup[$group] as $plugin_id => $definition) {
-      if (!isset($this->instances[$plugin_id])) {
-        $this->instances[$plugin_id] = $this->createInstance($plugin_id);
-      }
-      $instances[$plugin_id] = $this->instances[$plugin_id];
-    }
-    return $instances;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getGroups(): array {
-    // Use a double colon so as to not clash with the cache for each group.
-    if ($cache = $this->cacheBackend->get($this->cacheKey . '::groups')) {
-      $groups = $cache->data;
-    }
-    else {
-      $groups = [];
-      foreach ($this->getDefinitions() as $plugin_definition) {
-        if (!isset($groups[$plugin_definition['group']])) {
-          $groups[$plugin_definition['group']] = $plugin_definition['group'];
+    /**
+     * {@inheritdoc}
+     */
+    public function processDefinition(&$definition, $plugin_id): void
+    {
+        parent::processDefinition($definition, $plugin_id);
+        // Allow custom groups and therefore more than one group per extension.
+        if (empty($definition['group'])) {
+            $definition['group'] = $definition['provider'];
         }
-      }
-      $this->cacheBackend->set($this->cacheKey . '::groups', $groups, Cache::PERMANENT, ['breakpoints']);
+        // Ensure a 1x multiplier exists.
+        if (!in_array('1x', $definition['multipliers'])) {
+            $definition['multipliers'][] = '1x';
+        }
+        // Ensure that multipliers are sorted numerically so 1x, 1.5x and 2x
+        // come out in that order instead of 1.5x, 1x, 2x.
+        sort($definition['multipliers'], SORT_NUMERIC);
     }
-    // Get the labels. This is not cacheable due to translation.
-    $group_labels = [];
-    foreach ($groups as $group) {
-      $group_labels[$group] = $this->getGroupLabel($group);
-    }
-    asort($group_labels);
-    return $group_labels;
-  }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getGroupProviders($group): array {
-    $providers = [];
-    $breakpoints = $this->getBreakpointsByGroup($group);
-    foreach ($breakpoints as $breakpoint) {
-      $provider = $breakpoint->getProvider();
-      $extension = FALSE;
-      if ($this->moduleHandler->moduleExists($provider)) {
-        $extension = $this->moduleHandler->getModule($provider);
-      }
-      elseif ($this->themeHandler->themeExists($provider)) {
-        $extension = $this->themeHandler->getTheme($provider);
-      }
-      if ($extension) {
-        $providers[$extension->getName()] = $extension->getType();
-      }
+    /**
+     * {@inheritdoc}
+     */
+    protected function providerExists($provider): bool
+    {
+        if ($this->moduleHandler->moduleExists($provider)) {
+            return true;
+        }
+        return $this->themeHandler->themeExists($provider);
     }
-    return $providers;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearCachedDefinitions(): void {
-    parent::clearCachedDefinitions();
-    $this->breakpointsByGroup = NULL;
-    $this->instances = [];
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getBreakpointsByGroup($group): array
+    {
+        if (!isset($this->breakpointsByGroup[$group])) {
+            if ($cache = $this->cacheBackend->get($this->cacheKey . ':' . $group)) {
+                $this->breakpointsByGroup[$group] = $cache->data;
+            } else {
+                $breakpoints = [];
+                foreach ($this->getDefinitions() as $plugin_id => $plugin_definition) {
+                    if ($plugin_definition['group'] == $group) {
+                        $breakpoints[$plugin_id] = $plugin_definition;
+                    }
+                }
+                uasort($breakpoints, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
+                $this->cacheBackend->set($this->cacheKey . ':' . $group, $breakpoints, Cache::PERMANENT, ['breakpoints']);
+                $this->breakpointsByGroup[$group] = $breakpoints;
+            }
+        }
 
-  /**
-   * Gets the label for a breakpoint group.
-   *
-   * @param string $group
-   *   The breakpoint group.
-   *
-   * @return string
-   *   The label.
-   */
-  protected function getGroupLabel($group) {
-    // Extension names are not translatable.
-    if ($this->moduleHandler->moduleExists($group)) {
-      $label = $this->moduleExtensionList->getName($group);
+        $instances = [];
+        foreach ($this->breakpointsByGroup[$group] as $plugin_id => $definition) {
+            if (!isset($this->instances[$plugin_id])) {
+                $this->instances[$plugin_id] = $this->createInstance($plugin_id);
+            }
+            $instances[$plugin_id] = $this->instances[$plugin_id];
+        }
+        return $instances;
     }
-    elseif ($this->themeHandler->themeExists($group)) {
-      $label = $this->themeHandler->getName($group);
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getGroups(): array
+    {
+        // Use a double colon so as to not clash with the cache for each group.
+        if ($cache = $this->cacheBackend->get($this->cacheKey . '::groups')) {
+            $groups = $cache->data;
+        } else {
+            $groups = [];
+            foreach ($this->getDefinitions() as $plugin_definition) {
+                if (!isset($groups[$plugin_definition['group']])) {
+                    $groups[$plugin_definition['group']] = $plugin_definition['group'];
+                }
+            }
+            $this->cacheBackend->set($this->cacheKey . '::groups', $groups, Cache::PERMANENT, ['breakpoints']);
+        }
+        // Get the labels. This is not cacheable due to translation.
+        $group_labels = [];
+        foreach ($groups as $group) {
+            $group_labels[$group] = $this->getGroupLabel($group);
+        }
+        asort($group_labels);
+        return $group_labels;
     }
-    else {
-      // Custom group label that should be translatable.
-      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-      $label = $this->t($group, [], ['context' => 'breakpoint']);
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getGroupProviders($group): array
+    {
+        $providers = [];
+        $breakpoints = $this->getBreakpointsByGroup($group);
+        foreach ($breakpoints as $breakpoint) {
+            $provider = $breakpoint->getProvider();
+            $extension = false;
+            if ($this->moduleHandler->moduleExists($provider)) {
+                $extension = $this->moduleHandler->getModule($provider);
+            } elseif ($this->themeHandler->themeExists($provider)) {
+                $extension = $this->themeHandler->getTheme($provider);
+            }
+            if ($extension) {
+                $providers[$extension->getName()] = $extension->getType();
+            }
+        }
+        return $providers;
     }
-    return $label;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearCachedDefinitions(): void
+    {
+        parent::clearCachedDefinitions();
+        $this->breakpointsByGroup = null;
+        $this->instances = [];
+    }
+
+    /**
+     * Gets the label for a breakpoint group.
+     *
+     * @param string $group
+     *   The breakpoint group.
+     *
+     * @return string
+     *   The label.
+     */
+    protected function getGroupLabel($group)
+    {
+        // Extension names are not translatable.
+        if ($this->moduleHandler->moduleExists($group)) {
+            $label = $this->moduleExtensionList->getName($group);
+        } elseif ($this->themeHandler->themeExists($group)) {
+            $label = $this->themeHandler->getName($group);
+        } else {
+            // Custom group label that should be translatable.
+            // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+            $label = $this->t($group, [], ['context' => 'breakpoint']);
+        }
+        return $label;
+    }
 
 }

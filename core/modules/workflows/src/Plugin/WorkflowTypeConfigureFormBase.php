@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workflows\Plugin;
 
 use Drupal\Component\Plugin\PluginAwareInterface;
@@ -11,28 +13,30 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * A base class for workflow type configuration forms.
  */
-abstract class WorkflowTypeConfigureFormBase implements PluginFormInterface, PluginAwareInterface {
+abstract class WorkflowTypeConfigureFormBase implements PluginFormInterface, PluginAwareInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The workflow type.
+     *
+     * @var \Drupal\workflows\WorkflowTypeInterface
+     */
+    protected $workflowType;
 
-  /**
-   * The workflow type.
-   *
-   * @var \Drupal\workflows\WorkflowTypeInterface
-   */
-  protected $workflowType;
+    /**
+     * {@inheritdoc}
+     */
+    public function setPlugin(PluginInspectionInterface $plugin): void
+    {
+        $this->workflowType = $plugin;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPlugin(PluginInspectionInterface $plugin): void {
-    $this->workflowType = $plugin;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

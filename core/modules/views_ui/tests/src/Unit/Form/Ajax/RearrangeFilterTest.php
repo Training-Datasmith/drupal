@@ -12,16 +12,17 @@ use PHPUnit\Framework\Attributes\Group;
  * Unit tests for Views UI module functions.
  */
 #[Group('views_ui')]
-class RearrangeFilterTest extends UnitTestCase {
-
-  /**
-   * Tests static methods.
-   */
-  public function testStaticMethods(): void {
-    // Test the RearrangeFilter::arrayKeyPlus method.
-    $original = [0 => 'one', 1 => 'two', 2 => 'three'];
-    $expected = [1 => 'one', 2 => 'two', 3 => 'three'];
-    $this->assertSame(RearrangeFilter::arrayKeyPlus($original), $expected);
-  }
+class RearrangeFilterTest extends UnitTestCase
+{
+    /**
+     * Tests static methods.
+     */
+    public function testStaticMethods(): void
+    {
+        // Test the RearrangeFilter::arrayKeyPlus method.
+        $original = [0 => 'one', 1 => 'two', 2 => 'three'];
+        $expected = [1 => 'one', 2 => 'two', 3 => 'three'];
+        $this->assertSame(RearrangeFilter::arrayKeyPlus($original), $expected);
+    }
 
 }

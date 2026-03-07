@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Site\Settings;
@@ -7,24 +9,25 @@ use Drupal\Core\Site\Settings;
 /**
  * Provides a factory for creating config file storage objects.
  */
-class FileStorageFactory {
-
-  /**
-   * Returns a FileStorage object working with the sync config directory.
-   *
-   * @return \Drupal\Core\Config\FileStorage
-   *   The file storage object for the configuration sync directory.
-   *
-   * @throws \Drupal\Core\Config\ConfigDirectoryNotDefinedException
-   *   In case the sync directory does not exist or is not defined in
-   *   $settings['config_sync_directory'].
-   */
-  public static function getSync(): \Drupal\Core\Config\FileStorage {
-    $directory = Settings::get('config_sync_directory', FALSE);
-    if ($directory === FALSE) {
-      throw new ConfigDirectoryNotDefinedException('The config sync directory is not defined in $settings["config_sync_directory"]');
+class FileStorageFactory
+{
+    /**
+     * Returns a FileStorage object working with the sync config directory.
+     *
+     * @return \Drupal\Core\Config\FileStorage
+     *   The file storage object for the configuration sync directory.
+     *
+     * @throws \Drupal\Core\Config\ConfigDirectoryNotDefinedException
+     *   In case the sync directory does not exist or is not defined in
+     *   $settings['config_sync_directory'].
+     */
+    public static function getSync(): \Drupal\Core\Config\FileStorage
+    {
+        $directory = Settings::get('config_sync_directory', false);
+        if ($directory === false) {
+            throw new ConfigDirectoryNotDefinedException('The config sync directory is not defined in $settings["config_sync_directory"]');
+        }
+        return new FileStorage($directory);
     }
-    return new FileStorage($directory);
-  }
 
 }

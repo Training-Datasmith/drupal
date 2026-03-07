@@ -1,63 +1,66 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\KeyValueStore\Query;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryBase;
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 
 /**
  * Defines the entity query for entities stored in a key value backend.
  */
-class Query extends QueryBase {
-
-  /**
-   * Constructs a new Query.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   * @param string $conjunction
-   *   - AND: all of the conditions on the query need to match.
-   *   - OR: at least one of the conditions on the query need to match.
-   * @param array $namespaces
-   *   List of potential namespaces of the classes belonging to this query.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
-   *   The key value factory.
-   */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces, protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory) {
-    parent::__construct($entity_type, $conjunction, $namespaces);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function execute(): int|array {
-    // Load the relevant records.
-    $records = $this->keyValueFactory->get('entity_storage__' . $this->entityTypeId)->getAll();
-
-    // Apply conditions.
-    $result = $this->condition->compile($records);
-
-    // Apply sort settings.
-    foreach ($this->sort as $sort) {
-      $direction = $sort['direction'] == 'ASC' ? -1 : 1;
-      $field = $sort['field'];
-      uasort($result, fn($a, $b) => ($a[$field] <= $b[$field]) ? $direction : -$direction);
+class Query extends QueryBase
+{
+    /**
+     * Constructs a new Query.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     * @param string $conjunction
+     *   - AND: all of the conditions on the query need to match.
+     *   - OR: at least one of the conditions on the query need to match.
+     * @param array $namespaces
+     *   List of potential namespaces of the classes belonging to this query.
+     * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
+     *   The key value factory.
+     */
+    public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces, protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory)
+    {
+        parent::__construct($entity_type, $conjunction, $namespaces);
     }
 
-    // Let the pager do its work.
-    $this->initializePager();
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(): int|array
+    {
+        // Load the relevant records.
+        $records = $this->keyValueFactory->get('entity_storage__' . $this->entityTypeId)->getAll();
 
-    if ($this->range) {
-      $result = array_slice($result, $this->range['start'], $this->range['length'], TRUE);
-    }
-    if ($this->count) {
-      return count($result);
-    }
+        // Apply conditions.
+        $result = $this->condition->compile($records);
 
-    // Create the expected structure of entity_id => entity_id.
-    $entity_ids = array_keys($result);
-    return array_combine($entity_ids, $entity_ids);
-  }
+        // Apply sort settings.
+        foreach ($this->sort as $sort) {
+            $direction = $sort['direction'] == 'ASC' ? -1 : 1;
+            $field = $sort['field'];
+            uasort($result, fn ($a, $b) => ($a[$field] <= $b[$field]) ? $direction : -$direction);
+        }
+
+        // Let the pager do its work.
+        $this->initializePager();
+
+        if ($this->range) {
+            $result = array_slice($result, $this->range['start'], $this->range['length'], true);
+        }
+        if ($this->count) {
+            return count($result);
+        }
+
+        // Create the expected structure of entity_id => entity_id.
+        $entity_ids = array_keys($result);
+        return array_combine($entity_ids, $entity_ids);
+    }
 
 }

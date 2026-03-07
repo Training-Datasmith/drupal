@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
@@ -9,63 +11,67 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Provides a trait for published status.
  */
-trait EntityPublishedTrait {
+trait EntityPublishedTrait
+{
+    /**
+     * Returns an array of base field definitions for publishing status.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type to add the publishing status field to.
+     *
+     * @return \Drupal\Core\Field\BaseFieldDefinition[]
+     *   An array of base field definitions.
+     *
+     * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
+     *   Thrown when the entity type does not implement EntityPublishedInterface
+     *   or if it does not have a "published" entity key.
+     */
+    public static function publishedBaseFieldDefinitions(EntityTypeInterface $entity_type): array
+    {
+        if (!is_subclass_of($entity_type->getClass(), EntityPublishedInterface::class)) {
+            throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not implement \Drupal\Core\Entity\EntityPublishedInterface.');
+        }
+        if (!$entity_type->hasKey('published')) {
+            throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "published" entity key.');
+        }
 
-  /**
-   * Returns an array of base field definitions for publishing status.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type to add the publishing status field to.
-   *
-   * @return \Drupal\Core\Field\BaseFieldDefinition[]
-   *   An array of base field definitions.
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   *   Thrown when the entity type does not implement EntityPublishedInterface
-   *   or if it does not have a "published" entity key.
-   */
-  public static function publishedBaseFieldDefinitions(EntityTypeInterface $entity_type): array {
-    if (!is_subclass_of($entity_type->getClass(), EntityPublishedInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not implement \Drupal\Core\Entity\EntityPublishedInterface.');
+        return [
+          $entity_type->getKey('published') => BaseFieldDefinition::create('boolean')
+            ->setLabel(new TranslatableMarkup('Published'))
+            ->setRevisionable(true)
+            ->setTranslatable(true)
+            ->setDefaultValue(true),
+        ];
     }
-    if (!$entity_type->hasKey('published')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "published" entity key.');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isPublished(): bool
+    {
+        return (bool) $this->getEntityKey('published');
     }
 
-    return [
-      $entity_type->getKey('published') => BaseFieldDefinition::create('boolean')
-        ->setLabel(new TranslatableMarkup('Published'))
-        ->setRevisionable(TRUE)
-        ->setTranslatable(TRUE)
-        ->setDefaultValue(TRUE),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setPublished()
+    {
+        $key = $this->getEntityType()->getKey('published');
+        $this->set($key, true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isPublished(): bool {
-    return (bool) $this->getEntityKey('published');
-  }
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPublished() {
-    $key = $this->getEntityType()->getKey('published');
-    $this->set($key, TRUE);
+    /**
+     * {@inheritdoc}
+     */
+    public function setUnpublished()
+    {
+        $key = $this->getEntityType()->getKey('published');
+        $this->set($key, false);
 
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setUnpublished() {
-    $key = $this->getEntityType()->getKey('published');
-    $this->set($key, FALSE);
-
-    return $this;
-  }
+        return $this;
+    }
 
 }

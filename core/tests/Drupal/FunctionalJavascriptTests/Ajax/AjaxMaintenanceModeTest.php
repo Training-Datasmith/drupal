@@ -16,56 +16,58 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Ajax')]
 #[RunTestsInSeparateProcesses]
-class AjaxMaintenanceModeTest extends WebDriverTestBase {
+class AjaxMaintenanceModeTest extends WebDriverTestBase
+{
+    use FieldUiTestTrait;
+    use FileFieldCreationTrait;
+    use TestFileCreationTrait;
 
-  use FieldUiTestTrait;
-  use FileFieldCreationTrait;
-  use TestFileCreationTrait;
+    /**
+     * An user with administration permissions.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $adminUser;
 
-  /**
-   * An user with administration permissions.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $adminUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['ajax_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['ajax_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = $this->drupalCreateUser([
+          'access administration pages',
+          'administer site configuration',
+          'access site in maintenance mode',
+        ]);
+        $this->drupalLogin($this->adminUser);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->adminUser = $this->drupalCreateUser([
-      'access administration pages',
-      'administer site configuration',
-      'access site in maintenance mode',
-    ]);
-    $this->drupalLogin($this->adminUser);
-  }
+    /**
+     * Tests maintenance message only appears once on an AJAX call.
+     */
+    public function testAjaxCallMaintenanceMode(): void
+    {
+        $page = $this->getSession()->getPage();
+        $assert_session = $this->assertSession();
 
-  /**
-   * Tests maintenance message only appears once on an AJAX call.
-   */
-  public function testAjaxCallMaintenanceMode(): void {
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
+        \Drupal::state()->set('system.maintenance_mode', true);
 
-    \Drupal::state()->set('system.maintenance_mode', TRUE);
-
-    $this->drupalGet('ajax-test/insert-inline-wrapper');
-    $assert_session->pageTextContains('Target inline');
-    $page->clickLink('Link html pre-wrapped-div');
-    $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->pageTextContainsOnce('Operating in maintenance mode');
-  }
+        $this->drupalGet('ajax-test/insert-inline-wrapper');
+        $assert_session->pageTextContains('Target inline');
+        $page->clickLink('Link html pre-wrapped-div');
+        $this->assertSession()->assertWaitOnAjaxRequest();
+        $this->assertSession()->pageTextContainsOnce('Operating in maintenance mode');
+    }
 
 }

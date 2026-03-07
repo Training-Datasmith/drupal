@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views_ui\ParamConverter;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -8,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\ParamConverter\AdminPathConfigEntityConverter;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
 use Drupal\Core\Routing\AdminContext;
-use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Drupal\views_ui\ViewUI;
 use Symfony\Component\Routing\Route;
 
@@ -28,63 +29,65 @@ use Symfony\Component\Routing\Route;
  * Views UI and loaded from the views temp store, but it will not touch the
  * value for {bar}.
  */
-class ViewUIConverter extends AdminPathConfigEntityConverter implements ParamConverterInterface {
-
-  /**
-   * Constructs a new ViewUIConverter.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory
-   *   The factory for the temp store object.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
-   * @param \Drupal\Core\Routing\AdminContext $admin_context
-   *   The route admin context service.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory, ConfigFactoryInterface $config_factory, AdminContext $admin_context, EntityRepositoryInterface $entity_repository) {
-    parent::__construct($entity_type_manager, $config_factory, $admin_context, $entity_repository);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    if (!$entity = parent::convert($value, $definition, $name, $defaults)) {
-      return;
+class ViewUIConverter extends AdminPathConfigEntityConverter implements ParamConverterInterface
+{
+    /**
+     * Constructs a new ViewUIConverter.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory
+     *   The factory for the temp store object.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The config factory.
+     * @param \Drupal\Core\Routing\AdminContext $admin_context
+     *   The route admin context service.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+     *   The entity repository.
+     */
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory, ConfigFactoryInterface $config_factory, AdminContext $admin_context, EntityRepositoryInterface $entity_repository)
+    {
+        parent::__construct($entity_type_manager, $config_factory, $admin_context, $entity_repository);
     }
 
-    // Get the temp store for this variable if it needs one. Attempt to load the
-    // view from the temp store, synchronize its status with the existing view,
-    // and store the lock metadata.
-    $store = $this->tempStoreFactory->get('views');
-    if ($view = $store->get($value)) {
-      if ($entity->status()) {
-        $view->enable();
-      }
-      else {
-        $view->disable();
-      }
-      $view->setLock($store->getMetadata($value));
-    }
-    // Otherwise, decorate the existing view for use in the UI.
-    else {
-      $view = new ViewUI($entity);
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        if (!$entity = parent::convert($value, $definition, $name, $defaults)) {
+            return;
+        }
+
+        // Get the temp store for this variable if it needs one. Attempt to load the
+        // view from the temp store, synchronize its status with the existing view,
+        // and store the lock metadata.
+        $store = $this->tempStoreFactory->get('views');
+        if ($view = $store->get($value)) {
+            if ($entity->status()) {
+                $view->enable();
+            } else {
+                $view->disable();
+            }
+            $view->setLock($store->getMetadata($value));
+        }
+        // Otherwise, decorate the existing view for use in the UI.
+        else {
+            $view = new ViewUI($entity);
+        }
+
+        return $view;
     }
 
-    return $view;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route) {
-    if (parent::applies($definition, $name, $route)) {
-      return !empty($definition['tempstore']) && $definition['type'] === 'entity:view';
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route)
+    {
+        if (parent::applies($definition, $name, $route)) {
+            return !empty($definition['tempstore']) && $definition['type'] === 'entity:view';
+        }
+        return false;
     }
-    return FALSE;
-  }
 
 }

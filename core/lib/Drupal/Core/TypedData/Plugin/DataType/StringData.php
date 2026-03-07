@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -15,17 +17,18 @@ use Drupal\Core\TypedData\Type\StringInterface;
  * any PHP variable that casts to a string may be passed.
  */
 #[DataType(
-  id: "string",
-  label: new TranslatableMarkup("String")
+    id: 'string',
+    label: new TranslatableMarkup('String')
 )]
-class StringData extends PrimitiveBase implements StringInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'string'])]
-  public function getCastedValue() {
-    return $this->getString();
-  }
+class StringData extends PrimitiveBase implements StringInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'string'])]
+    public function getCastedValue()
+    {
+        return $this->getString();
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -11,52 +13,53 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'file_table' formatter.
  */
 #[FieldFormatter(
-  id: 'file_table',
-  label: new TranslatableMarkup('Table of files'),
-  field_types: [
+    id: 'file_table',
+    label: new TranslatableMarkup('Table of files'),
+    field_types: [
     'file',
   ],
 )]
-class TableFormatter extends DescriptionAwareFileFormatterBase {
+class TableFormatter extends DescriptionAwareFileFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     * @return list<array{'#theme': 'table__file_formatter_table', '#header': array{Drupal\Core\StringTranslation\TranslatableMarkup, Drupal\Core\StringTranslation\TranslatableMarkup}, '#rows': non-empty-list<array{array{data: array{'#theme': 'file_link', '#file': mixed, '#description': mixed, '#with_size': false, '#cache': array{tags: mixed}}}, array{data: Drupal\Core\StringTranslation\TranslatableMarkup}}>}>
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode): array
+    {
+        $elements = [];
 
-  /**
-   * {@inheritdoc}
-   * @return list<array{'#theme': 'table__file_formatter_table', '#header': array{Drupal\Core\StringTranslation\TranslatableMarkup, Drupal\Core\StringTranslation\TranslatableMarkup}, '#rows': non-empty-list<array{array{data: array{'#theme': 'file_link', '#file': mixed, '#description': mixed, '#with_size': false, '#cache': array{tags: mixed}}}, array{data: Drupal\Core\StringTranslation\TranslatableMarkup}}>}>
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode): array {
-    $elements = [];
+        if ($files = $this->getEntitiesToView($items, $langcode)) {
+            $header = [$this->t('Attachment'), $this->t('Size')];
+            $rows = [];
+            foreach ($files as $file) {
+                $item = $file->_referringItem;
+                $rows[] = [
+                  [
+                    'data' => [
+                      '#theme' => 'file_link',
+                      '#file' => $file,
+                      '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : null,
+                      // File size has its own column, so do not add it to the link.
+                      '#with_size' => false,
+                      '#cache' => [
+                        'tags' => $file->getCacheTags(),
+                      ],
+                    ],
+                  ],
+                  ['data' => $file->getSize() !== null ? ByteSizeMarkup::create($file->getSize()) : $this->t('Unknown')],
+                ];
+            }
 
-    if ($files = $this->getEntitiesToView($items, $langcode)) {
-      $header = [$this->t('Attachment'), $this->t('Size')];
-      $rows = [];
-      foreach ($files as $file) {
-        $item = $file->_referringItem;
-        $rows[] = [
-          [
-            'data' => [
-              '#theme' => 'file_link',
-              '#file' => $file,
-              '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : NULL,
-              // File size has its own column, so do not add it to the link.
-              '#with_size' => FALSE,
-              '#cache' => [
-                'tags' => $file->getCacheTags(),
-              ],
-            ],
-          ],
-          ['data' => $file->getSize() !== NULL ? ByteSizeMarkup::create($file->getSize()) : $this->t('Unknown')],
-        ];
-      }
+            $elements[0] = [];
+            $elements[0] = [
+              '#theme' => 'table__file_formatter_table',
+              '#header' => $header,
+              '#rows' => $rows,
+            ];
+        }
 
-      $elements[0] = [];
-      $elements[0] = [
-        '#theme' => 'table__file_formatter_table',
-        '#header' => $header,
-        '#rows' => $rows,
-      ];
+        return $elements;
     }
-
-    return $elements;
-  }
 
 }

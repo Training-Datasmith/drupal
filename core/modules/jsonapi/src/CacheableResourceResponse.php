@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi;
 
 use Drupal\Core\Cache\CacheableResponseInterface;
@@ -18,8 +20,8 @@ use Drupal\Core\Cache\CacheableResponseTrait;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class CacheableResourceResponse extends ResourceResponse implements CacheableResponseInterface {
-
-  use CacheableResponseTrait;
+class CacheableResourceResponse extends ResourceResponse implements CacheableResponseInterface
+{
+    use CacheableResponseTrait;
 
 }

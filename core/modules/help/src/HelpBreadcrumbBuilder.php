@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\help;
 
 use Drupal\Core\Breadcrumb\Breadcrumb;
@@ -15,27 +17,29 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @internal
  *   Tagged services are internal.
  */
-class HelpBreadcrumbBuilder implements BreadcrumbBuilderInterface {
+class HelpBreadcrumbBuilder implements BreadcrumbBuilderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool
+    {
+        $cacheable_metadata->addCacheContexts(['route']);
+        return $route_match->getRouteName() == 'help.help_topic';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
-    $cacheable_metadata->addCacheContexts(['route']);
-    return $route_match->getRouteName() == 'help.help_topic';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb
+    {
+        $breadcrumb = new Breadcrumb();
+        $breadcrumb->addCacheContexts(['url.path.parent']);
+        $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Home'), '<front>'));
+        $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Administration'), 'system.admin'));
+        $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Help'), 'help.main'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb {
-    $breadcrumb = new Breadcrumb();
-    $breadcrumb->addCacheContexts(['url.path.parent']);
-    $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Home'), '<front>'));
-    $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Administration'), 'system.admin'));
-    $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Help'), 'help.main'));
-
-    return $breadcrumb;
-  }
+        return $breadcrumb;
+    }
 
 }

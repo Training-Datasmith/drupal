@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate;
 
 /**
@@ -10,11 +12,12 @@ namespace Drupal\migrate;
  *   pipeline.
  * @see https://www.drupal.org/node/3414511
  */
-class MigrateSkipProcessException extends \Exception {
-
-  public function __construct(string $message = "", int $code = 0, ?\Throwable $previous = NULL) {
-    trigger_error(self::class . " is deprecated in drupal:10.3.0 and is removed from drupal:12.0.0. Return TRUE from a process plugin's isPipelineStopped() method to halt further processing on a pipeline. See https://www.drupal.org/node/3414511", E_USER_DEPRECATED);
-    parent::__construct($message, $code, $previous);
-  }
+class MigrateSkipProcessException extends \Exception
+{
+    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
+    {
+        trigger_error(self::class . " is deprecated in drupal:10.3.0 and is removed from drupal:12.0.0. Return TRUE from a process plugin's isPipelineStopped() method to halt further processing on a pipeline. See https://www.drupal.org/node/3414511", E_USER_DEPRECATED);
+        parent::__construct($message, $code, $previous);
+    }
 
 }

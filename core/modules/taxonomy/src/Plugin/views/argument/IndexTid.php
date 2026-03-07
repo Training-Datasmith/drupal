@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Plugin\views\argument;
 
 use Drupal\taxonomy\Entity\Term;
@@ -12,21 +14,22 @@ use Drupal\views\Plugin\views\argument\ManyToOne;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'taxonomy_index_tid',
+    id: 'taxonomy_index_tid',
 )]
-class IndexTid extends ManyToOne {
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function titleQuery(): array {
-    $titles = [];
-    $terms = Term::loadMultiple($this->value);
-    foreach ($terms as $term) {
-      $titles[] = \Drupal::service('entity.repository')->getTranslationFromContext($term)->label();
+class IndexTid extends ManyToOne
+{
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function titleQuery(): array
+    {
+        $titles = [];
+        $terms = Term::loadMultiple($this->value);
+        foreach ($terms as $term) {
+            $titles[] = \Drupal::service('entity.repository')->getTranslationFromContext($term)->label();
+        }
+        return $titles;
     }
-    return $titles;
-  }
 
 }

@@ -12,22 +12,23 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Modifies container services for testing.
  */
-class PackageManagerTestValidationServiceProvider extends ServiceProviderBase {
+class PackageManagerTestValidationServiceProvider extends ServiceProviderBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        parent::alter($container);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    parent::alter($container);
-
-    $service_id = SandboxDatabaseUpdatesValidator::class;
-    if ($container->hasDefinition($service_id)) {
-      $container->getDefinition($service_id)
-        ->setClass(TestSandboxDatabaseUpdatesValidator::class)
-        ->addMethodCall('setState', [
-          new Reference('state'),
-        ]);
+        $service_id = SandboxDatabaseUpdatesValidator::class;
+        if ($container->hasDefinition($service_id)) {
+            $container->getDefinition($service_id)
+              ->setClass(TestSandboxDatabaseUpdatesValidator::class)
+              ->addMethodCall('setState', [
+                new Reference('state'),
+              ]);
+        }
     }
-  }
 
 }

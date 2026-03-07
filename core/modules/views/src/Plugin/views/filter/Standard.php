@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\views\Attribute\ViewsFilter;
@@ -9,7 +11,7 @@ use Drupal\views\Attribute\ViewsFilter;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("standard")]
-class Standard extends FilterPluginBase {
-
+#[ViewsFilter('standard')]
+class Standard extends FilterPluginBase
+{
 }

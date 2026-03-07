@@ -15,73 +15,78 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class QueryTest extends ViewsKernelTestBase {
+class QueryTest extends ViewsKernelTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Provides Views metadata for the test data table.
+     */
+    protected function viewsData()
+    {
+        $data = parent::viewsData();
+        $data['views_test_data']['table']['base']['query_id'] = 'query_test';
 
-  /**
-   * Provides Views metadata for the test data table.
-   */
-  protected function viewsData() {
-    $data = parent::viewsData();
-    $data['views_test_data']['table']['base']['query_id'] = 'query_test';
+        return $data;
+    }
 
-    return $data;
-  }
+    /**
+     * Tests query plugins.
+     */
+    public function testQuery(): void
+    {
+        $this->_testInitQuery();
+        $this->_testQueryExecute();
+        $this->queryMethodsTests();
+    }
 
-  /**
-   * Tests query plugins.
-   */
-  public function testQuery(): void {
-    $this->_testInitQuery();
-    $this->_testQueryExecute();
-    $this->queryMethodsTests();
-  }
+    /**
+     * Tests the ViewExecutable::initQuery method.
+     */
+    public function _testInitQuery(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests the ViewExecutable::initQuery method.
-   */
-  public function _testInitQuery(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        $view->initQuery();
+        $this->assertInstanceOf(QueryTestPlugin::class, $view->query);
+    }
 
-    $view->initQuery();
-    $this->assertInstanceOf(QueryTestPlugin::class, $view->query);
-  }
+    /**
+     * Executes the views query, ensures it's not empty.
+     */
+    public function _testQueryExecute(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Executes the views query, ensures it's not empty.
-   */
-  public function _testQueryExecute(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        $view->initQuery();
+        $view->query->setAllItems($this->dataSet());
 
-    $view->initQuery();
-    $view->query->setAllItems($this->dataSet());
+        $this->executeView($view);
+        $this->assertNotEmpty($view->result, 'Make sure the view result got filled');
+    }
 
-    $this->executeView($view);
-    $this->assertNotEmpty($view->result, 'Make sure the view result got filled');
-  }
+    /**
+     * Tests methods provided by the QueryPluginBase.
+     *
+     * @see \Drupal\views\Plugin\views\query\QueryPluginBase
+     */
+    protected function queryMethodsTests(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests methods provided by the QueryPluginBase.
-   *
-   * @see \Drupal\views\Plugin\views\query\QueryPluginBase
-   */
-  protected function queryMethodsTests(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
-
-    $view->initQuery();
-    $this->assertNull($view->query->getLimit(), 'Default to an empty limit.');
-    $rand_number = rand(5, 10);
-    $view->query->setLimit($rand_number);
-    $this->assertEquals($rand_number, $view->query->getLimit(), 'set_limit adapts the amount of items.');
-  }
+        $view->initQuery();
+        $this->assertNull($view->query->getLimit(), 'Default to an empty limit.');
+        $rand_number = rand(5, 10);
+        $view->query->setLimit($rand_number);
+        $this->assertEquals($rand_number, $view->query->getLimit(), 'set_limit adapts the amount of items.');
+    }
 
 }

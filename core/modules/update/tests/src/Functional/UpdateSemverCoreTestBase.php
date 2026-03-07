@@ -10,28 +10,29 @@ namespace Drupal\Tests\update\Functional;
  * This wires up the protected data from UpdateSemverTestBase for Drupal core
  * with semantic version releases.
  */
-abstract class UpdateSemverCoreTestBase extends UpdateSemverTestBase {
+abstract class UpdateSemverCoreTestBase extends UpdateSemverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $updateTableLocator = 'table.update';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $updateTableLocator = 'table.update';
+    /**
+     * {@inheritdoc}
+     */
+    protected $updateProject = 'drupal';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $updateProject = 'drupal';
+    /**
+     * {@inheritdoc}
+     */
+    protected $projectTitle = 'Drupal';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $projectTitle = 'Drupal';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setProjectInstalledVersion($version) {
-    $this->mockDefaultExtensionsInfo(['version' => $version]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setProjectInstalledVersion($version)
+    {
+        $this->mockDefaultExtensionsInfo(['version' => $version]);
+    }
 
 }

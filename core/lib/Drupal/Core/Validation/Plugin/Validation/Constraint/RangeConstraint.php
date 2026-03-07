@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,33 +16,33 @@ use Symfony\Component\Validator\Constraints\Range;
  * @todo Move this below the TypedData core component.
  */
 #[Constraint(
-  id: 'Range',
-  label: new TranslatableMarkup('Range', [], ['context' => 'Validation']),
-  type: ['integer', 'float']
+    id: 'Range',
+    label: new TranslatableMarkup('Range', [], ['context' => 'Validation']),
+    type: ['integer', 'float']
 )]
-class RangeConstraint extends Range {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    ?array $options = NULL,
-    ?string $notInRangeMessage = NULL,
-    ?string $minMessage = NULL,
-    ?string $maxMessage = NULL,
-    ?string $invalidMessage = NULL,
-    ?string $invalidDateTimeMessage = NULL,
-    mixed $min = NULL,
-    ?string $minPropertyPath = NULL,
-    mixed $max = NULL,
-    ?string $maxPropertyPath = NULL,
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    $this->notInRangeMessage = 'This value should be between %min and %max.';
-    $this->minMessage = 'This value should be %limit or more.';
-    $this->maxMessage = 'This value should be %limit or less.';
-    parent::__construct($options, $notInRangeMessage, $minMessage, $maxMessage, $invalidMessage, $invalidDateTimeMessage, $min, $minPropertyPath, $max, $maxPropertyPath, $groups, $payload);
-  }
+class RangeConstraint extends Range
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(
+        ?array $options = null,
+        ?string $notInRangeMessage = null,
+        ?string $minMessage = null,
+        ?string $maxMessage = null,
+        ?string $invalidMessage = null,
+        ?string $invalidDateTimeMessage = null,
+        mixed $min = null,
+        ?string $minPropertyPath = null,
+        mixed $max = null,
+        ?string $maxPropertyPath = null,
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        $this->notInRangeMessage = 'This value should be between %min and %max.';
+        $this->minMessage = 'This value should be %limit or more.';
+        $this->maxMessage = 'This value should be %limit or less.';
+        parent::__construct($options, $notInRangeMessage, $minMessage, $maxMessage, $invalidMessage, $invalidDateTimeMessage, $min, $minPropertyPath, $max, $maxPropertyPath, $groups, $payload);
+    }
 
 }

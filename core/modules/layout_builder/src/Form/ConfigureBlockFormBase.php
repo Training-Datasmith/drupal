@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Ajax\AjaxFormHelperTrait;
-use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\BaseFormIdInterface;
 use Drupal\Core\Form\FormBase;
@@ -15,11 +15,9 @@ use Drupal\Core\Form\WorkspaceDynamicSafeFormInterface;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
-use Drupal\Core\Plugin\PluginFormFactoryInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\Controller\LayoutRebuildTrait;
-use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,229 +28,240 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Form classes are internal.
  */
-abstract class ConfigureBlockFormBase extends FormBase implements BaseFormIdInterface, WorkspaceDynamicSafeFormInterface {
+abstract class ConfigureBlockFormBase extends FormBase implements BaseFormIdInterface, WorkspaceDynamicSafeFormInterface
+{
+    use AjaxFormHelperTrait;
+    use ContextAwarePluginAssignmentTrait;
+    use LayoutBuilderContextTrait;
+    use LayoutRebuildTrait;
+    use WorkspaceSafeFormTrait;
 
-  use AjaxFormHelperTrait;
-  use ContextAwarePluginAssignmentTrait;
-  use LayoutBuilderContextTrait;
-  use LayoutRebuildTrait;
-  use WorkspaceSafeFormTrait;
+    /**
+     * The plugin being configured.
+     *
+     * @var \Drupal\Core\Block\BlockPluginInterface
+     */
+    protected $block;
 
-  /**
-   * The plugin being configured.
-   *
-   * @var \Drupal\Core\Block\BlockPluginInterface
-   */
-  protected $block;
+    /**
+     * The field delta.
+     *
+     * @var int
+     */
+    protected $delta;
 
-  /**
-   * The field delta.
-   *
-   * @var int
-   */
-  protected $delta;
+    /**
+     * The current region.
+     *
+     * @var string
+     */
+    protected $region;
 
-  /**
-   * The current region.
-   *
-   * @var string
-   */
-  protected $region;
+    /**
+     * The UUID of the component.
+     *
+     * @var string
+     */
+    protected $uuid;
 
-  /**
-   * The UUID of the component.
-   *
-   * @var string
-   */
-  protected $uuid;
+    /**
+     * The section storage.
+     *
+     * @var \Drupal\layout_builder\SectionStorageInterface
+     */
+    protected $sectionStorage;
 
-  /**
-   * The section storage.
-   *
-   * @var \Drupal\layout_builder\SectionStorageInterface
-   */
-  protected $sectionStorage;
-
-  /**
-   * Constructs a new block form.
-   *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
-   *   The layout tempstore repository.
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
-   *   The context repository.
-   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
-   *   The block manager.
-   * @param \Drupal\Component\Uuid\UuidInterface $uuidGenerator
-   *   The UUID generator.
-   * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory
-   *   The plugin form manager.
-   */
-  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, ContextRepositoryInterface $context_repository, protected \Drupal\Core\Block\BlockManagerInterface $blockManager, protected \Drupal\Component\Uuid\UuidInterface $uuidGenerator, protected \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory) {
-    $this->contextRepository = $context_repository;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('layout_builder.tempstore_repository'),
-      $container->get('context.repository'),
-      $container->get('plugin.manager.block'),
-      $container->get('uuid'),
-      $container->get('plugin_form.factory')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseFormId() {
-    return 'layout_builder_configure_block';
-  }
-
-  /**
-   * Builds the form for the block.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage being configured.
-   * @param int $delta
-   *   The delta of the section.
-   * @param \Drupal\layout_builder\SectionComponent $component
-   *   The section component containing the block.
-   *
-   * @return array
-   *   The form array.
-   */
-  public function doBuildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, ?SectionComponent $component = NULL) {
-    $this->sectionStorage = $section_storage;
-    $this->delta = $delta;
-    $this->uuid = $component->getUuid();
-    $this->block = $component->getPlugin();
-
-    $form_state->setTemporaryValue('gathered_contexts', $this->getPopulatedContexts($section_storage));
-
-    $form['#tree'] = TRUE;
-    $form['settings'] = [];
-    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
-    $form['settings'] = $this->getPluginForm($this->block)->buildConfigurationForm($form['settings'], $subform_state);
-
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->submitLabel(),
-      '#button_type' => 'primary',
-    ];
-    if ($this->isAjax()) {
-      $form['actions']['submit']['#ajax']['callback'] = '::ajaxSubmit';
-      // @todo static::ajaxSubmit() requires data-drupal-selector to be the same
-      //   between the various Ajax requests. A bug in
-      //   \Drupal\Core\Form\FormBuilder prevents that from happening unless
-      //   $form['#id'] is also the same. Normally, #id is set to a unique HTML
-      //   ID via Html::getUniqueId(), but here we bypass that in order to work
-      //   around the data-drupal-selector bug. This is okay so long as we
-      //   assume that this form only ever occurs once on a page. Remove this
-      //   workaround in https://www.drupal.org/node/2897377.
-      $form['#id'] = Html::getId($form_state->getBuildInfo()['form_id']);
+    /**
+     * Constructs a new block form.
+     *
+     * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
+     *   The layout tempstore repository.
+     * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
+     *   The context repository.
+     * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
+     *   The block manager.
+     * @param \Drupal\Component\Uuid\UuidInterface $uuidGenerator
+     *   The UUID generator.
+     * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory
+     *   The plugin form manager.
+     */
+    public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, ContextRepositoryInterface $context_repository, protected \Drupal\Core\Block\BlockManagerInterface $blockManager, protected \Drupal\Component\Uuid\UuidInterface $uuidGenerator, protected \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory)
+    {
+        $this->contextRepository = $context_repository;
     }
 
-    // Mark this as an administrative page for JavaScript ("Back to site" link).
-    $form['#attached']['drupalSettings']['path']['currentPathIsAdmin'] = TRUE;
-    return $form;
-  }
-
-  /**
-   * Returns the label for the submit button.
-   *
-   * @return string
-   *   Submit label.
-   */
-  abstract protected function submitLabel();
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
-    $this->getPluginForm($this->block)->validateConfigurationForm($form['settings'], $subform_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Call the plugin submit handler.
-    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
-    $this->getPluginForm($this->block)->submitConfigurationForm($form, $subform_state);
-
-    // If this block is context-aware, set the context mapping.
-    if ($this->block instanceof ContextAwarePluginInterface) {
-      $this->block->setContextMapping($subform_state->getValue('context_mapping', []));
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
+            $container->get('layout_builder.tempstore_repository'),
+            $container->get('context.repository'),
+            $container->get('plugin.manager.block'),
+            $container->get('uuid'),
+            $container->get('plugin_form.factory')
+        );
     }
 
-    $configuration = $this->block->getConfiguration();
-
-    $section = $this->sectionStorage->getSection($this->delta);
-    $section->getComponent($this->uuid)->setConfiguration($configuration);
-
-    $this->layoutTempstoreRepository->set($this->sectionStorage);
-    $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function successfulAjaxSubmit(array $form, FormStateInterface $form_state) {
-    return $this->rebuildAndClose($this->sectionStorage);
-  }
-
-  /**
-   * Retrieves the plugin form for a given block.
-   *
-   * @param \Drupal\Core\Block\BlockPluginInterface $block
-   *   The block plugin.
-   *
-   * @return \Drupal\Core\Plugin\PluginFormInterface
-   *   The plugin form for the block.
-   */
-  protected function getPluginForm(BlockPluginInterface $block) {
-    if ($block instanceof PluginWithFormsInterface) {
-      return $this->pluginFormFactory->createInstance($block, 'configure');
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseFormId()
+    {
+        return 'layout_builder_configure_block';
     }
-    return $block;
-  }
 
-  /**
-   * Retrieves the section storage object.
-   *
-   * @return \Drupal\layout_builder\SectionStorageInterface
-   *   The section storage for the current form.
-   */
-  public function getSectionStorage() {
-    return $this->sectionStorage;
-  }
+    /**
+     * Builds the form for the block.
+     *
+     * @param array $form
+     *   An associative array containing the structure of the form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+     *   The section storage being configured.
+     * @param int $delta
+     *   The delta of the section.
+     * @param \Drupal\layout_builder\SectionComponent $component
+     *   The section component containing the block.
+     *
+     * @return array
+     *   The form array.
+     */
+    public function doBuildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = null, $delta = null, ?SectionComponent $component = null)
+    {
+        $this->sectionStorage = $section_storage;
+        $this->delta = $delta;
+        $this->uuid = $component->getUuid();
+        $this->block = $component->getPlugin();
 
-  /**
-   * Retrieves the current layout section being edited by the form.
-   *
-   * @return \Drupal\layout_builder\Section
-   *   The current layout section.
-   */
-  public function getCurrentSection() {
-    return $this->sectionStorage->getSection($this->delta);
-  }
+        $form_state->setTemporaryValue('gathered_contexts', $this->getPopulatedContexts($section_storage));
 
-  /**
-   * Retrieves the current component being edited by the form.
-   *
-   * @return \Drupal\layout_builder\SectionComponent
-   *   The current section component.
-   */
-  public function getCurrentComponent() {
-    return $this->getCurrentSection()->getComponent($this->uuid);
-  }
+        $form['#tree'] = true;
+        $form['settings'] = [];
+        $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+        $form['settings'] = $this->getPluginForm($this->block)->buildConfigurationForm($form['settings'], $subform_state);
+
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->submitLabel(),
+          '#button_type' => 'primary',
+        ];
+        if ($this->isAjax()) {
+            $form['actions']['submit']['#ajax']['callback'] = '::ajaxSubmit';
+            // @todo static::ajaxSubmit() requires data-drupal-selector to be the same
+            //   between the various Ajax requests. A bug in
+            //   \Drupal\Core\Form\FormBuilder prevents that from happening unless
+            //   $form['#id'] is also the same. Normally, #id is set to a unique HTML
+            //   ID via Html::getUniqueId(), but here we bypass that in order to work
+            //   around the data-drupal-selector bug. This is okay so long as we
+            //   assume that this form only ever occurs once on a page. Remove this
+            //   workaround in https://www.drupal.org/node/2897377.
+            $form['#id'] = Html::getId($form_state->getBuildInfo()['form_id']);
+        }
+
+        // Mark this as an administrative page for JavaScript ("Back to site" link).
+        $form['#attached']['drupalSettings']['path']['currentPathIsAdmin'] = true;
+        return $form;
+    }
+
+    /**
+     * Returns the label for the submit button.
+     *
+     * @return string
+     *   Submit label.
+     */
+    abstract protected function submitLabel();
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state): void
+    {
+        $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+        $this->getPluginForm($this->block)->validateConfigurationForm($form['settings'], $subform_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        // Call the plugin submit handler.
+        $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+        $this->getPluginForm($this->block)->submitConfigurationForm($form, $subform_state);
+
+        // If this block is context-aware, set the context mapping.
+        if ($this->block instanceof ContextAwarePluginInterface) {
+            $this->block->setContextMapping($subform_state->getValue('context_mapping', []));
+        }
+
+        $configuration = $this->block->getConfiguration();
+
+        $section = $this->sectionStorage->getSection($this->delta);
+        $section->getComponent($this->uuid)->setConfiguration($configuration);
+
+        $this->layoutTempstoreRepository->set($this->sectionStorage);
+        $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function successfulAjaxSubmit(array $form, FormStateInterface $form_state)
+    {
+        return $this->rebuildAndClose($this->sectionStorage);
+    }
+
+    /**
+     * Retrieves the plugin form for a given block.
+     *
+     * @param \Drupal\Core\Block\BlockPluginInterface $block
+     *   The block plugin.
+     *
+     * @return \Drupal\Core\Plugin\PluginFormInterface
+     *   The plugin form for the block.
+     */
+    protected function getPluginForm(BlockPluginInterface $block)
+    {
+        if ($block instanceof PluginWithFormsInterface) {
+            return $this->pluginFormFactory->createInstance($block, 'configure');
+        }
+        return $block;
+    }
+
+    /**
+     * Retrieves the section storage object.
+     *
+     * @return \Drupal\layout_builder\SectionStorageInterface
+     *   The section storage for the current form.
+     */
+    public function getSectionStorage()
+    {
+        return $this->sectionStorage;
+    }
+
+    /**
+     * Retrieves the current layout section being edited by the form.
+     *
+     * @return \Drupal\layout_builder\Section
+     *   The current layout section.
+     */
+    public function getCurrentSection()
+    {
+        return $this->sectionStorage->getSection($this->delta);
+    }
+
+    /**
+     * Retrieves the current component being edited by the form.
+     *
+     * @return \Drupal\layout_builder\SectionComponent
+     *   The current section component.
+     */
+    public function getCurrentComponent()
+    {
+        return $this->getCurrentSection()->getComponent($this->uuid);
+    }
 
 }

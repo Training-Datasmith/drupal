@@ -18,49 +18,51 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(SvgIconBuilder::class)]
 #[Group('Layout')]
 #[RunTestsInSeparateProcesses]
-class IconBuilderTest extends KernelTestBase {
+class IconBuilderTest extends KernelTestBase
+{
+    /**
+     * Tests build.
+     *
+     * @legacy-covers ::build
+     * @legacy-covers ::buildRenderArray
+     * @legacy-covers ::calculateSvgValues
+     * @legacy-covers ::getLength
+     * @legacy-covers ::getOffset
+     */
+    #[DataProvider('providerTestBuild')]
+    public function testBuild(SvgIconBuilder $icon_builder, $icon_map, $expected): void
+    {
+        $renderer = $this->container->get('renderer');
 
-  /**
-   * Tests build.
-   *
-   * @legacy-covers ::build
-   * @legacy-covers ::buildRenderArray
-   * @legacy-covers ::calculateSvgValues
-   * @legacy-covers ::getLength
-   * @legacy-covers ::getOffset
-   */
-  #[DataProvider('providerTestBuild')]
-  public function testBuild(SvgIconBuilder $icon_builder, $icon_map, $expected): void {
-    $renderer = $this->container->get('renderer');
+        $build = $icon_builder->build($icon_map);
 
-    $build = $icon_builder->build($icon_map);
+        $output = (string) $renderer->executeInRenderContext(new RenderContext(), function () use ($build, $renderer) {
+            return $renderer->render($build);
+        });
+        $this->assertSame($expected, $output);
+    }
 
-    $output = (string) $renderer->executeInRenderContext(new RenderContext(), function () use ($build, $renderer) {
-      return $renderer->render($build);
-    });
-    $this->assertSame($expected, $output);
-  }
-
-  /**
-   * Returns data for testing the icon builder.
-   */
-  public static function providerTestBuild(): array {
-    $data = [];
-    $data['empty'][] = (new SvgIconBuilder());
-    $data['empty'][] = [];
-    $data['empty'][] = <<<'EOD'
+    /**
+     * Returns data for testing the icon builder.
+     */
+    public static function providerTestBuild(): array
+    {
+        $data = [];
+        $data['empty'][] = (new SvgIconBuilder());
+        $data['empty'][] = [];
+        $data['empty'][] = <<<'EOD'
 <svg width="125" height="150" class="layout-icon"></svg>
 
 EOD;
 
-    $data['two_column'][] = (new SvgIconBuilder())
-      ->setId('two_column')
-      ->setLabel('Two Column')
-      ->setWidth(250)
-      ->setHeight(300)
-      ->setStrokeWidth(2);
-    $data['two_column'][] = [['left', 'right']];
-    $data['two_column'][] = <<<'EOD'
+        $data['two_column'][] = (new SvgIconBuilder())
+          ->setId('two_column')
+          ->setLabel('Two Column')
+          ->setWidth(250)
+          ->setHeight(300)
+          ->setStrokeWidth(2);
+        $data['two_column'][] = [['left', 'right']];
+        $data['two_column'][] = <<<'EOD'
 <svg width="250" height="300" class="layout-icon layout-icon--two-column"><title>Two Column</title>
 <g><title>left</title>
 <rect x="1" y="1" width="121" height="298" stroke-width="2" class="layout-icon__region layout-icon__region--left" />
@@ -72,12 +74,12 @@ EOD;
 
 EOD;
 
-    $data['two_column_no_stroke'][] = (new SvgIconBuilder())
-      ->setWidth(250)
-      ->setHeight(300)
-      ->setStrokeWidth(NULL);
-    $data['two_column_no_stroke'][] = [['left', 'right']];
-    $data['two_column_no_stroke'][] = <<<'EOD'
+        $data['two_column_no_stroke'][] = (new SvgIconBuilder())
+          ->setWidth(250)
+          ->setHeight(300)
+          ->setStrokeWidth(null);
+        $data['two_column_no_stroke'][] = [['left', 'right']];
+        $data['two_column_no_stroke'][] = <<<'EOD'
 <svg width="250" height="300" class="layout-icon"><g><title>left</title>
 <rect x="0" y="0" width="123" height="300" class="layout-icon__region layout-icon__region--left" />
 </g>
@@ -88,13 +90,13 @@ EOD;
 
 EOD;
 
-    $data['two_column_border_collapse'][] = (new SvgIconBuilder())
-      ->setWidth(250)
-      ->setHeight(300)
-      ->setStrokeWidth(2)
-      ->setPadding(-2);
-    $data['two_column_border_collapse'][] = [['left', 'right']];
-    $data['two_column_border_collapse'][] = <<<'EOD'
+        $data['two_column_border_collapse'][] = (new SvgIconBuilder())
+          ->setWidth(250)
+          ->setHeight(300)
+          ->setStrokeWidth(2)
+          ->setPadding(-2);
+        $data['two_column_border_collapse'][] = [['left', 'right']];
+        $data['two_column_border_collapse'][] = <<<'EOD'
 <svg width="250" height="300" class="layout-icon"><g><title>left</title>
 <rect x="1" y="1" width="124" height="298" stroke-width="2" class="layout-icon__region layout-icon__region--left" />
 </g>
@@ -105,16 +107,16 @@ EOD;
 
 EOD;
 
-    $data['stacked'][] = (new SvgIconBuilder())
-      ->setStrokeWidth(2);
-    $data['stacked'][] = [
-      ['sidebar', 'top', 'top'],
-      ['sidebar', 'left', 'right'],
-      ['sidebar', 'middle', 'middle'],
-      ['footer_left', 'footer_right'],
-      ['footer_full'],
-    ];
-    $data['stacked'][] = <<<'EOD'
+        $data['stacked'][] = (new SvgIconBuilder())
+          ->setStrokeWidth(2);
+        $data['stacked'][] = [
+          ['sidebar', 'top', 'top'],
+          ['sidebar', 'left', 'right'],
+          ['sidebar', 'middle', 'middle'],
+          ['footer_left', 'footer_right'],
+          ['footer_full'],
+        ];
+        $data['stacked'][] = <<<'EOD'
 <svg width="125" height="150" class="layout-icon"><g><title>sidebar</title>
 <rect x="1" y="1" width="37" height="86.4" stroke-width="2" class="layout-icon__region layout-icon__region--sidebar" />
 </g>
@@ -143,7 +145,7 @@ EOD;
 
 EOD;
 
-    return $data;
-  }
+        return $data;
+    }
 
 }

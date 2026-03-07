@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -16,20 +18,21 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AppendCommand extends InsertCommand {
+class AppendCommand extends InsertCommand
+{
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'insert',
-      'method' => 'append',
-      'selector' => $this->selector,
-      'data' => $this->getRenderedContent(),
-      'settings' => $this->settings,
-    ];
-  }
+        return [
+          'command' => 'insert',
+          'method' => 'append',
+          'selector' => $this->selector,
+          'data' => $this->getRenderedContent(),
+          'settings' => $this->settings,
+        ];
+    }
 
 }

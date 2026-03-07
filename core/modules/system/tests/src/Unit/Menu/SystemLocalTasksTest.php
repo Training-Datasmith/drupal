@@ -15,84 +15,87 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests existence of system local tasks.
  */
 #[Group('system')]
-class SystemLocalTasksTest extends LocalTaskIntegrationTestBase {
+class SystemLocalTasksTest extends LocalTaskIntegrationTestBase
+{
+    /**
+     * The mocked theme handler.
+     *
+     * @var \Drupal\Core\Extension\ThemeHandlerInterface
+     */
+    protected $themeHandler;
 
-  /**
-   * The mocked theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->directoryList = [
+          'system' => 'core/modules/system',
+        ];
 
-    $this->directoryList = [
-      'system' => 'core/modules/system',
-    ];
+        $this->themeHandler = $this->createMock('Drupal\Core\Extension\ThemeHandlerInterface');
 
-    $this->themeHandler = $this->createMock('Drupal\Core\Extension\ThemeHandlerInterface');
+        $theme = new Extension($this->root, 'theme', 'core/themes/olivero', 'olivero.info.yml');
+        $theme->status = 1;
+        $theme->info = ['name' => 'olivero'];
+        $this->themeHandler->expects($this->any())
+          ->method('listInfo')
+          ->willReturn([
+            'olivero' => $theme,
+          ]);
+        $this->themeHandler->expects($this->any())
+          ->method('hasUi')
+          ->with('olivero')
+          ->willReturn(true);
+        $this->container->set('theme_handler', $this->themeHandler);
 
-    $theme = new Extension($this->root, 'theme', 'core/themes/olivero', 'olivero.info.yml');
-    $theme->status = 1;
-    $theme->info = ['name' => 'olivero'];
-    $this->themeHandler->expects($this->any())
-      ->method('listInfo')
-      ->willReturn([
-        'olivero' => $theme,
-      ]);
-    $this->themeHandler->expects($this->any())
-      ->method('hasUi')
-      ->with('olivero')
-      ->willReturn(TRUE);
-    $this->container->set('theme_handler', $this->themeHandler);
+        $fooEntityDefinition = $this->createMock(EntityTypeInterface::class);
+        $fooEntityDefinition
+          ->expects($this->once())
+          ->method('hasLinkTemplate')
+          ->with('version-history')
+          ->willReturn(true);
+        $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+        $entityTypeManager->expects($this->any())
+          ->method('getDefinitions')
+          ->willReturn([
+            'foo' => $fooEntityDefinition,
+          ]);
+        $this->container->set('entity_type.manager', $entityTypeManager);
+    }
 
-    $fooEntityDefinition = $this->createMock(EntityTypeInterface::class);
-    $fooEntityDefinition
-      ->expects($this->once())
-      ->method('hasLinkTemplate')
-      ->with('version-history')
-      ->willReturn(TRUE);
-    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $entityTypeManager->expects($this->any())
-      ->method('getDefinitions')
-      ->willReturn([
-        'foo' => $fooEntityDefinition,
-      ]);
-    $this->container->set('entity_type.manager', $entityTypeManager);
-  }
+    /**
+     * Tests local task existence.
+     */
+    #[DataProvider('getSystemAdminRoutes')]
+    public function testSystemAdminLocalTasks($route, $expected): void
+    {
+        $this->assertLocalTasks($route, $expected);
+    }
 
-  /**
-   * Tests local task existence.
-   */
-  #[DataProvider('getSystemAdminRoutes')]
-  public function testSystemAdminLocalTasks($route, $expected): void {
-    $this->assertLocalTasks($route, $expected);
-  }
-
-  /**
-   * Provides a list of routes to test.
-   */
-  public static function getSystemAdminRoutes() {
-    return [
-      ['system.admin_content', [['system.admin_content']]],
-      [
-        'system.theme_settings_theme',
-        [
-          ['system.themes_page', 'system.theme_settings'],
-          ['system.theme_settings_global', 'system.theme_settings_theme:olivero'],
-        ],
-      ],
-      [
-        'entity.foo.version_history',
-        [
-          ['entity.version_history:foo.version_history'],
-        ],
-      ],
-    ];
-  }
+    /**
+     * Provides a list of routes to test.
+     */
+    public static function getSystemAdminRoutes()
+    {
+        return [
+          ['system.admin_content', [['system.admin_content']]],
+          [
+            'system.theme_settings_theme',
+            [
+              ['system.themes_page', 'system.theme_settings'],
+              ['system.theme_settings_global', 'system.theme_settings_theme:olivero'],
+            ],
+          ],
+          [
+            'entity.foo.version_history',
+            [
+              ['entity.version_history:foo.version_history'],
+            ],
+          ],
+        ];
+    }
 
 }

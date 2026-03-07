@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\TypedData\ComplexDataInterface;
@@ -15,37 +17,39 @@ use Drupal\Core\TypedData\TypedDataInternalPropertiesHelper;
  * that module can register a new Normalizer and give it a higher priority than
  * this one.
  */
-class ComplexDataNormalizer extends NormalizerBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    $attributes = [];
-    // $object will not always match getSupportedTypes().
-    // @see \Drupal\serialization\Normalizer\EntityNormalizer
-    // Other normalizers that extend this class may only provide $object that
-    // implements \Traversable.
-    if ($object instanceof ComplexDataInterface) {
-      // If there are no properties to normalize, just normalize the value.
-      $object = !empty($object->getProperties(TRUE))
-        ? TypedDataInternalPropertiesHelper::getNonInternalProperties($object)
-        : $object->getValue();
+class ComplexDataNormalizer extends NormalizerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        $attributes = [];
+        // $object will not always match getSupportedTypes().
+        // @see \Drupal\serialization\Normalizer\EntityNormalizer
+        // Other normalizers that extend this class may only provide $object that
+        // implements \Traversable.
+        if ($object instanceof ComplexDataInterface) {
+            // If there are no properties to normalize, just normalize the value.
+            $object = !empty($object->getProperties(true))
+              ? TypedDataInternalPropertiesHelper::getNonInternalProperties($object)
+              : $object->getValue();
+        }
+        /** @var \Drupal\Core\TypedData\TypedDataInterface $property */
+        foreach ($object as $name => $property) {
+            $attributes[$name] = $this->serializer->normalize($property, $format, $context);
+        }
+        return $attributes;
     }
-    /** @var \Drupal\Core\TypedData\TypedDataInterface $property */
-    foreach ($object as $name => $property) {
-      $attributes[$name] = $this->serializer->normalize($property, $format, $context);
-    }
-    return $attributes;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      ComplexDataInterface::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          ComplexDataInterface::class => true,
+        ];
+    }
 
 }

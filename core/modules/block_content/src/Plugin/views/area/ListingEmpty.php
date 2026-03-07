@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Plugin\views\area;
 
-use Drupal\Core\Access\AccessManagerInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\views\Attribute\ViewsArea;
 use Drupal\views\Plugin\views\area\AreaPluginBase;
@@ -16,46 +16,48 @@ use Drupal\views\Plugin\views\area\AreaPluginBase;
  * @deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no replacement.
  * @see https://www.drupal.org/node/3336219
  */
-#[ViewsArea("block_content_listing_empty")]
-class ListingEmpty extends AreaPluginBase {
-
-  /**
-   * Constructs a new ListingEmpty.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
-   *   The access manager.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $currentUser) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    @trigger_error(self::class . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. See https://www.drupal.org/node/3336219', E_USER_DEPRECATED);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($empty = FALSE): array {
-    if (!$empty || !empty($this->options['empty'])) {
-      /** @var \Drupal\Core\Access\AccessResultInterface|\Drupal\Core\Cache\CacheableDependencyInterface $access_result */
-      $access_result = $this->accessManager->checkNamedRoute('block_content.add_page', [], $this->currentUser, TRUE);
-      return [
-        '#markup' => $this->t('Add a <a href=":url">content block</a>.', [':url' => Url::fromRoute('block_content.add_page')->toString()]),
-        '#access' => $access_result->isAllowed(),
-        '#cache' => [
-          'contexts' => $access_result->getCacheContexts(),
-          'tags' => $access_result->getCacheTags(),
-          'max-age' => $access_result->getCacheMaxAge(),
-        ],
-      ];
+#[ViewsArea('block_content_listing_empty')]
+class ListingEmpty extends AreaPluginBase
+{
+    /**
+     * Constructs a new ListingEmpty.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
+     *   The access manager.
+     * @param \Drupal\Core\Session\AccountInterface $currentUser
+     *   The current user.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $currentUser)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        @trigger_error(self::class . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. See https://www.drupal.org/node/3336219', E_USER_DEPRECATED);
     }
-    return [];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render($empty = false): array
+    {
+        if (!$empty || !empty($this->options['empty'])) {
+            /** @var \Drupal\Core\Access\AccessResultInterface|\Drupal\Core\Cache\CacheableDependencyInterface $access_result */
+            $access_result = $this->accessManager->checkNamedRoute('block_content.add_page', [], $this->currentUser, true);
+            return [
+              '#markup' => $this->t('Add a <a href=":url">content block</a>.', [':url' => Url::fromRoute('block_content.add_page')->toString()]),
+              '#access' => $access_result->isAllowed(),
+              '#cache' => [
+                'contexts' => $access_result->getCacheContexts(),
+                'tags' => $access_result->getCacheTags(),
+                'max-age' => $access_result->getCacheMaxAge(),
+              ],
+            ];
+        }
+        return [];
+    }
 
 }

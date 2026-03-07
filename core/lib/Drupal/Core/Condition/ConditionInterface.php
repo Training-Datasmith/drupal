@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Condition;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
@@ -44,35 +46,35 @@ use Drupal\Core\Plugin\PluginFormInterface;
  *
  * @ingroup plugin_api
  */
-interface ConditionInterface extends ExecutableInterface, PluginFormInterface, ConfigurableInterface, DependentPluginInterface, PluginInspectionInterface, CacheableDependencyInterface {
+interface ConditionInterface extends ExecutableInterface, PluginFormInterface, ConfigurableInterface, DependentPluginInterface, PluginInspectionInterface, CacheableDependencyInterface
+{
+    /**
+     * Determines whether condition result will be negated.
+     *
+     * @return bool
+     *   Whether the condition result will be negated.
+     */
+    public function isNegated();
 
-  /**
-   * Determines whether condition result will be negated.
-   *
-   * @return bool
-   *   Whether the condition result will be negated.
-   */
-  public function isNegated();
+    /**
+     * Evaluates the condition and returns TRUE or FALSE accordingly.
+     *
+     * @return bool
+     *   TRUE if the condition has been met, FALSE otherwise.
+     */
+    public function evaluate();
 
-  /**
-   * Evaluates the condition and returns TRUE or FALSE accordingly.
-   *
-   * @return bool
-   *   TRUE if the condition has been met, FALSE otherwise.
-   */
-  public function evaluate();
+    /**
+     * Provides a human readable summary of the condition's configuration.
+     */
+    public function summary();
 
-  /**
-   * Provides a human readable summary of the condition's configuration.
-   */
-  public function summary();
-
-  /**
-   * Sets the executable manager class.
-   *
-   * @param \Drupal\Core\Executable\ExecutableManagerInterface $executableManager
-   *   The executable manager.
-   */
-  public function setExecutableManager(ExecutableManagerInterface $executableManager);
+    /**
+     * Sets the executable manager class.
+     *
+     * @param \Drupal\Core\Executable\ExecutableManagerInterface $executableManager
+     *   The executable manager.
+     */
+    public function setExecutableManager(ExecutableManagerInterface $executableManager);
 
 }

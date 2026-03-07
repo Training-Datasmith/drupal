@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Routing;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -12,56 +14,61 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *
  * @see \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider.
  */
-class AdminHtmlRouteProvider extends DefaultHtmlRouteProvider {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAddPageRoute(EntityTypeInterface $entity_type) {
-    if ($route = parent::getAddPageRoute($entity_type)) {
-      $route->setOption('_admin_route', TRUE);
-      return $route;
+class AdminHtmlRouteProvider extends DefaultHtmlRouteProvider
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAddPageRoute(EntityTypeInterface $entity_type)
+    {
+        if ($route = parent::getAddPageRoute($entity_type)) {
+            $route->setOption('_admin_route', true);
+            return $route;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAddFormRoute(EntityTypeInterface $entity_type) {
-    if ($route = parent::getAddFormRoute($entity_type)) {
-      $route->setOption('_admin_route', TRUE);
-      return $route;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAddFormRoute(EntityTypeInterface $entity_type)
+    {
+        if ($route = parent::getAddFormRoute($entity_type)) {
+            $route->setOption('_admin_route', true);
+            return $route;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditFormRoute(EntityTypeInterface $entity_type) {
-    if ($route = parent::getEditFormRoute($entity_type)) {
-      $route->setOption('_admin_route', TRUE);
-      return $route;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditFormRoute(EntityTypeInterface $entity_type)
+    {
+        if ($route = parent::getEditFormRoute($entity_type)) {
+            $route->setOption('_admin_route', true);
+            return $route;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeleteFormRoute(EntityTypeInterface $entity_type) {
-    if ($route = parent::getDeleteFormRoute($entity_type)) {
-      $route->setOption('_admin_route', TRUE);
-      return $route;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeleteFormRoute(EntityTypeInterface $entity_type)
+    {
+        if ($route = parent::getDeleteFormRoute($entity_type)) {
+            $route->setOption('_admin_route', true);
+            return $route;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeleteMultipleFormRoute(EntityTypeInterface $entity_type) {
-    if ($route = parent::getDeleteMultipleFormRoute($entity_type)) {
-      $route->setOption('_admin_route', TRUE);
-      return $route;
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeleteMultipleFormRoute(EntityTypeInterface $entity_type)
+    {
+        if ($route = parent::getDeleteMultipleFormRoute($entity_type)) {
+            $route->setOption('_admin_route', true);
+            return $route;
+        }
     }
-  }
 
 }

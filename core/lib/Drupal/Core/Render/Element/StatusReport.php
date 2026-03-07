@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Extension\Requirement\RequirementSeverity;
@@ -9,55 +11,56 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * Creates status report page element.
  */
 #[RenderElement('status_report')]
-class StatusReport extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#theme' => 'status_report_grouped',
-      '#priorities' => [
-        'error',
-        'warning',
-        'checked',
-        'ok',
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderGroupRequirements'],
-      ],
-    ];
-  }
-
-  /**
-   * Render API callback: Groups requirements.
-   *
-   * This function is assigned as a #pre_render callback.
-   */
-  public static function preRenderGroupRequirements(array $element): array {
-    $grouped_requirements = [];
-    /** @var array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, value: mixed, description: \Drupal\Core\StringTranslation\TranslatableMarkup, severity: \Drupal\Core\Extension\Requirement\RequirementSeverity} $requirement */
-    foreach ($element['#requirements'] as $key => $requirement) {
-      $severity = RequirementSeverity::Info;
-      if (isset($requirement['severity'])) {
-        $severity = $requirement['severity'] === RequirementSeverity::OK ? RequirementSeverity::Info : $requirement['severity'];
-      }
-      elseif (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install') {
-        $severity = RequirementSeverity::OK;
-      }
-
-      $grouped_requirements[$severity->status()]['title'] = $severity->title();
-      $grouped_requirements[$severity->status()]['type'] = $severity->status();
-      $grouped_requirements[$severity->status()]['items'][$key] = $requirement;
+class StatusReport extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#theme' => 'status_report_grouped',
+          '#priorities' => [
+            'error',
+            'warning',
+            'checked',
+            'ok',
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderGroupRequirements'],
+          ],
+        ];
     }
 
-    // Order the grouped requirements by a set order.
-    $order = array_flip($element['#priorities']);
-    uksort($grouped_requirements, fn($a, $b) => $order[$a] <=> $order[$b]);
+    /**
+     * Render API callback: Groups requirements.
+     *
+     * This function is assigned as a #pre_render callback.
+     */
+    public static function preRenderGroupRequirements(array $element): array
+    {
+        $grouped_requirements = [];
+        /** @var array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, value: mixed, description: \Drupal\Core\StringTranslation\TranslatableMarkup, severity: \Drupal\Core\Extension\Requirement\RequirementSeverity} $requirement */
+        foreach ($element['#requirements'] as $key => $requirement) {
+            $severity = RequirementSeverity::Info;
+            if (isset($requirement['severity'])) {
+                $severity = $requirement['severity'] === RequirementSeverity::OK ? RequirementSeverity::Info : $requirement['severity'];
+            } elseif (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install') {
+                $severity = RequirementSeverity::OK;
+            }
 
-    $element['#grouped_requirements'] = $grouped_requirements;
+            $grouped_requirements[$severity->status()]['title'] = $severity->title();
+            $grouped_requirements[$severity->status()]['type'] = $severity->status();
+            $grouped_requirements[$severity->status()]['items'][$key] = $requirement;
+        }
 
-    return $element;
-  }
+        // Order the grouped requirements by a set order.
+        $order = array_flip($element['#priorities']);
+        uksort($grouped_requirements, fn ($a, $b) => $order[$a] <=> $order[$b]);
+
+        $element['#grouped_requirements'] = $grouped_requirements;
+
+        return $element;
+    }
 
 }

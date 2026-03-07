@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Entity\Routing;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -9,72 +11,75 @@ use Symfony\Component\Routing\Route;
 /**
  * Provides routes for the taxonomy vocabulary.
  */
-class VocabularyRouteProvider extends AdminHtmlRouteProvider {
+class VocabularyRouteProvider extends AdminHtmlRouteProvider
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection
+    {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
+        $collection = parent::getRoutes($entity_type);
 
-    $collection = parent::getRoutes($entity_type);
+        if ($reset_page_route = $this->getResetPageRoute($entity_type)) {
+            $collection->add('entity.taxonomy_vocabulary.reset_form', $reset_page_route);
+        }
 
-    if ($reset_page_route = $this->getResetPageRoute($entity_type)) {
-      $collection->add("entity.taxonomy_vocabulary.reset_form", $reset_page_route);
+        if ($overview_page_route = $this->getOverviewPageRoute($entity_type)) {
+            $collection->add('entity.taxonomy_vocabulary.overview_form', $overview_page_route);
+        }
+
+        return $collection;
     }
 
-    if ($overview_page_route = $this->getOverviewPageRoute($entity_type)) {
-      $collection->add("entity.taxonomy_vocabulary.overview_form", $overview_page_route);
+    /**
+     * Gets the reset page route.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     *
+     * @return \Symfony\Component\Routing\Route|null
+     *   The generated route, if available.
+     */
+    protected function getResetPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route
+    {
+        $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/reset');
+        $route->setDefault('_entity_form', 'taxonomy_vocabulary.reset');
+        $route->setDefault('_title', 'Reset');
+        $route->setRequirement('_entity_access', 'taxonomy_vocabulary.reset all weights');
+        $route->setOption('_admin_route', true);
+        $route->setOption('parameters', [
+          'taxonomy_vocabulary' => [
+            'with_config_overrides' => true,
+          ],
+        ]);
+
+        return $route;
     }
 
-    return $collection;
-  }
+    /**
+     * Gets the overview page route.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     *
+     * @return \Symfony\Component\Routing\Route|null
+     *   The generated route, if available.
+     */
+    protected function getOverviewPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route
+    {
+        $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/overview');
+        $route->setDefault('_title_callback', '\Drupal\Core\Entity\Controller\EntityController::title');
+        $route->setDefault('_entity_form', 'taxonomy_vocabulary.overview');
+        $route->setRequirement('_entity_access', 'taxonomy_vocabulary.access taxonomy overview');
+        $route->setOption('_admin_route', true);
+        $route->setOption('parameters', [
+          'taxonomy_vocabulary' => [
+            'with_config_overrides' => true,
+          ],
+        ]);
 
-  /**
-   * Gets the reset page route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
-   */
-  protected function getResetPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route {
-    $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/reset');
-    $route->setDefault('_entity_form', 'taxonomy_vocabulary.reset');
-    $route->setDefault('_title', 'Reset');
-    $route->setRequirement('_entity_access', 'taxonomy_vocabulary.reset all weights');
-    $route->setOption('_admin_route', TRUE);
-    $route->setOption('parameters', [
-      'taxonomy_vocabulary' => [
-        'with_config_overrides' => TRUE,
-      ],
-    ]);
-
-    return $route;
-  }
-
-  /**
-   * Gets the overview page route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
-   */
-  protected function getOverviewPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route {
-    $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/overview');
-    $route->setDefault('_title_callback', '\Drupal\Core\Entity\Controller\EntityController::title');
-    $route->setDefault('_entity_form', 'taxonomy_vocabulary.overview');
-    $route->setRequirement('_entity_access', 'taxonomy_vocabulary.access taxonomy overview');
-    $route->setOption('_admin_route', TRUE);
-    $route->setOption('parameters', [
-      'taxonomy_vocabulary' => [
-        'with_config_overrides' => TRUE,
-      ],
-    ]);
-
-    return $route;
-  }
+        return $route;
+    }
 
 }

@@ -1,24 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Test;
 
 /**
  * Object to test that security issues around serialization.
  */
-class ObjectSerialization {
+class ObjectSerialization
+{
+    /**
+     * ObjectSerialization constructor.
+     */
+    public function __construct()
+    {
+        throw new \Exception('This object should never be constructed');
+    }
 
-  /**
-   * ObjectSerialization constructor.
-   */
-  public function __construct() {
-    throw new \Exception('This object should never be constructed');
-  }
-
-  /**
-   * ObjectSerialization destructor.
-   */
-  public function __destruct() {
-    throw new \Exception('This object should never be destructed');
-  }
+    /**
+     * ObjectSerialization destructor.
+     */
+    public function __destruct()
+    {
+        throw new \Exception('This object should never be destructed');
+    }
 
 }

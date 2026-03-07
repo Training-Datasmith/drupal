@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Component\Utility\Crypt;
@@ -61,98 +63,101 @@ use Drupal\Core\Render\PlaceholderGenerator;
  * }
  * @endcode
  */
-class FilterProcessResult extends BubbleableMetadata implements \Stringable {
+class FilterProcessResult extends BubbleableMetadata implements \Stringable
+{
+    /**
+     * Constructs a FilterProcessResult object.
+     *
+     * @param string $processedText
+     *   The text as processed by a text filter.
+     */
+    public function __construct(
+        /**
+         * The processed text.
+         *
+         *
+         * @see \Drupal\filter\Plugin\FilterInterface::process()
+         */
+        protected $processedText = ''
+    ) {
+    }
 
-  /**
-   * Constructs a FilterProcessResult object.
-   *
-   * @param string $processedText
-   *   The text as processed by a text filter.
-   */
-  public function __construct(
-      /**
-       * The processed text.
-       *
-       *
-       * @see \Drupal\filter\Plugin\FilterInterface::process()
-       */
-      protected $processedText = ''
-  )
-  {
-  }
+    /**
+     * Gets the processed text.
+     *
+     * @return string
+     *   The processed text.
+     */
+    public function getProcessedText()
+    {
+        return $this->processedText;
+    }
 
-  /**
-   * Gets the processed text.
-   *
-   * @return string
-   *   The processed text.
-   */
-  public function getProcessedText() {
-    return $this->processedText;
-  }
+    /**
+     * Gets the processed text.
+     *
+     * @return string
+     *   The processed text.
+     */
+    public function __toString(): string
+    {
+        return $this->getProcessedText();
+    }
 
-  /**
-   * Gets the processed text.
-   *
-   * @return string
-   *   The processed text.
-   */
-  public function __toString(): string {
-    return $this->getProcessedText();
-  }
+    /**
+     * Sets the processed text.
+     *
+     * @param string $processed_text
+     *   The text as processed by a text filter.
+     *
+     * @return $this
+     */
+    public function setProcessedText($processed_text): static
+    {
+        $this->processedText = $processed_text;
+        return $this;
+    }
 
-  /**
-   * Sets the processed text.
-   *
-   * @param string $processed_text
-   *   The text as processed by a text filter.
-   *
-   * @return $this
-   */
-  public function setProcessedText($processed_text): static {
-    $this->processedText = $processed_text;
-    return $this;
-  }
+    /**
+     * Creates a placeholder.
+     *
+     * This generates its own placeholder markup for one major reason: to not have
+     * FilterProcessResult depend on the Renderer service, because this is a value
+     * object. As a side-effect and added benefit, this makes it easier to
+     * distinguish placeholders for filtered text versus generic render system
+     * placeholders.
+     *
+     * @param string $callback
+     *   The #lazy_builder callback that will replace the placeholder with its
+     *   eventual markup.
+     * @param array $args
+     *   The arguments for the #lazy_builder callback.
+     *
+     * @return string
+     *   The placeholder markup.
+     */
+    public function createPlaceholder($callback, array $args): string
+    {
+        // Generate placeholder markup.
+        $placeholder_markup = PlaceholderGenerator::createPlaceholderTag('drupal-filter-placeholder', [
+          'callback' => $callback,
+          'arguments' => UrlHelper::buildQuery($args),
+          'token' => Crypt::hashBase64(serialize([$callback, $args])),
+        ]);
 
-  /**
-   * Creates a placeholder.
-   *
-   * This generates its own placeholder markup for one major reason: to not have
-   * FilterProcessResult depend on the Renderer service, because this is a value
-   * object. As a side-effect and added benefit, this makes it easier to
-   * distinguish placeholders for filtered text versus generic render system
-   * placeholders.
-   *
-   * @param string $callback
-   *   The #lazy_builder callback that will replace the placeholder with its
-   *   eventual markup.
-   * @param array $args
-   *   The arguments for the #lazy_builder callback.
-   *
-   * @return string
-   *   The placeholder markup.
-   */
-  public function createPlaceholder($callback, array $args): string {
-    // Generate placeholder markup.
-    $placeholder_markup = PlaceholderGenerator::createPlaceholderTag('drupal-filter-placeholder', [
-      'callback' => $callback,
-      'arguments' => UrlHelper::buildQuery($args),
-      'token' => Crypt::hashBase64(serialize([$callback, $args])),
-    ]);
+        // Add the placeholder attachment.
+        $this->addAttachments([
+          'placeholders' => [
+            $placeholder_markup => [
+              '#lazy_builder' => [$callback, $args],
+            ],
+          ],
+        ]);
 
-    // Add the placeholder attachment.
-    $this->addAttachments([
-      'placeholders' => [
-        $placeholder_markup => [
-          '#lazy_builder' => [$callback, $args],
-        ],
-      ],
-    ]);
-
-    // Return the placeholder markup, so that the filter wanting to use a
-    // placeholder can actually insert the placeholder markup where it needs the
-    // placeholder to be replaced.
-    return $placeholder_markup;
-  }
+        // Return the placeholder markup, so that the filter wanting to use a
+        // placeholder can actually insert the placeholder markup where it needs the
+        // placeholder to be replaced.
+        return $placeholder_markup;
+    }
 
 }

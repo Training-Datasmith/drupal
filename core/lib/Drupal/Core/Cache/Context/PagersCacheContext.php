@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Pager\PagerParametersInterface;
 
 /**
  * Defines a cache context for "per page in a pager" caching.
@@ -12,45 +13,48 @@ use Drupal\Core\Pager\PagerParametersInterface;
  * Calculated cache context ID: 'url.query_args.pagers:%pager_id', e.g.
  * 'url.query_args.pagers:1' (to vary by the pager with ID 1).
  */
-class PagersCacheContext implements CalculatedCacheContextInterface {
-
-  /**
-   * Constructs a new PagersCacheContext object.
-   *
-   * @param \Drupal\Core\Pager\PagerParametersInterface $pagerParams
-   *   The pager parameters.
-   */
-  public function __construct(protected \Drupal\Core\Pager\PagerParametersInterface $pagerParams)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Pager');
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @see \Drupal\Core\Pager\PagerParametersInterface::findPage()
-   */
-  public function getContext($pager_id = NULL) {
-    // The value of the 'page' query argument contains the information that
-    // controls *all* pagers.
-    if ($pager_id === NULL) {
-      return $this->pagerParams->getPagerParameter();
+class PagersCacheContext implements CalculatedCacheContextInterface
+{
+    /**
+     * Constructs a new PagersCacheContext object.
+     *
+     * @param \Drupal\Core\Pager\PagerParametersInterface $pagerParams
+     *   The pager parameters.
+     */
+    public function __construct(protected \Drupal\Core\Pager\PagerParametersInterface $pagerParams)
+    {
     }
 
-    return $pager_id . '.' . $this->pagerParams->findPage($pager_id);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Pager');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($pager_id = NULL): \Drupal\Core\Cache\CacheableMetadata {
-    return new CacheableMetadata();
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Drupal\Core\Pager\PagerParametersInterface::findPage()
+     */
+    public function getContext($pager_id = null)
+    {
+        // The value of the 'page' query argument contains the information that
+        // controls *all* pagers.
+        if ($pager_id === null) {
+            return $this->pagerParams->getPagerParameter();
+        }
+
+        return $pager_id . '.' . $this->pagerParams->findPage($pager_id);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($pager_id = null): \Drupal\Core\Cache\CacheableMetadata
+    {
+        return new CacheableMetadata();
+    }
 
 }

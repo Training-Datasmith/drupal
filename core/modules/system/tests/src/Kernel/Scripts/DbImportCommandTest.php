@@ -17,59 +17,60 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 #[Group('console')]
 #[RunTestsInSeparateProcesses]
-class DbImportCommandTest extends KernelTestBase {
-
-  /**
-   * Tables that should be part of the exported script.
-   *
-   * @var array
-   */
-  protected $tables = [
-    'block_content',
-    'block_content_field_data',
-    'block_content_field_revision',
-    'block_content_revision',
-    'cachetags',
-    'config',
-    'cache_discovery',
-    'cache_bootstrap',
-    'file_managed',
-    'key_value_expire',
-    'menu_link_content',
-    'menu_link_content_data',
-    'path_alias',
-    'sessions',
-    'user__roles',
-    'users',
-    'users_field_data',
-    'watchdog',
-  ];
-
-  /**
-   * Tests the command directly.
-   */
-  #[RequiresPhpExtension('pdo_sqlite')]
-  public function testDbImportCommand(): void {
-    $connection_info = [
-      'driver' => 'sqlite',
-      'database' => ':memory:',
+class DbImportCommandTest extends KernelTestBase
+{
+    /**
+     * Tables that should be part of the exported script.
+     *
+     * @var array
+     */
+    protected $tables = [
+      'block_content',
+      'block_content_field_data',
+      'block_content_field_revision',
+      'block_content_revision',
+      'cachetags',
+      'config',
+      'cache_discovery',
+      'cache_bootstrap',
+      'file_managed',
+      'key_value_expire',
+      'menu_link_content',
+      'menu_link_content_data',
+      'path_alias',
+      'sessions',
+      'user__roles',
+      'users',
+      'users_field_data',
+      'watchdog',
     ];
-    Database::addConnectionInfo($this->databasePrefix, 'default', $connection_info);
 
-    $command = new DbImportCommand();
-    $command_tester = new CommandTester($command);
-    $command_tester->execute([
-      'script' => __DIR__ . '/../../../fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      '--database' => $this->databasePrefix,
-    ]);
+    /**
+     * Tests the command directly.
+     */
+    #[RequiresPhpExtension('pdo_sqlite')]
+    public function testDbImportCommand(): void
+    {
+        $connection_info = [
+          'driver' => 'sqlite',
+          'database' => ':memory:',
+        ];
+        Database::addConnectionInfo($this->databasePrefix, 'default', $connection_info);
 
-    // The tables should now exist.
-    $connection = Database::getConnection('default', $this->databasePrefix);
-    foreach ($this->tables as $table) {
-      $this->assertTrue($connection
-        ->schema()
-        ->tableExists($table), strtr('Table @table created by the database script.', ['@table' => $table]));
+        $command = new DbImportCommand();
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
+          'script' => __DIR__ . '/../../../fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          '--database' => $this->databasePrefix,
+        ]);
+
+        // The tables should now exist.
+        $connection = Database::getConnection('default', $this->databasePrefix);
+        foreach ($this->tables as $table) {
+            $this->assertTrue($connection
+              ->schema()
+              ->tableExists($table), strtr('Table @table created by the database script.', ['@table' => $table]));
+        }
     }
-  }
 
 }

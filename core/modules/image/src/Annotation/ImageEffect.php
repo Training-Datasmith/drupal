@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,35 +25,35 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class ImageEffect extends Plugin {
+class ImageEffect extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the image effect.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the image effect.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
-
-  /**
-   * A brief description of the image effect.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * This will be shown when adding or configuring this image effect.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description = '';
+    /**
+     * A brief description of the image effect.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * This will be shown when adding or configuring this image effect.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description = '';
 
 }

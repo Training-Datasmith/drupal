@@ -17,26 +17,27 @@ use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 #[CoversClass(BuildTestBase::class)]
 #[Group('Build')]
 #[RequiresPhpExtension('pdo_sqlite')]
-class HtRouterTest extends QuickStartTestBase {
+class HtRouterTest extends QuickStartTestBase
+{
+    /**
+     * @legacy-covers ::instantiateServer
+     */
+    public function testHtRouter(): void
+    {
+        $sqlite = (new \PDO('sqlite::memory:'))->query('select sqlite_version()')->fetch()[0];
+        if (version_compare($sqlite, Tasks::SQLITE_MINIMUM_VERSION) < 0) {
+            $this->markTestSkipped();
+        }
 
-  /**
-   * @legacy-covers ::instantiateServer
-   */
-  public function testHtRouter(): void {
-    $sqlite = (new \PDO('sqlite::memory:'))->query('select sqlite_version()')->fetch()[0];
-    if (version_compare($sqlite, Tasks::SQLITE_MINIMUM_VERSION) < 0) {
-      $this->markTestSkipped();
+        $this->copyCodebase();
+        $this->executeCommand('COMPOSER_DISCARD_CHANGES=true composer install --no-dev --no-interaction');
+        $this->assertErrorOutputContains('Generating autoload files');
+        $this->installQuickStart('minimal');
+        $this->formLogin($this->adminUsername, $this->adminPassword);
+        $this->visit('/.well-known/change-password');
+        $this->assertDrupalVisit();
+        $url = $this->getMink()->getSession()->getCurrentUrl();
+        $this->assertEquals('http://localhost:' . $this->getPortNumber() . '/user/1/edit', $url);
     }
-
-    $this->copyCodebase();
-    $this->executeCommand('COMPOSER_DISCARD_CHANGES=true composer install --no-dev --no-interaction');
-    $this->assertErrorOutputContains('Generating autoload files');
-    $this->installQuickStart('minimal');
-    $this->formLogin($this->adminUsername, $this->adminPassword);
-    $this->visit('/.well-known/change-password');
-    $this->assertDrupalVisit();
-    $url = $this->getMink()->getSession()->getCurrentUrl();
-    $this->assertEquals('http://localhost:' . $this->getPortNumber() . '/user/1/edit', $url);
-  }
 
 }

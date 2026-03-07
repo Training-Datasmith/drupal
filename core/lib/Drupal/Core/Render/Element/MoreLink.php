@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -21,21 +23,22 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * @endcode
  */
 #[RenderElement('more_link')]
-class MoreLink extends Link {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo() {
-    $info = parent::getInfo();
-    return [
-      '#title' => $this->t('More'),
-      '#theme_wrappers' => [
-        'container' => [
-          '#attributes' => ['class' => ['more-link']],
-        ],
-      ],
-    ] + $info;
-  }
+class MoreLink extends Link
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo()
+    {
+        $info = parent::getInfo();
+        return [
+          '#title' => $this->t('More'),
+          '#theme_wrappers' => [
+            'container' => [
+              '#attributes' => ['class' => ['more-link']],
+            ],
+          ],
+        ] + $info;
+    }
 
 }

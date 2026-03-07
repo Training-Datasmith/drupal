@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\style;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,70 +14,71 @@ use Drupal\views\Attribute\ViewsStyle;
  * @ingroup views_style_plugins
  */
 #[ViewsStyle(
-  id: "opml",
-  title: new TranslatableMarkup("OPML Feed"),
-  help: new TranslatableMarkup("Generates an OPML feed from a view."),
-  theme: "views_view_opml",
-  display_types: ["feed"],
+    id: 'opml',
+    title: new TranslatableMarkup('OPML Feed'),
+    help: new TranslatableMarkup('Generates an OPML feed from a view.'),
+    theme: 'views_view_opml',
+    display_types: ['feed'],
 )]
-class Opml extends StylePluginBase {
+class Opml extends StylePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $usesRowPlugin = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $usesRowPlugin = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function attachTo(array &$build, $display_id, Url $feed_url, $title): void
+    {
+        $display = $this->view->displayHandlers->get($display_id);
+        $url_options = [];
+        $input = $this->view->getExposedInput();
+        if ($input) {
+            $url_options['query'] = $input;
+        }
+        $url_options['absolute'] = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function attachTo(array &$build, $display_id, Url $feed_url, $title): void {
-    $display = $this->view->displayHandlers->get($display_id);
-    $url_options = [];
-    $input = $this->view->getExposedInput();
-    if ($input) {
-      $url_options['query'] = $input;
-    }
-    $url_options['absolute'] = TRUE;
-
-    $url = $feed_url->setOptions($url_options)->toString();
-    if ($display->hasPath()) {
-      if (empty($this->preview)) {
-        $build['#attached']['feed'][] = [$url, $title];
-      }
-    }
-    else {
-      $this->view->feedIcons[] = [
-        '#theme' => 'feed_icon',
-        '#url' => $url,
-        '#title' => $title,
-      ];
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    $rows = [];
-
-    foreach ($this->view->result as $row_index => $row) {
-      $this->view->row_index = $row_index;
-      $rows[] = $this->view->rowPlugin->render($row);
+        $url = $feed_url->setOptions($url_options)->toString();
+        if ($display->hasPath()) {
+            if (empty($this->preview)) {
+                $build['#attached']['feed'][] = [$url, $title];
+            }
+        } else {
+            $this->view->feedIcons[] = [
+              '#theme' => 'feed_icon',
+              '#url' => $url,
+              '#title' => $title,
+            ];
+        }
     }
 
-    $build = [
-      '#theme' => $this->themeFunctions(),
-      '#view' => $this->view,
-      '#options' => $this->options,
-      '#rows' => $rows,
-      '#attached' => [
-        'http_header' => [
-          ['Content-Type', 'text/xml; charset=utf-8'],
-        ],
-      ],
-    ];
-    unset($this->view->row_index);
-    return $build;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        $rows = [];
+
+        foreach ($this->view->result as $row_index => $row) {
+            $this->view->row_index = $row_index;
+            $rows[] = $this->view->rowPlugin->render($row);
+        }
+
+        $build = [
+          '#theme' => $this->themeFunctions(),
+          '#view' => $this->view,
+          '#options' => $this->options,
+          '#rows' => $rows,
+          '#attached' => [
+            'http_header' => [
+              ['Content-Type', 'text/xml; charset=utf-8'],
+            ],
+          ],
+        ];
+        unset($this->view->row_index);
+        return $build;
+    }
 
 }

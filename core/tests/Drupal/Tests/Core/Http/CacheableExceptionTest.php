@@ -29,62 +29,64 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests Cacheable Exception.
  */
 #[Group('Http')]
-class CacheableExceptionTest extends UnitTestCase {
+class CacheableExceptionTest extends UnitTestCase
+{
+    /**
+     * Tests cacheable http exception.
+     *
+     * @legacy-covers \Drupal\Core\Http\Exception\CacheableHttpException
+     */
+    public function testCacheableHttpException(): void
+    {
+        $exception = new CacheableHttpException((new CacheableMetadata())->setCacheContexts(['route']), 500, 'test message', null, ['X-Drupal-Exception' => 'Test'], 123);
+        $this->assertSame(['route'], $exception->getCacheContexts());
+        $this->assertSame(500, $exception->getStatusCode());
+        $this->assertSame('test message', $exception->getMessage());
+        $this->assertSame(['X-Drupal-Exception' => 'Test'], $exception->getHeaders());
+        $this->assertSame(123, $exception->getCode());
+    }
 
-  /**
-   * Tests cacheable http exception.
-   *
-   * @legacy-covers \Drupal\Core\Http\Exception\CacheableHttpException
-   */
-  public function testCacheableHttpException(): void {
-    $exception = new CacheableHttpException((new CacheableMetadata())->setCacheContexts(['route']), 500, 'test message', NULL, ['X-Drupal-Exception' => 'Test'], 123);
-    $this->assertSame(['route'], $exception->getCacheContexts());
-    $this->assertSame(500, $exception->getStatusCode());
-    $this->assertSame('test message', $exception->getMessage());
-    $this->assertSame(['X-Drupal-Exception' => 'Test'], $exception->getHeaders());
-    $this->assertSame(123, $exception->getCode());
-  }
-
-  /**
+    /**
  * Tests exceptions.
  */
-  #[DataProvider('providerTestExceptions')]
-  public function testExceptions($status_code, $class, $argument = NULL, $expected_headers = []): void {
-    $cacheable_metadata = (new CacheableMetadata())->setCacheContexts(['route']);
-    $message = "$class test message";
-    $previous = new class('Error of PHP 7+') extends \Error {};
-    if ($argument) {
-      $exception = new $class($cacheable_metadata, $argument, $message, $previous, 123);
+    #[DataProvider('providerTestExceptions')]
+    public function testExceptions($status_code, $class, $argument = null, $expected_headers = []): void
+    {
+        $cacheable_metadata = (new CacheableMetadata())->setCacheContexts(['route']);
+        $message = "$class test message";
+        $previous = new class ('Error of PHP 7+') extends \Error {};
+        if ($argument) {
+            $exception = new $class($cacheable_metadata, $argument, $message, $previous, 123);
+        } else {
+            $exception = new $class($cacheable_metadata, $message, $previous, 123);
+        }
+        $this->assertSame(['route'], $exception->getCacheContexts());
+        $this->assertSame($message, $exception->getMessage());
+        $this->assertSame($status_code, $exception->getStatusCode());
+        $this->assertSame($expected_headers, $exception->getHeaders());
+        $this->assertSame($previous, $exception->getPrevious());
+        $this->assertSame(123, $exception->getCode());
     }
-    else {
-      $exception = new $class($cacheable_metadata, $message, $previous, 123);
-    }
-    $this->assertSame(['route'], $exception->getCacheContexts());
-    $this->assertSame($message, $exception->getMessage());
-    $this->assertSame($status_code, $exception->getStatusCode());
-    $this->assertSame($expected_headers, $exception->getHeaders());
-    $this->assertSame($previous, $exception->getPrevious());
-    $this->assertSame(123, $exception->getCode());
-  }
 
-  public static function providerTestExceptions(): array {
-    return [
-      [400, CacheableBadRequestHttpException::class],
-      [401, CacheableUnauthorizedHttpException::class, 'test challenge', ['WWW-Authenticate' => 'test challenge']],
-      [403, CacheableAccessDeniedHttpException::class],
-      [404, CacheableNotFoundHttpException::class],
-      [405, CacheableMethodNotAllowedHttpException::class, ['POST', 'PUT'], ['Allow' => 'POST, PUT']],
-      [406, CacheableNotAcceptableHttpException::class],
-      [409, CacheableConflictHttpException::class],
-      [410, CacheableGoneHttpException::class],
-      [411, CacheableLengthRequiredHttpException::class],
-      [412, CacheablePreconditionFailedHttpException::class],
-      [415, CacheableUnsupportedMediaTypeHttpException::class],
-      [422, CacheableUnprocessableEntityHttpException::class],
-      [428, CacheablePreconditionRequiredHttpException::class],
-      [429, CacheableTooManyRequestsHttpException::class, 60, ['Retry-After' => 60]],
-      [503, CacheableServiceUnavailableHttpException::class, 60, ['Retry-After' => 60]],
-    ];
-  }
+    public static function providerTestExceptions(): array
+    {
+        return [
+          [400, CacheableBadRequestHttpException::class],
+          [401, CacheableUnauthorizedHttpException::class, 'test challenge', ['WWW-Authenticate' => 'test challenge']],
+          [403, CacheableAccessDeniedHttpException::class],
+          [404, CacheableNotFoundHttpException::class],
+          [405, CacheableMethodNotAllowedHttpException::class, ['POST', 'PUT'], ['Allow' => 'POST, PUT']],
+          [406, CacheableNotAcceptableHttpException::class],
+          [409, CacheableConflictHttpException::class],
+          [410, CacheableGoneHttpException::class],
+          [411, CacheableLengthRequiredHttpException::class],
+          [412, CacheablePreconditionFailedHttpException::class],
+          [415, CacheableUnsupportedMediaTypeHttpException::class],
+          [422, CacheableUnprocessableEntityHttpException::class],
+          [428, CacheablePreconditionRequiredHttpException::class],
+          [429, CacheableTooManyRequestsHttpException::class, 60, ['Retry-After' => 60]],
+          [503, CacheableServiceUnavailableHttpException::class, 60, ['Retry-After' => 60]],
+        ];
+    }
 
 }

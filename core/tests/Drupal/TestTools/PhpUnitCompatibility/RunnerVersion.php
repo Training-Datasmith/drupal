@@ -11,22 +11,24 @@ use PHPUnit\Runner\Version;
  *
  * This class contains static methods only and is not meant to be instantiated.
  */
-final class RunnerVersion {
+final class RunnerVersion
+{
+    /**
+     * This class should not be instantiated.
+     */
+    private function __construct()
+    {
+    }
 
-  /**
-   * This class should not be instantiated.
-   */
-  private function __construct() {
-  }
-
-  /**
-   * Returns the major version of the PHPUnit runner being used.
-   *
-   * @return int
-   *   The major version of the PHPUnit runner being used.
-   */
-  public static function getMajor(): int {
-    return (int) explode('.', Version::id())[0];
-  }
+    /**
+     * Returns the major version of the PHPUnit runner being used.
+     *
+     * @return int
+     *   The major version of the PHPUnit runner being used.
+     */
+    public static function getMajor(): int
+    {
+        return (int) explode('.', Version::id())[0];
+    }
 
 }

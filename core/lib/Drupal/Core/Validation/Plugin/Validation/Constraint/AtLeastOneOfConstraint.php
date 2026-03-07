@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -15,23 +17,25 @@ use Symfony\Component\Validator\Constraints\AtLeastOneOfValidator;
  * of constraint objects and use them.
  */
 #[Constraint(
-  id: 'AtLeastOneOf',
-  label: new TranslatableMarkup('At least one of', [], ['context' => 'Validation'])
+    id: 'AtLeastOneOf',
+    label: new TranslatableMarkup('At least one of', [], ['context' => 'Validation'])
 )]
-class AtLeastOneOfConstraint extends AtLeastOneOf implements CompositeConstraintInterface {
+class AtLeastOneOfConstraint extends AtLeastOneOf implements CompositeConstraintInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getCompositeOptionStatic(): string
+    {
+        return 'constraints';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCompositeOptionStatic(): string {
-    return 'constraints';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validatedBy(): string {
-    return AtLeastOneOfValidator::class;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy(): string
+    {
+        return AtLeastOneOfValidator::class;
+    }
 
 }

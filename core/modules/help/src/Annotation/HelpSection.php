@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\help\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -19,51 +21,51 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class HelpSection extends Plugin {
+class HelpSection extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The text to use as the title of the help page section.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title;
 
-  /**
-   * The text to use as the title of the help page section.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title;
+    /**
+     * The description of the help page section.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description;
 
-  /**
-   * The description of the help page section.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description;
+    /**
+     * The (optional) permission needed to view the help section.
+     *
+     * Only set if this section needs its own permission, beyond the generic
+     * 'access help pages' permission needed to see the /admin/help
+     * page itself.
+     *
+     * @var string
+     */
+    public $permission = '';
 
-  /**
-   * The (optional) permission needed to view the help section.
-   *
-   * Only set if this section needs its own permission, beyond the generic
-   * 'access help pages' permission needed to see the /admin/help
-   * page itself.
-   *
-   * @var string
-   */
-  public $permission = '';
-
-  /**
-   * An optional weight for the help section.
-   *
-   * The sections will be ordered by this weight on the help page.
-   *
-   * @var int
-   */
-  public $weight = 0;
+    /**
+     * An optional weight for the help section.
+     *
+     * The sections will be ordered by this weight on the help page.
+     *
+     * @var int
+     */
+    public $weight = 0;
 
 }

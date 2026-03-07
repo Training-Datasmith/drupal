@@ -13,28 +13,29 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class ElementsContainerTest extends BrowserTestBase {
+class ElementsContainerTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['form_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['form_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests the #optional container property.
-   */
-  public function testOptionalContainerElements(): void {
-    $this->drupalGet('form-test/optional-container');
-    $assertSession = $this->assertSession();
-    $assertSession->elementNotExists('css', 'div.empty_optional');
-    $assertSession->elementExists('css', 'div.empty_non_optional');
-    $assertSession->elementExists('css', 'div.nonempty_optional');
-    $assertSession->elementExists('css', 'div.nonempty_non_optional');
-  }
+    /**
+     * Tests the #optional container property.
+     */
+    public function testOptionalContainerElements(): void
+    {
+        $this->drupalGet('form-test/optional-container');
+        $assertSession = $this->assertSession();
+        $assertSession->elementNotExists('css', 'div.empty_optional');
+        $assertSession->elementExists('css', 'div.empty_non_optional');
+        $assertSession->elementExists('css', 'div.nonempty_optional');
+        $assertSession->elementExists('css', 'div.nonempty_non_optional');
+    }
 
 }

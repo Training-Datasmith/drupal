@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Form;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -18,60 +20,63 @@ use Symfony\Component\HttpFoundation\Response;
  * @see Drupal\Core\EventSubscriber\DefaultExceptionSubscriber::createHtmlResponse()
  * @see Drupal\Core\EventSubscriber\DefaultExceptionHtmlSubscriber::createResponse()
  */
-class EnforcedResponse extends Response {
+class EnforcedResponse extends Response
+{
+    /**
+     * The wrapped response object.
+     *
+     * @var \Symfony\Component\HttpFoundation\Response
+     */
+    protected $response;
 
-  /**
-   * The wrapped response object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Response
-   */
-  protected $response;
+    /**
+     * Constructs a new enforced response from the given exception.
+     *
+     * Note that it is necessary to traverse the exception chain when searching
+     * for an enforced response. Otherwise it would be impossible to find an
+     * exception thrown from within a twig template.
+     *
+     * @param \Throwable $e
+     *   The exception where the enforced response is to be extracted from.
+     *
+     * @return static|null
+     *   The enforced response or NULL if the exception chain does not contain a
+     *   \Drupal\Core\Form\EnforcedResponseException exception.
+     */
+    public static function createFromException(\Throwable $e)
+    {
+        while ($e) {
+            if ($e instanceof EnforcedResponseException) {
+                return new static($e->getResponse());
+            }
 
-  /**
-   * Constructs a new enforced response from the given exception.
-   *
-   * Note that it is necessary to traverse the exception chain when searching
-   * for an enforced response. Otherwise it would be impossible to find an
-   * exception thrown from within a twig template.
-   *
-   * @param \Throwable $e
-   *   The exception where the enforced response is to be extracted from.
-   *
-   * @return static|null
-   *   The enforced response or NULL if the exception chain does not contain a
-   *   \Drupal\Core\Form\EnforcedResponseException exception.
-   */
-  public static function createFromException(\Throwable $e) {
-    while ($e) {
-      if ($e instanceof EnforcedResponseException) {
-        return new static($e->getResponse());
-      }
-
-      $e = $e->getPrevious();
+            $e = $e->getPrevious();
+        }
     }
-  }
 
-  /**
-   * Constructs an enforced response.
-   *
-   * Use EnforcedResponse::createFromException() instead.
-   *
-   * @param \Symfony\Component\HttpFoundation\Response $response
-   *   The response to wrap.
-   */
-  public function __construct(Response $response) {
-    parent::__construct('', 500);
-    $this->response = $response;
-  }
+    /**
+     * Constructs an enforced response.
+     *
+     * Use EnforcedResponse::createFromException() instead.
+     *
+     * @param \Symfony\Component\HttpFoundation\Response $response
+     *   The response to wrap.
+     */
+    public function __construct(Response $response)
+    {
+        parent::__construct('', 500);
+        $this->response = $response;
+    }
 
-  /**
-   * Returns the wrapped response.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The wrapped response.
-   */
-  public function getResponse() {
-    return $this->response;
-  }
+    /**
+     * Returns the wrapped response.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   The wrapped response.
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
 
 }

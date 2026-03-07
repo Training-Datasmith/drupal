@@ -10,13 +10,14 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Defines a contextual link plugin with a dynamic title from user input.
  */
-class TestContextualLink extends ContextualLinkDefault {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(?Request $request = NULL) {
-    return "<script>alert('Welcome to the jungle!')</script>";
-  }
+class TestContextualLink extends ContextualLinkDefault
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(?Request $request = null)
+    {
+        return "<script>alert('Welcome to the jungle!')</script>";
+    }
 
 }

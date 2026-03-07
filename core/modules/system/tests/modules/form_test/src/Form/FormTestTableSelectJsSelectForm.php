@@ -11,33 +11,36 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestTableSelectJsSelectForm extends FormTestTableSelectFormBase {
+class FormTestTableSelectJsSelectForm extends FormTestTableSelectFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return '_form_test_tableselect_js_select_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return '_form_test_tableselect_js_select_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $test_action = null)
+    {
+        $options = match ($test_action) {
+            'multiple-true-default' => ['#multiple' => true],
+            'multiple-false-default' => ['#multiple' => false],
+            'multiple-true-no-advanced-select' => ['#multiple' => true, '#js_select' => false],
+            'multiple-false-advanced-select' => ['#multiple' => false, '#js_select' => true],
+        };
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $test_action = NULL) {
-    $options = match ($test_action) {
-      'multiple-true-default' => ['#multiple' => TRUE],
-      'multiple-false-default' => ['#multiple' => FALSE],
-      'multiple-true-no-advanced-select' => ['#multiple' => TRUE, '#js_select' => FALSE],
-      'multiple-false-advanced-select' => ['#multiple' => FALSE, '#js_select' => TRUE],
-    };
+        return $this->tableselectFormBuilder($form, $form_state, $options);
+    }
 
-    return $this->tableselectFormBuilder($form, $form_state, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

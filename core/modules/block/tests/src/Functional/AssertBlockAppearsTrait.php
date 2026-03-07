@@ -11,26 +11,28 @@ use Drupal\block\Entity\Block;
  *
  * Can be used by test classes that extend \Drupal\Tests\BrowserTestBase.
  */
-trait AssertBlockAppearsTrait {
+trait AssertBlockAppearsTrait
+{
+    /**
+     * Checks to see whether a block appears on the page.
+     *
+     * @param \Drupal\block\Entity\Block $block
+     *   The block entity to find on the page.
+     */
+    protected function assertBlockAppears(Block $block)
+    {
+        $this->assertSession()->elementExists('xpath', "//div[@id = 'block-{$block->id()}']");
+    }
 
-  /**
-   * Checks to see whether a block appears on the page.
-   *
-   * @param \Drupal\block\Entity\Block $block
-   *   The block entity to find on the page.
-   */
-  protected function assertBlockAppears(Block $block) {
-    $this->assertSession()->elementExists('xpath', "//div[@id = 'block-{$block->id()}']");
-  }
-
-  /**
-   * Checks to see whether a block does not appears on the page.
-   *
-   * @param \Drupal\block\Entity\Block $block
-   *   The block entity to find on the page.
-   */
-  protected function assertNoBlockAppears(Block $block) {
-    $this->assertSession()->elementNotExists('xpath', "//div[@id = 'block-{$block->id()}']");
-  }
+    /**
+     * Checks to see whether a block does not appears on the page.
+     *
+     * @param \Drupal\block\Entity\Block $block
+     *   The block entity to find on the page.
+     */
+    protected function assertNoBlockAppears(Block $block)
+    {
+        $this->assertSession()->elementNotExists('xpath', "//div[@id = 'block-{$block->id()}']");
+    }
 
 }

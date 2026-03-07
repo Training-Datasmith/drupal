@@ -1,453 +1,487 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\config_translation;
 
 use Drupal\config_translation\Event\ConfigMapperPopulateEvent;
 use Drupal\config_translation\Event\ConfigTranslationEvents;
 use Drupal\config_translation\Exception\ConfigMapperLanguageException;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
-use Drupal\locale\LocaleConfigManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Configuration mapper base implementation.
  */
-class ConfigNamesMapper extends PluginBase implements ConfigMapperInterface, ContainerFactoryPluginInterface {
+class ConfigNamesMapper extends PluginBase implements ConfigMapperInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * The base route object that the mapper is attached to.
+     *
+     * @var \Symfony\Component\Routing\Route
+     */
+    protected $baseRoute;
 
-  /**
-   * The base route object that the mapper is attached to.
-   *
-   * @var \Symfony\Component\Routing\Route
-   */
-  protected $baseRoute;
+    /**
+     * The available routes.
+     *
+     * @var \Symfony\Component\Routing\RouteCollection
+     */
+    protected $routeCollection;
 
-  /**
-   * The available routes.
-   *
-   * @var \Symfony\Component\Routing\RouteCollection
-   */
-  protected $routeCollection;
+    /**
+     * The language code of the language this mapper, if any.
+     *
+     * @var string|null
+     */
+    protected $langcode;
 
-  /**
-   * The language code of the language this mapper, if any.
-   *
-   * @var string|null
-   */
-  protected $langcode;
+    /**
+     * The event dispatcher.
+     *
+     * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+     */
+    protected object $eventDispatcher;
 
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected object $eventDispatcher;
+    /**
+     * Constructs a ConfigNamesMapper.
+     *
+     * @param string $plugin_id
+     *   The config mapper plugin ID.
+     * @param mixed $plugin_definition
+     *   An array of plugin information with the following keys:
+     *   - title: The title of the mapper, used for generating page titles.
+     *   - base_route_name: The route name of the base route this mapper is
+     *     attached to.
+     *   - names: (optional) An array of configuration names.
+     *   - weight: (optional) The weight of this mapper, used in mapper listings.
+     *     Defaults to 20.
+     *   - list_controller: (optional) Class name for list controller used to
+     *     generate lists of this type of configuration.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The configuration factory.
+     * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+     *   The typed configuration manager.
+     * @param \Drupal\locale\LocaleConfigManager $localeConfigManager
+     *   The locale configuration manager.
+     * @param \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager
+     *   The mapper plugin discovery service.
+     * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
+     *   The route provider.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+     *   (optional) The event dispatcher.
+     *
+     * @throws \Symfony\Component\Routing\Exception\RouteNotFoundException
+     *   Throws an exception if the route specified by the 'base_route_name' in
+     *   the plugin definition could not be found by the route provider.
+     */
+    public function __construct($plugin_id, $plugin_definition, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, protected \Drupal\locale\LocaleConfigManager $localeConfigManager, protected \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, TranslationInterface $string_translation, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, ?EventDispatcherInterface $event_dispatcher = null)
+    {
+        $this->pluginId = $plugin_id;
+        $this->pluginDefinition = $plugin_definition;
 
-  /**
-   * Constructs a ConfigNamesMapper.
-   *
-   * @param string $plugin_id
-   *   The config mapper plugin ID.
-   * @param mixed $plugin_definition
-   *   An array of plugin information with the following keys:
-   *   - title: The title of the mapper, used for generating page titles.
-   *   - base_route_name: The route name of the base route this mapper is
-   *     attached to.
-   *   - names: (optional) An array of configuration names.
-   *   - weight: (optional) The weight of this mapper, used in mapper listings.
-   *     Defaults to 20.
-   *   - list_controller: (optional) Class name for list controller used to
-   *     generate lists of this type of configuration.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The configuration factory.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
-   *   The typed configuration manager.
-   * @param \Drupal\locale\LocaleConfigManager $localeConfigManager
-   *   The locale configuration manager.
-   * @param \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager
-   *   The mapper plugin discovery service.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
-   *   The route provider.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   (optional) The event dispatcher.
-   *
-   * @throws \Symfony\Component\Routing\Exception\RouteNotFoundException
-   *   Throws an exception if the route specified by the 'base_route_name' in
-   *   the plugin definition could not be found by the route provider.
-   */
-  public function __construct($plugin_id, $plugin_definition, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, protected \Drupal\locale\LocaleConfigManager $localeConfigManager, protected \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, TranslationInterface $string_translation, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, ?EventDispatcherInterface $event_dispatcher = NULL) {
-    $this->pluginId = $plugin_id;
-    $this->pluginDefinition = $plugin_definition;
-
-    $this->stringTranslation = $string_translation;
-    $this->eventDispatcher = $event_dispatcher ?: \Drupal::service('event_dispatcher');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    // Note that we ignore the plugin $configuration because mappers have
-    // nothing to configure in themselves.
-    return new static(
-      $plugin_id,
-      $plugin_definition,
-      $container->get('config.factory'),
-      $container->get('config.typed'),
-      $container->get('locale.config_manager'),
-      $container->get('plugin.manager.config_translation.mapper'),
-      $container->get('router.route_provider'),
-      $container->get('string_translation'),
-      $container->get('language_manager'),
-      $container->get('event_dispatcher')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setRouteCollection(RouteCollection $collection): void {
-    $this->routeCollection = $collection;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    // A title from a *.config_translation.yml. Should be translated for
-    // display in the current page language.
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    return $this->t($this->pluginDefinition['title']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseRouteName() {
-    return $this->pluginDefinition['base_route_name'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseRouteParameters(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBaseRoute() {
-    if ($this->routeCollection) {
-      return $this->routeCollection->get($this->getBaseRouteName());
+        $this->stringTranslation = $string_translation;
+        $this->eventDispatcher = $event_dispatcher ?: \Drupal::service('event_dispatcher');
     }
-    return $this->routeProvider->getRouteByName($this->getBaseRouteName());
-  }
 
-  /**
-   * Allows to process all config translation routes.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route object to process.
-   */
-  protected function processRoute(Route $route) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        // Note that we ignore the plugin $configuration because mappers have
+        // nothing to configure in themselves.
+        return new static(
+            $plugin_id,
+            $plugin_definition,
+            $container->get('config.factory'),
+            $container->get('config.typed'),
+            $container->get('locale.config_manager'),
+            $container->get('plugin.manager.config_translation.mapper'),
+            $container->get('router.route_provider'),
+            $container->get('string_translation'),
+            $container->get('language_manager'),
+            $container->get('event_dispatcher')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getBasePath() {
-    return Url::fromRoute($this->getBaseRouteName(), $this->getBaseRouteParameters())->getInternalPath();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setRouteCollection(RouteCollection $collection): void
+    {
+        $this->routeCollection = $collection;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOverviewRouteName(): string {
-    return 'config_translation.item.overview.' . $this->getBaseRouteName();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        // A title from a *.config_translation.yml. Should be translated for
+        // display in the current page language.
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        return $this->t($this->pluginDefinition['title']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOverviewRouteParameters() {
-    return $this->getBaseRouteParameters();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseRouteName()
+    {
+        return $this->pluginDefinition['base_route_name'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOverviewRoute(): \Symfony\Component\Routing\Route {
-    $route = new Route(
-      $this->getBaseRoute()->getPath() . '/translate',
-      [
-        '_controller' => '\Drupal\config_translation\Controller\ConfigTranslationController::itemPage',
-        'plugin_id' => $this->getPluginId(),
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseRouteParameters(): array
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseRoute()
+    {
+        if ($this->routeCollection) {
+            return $this->routeCollection->get($this->getBaseRouteName());
+        }
+        return $this->routeProvider->getRouteByName($this->getBaseRouteName());
+    }
+
+    /**
+     * Allows to process all config translation routes.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route object to process.
+     */
+    protected function processRoute(Route $route)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBasePath()
+    {
+        return Url::fromRoute($this->getBaseRouteName(), $this->getBaseRouteParameters())->getInternalPath();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOverviewRouteName(): string
+    {
+        return 'config_translation.item.overview.' . $this->getBaseRouteName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOverviewRouteParameters()
+    {
+        return $this->getBaseRouteParameters();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOverviewRoute(): \Symfony\Component\Routing\Route
+    {
+        $route = new Route(
+            $this->getBaseRoute()->getPath() . '/translate',
+            [
+            '_controller' => '\Drupal\config_translation\Controller\ConfigTranslationController::itemPage',
+            'plugin_id' => $this->getPluginId(),
       ],
-      ['_config_translation_overview_access' => 'TRUE']
-    );
-    $this->processRoute($route);
-    return $route;
-  }
+            ['_config_translation_overview_access' => 'TRUE']
+        );
+        $this->processRoute($route);
+        return $route;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOverviewPath() {
-    return Url::fromRoute($this->getOverviewRouteName(), $this->getOverviewRouteParameters())->getInternalPath();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getOverviewPath()
+    {
+        return Url::fromRoute($this->getOverviewRouteName(), $this->getOverviewRouteParameters())->getInternalPath();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAddRouteName(): string {
-    return 'config_translation.item.add.' . $this->getBaseRouteName();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAddRouteName(): string
+    {
+        return 'config_translation.item.add.' . $this->getBaseRouteName();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAddRouteParameters() {
-    // If sub-classes provide route parameters in getBaseRouteParameters(), they
-    // probably also want to provide those for the add, edit, and delete forms.
-    $parameters = $this->getBaseRouteParameters();
-    $parameters['langcode'] = $this->langcode;
-    return $parameters;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAddRouteParameters()
+    {
+        // If sub-classes provide route parameters in getBaseRouteParameters(), they
+        // probably also want to provide those for the add, edit, and delete forms.
+        $parameters = $this->getBaseRouteParameters();
+        $parameters['langcode'] = $this->langcode;
+        return $parameters;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAddRoute(): \Symfony\Component\Routing\Route {
-    $route = new Route(
-      $this->getBaseRoute()->getPath() . '/translate/{langcode}/add',
-      [
-        '_form' => \Drupal\config_translation\Form\ConfigTranslationAddForm::class,
-        'plugin_id' => $this->getPluginId(),
+    /**
+     * {@inheritdoc}
+     */
+    public function getAddRoute(): \Symfony\Component\Routing\Route
+    {
+        $route = new Route(
+            $this->getBaseRoute()->getPath() . '/translate/{langcode}/add',
+            [
+            '_form' => \Drupal\config_translation\Form\ConfigTranslationAddForm::class,
+            'plugin_id' => $this->getPluginId(),
       ],
-      ['_config_translation_form_access' => 'TRUE']
-    );
-    $this->processRoute($route);
-    return $route;
-  }
+            ['_config_translation_form_access' => 'TRUE']
+        );
+        $this->processRoute($route);
+        return $route;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEditRouteName(): string {
-    return 'config_translation.item.edit.' . $this->getBaseRouteName();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getEditRouteName(): string
+    {
+        return 'config_translation.item.edit.' . $this->getBaseRouteName();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEditRouteParameters() {
-    return $this->getAddRouteParameters();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getEditRouteParameters()
+    {
+        return $this->getAddRouteParameters();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEditRoute(): \Symfony\Component\Routing\Route {
-    $route = new Route(
-      $this->getBaseRoute()->getPath() . '/translate/{langcode}/edit',
-      [
-        '_form' => \Drupal\config_translation\Form\ConfigTranslationEditForm::class,
-        'plugin_id' => $this->getPluginId(),
+    /**
+     * {@inheritdoc}
+     */
+    public function getEditRoute(): \Symfony\Component\Routing\Route
+    {
+        $route = new Route(
+            $this->getBaseRoute()->getPath() . '/translate/{langcode}/edit',
+            [
+            '_form' => \Drupal\config_translation\Form\ConfigTranslationEditForm::class,
+            'plugin_id' => $this->getPluginId(),
       ],
-      ['_config_translation_form_access' => 'TRUE']
-    );
-    $this->processRoute($route);
-    return $route;
-  }
+            ['_config_translation_form_access' => 'TRUE']
+        );
+        $this->processRoute($route);
+        return $route;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDeleteRouteName(): string {
-    return 'config_translation.item.delete.' . $this->getBaseRouteName();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDeleteRouteName(): string
+    {
+        return 'config_translation.item.delete.' . $this->getBaseRouteName();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDeleteRouteParameters() {
-    return $this->getAddRouteParameters();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDeleteRouteParameters()
+    {
+        return $this->getAddRouteParameters();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDeleteRoute(): \Symfony\Component\Routing\Route {
-    $route = new Route(
-      $this->getBaseRoute()->getPath() . '/translate/{langcode}/delete',
-      [
-        '_form' => \Drupal\config_translation\Form\ConfigTranslationDeleteForm::class,
-        'plugin_id' => $this->getPluginId(),
+    /**
+     * {@inheritdoc}
+     */
+    public function getDeleteRoute(): \Symfony\Component\Routing\Route
+    {
+        $route = new Route(
+            $this->getBaseRoute()->getPath() . '/translate/{langcode}/delete',
+            [
+            '_form' => \Drupal\config_translation\Form\ConfigTranslationDeleteForm::class,
+            'plugin_id' => $this->getPluginId(),
       ],
-      ['_config_translation_form_access' => 'TRUE']
-    );
-    $this->processRoute($route);
-    return $route;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigNames() {
-    return $this->pluginDefinition['names'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addConfigName($name): void {
-    $this->pluginDefinition['names'][] = $name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight() {
-    return $this->pluginDefinition['weight'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function populateFromRouteMatch(RouteMatchInterface $route_match): void {
-    $this->langcode = $route_match->getParameter('langcode');
-
-    $event = new ConfigMapperPopulateEvent($this, $route_match);
-    $this->eventDispatcher->dispatch($event, ConfigTranslationEvents::POPULATE_MAPPER);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTypeLabel() {
-    return $this->getTitle();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcode(): string|false {
-    $langcodes = array_map($this->getLangcodeFromConfig(...), $this->getConfigNames());
-
-    if (count(array_unique($langcodes)) > 1) {
-      throw new ConfigMapperLanguageException('A config mapper can only contain configuration for a single language.');
+            ['_config_translation_form_access' => 'TRUE']
+        );
+        $this->processRoute($route);
+        return $route;
     }
 
-    return reset($langcodes);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcodeFromConfig($config_name) {
-    // Default to English if no language code was provided in the file.
-    // Although it is a best practice to include a language code, if the
-    // developer did not think about a multilingual use case, we fall back
-    // on assuming the file is English.
-    return $this->configFactory->get($config_name)->get('langcode') ?: 'en';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setLangcode($langcode): static {
-    $this->langcode = $langcode;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getConfigData(): array {
-    $config_data = [];
-    foreach ($this->getConfigNames() as $name) {
-      $config_data[$name] = $this->configFactory->getEditable($name)->get();
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfigNames()
+    {
+        return $this->pluginDefinition['names'];
     }
-    return $config_data;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasSchema(): bool {
-    foreach ($this->getConfigNames() as $name) {
-      if (!$this->typedConfigManager->hasConfigSchema($name)) {
-        return FALSE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function addConfigName($name): void
+    {
+        $this->pluginDefinition['names'][] = $name;
     }
-    return TRUE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasTranslatable(): bool {
-    foreach ($this->getConfigNames() as $name) {
-      if ($this->configMapperManager->hasTranslatable($name)) {
-        return TRUE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getWeight()
+    {
+        return $this->pluginDefinition['weight'];
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hasTranslation(LanguageInterface $language): bool {
-    foreach ($this->getConfigNames() as $name) {
-      if ($this->localeConfigManager->hasTranslation($name, $language->getId())) {
-        return TRUE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function populateFromRouteMatch(RouteMatchInterface $route_match): void
+    {
+        $this->langcode = $route_match->getParameter('langcode');
+
+        $event = new ConfigMapperPopulateEvent($this, $route_match);
+        $this->eventDispatcher->dispatch($event, ConfigTranslationEvents::POPULATE_MAPPER);
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTypeName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Settings');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTypeLabel()
+    {
+        return $this->getTitle();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOperations(): array {
-    return [
-      'translate' => [
-        'title' => $this->t('Translate'),
-        'url' => Url::fromRoute($this->getOverviewRouteName(), $this->getOverviewRouteParameters()),
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcode(): string|false
+    {
+        $langcodes = array_map($this->getLangcodeFromConfig(...), $this->getConfigNames());
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextualLinkGroup(): null {
-    return NULL;
-  }
+        if (count(array_unique($langcodes)) > 1) {
+            throw new ConfigMapperLanguageException('A config mapper can only contain configuration for a single language.');
+        }
+
+        return reset($langcodes);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcodeFromConfig($config_name)
+    {
+        // Default to English if no language code was provided in the file.
+        // Although it is a best practice to include a language code, if the
+        // developer did not think about a multilingual use case, we fall back
+        // on assuming the file is English.
+        return $this->configFactory->get($config_name)->get('langcode') ?: 'en';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLangcode($langcode): static
+    {
+        $this->langcode = $langcode;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getConfigData(): array
+    {
+        $config_data = [];
+        foreach ($this->getConfigNames() as $name) {
+            $config_data[$name] = $this->configFactory->getEditable($name)->get();
+        }
+        return $config_data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasSchema(): bool
+    {
+        foreach ($this->getConfigNames() as $name) {
+            if (!$this->typedConfigManager->hasConfigSchema($name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasTranslatable(): bool
+    {
+        foreach ($this->getConfigNames() as $name) {
+            if ($this->configMapperManager->hasTranslatable($name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasTranslation(LanguageInterface $language): bool
+    {
+        foreach ($this->getConfigNames() as $name) {
+            if ($this->localeConfigManager->hasTranslation($name, $language->getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTypeName(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Settings');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOperations(): array
+    {
+        return [
+          'translate' => [
+            'title' => $this->t('Translate'),
+            'url' => Url::fromRoute($this->getOverviewRouteName(), $this->getOverviewRouteParameters()),
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextualLinkGroup(): null
+    {
+        return null;
+    }
 
 }

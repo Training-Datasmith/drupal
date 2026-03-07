@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database;
 
 /**
@@ -14,64 +16,69 @@ namespace Drupal\Core\Database;
  *
  * @see \Drupal\Core\Database\Connection::startTransaction()
  */
-class Transaction {
+class Transaction
+{
+    public function __construct(
+        protected readonly Connection $connection,
+        protected readonly string $name,
+        protected readonly string $id,
+    ) {
+        // Transactions rely on objects being destroyed in order to be committed.
+        // PHP makes no guarantee about the order in which objects are destroyed so
+        // ensure all transactions are committed on shutdown.
+        Database::commitAllOnShutdown();
+    }
 
-  public function __construct(
-    protected readonly Connection $connection,
-    protected readonly string $name,
-    protected readonly string $id,
-  ) {
-    // Transactions rely on objects being destroyed in order to be committed.
-    // PHP makes no guarantee about the order in which objects are destroyed so
-    // ensure all transactions are committed on shutdown.
-    Database::commitAllOnShutdown();
-  }
+    /**
+     * Destructs the object.
+     *
+     * If the transaction is still active at this stage, and depending on the
+     * state of the transaction stack, this leads to a COMMIT (for a root item)
+     * or to a RELEASE SAVEPOINT (for a savepoint item) executed on the database.
+     */
+    public function __destruct()
+    {
+        $this->connection->transactionManager()->purge($this->name, $this->id);
+    }
 
-  /**
-   * Destructs the object.
-   *
-   * If the transaction is still active at this stage, and depending on the
-   * state of the transaction stack, this leads to a COMMIT (for a root item)
-   * or to a RELEASE SAVEPOINT (for a savepoint item) executed on the database.
-   */
-  public function __destruct() {
-    $this->connection->transactionManager()->purge($this->name, $this->id);
-  }
+    /**
+     * Prevent transactions from being unserialized.
+     */
+    public function __wakeup(): void
+    {
+        throw new \BadMethodCallException('Cannot unserialize ' . static::class);
+    }
 
-  /**
-   * Prevent transactions from being unserialized.
-   */
-  public function __wakeup(): void {
-    throw new \BadMethodCallException('Cannot unserialize ' . static::class);
-  }
+    /**
+     * Retrieves the name of the transaction or savepoint.
+     */
+    public function name(): string
+    {
+        return $this->name;
+    }
 
-  /**
-   * Retrieves the name of the transaction or savepoint.
-   */
-  public function name(): string {
-    return $this->name;
-  }
+    /**
+     * Returns the transaction to the parent nesting level.
+     *
+     * Depending on the state of the transaction stack, this leads to a COMMIT
+     * operation (for a root item), or to a RELEASE SAVEPOINT operation (for a
+     * savepoint item) executed on the database.
+     */
+    public function commitOrRelease(): void
+    {
+        $this->connection->transactionManager()->unpile($this->name, $this->id);
+    }
 
-  /**
-   * Returns the transaction to the parent nesting level.
-   *
-   * Depending on the state of the transaction stack, this leads to a COMMIT
-   * operation (for a root item), or to a RELEASE SAVEPOINT operation (for a
-   * savepoint item) executed on the database.
-   */
-  public function commitOrRelease(): void {
-    $this->connection->transactionManager()->unpile($this->name, $this->id);
-  }
-
-  /**
-   * Rolls back the transaction.
-   *
-   * Depending on the state of the transaction stack, this leads to a ROLLBACK
-   * operation (for a root item), or to a ROLLBACK TO SAVEPOINT + a RELEASE
-   * SAVEPOINT operations (for a savepoint item) executed on the database.
-   */
-  public function rollBack(): void {
-    $this->connection->transactionManager()->rollback($this->name, $this->id);
-  }
+    /**
+     * Rolls back the transaction.
+     *
+     * Depending on the state of the transaction stack, this leads to a ROLLBACK
+     * operation (for a root item), or to a ROLLBACK TO SAVEPOINT + a RELEASE
+     * SAVEPOINT operations (for a savepoint item) executed on the database.
+     */
+    public function rollBack(): void
+    {
+        $this->connection->transactionManager()->rollback($this->name, $this->id);
+    }
 
 }

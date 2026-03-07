@@ -22,9 +22,9 @@ use Drupal\layout_builder\Plugin\Derivative\FieldBlockDeriver;
  * @see layout_builder_plugin_filter_block__block_ui_alter()
  */
 #[Block(
-  id: "field_block_test",
-  deriver: FieldBlockDeriver::class
+    id: 'field_block_test',
+    deriver: FieldBlockDeriver::class
 )]
-class FieldBlock extends LayoutBuilderFieldBlock {
-
+class FieldBlock extends LayoutBuilderFieldBlock
+{
 }

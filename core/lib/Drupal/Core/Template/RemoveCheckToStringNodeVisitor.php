@@ -17,40 +17,43 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  * objects when Drupal's default SandboxPolicy is active. Therefore, Twig's
  * SandboxExtension checks are unnecessary.
  */
-final class RemoveCheckToStringNodeVisitor implements NodeVisitorInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function enterNode(Node $node, Environment $env): Node {
-    if ($node instanceof CheckToStringNode) {
-      // Replace CheckToStringNode with the faster equivalent, __toString is an
-      // allowed method so any checking of __toString on a per-object basis is
-      // performance overhead.
-      $new = new TwigSimpleCheckToStringNode($node->getNode('expr'));
-      // @todo https://www.drupal.org/project/drupal/issues/3488584 Update for
-      //   Twig 4 as the spread attribute has been removed there.
-      if ($node->hasAttribute('spread')) {
-        $new->setAttribute('spread', $node->getAttribute('spread'));
-      }
-      return $new;
+final class RemoveCheckToStringNodeVisitor implements NodeVisitorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function enterNode(Node $node, Environment $env): Node
+    {
+        if ($node instanceof CheckToStringNode) {
+            // Replace CheckToStringNode with the faster equivalent, __toString is an
+            // allowed method so any checking of __toString on a per-object basis is
+            // performance overhead.
+            $new = new TwigSimpleCheckToStringNode($node->getNode('expr'));
+            // @todo https://www.drupal.org/project/drupal/issues/3488584 Update for
+            //   Twig 4 as the spread attribute has been removed there.
+            if ($node->hasAttribute('spread')) {
+                $new->setAttribute('spread', $node->getAttribute('spread'));
+            }
+            return $new;
+        }
+        return $node;
     }
-    return $node;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function leaveNode(Node $node, Environment $env): \Twig\Node\Node {
-    return $node;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    {
+        return $node;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPriority(): int {
-    // Runs after sandbox visitor.
-    return 1;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPriority(): int
+    {
+        // Runs after sandbox visitor.
+        return 1;
+    }
 
 }

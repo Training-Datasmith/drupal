@@ -14,27 +14,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('menu_ui')]
 #[RunTestsInSeparateProcesses]
-class MenuUninstallTest extends BrowserTestBase {
+class MenuUninstallTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['menu_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['menu_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests Menu uninstall.
+     */
+    public function testMenuUninstall(): void
+    {
+        \Drupal::service('module_installer')->uninstall(['menu_ui']);
 
-  /**
-   * Tests Menu uninstall.
-   */
-  public function testMenuUninstall(): void {
-    \Drupal::service('module_installer')->uninstall(['menu_ui']);
+        \Drupal::entityTypeManager()->getStorage('menu')->resetCache(['admin']);
 
-    \Drupal::entityTypeManager()->getStorage('menu')->resetCache(['admin']);
-
-    $this->assertNotEmpty(Menu::load('admin'), 'The \'admin\' menu still exists after uninstalling Menu UI module.');
-  }
+        $this->assertNotEmpty(Menu::load('admin'), 'The \'admin\' menu still exists after uninstalling Menu UI module.');
+    }
 
 }

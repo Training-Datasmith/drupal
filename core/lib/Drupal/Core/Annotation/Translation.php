@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Annotation;
 
 use Drupal\Component\Annotation\AnnotationBase;
@@ -50,44 +52,46 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @Annotation
  */
-class Translation extends AnnotationBase {
+class Translation extends AnnotationBase
+{
+    /**
+     * The string translation object.
+     */
+    protected \Drupal\Core\StringTranslation\TranslatableMarkup $translation;
 
-  /**
-   * The string translation object.
-   */
-  protected \Drupal\Core\StringTranslation\TranslatableMarkup $translation;
-
-  /**
-   * Constructs a new class instance.
-   *
-   * Parses values passed into this class through the t() function in Drupal and
-   * handles an optional context for the string.
-   *
-   * @param array $values
-   *   Possible array keys:
-   *   - value (required): the string that is to be translated.
-   *   - arguments (optional): an array with placeholder replacements, keyed by
-   *     placeholder.
-   *   - context (optional): a string that describes the context of "value".
-   */
-  public function __construct(array $values) {
-    $string = $values['value'];
-    $arguments = $values['arguments'] ?? [];
-    $options = [];
-    if (!empty($values['context'])) {
-      $options = [
-        'context' => $values['context'],
-      ];
+    /**
+     * Constructs a new class instance.
+     *
+     * Parses values passed into this class through the t() function in Drupal and
+     * handles an optional context for the string.
+     *
+     * @param array $values
+     *   Possible array keys:
+     *   - value (required): the string that is to be translated.
+     *   - arguments (optional): an array with placeholder replacements, keyed by
+     *     placeholder.
+     *   - context (optional): a string that describes the context of "value".
+     */
+    public function __construct(array $values)
+    {
+        $string = $values['value'];
+        $arguments = $values['arguments'] ?? [];
+        $options = [];
+        if (!empty($values['context'])) {
+            $options = [
+              'context' => $values['context'],
+            ];
+        }
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $this->translation = new TranslatableMarkup($string, $arguments, $options);
     }
-    // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    $this->translation = new TranslatableMarkup($string, $arguments, $options);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get() {
-    return $this->translation;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get()
+    {
+        return $this->translation;
+    }
 
 }

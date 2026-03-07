@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -10,14 +12,14 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-interface CommandWithAttachedAssetsInterface {
-
-  /**
-   * Gets the attached assets.
-   *
-   * @return \Drupal\Core\Asset\AttachedAssets|null
-   *   The attached assets for this command.
-   */
-  public function getAttachedAssets();
+interface CommandWithAttachedAssetsInterface
+{
+    /**
+     * Gets the attached assets.
+     *
+     * @return \Drupal\Core\Asset\AttachedAssets|null
+     *   The attached assets for this command.
+     */
+    public function getAttachedAssets();
 
 }

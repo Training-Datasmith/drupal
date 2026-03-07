@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -12,37 +13,39 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\system\Plugin\Block\SystemMenuBlock
  */
-class SystemMenuBlock extends DeriverBase implements ContainerDeriverInterface {
-
-  /**
-   * Constructs new SystemMenuBlock.
-   *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $menuStorage
-   *   The menu storage.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $menuStorage)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get('entity_type.manager')->getStorage('menu')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    foreach ($this->menuStorage->loadMultiple() as $menu => $entity) {
-      $this->derivatives[$menu] = $base_plugin_definition;
-      $this->derivatives[$menu]['admin_label'] = $entity->label();
-      $this->derivatives[$menu]['config_dependencies']['config'] = [$entity->getConfigDependencyName()];
+class SystemMenuBlock extends DeriverBase implements ContainerDeriverInterface
+{
+    /**
+     * Constructs new SystemMenuBlock.
+     *
+     * @param \Drupal\Core\Entity\EntityStorageInterface $menuStorage
+     *   The menu storage.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $menuStorage)
+    {
     }
-    return $this->derivatives;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get('entity_type.manager')->getStorage('menu')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        foreach ($this->menuStorage->loadMultiple() as $menu => $entity) {
+            $this->derivatives[$menu] = $base_plugin_definition;
+            $this->derivatives[$menu]['admin_label'] = $entity->label();
+            $this->derivatives[$menu]['config_dependencies']['config'] = [$entity->getConfigDependencyName()];
+        }
+        return $this->derivatives;
+    }
 
 }

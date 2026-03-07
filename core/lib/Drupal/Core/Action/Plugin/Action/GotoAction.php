@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Action\Plugin\Action;
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\Utility\UnroutedUrlAssemblerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -19,98 +19,104 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * Redirects to a different URL.
  */
 #[Action(
-  id: 'action_goto_action',
-  label: new TranslatableMarkup('Redirect to URL'),
-  type: 'system'
+    id: 'action_goto_action',
+    label: new TranslatableMarkup('Redirect to URL'),
+    type: 'system'
 )]
-class GotoAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a GotoAction object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
-   *   The tempstore factory.
-   * @param \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler
-   *   The unrouted URL assembler service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function execute($object = NULL): void {
-    $url = $this->configuration['url'];
-    // Leave external URLs unchanged, and assemble others as absolute URLs
-    // relative to the site's base URL.
-    if (!UrlHelper::isExternal($url)) {
-      $parts = UrlHelper::parse($url);
-      // @todo '<front>' is valid input for BC reasons, may be removed by
-      //   https://www.drupal.org/node/2421941
-      if ($parts['path'] === '<front>') {
-        $parts['path'] = '';
-      }
-      $uri = 'base:' . $parts['path'];
-      $options = [
-        'query' => $parts['query'],
-        'fragment' => $parts['fragment'],
-        'absolute' => TRUE,
-      ];
-      // Treat this as if it's user input of a path relative to the site's
-      // base URL.
-      $url = $this->unroutedUrlAssembler->assemble($uri, $options);
+class GotoAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a GotoAction object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
+     *   The tempstore factory.
+     * @param \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler
+     *   The unrouted URL assembler service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    $response = new RedirectResponse($url);
-    $listener = function ($event) use ($response): void {
-      $event->setResponse($response);
-    };
-    // Add the listener to the event dispatcher.
-    $this->dispatcher->addListener(KernelEvents::RESPONSE, $listener);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'url' => '',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function execute($object = null): void
+    {
+        $url = $this->configuration['url'];
+        // Leave external URLs unchanged, and assemble others as absolute URLs
+        // relative to the site's base URL.
+        if (!UrlHelper::isExternal($url)) {
+            $parts = UrlHelper::parse($url);
+            // @todo '<front>' is valid input for BC reasons, may be removed by
+            //   https://www.drupal.org/node/2421941
+            if ($parts['path'] === '<front>') {
+                $parts['path'] = '';
+            }
+            $uri = 'base:' . $parts['path'];
+            $options = [
+              'query' => $parts['query'],
+              'fragment' => $parts['fragment'],
+              'absolute' => true,
+            ];
+            // Treat this as if it's user input of a path relative to the site's
+            // base URL.
+            $url = $this->unroutedUrlAssembler->assemble($uri, $options);
+        }
+        $response = new RedirectResponse($url);
+        $listener = function ($event) use ($response): void {
+            $event->setResponse($response);
+        };
+        // Add the listener to the event dispatcher.
+        $this->dispatcher->addListener(KernelEvents::RESPONSE, $listener);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $form['url'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('URL'),
-      '#description' => $this->t('The URL to which the user should be redirected. This can be an internal URL like /node/1234 or an external URL like @url.', ['@url' => 'https://example.com']),
-      '#default_value' => $this->configuration['url'],
-      '#required' => TRUE,
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'url' => '',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $this->configuration['url'] = $form_state->getValue('url');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    {
+        $form['url'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('URL'),
+          '#description' => $this->t('The URL to which the user should be redirected. This can be an internal URL like /node/1234 or an external URL like @url.', ['@url' => 'https://example.com']),
+          '#default_value' => $this->configuration['url'],
+          '#required' => true,
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $access = AccessResult::allowed();
-    return $return_as_object ? $access : $access->isAllowed();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->configuration['url'] = $form_state->getValue('url');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        $access = AccessResult::allowed();
+        return $return_as_object ? $access : $access->isAllowed();
+    }
 
 }

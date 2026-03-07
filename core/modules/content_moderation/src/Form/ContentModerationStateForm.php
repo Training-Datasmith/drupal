@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -11,36 +13,37 @@ use Drupal\workflows\StateInterface;
  *
  * @see \Drupal\content_moderation\Plugin\WorkflowType\ContentModeration
  */
-class ContentModerationStateForm extends WorkflowTypeStateFormBase {
+class ContentModerationStateForm extends WorkflowTypeStateFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state, ?StateInterface $state = null): array
+    {
+        /** @var \Drupal\content_moderation\ContentModerationState $state */
+        $state = $form_state->get('state');
+        $is_required_state = isset($state) && in_array($state->id(), $this->workflowType->getRequiredStates(), true);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state, ?StateInterface $state = NULL): array {
-    /** @var \Drupal\content_moderation\ContentModerationState $state */
-    $state = $form_state->get('state');
-    $is_required_state = isset($state) && in_array($state->id(), $this->workflowType->getRequiredStates(), TRUE);
+        $form = [];
+        $form['published'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Published'),
+          '#description' => $this->t('When content reaches this state it should be published.'),
+          '#default_value' => isset($state) && $state->isPublishedState(),
+          '#disabled' => $is_required_state,
+        ];
 
-    $form = [];
-    $form['published'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Published'),
-      '#description' => $this->t('When content reaches this state it should be published.'),
-      '#default_value' => isset($state) && $state->isPublishedState(),
-      '#disabled' => $is_required_state,
-    ];
-
-    $form['default_revision'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Default revision'),
-      '#description' => $this->t('When content reaches this state it should be made the default revision; this is implied for published states.'),
-      '#default_value' => isset($state) && $state->isDefaultRevisionState(),
-      '#disabled' => $is_required_state,
-      // @todo Add form #state to force "make default" on when "published" is
-      // on for a state.
-      // @see https://www.drupal.org/node/2645614
-    ];
-    return $form;
-  }
+        $form['default_revision'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Default revision'),
+          '#description' => $this->t('When content reaches this state it should be made the default revision; this is implied for published states.'),
+          '#default_value' => isset($state) && $state->isDefaultRevisionState(),
+          '#disabled' => $is_required_state,
+          // @todo Add form #state to force "make default" on when "published" is
+          // on for a state.
+          // @see https://www.drupal.org/node/2645614
+        ];
+        return $form;
+    }
 
 }

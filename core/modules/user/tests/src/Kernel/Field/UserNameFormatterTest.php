@@ -16,84 +16,87 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('field')]
 #[RunTestsInSeparateProcesses]
-class UserNameFormatterTest extends KernelTestBase {
+class UserNameFormatterTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['field', 'user', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['field', 'user', 'system'];
+    /**
+     * @var string
+     */
+    protected $entityType;
 
-  /**
-   * @var string
-   */
-  protected $entityType;
+    /**
+     * @var string
+     */
+    protected $bundle;
 
-  /**
-   * @var string
-   */
-  protected $bundle;
+    /**
+     * @var string
+     */
+    protected $fieldName;
 
-  /**
-   * @var string
-   */
-  protected $fieldName;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installConfig(['field']);
+        $this->installEntitySchema('user');
 
-    $this->installConfig(['field']);
-    $this->installEntitySchema('user');
+        $this->entityType = 'user';
+        $this->bundle = $this->entityType;
+        $this->fieldName = 'name';
+    }
 
-    $this->entityType = 'user';
-    $this->bundle = $this->entityType;
-    $this->fieldName = 'name';
-  }
+    /**
+     * Renders fields of a given entity with a given display.
+     *
+     * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+     *   The entity object with attached fields to render.
+     * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+     *   The display to render the fields in.
+     *
+     * @return string
+     *   The rendered entity fields.
+     */
+    protected function renderEntityFields(FieldableEntityInterface $entity, EntityViewDisplayInterface $display)
+    {
+        $content = $display->build($entity);
+        $content = $this->render($content);
+        return $content;
+    }
 
-  /**
-   * Renders fields of a given entity with a given display.
-   *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
-   *   The entity object with attached fields to render.
-   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
-   *   The display to render the fields in.
-   *
-   * @return string
-   *   The rendered entity fields.
-   */
-  protected function renderEntityFields(FieldableEntityInterface $entity, EntityViewDisplayInterface $display) {
-    $content = $display->build($entity);
-    $content = $this->render($content);
-    return $content;
-  }
+    /**
+     * Tests the formatter output.
+     */
+    public function testFormatter(): void
+    {
+        $user = User::create([
+          'name' => 'test name',
+        ]);
+        $user->save();
 
-  /**
-   * Tests the formatter output.
-   */
-  public function testFormatter(): void {
-    $user = User::create([
-      'name' => 'test name',
-    ]);
-    $user->save();
+        $result = $user->{$this->fieldName}->view(['type' => 'user_name']);
+        $this->assertEquals('username', $result[0]['#theme']);
+        $this->assertEquals(spl_object_hash($user), spl_object_hash($result[0]['#account']));
 
-    $result = $user->{$this->fieldName}->view(['type' => 'user_name']);
-    $this->assertEquals('username', $result[0]['#theme']);
-    $this->assertEquals(spl_object_hash($user), spl_object_hash($result[0]['#account']));
+        $result = $user->{$this->fieldName}->view(['type' => 'user_name', 'settings' => ['link_to_entity' => false]]);
+        $this->assertEquals($user->getDisplayName(), $result[0]['#markup']);
 
-    $result = $user->{$this->fieldName}->view(['type' => 'user_name', 'settings' => ['link_to_entity' => FALSE]]);
-    $this->assertEquals($user->getDisplayName(), $result[0]['#markup']);
+        $user = User::getAnonymousUser();
 
-    $user = User::getAnonymousUser();
+        $result = $user->{$this->fieldName}->view(['type' => 'user_name']);
+        $this->assertEquals('username', $result[0]['#theme']);
+        $this->assertEquals(spl_object_hash($user), spl_object_hash($result[0]['#account']));
 
-    $result = $user->{$this->fieldName}->view(['type' => 'user_name']);
-    $this->assertEquals('username', $result[0]['#theme']);
-    $this->assertEquals(spl_object_hash($user), spl_object_hash($result[0]['#account']));
-
-    $result = $user->{$this->fieldName}->view(['type' => 'user_name', 'settings' => ['link_to_entity' => FALSE]]);
-    $this->assertEquals($user->getDisplayName(), $result[0]['#markup']);
-    $this->assertEquals($this->config('user.settings')->get('anonymous'), $result[0]['#markup']);
-  }
+        $result = $user->{$this->fieldName}->view(['type' => 'user_name', 'settings' => ['link_to_entity' => false]]);
+        $this->assertEquals($user->getDisplayName(), $result[0]['#markup']);
+        $this->assertEquals($this->config('user.settings')->get('anonymous'), $result[0]['#markup']);
+    }
 
 }

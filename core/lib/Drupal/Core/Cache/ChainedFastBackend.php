@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -47,261 +49,275 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorInterface {
+class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorInterface
+{
+    /**
+     * Cache key prefix for the bin-specific entry to track the last write.
+     */
+    public const LAST_WRITE_TIMESTAMP_PREFIX = 'last_write_timestamp_';
 
-  /**
-   * Cache key prefix for the bin-specific entry to track the last write.
-   */
-  const LAST_WRITE_TIMESTAMP_PREFIX = 'last_write_timestamp_';
+    protected string $bin;
 
-  protected string $bin;
+    /**
+     * The time at which the last write to this cache bin happened.
+     *
+     * @var float
+     */
+    protected $lastWriteTimestamp;
 
-  /**
-   * The time at which the last write to this cache bin happened.
-   *
-   * @var float
-   */
-  protected $lastWriteTimestamp;
+    /**
+     * Constructs a ChainedFastBackend object.
+     *
+     * @param \Drupal\Core\Cache\CacheBackendInterface $consistentBackend
+     *   The consistent cache backend.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $fastBackend
+     *   The fast cache backend.
+     * @param string $bin
+     *   The cache bin for which the object is created.
+     */
+    public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $consistentBackend, protected \Drupal\Core\Cache\CacheBackendInterface $fastBackend, string $bin)
+    {
+        $this->bin = 'cache_' . $bin;
+        $this->lastWriteTimestamp = null;
+    }
 
-  /**
-   * Constructs a ChainedFastBackend object.
-   *
-   * @param \Drupal\Core\Cache\CacheBackendInterface $consistentBackend
-   *   The consistent cache backend.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $fastBackend
-   *   The fast cache backend.
-   * @param string $bin
-   *   The cache bin for which the object is created.
-   */
-  public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $consistentBackend, protected \Drupal\Core\Cache\CacheBackendInterface $fastBackend, string $bin) {
-    $this->bin = 'cache_' . $bin;
-    $this->lastWriteTimestamp = NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get($cid, $allow_invalid = false): mixed
+    {
+        $cids = [$cid];
+        $cache = $this->getMultiple($cids, $allow_invalid);
+        return reset($cache);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($cid, $allow_invalid = FALSE): mixed {
-    $cids = [$cid];
-    $cache = $this->getMultiple($cids, $allow_invalid);
-    return reset($cache);
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getMultiple(&$cids, $allow_invalid = false): array
+    {
+        $cids_copy = $cids;
+        $cache = [];
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
-    $cids_copy = $cids;
-    $cache = [];
+        // If we can determine the time at which the last write to the consistent
+        // backend occurred (we might not be able to if it has been recently
+        // flushed/restarted), then we can use that to validate items from the fast
+        // backend, so try to get those first. Otherwise, we can't assume that
+        // anything in the fast backend is valid, so don't even bother fetching
+        // from there.
+        $last_write_timestamp = $this->getLastWriteTimestamp();
 
-    // If we can determine the time at which the last write to the consistent
-    // backend occurred (we might not be able to if it has been recently
-    // flushed/restarted), then we can use that to validate items from the fast
-    // backend, so try to get those first. Otherwise, we can't assume that
-    // anything in the fast backend is valid, so don't even bother fetching
-    // from there.
-    $last_write_timestamp = $this->getLastWriteTimestamp();
+        // Don't bother to either read from or write to the fast backend if the last
+        // write timestamp is in the future - it is always set with an additional
+        // grace period for this reason. This reduces the likelihood of a cache
+        // stampede on the fast backend when the consistent backend is being written
+        // to frequently. It can also reduce the storage (usually memory)
+        // requirement of the fast backend due to layered caching - e.g. when a
+        // higher level cache is warm, the lower level cache items that are used to
+        // build it won't be requested. Once the grace period has passed, the fast
+        // backend will begin to take over from the consistent backend again.
+        $compare = round(microtime(true), 3);
 
-    // Don't bother to either read from or write to the fast backend if the last
-    // write timestamp is in the future - it is always set with an additional
-    // grace period for this reason. This reduces the likelihood of a cache
-    // stampede on the fast backend when the consistent backend is being written
-    // to frequently. It can also reduce the storage (usually memory)
-    // requirement of the fast backend due to layered caching - e.g. when a
-    // higher level cache is warm, the lower level cache items that are used to
-    // build it won't be requested. Once the grace period has passed, the fast
-    // backend will begin to take over from the consistent backend again.
-    $compare = round(microtime(TRUE), 3);
+        if ($last_write_timestamp && $compare > $last_write_timestamp) {
+            // Items in the fast backend might be invalid based on their timestamp,
+            // but we can't check the timestamp prior to getting the item, which
+            // includes unserializing it. However, unserializing an invalid item can
+            // throw an exception. For example, a __wakeup() implementation that
+            // receives object properties containing references to code or data that
+            // no longer exists in the application's current state.
+            //
+            // Unserializing invalid data, whether it throws an exception or not, is
+            // a waste of time, but we only incur it while a cache invalidation has
+            // not yet finished propagating to all the fast backend instances.
+            //
+            // Most cache backend implementations should not wrap their internal
+            // get() implementations with a try/catch, because they have no reason to
+            // assume that their data is invalid, and doing so would mask
+            // unserialization errors of valid data. We do so here, only because the
+            // fast backend is non-authoritative, and after discarding its
+            // exceptions, we proceed to check the consistent (authoritative) backend
+            // and allow exceptions from that to bubble up.
+            try {
+                $items = $this->fastBackend->getMultiple($cids, $allow_invalid);
+            } catch (\Exception) {
+                $cids = $cids_copy;
+                $items = [];
+            }
 
-    if ($last_write_timestamp && $compare > $last_write_timestamp) {
-      // Items in the fast backend might be invalid based on their timestamp,
-      // but we can't check the timestamp prior to getting the item, which
-      // includes unserializing it. However, unserializing an invalid item can
-      // throw an exception. For example, a __wakeup() implementation that
-      // receives object properties containing references to code or data that
-      // no longer exists in the application's current state.
-      //
-      // Unserializing invalid data, whether it throws an exception or not, is
-      // a waste of time, but we only incur it while a cache invalidation has
-      // not yet finished propagating to all the fast backend instances.
-      //
-      // Most cache backend implementations should not wrap their internal
-      // get() implementations with a try/catch, because they have no reason to
-      // assume that their data is invalid, and doing so would mask
-      // unserialization errors of valid data. We do so here, only because the
-      // fast backend is non-authoritative, and after discarding its
-      // exceptions, we proceed to check the consistent (authoritative) backend
-      // and allow exceptions from that to bubble up.
-      try {
-        $items = $this->fastBackend->getMultiple($cids, $allow_invalid);
-      }
-      catch (\Exception) {
-        $cids = $cids_copy;
-        $items = [];
-      }
-
-      // Even if items were successfully fetched from the fast backend, they
-      // are potentially invalid if older than the last time the bin was
-      // written to in the consistent backend, so only keep ones that aren't.
-      foreach ($items as $item) {
-        if ($item->created < $last_write_timestamp) {
-          $cids[array_search($item->cid, $cids_copy)] = $item->cid;
+            // Even if items were successfully fetched from the fast backend, they
+            // are potentially invalid if older than the last time the bin was
+            // written to in the consistent backend, so only keep ones that aren't.
+            foreach ($items as $item) {
+                if ($item->created < $last_write_timestamp) {
+                    $cids[array_search($item->cid, $cids_copy)] = $item->cid;
+                } else {
+                    $cache[$item->cid] = $item;
+                }
+            }
         }
-        else {
-          $cache[$item->cid] = $item;
+
+        // If there were any cache entries that were not available in the fast
+        // backend, retrieve them from the consistent backend and store them in the
+        // fast one.
+        if ($cids) {
+            foreach ($this->consistentBackend->getMultiple($cids, $allow_invalid) as $item) {
+                $cache[$item->cid] = $item;
+                // Only write back to the fast backend if the created time will be later
+                // than $last_write_timestamp the next time it is retrieved, to
+                // avoid wasted writes.
+                if ((!$allow_invalid || $item->valid) && $compare > $last_write_timestamp) {
+                    $this->fastBackend->set($item->cid, $item->data, $item->expire, $item->tags);
+                }
+            }
         }
-      }
+
+        return $cache;
     }
 
-    // If there were any cache entries that were not available in the fast
-    // backend, retrieve them from the consistent backend and store them in the
-    // fast one.
-    if ($cids) {
-      foreach ($this->consistentBackend->getMultiple($cids, $allow_invalid) as $item) {
-        $cache[$item->cid] = $item;
-        // Only write back to the fast backend if the created time will be later
-        // than $last_write_timestamp the next time it is retrieved, to
-        // avoid wasted writes.
-        if ((!$allow_invalid || $item->valid) && $compare > $last_write_timestamp) {
-          $this->fastBackend->set($item->cid, $item->data, $item->expire, $item->tags);
+    /**
+     * {@inheritdoc}
+     */
+    public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void
+    {
+        // Setting a cache item on the consistent backend requires invalidating the
+        // fast backend. In a cold cache situation, there can be thousands of cache
+        // sets. However, because each cache set invalidates every previous set,
+        // only the item(s) from the last one will be valid. Therefore, don't write
+        // to the fast backend, this avoids lock/write contention on the fast
+        // backend, for cache items which may not be requested immediately anyway,
+        // e.g. when higher level caches are warmed at the same time. The fast
+        // backend will be populated via the logic in ::get() instead when cache
+        // items are actually requested.
+        $this->consistentBackend->set($cid, $data, $expire, $tags);
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $items): void
+    {
+        $this->consistentBackend->setMultiple($items);
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid): void
+    {
+        $this->consistentBackend->deleteMultiple([$cid]);
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $cids): void
+    {
+        $this->consistentBackend->deleteMultiple($cids);
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll(): void
+    {
+        $this->consistentBackend->deleteAll();
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidate($cid): void
+    {
+        $this->invalidateMultiple([$cid]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateMultiple(array $cids): void
+    {
+        $this->consistentBackend->invalidateMultiple($cids);
+        $this->markAsOutdated();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags): void
+    {
+        if ($this->consistentBackend instanceof CacheTagsInvalidatorInterface) {
+            $this->consistentBackend->invalidateTags($tags);
         }
-      }
+        if ($this->fastBackend instanceof CacheTagsInvalidatorInterface) {
+            $this->fastBackend->invalidateTags($tags);
+        }
     }
 
-    return $cache;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
-    // Setting a cache item on the consistent backend requires invalidating the
-    // fast backend. In a cold cache situation, there can be thousands of cache
-    // sets. However, because each cache set invalidates every previous set,
-    // only the item(s) from the last one will be valid. Therefore, don't write
-    // to the fast backend, this avoids lock/write contention on the fast
-    // backend, for cache items which may not be requested immediately anyway,
-    // e.g. when higher level caches are warmed at the same time. The fast
-    // backend will be populated via the logic in ::get() instead when cache
-    // items are actually requested.
-    $this->consistentBackend->set($cid, $data, $expire, $tags);
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $items): void {
-    $this->consistentBackend->setMultiple($items);
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid): void {
-    $this->consistentBackend->deleteMultiple([$cid]);
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $cids): void {
-    $this->consistentBackend->deleteMultiple($cids);
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll(): void {
-    $this->consistentBackend->deleteAll();
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidate($cid): void {
-    $this->invalidateMultiple([$cid]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateMultiple(array $cids): void {
-    $this->consistentBackend->invalidateMultiple($cids);
-    $this->markAsOutdated();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateTags(array $tags): void {
-    if ($this->consistentBackend instanceof CacheTagsInvalidatorInterface) {
-      $this->consistentBackend->invalidateTags($tags);
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection(): void
+    {
+        $this->consistentBackend->garbageCollection();
+        $this->fastBackend->garbageCollection();
     }
-    if ($this->fastBackend instanceof CacheTagsInvalidatorInterface) {
-      $this->fastBackend->invalidateTags($tags);
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeBin(): void
+    {
+        $this->consistentBackend->removeBin();
+        $this->fastBackend->removeBin();
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection(): void {
-    $this->consistentBackend->garbageCollection();
-    $this->fastBackend->garbageCollection();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeBin(): void {
-    $this->consistentBackend->removeBin();
-    $this->fastBackend->removeBin();
-  }
-
-  /**
-   * @todo Document in https://www.drupal.org/node/2311945.
-   */
-  public function reset(): void {
-    $this->lastWriteTimestamp = NULL;
-  }
-
-  /**
-   * Gets the last write timestamp.
-   */
-  protected function getLastWriteTimestamp() {
-    if ($this->lastWriteTimestamp === NULL) {
-      $cache = $this->consistentBackend->get(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin);
-      $this->lastWriteTimestamp = $cache ? $cache->data : 0;
+    /**
+     * @todo Document in https://www.drupal.org/node/2311945.
+     */
+    public function reset(): void
+    {
+        $this->lastWriteTimestamp = null;
     }
-    return $this->lastWriteTimestamp;
-  }
 
-  /**
-   * Marks the fast cache bin as outdated because of a write.
-   */
-  protected function markAsOutdated() {
-    // Clocks on a single server can drift. Multiple servers may have slightly
-    // differing opinions about the current time. Given that, do not assume
-    // 'now' on this server is always later than our stored timestamp. Add one
-    // second to the current time each time we write it to the persistent cache
-    // and make sure it is always at least 1ms ahead of the current time. This
-    // somewhat protects against clock drift, while also reducing the number of
-    // persistent cache writes to one every second if this method is called
-    // multiple times during a request. Reads and writes from the fast cache
-    // are skipped when this timestamp is in the future, which also helps to
-    // avoid write contention on the fast cache.
-    $compare = round(microtime(TRUE) + .001, 3);
-    if ($compare > $this->getLastWriteTimestamp()) {
-      $now = round(microtime(TRUE) + 1, 3);
-      $this->lastWriteTimestamp = $now;
-      $this->consistentBackend->set(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin, $this->lastWriteTimestamp);
+    /**
+     * Gets the last write timestamp.
+     */
+    protected function getLastWriteTimestamp()
+    {
+        if ($this->lastWriteTimestamp === null) {
+            $cache = $this->consistentBackend->get(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin);
+            $this->lastWriteTimestamp = $cache ? $cache->data : 0;
+        }
+        return $this->lastWriteTimestamp;
     }
-  }
+
+    /**
+     * Marks the fast cache bin as outdated because of a write.
+     */
+    protected function markAsOutdated()
+    {
+        // Clocks on a single server can drift. Multiple servers may have slightly
+        // differing opinions about the current time. Given that, do not assume
+        // 'now' on this server is always later than our stored timestamp. Add one
+        // second to the current time each time we write it to the persistent cache
+        // and make sure it is always at least 1ms ahead of the current time. This
+        // somewhat protects against clock drift, while also reducing the number of
+        // persistent cache writes to one every second if this method is called
+        // multiple times during a request. Reads and writes from the fast cache
+        // are skipped when this timestamp is in the future, which also helps to
+        // avoid write contention on the fast cache.
+        $compare = round(microtime(true) + .001, 3);
+        if ($compare > $this->getLastWriteTimestamp()) {
+            $now = round(microtime(true) + 1, 3);
+            $this->lastWriteTimestamp = $now;
+            $this->consistentBackend->set(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin, $this->lastWriteTimestamp);
+        }
+    }
 
 }

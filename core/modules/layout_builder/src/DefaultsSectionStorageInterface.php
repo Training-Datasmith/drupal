@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder;
 
 use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
@@ -7,4 +9,6 @@ use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 /**
  * Defines an interface for an object that stores layout sections for defaults.
  */
-interface DefaultsSectionStorageInterface extends SupportAwareSectionStorageInterface, ThirdPartySettingsInterface, LayoutBuilderEnabledInterface, LayoutBuilderOverridableInterface {}
+interface DefaultsSectionStorageInterface extends SupportAwareSectionStorageInterface, ThirdPartySettingsInterface, LayoutBuilderEnabledInterface, LayoutBuilderOverridableInterface
+{
+}

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,57 +14,59 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  *
  * @internal
  */
-class ToolbarItemConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+class ToolbarItemConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    use PluginManagerDependentValidatorTrait;
 
-  use PluginManagerDependentValidatorTrait;
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \Symfony\Component\Validator\Exception\UnexpectedTypeException
+     *   Thrown when the given constraint is not supported by this validator.
+     */
+    public function validate($toolbar_item, Constraint $constraint): void
+    {
+        if (!$constraint instanceof ToolbarItemConstraint) {
+            throw new UnexpectedTypeException($constraint, __NAMESPACE__ . '\ToolbarItem');
+        }
 
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Symfony\Component\Validator\Exception\UnexpectedTypeException
-   *   Thrown when the given constraint is not supported by this validator.
-   */
-  public function validate($toolbar_item, Constraint $constraint): void {
-    if (!$constraint instanceof ToolbarItemConstraint) {
-      throw new UnexpectedTypeException($constraint, __NAMESPACE__ . '\ToolbarItem');
+        if ($toolbar_item === null) {
+            return;
+        }
+
+        if (!static::isValidToolbarItem($toolbar_item)) {
+            $this->context->buildViolation($constraint->message)
+              ->setParameter('%toolbar_item', $toolbar_item)
+              ->setInvalidValue($toolbar_item)
+              ->addViolation();
+        }
     }
 
-    if ($toolbar_item === NULL) {
-      return;
-    }
+    /**
+     * Validates the given toolbar item.
+     *
+     * @param string $toolbar_item
+     *   A toolbar item as expected by CKEditor 5.
+     *
+     * @return bool
+     *   Whether the given toolbar item is valid or not.
+     */
+    protected function isValidToolbarItem(string $toolbar_item): bool
+    {
+        // Special case: the toolbar group separator.
+        // @see https://ckeditor.com/docs/ckeditor5/latest/features/toolbar/toolbar.html#separating-toolbar-items
+        if ($toolbar_item === '|') {
+            return true;
+        }
 
-    if (!static::isValidToolbarItem($toolbar_item)) {
-      $this->context->buildViolation($constraint->message)
-        ->setParameter('%toolbar_item', $toolbar_item)
-        ->setInvalidValue($toolbar_item)
-        ->addViolation();
-    }
-  }
+        // Special case: the breakpoint separator.
+        // @see https://ckeditor.com/docs/ckeditor5/latest/features/toolbar/toolbar.html#explicit-wrapping-breakpoint
+        if ($toolbar_item === '-') {
+            return true;
+        }
 
-  /**
-   * Validates the given toolbar item.
-   *
-   * @param string $toolbar_item
-   *   A toolbar item as expected by CKEditor 5.
-   *
-   * @return bool
-   *   Whether the given toolbar item is valid or not.
-   */
-  protected function isValidToolbarItem(string $toolbar_item): bool {
-    // Special case: the toolbar group separator.
-    // @see https://ckeditor.com/docs/ckeditor5/latest/features/toolbar/toolbar.html#separating-toolbar-items
-    if ($toolbar_item === '|') {
-      return TRUE;
+        $available_toolbar_items = array_keys($this->pluginManager->getToolbarItems());
+        return in_array($toolbar_item, $available_toolbar_items, true);
     }
-
-    // Special case: the breakpoint separator.
-    // @see https://ckeditor.com/docs/ckeditor5/latest/features/toolbar/toolbar.html#explicit-wrapping-breakpoint
-    if ($toolbar_item === '-') {
-      return TRUE;
-    }
-
-    $available_toolbar_items = array_keys($this->pluginManager->getToolbarItems());
-    return in_array($toolbar_item, $available_toolbar_items, TRUE);
-  }
 
 }

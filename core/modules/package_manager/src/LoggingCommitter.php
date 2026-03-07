@@ -21,30 +21,32 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-class LoggingCommitter implements CommitterInterface {
-
-  public function __construct(
-    private readonly CommitterInterface $decorated,
-    private readonly ConfigFactoryInterface $configFactory,
-    private readonly TimeInterface $time,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function commit(PathInterface $stagingDir, PathInterface $activeDir, ?PathListInterface $exclusions = NULL, ?OutputCallbackInterface $callback = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    $path = $this->configFactory->get('package_manager.settings')->get('log');
-    if ($path) {
-      $callback = new FileProcessOutputCallback($path, $callback);
-      $callback(OutputTypeEnum::OUT, sprintf("### Committing changes from %s to %s\n", $stagingDir->absolute(), $activeDir->absolute()));
+class LoggingCommitter implements CommitterInterface
+{
+    public function __construct(
+        private readonly CommitterInterface $decorated,
+        private readonly ConfigFactoryInterface $configFactory,
+        private readonly TimeInterface $time,
+    ) {
     }
 
-    $start_time = $this->time->getCurrentMicroTime();
-    $this->decorated->commit($stagingDir, $activeDir, $exclusions, $callback, $timeout);
-    $end_time = $this->time->getCurrentMicroTime();
-    if ($callback) {
-      $callback(OutputTypeEnum::OUT, sprintf("### Finished in %0.3f seconds\n", $end_time - $start_time));
+    /**
+     * {@inheritdoc}
+     */
+    public function commit(PathInterface $stagingDir, PathInterface $activeDir, ?PathListInterface $exclusions = null, ?OutputCallbackInterface $callback = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        $path = $this->configFactory->get('package_manager.settings')->get('log');
+        if ($path) {
+            $callback = new FileProcessOutputCallback($path, $callback);
+            $callback(OutputTypeEnum::OUT, sprintf("### Committing changes from %s to %s\n", $stagingDir->absolute(), $activeDir->absolute()));
+        }
+
+        $start_time = $this->time->getCurrentMicroTime();
+        $this->decorated->commit($stagingDir, $activeDir, $exclusions, $callback, $timeout);
+        $end_time = $this->time->getCurrentMicroTime();
+        if ($callback) {
+            $callback(OutputTypeEnum::OUT, sprintf("### Finished in %0.3f seconds\n", $end_time - $start_time));
+        }
     }
-  }
 
 }

@@ -17,15 +17,17 @@ use Drupal\Component\Plugin\ConfigurableInterface;
  *
  * @see \Drupal\Core\Plugin\ConfigurableTrait
  */
-abstract class ConfigurablePluginBase extends PluginBase implements ConfigurableInterface {
-  use ConfigurableTrait;
+abstract class ConfigurablePluginBase extends PluginBase implements ConfigurableInterface
+{
+    use ConfigurableTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->setConfiguration($configuration);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->setConfiguration($configuration);
+    }
 
 }

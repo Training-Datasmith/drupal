@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -52,113 +54,116 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * @todo Remove in Drupal 9.0.0, by disallowing early rendering.
  */
-class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterface {
+class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterface
+{
+    /**
+     * The argument resolver.
+     *
+     * @var \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface
+     */
+    protected $argumentResolver;
 
-  /**
-   * The argument resolver.
-   *
-   * @var \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface
-   */
-  protected $argumentResolver;
-
-  /**
-   * Constructs a new EarlyRenderingControllerWrapperSubscriber instance.
-   *
-   * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
-   *   The argument resolver.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
-   */
-  public function __construct(ArgumentResolverInterface $argument_resolver, protected \Drupal\Core\Render\RendererInterface $renderer) {
-    $this->argumentResolver = $argument_resolver;
-  }
-
-  /**
-   * Ensures bubbleable metadata from early rendering is not lost.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ControllerEvent $event
-   *   The controller event.
-   */
-  public function onController(ControllerEvent $event): void {
-    $controller = $event->getController();
-
-    // See \Symfony\Component\HttpKernel\HttpKernel::handleRaw().
-    $arguments = $this->argumentResolver->getArguments($event->getRequest(), $controller);
-
-    $event->setController(fn() => $this->wrapControllerExecutionInRenderContext($controller, $arguments));
-  }
-
-  /**
-   * Wraps a controller execution in a render context.
-   *
-   * @param callable $controller
-   *   The controller to execute.
-   * @param array $arguments
-   *   The arguments to pass to the controller.
-   *
-   * @return mixed
-   *   The return value of the controller.
-   *
-   * @throws \LogicException
-   *   When early rendering has occurred in a controller that returned a
-   *   Response or domain object that cares about attachments or cacheability.
-   *
-   * @see \Symfony\Component\HttpKernel\HttpKernel::handleRaw()
-   */
-  protected function wrapControllerExecutionInRenderContext($controller, array $arguments) {
-    $context = new RenderContext();
-
-    $response = $this->renderer->executeInRenderContext($context, 
-        // Now call the actual controller, just like HttpKernel does.
-        fn() => call_user_func_array($controller, $arguments));
-
-    // If early rendering happened, i.e. if code in the controller called
-    // RendererInterface::render() outside of a render context, then the
-    // bubbleable metadata for that is stored in the current render context.
-    if (!$context->isEmpty()) {
-      /** @var \Drupal\Core\Render\BubbleableMetadata $early_rendering_bubbleable_metadata */
-      $early_rendering_bubbleable_metadata = $context->pop();
-
-      // If a render array or AjaxResponse is returned by the controller, merge
-      // the "lost" bubbleable metadata.
-      if (is_array($response)) {
-        BubbleableMetadata::createFromRenderArray($response)
-          ->merge($early_rendering_bubbleable_metadata)
-          ->applyTo($response);
-      }
-      elseif ($response instanceof AjaxResponse) {
-        $response->addAttachments($early_rendering_bubbleable_metadata->getAttachments());
-        if ($response instanceof CacheableResponseInterface) {
-          $response->addCacheableDependency($early_rendering_bubbleable_metadata);
-        }
-      }
-      elseif ($response instanceof CacheableResponseInterface) {
-        $response->addCacheableDependency($early_rendering_bubbleable_metadata);
-      }
-      // If a non-Ajax Response or domain object is returned and it cares about
-      // attachments or cacheability, then throw an exception: early rendering
-      // is not permitted in that case. It is the developer's responsibility
-      // to not use early rendering.
-      elseif ($response instanceof AttachmentsInterface || $response instanceof CacheableDependencyInterface) {
-        throw new \LogicException(sprintf('The controller result claims to be providing relevant cache metadata, but leaked metadata was detected. Ensure you are not rendering content too early. Returned object class: %s.', $response::class));
-      }
-      else {
-        // A Response or domain object is returned that does not care about
-        // attachments nor cacheability; for instance, a RedirectResponse. It is
-        // safe to discard any early rendering metadata.
-      }
+    /**
+     * Constructs a new EarlyRenderingControllerWrapperSubscriber instance.
+     *
+     * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
+     *   The argument resolver.
+     * @param \Drupal\Core\Render\RendererInterface $renderer
+     *   The renderer.
+     */
+    public function __construct(ArgumentResolverInterface $argument_resolver, protected \Drupal\Core\Render\RendererInterface $renderer)
+    {
+        $this->argumentResolver = $argument_resolver;
     }
 
-    return $response;
-  }
+    /**
+     * Ensures bubbleable metadata from early rendering is not lost.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ControllerEvent $event
+     *   The controller event.
+     */
+    public function onController(ControllerEvent $event): void
+    {
+        $controller = $event->getController();
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[KernelEvents::CONTROLLER][] = ['onController'];
+        // See \Symfony\Component\HttpKernel\HttpKernel::handleRaw().
+        $arguments = $this->argumentResolver->getArguments($event->getRequest(), $controller);
 
-    return $events;
-  }
+        $event->setController(fn () => $this->wrapControllerExecutionInRenderContext($controller, $arguments));
+    }
+
+    /**
+     * Wraps a controller execution in a render context.
+     *
+     * @param callable $controller
+     *   The controller to execute.
+     * @param array $arguments
+     *   The arguments to pass to the controller.
+     *
+     * @return mixed
+     *   The return value of the controller.
+     *
+     * @throws \LogicException
+     *   When early rendering has occurred in a controller that returned a
+     *   Response or domain object that cares about attachments or cacheability.
+     *
+     * @see \Symfony\Component\HttpKernel\HttpKernel::handleRaw()
+     */
+    protected function wrapControllerExecutionInRenderContext($controller, array $arguments)
+    {
+        $context = new RenderContext();
+
+        $response = $this->renderer->executeInRenderContext(
+            $context,
+            // Now call the actual controller, just like HttpKernel does.
+            fn () => call_user_func_array($controller, $arguments)
+        );
+
+        // If early rendering happened, i.e. if code in the controller called
+        // RendererInterface::render() outside of a render context, then the
+        // bubbleable metadata for that is stored in the current render context.
+        if (!$context->isEmpty()) {
+            /** @var \Drupal\Core\Render\BubbleableMetadata $early_rendering_bubbleable_metadata */
+            $early_rendering_bubbleable_metadata = $context->pop();
+
+            // If a render array or AjaxResponse is returned by the controller, merge
+            // the "lost" bubbleable metadata.
+            if (is_array($response)) {
+                BubbleableMetadata::createFromRenderArray($response)
+                  ->merge($early_rendering_bubbleable_metadata)
+                  ->applyTo($response);
+            } elseif ($response instanceof AjaxResponse) {
+                $response->addAttachments($early_rendering_bubbleable_metadata->getAttachments());
+                if ($response instanceof CacheableResponseInterface) {
+                    $response->addCacheableDependency($early_rendering_bubbleable_metadata);
+                }
+            } elseif ($response instanceof CacheableResponseInterface) {
+                $response->addCacheableDependency($early_rendering_bubbleable_metadata);
+            }
+            // If a non-Ajax Response or domain object is returned and it cares about
+            // attachments or cacheability, then throw an exception: early rendering
+            // is not permitted in that case. It is the developer's responsibility
+            // to not use early rendering.
+            elseif ($response instanceof AttachmentsInterface || $response instanceof CacheableDependencyInterface) {
+                throw new \LogicException(sprintf('The controller result claims to be providing relevant cache metadata, but leaked metadata was detected. Ensure you are not rendering content too early. Returned object class: %s.', $response::class));
+            } else {
+                // A Response or domain object is returned that does not care about
+                // attachments nor cacheability; for instance, a RedirectResponse. It is
+                // safe to discard any early rendering metadata.
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[KernelEvents::CONTROLLER][] = ['onController'];
+
+        return $events;
+    }
 
 }

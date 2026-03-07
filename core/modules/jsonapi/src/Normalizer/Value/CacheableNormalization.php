@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Normalizer\Value;
 
 use Drupal\Component\Assertion\Inspector;
@@ -16,123 +18,130 @@ use Drupal\Core\Cache\CacheableMetadata;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions implements CacheableDependencyInterface {
+class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
 
-  use CacheableDependencyTrait;
+    /**
+     * A normalized value.
+     *
+     * @var mixed
+     */
+    protected $normalization;
 
-  /**
-   * A normalized value.
-   *
-   * @var mixed
-   */
-  protected $normalization;
-
-  /**
-   * CacheableNormalization constructor.
-   *
-   * @param \Drupal\Core\Cache\CacheableDependencyInterface $cacheability
-   *   The cacheability metadata for the normalized data.
-   * @param array|string|int|float|bool|null $normalization
-   *   The normalized data. This value must not contain any
-   *   CacheableNormalizations.
-   */
-  public function __construct(CacheableDependencyInterface $cacheability, $normalization) {
-    assert((is_array($normalization) && static::hasNoNestedInstances($normalization)) || is_string($normalization) || is_int($normalization) || is_float($normalization) || is_bool($normalization) || is_null($normalization));
-    $this->normalization = $normalization;
-    $this->setCacheability($cacheability);
-  }
-
-  /**
-   * Creates a CacheableNormalization instance without any special cacheability.
-   *
-   * @param array|string|int|float|bool|null $normalization
-   *   The normalized data. This value must not contain any
-   *   CacheableNormalizations.
-   *
-   * @return static
-   *   The CacheableNormalization.
-   */
-  public static function permanent($normalization): static {
-    return new static(new CacheableMetadata(), $normalization);
-  }
-
-  /**
-   * Gets the decorated normalization.
-   *
-   * @return array|string|int|float|bool|null
-   *   The normalization.
-   */
-  public function getNormalization() {
-    return $this->normalization;
-  }
-
-  /**
-   * Converts the object to a CacheableOmission if the normalization is empty.
-   *
-   * @return self|\Drupal\jsonapi\Normalizer\Value\CacheableOmission
-   *   A CacheableOmission if the normalization is considered empty, self
-   *   otherwise.
-   */
-  public function omitIfEmpty(): \Drupal\jsonapi\Normalizer\Value\CacheableOmission|self {
-    return empty($this->normalization) ? new CacheableOmission($this) : $this;
-  }
-
-  /**
-   * Gets a new CacheableNormalization with an additional dependency.
-   *
-   * @param \Drupal\Core\Cache\CacheableDependencyInterface $dependency
-   *   The new cacheable dependency.
-   *
-   * @return static
-   *   A new object based on the current value with an additional cacheable
-   *   dependency.
-   */
-  public function withCacheableDependency(CacheableDependencyInterface $dependency): static {
-    return new static(CacheableMetadata::createFromObject($this)->addCacheableDependency($dependency), $this->normalization);
-  }
-
-  /**
-   * Collects an array of CacheableNormalizations into a single instance.
-   *
-   * @param \Drupal\jsonapi\Normalizer\Value\CacheableNormalization[] $cacheable_normalizations
-   *   An array of CacheableNormalizations.
-   *
-   * @return static
-   *   A new CacheableNormalization. Each input value's cacheability will be
-   *   merged into the return value's cacheability. The return value's
-   *   normalization will be an array of the input's normalizations. This method
-   *   does *not* behave like array_merge() or NestedArray::mergeDeep().
-   */
-  public static function aggregate(array $cacheable_normalizations): static {
-    assert(Inspector::assertAllObjects($cacheable_normalizations, CacheableNormalization::class));
-    return new static(
-      array_reduce($cacheable_normalizations, fn(CacheableMetadata $merged, CacheableNormalization $item) => $merged->addCacheableDependency($item), new CacheableMetadata()),
-      array_reduce(array_keys($cacheable_normalizations), function (array $merged, int|string $key) use ($cacheable_normalizations): array {
-        if (!$cacheable_normalizations[$key] instanceof CacheableOmission) {
-          $merged[$key] = $cacheable_normalizations[$key]->getNormalization();
-        }
-        return $merged;
-      }, [])
-    );
-  }
-
-  /**
-   * Ensures that no nested values are instances of this class.
-   *
-   * @param array|\Traversable $array
-   *   The traversable object which may contain instance of this object.
-   *
-   * @return bool
-   *   Whether the given object or its children have CacheableNormalizations in
-   *   them.
-   */
-  protected static function hasNoNestedInstances($array): bool {
-    foreach ($array as $value) {
-      if (is_iterable($value) && !static::hasNoNestedInstances($value) || $value instanceof static) {
-        return FALSE;
-      }
+    /**
+     * CacheableNormalization constructor.
+     *
+     * @param \Drupal\Core\Cache\CacheableDependencyInterface $cacheability
+     *   The cacheability metadata for the normalized data.
+     * @param array|string|int|float|bool|null $normalization
+     *   The normalized data. This value must not contain any
+     *   CacheableNormalizations.
+     */
+    public function __construct(CacheableDependencyInterface $cacheability, $normalization)
+    {
+        assert((is_array($normalization) && static::hasNoNestedInstances($normalization)) || is_string($normalization) || is_int($normalization) || is_float($normalization) || is_bool($normalization) || is_null($normalization));
+        $this->normalization = $normalization;
+        $this->setCacheability($cacheability);
     }
-    return TRUE;
-  }
+
+    /**
+     * Creates a CacheableNormalization instance without any special cacheability.
+     *
+     * @param array|string|int|float|bool|null $normalization
+     *   The normalized data. This value must not contain any
+     *   CacheableNormalizations.
+     *
+     * @return static
+     *   The CacheableNormalization.
+     */
+    public static function permanent($normalization): static
+    {
+        return new static(new CacheableMetadata(), $normalization);
+    }
+
+    /**
+     * Gets the decorated normalization.
+     *
+     * @return array|string|int|float|bool|null
+     *   The normalization.
+     */
+    public function getNormalization()
+    {
+        return $this->normalization;
+    }
+
+    /**
+     * Converts the object to a CacheableOmission if the normalization is empty.
+     *
+     * @return self|\Drupal\jsonapi\Normalizer\Value\CacheableOmission
+     *   A CacheableOmission if the normalization is considered empty, self
+     *   otherwise.
+     */
+    public function omitIfEmpty(): \Drupal\jsonapi\Normalizer\Value\CacheableOmission|self
+    {
+        return empty($this->normalization) ? new CacheableOmission($this) : $this;
+    }
+
+    /**
+     * Gets a new CacheableNormalization with an additional dependency.
+     *
+     * @param \Drupal\Core\Cache\CacheableDependencyInterface $dependency
+     *   The new cacheable dependency.
+     *
+     * @return static
+     *   A new object based on the current value with an additional cacheable
+     *   dependency.
+     */
+    public function withCacheableDependency(CacheableDependencyInterface $dependency): static
+    {
+        return new static(CacheableMetadata::createFromObject($this)->addCacheableDependency($dependency), $this->normalization);
+    }
+
+    /**
+     * Collects an array of CacheableNormalizations into a single instance.
+     *
+     * @param \Drupal\jsonapi\Normalizer\Value\CacheableNormalization[] $cacheable_normalizations
+     *   An array of CacheableNormalizations.
+     *
+     * @return static
+     *   A new CacheableNormalization. Each input value's cacheability will be
+     *   merged into the return value's cacheability. The return value's
+     *   normalization will be an array of the input's normalizations. This method
+     *   does *not* behave like array_merge() or NestedArray::mergeDeep().
+     */
+    public static function aggregate(array $cacheable_normalizations): static
+    {
+        assert(Inspector::assertAllObjects($cacheable_normalizations, CacheableNormalization::class));
+        return new static(
+            array_reduce($cacheable_normalizations, fn (CacheableMetadata $merged, CacheableNormalization $item) => $merged->addCacheableDependency($item), new CacheableMetadata()),
+            array_reduce(array_keys($cacheable_normalizations), function (array $merged, int|string $key) use ($cacheable_normalizations): array {
+                if (!$cacheable_normalizations[$key] instanceof CacheableOmission) {
+                    $merged[$key] = $cacheable_normalizations[$key]->getNormalization();
+                }
+                return $merged;
+            }, [])
+        );
+    }
+
+    /**
+     * Ensures that no nested values are instances of this class.
+     *
+     * @param array|\Traversable $array
+     *   The traversable object which may contain instance of this object.
+     *
+     * @return bool
+     *   Whether the given object or its children have CacheableNormalizations in
+     *   them.
+     */
+    protected static function hasNoNestedInstances($array): bool
+    {
+        foreach ($array as $value) {
+            if (is_iterable($value) && !static::hasNoNestedInstances($value) || $value instanceof static) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

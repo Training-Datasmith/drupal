@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\ContextProvider;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -7,68 +9,66 @@ use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextProviderInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\node\Entity\Node;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\node\Entity\Node;
 
 /**
  * Sets the current node as a context on node routes.
  */
-class NodeRouteContext implements ContextProviderInterface {
+class NodeRouteContext implements ContextProviderInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a new NodeRouteContext.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The route match object.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRuntimeContexts(array $unqualified_context_ids): array {
-    $result = [];
-    $context_definition = EntityContextDefinition::create('node')->setRequired(FALSE);
-    $value = NULL;
-    if (($route_object = $this->routeMatch->getRouteObject())) {
-      $route_contexts = $route_object->getOption('parameters');
-      // Check for a node revision parameter first.
-      if (isset($route_contexts['node_revision']) && $revision = $this->routeMatch->getParameter('node_revision')) {
-        $value = $revision;
-      }
-      elseif (isset($route_contexts['node']) && $node = $this->routeMatch->getParameter('node')) {
-        $value = $node;
-      }
-      elseif (isset($route_contexts['node_preview']) && $node = $this->routeMatch->getParameter('node_preview')) {
-        $value = $node;
-      }
-      elseif ($this->routeMatch->getRouteName() == 'node.add') {
-        $node_type = $this->routeMatch->getParameter('node_type');
-        $value = Node::create(['type' => $node_type->id()]);
-      }
+    /**
+     * Constructs a new NodeRouteContext.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The route match object.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    {
     }
 
-    $cacheability = new CacheableMetadata();
-    $cacheability->setCacheContexts(['route']);
+    /**
+     * {@inheritdoc}
+     */
+    public function getRuntimeContexts(array $unqualified_context_ids): array
+    {
+        $result = [];
+        $context_definition = EntityContextDefinition::create('node')->setRequired(false);
+        $value = null;
+        if (($route_object = $this->routeMatch->getRouteObject())) {
+            $route_contexts = $route_object->getOption('parameters');
+            // Check for a node revision parameter first.
+            if (isset($route_contexts['node_revision']) && $revision = $this->routeMatch->getParameter('node_revision')) {
+                $value = $revision;
+            } elseif (isset($route_contexts['node']) && $node = $this->routeMatch->getParameter('node')) {
+                $value = $node;
+            } elseif (isset($route_contexts['node_preview']) && $node = $this->routeMatch->getParameter('node_preview')) {
+                $value = $node;
+            } elseif ($this->routeMatch->getRouteName() == 'node.add') {
+                $node_type = $this->routeMatch->getParameter('node_type');
+                $value = Node::create(['type' => $node_type->id()]);
+            }
+        }
 
-    $context = new Context($context_definition, $value);
-    $context->addCacheableDependency($cacheability);
-    $result['node'] = $context;
+        $cacheability = new CacheableMetadata();
+        $cacheability->setCacheContexts(['route']);
 
-    return $result;
-  }
+        $context = new Context($context_definition, $value);
+        $context->addCacheableDependency($cacheability);
+        $result['node'] = $context;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAvailableContexts(): array {
-    $context = EntityContext::fromEntityTypeId('node', $this->t('Node from URL'));
-    return ['node' => $context];
-  }
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAvailableContexts(): array
+    {
+        $context = EntityContext::fromEntityTypeId('node', $this->t('Node from URL'));
+        return ['node' => $context];
+    }
 
 }

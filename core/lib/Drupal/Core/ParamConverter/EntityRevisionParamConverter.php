@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ParamConverter;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\TranslatableInterface;
 use Symfony\Component\Routing\Route;
 
@@ -25,45 +25,47 @@ use Symfony\Component\Routing\Route;
  *         type: entity_revision:entity_example
  * @endcode
  */
-class EntityRevisionParamConverter implements ParamConverterInterface {
+class EntityRevisionParamConverter implements ParamConverterInterface
+{
+    use DynamicEntityTypeParamConverterTrait;
 
-  use DynamicEntityTypeParamConverterTrait;
-
-  /**
-   * Creates a new EntityRevisionParamConverter instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function convert($value, $definition, $name, array $defaults) {
-    $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    $entity = $storage->loadRevision($value);
-
-    // If the entity type is translatable, ensure we return the proper
-    // translation object for the current context.
-    if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
-      return $this->entityRepository->getTranslationFromContext($entity, NULL, ['operation' => 'entity_upcast']);
+    /**
+     * Creates a new EntityRevisionParamConverter instance.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+    {
     }
 
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($value, $definition, $name, array $defaults)
+    {
+        $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
+        /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+        $storage = $this->entityTypeManager->getStorage($entity_type_id);
+        $entity = $storage->loadRevision($value);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies($definition, $name, Route $route): bool {
-    return isset($definition['type']) && str_contains($definition['type'], 'entity_revision:');
-  }
+        // If the entity type is translatable, ensure we return the proper
+        // translation object for the current context.
+        if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
+            return $this->entityRepository->getTranslationFromContext($entity, null, ['operation' => 'entity_upcast']);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applies($definition, $name, Route $route): bool
+    {
+        return isset($definition['type']) && str_contains($definition['type'], 'entity_revision:');
+    }
 
 }

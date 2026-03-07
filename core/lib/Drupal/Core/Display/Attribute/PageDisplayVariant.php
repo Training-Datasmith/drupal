@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Display\Attribute;
 
 /**
@@ -18,4 +20,6 @@ namespace Drupal\Core\Display\Attribute;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class PageDisplayVariant extends DisplayVariant {}
+class PageDisplayVariant extends DisplayVariant
+{
+}

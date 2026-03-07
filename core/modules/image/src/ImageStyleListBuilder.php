@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -12,50 +14,54 @@ use Drupal\Core\Url;
  *
  * @see \Drupal\image\Entity\ImageStyle
  */
-class ImageStyleListBuilder extends ConfigEntityListBuilder {
+class ImageStyleListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['label'] = $this->t('Style name');
+        return $header + parent::buildHeader();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['label'] = $this->t('Style name');
-    return $header + parent::buildHeader();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['label'] = $entity->label();
+        return $row + parent::buildRow($entity);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
-    return $row + parent::buildRow($entity);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $flush = [
+          'title' => $this->t('Flush'),
+          'weight' => 200,
+          'url' => $entity->toUrl('flush-form'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $flush = [
-      'title' => $this->t('Flush'),
-      'weight' => 200,
-      'url' => $entity->toUrl('flush-form'),
-    ];
+        return parent::getDefaultOperations($entity, $cacheability) + [
+          'flush' => $flush,
+        ];
+    }
 
-    return parent::getDefaultOperations($entity, $cacheability) + [
-      'flush' => $flush,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    $build = parent::render();
-    $build['table']['#empty'] = $this->t('There are currently no styles. <a href=":url">Add a new one</a>.', [
-      ':url' => Url::fromRoute('image.style_add')->toString(),
-    ]);
-    return $build;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        $build = parent::render();
+        $build['table']['#empty'] = $this->t('There are currently no styles. <a href=":url">Add a new one</a>.', [
+          ':url' => Url::fromRoute('image.style_add')->toString(),
+        ]);
+        return $build;
+    }
 
 }

@@ -16,11 +16,11 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see field_test_field_widget_info_alter()
  */
 #[FieldWidget(
-  id: 'test_field_widget_multiple_single_value',
-  label: new TranslatableMarkup('Test widget - multiple - single value'),
-  multiple_values: FALSE,
-  weight: 10,
+    id: 'test_field_widget_multiple_single_value',
+    label: new TranslatableMarkup('Test widget - multiple - single value'),
+    multiple_values: false,
+    weight: 10,
 )]
-class TestFieldWidgetMultipleSingleValues extends TestFieldWidgetMultiple {
-
+class TestFieldWidgetMultipleSingleValues extends TestFieldWidgetMultiple
+{
 }

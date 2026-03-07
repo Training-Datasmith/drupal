@@ -7,6 +7,6 @@ namespace Drupal\Core\Render\Component\Exception;
 /**
  * Raised when a component cannot be found.
  */
-class ComponentNotFoundException extends \Exception {
-
+class ComponentNotFoundException extends \Exception
+{
 }

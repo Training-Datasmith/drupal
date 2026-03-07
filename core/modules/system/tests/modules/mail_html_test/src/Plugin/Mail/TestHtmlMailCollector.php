@@ -16,21 +16,22 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * to plaintext.
  */
 #[Mail(
-  id: 'test_html_mail_collector',
-  label: new TranslatableMarkup('HTML mail collector'),
-  description: new TranslatableMarkup('Does not send the message, but stores its HTML in Drupal within the state system. Used for testing.'),
+    id: 'test_html_mail_collector',
+    label: new TranslatableMarkup('HTML mail collector'),
+    description: new TranslatableMarkup('Does not send the message, but stores its HTML in Drupal within the state system. Used for testing.'),
 )]
-class TestHtmlMailCollector extends TestMailCollector {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function format(array $message) {
-    // Join the body array into one string.
-    $message['body'] = implode(PHP_EOL, $message['body']);
-    // Wrap the mail body for sending.
-    $message['body'] = MailFormatHelper::wrapMail($message['body']);
-    return $message;
-  }
+class TestHtmlMailCollector extends TestMailCollector
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function format(array $message)
+    {
+        // Join the body array into one string.
+        $message['body'] = implode(PHP_EOL, $message['body']);
+        // Wrap the mail body for sending.
+        $message['body'] = MailFormatHelper::wrapMail($message['body']);
+        return $message;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -17,27 +19,29 @@ use Drupal\jsonapi\DependencyInjection\Compiler\RegisterSerializationClassesComp
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class JsonapiServiceProvider implements ServiceModifierInterface, ServiceProviderInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    if ($container->has('http_middleware.negotiation') && is_a($container->getDefinition('http_middleware.negotiation')->getClass(), NegotiationMiddleware::class, TRUE)) {
-      // @see http://www.iana.org/assignments/media-types/application/vnd.api+json
-      $container->getDefinition('http_middleware.negotiation')
-        ->addMethodCall('registerFormat', [
-          'api_json',
-          ['application/vnd.api+json'],
-        ]);
+class JsonapiServiceProvider implements ServiceModifierInterface, ServiceProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        if ($container->has('http_middleware.negotiation') && is_a($container->getDefinition('http_middleware.negotiation')->getClass(), NegotiationMiddleware::class, true)) {
+            // @see http://www.iana.org/assignments/media-types/application/vnd.api+json
+            $container->getDefinition('http_middleware.negotiation')
+              ->addMethodCall('registerFormat', [
+                'api_json',
+                ['application/vnd.api+json'],
+              ]);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    $container->addCompilerPass(new RegisterSerializationClassesCompilerPass());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        $container->addCompilerPass(new RegisterSerializationClassesCompilerPass());
+    }
 
 }

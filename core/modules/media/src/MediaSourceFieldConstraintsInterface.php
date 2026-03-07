@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 /**
@@ -14,17 +16,17 @@ namespace Drupal\media;
  * @see \Drupal\media\MediaSourceBase
  * @see \Drupal\media\Entity\Media
  */
-interface MediaSourceFieldConstraintsInterface extends MediaSourceInterface {
-
-  /**
-   * Gets media source-specific validation constraints for a source field.
-   *
-   * @return \Symfony\Component\Validator\Constraint[]
-   *   An array of validation constraint definitions, keyed by plugin IDs. The
-   *   corresponding values are options for each validation plugin.
-   *   Each constraint definition can be used for instantiating
-   *   \Symfony\Component\Validator\Constraint objects.
-   */
-  public function getSourceFieldConstraints();
+interface MediaSourceFieldConstraintsInterface extends MediaSourceInterface
+{
+    /**
+     * Gets media source-specific validation constraints for a source field.
+     *
+     * @return \Symfony\Component\Validator\Constraint[]
+     *   An array of validation constraint definitions, keyed by plugin IDs. The
+     *   corresponding values are options for each validation plugin.
+     *   Each constraint definition can be used for instantiating
+     *   \Symfony\Component\Validator\Constraint objects.
+     */
+    public function getSourceFieldConstraints();
 
 }

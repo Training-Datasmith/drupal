@@ -18,58 +18,60 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('package_manager')]
 #[CoversTrait(EventWithPackageListTrait::class)]
-class EventWithPackageListTraitTest extends UnitTestCase {
+class EventWithPackageListTraitTest extends UnitTestCase
+{
+    /**
+     * Tests that runtime and dev packages are keyed correctly.
+     *
+     * @param string[] $runtime_packages
+     *   The runtime package constraints passed to the event constructor.
+     * @param string[] $dev_packages
+     *   The dev package constraints passed to the event constructor.
+     * @param string[] $expected_runtime_packages
+     *   The keyed runtime packages that should be returned by
+     *   ::getRuntimePackages().
+     * @param string[] $expected_dev_packages
+     *   The keyed dev packages that should be returned by ::getDevPackages().
+     */
+    #[DataProvider('providerGetPackages')]
+    public function testGetPackages(array $runtime_packages, array $dev_packages, array $expected_runtime_packages, array $expected_dev_packages): void
+    {
+        $stage = $this->createStub(SandboxManagerBase::class);
 
-  /**
-   * Tests that runtime and dev packages are keyed correctly.
-   *
-   * @param string[] $runtime_packages
-   *   The runtime package constraints passed to the event constructor.
-   * @param string[] $dev_packages
-   *   The dev package constraints passed to the event constructor.
-   * @param string[] $expected_runtime_packages
-   *   The keyed runtime packages that should be returned by
-   *   ::getRuntimePackages().
-   * @param string[] $expected_dev_packages
-   *   The keyed dev packages that should be returned by ::getDevPackages().
-   */
-  #[DataProvider('providerGetPackages')]
-  public function testGetPackages(array $runtime_packages, array $dev_packages, array $expected_runtime_packages, array $expected_dev_packages): void {
-    $stage = $this->createStub(SandboxManagerBase::class);
-
-    $events = [
-      '\Drupal\package_manager\Event\PostRequireEvent',
-      '\Drupal\package_manager\Event\PreRequireEvent',
-    ];
-    foreach ($events as $event) {
-      /** @var \Drupal\package_manager\Event\EventWithPackageListTrait $event */
-      $event = new $event($stage, $runtime_packages, $dev_packages);
-      $this->assertSame($expected_runtime_packages, $event->getRuntimePackages());
-      $this->assertSame($expected_dev_packages, $event->getDevPackages());
+        $events = [
+          '\Drupal\package_manager\Event\PostRequireEvent',
+          '\Drupal\package_manager\Event\PreRequireEvent',
+        ];
+        foreach ($events as $event) {
+            /** @var \Drupal\package_manager\Event\EventWithPackageListTrait $event */
+            $event = new $event($stage, $runtime_packages, $dev_packages);
+            $this->assertSame($expected_runtime_packages, $event->getRuntimePackages());
+            $this->assertSame($expected_dev_packages, $event->getDevPackages());
+        }
     }
-  }
 
-  /**
-   * Data provider for testGetPackages().
-   *
-   * @return mixed[]
-   *   The test cases.
-   */
-  public static function providerGetPackages(): array {
-    return [
-      'Package with constraint' => [
-        ['drupal/new_package:^8.1'],
-        ['drupal/dev_package:^9'],
-        ['drupal/new_package' => '^8.1'],
-        ['drupal/dev_package' => '^9'],
-      ],
-      'Package without constraint' => [
-        ['drupal/new_package'],
-        ['drupal/dev_package'],
-        ['drupal/new_package' => '*'],
-        ['drupal/dev_package' => '*'],
-      ],
-    ];
-  }
+    /**
+     * Data provider for testGetPackages().
+     *
+     * @return mixed[]
+     *   The test cases.
+     */
+    public static function providerGetPackages(): array
+    {
+        return [
+          'Package with constraint' => [
+            ['drupal/new_package:^8.1'],
+            ['drupal/dev_package:^9'],
+            ['drupal/new_package' => '^8.1'],
+            ['drupal/dev_package' => '^9'],
+          ],
+          'Package without constraint' => [
+            ['drupal/new_package'],
+            ['drupal/dev_package'],
+            ['drupal/new_package' => '*'],
+            ['drupal/dev_package' => '*'],
+          ],
+        ];
+    }
 
 }

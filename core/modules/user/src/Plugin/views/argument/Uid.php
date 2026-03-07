@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -11,6 +13,8 @@ use Drupal\views\Plugin\views\argument\EntityArgument;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'user_uid'
+    id: 'user_uid'
 )]
-class Uid extends EntityArgument {}
+class Uid extends EntityArgument
+{
+}

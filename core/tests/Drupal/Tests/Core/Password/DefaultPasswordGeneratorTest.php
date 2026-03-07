@@ -14,18 +14,19 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(DefaultPasswordGenerator::class)]
 #[Group('System')]
-class DefaultPasswordGeneratorTest extends UnitTestCase {
+class DefaultPasswordGeneratorTest extends UnitTestCase
+{
+    /**
+     * Tests generate.
+     */
+    public function testGenerate(): void
+    {
+        $generator = new DefaultPasswordGenerator();
+        $password = $generator->generate();
+        $this->assertEquals(10, strlen($password));
 
-  /**
-   * Tests generate.
-   */
-  public function testGenerate(): void {
-    $generator = new DefaultPasswordGenerator();
-    $password = $generator->generate();
-    $this->assertEquals(10, strlen($password));
-
-    $password = $generator->generate(32);
-    $this->assertEquals(32, strlen($password));
-  }
+        $password = $generator->generate(32);
+        $this->assertEquals(32, strlen($password));
+    }
 
 }

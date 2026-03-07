@@ -13,37 +13,40 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class BatchTestMockForm extends FormBase {
+class BatchTestMockForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'batch_test_mock_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'batch_test_mock_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['test_value'] = [
+          '#title' => $this->t('Test value'),
+          '#type' => 'textfield',
+        ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Submit'),
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['test_value'] = [
-      '#title' => $this->t('Test value'),
-      '#type' => 'textfield',
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit'),
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $batch_test_helper = new BatchTestHelper();
-    $batch_test_helper->stack('mock form submitted with value = ' . $form_state->getValue('test_value'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $batch_test_helper = new BatchTestHelper();
+        $batch_test_helper->stack('mock form submitted with value = ' . $form_state->getValue('test_value'));
+    }
 
 }

@@ -26,250 +26,253 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(NodeAccessControlHandler::class)]
 #[Group('node')]
-class NodeOperationAccessTest extends UnitTestCase {
+class NodeOperationAccessTest extends UnitTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Cache utility calls container directly.
-    $cacheContextsManager = $this->getMockBuilder(CacheContextsManager::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-    $cacheContextsManager->method('assertValidTokens')->willReturn(TRUE);
-    $container = new ContainerBuilder();
-    $container->set('cache_contexts_manager', $cacheContextsManager);
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests revision operations.
-   *
-   * @param string $operation
-   *   A revision operation.
-   * @param array $hasPermissionMap
-   *   A map of permissions, to whether they should be granted.
-   * @param bool|null $assertAccess
-   *   Whether the access is allowed or denied.
-   * @param bool|null $isDefaultRevision
-   *   Whether the node should be default revision, or NULL if not to expect it
-   *   to be called.
-   */
-  #[DataProvider('providerTestRevisionOperations')]
-  public function testRevisionOperations($operation, array $hasPermissionMap, $assertAccess, $isDefaultRevision = NULL): void {
-    $account = $this->createMock(AccountInterface::class);
-    $account->method('hasPermission')
-      ->willReturnMap($hasPermissionMap);
-    $account->method('id')
-      ->willReturn(42);
-
-    $entityType = $this->createMock(EntityTypeInterface::class);
-    $grants = $this->createMock(NodeGrantDatabaseStorageInterface::class);
-    $grants->expects($this->any())
-      ->method('access')
-      ->willReturn(AccessResult::neutral());
-
-    $language = $this->createMock(LanguageInterface::class);
-    $language->expects($this->any())
-      ->method('getId')
-      ->willReturn('de');
-
-    $nid = 333;
-    /** @var \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject $node */
-    $node = $this->createMock(NodeInterface::class);
-    $node->expects($this->any())
-      ->method('language')
-      ->willReturn($language);
-    $node->expects($this->any())
-      ->method('id')
-      ->willReturn($nid);
-    $node->expects($this->any())
-      ->method('getCacheContexts')
-      ->willReturn([]);
-    $node->expects($this->any())
-      ->method('getCacheTags')
-      ->willReturn([]);
-    $node->expects($this->any())
-      ->method('getCacheMaxAge')
-      ->willReturn(-1);
-    $node->expects($this->any())
-      ->method('getEntityTypeId')
-      ->willReturn('node');
-
-    if (isset($isDefaultRevision)) {
-      $node->expects($this->atLeastOnce())
-        ->method('isDefaultRevision')
-        ->willReturn($isDefaultRevision);
+        // Cache utility calls container directly.
+        $cacheContextsManager = $this->getMockBuilder(CacheContextsManager::class)
+          ->disableOriginalConstructor()
+          ->getMock();
+        $cacheContextsManager->method('assertValidTokens')->willReturn(true);
+        $container = new ContainerBuilder();
+        $container->set('cache_contexts_manager', $cacheContextsManager);
+        \Drupal::setContainer($container);
     }
 
-    $nodeStorage = $this->createMock(NodeStorageInterface::class);
-    $nodeStorage->expects($this->any())
-      ->method('load')
-      ->with($nid)
-      ->willReturn($node);
-    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $entityTypeManager->expects($this->any())
-      ->method('getStorage')
-      ->with('node')
-      ->willReturn($nodeStorage);
+    /**
+     * Tests revision operations.
+     *
+     * @param string $operation
+     *   A revision operation.
+     * @param array $hasPermissionMap
+     *   A map of permissions, to whether they should be granted.
+     * @param bool|null $assertAccess
+     *   Whether the access is allowed or denied.
+     * @param bool|null $isDefaultRevision
+     *   Whether the node should be default revision, or NULL if not to expect it
+     *   to be called.
+     */
+    #[DataProvider('providerTestRevisionOperations')]
+    public function testRevisionOperations($operation, array $hasPermissionMap, $assertAccess, $isDefaultRevision = null): void
+    {
+        $account = $this->createMock(AccountInterface::class);
+        $account->method('hasPermission')
+          ->willReturnMap($hasPermissionMap);
+        $account->method('id')
+          ->willReturn(42);
 
-    $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $moduleHandler->expects($this->any())
-      ->method('invokeAll')
-      ->willReturn([]);
-    $accessControl = new NodeAccessControlHandler($entityType, $grants, $entityTypeManager);
-    $accessControl->setModuleHandler($moduleHandler);
+        $entityType = $this->createMock(EntityTypeInterface::class);
+        $grants = $this->createMock(NodeGrantDatabaseStorageInterface::class);
+        $grants->expects($this->any())
+          ->method('access')
+          ->willReturn(AccessResult::neutral());
 
-    $access = $accessControl->access($node, $operation, $account, FALSE);
-    $this->assertEquals($assertAccess, $access);
-  }
+        $language = $this->createMock(LanguageInterface::class);
+        $language->expects($this->any())
+          ->method('getId')
+          ->willReturn('de');
 
-  /**
-   * Data provider for revisionOperationsProvider.
-   *
-   * @return array
-   *   Data for testing.
-   */
-  public static function providerTestRevisionOperations() {
-    $data = [];
+        $nid = 333;
+        /** @var \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject $node */
+        $node = $this->createMock(NodeInterface::class);
+        $node->expects($this->any())
+          ->method('language')
+          ->willReturn($language);
+        $node->expects($this->any())
+          ->method('id')
+          ->willReturn($nid);
+        $node->expects($this->any())
+          ->method('getCacheContexts')
+          ->willReturn([]);
+        $node->expects($this->any())
+          ->method('getCacheTags')
+          ->willReturn([]);
+        $node->expects($this->any())
+          ->method('getCacheMaxAge')
+          ->willReturn(-1);
+        $node->expects($this->any())
+          ->method('getEntityTypeId')
+          ->willReturn('node');
 
-    // Tests 'bypass node access' never works on revision operations.
-    $data['bypass, view all revisions'] = [
-      'view all revisions',
-      [
-        ['access content', TRUE],
-        ['bypass node access', TRUE],
-      ],
-      FALSE,
-    ];
-    $data['bypass, view revision'] = [
-      'view revision',
-      [
-        ['access content', TRUE],
-        ['bypass node access', TRUE],
-      ],
-      FALSE,
-    ];
-    $data['bypass, revert'] = [
-      'revert revision',
-      [
-        ['access content', TRUE],
-        ['bypass node access', TRUE],
-      ],
-      FALSE,
-    ];
-    $data['bypass, delete revision'] = [
-      'delete revision',
-      [
-        ['access content', TRUE],
-        ['bypass node access', TRUE],
-      ],
-      FALSE,
-    ];
+        if (isset($isDefaultRevision)) {
+            $node->expects($this->atLeastOnce())
+              ->method('isDefaultRevision')
+              ->willReturn($isDefaultRevision);
+        }
 
-    $data['view all revisions'] = [
-      'view all revisions',
-      [
-        ['access content', TRUE],
-        ['view all revisions', TRUE],
-      ],
-      TRUE,
-    ];
-    $data['view all revisions with view access'] = [
-      'view all revisions',
-      [
-        ['access content', TRUE],
-        ['view all revisions', TRUE],
-        // Bypass for 'view' operation.
-        ['bypass node access', TRUE],
-      ],
-      TRUE,
-    ];
+        $nodeStorage = $this->createMock(NodeStorageInterface::class);
+        $nodeStorage->expects($this->any())
+          ->method('load')
+          ->with($nid)
+          ->willReturn($node);
+        $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+        $entityTypeManager->expects($this->any())
+          ->method('getStorage')
+          ->with('node')
+          ->willReturn($nodeStorage);
 
-    $data['view revision, without view access'] = [
-      'view revision',
-      [
-        ['access content', TRUE],
-        ['view all revisions', TRUE],
-      ],
-      FALSE,
-    ];
+        $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
+        $moduleHandler->expects($this->any())
+          ->method('invokeAll')
+          ->willReturn([]);
+        $accessControl = new NodeAccessControlHandler($entityType, $grants, $entityTypeManager);
+        $accessControl->setModuleHandler($moduleHandler);
 
-    $data['view revision, with view access'] = [
-      'view revision',
-      [
-        ['access content', TRUE],
-        ['view all revisions', TRUE],
-        // Bypass for 'view' operation.
-        ['bypass node access', TRUE],
-      ],
-      TRUE,
-    ];
+        $access = $accessControl->access($node, $operation, $account, false);
+        $this->assertEquals($assertAccess, $access);
+    }
 
-    // Cannot revert if no update access.
-    $data['revert, without update access, non default'] = [
-      'revert revision',
-      [
-        ['access content', TRUE],
-        ['revert all revisions', TRUE],
-      ],
-      FALSE,
-      FALSE,
-    ];
+    /**
+     * Data provider for revisionOperationsProvider.
+     *
+     * @return array
+     *   Data for testing.
+     */
+    public static function providerTestRevisionOperations()
+    {
+        $data = [];
 
-    // Can revert if has update access.
-    $data['revert, with update access, non default'] = [
-      'revert revision',
-      [
-        ['access content', TRUE],
-        ['revert all revisions', TRUE],
-        // Bypass for 'update' operation.
-        ['bypass node access', TRUE],
-      ],
-      TRUE,
-      FALSE,
-    ];
+        // Tests 'bypass node access' never works on revision operations.
+        $data['bypass, view all revisions'] = [
+          'view all revisions',
+          [
+            ['access content', true],
+            ['bypass node access', true],
+          ],
+          false,
+        ];
+        $data['bypass, view revision'] = [
+          'view revision',
+          [
+            ['access content', true],
+            ['bypass node access', true],
+          ],
+          false,
+        ];
+        $data['bypass, revert'] = [
+          'revert revision',
+          [
+            ['access content', true],
+            ['bypass node access', true],
+          ],
+          false,
+        ];
+        $data['bypass, delete revision'] = [
+          'delete revision',
+          [
+            ['access content', true],
+            ['bypass node access', true],
+          ],
+          false,
+        ];
 
-    // Can never revert default revision.
-    $data['revert, with update access, default revision'] = [
-      'revert revision',
-      [
-        ['access content', TRUE],
-        ['revert all revisions', TRUE],
-        // Bypass for 'update' operation.
-        ['bypass node access', TRUE],
-      ],
-      FALSE,
-      TRUE,
-    ];
+        $data['view all revisions'] = [
+          'view all revisions',
+          [
+            ['access content', true],
+            ['view all revisions', true],
+          ],
+          true,
+        ];
+        $data['view all revisions with view access'] = [
+          'view all revisions',
+          [
+            ['access content', true],
+            ['view all revisions', true],
+            // Bypass for 'view' operation.
+            ['bypass node access', true],
+          ],
+          true,
+        ];
 
-    // Cannot delete non default revision if no delete access.
-    $data['delete revision, without delete access, non default'] = [
-      'delete revision',
-      [
-        ['access content', TRUE],
-        ['delete all revisions', TRUE],
-      ],
-      FALSE,
-      FALSE,
-    ];
+        $data['view revision, without view access'] = [
+          'view revision',
+          [
+            ['access content', true],
+            ['view all revisions', true],
+          ],
+          false,
+        ];
 
-    // Can delete non default revision if delete access.
-    $data['delete revision, with delete access, non default'] = [
-      'delete revision',
-      [
-        ['access content', TRUE],
-        ['delete all revisions', TRUE],
-        // Bypass for 'delete' operation.
-        ['bypass node access', TRUE],
-      ],
-      TRUE,
-      FALSE,
-    ];
+        $data['view revision, with view access'] = [
+          'view revision',
+          [
+            ['access content', true],
+            ['view all revisions', true],
+            // Bypass for 'view' operation.
+            ['bypass node access', true],
+          ],
+          true,
+        ];
 
-    return $data;
-  }
+        // Cannot revert if no update access.
+        $data['revert, without update access, non default'] = [
+          'revert revision',
+          [
+            ['access content', true],
+            ['revert all revisions', true],
+          ],
+          false,
+          false,
+        ];
+
+        // Can revert if has update access.
+        $data['revert, with update access, non default'] = [
+          'revert revision',
+          [
+            ['access content', true],
+            ['revert all revisions', true],
+            // Bypass for 'update' operation.
+            ['bypass node access', true],
+          ],
+          true,
+          false,
+        ];
+
+        // Can never revert default revision.
+        $data['revert, with update access, default revision'] = [
+          'revert revision',
+          [
+            ['access content', true],
+            ['revert all revisions', true],
+            // Bypass for 'update' operation.
+            ['bypass node access', true],
+          ],
+          false,
+          true,
+        ];
+
+        // Cannot delete non default revision if no delete access.
+        $data['delete revision, without delete access, non default'] = [
+          'delete revision',
+          [
+            ['access content', true],
+            ['delete all revisions', true],
+          ],
+          false,
+          false,
+        ];
+
+        // Can delete non default revision if delete access.
+        $data['delete revision, with delete access, non default'] = [
+          'delete revision',
+          [
+            ['access content', true],
+            ['delete all revisions', true],
+            // Bypass for 'delete' operation.
+            ['bypass node access', true],
+          ],
+          true,
+          false,
+        ];
+
+        return $data;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -10,82 +12,87 @@ namespace Drupal\Core\Cache;
  *
  * @todo On the longrun this backend should be replaced by phpunit mock objects.
  */
-class MemoryCounterBackend extends MemoryBackend {
+class MemoryCounterBackend extends MemoryBackend
+{
+    /**
+     * Stores a list of cache cid calls keyed by function name.
+     *
+     * @var array
+     */
+    protected $counter = [];
 
-  /**
-   * Stores a list of cache cid calls keyed by function name.
-   *
-   * @var array
-   */
-  protected $counter = [];
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($cid, $allow_invalid = FALSE) {
-    $this->increaseCounter(__FUNCTION__, $cid);
-    return parent::get($cid, $allow_invalid);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
-    $this->increaseCounter(__FUNCTION__, $cid);
-    parent::set($cid, $data, $expire, $tags);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid): void {
-    $this->increaseCounter(__FUNCTION__, $cid);
-    parent::delete($cid);
-  }
-
-  /**
-   * Increase the counter for a function with a certain cid.
-   *
-   * @param string $function
-   *   The called function.
-   * @param string $cid
-   *   The cache ID of the cache entry to increase the counter.
-   */
-  protected function increaseCounter($function, $cid) {
-    if (!isset($this->counter[$function][$cid])) {
-      $this->counter[$function][$cid] = 1;
+    /**
+     * {@inheritdoc}
+     */
+    public function get($cid, $allow_invalid = false)
+    {
+        $this->increaseCounter(__FUNCTION__, $cid);
+        return parent::get($cid, $allow_invalid);
     }
-    else {
-      $this->counter[$function][$cid]++;
-    }
-  }
 
-  /**
-   * Returns the call counter for the get, set and delete methods.
-   *
-   * @param string $method
-   *   (optional) The name of the method to return the call counter for.
-   * @param string $cid
-   *   (optional) The name of the cache id to return the call counter for.
-   *
-   * @return int|array
-   *   An integer if both method and cid is given, an array otherwise.
-   */
-  public function getCounter($method = NULL, $cid = NULL) {
-    if ($method && $cid) {
-        return $this->counter[$method][$cid] ?? 0;
+    /**
+     * {@inheritdoc}
+     */
+    public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void
+    {
+        $this->increaseCounter(__FUNCTION__, $cid);
+        parent::set($cid, $data, $expire, $tags);
     }
-    if ($method) {
-        return $this->counter[$method] ?? [];
-    }
-    return $this->counter;
-  }
 
-  /**
-   * Resets the call counter.
-   */
-  public function resetCounter(): void {
-    $this->counter = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid): void
+    {
+        $this->increaseCounter(__FUNCTION__, $cid);
+        parent::delete($cid);
+    }
+
+    /**
+     * Increase the counter for a function with a certain cid.
+     *
+     * @param string $function
+     *   The called function.
+     * @param string $cid
+     *   The cache ID of the cache entry to increase the counter.
+     */
+    protected function increaseCounter($function, $cid)
+    {
+        if (!isset($this->counter[$function][$cid])) {
+            $this->counter[$function][$cid] = 1;
+        } else {
+            $this->counter[$function][$cid]++;
+        }
+    }
+
+    /**
+     * Returns the call counter for the get, set and delete methods.
+     *
+     * @param string $method
+     *   (optional) The name of the method to return the call counter for.
+     * @param string $cid
+     *   (optional) The name of the cache id to return the call counter for.
+     *
+     * @return int|array
+     *   An integer if both method and cid is given, an array otherwise.
+     */
+    public function getCounter($method = null, $cid = null)
+    {
+        if ($method && $cid) {
+            return $this->counter[$method][$cid] ?? 0;
+        }
+        if ($method) {
+            return $this->counter[$method] ?? [];
+        }
+        return $this->counter;
+    }
+
+    /**
+     * Resets the call counter.
+     */
+    public function resetCounter(): void
+    {
+        $this->counter = [];
+    }
 
 }

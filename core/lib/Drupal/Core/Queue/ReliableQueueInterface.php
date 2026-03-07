@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue;
 
 /**
@@ -10,5 +12,6 @@ namespace Drupal\Core\Queue;
  *
  * @ingroup queue
  */
-interface ReliableQueueInterface extends QueueInterface {
+interface ReliableQueueInterface extends QueueInterface
+{
 }

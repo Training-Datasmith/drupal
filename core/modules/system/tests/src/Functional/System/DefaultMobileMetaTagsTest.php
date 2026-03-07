@@ -13,49 +13,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class DefaultMobileMetaTagsTest extends BrowserTestBase {
+class DefaultMobileMetaTagsTest extends BrowserTestBase
+{
+    /**
+     * Array of default meta tags to insert into the page.
+     *
+     * @var array
+     */
+    protected $defaultMetaTags;
 
-  /**
-   * Array of default meta tags to insert into the page.
-   *
-   * @var array
-   */
-  protected $defaultMetaTags;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->defaultMetaTags = [
-      'viewport' => '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-    ];
-  }
-
-  /**
-   * Verifies that the default mobile meta tags are added.
-   */
-  public function testDefaultMetaTagsExist(): void {
-    $this->drupalGet('');
-    foreach ($this->defaultMetaTags as $metatag) {
-      $this->assertSession()->responseContains($metatag);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->defaultMetaTags = [
+          'viewport' => '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+        ];
     }
-  }
 
-  /**
-   * Verifies that the default mobile meta tags can be removed.
-   */
-  public function testRemovingDefaultMetaTags(): void {
-    \Drupal::service('module_installer')->install(['system_module_test']);
-    $this->drupalGet('');
-    foreach ($this->defaultMetaTags as $metatag) {
-      $this->assertSession()->responseNotContains($metatag);
+    /**
+     * Verifies that the default mobile meta tags are added.
+     */
+    public function testDefaultMetaTagsExist(): void
+    {
+        $this->drupalGet('');
+        foreach ($this->defaultMetaTags as $metatag) {
+            $this->assertSession()->responseContains($metatag);
+        }
     }
-  }
+
+    /**
+     * Verifies that the default mobile meta tags can be removed.
+     */
+    public function testRemovingDefaultMetaTags(): void
+    {
+        \Drupal::service('module_installer')->install(['system_module_test']);
+        $this->drupalGet('');
+        foreach ($this->defaultMetaTags as $metatag) {
+            $this->assertSession()->responseNotContains($metatag);
+        }
+    }
 
 }

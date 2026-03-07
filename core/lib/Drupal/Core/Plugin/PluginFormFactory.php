@@ -1,60 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\PluginAwareInterface;
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
 
 /**
  * Provides form discovery capabilities for plugins.
  */
-class PluginFormFactory implements PluginFormFactoryInterface {
-
-  /**
-   * PluginFormFactory constructor.
-   *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver.
-   */
-  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createInstance(PluginWithFormsInterface $plugin, $operation, $fallback_operation = NULL) {
-    if (!$plugin->hasFormClass($operation)) {
-      // Use the default form class if no form is specified for this operation.
-      if ($fallback_operation && $plugin->hasFormClass($fallback_operation)) {
-        $operation = $fallback_operation;
-      }
-      else {
-        throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a "%s" form class', $plugin->getPluginId(), $operation));
-      }
+class PluginFormFactory implements PluginFormFactoryInterface
+{
+    /**
+     * PluginFormFactory constructor.
+     *
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver.
+     */
+    public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+    {
     }
 
-    $form_class = $plugin->getFormClass($operation);
+    /**
+     * {@inheritdoc}
+     */
+    public function createInstance(PluginWithFormsInterface $plugin, $operation, $fallback_operation = null)
+    {
+        if (!$plugin->hasFormClass($operation)) {
+            // Use the default form class if no form is specified for this operation.
+            if ($fallback_operation && $plugin->hasFormClass($fallback_operation)) {
+                $operation = $fallback_operation;
+            } else {
+                throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a "%s" form class', $plugin->getPluginId(), $operation));
+            }
+        }
 
-    // If the form specified is the plugin itself, use it directly.
-    if (ltrim($plugin::class, '\\') === ltrim((string) $form_class, '\\')) {
-      $form_object = $plugin;
-    }
-    else {
-      $form_object = $this->classResolver->getInstanceFromDefinition($form_class);
-    }
+        $form_class = $plugin->getFormClass($operation);
 
-    // Ensure the resulting object is a plugin form.
-    if (!$form_object instanceof PluginFormInterface) {
-      throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a valid "%s" form class, must implement \Drupal\Core\Plugin\PluginFormInterface', $plugin->getPluginId(), $operation));
-    }
+        // If the form specified is the plugin itself, use it directly.
+        if (ltrim($plugin::class, '\\') === ltrim((string) $form_class, '\\')) {
+            $form_object = $plugin;
+        } else {
+            $form_object = $this->classResolver->getInstanceFromDefinition($form_class);
+        }
 
-    if ($form_object instanceof PluginAwareInterface) {
-      $form_object->setPlugin($plugin);
-    }
+        // Ensure the resulting object is a plugin form.
+        if (!$form_object instanceof PluginFormInterface) {
+            throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a valid "%s" form class, must implement \Drupal\Core\Plugin\PluginFormInterface', $plugin->getPluginId(), $operation));
+        }
 
-    return $form_object;
-  }
+        if ($form_object instanceof PluginAwareInterface) {
+            $form_object->setPlugin($plugin);
+        }
+
+        return $form_object;
+    }
 
 }

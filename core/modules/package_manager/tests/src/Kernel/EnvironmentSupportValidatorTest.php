@@ -22,76 +22,82 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('package_manager')]
 #[CoversClass(EnvironmentSupportValidator::class)]
 #[RunTestsInSeparateProcesses]
-class EnvironmentSupportValidatorTest extends PackageManagerKernelTestBase {
+class EnvironmentSupportValidatorTest extends PackageManagerKernelTestBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Tests handling of an invalid URL in the environment support variable.
+     */
+    public function testInvalidUrl(): void
+    {
+        putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=broken/url.org');
 
-  /**
-   * Tests handling of an invalid URL in the environment support variable.
-   */
-  public function testInvalidUrl(): void {
-    putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=broken/url.org');
-
-    $result = ValidationResult::createError([
-      $this->t('Package Manager is not supported by your environment.'),
-    ]);
-    foreach ([PreCreateEvent::class, StatusCheckEvent::class] as $event_class) {
-      $this->assertEventPropagationStopped(
-        $event_class,
-        [
-          $this->container->get(EnvironmentSupportValidator::class),
-          'validate',
+        $result = ValidationResult::createError([
+          $this->t('Package Manager is not supported by your environment.'),
         ]);
+        foreach ([PreCreateEvent::class, StatusCheckEvent::class] as $event_class) {
+            $this->assertEventPropagationStopped(
+                $event_class,
+                [
+                $this->container->get(EnvironmentSupportValidator::class),
+                'validate',
+        ]
+            );
+        }
+        $this->assertStatusCheckResults([$result]);
+        $this->assertResults([$result], PreCreateEvent::class);
     }
-    $this->assertStatusCheckResults([$result]);
-    $this->assertResults([$result], PreCreateEvent::class);
-  }
 
-  /**
-   * Tests an invalid URL in the environment support variable during pre-apply.
-   */
-  public function testInvalidUrlDuringPreApply(): void {
-    $this->addEventTestListener(function (): void {
-      putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=broken/url.org');
-    });
+    /**
+     * Tests an invalid URL in the environment support variable during pre-apply.
+     */
+    public function testInvalidUrlDuringPreApply(): void
+    {
+        $this->addEventTestListener(function (): void {
+            putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=broken/url.org');
+        });
 
-    $result = ValidationResult::createError([
-      $this->t('Package Manager is not supported by your environment.'),
-    ]);
+        $result = ValidationResult::createError([
+          $this->t('Package Manager is not supported by your environment.'),
+        ]);
 
-    $this->assertEventPropagationStopped(
-      PreApplyEvent::class,
-      [$this->container->get(EnvironmentSupportValidator::class), 'validate']);
-    $this->assertResults([$result], PreApplyEvent::class);
-  }
+        $this->assertEventPropagationStopped(
+            PreApplyEvent::class,
+            [$this->container->get(EnvironmentSupportValidator::class), 'validate']
+        );
+        $this->assertResults([$result], PreApplyEvent::class);
+    }
 
-  /**
-   * Tests that the validation message links to the provided URL.
-   */
-  public function testValidUrl(): void {
-    $url = 'http://www.example.com';
-    putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=' . $url);
+    /**
+     * Tests that the validation message links to the provided URL.
+     */
+    public function testValidUrl(): void
+    {
+        $url = 'http://www.example.com';
+        putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=' . $url);
 
-    $result = ValidationResult::createError([
-      $this->t('<a href=":url">Package Manager is not supported by your environment.</a>', [':url' => $url]),
-    ]);
-    $this->assertStatusCheckResults([$result]);
-    $this->assertResults([$result], PreCreateEvent::class);
-  }
+        $result = ValidationResult::createError([
+          $this->t('<a href=":url">Package Manager is not supported by your environment.</a>', [':url' => $url]),
+        ]);
+        $this->assertStatusCheckResults([$result]);
+        $this->assertResults([$result], PreCreateEvent::class);
+    }
 
-  /**
-   * Tests that the validation message links to the provided URL during pre-apply.
-   */
-  public function testValidUrlDuringPreApply(): void {
-    $url = 'http://www.example.com';
-    $this->addEventTestListener(function () use ($url): void {
-      putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=' . $url);
-    });
+    /**
+     * Tests that the validation message links to the provided URL during pre-apply.
+     */
+    public function testValidUrlDuringPreApply(): void
+    {
+        $url = 'http://www.example.com';
+        $this->addEventTestListener(function () use ($url): void {
+            putenv(EnvironmentSupportValidator::VARIABLE_NAME . '=' . $url);
+        });
 
-    $result = ValidationResult::createError([
-      $this->t('<a href=":url">Package Manager is not supported by your environment.</a>', [':url' => $url]),
-    ]);
-    $this->assertResults([$result], PreApplyEvent::class);
-  }
+        $result = ValidationResult::createError([
+          $this->t('<a href=":url">Package Manager is not supported by your environment.</a>', [':url' => $url]),
+        ]);
+        $this->assertResults([$result], PreApplyEvent::class);
+    }
 
 }

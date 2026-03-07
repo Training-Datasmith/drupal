@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\source;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
@@ -64,213 +66,224 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
  */
 #[MigrateSource(
-  id: "content_entity",
-  deriver: ContentEntityDeriver::class,
+    id: 'content_entity',
+    deriver: ContentEntityDeriver::class,
 )]
-class ContentEntity extends SourcePluginBase implements ContainerFactoryPluginInterface {
-  use EntityFieldDefinitionTrait;
+class ContentEntity extends SourcePluginBase implements ContainerFactoryPluginInterface
+{
+    use EntityFieldDefinitionTrait;
 
-  /**
-   * The entity type definition.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  protected $entityType;
+    /**
+     * The entity type definition.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeInterface
+     */
+    protected $entityType;
 
-  /**
-   * The plugin's default configuration.
-   */
-  protected array $defaultConfiguration = [
-    'bundle' => NULL,
-    'include_translations' => TRUE,
-    'add_revision_id' => TRUE,
-  ];
+    /**
+     * The plugin's default configuration.
+     */
+    protected array $defaultConfiguration = [
+      'bundle' => null,
+      'include_translations' => true,
+      'add_revision_id' => true,
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    array $configuration,
-    string $plugin_id,
-    array $plugin_definition,
-    MigrationInterface $migration,
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected EntityFieldManagerInterface $entityFieldManager,
-    protected EntityTypeBundleInfoInterface $entityTypeBundleInfo,
-  ) {
-    if (empty($plugin_definition['entity_type'])) {
-      throw new InvalidPluginDefinitionException($plugin_id, 'Missing required "entity_type" definition.');
-    }
-    $this->entityType = $this->entityTypeManager->getDefinition($plugin_definition['entity_type']);
-    if (!$this->entityType instanceof ContentEntityTypeInterface) {
-      throw new InvalidPluginDefinitionException($plugin_id, sprintf('The entity type (%s) is not supported. The "content_entity" source plugin only supports content entities.', $plugin_definition['entity_type']));
-    }
-    if (!empty($configuration['bundle'])) {
-      if (!$this->entityType->hasKey('bundle')) {
-        throw new \InvalidArgumentException(sprintf('A bundle was provided but the entity type (%s) is not bundleable.', $plugin_definition['entity_type']));
-      }
-      $bundle_info = array_keys($this->entityTypeBundleInfo->getBundleInfo($this->entityType->id()));
-      if (!in_array($configuration['bundle'], $bundle_info, TRUE)) {
-        throw new \InvalidArgumentException(sprintf('The provided bundle (%s) is not valid for the (%s) entity type.', $configuration['bundle'], $plugin_definition['entity_type']));
-      }
-    }
-    parent::__construct($configuration + $this->defaultConfiguration, $plugin_id, $plugin_definition, $migration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('entity_type.manager'),
-      $container->get('entity_field.manager'),
-      $container->get('entity_type.bundle.info')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return (string) $this->entityType->getPluralLabel();
-  }
-
-  /**
-   * Initializes the iterator with the source data.
-   *
-   * @return \Generator
-   *   A data generator for this source.
-   */
-  protected function initializeIterator(): \Generator {
-    $ids = $this->query()->execute();
-    return $this->yieldEntities($ids);
-  }
-
-  /**
-   * Loads and yields entities, one at a time.
-   *
-   * @param array $ids
-   *   The entity IDs.
-   *
-   * @return \Generator
-   *   An iterable of the loaded entities.
-   */
-  protected function yieldEntities(array $ids): \Generator {
-    $storage = $this->entityTypeManager
-      ->getStorage($this->entityType->id());
-    foreach ($ids as $id) {
-      /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-      $entity = $storage->load($id);
-      yield $this->toArray($entity);
-      if ($this->configuration['include_translations']) {
-        foreach ($entity->getTranslationLanguages(FALSE) as $language) {
-          yield $this->toArray($entity->getTranslation($language->getId()));
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(
+        array $configuration,
+        string $plugin_id,
+        array $plugin_definition,
+        MigrationInterface $migration,
+        protected EntityTypeManagerInterface $entityTypeManager,
+        protected EntityFieldManagerInterface $entityFieldManager,
+        protected EntityTypeBundleInfoInterface $entityTypeBundleInfo,
+    ) {
+        if (empty($plugin_definition['entity_type'])) {
+            throw new InvalidPluginDefinitionException($plugin_id, 'Missing required "entity_type" definition.');
         }
-      }
+        $this->entityType = $this->entityTypeManager->getDefinition($plugin_definition['entity_type']);
+        if (!$this->entityType instanceof ContentEntityTypeInterface) {
+            throw new InvalidPluginDefinitionException($plugin_id, sprintf('The entity type (%s) is not supported. The "content_entity" source plugin only supports content entities.', $plugin_definition['entity_type']));
+        }
+        if (!empty($configuration['bundle'])) {
+            if (!$this->entityType->hasKey('bundle')) {
+                throw new \InvalidArgumentException(sprintf('A bundle was provided but the entity type (%s) is not bundleable.', $plugin_definition['entity_type']));
+            }
+            $bundle_info = array_keys($this->entityTypeBundleInfo->getBundleInfo($this->entityType->id()));
+            if (!in_array($configuration['bundle'], $bundle_info, true)) {
+                throw new \InvalidArgumentException(sprintf('The provided bundle (%s) is not valid for the (%s) entity type.', $configuration['bundle'], $plugin_definition['entity_type']));
+            }
+        }
+        parent::__construct($configuration + $this->defaultConfiguration, $plugin_id, $plugin_definition, $migration);
     }
-  }
 
-  /**
-   * Converts an entity to an array.
-   *
-   * Makes all IDs into flat values. All other values are returned as per
-   * $entity->toArray(), which is a nested array.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   The entity to convert.
-   *
-   * @return array
-   *   The entity, represented as an array.
-   */
-  protected function toArray(ContentEntityInterface $entity): array {
-    $return = $entity->toArray();
-    // This is necessary because the IDs must be flat. They cannot be nested for
-    // the ID map.
-    foreach (array_keys($this->getIds()) as $id) {
-      /** @var \Drupal\Core\TypedData\Plugin\DataType\ItemList $value */
-      $value = $entity->get($id);
-      // Force the IDs on top of the previous values.
-      $return[$id] = $value->first()->getString();
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('entity_type.manager'),
+            $container->get('entity_field.manager'),
+            $container->get('entity_type.bundle.info')
+        );
     }
-    return $return;
-  }
 
-  /**
-   * Query to retrieve the entities.
-   *
-   * @return \Drupal\Core\Entity\Query\QueryInterface
-   *   The query.
-   */
-  public function query(): QueryInterface {
-    $query = $this->entityTypeManager
-      ->getStorage($this->entityType->id())
-      ->getQuery()
-      ->accessCheck(FALSE);
-    if (!empty($this->configuration['bundle'])) {
-      $query->condition($this->entityType->getKey('bundle'), $this->configuration['bundle']);
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return (string) $this->entityType->getPluralLabel();
     }
-    // Exclude anonymous user account.
-    if ($this->entityType->id() === 'user' && !empty($this->entityType->getKey('id'))) {
-      $query->condition($this->entityType->getKey('id'), 0, '>');
-    }
-    return $query;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function count($refresh = FALSE): int {
-    // If no translations are included, then a simple query is possible.
-    if (!$this->configuration['include_translations']) {
-      return parent::count($refresh);
+    /**
+     * Initializes the iterator with the source data.
+     *
+     * @return \Generator
+     *   A data generator for this source.
+     */
+    protected function initializeIterator(): \Generator
+    {
+        $ids = $this->query()->execute();
+        return $this->yieldEntities($ids);
     }
-    // @todo Determine a better way to retrieve a valid count for translations.
-    //   https://www.drupal.org/project/drupal/issues/2937166
-    return MigrateSourceInterface::NOT_COUNTABLE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function doCount(): int {
-    return $this->query()->count()->execute();
-  }
+    /**
+     * Loads and yields entities, one at a time.
+     *
+     * @param array $ids
+     *   The entity IDs.
+     *
+     * @return \Generator
+     *   An iterable of the loaded entities.
+     */
+    protected function yieldEntities(array $ids): \Generator
+    {
+        $storage = $this->entityTypeManager
+          ->getStorage($this->entityType->id());
+        foreach ($ids as $id) {
+            /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+            $entity = $storage->load($id);
+            yield $this->toArray($entity);
+            if ($this->configuration['include_translations']) {
+                foreach ($entity->getTranslationLanguages(false) as $language) {
+                    yield $this->toArray($entity->getTranslation($language->getId()));
+                }
+            }
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): array {
-    // Retrieving fields from a non-fieldable content entity will throw a
-    // LogicException. Return an empty list of fields instead.
-    if (!$this->entityType->entityClassImplements(\Drupal\Core\Entity\FieldableEntityInterface::class)) {
-      return [];
+    /**
+     * Converts an entity to an array.
+     *
+     * Makes all IDs into flat values. All other values are returned as per
+     * $entity->toArray(), which is a nested array.
+     *
+     * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+     *   The entity to convert.
+     *
+     * @return array
+     *   The entity, represented as an array.
+     */
+    protected function toArray(ContentEntityInterface $entity): array
+    {
+        $return = $entity->toArray();
+        // This is necessary because the IDs must be flat. They cannot be nested for
+        // the ID map.
+        foreach (array_keys($this->getIds()) as $id) {
+            /** @var \Drupal\Core\TypedData\Plugin\DataType\ItemList $value */
+            $value = $entity->get($id);
+            // Force the IDs on top of the previous values.
+            $return[$id] = $value->first()->getString();
+        }
+        return $return;
     }
-    $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
-    if (!empty($this->configuration['bundle'])) {
-      $field_definitions += $this->entityFieldManager->getFieldDefinitions($this->entityType->id(), $this->configuration['bundle']);
-    }
-    return array_map(fn(\Drupal\Core\Field\FieldDefinitionInterface $definition) => (string) $definition->getLabel(), $field_definitions);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds(): array {
-    $id_key = $this->entityType->getKey('id');
-    $ids[$id_key] = $this->getDefinitionFromEntity($id_key);
-    if ($this->configuration['add_revision_id'] && $this->entityType->isRevisionable()) {
-      $revision_key = $this->entityType->getKey('revision');
-      $ids[$revision_key] = $this->getDefinitionFromEntity($revision_key);
+    /**
+     * Query to retrieve the entities.
+     *
+     * @return \Drupal\Core\Entity\Query\QueryInterface
+     *   The query.
+     */
+    public function query(): QueryInterface
+    {
+        $query = $this->entityTypeManager
+          ->getStorage($this->entityType->id())
+          ->getQuery()
+          ->accessCheck(false);
+        if (!empty($this->configuration['bundle'])) {
+            $query->condition($this->entityType->getKey('bundle'), $this->configuration['bundle']);
+        }
+        // Exclude anonymous user account.
+        if ($this->entityType->id() === 'user' && !empty($this->entityType->getKey('id'))) {
+            $query->condition($this->entityType->getKey('id'), 0, '>');
+        }
+        return $query;
     }
-    if ($this->entityType->isTranslatable()) {
-      $langcode_key = $this->entityType->getKey('langcode');
-      $ids[$langcode_key] = $this->getDefinitionFromEntity($langcode_key);
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count($refresh = false): int
+    {
+        // If no translations are included, then a simple query is possible.
+        if (!$this->configuration['include_translations']) {
+            return parent::count($refresh);
+        }
+        // @todo Determine a better way to retrieve a valid count for translations.
+        //   https://www.drupal.org/project/drupal/issues/2937166
+        return MigrateSourceInterface::NOT_COUNTABLE;
     }
-    return $ids;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doCount(): int
+    {
+        return $this->query()->count()->execute();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): array
+    {
+        // Retrieving fields from a non-fieldable content entity will throw a
+        // LogicException. Return an empty list of fields instead.
+        if (!$this->entityType->entityClassImplements(\Drupal\Core\Entity\FieldableEntityInterface::class)) {
+            return [];
+        }
+        $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
+        if (!empty($this->configuration['bundle'])) {
+            $field_definitions += $this->entityFieldManager->getFieldDefinitions($this->entityType->id(), $this->configuration['bundle']);
+        }
+        return array_map(fn (\Drupal\Core\Field\FieldDefinitionInterface $definition) => (string) $definition->getLabel(), $field_definitions);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds(): array
+    {
+        $id_key = $this->entityType->getKey('id');
+        $ids[$id_key] = $this->getDefinitionFromEntity($id_key);
+        if ($this->configuration['add_revision_id'] && $this->entityType->isRevisionable()) {
+            $revision_key = $this->entityType->getKey('revision');
+            $ids[$revision_key] = $this->getDefinitionFromEntity($revision_key);
+        }
+        if ($this->entityType->isTranslatable()) {
+            $langcode_key = $this->entityType->getKey('langcode');
+            $ids[$langcode_key] = $this->getDefinitionFromEntity($langcode_key);
+        }
+        return $ids;
+    }
 
 }

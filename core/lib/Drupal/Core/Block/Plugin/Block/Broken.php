@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Block\Plugin\Block;
 
 use Drupal\Core\Block\Attribute\Block;
@@ -7,76 +9,78 @@ use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Block\BlockPluginTrait;
 use Drupal\Core\Cache\CacheableDependencyTrait;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines a fallback plugin for missing block plugins.
  */
 #[Block(
-  id: "broken",
-  admin_label: new TranslatableMarkup("Broken/Missing"),
-  category: new TranslatableMarkup("Block")
+    id: 'broken',
+    admin_label: new TranslatableMarkup('Broken/Missing'),
+    category: new TranslatableMarkup('Block')
 )]
-class Broken extends PluginBase implements BlockPluginInterface, ContainerFactoryPluginInterface {
+class Broken extends PluginBase implements BlockPluginInterface, ContainerFactoryPluginInterface
+{
+    use BlockPluginTrait;
+    use CacheableDependencyTrait;
 
-  use BlockPluginTrait;
-  use CacheableDependencyTrait;
-
-  /**
-   * Creates a Broken Block instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    protected \Drupal\Core\Session\AccountInterface $currentUser,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function build(): array {
-    $build = [];
-    if ($this->currentUser->hasPermission('administer blocks')) {
-      $build += $this->brokenMessage();
+    /**
+     * Creates a Broken Block instance.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Session\AccountInterface $currentUser
+     *   The current user.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        protected \Drupal\Core\Session\AccountInterface $currentUser,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $build;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function blockForm($form, FormStateInterface $form_state) {
-    return $this->brokenMessage();
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function build(): array
+    {
+        $build = [];
+        if ($this->currentUser->hasPermission('administer blocks')) {
+            $build += $this->brokenMessage();
+        }
+        return $build;
+    }
 
-  /**
-   * Generate message with debugging information as to why the block is broken.
-   *
-   * @return array
-   *   Render array containing debug information.
-   */
-  protected function brokenMessage() {
-    $build['message'] = [
-      '#markup' => $this->t('This block is broken or missing. You may be missing content or you might need to install the original module.'),
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function blockForm($form, FormStateInterface $form_state)
+    {
+        return $this->brokenMessage();
+    }
 
-    return $build;
-  }
+    /**
+     * Generate message with debugging information as to why the block is broken.
+     *
+     * @return array
+     *   Render array containing debug information.
+     */
+    protected function brokenMessage()
+    {
+        $build['message'] = [
+          '#markup' => $this->t('This block is broken or missing. You may be missing content or you might need to install the original module.'),
+        ];
+
+        return $build;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Plugin\ObjectWithPluginCollectionInterface;
@@ -11,6 +13,6 @@ use Drupal\Core\Plugin\ObjectWithPluginCollectionInterface;
  *
  * @ingroup plugin_api
  */
-interface EntityWithPluginCollectionInterface extends EntityInterface, ObjectWithPluginCollectionInterface {
-
+interface EntityWithPluginCollectionInterface extends EntityInterface, ObjectWithPluginCollectionInterface
+{
 }

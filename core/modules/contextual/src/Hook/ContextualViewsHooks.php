@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\contextual\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
@@ -8,22 +10,23 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Hook implementations for contextual.
  */
-class ContextualViewsHooks {
+class ContextualViewsHooks
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Implements hook_views_data_alter().
-   */
-  #[Hook('views_data_alter')]
-  public function viewsDataAlter(array &$data): void {
-    $data['views']['contextual_links'] = [
-      'title' => $this->t('Contextual Links'),
-      'help' => $this->t('Display fields in a contextual links menu.'),
-      'field' => [
-        'id' => 'contextual_links',
-      ],
-    ];
-  }
+    /**
+     * Implements hook_views_data_alter().
+     */
+    #[Hook('views_data_alter')]
+    public function viewsDataAlter(array &$data): void
+    {
+        $data['views']['contextual_links'] = [
+          'title' => $this->t('Contextual Links'),
+          'help' => $this->t('Display fields in a contextual links menu.'),
+          'field' => [
+            'id' => 'contextual_links',
+          ],
+        ];
+    }
 
 }

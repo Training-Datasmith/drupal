@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Alias;
@@ -31,45 +33,43 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *   class: ...
  * @endcode
  */
-class BackendCompilerPass implements CompilerPassInterface {
+class BackendCompilerPass implements CompilerPassInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
+    {
+        if ($container->hasParameter('default_backend')) {
+            $default_backend = $container->getParameter('default_backend');
+            // Opt out from the default backend.
+            if (!$default_backend) {
+                return;
+            }
+        } else {
+            try {
+                $driver_backend = $container->get('database')->driver();
+                $default_backend = $container->get('database')->databaseType();
+                $container->set('database', null);
+            } catch (\Exception) {
+                // If Drupal is not installed or a test doesn't define database there
+                // is nothing to override.
+                return;
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process(ContainerBuilder $container): void {
-    if ($container->hasParameter('default_backend')) {
-      $default_backend = $container->getParameter('default_backend');
-      // Opt out from the default backend.
-      if (!$default_backend) {
-        return;
-      }
+        foreach ($container->findTaggedServiceIds('backend_overridable') as $id => $attributes) {
+            // If the service is already an alias it is not the original backend, so
+            // we don't want to fallback to other storages any longer.
+            if ($container->hasAlias($id)) {
+                continue;
+            }
+            if (isset($driver_backend) && ($container->hasDefinition("$driver_backend.$id") || $container->hasAlias("$driver_backend.$id"))) {
+                $container->setAlias($id, new Alias("$driver_backend.$id"));
+            } elseif (!empty($default_backend) && ($container->hasDefinition("$default_backend.$id") || $container->hasAlias("$default_backend.$id"))) {
+                $container->setAlias($id, new Alias("$default_backend.$id"));
+            }
+        }
     }
-    else {
-      try {
-        $driver_backend = $container->get('database')->driver();
-        $default_backend = $container->get('database')->databaseType();
-        $container->set('database', NULL);
-      }
-      catch (\Exception) {
-        // If Drupal is not installed or a test doesn't define database there
-        // is nothing to override.
-        return;
-      }
-    }
-
-    foreach ($container->findTaggedServiceIds('backend_overridable') as $id => $attributes) {
-      // If the service is already an alias it is not the original backend, so
-      // we don't want to fallback to other storages any longer.
-      if ($container->hasAlias($id)) {
-        continue;
-      }
-      if (isset($driver_backend) && ($container->hasDefinition("$driver_backend.$id") || $container->hasAlias("$driver_backend.$id"))) {
-        $container->setAlias($id, new Alias("$driver_backend.$id"));
-      }
-      elseif (!empty($default_backend) && ($container->hasDefinition("$default_backend.$id") || $container->hasAlias("$default_backend.$id"))) {
-        $container->setAlias($id, new Alias("$default_backend.$id"));
-      }
-    }
-  }
 
 }

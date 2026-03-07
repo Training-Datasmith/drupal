@@ -13,31 +13,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('content_translation')]
 #[RunTestsInSeparateProcesses]
-class ContentTranslationViewsUITest extends UITestBase {
+class ContentTranslationViewsUITest extends UITestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['content_translation'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['content_translation'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests the views UI.
-   */
-  public function testViewsUI(): void {
-    $this->drupalGet('admin/structure/views/view/test_view/edit');
-    $this->assertSession()->titleEquals('Test view (Views test data) | Drupal');
-  }
+    /**
+     * Tests the views UI.
+     */
+    public function testViewsUI(): void
+    {
+        $this->drupalGet('admin/structure/views/view/test_view/edit');
+        $this->assertSession()->titleEquals('Test view (Views test data) | Drupal');
+    }
 
 }

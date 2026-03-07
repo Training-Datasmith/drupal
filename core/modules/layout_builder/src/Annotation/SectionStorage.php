@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -13,71 +15,72 @@ use Drupal\layout_builder\SectionStorage\SectionStorageDefinition;
  *
  * @Annotation
  */
-class SectionStorage extends Plugin {
+class SectionStorage extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The plugin weight, optional (defaults to 0).
+     *
+     * When an entity with layout is rendered, section storage plugins are
+     * checked, in order of their weight, to determine which one should be used
+     * to render the layout.
+     *
+     * @var int
+     */
+    public $weight = 0;
 
-  /**
-   * The plugin weight, optional (defaults to 0).
-   *
-   * When an entity with layout is rendered, section storage plugins are
-   * checked, in order of their weight, to determine which one should be used
-   * to render the layout.
-   *
-   * @var int
-   */
-  public $weight = 0;
+    /**
+     * Any required context definitions, optional.
+     *
+     * When an entity with layout is rendered, all section storage plugins which
+     * match a particular set of contexts are checked, in order of their weight,
+     * to determine which plugin should be used to render the layout.
+     *
+     * @var array
+     *
+     * @see \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface::findByContext()
+     */
+    public $context_definitions = [];
 
-  /**
-   * Any required context definitions, optional.
-   *
-   * When an entity with layout is rendered, all section storage plugins which
-   * match a particular set of contexts are checked, in order of their weight,
-   * to determine which plugin should be used to render the layout.
-   *
-   * @var array
-   *
-   * @see \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface::findByContext()
-   */
-  public $context_definitions = [];
+    /**
+     * Indicates that this section storage handles its own permission checking.
+     *
+     * If FALSE, the 'configure any layout' permission will be required during
+     * routing access. If TRUE, Layout Builder will not enforce any access
+     * restrictions for the storage, so the section storage's implementation of
+     * access() must perform the access checking itself. Defaults to FALSE.
+     *
+     * @var bool
+     *
+     * @see \Drupal\layout_builder\Access\LayoutBuilderAccessCheck
+     */
+    public $handles_permission_check = false;
 
-  /**
-   * Indicates that this section storage handles its own permission checking.
-   *
-   * If FALSE, the 'configure any layout' permission will be required during
-   * routing access. If TRUE, Layout Builder will not enforce any access
-   * restrictions for the storage, so the section storage's implementation of
-   * access() must perform the access checking itself. Defaults to FALSE.
-   *
-   * @var bool
-   *
-   * @see \Drupal\layout_builder\Access\LayoutBuilderAccessCheck
-   */
-  public $handles_permission_check = FALSE;
+    /**
+     * Indicates that this section storage allows inline block creation.
+     *
+     * If TRUE, the 'Create content block' link will be shown as part of the
+     * choose block off-canvas dialog. If FALSE, the link will be hidden and will
+     * not be possible to add new inline blocks from the Layout Builder UI.
+     * Defaults to TRUE.
+     *
+     *
+     * @see \Drupal\layout_builder\Controller\ChooseBlockController
+     */
+    public bool $allow_inline_blocks = true;
 
-  /**
-   * Indicates that this section storage allows inline block creation.
-   *
-   * If TRUE, the 'Create content block' link will be shown as part of the
-   * choose block off-canvas dialog. If FALSE, the link will be hidden and will
-   * not be possible to add new inline blocks from the Layout Builder UI.
-   * Defaults to TRUE.
-   *
-   *
-   * @see \Drupal\layout_builder\Controller\ChooseBlockController
-   */
-  public bool $allow_inline_blocks = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get(): \Drupal\layout_builder\SectionStorage\SectionStorageDefinition {
-    return new SectionStorageDefinition($this->definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get(): \Drupal\layout_builder\SectionStorage\SectionStorageDefinition
+    {
+        return new SectionStorageDefinition($this->definition);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\views\Attribute\ViewsFilter;
@@ -15,26 +17,26 @@ use Drupal\views\Attribute\ViewsFilter;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("boolean_string")]
-class BooleanOperatorString extends BooleanOperator {
+#[ViewsFilter('boolean_string')]
+class BooleanOperatorString extends BooleanOperator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        $this->ensureMyTable();
+        $where = "$this->tableAlias.$this->realField ";
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    $this->ensureMyTable();
-    $where = "$this->tableAlias.$this->realField ";
-
-    if (empty($this->value)) {
-      $where .= "= ''";
-      if ($this->accept_null) {
-        $where = '(' . $where . " OR $this->tableAlias.$this->realField IS NULL)";
-      }
+        if (empty($this->value)) {
+            $where .= "= ''";
+            if ($this->accept_null) {
+                $where = '(' . $where . " OR $this->tableAlias.$this->realField IS NULL)";
+            }
+        } else {
+            $where .= "<> ''";
+        }
+        $this->query->addWhereExpression($this->options['group'], $where);
     }
-    else {
-      $where .= "<> ''";
-    }
-    $this->query->addWhereExpression($this->options['group'], $where);
-  }
 
 }

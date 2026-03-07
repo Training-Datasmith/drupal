@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -11,16 +13,17 @@ use Symfony\Component\Validator\Constraints\UuidValidator;
  * Validates a UUID.
  */
 #[Constraint(
-  id: 'Uuid',
-  label: new TranslatableMarkup('Universally Unique Identifier', [], ['context' => 'Validation'])
+    id: 'Uuid',
+    label: new TranslatableMarkup('Universally Unique Identifier', [], ['context' => 'Validation'])
 )]
-class UuidConstraint extends Uuid {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validatedBy(): string {
-    return UuidValidator::class;
-  }
+class UuidConstraint extends Uuid
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy(): string
+    {
+        return UuidValidator::class;
+    }
 
 }

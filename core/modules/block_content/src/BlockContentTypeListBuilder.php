@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -11,46 +13,50 @@ use Drupal\Core\Entity\EntityInterface;
  *
  * @see \Drupal\block_content\Entity\BlockContentType
  */
-class BlockContentTypeListBuilder extends ConfigEntityListBuilder {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $operations = parent::getDefaultOperations($entity, $cacheability);
-    // Place the edit operation after the operations added by
-    // FieldUiHooks::entityOperation() which have the weights 15, 20, 25.
-    if (isset($operations['edit'])) {
-      $operations['edit']['weight'] = 30;
+class BlockContentTypeListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $operations = parent::getDefaultOperations($entity, $cacheability);
+        // Place the edit operation after the operations added by
+        // FieldUiHooks::entityOperation() which have the weights 15, 20, 25.
+        if (isset($operations['edit'])) {
+            $operations['edit']['weight'] = 30;
+        }
+        return $operations;
     }
-    return $operations;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['type'] = $this->t('Block type');
-    $header['description'] = $this->t('Description');
-    return $header + parent::buildHeader();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['type'] = $this->t('Block type');
+        $header['description'] = $this->t('Description');
+        return $header + parent::buildHeader();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['type'] = $entity->toLink(NULL, 'edit-form')->toString();
-    $row['description']['data']['#markup'] = $entity->getDescription();
-    return $row + parent::buildRow($entity);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['type'] = $entity->toLink(null, 'edit-form')->toString();
+        $row['description']['data']['#markup'] = $entity->getDescription();
+        return $row + parent::buildRow($entity);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Block types');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Block types');
+    }
 
 }

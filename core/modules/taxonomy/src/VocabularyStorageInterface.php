@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy;
 
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
@@ -7,17 +9,17 @@ use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 /**
  * Defines an interface for vocabulary entity storage classes.
  */
-interface VocabularyStorageInterface extends ConfigEntityStorageInterface {
-
-  /**
-   * Gets top-level term IDs of vocabularies.
-   *
-   * @param array $vids
-   *   Array of vocabulary IDs.
-   *
-   * @return array
-   *   Array of top-level term IDs.
-   */
-  public function getToplevelTids($vids);
+interface VocabularyStorageInterface extends ConfigEntityStorageInterface
+{
+    /**
+     * Gets top-level term IDs of vocabularies.
+     *
+     * @param array $vids
+     *   Array of vocabulary IDs.
+     *
+     * @return array
+     *   Array of top-level term IDs.
+     */
+    public function getToplevelTids($vids);
 
 }

@@ -22,50 +22,52 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('package_manager')]
 #[CoversClass(AllowedScaffoldPackagesValidator::class)]
 #[RunTestsInSeparateProcesses]
-class AllowedScaffoldPackagesValidatorTest extends PackageManagerKernelTestBase {
+class AllowedScaffoldPackagesValidatorTest extends PackageManagerKernelTestBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Tests that the allowed-packages setting is validated during pre-create.
+     */
+    public function testPreCreate(): void
+    {
+        (new ActiveFixtureManipulator())->addConfig([
+          'extra.drupal-scaffold.allowed-packages' => [
+            'drupal/dummy_scaffolding',
+            'drupal/dummy_scaffolding_2',
+          ],
+        ])->commitChanges()->updateLock();
 
-  /**
-   * Tests that the allowed-packages setting is validated during pre-create.
-   */
-  public function testPreCreate(): void {
-    (new ActiveFixtureManipulator())->addConfig([
-      'extra.drupal-scaffold.allowed-packages' => [
-        "drupal/dummy_scaffolding",
-        "drupal/dummy_scaffolding_2",
+        $result = ValidationResult::createError(
+            [
+            $this->t('drupal/dummy_scaffolding'),
+            $this->t('drupal/dummy_scaffolding_2'),
       ],
-    ])->commitChanges()->updateLock();
+            $this->t('Any packages other than the implicitly allowed packages are not allowed to scaffold files. See <a href="https://www.drupal.org/docs/develop/using-composer/using-drupals-composer-scaffold">the scaffold documentation</a> for more information.')
+        );
+        $this->assertStatusCheckResults([$result]);
+        $this->assertResults([$result], PreCreateEvent::class);
+    }
 
-    $result = ValidationResult::createError(
-      [
-        $this->t("drupal/dummy_scaffolding"),
-        $this->t("drupal/dummy_scaffolding_2"),
+    /**
+     * Tests that the allowed-packages setting is validated during pre-apply.
+     */
+    public function testPreApply(): void
+    {
+        $this->getStageFixtureManipulator()
+          ->addConfig([
+            'extra.drupal-scaffold.allowed-packages' => [
+              'drupal/dummy_scaffolding',
+            ],
+          ], true);
+
+        $result = ValidationResult::createError(
+            [
+            $this->t('drupal/dummy_scaffolding'),
       ],
-      $this->t('Any packages other than the implicitly allowed packages are not allowed to scaffold files. See <a href="https://www.drupal.org/docs/develop/using-composer/using-drupals-composer-scaffold">the scaffold documentation</a> for more information.')
-    );
-    $this->assertStatusCheckResults([$result]);
-    $this->assertResults([$result], PreCreateEvent::class);
-  }
-
-  /**
-   * Tests that the allowed-packages setting is validated during pre-apply.
-   */
-  public function testPreApply(): void {
-    $this->getStageFixtureManipulator()
-      ->addConfig([
-        'extra.drupal-scaffold.allowed-packages' => [
-          "drupal/dummy_scaffolding",
-        ],
-      ], TRUE);
-
-    $result = ValidationResult::createError(
-      [
-        $this->t("drupal/dummy_scaffolding"),
-      ],
-      $this->t('Any packages other than the implicitly allowed packages are not allowed to scaffold files. See <a href="https://www.drupal.org/docs/develop/using-composer/using-drupals-composer-scaffold">the scaffold documentation</a> for more information.')
-    );
-    $this->assertResults([$result], PreApplyEvent::class);
-  }
+            $this->t('Any packages other than the implicitly allowed packages are not allowed to scaffold files. See <a href="https://www.drupal.org/docs/develop/using-composer/using-drupals-composer-scaffold">the scaffold documentation</a> for more information.')
+        );
+        $this->assertResults([$result], PreApplyEvent::class);
+    }
 
 }

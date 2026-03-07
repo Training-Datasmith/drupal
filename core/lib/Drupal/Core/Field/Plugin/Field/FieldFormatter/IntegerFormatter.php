@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -13,29 +15,31 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * different settings.
  */
 #[FieldFormatter(
-  id: 'number_integer',
-  label: new TranslatableMarkup('Default'),
-  field_types: [
+    id: 'number_integer',
+    label: new TranslatableMarkup('Default'),
+    field_types: [
     'integer',
   ],
 )]
-class IntegerFormatter extends NumericFormatterBase {
+class IntegerFormatter extends NumericFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+          'thousand_separator' => '',
+          'prefix_suffix' => true,
+        ] + parent::defaultSettings();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'thousand_separator' => '',
-      'prefix_suffix' => TRUE,
-    ] + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function numberFormat($number): string {
-    return number_format($number, 0, '', $this->getSetting('thousand_separator'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function numberFormat($number): string
+    {
+        return number_format($number, 0, '', $this->getSetting('thousand_separator'));
+    }
 
 }

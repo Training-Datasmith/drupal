@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 use Drupal\Core\Asset\AttachedAssets;
@@ -18,67 +20,68 @@ use Drupal\Core\Asset\AttachedAssets;
  *
  * @ingroup ajax
  */
-class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInterface {
+class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+{
+    /**
+     * The assertive priority attribute value.
+     *
+     * @var string
+     */
+    public const PRIORITY_ASSERTIVE = 'assertive';
 
-  /**
-   * The assertive priority attribute value.
-   *
-   * @var string
-   */
-  const PRIORITY_ASSERTIVE = 'assertive';
+    /**
+     * The polite priority attribute value.
+     *
+     * @var string
+     */
+    public const PRIORITY_POLITE = 'polite';
 
-  /**
-   * The polite priority attribute value.
-   *
-   * @var string
-   */
-  const PRIORITY_POLITE = 'polite';
-
-  /**
-   * Constructs an AnnounceCommand object.
-   *
-   * @param string $text
-   *   The text to be announced.
-   * @param string|null $priority
-   *   (optional) The priority that will be used for the announcement. Defaults
-   *   to NULL which will not set a 'priority' in the response sent to the
-   *   client and therefore the JavaScript Drupal.announce() default of 'polite'
-   *   will be used for the message.
-   */
-  public function __construct(
-      /**
-       * The text to be announced.
-       */
-      protected $text,
-      /**
-       * The priority that will be used for the announcement.
-       */
-      protected $priority = NULL
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    $render = [
-      'command' => 'announce',
-      'text' => $this->text,
-    ];
-    if ($this->priority !== NULL) {
-      $render['priority'] = $this->priority;
+    /**
+     * Constructs an AnnounceCommand object.
+     *
+     * @param string $text
+     *   The text to be announced.
+     * @param string|null $priority
+     *   (optional) The priority that will be used for the announcement. Defaults
+     *   to NULL which will not set a 'priority' in the response sent to the
+     *   client and therefore the JavaScript Drupal.announce() default of 'polite'
+     *   will be used for the message.
+     */
+    public function __construct(
+        /**
+         * The text to be announced.
+         */
+        protected $text,
+        /**
+         * The priority that will be used for the announcement.
+         */
+        protected $priority = null
+    ) {
     }
-    return $render;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets {
-    $assets = new AttachedAssets();
-    $assets->setLibraries(['core/drupal.announce']);
-    return $assets;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        $render = [
+          'command' => 'announce',
+          'text' => $this->text,
+        ];
+        if ($this->priority !== null) {
+            $render['priority'] = $this->priority;
+        }
+        return $render;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets
+    {
+        $assets = new AttachedAssets();
+        $assets->setLibraries(['core/drupal.announce']);
+        return $assets;
+    }
 
 }

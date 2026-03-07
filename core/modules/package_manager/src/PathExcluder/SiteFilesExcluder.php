@@ -18,49 +18,51 @@ use Symfony\Component\Filesystem\Filesystem;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class SiteFilesExcluder implements EventSubscriberInterface {
-
-  public function __construct(
-    private StreamWrapperManagerInterface $streamWrapperManager,
-    private Filesystem $fileSystem,
-    private array $wrappers,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      CollectPathsToExcludeEvent::class => 'excludeSiteFiles',
-    ];
-  }
-
-  /**
-   * Excludes public and private files from stage operations.
-   *
-   * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
-   *   The event object.
-   */
-  public function excludeSiteFiles(CollectPathsToExcludeEvent $event): void {
-    // Exclude files handled by the stream wrappers listed in $this->wrappers.
-    // These paths could be either absolute or relative, depending on site
-    // settings. If they are absolute, treat them as relative to the project
-    // root. Otherwise, treat them as relative to the web root.
-    foreach ($this->wrappers as $scheme) {
-      $wrapper = $this->streamWrapperManager->getViaScheme($scheme);
-      if ($wrapper instanceof LocalStream) {
-        $path = $wrapper->getDirectoryPath();
-
-        if ($this->fileSystem->isAbsolutePath($path)) {
-          if ($path = realpath($path)) {
-            $event->addPathsRelativeToProjectRoot([$path]);
-          }
-        }
-        else {
-          $event->addPathsRelativeToWebRoot([$path]);
-        }
-      }
+final readonly class SiteFilesExcluder implements EventSubscriberInterface
+{
+    public function __construct(
+        private StreamWrapperManagerInterface $streamWrapperManager,
+        private Filesystem $fileSystem,
+        private array $wrappers,
+    ) {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          CollectPathsToExcludeEvent::class => 'excludeSiteFiles',
+        ];
+    }
+
+    /**
+     * Excludes public and private files from stage operations.
+     *
+     * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
+     *   The event object.
+     */
+    public function excludeSiteFiles(CollectPathsToExcludeEvent $event): void
+    {
+        // Exclude files handled by the stream wrappers listed in $this->wrappers.
+        // These paths could be either absolute or relative, depending on site
+        // settings. If they are absolute, treat them as relative to the project
+        // root. Otherwise, treat them as relative to the web root.
+        foreach ($this->wrappers as $scheme) {
+            $wrapper = $this->streamWrapperManager->getViaScheme($scheme);
+            if ($wrapper instanceof LocalStream) {
+                $path = $wrapper->getDirectoryPath();
+
+                if ($this->fileSystem->isAbsolutePath($path)) {
+                    if ($path = realpath($path)) {
+                        $event->addPathsRelativeToProjectRoot([$path]);
+                    }
+                } else {
+                    $event->addPathsRelativeToWebRoot([$path]);
+                }
+            }
+        }
+    }
 
 }

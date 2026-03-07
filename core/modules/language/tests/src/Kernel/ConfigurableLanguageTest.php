@@ -16,22 +16,23 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class ConfigurableLanguageTest extends KernelTestBase {
+class ConfigurableLanguageTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language'];
-
-  /**
-   * Tests configurable language name methods.
-   */
-  public function testName(): void {
-    $name = $this->randomMachineName();
-    $language_code = $this->randomMachineName(2);
-    $configurableLanguage = new ConfigurableLanguage(['label' => $name, 'id' => $language_code], 'configurable_language');
-    $this->assertEquals($name, $configurableLanguage->getName());
-    $this->assertEquals('Test language', $configurableLanguage->setName('Test language')->getName());
-  }
+    /**
+     * Tests configurable language name methods.
+     */
+    public function testName(): void
+    {
+        $name = $this->randomMachineName();
+        $language_code = $this->randomMachineName(2);
+        $configurableLanguage = new ConfigurableLanguage(['label' => $name, 'id' => $language_code], 'configurable_language');
+        $this->assertEquals($name, $configurableLanguage->getName());
+        $this->assertEquals('Test language', $configurableLanguage->setName('Test language')->getName());
+    }
 
 }

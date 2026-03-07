@@ -16,150 +16,156 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class EntityViewDisplayTest extends ConfigEntityResourceTestBase {
+class EntityViewDisplayTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'field_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'field_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'entity_view_display';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'entity_view_display';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'entity_view_display--entity_view_display';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'entity_view_display--entity_view_display';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer node display']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer node display']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Camelids" node type.
+        $camelids = NodeType::create([
+          'name' => 'Camelids',
+          'type' => 'camelids',
+        ]);
+        $camelids->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Camelids" node type.
-    $camelids = NodeType::create([
-      'name' => 'Camelids',
-      'type' => 'camelids',
-    ]);
-    $camelids->save();
-
-    // Create a view display.
-    $view_display = EntityViewDisplay::create([
-      'targetEntityType' => 'node',
-      'bundle' => 'camelids',
-      'mode' => 'default',
-      'status' => TRUE,
-    ]);
-    $view_display->save();
-
-    return $view_display;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/entity_view_display/entity_view_display/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'entity_view_display--entity_view_display',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'bundle' => 'camelids',
-          'content' => [
-            'links' => [
-              'region' => 'content',
-              'weight' => 100,
-              'settings' => [],
-              'third_party_settings' => [],
-            ],
-          ],
-          'dependencies' => [
-            'config' => [
-              'node.type.camelids',
-            ],
-            'module' => [
-              'user',
-            ],
-          ],
-          'hidden' => [],
-          'langcode' => 'en',
-          'mode' => 'default',
-          'status' => TRUE,
+        // Create a view display.
+        $view_display = EntityViewDisplay::create([
           'targetEntityType' => 'node',
-          'drupal_internal__id' => 'node.camelids.default',
-        ],
-      ],
-    ];
-  }
+          'bundle' => 'camelids',
+          'mode' => 'default',
+          'status' => true,
+        ]);
+        $view_display->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+        return $view_display;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method): string {
-    return "The 'administer node display' permission is required.";
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/entity_view_display/entity_view_display/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'entity_view_display--entity_view_display',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'bundle' => 'camelids',
+              'content' => [
+                'links' => [
+                  'region' => 'content',
+                  'weight' => 100,
+                  'settings' => [],
+                  'third_party_settings' => [],
+                ],
+              ],
+              'dependencies' => [
+                'config' => [
+                  'node.type.camelids',
+                ],
+                'module' => [
+                  'user',
+                ],
+              ],
+              'hidden' => [],
+              'langcode' => 'en',
+              'mode' => 'default',
+              'status' => true,
+              'targetEntityType' => 'node',
+              'drupal_internal__id' => 'node.camelids.default',
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createAnotherEntity($key) {
-    NodeType::create([
-      'name' => 'Pachyderms',
-      'type' => 'pachyderms',
-    ])->save();
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
-    $entity = EntityViewDisplay::create([
-      'targetEntityType' => 'node',
-      'bundle' => 'pachyderms',
-      'mode' => 'default',
-      'status' => TRUE,
-    ]);
-    $entity->save();
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method): string
+    {
+        return "The 'administer node display' permission is required.";
+    }
 
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createAnotherEntity($key)
+    {
+        NodeType::create([
+          'name' => 'Pachyderms',
+          'type' => 'pachyderms',
+        ])->save();
+
+        $entity = EntityViewDisplay::create([
+          'targetEntityType' => 'node',
+          'bundle' => 'pachyderms',
+          'mode' => 'default',
+          'status' => true,
+        ]);
+        $entity->save();
+
+        return $entity;
+    }
 
 }

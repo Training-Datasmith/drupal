@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Entity;
 
 use Drupal\Core\Config\Action\Attribute\ActionMethod;
@@ -8,9 +10,9 @@ use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\Form\NodeTypeDeleteConfirm;
+use Drupal\node\Form\NodeTypeForm;
 use Drupal\node\NodePreviewMode;
 use Drupal\node\NodeTypeAccessControlHandler;
-use Drupal\node\Form\NodeTypeForm;
 use Drupal\node\NodeTypeInterface;
 use Drupal\node\NodeTypeListBuilder;
 use Drupal\user\Entity\EntityPermissionsRouteProvider;
@@ -19,17 +21,17 @@ use Drupal\user\Entity\EntityPermissionsRouteProvider;
  * Defines the Node type configuration entity.
  */
 #[ConfigEntityType(
-  id: 'node_type',
-  label: new TranslatableMarkup('Content type'),
-  label_collection: new TranslatableMarkup('Content types'),
-  label_singular: new TranslatableMarkup('content type'),
-  label_plural: new TranslatableMarkup('content types'),
-  config_prefix: 'type',
-  entity_keys: [
+    id: 'node_type',
+    label: new TranslatableMarkup('Content type'),
+    label_collection: new TranslatableMarkup('Content types'),
+    label_singular: new TranslatableMarkup('content type'),
+    label_plural: new TranslatableMarkup('content types'),
+    config_prefix: 'type',
+    entity_keys: [
     'id' => 'type',
     'label' => 'name',
   ],
-  handlers: [
+    handlers: [
     'access' => NodeTypeAccessControlHandler::class,
     'form' => [
       'add' => NodeTypeForm::class,
@@ -41,19 +43,19 @@ use Drupal\user\Entity\EntityPermissionsRouteProvider;
     ],
     'list_builder' => NodeTypeListBuilder::class,
   ],
-  links: [
+    links: [
     'edit-form' => '/admin/structure/types/manage/{node_type}',
     'delete-form' => '/admin/structure/types/manage/{node_type}/delete',
     'entity-permissions-form' => '/admin/structure/types/manage/{node_type}/permissions',
     'collection' => '/admin/structure/types',
   ],
-  admin_permission: 'administer content types',
-  bundle_of: 'node',
-  label_count: [
+    admin_permission: 'administer content types',
+    bundle_of: 'node',
+    label_count: [
     'singular' => '@count content type',
     'plural' => '@count content types',
   ],
-  config_export: [
+    config_export: [
     'name',
     'type',
     'description',
@@ -63,166 +65,178 @@ use Drupal\user\Entity\EntityPermissionsRouteProvider;
     'display_submitted',
   ],
 )]
-class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
+class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface
+{
+    /**
+     * The machine name of this node type.
+     *
+     * @var string
+     *
+     * @todo Rename to $id.
+     */
+    protected $type;
 
-  /**
-   * The machine name of this node type.
-   *
-   * @var string
-   *
-   * @todo Rename to $id.
-   */
-  protected $type;
+    /**
+     * The human-readable name of the node type.
+     *
+     * @var string
+     *
+     * @todo Rename to $label.
+     */
+    protected $name;
 
-  /**
-   * The human-readable name of the node type.
-   *
-   * @var string
-   *
-   * @todo Rename to $label.
-   */
-  protected $name;
+    /**
+     * A brief description of this node type.
+     *
+     * @var string|null
+     */
+    protected $description;
 
-  /**
-   * A brief description of this node type.
-   *
-   * @var string|null
-   */
-  protected $description;
+    /**
+     * Help information shown to the user when creating a Node of this type.
+     *
+     * @var string|null
+     */
+    protected $help;
 
-  /**
-   * Help information shown to the user when creating a Node of this type.
-   *
-   * @var string|null
-   */
-  protected $help;
+    /**
+     * Default value of the 'Create new revision' checkbox of this node type.
+     *
+     * @var bool
+     */
+    protected $new_revision = true;
 
-  /**
-   * Default value of the 'Create new revision' checkbox of this node type.
-   *
-   * @var bool
-   */
-  protected $new_revision = TRUE;
+    /**
+     * The preview mode.
+     *
+     * @var int
+     */
+    protected $preview_mode = NodePreviewMode::Optional->value;
 
-  /**
-   * The preview mode.
-   *
-   * @var int
-   */
-  protected $preview_mode = NodePreviewMode::Optional->value;
+    /**
+     * Display setting for author and date Submitted by post information.
+     *
+     * @var bool
+     */
+    protected $display_submitted = true;
 
-  /**
-   * Display setting for author and date Submitted by post information.
-   *
-   * @var bool
-   */
-  protected $display_submitted = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function id() {
-    return $this->type;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isLocked() {
-    $locked = \Drupal::state()->get('node.type.locked');
-    return $locked[$this->id()] ?? FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[ActionMethod(adminLabel: new TranslatableMarkup('Automatically create new revisions'), pluralize: FALSE)]
-  public function setNewRevision($new_revision): void {
-    $this->new_revision = $new_revision;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function displaySubmitted() {
-    return $this->display_submitted;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[ActionMethod(adminLabel: new TranslatableMarkup('Set whether to display submission information'), pluralize: FALSE)]
-  public function setDisplaySubmitted($display_submitted): void {
-    $this->display_submitted = $display_submitted;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPreviewMode(bool $returnAsInt = TRUE) {
-    $previewMode = NodePreviewMode::from($this->preview_mode);
-    if ($returnAsInt) {
-      @trigger_error('Calling ' . __METHOD__ . ' with the $returnAsInt parameter is deprecated in drupal:11.3.0 and is removed in drupal:13.0.0. See https://www.drupal.org/node/3538666', E_USER_DEPRECATED);
-      return $previewMode->value;
+    /**
+     * {@inheritdoc}
+     */
+    public function id()
+    {
+        return $this->type;
     }
-    return $previewMode;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  #[ActionMethod(adminLabel: new TranslatableMarkup('Set preview mode'), pluralize: FALSE)]
-  public function setPreviewMode(NodePreviewMode|int $preview_mode): void {
-    if (!$preview_mode instanceof NodePreviewMode) {
-      @trigger_error('Calling ' . __METHOD__ . ' with an integer $preview_mode parameter is deprecated in drupal:11.3.0 and is removed in drupal:13.0.0. Use the \Drupal\node\NodePreviewMode enum instead. See https://www.drupal.org/node/3538666', E_USER_DEPRECATED);
-      $this->preview_mode = $preview_mode;
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function isLocked()
+    {
+        $locked = \Drupal::state()->get('node.type.locked');
+        return $locked[$this->id()] ?? false;
     }
-    $this->preview_mode = $preview_mode->value;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getHelp() {
-    return $this->help ?? '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return $this->description ?? '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage, $update);
-
-    if ($update) {
-      // Clear the cached field definitions as some settings affect the field
-      // definitions.
-      \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+    /**
+     * {@inheritdoc}
+     */
+    #[ActionMethod(adminLabel: new TranslatableMarkup('Automatically create new revisions'), pluralize: false)]
+    public function setNewRevision($new_revision): void
+    {
+        $this->new_revision = $new_revision;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::postDelete($storage, $entities);
+    /**
+     * {@inheritdoc}
+     */
+    public function displaySubmitted()
+    {
+        return $this->display_submitted;
+    }
 
-    // Clear the node type cache to reflect the removal.
-    $storage->resetCache(array_keys($entities));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    #[ActionMethod(adminLabel: new TranslatableMarkup('Set whether to display submission information'), pluralize: false)]
+    public function setDisplaySubmitted($display_submitted): void
+    {
+        $this->display_submitted = $display_submitted;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function shouldCreateNewRevision() {
-    return $this->new_revision;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPreviewMode(bool $returnAsInt = true)
+    {
+        $previewMode = NodePreviewMode::from($this->preview_mode);
+        if ($returnAsInt) {
+            @trigger_error('Calling ' . __METHOD__ . ' with the $returnAsInt parameter is deprecated in drupal:11.3.0 and is removed in drupal:13.0.0. See https://www.drupal.org/node/3538666', E_USER_DEPRECATED);
+            return $previewMode->value;
+        }
+        return $previewMode;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[ActionMethod(adminLabel: new TranslatableMarkup('Set preview mode'), pluralize: false)]
+    public function setPreviewMode(NodePreviewMode|int $preview_mode): void
+    {
+        if (!$preview_mode instanceof NodePreviewMode) {
+            @trigger_error('Calling ' . __METHOD__ . ' with an integer $preview_mode parameter is deprecated in drupal:11.3.0 and is removed in drupal:13.0.0. Use the \Drupal\node\NodePreviewMode enum instead. See https://www.drupal.org/node/3538666', E_USER_DEPRECATED);
+            $this->preview_mode = $preview_mode;
+            return;
+        }
+        $this->preview_mode = $preview_mode->value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHelp()
+    {
+        return $this->help ?? '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return $this->description ?? '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave(EntityStorageInterface $storage, $update = true): void
+    {
+        parent::postSave($storage, $update);
+
+        if ($update) {
+            // Clear the cached field definitions as some settings affect the field
+            // definitions.
+            \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::postDelete($storage, $entities);
+
+        // Clear the node type cache to reflect the removal.
+        $storage->resetCache(array_keys($entities));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function shouldCreateNewRevision()
+    {
+        return $this->new_revision;
+    }
 
 }

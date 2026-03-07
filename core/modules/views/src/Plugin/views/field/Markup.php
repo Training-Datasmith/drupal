@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -17,54 +19,56 @@ use Drupal\views\ViewExecutable;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("markup")]
-class Markup extends FieldPluginBase {
+#[ViewsField('markup')]
+class Markup extends FieldPluginBase
+{
+    /**
+     * The format to use for this field.
+     */
+    public string $format;
 
-  /**
-   * The format to use for this field.
-   */
-  public string $format;
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
+        $this->format = $this->definition['format'];
 
-    $this->format = $this->definition['format'];
-
-    $this->additional_fields = [];
-    if (is_array($this->format)) {
-      $this->additional_fields['format'] = $this->format;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $this->getValue($values);
-    if (is_array($this->format)) {
-      $format = $this->getValue($values, 'format');
-    }
-    else {
-      $format = $this->format;
-    }
-    if ($value) {
-      $value = str_replace('<!--break-->', '', $value);
-      return check_markup($value, $format);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function elementType($none_supported = FALSE, $default_empty = FALSE, $inline = FALSE) {
-    if ($inline) {
-      return 'span';
+        $this->additional_fields = [];
+        if (is_array($this->format)) {
+            $this->additional_fields['format'] = $this->format;
+        }
     }
 
-    return $this->definition['element type'] ?? 'div';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $this->getValue($values);
+        if (is_array($this->format)) {
+            $format = $this->getValue($values, 'format');
+        } else {
+            $format = $this->format;
+        }
+        if ($value) {
+            $value = str_replace('<!--break-->', '', $value);
+            return check_markup($value, $format);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function elementType($none_supported = false, $default_empty = false, $inline = false)
+    {
+        if ($inline) {
+            return 'span';
+        }
+
+        return $this->definition['element type'] ?? 'div';
+    }
 
 }

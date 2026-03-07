@@ -14,46 +14,47 @@ use Symfony\Component\Mailer\Transport\NullTransport;
  */
 #[Group('mailer')]
 #[RunTestsInSeparateProcesses]
-class TransportServiceFactoryTest extends BrowserTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'mailer',
-    'mailer_transport_factory_functional_test',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Test that the transport is set to null://null by default in the child site.
-   *
-   * The mailer configuration is set to a safe default during test setUp by
-   * FunctionalTestSetupTrait::initConfig(). This is in order to prevent tests
-   * from accidentally sending out emails. This test ensures that the transport
-   * service is configured correctly in the test child site.
-   */
-  public function testDefaultTestMailFactory(): void {
-    $response = $this->drupalGet('mailer-transport-factory-functional-test/transport-info');
-    $actual = json_decode($response, TRUE);
-
-    $expected = [
-      'mailerDsn' => [
-        'scheme' => 'null',
-        'host' => 'null',
-        'user' => NULL,
-        'password' => NULL,
-        'port' => NULL,
-        'options' => [],
-      ],
-      'mailerTransportClass' => NullTransport::class,
+class TransportServiceFactoryTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'mailer',
+      'mailer_transport_factory_functional_test',
     ];
-    $this->assertEquals($expected, $actual);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
+
+    /**
+     * Test that the transport is set to null://null by default in the child site.
+     *
+     * The mailer configuration is set to a safe default during test setUp by
+     * FunctionalTestSetupTrait::initConfig(). This is in order to prevent tests
+     * from accidentally sending out emails. This test ensures that the transport
+     * service is configured correctly in the test child site.
+     */
+    public function testDefaultTestMailFactory(): void
+    {
+        $response = $this->drupalGet('mailer-transport-factory-functional-test/transport-info');
+        $actual = json_decode($response, true);
+
+        $expected = [
+          'mailerDsn' => [
+            'scheme' => 'null',
+            'host' => 'null',
+            'user' => null,
+            'password' => null,
+            'port' => null,
+            'options' => [],
+          ],
+          'mailerTransportClass' => NullTransport::class,
+        ];
+        $this->assertEquals($expected, $actual);
+    }
 
 }

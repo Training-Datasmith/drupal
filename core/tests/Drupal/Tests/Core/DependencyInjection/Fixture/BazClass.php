@@ -10,6 +10,6 @@ namespace Drupal\Tests\Core\DependencyInjection\Fixture;
  * @see \Drupal\Tests\Core\DependencyInjection\ContainerBuilderTest
  * @see \Drupal\Tests\Core\DependencyInjection\Fixture\BarClass
  */
-class BazClass {
-
+class BazClass
+{
 }

@@ -11,50 +11,52 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests that the base controller class.
  */
 #[Group('Controller')]
-class ControllerBaseTest extends UnitTestCase {
+class ControllerBaseTest extends UnitTestCase
+{
+    /**
+     * The tested controller base class.
+     */
+    protected StubControllerBase $controllerBase;
 
-  /**
-   * The tested controller base class.
-   */
-  protected StubControllerBase $controllerBase;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->controllerBase = new StubControllerBase();
+    }
 
-    $this->controllerBase = new StubControllerBase();
-  }
+    /**
+     * Tests the config method.
+     */
+    public function testGetConfig(): void
+    {
+        $config_factory = $this->getConfigFactoryStub([
+          'config_name' => [
+            'key' => 'value',
+          ],
+          'config_name2' => [
+            'key2' => 'value2',
+          ],
+        ]);
 
-  /**
-   * Tests the config method.
-   */
-  public function testGetConfig(): void {
-    $config_factory = $this->getConfigFactoryStub([
-      'config_name' => [
-        'key' => 'value',
-      ],
-      'config_name2' => [
-        'key2' => 'value2',
-      ],
-    ]);
+        $container = $this->createMock('Symfony\Component\DependencyInjection\ContainerInterface');
+        $container->expects($this->once())
+          ->method('get')
+          ->with('config.factory')
+          ->willReturn($config_factory);
+        \Drupal::setContainer($container);
 
-    $container = $this->createMock('Symfony\Component\DependencyInjection\ContainerInterface');
-    $container->expects($this->once())
-      ->method('get')
-      ->with('config.factory')
-      ->willReturn($config_factory);
-    \Drupal::setContainer($container);
+        $config_method = new \ReflectionMethod(StubControllerBase::class, 'config');
 
-    $config_method = new \ReflectionMethod(StubControllerBase::class, 'config');
+        // Call config twice to ensure that the container is just called once.
+        $config = $config_method->invoke($this->controllerBase, 'config_name');
+        $this->assertEquals('value', $config->get('key'));
 
-    // Call config twice to ensure that the container is just called once.
-    $config = $config_method->invoke($this->controllerBase, 'config_name');
-    $this->assertEquals('value', $config->get('key'));
-
-    $config = $config_method->invoke($this->controllerBase, 'config_name2');
-    $this->assertEquals('value2', $config->get('key2'));
-  }
+        $config = $config_method->invoke($this->controllerBase, 'config_name2');
+        $this->assertEquals('value2', $config->get('key2'));
+    }
 
 }

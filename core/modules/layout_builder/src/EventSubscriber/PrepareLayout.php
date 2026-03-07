@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\EventSubscriber;
 
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\layout_builder\Event\PrepareLayoutEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
-use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -19,55 +19,56 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @see \Drupal\layout_builder\Event\PrepareLayoutEvent
  * @see \Drupal\layout_builder\Element\LayoutBuilder::prepareLayout()
  */
-class PrepareLayout implements EventSubscriberInterface {
+class PrepareLayout implements EventSubscriberInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a new PrepareLayout.
-   *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
-   *   The tempstore repository.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   */
-  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Messenger\MessengerInterface $messenger)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[LayoutBuilderEvents::PREPARE_LAYOUT][] = ['onPrepareLayout', 10];
-    return $events;
-  }
-
-  /**
-   * Prepares a layout for use in the UI.
-   *
-   * @param \Drupal\layout_builder\Event\PrepareLayoutEvent $event
-   *   The prepare layout event.
-   */
-  public function onPrepareLayout(PrepareLayoutEvent $event): void {
-    $section_storage = $event->getSectionStorage();
-
-    // If the layout has pending changes, add a warning.
-    if ($this->layoutTempstoreRepository->has($section_storage)) {
-      $this->messenger->addWarning($this->t('You have unsaved changes.'));
+    /**
+     * Constructs a new PrepareLayout.
+     *
+     * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
+     *   The tempstore repository.
+     * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+     *   The messenger service.
+     */
+    public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Messenger\MessengerInterface $messenger)
+    {
     }
-    else {
-      // If the layout is an override that has not yet been overridden, copy the
-      // sections from the corresponding default.
-      if ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
-        $sections = $section_storage->getDefaultSectionStorage()->getSections();
-        foreach ($sections as $section) {
-          $section_storage->appendSection($section);
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[LayoutBuilderEvents::PREPARE_LAYOUT][] = ['onPrepareLayout', 10];
+        return $events;
+    }
+
+    /**
+     * Prepares a layout for use in the UI.
+     *
+     * @param \Drupal\layout_builder\Event\PrepareLayoutEvent $event
+     *   The prepare layout event.
+     */
+    public function onPrepareLayout(PrepareLayoutEvent $event): void
+    {
+        $section_storage = $event->getSectionStorage();
+
+        // If the layout has pending changes, add a warning.
+        if ($this->layoutTempstoreRepository->has($section_storage)) {
+            $this->messenger->addWarning($this->t('You have unsaved changes.'));
+        } else {
+            // If the layout is an override that has not yet been overridden, copy the
+            // sections from the corresponding default.
+            if ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
+                $sections = $section_storage->getDefaultSectionStorage()->getSections();
+                foreach ($sections as $section) {
+                    $section_storage->appendSection($section);
+                }
+            }
+            // Add storage to tempstore regardless of what the storage is.
+            $this->layoutTempstoreRepository->set($section_storage);
         }
-      }
-      // Add storage to tempstore regardless of what the storage is.
-      $this->layoutTempstoreRepository->set($section_storage);
     }
-  }
 
 }

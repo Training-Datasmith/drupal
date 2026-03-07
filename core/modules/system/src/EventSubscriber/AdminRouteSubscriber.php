@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\EventSubscriber;
 
 use Drupal\Core\Routing\RouteSubscriberBase;
@@ -10,47 +12,50 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Adds the _admin_route option to each admin HTML route.
  */
-class AdminRouteSubscriber extends RouteSubscriberBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function alterRoutes(RouteCollection $collection) {
-    foreach ($collection->all() as $route) {
-      $path = $route->getPath();
-      if (($path == '/admin' || str_starts_with((string) $path, '/admin/')) && !$route->hasOption('_admin_route') && static::isHtmlRoute($route)) {
-        $route->setOption('_admin_route', TRUE);
-      }
+class AdminRouteSubscriber extends RouteSubscriberBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function alterRoutes(RouteCollection $collection)
+    {
+        foreach ($collection->all() as $route) {
+            $path = $route->getPath();
+            if (($path == '/admin' || str_starts_with((string) $path, '/admin/')) && !$route->hasOption('_admin_route') && static::isHtmlRoute($route)) {
+                $route->setOption('_admin_route', true);
+            }
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events = parent::getSubscribedEvents();
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events = parent::getSubscribedEvents();
 
-    // Use a lower priority than \Drupal\field_ui\Routing\RouteSubscriber or
-    // \Drupal\views\EventSubscriber\RouteSubscriber to ensure we add the option
-    // to their routes.
-    $events[RoutingEvents::ALTER] = ['onAlterRoutes', -200];
+        // Use a lower priority than \Drupal\field_ui\Routing\RouteSubscriber or
+        // \Drupal\views\EventSubscriber\RouteSubscriber to ensure we add the option
+        // to their routes.
+        $events[RoutingEvents::ALTER] = ['onAlterRoutes', -200];
 
-    return $events;
-  }
+        return $events;
+    }
 
-  /**
-   * Determines whether the given route is an HTML route.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route to analyze.
-   *
-   * @return bool
-   *   TRUE if HTML is a valid format for this route.
-   */
-  protected static function isHtmlRoute(Route $route): bool {
-    // If a route has no explicit format, then HTML is valid.
-    $format = $route->hasRequirement('_format') ? explode('|', $route->getRequirement('_format')) : ['html'];
-    return in_array('html', $format, TRUE);
-  }
+    /**
+     * Determines whether the given route is an HTML route.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route to analyze.
+     *
+     * @return bool
+     *   TRUE if HTML is a valid format for this route.
+     */
+    protected static function isHtmlRoute(Route $route): bool
+    {
+        // If a route has no explicit format, then HTML is valid.
+        $format = $route->hasRequirement('_format') ? explode('|', $route->getRequirement('_format')) : ['html'];
+        return in_array('html', $format, true);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
@@ -67,144 +69,144 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * @see \Drupal\media\MediaSourceFieldConstraintsInterface
  * @see plugin_api
  */
-interface MediaSourceInterface extends PluginInspectionInterface, ConfigurableInterface, DependentPluginInterface, PluginFormInterface {
+interface MediaSourceInterface extends PluginInspectionInterface, ConfigurableInterface, DependentPluginInterface, PluginFormInterface
+{
+    /**
+     * Default empty value for metadata fields.
+     */
+    public const METADATA_FIELD_EMPTY = '_none';
 
-  /**
-   * Default empty value for metadata fields.
-   */
-  const METADATA_FIELD_EMPTY = '_none';
+    /**
+     * Key for "Drupal entity link target" metadata attribute.
+     *
+     * Media source plugins knows how the media in this source is stored and hence
+     * also how to generate a link target for it, if at all possible. This key is
+     * reserved to enable \Drupal\media\Entity\MediaLinkTarget to generate link
+     * targets for all media, with a default implementation in the base class that
+     * only works if standalone media URLs are enabled.
+     *
+     * @see \Drupal\media\Entity\MediaLinkTarget
+     * @see \Drupal\Core\Entity\EntityLinkTargetInterface
+     * @see \Drupal\media\MediaSourceBase::getMetadata()
+     */
+    public const METADATA_ATTRIBUTE_LINK_TARGET = 'drupal:entity_link_target';
 
-  /**
-   * Key for "Drupal entity link target" metadata attribute.
-   *
-   * Media source plugins knows how the media in this source is stored and hence
-   * also how to generate a link target for it, if at all possible. This key is
-   * reserved to enable \Drupal\media\Entity\MediaLinkTarget to generate link
-   * targets for all media, with a default implementation in the base class that
-   * only works if standalone media URLs are enabled.
-   *
-   * @see \Drupal\media\Entity\MediaLinkTarget
-   * @see \Drupal\Core\Entity\EntityLinkTargetInterface
-   * @see \Drupal\media\MediaSourceBase::getMetadata()
-   */
-  const METADATA_ATTRIBUTE_LINK_TARGET = 'drupal:entity_link_target';
+    /**
+     * Gets a list of metadata attributes provided by this plugin.
+     *
+     * Most media sources have associated metadata, describing attributes
+     * such as:
+     * - dimensions
+     * - duration
+     * - encoding
+     * - date
+     * - location
+     * - permalink
+     * - licensing information
+     * - and so on.
+     *
+     * This method should list all metadata attributes that a media source MAY
+     * offer. In other words: it is possible that a particular media item does
+     * not contain a certain attribute. For example: an oEmbed media source can
+     * contain both video and images. Images don't have a duration, but
+     * videos do.
+     *
+     * (The term 'attributes' was chosen because it cannot be confused
+     * with 'fields' and 'properties', both of which are concepts in Drupal's
+     * Entity Field API.)
+     *
+     * @return array
+     *   Associative array with:
+     *   - keys: metadata attribute names
+     *   - values: human-readable labels for those attribute names
+     */
+    public function getMetadataAttributes();
 
-  /**
-   * Gets a list of metadata attributes provided by this plugin.
-   *
-   * Most media sources have associated metadata, describing attributes
-   * such as:
-   * - dimensions
-   * - duration
-   * - encoding
-   * - date
-   * - location
-   * - permalink
-   * - licensing information
-   * - and so on.
-   *
-   * This method should list all metadata attributes that a media source MAY
-   * offer. In other words: it is possible that a particular media item does
-   * not contain a certain attribute. For example: an oEmbed media source can
-   * contain both video and images. Images don't have a duration, but
-   * videos do.
-   *
-   * (The term 'attributes' was chosen because it cannot be confused
-   * with 'fields' and 'properties', both of which are concepts in Drupal's
-   * Entity Field API.)
-   *
-   * @return array
-   *   Associative array with:
-   *   - keys: metadata attribute names
-   *   - values: human-readable labels for those attribute names
-   */
-  public function getMetadataAttributes();
+    /**
+     * Gets the value for a metadata attribute for a given media item.
+     *
+     * @param \Drupal\media\MediaInterface $media
+     *   A media item.
+     * @param string $attribute_name
+     *   Name of the attribute to fetch.
+     *
+     * @return mixed|null
+     *   Metadata attribute value or NULL if unavailable.
+     */
+    public function getMetadata(MediaInterface $media, $attribute_name);
 
-  /**
-   * Gets the value for a metadata attribute for a given media item.
-   *
-   * @param \Drupal\media\MediaInterface $media
-   *   A media item.
-   * @param string $attribute_name
-   *   Name of the attribute to fetch.
-   *
-   * @return mixed|null
-   *   Metadata attribute value or NULL if unavailable.
-   */
-  public function getMetadata(MediaInterface $media, $attribute_name);
+    /**
+     * Get the source field definition for a media type.
+     *
+     * @param \Drupal\media\MediaTypeInterface $type
+     *   A media type.
+     *
+     * @return \Drupal\Core\Field\FieldDefinitionInterface|null
+     *   The source field definition, or NULL if it doesn't exist or has not been
+     *   configured yet.
+     */
+    public function getSourceFieldDefinition(MediaTypeInterface $type);
 
-  /**
-   * Get the source field definition for a media type.
-   *
-   * @param \Drupal\media\MediaTypeInterface $type
-   *   A media type.
-   *
-   * @return \Drupal\Core\Field\FieldDefinitionInterface|null
-   *   The source field definition, or NULL if it doesn't exist or has not been
-   *   configured yet.
-   */
-  public function getSourceFieldDefinition(MediaTypeInterface $type);
+    /**
+     * Creates the source field definition for a type.
+     *
+     * @param \Drupal\media\MediaTypeInterface $type
+     *   The media type.
+     *
+     * @return \Drupal\field\FieldConfigInterface
+     *   The unsaved field definition. The field storage definition, if new,
+     *   should also be unsaved.
+     */
+    public function createSourceField(MediaTypeInterface $type);
 
-  /**
-   * Creates the source field definition for a type.
-   *
-   * @param \Drupal\media\MediaTypeInterface $type
-   *   The media type.
-   *
-   * @return \Drupal\field\FieldConfigInterface
-   *   The unsaved field definition. The field storage definition, if new,
-   *   should also be unsaved.
-   */
-  public function createSourceField(MediaTypeInterface $type);
+    /**
+     * Prepares the media type fields for this source in the view display.
+     *
+     * This method should normally call
+     * \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent() or
+     * \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent() to
+     * configure the media type fields in the view display.
+     *
+     * @param \Drupal\media\MediaTypeInterface $type
+     *   The media type which is using this source.
+     * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+     *   The display which should be prepared.
+     *
+     * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent()
+     * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent()
+     */
+    public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display);
 
-  /**
-   * Prepares the media type fields for this source in the view display.
-   *
-   * This method should normally call
-   * \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent() or
-   * \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent() to
-   * configure the media type fields in the view display.
-   *
-   * @param \Drupal\media\MediaTypeInterface $type
-   *   The media type which is using this source.
-   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
-   *   The display which should be prepared.
-   *
-   * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent()
-   * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent()
-   */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display);
+    /**
+     * Prepares the media type fields for this source in the form display.
+     *
+     * This method should normally call
+     * \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent() or
+     * \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent() to
+     * configure the media type fields in the form display.
+     *
+     * @param \Drupal\media\MediaTypeInterface $type
+     *   The media type which is using this source.
+     * @param \Drupal\Core\Entity\Display\EntityFormDisplayInterface $display
+     *   The display which should be prepared.
+     *
+     * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent()
+     * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent()
+     */
+    public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display);
 
-  /**
-   * Prepares the media type fields for this source in the form display.
-   *
-   * This method should normally call
-   * \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent() or
-   * \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent() to
-   * configure the media type fields in the form display.
-   *
-   * @param \Drupal\media\MediaTypeInterface $type
-   *   The media type which is using this source.
-   * @param \Drupal\Core\Entity\Display\EntityFormDisplayInterface $display
-   *   The display which should be prepared.
-   *
-   * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::setComponent()
-   * @see \Drupal\Core\Entity\Display\EntityDisplayInterface::removeComponent()
-   */
-  public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display);
-
-  /**
-   * Get the primary value stored in the source field.
-   *
-   * @param MediaInterface $media
-   *   A media item.
-   *
-   * @return mixed
-   *   The source value, or NULL if the media item's source field is empty.
-   *
-   * @throws \RuntimeException
-   *   If the source field for the media source is not defined.
-   */
-  public function getSourceFieldValue(MediaInterface $media);
+    /**
+     * Get the primary value stored in the source field.
+     *
+     * @param MediaInterface $media
+     *   A media item.
+     *
+     * @return mixed
+     *   The source value, or NULL if the media item's source field is empty.
+     *
+     * @throws \RuntimeException
+     *   If the source field for the media source is not defined.
+     */
+    public function getSourceFieldValue(MediaInterface $media);
 
 }

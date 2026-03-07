@@ -13,31 +13,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Session')]
 #[RunTestsInSeparateProcesses]
-class CsrfTokenRaceTest extends WebDriverTestBase {
+class CsrfTokenRaceTest extends WebDriverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['csrf_race_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['csrf_race_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests race condition for CSRF tokens for simultaneous requests.
-   */
-  public function testCsrfRace(): void {
-    $user = $this->createUser(['access content']);
-    $this->drupalLogin($user);
-    $this->drupalGet('/csrf_race/test');
-    $script = '';
-    // Delay the request processing of the first request by one second through
-    // the request parameter, which will simulate the concurrent processing
-    // of both requests.
-    foreach ([1, 0] as $i) {
-      $script .= <<<EOT
+    /**
+     * Tests race condition for CSRF tokens for simultaneous requests.
+     */
+    public function testCsrfRace(): void
+    {
+        $user = $this->createUser(['access content']);
+        $this->drupalLogin($user);
+        $this->drupalGet('/csrf_race/test');
+        $script = '';
+        // Delay the request processing of the first request by one second through
+        // the request parameter, which will simulate the concurrent processing
+        // of both requests.
+        foreach ([1, 0] as $i) {
+            $script .= <<<EOT
       jQuery.ajax({
         url: "$this->baseUrl/csrf_race/get_csrf_token/$i",
         method: "GET",
@@ -53,13 +54,13 @@ class CsrfTokenRaceTest extends WebDriverTestBase {
         }
       });
 EOT;
+        }
+        $this->getSession()->getDriver()->executeScript($script);
+        $token0 = $this->assertSession()->waitForElement('css', '.csrf0')->getHtml();
+        $token1 = $this->assertSession()->waitForElement('css', '.csrf1')->getHtml();
+        $this->assertNotNull($token0);
+        $this->assertNotNull($token1);
+        $this->assertEquals($token0, $token1);
     }
-    $this->getSession()->getDriver()->executeScript($script);
-    $token0 = $this->assertSession()->waitForElement('css', '.csrf0')->getHtml();
-    $token1 = $this->assertSession()->waitForElement('css', '.csrf1')->getHtml();
-    $this->assertNotNull($token0);
-    $this->assertNotNull($token1);
-    $this->assertEquals($token0, $token1);
-  }
 
 }

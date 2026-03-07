@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Update;
 
 use Drupal\Core\Cache\CacheFactoryInterface;
@@ -12,33 +14,34 @@ use Drupal\Core\Cache\CacheFactoryInterface;
  *
  * @see \Drupal\Core\Update\UpdateServiceProvider::register()
  */
-class UpdateCacheBackendFactory implements CacheFactoryInterface {
+class UpdateCacheBackendFactory implements CacheFactoryInterface
+{
+    /**
+     * Instantiated update cache bins.
+     *
+     * @var \Drupal\Core\Update\UpdateBackend[]
+     */
+    protected $bins = [];
 
-  /**
-   * Instantiated update cache bins.
-   *
-   * @var \Drupal\Core\Update\UpdateBackend[]
-   */
-  protected $bins = [];
-
-  /**
-   * UpdateCacheBackendFactory constructor.
-   *
-   * @param \Drupal\Core\Cache\CacheFactoryInterface $cacheFactory
-   *   The regular runtime cache_factory service.
-   */
-  public function __construct(protected \Drupal\Core\Cache\CacheFactoryInterface $cacheFactory)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($bin) {
-    if (!isset($this->bins[$bin])) {
-      $this->bins[$bin] = new UpdateBackend($this->cacheFactory->get($bin));
+    /**
+     * UpdateCacheBackendFactory constructor.
+     *
+     * @param \Drupal\Core\Cache\CacheFactoryInterface $cacheFactory
+     *   The regular runtime cache_factory service.
+     */
+    public function __construct(protected \Drupal\Core\Cache\CacheFactoryInterface $cacheFactory)
+    {
     }
-    return $this->bins[$bin];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($bin)
+    {
+        if (!isset($this->bins[$bin])) {
+            $this->bins[$bin] = new UpdateBackend($this->cacheFactory->get($bin));
+        }
+        return $this->bins[$bin];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // phpcs:ignoreFile Portions of this file are a direct copy of
 // \Symfony\Component\DependencyInjection\Loader\YamlFileLoader.
 
@@ -12,11 +14,11 @@ use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\ChildDefinition;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Yaml\Tag\TaggedValue;
 
 /**
@@ -117,15 +119,14 @@ class YamlFileLoader
         // Some extensions split up their dependencies into multiple files.
         if (isset($content['_provider'])) {
             $provider = $content['_provider'];
-        }
-        else {
+        } else {
             $basename = basename($file);
             [$provider, ] = explode('.', $basename, 2);
         }
         $defaults = $this->parseDefaults($content, $file);
         $defaults['tags'][] = [
             'name' => '_provider',
-            'provider' => $provider
+            'provider' => $provider,
         ];
         foreach ($content['services'] as $id => $service) {
             $this->parseDefinition($id, $service, $file, $defaults);
@@ -221,8 +222,8 @@ class YamlFileLoader
             }
 
             if (array_key_exists('deprecated', $service)) {
-              $deprecation = \is_array($service['deprecated']) ? $service['deprecated'] : ['message' => $service['deprecated']];
-              $alias->setDeprecated($deprecation['package'] ?? '', $deprecation['version'] ?? '', $deprecation['message']);
+                $deprecation = \is_array($service['deprecated']) ? $service['deprecated'] : ['message' => $service['deprecated']];
+                $alias->setDeprecated($deprecation['package'] ?? '', $deprecation['version'] ?? '', $deprecation['message']);
             }
 
             return;
@@ -274,8 +275,8 @@ class YamlFileLoader
         }
 
         if (array_key_exists('deprecated', $service)) {
-          $deprecation = \is_array($service['deprecated']) ? $service['deprecated'] : ['message' => $service['deprecated']];
-          $definition->setDeprecated($deprecation['package'] ?? '', $deprecation['version'] ?? '', $deprecation['message']);
+            $deprecation = \is_array($service['deprecated']) ? $service['deprecated'] : ['message' => $service['deprecated']];
+            $definition->setDeprecated($deprecation['package'] ?? '', $deprecation['version'] ?? '', $deprecation['message']);
         }
 
         if (isset($service['factory'])) {
@@ -382,17 +383,13 @@ class YamlFileLoader
             $decorationOnInvalid = \array_key_exists('decoration_on_invalid', $service) ? $service['decoration_on_invalid'] : 'exception';
             if ('exception' === $decorationOnInvalid) {
                 $invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE;
-            }
-            elseif ('ignore' === $decorationOnInvalid) {
+            } elseif ('ignore' === $decorationOnInvalid) {
                 $invalidBehavior = ContainerInterface::IGNORE_ON_INVALID_REFERENCE;
-            }
-            elseif (null === $decorationOnInvalid) {
+            } elseif (null === $decorationOnInvalid) {
                 $invalidBehavior = ContainerInterface::NULL_ON_INVALID_REFERENCE;
-            }
-            elseif ('null' === $decorationOnInvalid) {
+            } elseif ('null' === $decorationOnInvalid) {
                 throw new InvalidArgumentException(\sprintf('Invalid value "%s" for attribute "decoration_on_invalid" on service "%s". Did you mean null (without quotes) in "%s"?', $decorationOnInvalid, $id, $file));
-            }
-            else {
+            } else {
                 throw new InvalidArgumentException(\sprintf('Invalid value "%s" for attribute "decoration_on_invalid" on service "%s". Did you mean "exception", "ignore" or null in "%s"?', $decorationOnInvalid, $id, $file));
             }
 
@@ -430,10 +427,9 @@ class YamlFileLoader
         }
 
         try {
-          $valid_file = $this->validate(Yaml::decode(file_get_contents($file)), $file);
-        }
-        catch (InvalidDataTypeException $e) {
-          throw new InvalidArgumentException(sprintf('The file "%s" does not contain valid YAML: ', $file) . $e->getMessage());
+            $valid_file = $this->validate(Yaml::decode(file_get_contents($file)), $file);
+        } catch (InvalidDataTypeException $e) {
+            throw new InvalidArgumentException(sprintf('The file "%s" does not contain valid YAML: ', $file) . $e->getMessage());
         }
 
         return $valid_file;
@@ -479,25 +475,25 @@ class YamlFileLoader
         if ($value instanceof TaggedValue) {
             $argument = $value->getValue();
             if (\in_array($value->getTag(), ['tagged', 'tagged_iterator', 'tagged_locator'], true)) {
-               $forLocator = 'tagged_locator' === $value->getTag();
+                $forLocator = 'tagged_locator' === $value->getTag();
 
-              if (\is_array($argument) && isset($argument['tag']) && $argument['tag']) {
-                 if ($diff = array_diff(array_keys($argument), $supportedKeys = ['tag', 'index_by', 'default_index_method', 'default_priority_method', 'exclude', 'exclude_self'])) {
-                   throw new InvalidArgumentException(sprintf('"!%s" tag contains unsupported key "%s"; supported ones are "%s".', $value->getTag(), implode('", "', $diff), implode('", "', $supportedKeys)));
-                 }
+                if (\is_array($argument) && isset($argument['tag']) && $argument['tag']) {
+                    if ($diff = array_diff(array_keys($argument), $supportedKeys = ['tag', 'index_by', 'default_index_method', 'default_priority_method', 'exclude', 'exclude_self'])) {
+                        throw new InvalidArgumentException(sprintf('"!%s" tag contains unsupported key "%s"; supported ones are "%s".', $value->getTag(), implode('", "', $diff), implode('", "', $supportedKeys)));
+                    }
 
-                 $argument = new TaggedIteratorArgument($argument['tag'], $argument['index_by'] ?? null, $argument['default_index_method'] ?? null, $forLocator, $argument['default_priority_method'] ?? null, (array) ($argument['exclude'] ?? null), $argument['exclude_self'] ?? true);
-              } elseif (\is_string($argument) && $argument) {
-                 $argument = new TaggedIteratorArgument($argument, null, null, $forLocator);
-              } else {
-                 throw new InvalidArgumentException(sprintf('"!%s" tags only accept a non empty string or an array with a key "tag"".', $value->getTag()));
-              }
+                    $argument = new TaggedIteratorArgument($argument['tag'], $argument['index_by'] ?? null, $argument['default_index_method'] ?? null, $forLocator, $argument['default_priority_method'] ?? null, (array) ($argument['exclude'] ?? null), $argument['exclude_self'] ?? true);
+                } elseif (\is_string($argument) && $argument) {
+                    $argument = new TaggedIteratorArgument($argument, null, null, $forLocator);
+                } else {
+                    throw new InvalidArgumentException(sprintf('"!%s" tags only accept a non empty string or an array with a key "tag"".', $value->getTag()));
+                }
 
-              if ($forLocator) {
-                 return new ServiceLocatorArgument($argument);
-              }
+                if ($forLocator) {
+                    return new ServiceLocatorArgument($argument);
+                }
 
-              return $argument;
+                return $argument;
             }
 
             if ($value->getTag() === 'service_closure') {

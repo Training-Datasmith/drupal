@@ -16,31 +16,33 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * for web tests with the node route context.
  */
 #[Condition(
-  id: "condition_test_optional_context",
-  label: new TranslatableMarkup("Optional context"),
-  context_definitions: [
-    "node" => new EntityContextDefinition(
-      data_type: "entity:node",
-      label: new TranslatableMarkup("Node"),
-      required: FALSE,
+    id: 'condition_test_optional_context',
+    label: new TranslatableMarkup('Optional context'),
+    context_definitions: [
+    'node' => new EntityContextDefinition(
+        data_type: 'entity:node',
+        label: new TranslatableMarkup('Node'),
+        required: false,
     ),
   ]
 )]
-class OptionalContextCondition extends ConditionPluginBase {
+class OptionalContextCondition extends ConditionPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function evaluate()
+    {
+        // Grant access if no context value is given.
+        return !$this->getContextValue('node');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function evaluate() {
-    // Grant access if no context value is given.
-    return !$this->getContextValue('node');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function summary() {
-    return $this->t('Context with optional context.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function summary()
+    {
+        return $this->t('Context with optional context.');
+    }
 
 }

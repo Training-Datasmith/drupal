@@ -14,37 +14,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserEditedOwnAccountTest extends BrowserTestBase {
+class UserEditedOwnAccountTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests that a user who edits their own account can still log in.
+     */
+    public function testUserEditedOwnAccount(): void
+    {
+        // Change account setting 'Who can register accounts?' to Administrators
+        // only.
+        $this->config('user.settings')->set('register', UserInterface::REGISTER_ADMINISTRATORS_ONLY)->save();
 
-  /**
-   * Tests that a user who edits their own account can still log in.
-   */
-  public function testUserEditedOwnAccount(): void {
-    // Change account setting 'Who can register accounts?' to Administrators
-    // only.
-    $this->config('user.settings')->set('register', UserInterface::REGISTER_ADMINISTRATORS_ONLY)->save();
+        // Create a new user account and log in.
+        $account = $this->drupalCreateUser(['change own username']);
+        $this->drupalLogin($account);
 
-    // Create a new user account and log in.
-    $account = $this->drupalCreateUser(['change own username']);
-    $this->drupalLogin($account);
+        // Change own username.
+        $edit = [];
+        $edit['name'] = $this->randomMachineName();
+        $this->drupalGet('user/' . $account->id() . '/edit');
+        $this->submitForm($edit, 'Save');
 
-    // Change own username.
-    $edit = [];
-    $edit['name'] = $this->randomMachineName();
-    $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+        // Log out.
+        $this->drupalLogout();
 
-    // Log out.
-    $this->drupalLogout();
-
-    // Set the new name on the user account and attempt to log back in.
-    $account->name = $edit['name'];
-    $this->drupalLogin($account);
-  }
+        // Set the new name on the user account and attempt to log back in.
+        $account->name = $edit['name'];
+        $this->drupalLogin($account);
+    }
 
 }

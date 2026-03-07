@@ -16,119 +16,126 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class TaggingTest extends DatabaseTestBase {
+class TaggingTest extends DatabaseTestBase
+{
+    /**
+     * Confirms that a query has a tag added to it.
+     */
+    public function testHasTag(): void
+    {
+        $query = $this->connection->select('test');
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Confirms that a query has a tag added to it.
-   */
-  public function testHasTag(): void {
-    $query = $this->connection->select('test');
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
 
-    $query->addTag('test');
+        $this->assertTrue($query->hasTag('test'));
+        $this->assertFalse($query->hasTag('other'));
+    }
 
-    $this->assertTrue($query->hasTag('test'));
-    $this->assertFalse($query->hasTag('other'));
-  }
+    /**
+     * Tests query tagging "has all of these tags" functionality.
+     */
+    public function testHasAllTags(): void
+    {
+        $query = $this->connection->select('test');
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Tests query tagging "has all of these tags" functionality.
-   */
-  public function testHasAllTags(): void {
-    $query = $this->connection->select('test');
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
+        $query->addTag('other');
 
-    $query->addTag('test');
-    $query->addTag('other');
+        $this->assertTrue($query->hasAllTags('test', 'other'));
+        $this->assertFalse($query->hasAllTags('test', 'stuff'));
+    }
 
-    $this->assertTrue($query->hasAllTags('test', 'other'));
-    $this->assertFalse($query->hasAllTags('test', 'stuff'));
-  }
+    /**
+     * Tests query tagging "has at least one of these tags" functionality.
+     */
+    public function testHasAnyTag(): void
+    {
+        $query = $this->connection->select('test');
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Tests query tagging "has at least one of these tags" functionality.
-   */
-  public function testHasAnyTag(): void {
-    $query = $this->connection->select('test');
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
 
-    $query->addTag('test');
+        $this->assertTrue($query->hasAnyTag('test', 'other'));
+        $this->assertFalse($query->hasAnyTag('other', 'stuff'));
+    }
 
-    $this->assertTrue($query->hasAnyTag('test', 'other'));
-    $this->assertFalse($query->hasAnyTag('other', 'stuff'));
-  }
+    /**
+     * Confirms that an extended query has a tag added to it.
+     */
+    public function testExtenderHasTag(): void
+    {
+        $query = $this->connection->select('test')
+          ->extend(SelectExtender::class);
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Confirms that an extended query has a tag added to it.
-   */
-  public function testExtenderHasTag(): void {
-    $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
 
-    $query->addTag('test');
+        $this->assertTrue($query->hasTag('test'));
+        $this->assertFalse($query->hasTag('other'));
+    }
 
-    $this->assertTrue($query->hasTag('test'));
-    $this->assertFalse($query->hasTag('other'));
-  }
+    /**
+     * Tests extended query tagging "has all of these tags" functionality.
+     */
+    public function testExtenderHasAllTags(): void
+    {
+        $query = $this->connection->select('test')
+          ->extend(SelectExtender::class);
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Tests extended query tagging "has all of these tags" functionality.
-   */
-  public function testExtenderHasAllTags(): void {
-    $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
+        $query->addTag('other');
 
-    $query->addTag('test');
-    $query->addTag('other');
+        $this->assertTrue($query->hasAllTags('test', 'other'));
+        $this->assertFalse($query->hasAllTags('test', 'stuff'));
+    }
 
-    $this->assertTrue($query->hasAllTags('test', 'other'));
-    $this->assertFalse($query->hasAllTags('test', 'stuff'));
-  }
+    /**
+     * Tests extended query tagging for "has at least one of these tags".
+     */
+    public function testExtenderHasAnyTag(): void
+    {
+        $query = $this->connection->select('test')
+          ->extend(SelectExtender::class);
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Tests extended query tagging for "has at least one of these tags".
-   */
-  public function testExtenderHasAnyTag(): void {
-    $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $query->addTag('test');
 
-    $query->addTag('test');
+        $this->assertTrue($query->hasAnyTag('test', 'other'));
+        $this->assertFalse($query->hasAnyTag('other', 'stuff'));
+    }
 
-    $this->assertTrue($query->hasAnyTag('test', 'other'));
-    $this->assertFalse($query->hasAnyTag('other', 'stuff'));
-  }
+    /**
+     * Tests that we can attach metadata to a query object.
+     *
+     * This is how we pass additional context to alter hooks.
+     */
+    public function testMetaData(): void
+    {
+        $query = $this->connection->select('test');
+        $query->addField('test', 'name');
+        $query->addField('test', 'age', 'age');
 
-  /**
-   * Tests that we can attach metadata to a query object.
-   *
-   * This is how we pass additional context to alter hooks.
-   */
-  public function testMetaData(): void {
-    $query = $this->connection->select('test');
-    $query->addField('test', 'name');
-    $query->addField('test', 'age', 'age');
+        $data = [
+          'a' => 'A',
+          'b' => 'B',
+        ];
 
-    $data = [
-      'a' => 'A',
-      'b' => 'B',
-    ];
+        $query->addMetaData('test', $data);
 
-    $query->addMetaData('test', $data);
+        $return = $query->getMetaData('test');
+        $this->assertEquals($data, $return, 'Correct metadata returned.');
 
-    $return = $query->getMetaData('test');
-    $this->assertEquals($data, $return, 'Correct metadata returned.');
-
-    $return = $query->getMetaData('not_here');
-    $this->assertNull($return, 'Non-existent key returned NULL.');
-  }
+        $return = $query->getMetaData('not_here');
+        $this->assertNull($return, 'Non-existent key returned NULL.');
+    }
 
 }

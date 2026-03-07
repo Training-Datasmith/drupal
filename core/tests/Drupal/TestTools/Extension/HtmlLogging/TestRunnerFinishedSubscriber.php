@@ -12,10 +12,11 @@ use PHPUnit\Event\TestRunner\FinishedSubscriber;
  *
  * @internal
  */
-final class TestRunnerFinishedSubscriber extends SubscriberBase implements FinishedSubscriber {
-
-  public function notify(Finished $event): void {
-    $this->logger()->testRunnerFinished($event);
-  }
+final class TestRunnerFinishedSubscriber extends SubscriberBase implements FinishedSubscriber
+{
+    public function notify(Finished $event): void
+    {
+        $this->logger()->testRunnerFinished($event);
+    }
 
 }

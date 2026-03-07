@@ -15,235 +15,238 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('menu_ui')]
 #[RunTestsInSeparateProcesses]
-class MenuUiContentModerationTest extends BrowserTestBase {
+class MenuUiContentModerationTest extends BrowserTestBase
+{
+    use ContentModerationTestTrait;
 
-  use ContentModerationTestTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block',
-    'content_moderation',
-    'node',
-    'menu_ui',
-    'test_page_test',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->drupalPlaceBlock('system_menu_block:main');
-
-    // Create a 'page' content type.
-    $this->drupalCreateContentType([
-      'type' => 'page',
-      'name' => 'Basic page',
-      'display_submitted' => FALSE,
-    ]);
-
-    $workflow = $this->createEditorialWorkflow();
-    $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
-    $workflow->save();
-  }
-
-  /**
-   * Tests that node drafts can not modify the menu settings.
-   */
-  public function testMenuUiWithPendingRevisions(): void {
-    $editor = $this->drupalCreateUser([
-      'administer nodes',
-      'administer menu',
-      'create page content',
-      'edit any page content',
-      'use editorial transition create_new_draft',
-      'use editorial transition publish',
-      'view latest version',
-      'view any unpublished content',
-    ]);
-    $this->drupalLogin($editor);
-
-    // Create a node.
-    $node = $this->drupalCreateNode();
-
-    // Publish the node with no changes.
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm([], 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
-
-    // Create a pending revision with no changes.
-    $edit = ['moderation_state[0][state]' => 'draft'];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
-
-    // Add a menu link and save a new default (published) revision.
-    $edit = [
-      'menu[enabled]' => 1,
-      'menu[title]' => 'Test menu link',
-      'moderation_state[0][state]' => 'published',
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block',
+      'content_moderation',
+      'node',
+      'menu_ui',
+      'test_page_test',
     ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
 
-    $this->assertSession()->linkExists('Test menu link');
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-    // Try to change the menu link weight and save a new non-default (draft)
-    // revision.
-    $edit = [
-      'menu[weight]' => 1,
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    // Check that the menu settings were not applied.
-    $this->assertSession()->pageTextContains('You can only change the menu link weight for the published version of this content.');
+        $this->drupalPlaceBlock('system_menu_block:main');
 
-    // Try to change the menu link parent and save a new non-default (draft)
-    // revision.
-    $edit = [
-      'menu[menu_parent]' => 'main:test_page_test.front_page',
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+        // Create a 'page' content type.
+        $this->drupalCreateContentType([
+          'type' => 'page',
+          'name' => 'Basic page',
+          'display_submitted' => false,
+        ]);
 
-    // Check that the menu settings were not applied.
-    $this->assertSession()->pageTextContains('You can only change the parent menu link for the published version of this content.');
+        $workflow = $this->createEditorialWorkflow();
+        $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
+        $workflow->save();
+    }
 
-    // Try to delete the menu link and save a new non-default (draft) revision.
-    $edit = [
-      'menu[enabled]' => 0,
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    /**
+     * Tests that node drafts can not modify the menu settings.
+     */
+    public function testMenuUiWithPendingRevisions(): void
+    {
+        $editor = $this->drupalCreateUser([
+          'administer nodes',
+          'administer menu',
+          'create page content',
+          'edit any page content',
+          'use editorial transition create_new_draft',
+          'use editorial transition publish',
+          'view latest version',
+          'view any unpublished content',
+        ]);
+        $this->drupalLogin($editor);
 
-    // Check that the menu settings were not applied.
-    $this->assertSession()->pageTextContains('You can only remove the menu link in the published version of this content.');
-    $this->assertSession()->linkExists('Test menu link');
+        // Create a node.
+        $node = $this->drupalCreateNode();
 
-    // Try to change the menu link title and description and save a new
-    // non-default (draft) revision.
-    $edit = [
-      'menu[title]' => 'Test menu link draft',
-      'menu[description]' => 'Test menu link description',
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+        // Publish the node with no changes.
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm([], 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
 
-    // Ensure the content was not immediately published.
-    $this->assertSession()->linkExists('Test menu link');
+        // Create a pending revision with no changes.
+        $edit = ['moderation_state[0][state]' => 'draft'];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
 
-    // Publish the node and ensure the new link text was published.
-    $edit = [
-      'moderation_state[0][state]' => 'published',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->linkExists('Test menu link draft');
+        // Add a menu link and save a new default (published) revision.
+        $edit = [
+          'menu[enabled]' => 1,
+          'menu[title]' => 'Test menu link',
+          'moderation_state[0][state]' => 'published',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
 
-    // Try to save a new non-default (draft) revision without any changes and
-    // check that the error message is not shown.
-    $edit = ['moderation_state[0][state]' => 'draft'];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+        $this->assertSession()->linkExists('Test menu link');
 
-    // Create a node.
-    $node = $this->drupalCreateNode();
+        // Try to change the menu link weight and save a new non-default (draft)
+        // revision.
+        $edit = [
+          'menu[weight]' => 1,
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
 
-    // Publish the node with no changes.
-    $edit = ['moderation_state[0][state]' => 'published'];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+        // Check that the menu settings were not applied.
+        $this->assertSession()->pageTextContains('You can only change the menu link weight for the published version of this content.');
 
-    // Add a menu link and save and create a new non-default (draft) revision
-    // and ensure it's not immediately published.
-    $edit = [
-      'menu[enabled]' => 1,
-      'menu[title]' => 'Second test menu link',
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+        // Try to change the menu link parent and save a new non-default (draft)
+        // revision.
+        $edit = [
+          'menu[menu_parent]' => 'main:test_page_test.front_page',
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
 
-    // The link is created to the latest page, which the editor is allowed
-    // see, but an anonymous visitor not.
-    $this->assertSession()->linkExists('Second test menu link');
-    $this->drupalLogout();
-    $this->assertSession()->linkNotExists('Second test menu link');
+        // Check that the menu settings were not applied.
+        $this->assertSession()->pageTextContains('You can only change the parent menu link for the published version of this content.');
 
-    $this->drupalLogin($editor);
-    // Publish the content and ensure the new menu link shows up.
-    $edit = [
-      'moderation_state[0][state]' => 'published',
-    ];
-    $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
-    $this->assertSession()->linkExists('Second test menu link');
-  }
+        // Try to delete the menu link and save a new non-default (draft) revision.
+        $edit = [
+          'menu[enabled]' => 0,
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
 
-  /**
-   * Tests that unpublished content can be selected through the menu UI.
-   */
-  public function testMenuUiWithUnpublishedContent(): void {
-    $editor_with_unpublished_content_access = $this->drupalCreateUser([
-      'administer nodes',
-      'administer menu',
-      'create page content',
-      'use editorial transition create_new_draft',
-      'view any unpublished content',
-    ]);
-    $this->drupalLogin($editor_with_unpublished_content_access);
+        // Check that the menu settings were not applied.
+        $this->assertSession()->pageTextContains('You can only remove the menu link in the published version of this content.');
+        $this->assertSession()->linkExists('Test menu link');
 
-    // Create a node.
-    $node_title = $this->randomMachineName();
-    $edit = [
-      'title[0][value]' => $node_title,
-      'menu[enabled]' => 1,
-      'menu[title]' => $node_title,
-      'moderation_state[0][state]' => 'draft',
-    ];
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Save');
+        // Try to change the menu link title and description and save a new
+        // non-default (draft) revision.
+        $edit = [
+          'menu[title]' => 'Test menu link draft',
+          'menu[description]' => 'Test menu link description',
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
 
-    // Assert that the unpublished node can be selected as a parent menu link
-    // for users with access to the node.
-    $node = $this->drupalGetNodeByTitle($node_title);
-    $this->assertTrue($node->access('view', $editor_with_unpublished_content_access));
-    $this->assertEquals($edit['title[0][value]'], $node->getTitle());
-    $this->drupalGet('node/add/page');
-    $link_id = menu_ui_get_menu_link_defaults($node)['entity_id'];
-    /** @var \Drupal\menu_link_content\Entity\MenuLinkContent $link */
-    $link = MenuLinkContent::load($link_id);
-    $this->assertSession()->optionExists('edit-menu-menu-parent', 'main:' . $link->getPluginId());
+        // Ensure the content was not immediately published.
+        $this->assertSession()->linkExists('Test menu link');
 
-    // Assert that the unpublished node cannot be selected as a parent menu link
-    // for users without access to the node.
-    $editor_without_unpublished_content_access = $this->drupalCreateUser([
-      'administer nodes',
-      'administer menu',
-      'create page content',
-      'use editorial transition create_new_draft',
-    ]);
-    $this->drupalLogin($editor_without_unpublished_content_access);
-    $this->assertFalse($node->access('view', $editor_without_unpublished_content_access));
-    $this->drupalGet('node/add/page');
-    $this->assertSession()->optionNotExists('edit-menu-menu-parent', 'main:' . $link->getPluginId());
-  }
+        // Publish the node and ensure the new link text was published.
+        $edit = [
+          'moderation_state[0][state]' => 'published',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->linkExists('Test menu link draft');
+
+        // Try to save a new non-default (draft) revision without any changes and
+        // check that the error message is not shown.
+        $edit = ['moderation_state[0][state]' => 'draft'];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+
+        // Create a node.
+        $node = $this->drupalCreateNode();
+
+        // Publish the node with no changes.
+        $edit = ['moderation_state[0][state]' => 'published'];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+
+        // Add a menu link and save and create a new non-default (draft) revision
+        // and ensure it's not immediately published.
+        $edit = [
+          'menu[enabled]' => 1,
+          'menu[title]' => 'Second test menu link',
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+
+        // The link is created to the latest page, which the editor is allowed
+        // see, but an anonymous visitor not.
+        $this->assertSession()->linkExists('Second test menu link');
+        $this->drupalLogout();
+        $this->assertSession()->linkNotExists('Second test menu link');
+
+        $this->drupalLogin($editor);
+        // Publish the content and ensure the new menu link shows up.
+        $edit = [
+          'moderation_state[0][state]' => 'published',
+        ];
+        $this->drupalGet('node/' . $node->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+        $this->assertSession()->pageTextContains("Page {$node->label()} has been updated.");
+        $this->assertSession()->linkExists('Second test menu link');
+    }
+
+    /**
+     * Tests that unpublished content can be selected through the menu UI.
+     */
+    public function testMenuUiWithUnpublishedContent(): void
+    {
+        $editor_with_unpublished_content_access = $this->drupalCreateUser([
+          'administer nodes',
+          'administer menu',
+          'create page content',
+          'use editorial transition create_new_draft',
+          'view any unpublished content',
+        ]);
+        $this->drupalLogin($editor_with_unpublished_content_access);
+
+        // Create a node.
+        $node_title = $this->randomMachineName();
+        $edit = [
+          'title[0][value]' => $node_title,
+          'menu[enabled]' => 1,
+          'menu[title]' => $node_title,
+          'moderation_state[0][state]' => 'draft',
+        ];
+        $this->drupalGet('node/add/page');
+        $this->submitForm($edit, 'Save');
+
+        // Assert that the unpublished node can be selected as a parent menu link
+        // for users with access to the node.
+        $node = $this->drupalGetNodeByTitle($node_title);
+        $this->assertTrue($node->access('view', $editor_with_unpublished_content_access));
+        $this->assertEquals($edit['title[0][value]'], $node->getTitle());
+        $this->drupalGet('node/add/page');
+        $link_id = menu_ui_get_menu_link_defaults($node)['entity_id'];
+        /** @var \Drupal\menu_link_content\Entity\MenuLinkContent $link */
+        $link = MenuLinkContent::load($link_id);
+        $this->assertSession()->optionExists('edit-menu-menu-parent', 'main:' . $link->getPluginId());
+
+        // Assert that the unpublished node cannot be selected as a parent menu link
+        // for users without access to the node.
+        $editor_without_unpublished_content_access = $this->drupalCreateUser([
+          'administer nodes',
+          'administer menu',
+          'create page content',
+          'use editorial transition create_new_draft',
+        ]);
+        $this->drupalLogin($editor_without_unpublished_content_access);
+        $this->assertFalse($node->access('view', $editor_without_unpublished_content_access));
+        $this->drupalGet('node/add/page');
+        $this->assertSession()->optionNotExists('edit-menu-menu-parent', 'main:' . $link->getPluginId());
+    }
 
 }

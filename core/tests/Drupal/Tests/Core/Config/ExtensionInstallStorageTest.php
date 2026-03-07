@@ -17,23 +17,24 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ExtensionInstallStorage::class)]
 #[Group('Config')]
-class ExtensionInstallStorageTest extends UnitTestCase {
+class ExtensionInstallStorageTest extends UnitTestCase
+{
+    /**
+     * Tests create collection.
+     */
+    public function testCreateCollection(): void
+    {
+        $memory = new MemoryStorage();
+        $include_profile = false;
+        $profile = $this->randomMachineName();
+        $collectionName = $this->randomMachineName();
 
-  /**
-   * Tests create collection.
-   */
-  public function testCreateCollection(): void {
-    $memory = new MemoryStorage();
-    $include_profile = FALSE;
-    $profile = $this->randomMachineName();
-    $collectionName = $this->randomMachineName();
+        // Set up the storage.
+        $storage = new ExtensionInstallStorage($memory, InstallStorage::CONFIG_INSTALL_DIRECTORY, StorageInterface::DEFAULT_COLLECTION, $include_profile, $profile);
+        // Create a collection.
+        $collection = $storage->createCollection($collectionName);
 
-    // Set up the storage.
-    $storage = new ExtensionInstallStorage($memory, InstallStorage::CONFIG_INSTALL_DIRECTORY, StorageInterface::DEFAULT_COLLECTION, $include_profile, $profile);
-    // Create a collection.
-    $collection = $storage->createCollection($collectionName);
-
-    static::assertEquals($collectionName, $collection->getCollectionName());
-  }
+        static::assertEquals($collectionName, $collection->getCollectionName());
+    }
 
 }

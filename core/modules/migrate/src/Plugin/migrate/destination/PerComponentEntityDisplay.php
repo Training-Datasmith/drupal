@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -47,15 +49,16 @@ use Drupal\migrate\Attribute\MigrateDestination;
  * "options" constant, for example the label will be hidden.
  */
 #[MigrateDestination('component_entity_display')]
-class PerComponentEntityDisplay extends ComponentEntityDisplayBase {
+class PerComponentEntityDisplay extends ComponentEntityDisplayBase
+{
+    public const MODE_NAME = 'view_mode';
 
-  const MODE_NAME = 'view_mode';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntity($entity_type, $bundle, $view_mode) {
-    return $this->entityDisplayRepository->getViewDisplay($entity_type, $bundle, $view_mode);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntity($entity_type, $bundle, $view_mode)
+    {
+        return $this->entityDisplayRepository->getViewDisplay($entity_type, $bundle, $view_mode);
+    }
 
 }

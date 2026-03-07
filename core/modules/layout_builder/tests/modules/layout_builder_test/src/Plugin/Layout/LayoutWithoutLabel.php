@@ -13,33 +13,37 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Layout plugin without a label configuration.
  */
 #[Layout(
-  id: 'layout_without_label',
-  label: new TranslatableMarkup('Layout Without Label'),
-  regions: [
-    "main" => [
-      "label" => new TranslatableMarkup("Main Region"),
+    id: 'layout_without_label',
+    label: new TranslatableMarkup('Layout Without Label'),
+    regions: [
+    'main' => [
+      'label' => new TranslatableMarkup('Main Region'),
     ],
   ],
 )]
-class LayoutWithoutLabel extends LayoutDefault {
+class LayoutWithoutLabel extends LayoutDefault
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration()
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

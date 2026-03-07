@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Form;
 
 use Drupal\Core\Config\PreExistingConfigException;
 use Drupal\Core\Config\UnmetDependenciesException;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,170 +16,177 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class ModulesListConfirmForm extends ConfirmFormBase {
+class ModulesListConfirmForm extends ConfirmFormBase
+{
+    use ModulesEnabledTrait;
 
-  use ModulesEnabledTrait;
+    /**
+     * An associative list of modules to install or uninstall.
+     *
+     * @var array
+     */
+    protected $modules = [];
 
-  /**
-   * An associative list of modules to install or uninstall.
-   *
-   * @var array
-   */
-  protected $modules = [];
-
-  /**
-   * Constructs a ModulesListConfirmForm object.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
-   *   The module installer.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
-   *   The key value expirable factory.
-   */
-  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('module_handler'),
-      $container->get('module_installer'),
-      $container->get('keyvalue.expirable')->get('module_list')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Some required modules must be installed');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return new Url('system.modules_list');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Continue');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Would you like to continue with the above?');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'system_modules_confirm_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $account = $this->currentUser()->id();
-    $this->modules = $this->keyValueExpirable->get($account);
-
-    // Redirect to the modules list page if the key value store is empty.
-    if (!$this->modules) {
-      return $this->redirect('system.modules_list');
+    /**
+     * Constructs a ModulesListConfirmForm object.
+     *
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
+     *   The module installer.
+     * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
+     *   The key value expirable factory.
+     */
+    public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable)
+    {
     }
 
-    $items = $this->buildMessageList();
-    $form['message'] = [
-      '#theme' => 'item_list',
-      '#items' => $items,
-    ];
-
-    return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * Builds the message list for the confirmation form.
-   *
-   * @return \Drupal\Component\Render\MarkupInterface[]
-   *   Array of markup for the list of messages on the form.
-   *
-   * @see \Drupal\system\Form\ModulesListForm::buildModuleList()
-   */
-  protected function buildMessageList(): array {
-    $items = [];
-    if (!empty($this->modules['dependencies'])) {
-      // Display a list of required modules that have to be installed as well
-      // but were not manually selected.
-      foreach ($this->modules['dependencies'] as $module => $dependencies) {
-        $items[] = [
-          [
-            '#markup' => $this->formatPlural(
-              count($dependencies),
-              'You must install the following module to install @module:',
-              'You must install the following modules to install @module:',
-              [
-                '@module' => $this->modules['install'][$module],
-              ]
-            ),
-          ],
-          [
-            '#theme' => 'item_list',
-            '#list_type' => 'ul',
-            '#items' => $dependencies,
-          ],
-        ];
-      }
-    }
-    return $items;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Remove the key value store entry.
-    $account = $this->currentUser()->id();
-    $this->keyValueExpirable->delete($account);
-
-    if (!empty($this->modules['install'])) {
-      // Don't catch the exception that this can throw for missing dependencies:
-      // the form doesn't allow modules with unmet dependencies, so the only way
-      // this can happen is if the filesystem changed between form display and
-      // submit, in which case the user has bigger problems.
-      try {
-        // Install the given modules.
-        $this->moduleInstaller->install(array_keys($this->modules['install']));
-      }
-      catch (PreExistingConfigException $e) {
-        $this->messenger()->addError($this->modulesFailToEnableMessage($this->modules, $e));
-        return;
-      }
-      catch (UnmetDependenciesException $e) {
-        $this->messenger()->addError(
-          $e->getTranslatedMessage($this->getStringTranslation(), $this->modules['install'][$e->getExtension()])
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('module_handler'),
+            $container->get('module_installer'),
+            $container->get('keyvalue.expirable')->get('module_list')
         );
-        return;
-      }
-
-      // Unset the messenger to make sure that we'll get the service from the
-      // new container.
-      $this->messenger = NULL;
-      $this->messenger()
-        ->addStatus($this->modulesEnabledConfirmationMessage($this->modules['install']));
     }
 
-    $form_state->setRedirectUrl($this->getCancelUrl());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Some required modules must be installed');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return new Url('system.modules_list');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Continue');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Would you like to continue with the above?');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'system_modules_confirm_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $account = $this->currentUser()->id();
+        $this->modules = $this->keyValueExpirable->get($account);
+
+        // Redirect to the modules list page if the key value store is empty.
+        if (!$this->modules) {
+            return $this->redirect('system.modules_list');
+        }
+
+        $items = $this->buildMessageList();
+        $form['message'] = [
+          '#theme' => 'item_list',
+          '#items' => $items,
+        ];
+
+        return parent::buildForm($form, $form_state);
+    }
+
+    /**
+     * Builds the message list for the confirmation form.
+     *
+     * @return \Drupal\Component\Render\MarkupInterface[]
+     *   Array of markup for the list of messages on the form.
+     *
+     * @see \Drupal\system\Form\ModulesListForm::buildModuleList()
+     */
+    protected function buildMessageList(): array
+    {
+        $items = [];
+        if (!empty($this->modules['dependencies'])) {
+            // Display a list of required modules that have to be installed as well
+            // but were not manually selected.
+            foreach ($this->modules['dependencies'] as $module => $dependencies) {
+                $items[] = [
+                  [
+                    '#markup' => $this->formatPlural(
+                        count($dependencies),
+                        'You must install the following module to install @module:',
+                        'You must install the following modules to install @module:',
+                        [
+                        '@module' => $this->modules['install'][$module],
+              ]
+                    ),
+                  ],
+                  [
+                    '#theme' => 'item_list',
+                    '#list_type' => 'ul',
+                    '#items' => $dependencies,
+          ],
+                ];
+            }
+        }
+        return $items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        // Remove the key value store entry.
+        $account = $this->currentUser()->id();
+        $this->keyValueExpirable->delete($account);
+
+        if (!empty($this->modules['install'])) {
+            // Don't catch the exception that this can throw for missing dependencies:
+            // the form doesn't allow modules with unmet dependencies, so the only way
+            // this can happen is if the filesystem changed between form display and
+            // submit, in which case the user has bigger problems.
+            try {
+                // Install the given modules.
+                $this->moduleInstaller->install(array_keys($this->modules['install']));
+            } catch (PreExistingConfigException $e) {
+                $this->messenger()->addError($this->modulesFailToEnableMessage($this->modules, $e));
+                return;
+            } catch (UnmetDependenciesException $e) {
+                $this->messenger()->addError(
+                    $e->getTranslatedMessage($this->getStringTranslation(), $this->modules['install'][$e->getExtension()])
+                );
+                return;
+            }
+
+            // Unset the messenger to make sure that we'll get the service from the
+            // new container.
+            $this->messenger = null;
+            $this->messenger()
+              ->addStatus($this->modulesEnabledConfirmationMessage($this->modules['install']));
+        }
+
+        $form_state->setRedirectUrl($this->getCancelUrl());
+    }
 
 }

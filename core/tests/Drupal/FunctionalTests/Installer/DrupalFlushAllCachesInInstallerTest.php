@@ -14,34 +14,35 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class DrupalFlushAllCachesInInstallerTest extends BrowserTestBase {
+class DrupalFlushAllCachesInInstallerTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'cache_flush_test';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'cache_flush_test';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEnvironment(): void {
-    parent::prepareEnvironment();
-    $info = [
-      'type' => 'profile',
-      'core_version_requirement' => '*',
-      'name' => 'Cache flush test',
-      'install' => ['language'],
-    ];
-    // File API functions are not available yet.
-    $path = $this->siteDirectory . '/profiles/cache_flush_test';
-    mkdir($path, 0777, TRUE);
-    file_put_contents("$path/cache_flush_test.info.yml", Yaml::encode($info));
-    $php_code = <<<EOF
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEnvironment(): void
+    {
+        parent::prepareEnvironment();
+        $info = [
+          'type' => 'profile',
+          'core_version_requirement' => '*',
+          'name' => 'Cache flush test',
+          'install' => ['language'],
+        ];
+        // File API functions are not available yet.
+        $path = $this->siteDirectory . '/profiles/cache_flush_test';
+        mkdir($path, 0777, true);
+        file_put_contents("$path/cache_flush_test.info.yml", Yaml::encode($info));
+        $php_code = <<<EOF
 <?php
 function cache_flush_test_install() {
   // Note it is bad practice to call this method during hook_install() as it
@@ -52,14 +53,15 @@ function cache_flush_test_install() {
 }
 EOF;
 
-    file_put_contents("$path/cache_flush_test.install", $php_code);
-  }
+        file_put_contents("$path/cache_flush_test.install", $php_code);
+    }
 
-  /**
-   * Confirms that the installation succeeded.
-   */
-  public function testInstalled(): void {
-    $this->assertTrue(\Drupal::state()->get('cache_flush_test'));
-  }
+    /**
+     * Confirms that the installation succeeded.
+     */
+    public function testInstalled(): void
+    {
+        $this->assertTrue(\Drupal::state()->get('cache_flush_test'));
+    }
 
 }

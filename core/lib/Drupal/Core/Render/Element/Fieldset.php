@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -24,23 +26,24 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * @see \Drupal\Core\Render\Element\Details
  */
 #[RenderElement('fieldset')]
-class Fieldset extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#process' => [
-        [static::class, 'processGroup'],
-        [static::class, 'processAjaxForm'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderGroup'],
-      ],
-      '#value' => NULL,
-      '#theme_wrappers' => ['fieldset'],
-    ];
-  }
+class Fieldset extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#process' => [
+            [static::class, 'processGroup'],
+            [static::class, 'processAjaxForm'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderGroup'],
+          ],
+          '#value' => null,
+          '#theme_wrappers' => ['fieldset'],
+        ];
+    }
 
 }

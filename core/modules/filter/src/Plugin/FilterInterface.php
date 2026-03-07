@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Plugin;
 
-use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\DependentPluginInterface;
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -76,192 +78,192 @@ use Drupal\Core\Form\FormStateInterface;
  * @see \Drupal\filter\Plugin\FilterBase
  * @see plugin_api
  */
-interface FilterInterface extends ConfigurableInterface, DependentPluginInterface, PluginInspectionInterface {
+interface FilterInterface extends ConfigurableInterface, DependentPluginInterface, PluginInspectionInterface
+{
+    /**
+     * Non-HTML markup language filters that generate HTML.
+     */
+    public const TYPE_MARKUP_LANGUAGE = 0;
 
-  /**
-   * Non-HTML markup language filters that generate HTML.
-   */
-  const TYPE_MARKUP_LANGUAGE = 0;
+    /**
+     * HTML tag and attribute restricting filters to prevent XSS attacks.
+     */
+    public const TYPE_HTML_RESTRICTOR = 1;
 
-  /**
-   * HTML tag and attribute restricting filters to prevent XSS attacks.
-   */
-  const TYPE_HTML_RESTRICTOR = 1;
+    /**
+     * Reversible transformation filters.
+     */
+    public const TYPE_TRANSFORM_REVERSIBLE = 2;
 
-  /**
-   * Reversible transformation filters.
-   */
-  const TYPE_TRANSFORM_REVERSIBLE = 2;
+    /**
+     * Irreversible transformation filters.
+     */
+    public const TYPE_TRANSFORM_IRREVERSIBLE = 3;
 
-  /**
-   * Irreversible transformation filters.
-   */
-  const TYPE_TRANSFORM_IRREVERSIBLE = 3;
+    /**
+     * Returns the processing type of this filter plugin.
+     *
+     * @return int
+     *   One of:
+     *   - FilterInterface::TYPE_MARKUP_LANGUAGE
+     *   - FilterInterface::TYPE_HTML_RESTRICTOR
+     *   - FilterInterface::TYPE_TRANSFORM_REVERSIBLE
+     *   - FilterInterface::TYPE_TRANSFORM_IRREVERSIBLE
+     */
+    public function getType();
 
-  /**
-   * Returns the processing type of this filter plugin.
-   *
-   * @return int
-   *   One of:
-   *   - FilterInterface::TYPE_MARKUP_LANGUAGE
-   *   - FilterInterface::TYPE_HTML_RESTRICTOR
-   *   - FilterInterface::TYPE_TRANSFORM_REVERSIBLE
-   *   - FilterInterface::TYPE_TRANSFORM_IRREVERSIBLE
-   */
-  public function getType();
+    /**
+     * Returns the administrative label for this filter plugin.
+     *
+     * @return string
+     *   The administrative label of the filter plugin.
+     */
+    public function getLabel();
 
-  /**
-   * Returns the administrative label for this filter plugin.
-   *
-   * @return string
-   *   The administrative label of the filter plugin.
-   */
-  public function getLabel();
+    /**
+     * Returns the administrative description for this filter plugin.
+     *
+     * @return string
+     *   The administrative description of the filter plugin.
+     */
+    public function getDescription();
 
-  /**
-   * Returns the administrative description for this filter plugin.
-   *
-   * @return string
-   *   The administrative description of the filter plugin.
-   */
-  public function getDescription();
+    /**
+     * Generates a filter's settings form.
+     *
+     * @param array $form
+     *   A minimally prepopulated form array.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The state of the (entire) configuration form.
+     *
+     * @return array
+     *   The $form array with additional form elements for the settings of this
+     *   filter. The submitted form values should match $this->settings.
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state);
 
-  /**
-   * Generates a filter's settings form.
-   *
-   * @param array $form
-   *   A minimally prepopulated form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The state of the (entire) configuration form.
-   *
-   * @return array
-   *   The $form array with additional form elements for the settings of this
-   *   filter. The submitted form values should match $this->settings.
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state);
+    /**
+     * Prepares the text for processing.
+     *
+     * Filters should not use the prepare method for anything other than escaping,
+     * because that would short-circuit the control the user has over the order in
+     * which filters are applied.
+     *
+     * @param string $text
+     *   The text string to be filtered.
+     * @param string $langcode
+     *   The language code of the text to be filtered.
+     *
+     * @return string
+     *   The prepared, escaped text.
+     */
+    public function prepare($text, $langcode);
 
-  /**
-   * Prepares the text for processing.
-   *
-   * Filters should not use the prepare method for anything other than escaping,
-   * because that would short-circuit the control the user has over the order in
-   * which filters are applied.
-   *
-   * @param string $text
-   *   The text string to be filtered.
-   * @param string $langcode
-   *   The language code of the text to be filtered.
-   *
-   * @return string
-   *   The prepared, escaped text.
-   */
-  public function prepare($text, $langcode);
+    /**
+     * Performs the filter processing.
+     *
+     * @param string $text
+     *   The text string to be filtered.
+     * @param string $langcode
+     *   The language code of the text to be filtered.
+     *
+     * @return \Drupal\filter\FilterProcessResult
+     *   The filtered text, wrapped in a FilterProcessResult object, and possibly
+     *   with associated assets, cacheability metadata and placeholders.
+     *
+     * @see \Drupal\filter\FilterProcessResult
+     */
+    public function process($text, $langcode);
 
-  /**
-   * Performs the filter processing.
-   *
-   * @param string $text
-   *   The text string to be filtered.
-   * @param string $langcode
-   *   The language code of the text to be filtered.
-   *
-   * @return \Drupal\filter\FilterProcessResult
-   *   The filtered text, wrapped in a FilterProcessResult object, and possibly
-   *   with associated assets, cacheability metadata and placeholders.
-   *
-   * @see \Drupal\filter\FilterProcessResult
-   */
-  public function process($text, $langcode);
+    /**
+     * Returns HTML allowed by this filter's configuration.
+     *
+     * May be implemented by filters of the FilterInterface::TYPE_HTML_RESTRICTOR
+     * type, this won't be used for filters of other types; they should just
+     * return FALSE.
+     *
+     * This callback function is only necessary for filters that strip away HTML
+     * tags (and possibly attributes) and allows other modules to gain insight in
+     * a generic manner into which HTML tags and attributes are allowed by a
+     * format.
+     *
+     * @return array|false
+     *   A nested array with the following structure:
+     *     - 'allowed': the allowed tags as keys, and for each of those tags
+     *       (keys) either of the following values:
+     *       - TRUE to indicate any attribute is allowed
+     *       - FALSE to indicate no attributes are allowed
+     *       - an array to convey attribute restrictions: the keys must be
+     *         attribute names (which may use a wildcard, e.g. "data-*"), the
+     *         possible values are similar to the above:
+     *           - TRUE to indicate any attribute value is allowed
+     *           - FALSE to indicate the attribute is forbidden
+     *           - an array to convey attribute value restrictions: the key must
+     *             be attribute values (which may use a wildcard, e.g. "xsd:*"),
+     *             the possible values are TRUE or FALSE: to mark the attribute
+     *             value as allowed or forbidden, respectively
+     *
+     *   There is one special case: the "wildcard tag", "*": any attribute
+     *   restrictions on that pseudotag apply to all tags.
+     *
+     *   If no restrictions apply, then FALSE must be returned.
+     *
+     *   Here is a concrete example, for a very granular filter:
+     *     @code
+     *     [
+     *       'allowed' => [
+     *         // Allows any attribute with any value on the <div> tag.
+     *         'div' => TRUE,
+     *         // Allows no attributes on the <p> tag.
+     *         'p' => FALSE,
+     *         // Allows the following attributes on the <a> tag:
+     *         //  - 'href', with any value;
+     *         //  - 'rel', with the value 'nofollow' value.
+     *         'a' => [
+     *           'href' => TRUE,
+     *           'rel' => ['nofollow' => TRUE],
+     *         ],
+     *         // Only allows the 'src' and 'alt' attributes on the <alt> tag,
+     *         // with any value.
+     *         'img' => [
+     *           'src' => TRUE,
+     *           'alt' => TRUE,
+     *         ],
+     *         // Forbid the 'style' and 'on*' ('onClick' etc.) attributes on any
+     *         // tag.
+     *         '*' => [
+     *           'style' => FALSE,
+     *           'on*' => FALSE,
+     *         ],
+     *       ]
+     *     ]
+     *     @endcode
+     *
+     *   The simplest example possible: a filter that doesn't allow any HTML:
+     *     @code
+     *     [
+     *       'allowed' => []
+     *     ]
+     *     @endcode
+     *
+     *   And for a filter that applies no restrictions, i.e. allows any HTML:
+     *     @code
+     *     FALSE
+     *     @endcode
+     *
+     * @see \Drupal\filter\Entity\FilterFormatInterface::getHtmlRestrictions()
+     */
+    public function getHTMLRestrictions();
 
-  /**
-   * Returns HTML allowed by this filter's configuration.
-   *
-   * May be implemented by filters of the FilterInterface::TYPE_HTML_RESTRICTOR
-   * type, this won't be used for filters of other types; they should just
-   * return FALSE.
-   *
-   * This callback function is only necessary for filters that strip away HTML
-   * tags (and possibly attributes) and allows other modules to gain insight in
-   * a generic manner into which HTML tags and attributes are allowed by a
-   * format.
-   *
-   * @return array|false
-   *   A nested array with the following structure:
-   *     - 'allowed': the allowed tags as keys, and for each of those tags
-   *       (keys) either of the following values:
-   *       - TRUE to indicate any attribute is allowed
-   *       - FALSE to indicate no attributes are allowed
-   *       - an array to convey attribute restrictions: the keys must be
-   *         attribute names (which may use a wildcard, e.g. "data-*"), the
-   *         possible values are similar to the above:
-   *           - TRUE to indicate any attribute value is allowed
-   *           - FALSE to indicate the attribute is forbidden
-   *           - an array to convey attribute value restrictions: the key must
-   *             be attribute values (which may use a wildcard, e.g. "xsd:*"),
-   *             the possible values are TRUE or FALSE: to mark the attribute
-   *             value as allowed or forbidden, respectively
-   *
-   *   There is one special case: the "wildcard tag", "*": any attribute
-   *   restrictions on that pseudotag apply to all tags.
-   *
-   *   If no restrictions apply, then FALSE must be returned.
-   *
-   *   Here is a concrete example, for a very granular filter:
-   *     @code
-   *     [
-   *       'allowed' => [
-   *         // Allows any attribute with any value on the <div> tag.
-   *         'div' => TRUE,
-   *         // Allows no attributes on the <p> tag.
-   *         'p' => FALSE,
-   *         // Allows the following attributes on the <a> tag:
-   *         //  - 'href', with any value;
-   *         //  - 'rel', with the value 'nofollow' value.
-   *         'a' => [
-   *           'href' => TRUE,
-   *           'rel' => ['nofollow' => TRUE],
-   *         ],
-   *         // Only allows the 'src' and 'alt' attributes on the <alt> tag,
-   *         // with any value.
-   *         'img' => [
-   *           'src' => TRUE,
-   *           'alt' => TRUE,
-   *         ],
-   *         // Forbid the 'style' and 'on*' ('onClick' etc.) attributes on any
-   *         // tag.
-   *         '*' => [
-   *           'style' => FALSE,
-   *           'on*' => FALSE,
-   *         ],
-   *       ]
-   *     ]
-   *     @endcode
-   *
-   *   The simplest example possible: a filter that doesn't allow any HTML:
-   *     @code
-   *     [
-   *       'allowed' => []
-   *     ]
-   *     @endcode
-   *
-   *   And for a filter that applies no restrictions, i.e. allows any HTML:
-   *     @code
-   *     FALSE
-   *     @endcode
-   *
-   * @see \Drupal\filter\Entity\FilterFormatInterface::getHtmlRestrictions()
-   */
-  public function getHTMLRestrictions();
-
-  /**
-   * Generates a filter's tip.
-   *
-   * A filter's tips should be informative and to the point. Short tips are
-   * preferably one-liners.
-   *
-   * @return string|null
-   *   Translated text to display as a tip, or NULL if this filter has no tip.
-   */
-  public function tips();
+    /**
+     * Generates a filter's tip.
+     *
+     * A filter's tips should be informative and to the point. Short tips are
+     * preferably one-liners.
+     *
+     * @return string|null
+     *   Translated text to display as a tip, or NULL if this filter has no tip.
+     */
+    public function tips();
 
 }

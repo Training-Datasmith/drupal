@@ -13,23 +13,25 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests.
  */
 #[Group('Composer')]
-class ComposerValidateTest extends BuildTestBase {
+class ComposerValidateTest extends BuildTestBase
+{
+    use ComposerIntegrationTrait;
 
-  use ComposerIntegrationTrait;
-
-  public static function provideComposerJson() {
-    $data = [];
-    $composer_json_finder = self::getComposerJsonFinder(self::getDrupalRootStatic());
-    foreach ($composer_json_finder->getIterator() as $composer_json) {
-      $data[] = [$composer_json->getPathname()];
+    public static function provideComposerJson()
+    {
+        $data = [];
+        $composer_json_finder = self::getComposerJsonFinder(self::getDrupalRootStatic());
+        foreach ($composer_json_finder->getIterator() as $composer_json) {
+            $data[] = [$composer_json->getPathname()];
+        }
+        return $data;
     }
-    return $data;
-  }
 
-  #[DataProvider('provideComposerJson')]
-  public function testValidateComposer($path): void {
-    $this->executeCommand('composer validate --strict --no-check-all ' . $path);
-    $this->assertCommandSuccessful();
-  }
+    #[DataProvider('provideComposerJson')]
+    public function testValidateComposer($path): void
+    {
+        $this->executeCommand('composer validate --strict --no-check-all ' . $path);
+        $this->assertCommandSuccessful();
+    }
 
 }

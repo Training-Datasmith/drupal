@@ -20,73 +20,75 @@ use Drupal\user\Entity\User;
  * @internal
  */
 #[Block(
-  id: 'navigation_user',
-  admin_label: new TranslatableMarkup('User'),
+    id: 'navigation_user',
+    admin_label: new TranslatableMarkup('User'),
 )]
-final class NavigationUserBlock extends BlockBase {
+final class NavigationUserBlock extends BlockBase
+{
+    public const string NAVIGATION_LINKS_MENU = 'navigation-user-links';
 
-  const string NAVIGATION_LINKS_MENU = 'navigation-user-links';
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return [
+          '#create_placeholder' => true,
+          '#lazy_builder' => [self::class . '::buildLinks', [$this->configuration['label']]],
+          '#cache' => [
+            'keys' => ['navigation_user_block'],
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return [
-      '#create_placeholder' => TRUE,
-      '#lazy_builder' => [self::class . '::buildLinks', [$this->configuration['label']]],
-      '#cache' => [
-        'keys' => ['navigation_user_block'],
-      ],
-    ];
-  }
+    /**
+     * Lazy builder callback.
+     */
+    #[TrustedCallback]
+    public static function buildLinks(string $label): array
+    {
+        $parameters = new MenuTreeParameters();
+        $parameters
+          ->setMinDepth(0)
+          ->setMaxDepth(2)
+          ->onlyEnabledLinks();
+        /** @var \Drupal\Core\Menu\MenuLinkTreeInterface $menu_tree */
+        $menu_tree = \Drupal::service('navigation.menu_tree');
+        $subtree = $menu_tree->load(static::NAVIGATION_LINKS_MENU, $parameters);
 
-  /**
-   * Lazy builder callback.
-   */
-  #[TrustedCallback]
-  public static function buildLinks(string $label): array {
-    $parameters = new MenuTreeParameters();
-    $parameters
-      ->setMinDepth(0)
-      ->setMaxDepth(2)
-      ->onlyEnabledLinks();
-    /** @var \Drupal\Core\Menu\MenuLinkTreeInterface $menu_tree */
-    $menu_tree = \Drupal::service('navigation.menu_tree');
-    $subtree = $menu_tree->load(static::NAVIGATION_LINKS_MENU, $parameters);
+        // Load the current user so that they can be added as a cacheable dependency
+        // of the final render array.
+        $account = User::load(\Drupal::currentUser()->id());
 
-    // Load the current user so that they can be added as a cacheable dependency
-    // of the final render array.
-    $account = User::load(\Drupal::currentUser()->id());
+        $menu_definition = [
+          'menu_name' => static::NAVIGATION_LINKS_MENU,
+          'route_name' => 'user.page',
+          'route_parameters' => [],
+          'title' => $account->getDisplayName(),
+          'description' => '',
+          'options' => [],
+          'provider' => 'navigation',
+          'enabled' => '1',
+        ];
+        // Create a parent link that serves as a wrapper.
+        // If the menu is removed for any reason, this item shows a link to the
+        // user profile page as a fallback.
+        $link = MenuLinkDefault::create(\Drupal::getContainer(), [], 'navigation.user_links.user.wrapper', $menu_definition);
+        $tree = new MenuLinkTreeElement($link, true, 1, false, $subtree);
 
-    $menu_definition = [
-      'menu_name' => static::NAVIGATION_LINKS_MENU,
-      'route_name' => 'user.page',
-      'route_parameters' => [],
-      'title' => $account->getDisplayName(),
-      'description' => '',
-      'options' => [],
-      'provider' => 'navigation',
-      'enabled' => '1',
-    ];
-    // Create a parent link that serves as a wrapper.
-    // If the menu is removed for any reason, this item shows a link to the
-    // user profile page as a fallback.
-    $link = MenuLinkDefault::create(\Drupal::getContainer(), [], 'navigation.user_links.user.wrapper', $menu_definition);
-    $tree = new MenuLinkTreeElement($link, TRUE, 1, FALSE, $subtree);
+        $manipulators = [
+          ['callable' => 'menu.default_tree_manipulators:checkAccess'],
+          ['callable' => 'menu.default_tree_manipulators:generateIndexAndSort'],
+        ];
+        $tree = $menu_tree->transform([$tree], $manipulators);
+        $build = $menu_tree->build($tree);
+        $build['#title'] = $label;
+        $build['#cache']['contexts'][] = 'user';
+        $cacheable_metadata = CacheableMetadata::createFromRenderArray($build);
+        $cacheable_metadata->addCacheableDependency($account);
+        $cacheable_metadata->applyTo($build);
 
-    $manipulators = [
-      ['callable' => 'menu.default_tree_manipulators:checkAccess'],
-      ['callable' => 'menu.default_tree_manipulators:generateIndexAndSort'],
-    ];
-    $tree = $menu_tree->transform([$tree], $manipulators);
-    $build = $menu_tree->build($tree);
-    $build['#title'] = $label;
-    $build['#cache']['contexts'][] = 'user';
-    $cacheable_metadata = CacheableMetadata::createFromRenderArray($build);
-    $cacheable_metadata->addCacheableDependency($account);
-    $cacheable_metadata->applyTo($build);
-
-    return $build;
-  }
+        return $build;
+    }
 
 }

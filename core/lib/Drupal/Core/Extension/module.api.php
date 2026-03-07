@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks related to module and update systems.
@@ -82,11 +84,12 @@ use Drupal\Core\Utility\UpdateException;
  *
  * @see \Drupal\Core\Extension\ModuleUninstallValidatorInterface
  */
-function hook_system_info_alter(array &$info, \Drupal\Core\Extension\Extension $file, $type): void {
-  // Only fill this in if the .info.yml file does not define a 'datestamp'.
-  if (empty($info['datestamp'])) {
-    $info['datestamp'] = $file->getFileInfo()->getMTime();
-  }
+function hook_system_info_alter(array &$info, \Drupal\Core\Extension\Extension $file, $type): void
+{
+    // Only fill this in if the .info.yml file does not define a 'datestamp'.
+    if (empty($info['datestamp'])) {
+        $info['datestamp'] = $file->getFileInfo()->getMTime();
+    }
 }
 
 /**
@@ -102,8 +105,9 @@ function hook_system_info_alter(array &$info, \Drupal\Core\Extension\Extension $
  *   should be made earlier and exported so during import there's no need to
  *   do them again.
  */
-function hook_module_preinstall($module, bool $is_syncing): void {
-  my_module_cache_clear();
+function hook_module_preinstall($module, bool $is_syncing): void
+{
+    my_module_cache_clear();
 }
 
 /**
@@ -130,13 +134,14 @@ function hook_module_preinstall($module, bool $is_syncing): void {
  * @see \Drupal\Core\Extension\ModuleInstaller::install()
  * @see hook_install()
  */
-function hook_modules_installed($modules, $is_syncing): void {
-  if (in_array('lousy_module', $modules)) {
-    \Drupal::state()->set('my_module.lousy_module_compatibility', TRUE);
-  }
-  if (!$is_syncing) {
-    \Drupal::service('my_module.service')->doSomething($modules);
-  }
+function hook_modules_installed($modules, $is_syncing): void
+{
+    if (in_array('lousy_module', $modules)) {
+        \Drupal::state()->set('my_module.lousy_module_compatibility', true);
+    }
+    if (!$is_syncing) {
+        \Drupal::service('my_module.service')->doSomething($modules);
+    }
 }
 
 /**
@@ -184,9 +189,10 @@ function hook_modules_installed($modules, $is_syncing): void {
  * @see hook_uninstall()
  * @see hook_modules_installed()
  */
-function hook_install($is_syncing): void {
-  // Set general module variables.
-  \Drupal::state()->set('my_module.foo', 'bar');
+function hook_install($is_syncing): void
+{
+    // Set general module variables.
+    \Drupal::state()->set('my_module.foo', 'bar');
 }
 
 /**
@@ -201,8 +207,9 @@ function hook_install($is_syncing): void {
  *   should be made earlier and exported so during import there's no need to
  *   do them again.
  */
-function hook_module_preuninstall($module, bool $is_syncing): void {
-  my_module_cache_clear();
+function hook_module_preuninstall($module, bool $is_syncing): void
+{
+    my_module_cache_clear();
 }
 
 /**
@@ -226,14 +233,15 @@ function hook_module_preuninstall($module, bool $is_syncing): void {
  *
  * @see hook_uninstall()
  */
-function hook_modules_uninstalled($modules, $is_syncing): void {
-  if (in_array('lousy_module', $modules)) {
-    \Drupal::state()->delete('my_module.lousy_module_compatibility');
-  }
-  my_module_cache_rebuild();
-  if (!$is_syncing) {
-    \Drupal::service('my_module.service')->doSomething($modules);
-  }
+function hook_modules_uninstalled($modules, $is_syncing): void
+{
+    if (in_array('lousy_module', $modules)) {
+        \Drupal::state()->delete('my_module.lousy_module_compatibility');
+    }
+    my_module_cache_rebuild();
+    if (!$is_syncing) {
+        \Drupal::service('my_module.service')->doSomething($modules);
+    }
 }
 
 /**
@@ -270,9 +278,10 @@ function hook_modules_uninstalled($modules, $is_syncing): void {
  * @see hook_modules_uninstalled()
  * @see \Drupal\Core\Extension\ModuleUninstallValidatorInterface
  */
-function hook_uninstall($is_syncing): void {
-  // Delete remaining general module variables.
-  \Drupal::state()->delete('my_module.foo');
+function hook_uninstall($is_syncing): void
+{
+    // Delete remaining general module variables.
+    \Drupal::state()->delete('my_module.foo');
 }
 
 /**
@@ -380,64 +389,65 @@ function hook_uninstall($is_syncing): void {
  * @see hook_install_tasks_alter()
  * @see install_tasks()
  */
-function hook_install_tasks(&$install_state): array {
-  // Here, we define a variable to allow tasks to indicate that a particular,
-  // processor-intensive batch process needs to be triggered later on in the
-  // installation.
-  $my_profile_needs_batch_processing = \Drupal::state()->get('my_profile.needs_batch_processing', FALSE);
-  return [
-    // This is an example of a task that defines a form which the user who is
-    // installing the site will be asked to fill out. To implement this task,
-    // your profile would define a function named my_profile_data_import_form()
-    // as a normal form API callback function, with associated validation and
-    // submit handlers. In the submit handler, in addition to saving whatever
-    // other data you have collected from the user, you might also call
-    // \Drupal::state()->set('my_profile.needs_batch_processing', TRUE) if the
-    // user has entered data which requires that batch processing will need to
-    // occur later on.
-    'my_profile_data_import_form' => [
-      'display_name' => t('Data import options'),
-      'type' => 'form',
-    ],
-    // Similarly, to implement this task, your profile would define a function
-    // named my_profile_settings_form() with associated validation and submit
-    // handlers. This form might be used to collect and save additional
-    // information from the user that your profile needs. There are no extra
-    // steps required for your profile to act as an "installation wizard"; you
-    // can simply define as many tasks of type 'form' as you wish to execute,
-    // and the forms will be presented to the user, one after another.
-    'my_profile_settings_form' => [
-      'display_name' => t('Additional options'),
-      'type' => 'form',
-    ],
-    // This is an example of a task that performs batch operations. To
-    // implement this task, your profile would define a function named
-    // my_profile_batch_processing() which returns a batch API array definition
-    // that the installer will use to execute your batch operations. Due to the
-    // 'my_profile.needs_batch_processing' variable used here, this task will be
-    // hidden and skipped unless your profile set it to TRUE in one of the
-    // previous tasks.
-    'my_profile_batch_processing' => [
-      'display_name' => t('Import additional data'),
-      'display' => $my_profile_needs_batch_processing,
-      'type' => 'batch',
-      'run' => $my_profile_needs_batch_processing ? INSTALL_TASK_RUN_IF_NOT_COMPLETED : INSTALL_TASK_SKIP,
-    ],
-    // This is an example of a task that will not be displayed in the list that
-    // the user sees. To implement this task, your profile would define a
-    // function named my_profile_final_site_setup(), in which additional,
-    // automated site setup operations would be performed. Since this is the
-    // last task defined by your profile, you should also use this function to
-    // call \Drupal::state()->delete('my_profile.needs_batch_processing') and
-    // clean up the state that was used above. If you want the user to pass
-    // to the final Drupal installation tasks uninterrupted, return no output
-    // from this function. Otherwise, return themed output that the user will
-    // see (for example, a confirmation page explaining that your profile's
-    // tasks are complete, with a link to reload the current page and therefore
-    // pass on to the final Drupal installation tasks when the user is ready to
-    // do so).
-    'my_profile_final_site_setup' => [],
-  ];
+function hook_install_tasks(&$install_state): array
+{
+    // Here, we define a variable to allow tasks to indicate that a particular,
+    // processor-intensive batch process needs to be triggered later on in the
+    // installation.
+    $my_profile_needs_batch_processing = \Drupal::state()->get('my_profile.needs_batch_processing', false);
+    return [
+      // This is an example of a task that defines a form which the user who is
+      // installing the site will be asked to fill out. To implement this task,
+      // your profile would define a function named my_profile_data_import_form()
+      // as a normal form API callback function, with associated validation and
+      // submit handlers. In the submit handler, in addition to saving whatever
+      // other data you have collected from the user, you might also call
+      // \Drupal::state()->set('my_profile.needs_batch_processing', TRUE) if the
+      // user has entered data which requires that batch processing will need to
+      // occur later on.
+      'my_profile_data_import_form' => [
+        'display_name' => t('Data import options'),
+        'type' => 'form',
+      ],
+      // Similarly, to implement this task, your profile would define a function
+      // named my_profile_settings_form() with associated validation and submit
+      // handlers. This form might be used to collect and save additional
+      // information from the user that your profile needs. There are no extra
+      // steps required for your profile to act as an "installation wizard"; you
+      // can simply define as many tasks of type 'form' as you wish to execute,
+      // and the forms will be presented to the user, one after another.
+      'my_profile_settings_form' => [
+        'display_name' => t('Additional options'),
+        'type' => 'form',
+      ],
+      // This is an example of a task that performs batch operations. To
+      // implement this task, your profile would define a function named
+      // my_profile_batch_processing() which returns a batch API array definition
+      // that the installer will use to execute your batch operations. Due to the
+      // 'my_profile.needs_batch_processing' variable used here, this task will be
+      // hidden and skipped unless your profile set it to TRUE in one of the
+      // previous tasks.
+      'my_profile_batch_processing' => [
+        'display_name' => t('Import additional data'),
+        'display' => $my_profile_needs_batch_processing,
+        'type' => 'batch',
+        'run' => $my_profile_needs_batch_processing ? INSTALL_TASK_RUN_IF_NOT_COMPLETED : INSTALL_TASK_SKIP,
+      ],
+      // This is an example of a task that will not be displayed in the list that
+      // the user sees. To implement this task, your profile would define a
+      // function named my_profile_final_site_setup(), in which additional,
+      // automated site setup operations would be performed. Since this is the
+      // last task defined by your profile, you should also use this function to
+      // call \Drupal::state()->delete('my_profile.needs_batch_processing') and
+      // clean up the state that was used above. If you want the user to pass
+      // to the final Drupal installation tasks uninterrupted, return no output
+      // from this function. Otherwise, return themed output that the user will
+      // see (for example, a confirmation page explaining that your profile's
+      // tasks are complete, with a link to reload the current page and therefore
+      // pass on to the final Drupal installation tasks when the user is ready to
+      // do so).
+      'my_profile_final_site_setup' => [],
+    ];
 }
 
 /**
@@ -460,10 +470,11 @@ function hook_install_tasks(&$install_state): array {
  * @see hook_install_tasks()
  * @see install_tasks()
  */
-function hook_install_tasks_alter(array &$tasks, $install_state): void {
-  // Replace the entire site configuration form provided by Drupal core
-  // with a custom callback function defined by this installation profile.
-  $tasks['install_configure_form']['function'] = 'my_profile_install_configure_form';
+function hook_install_tasks_alter(array &$tasks, $install_state): void
+{
+    // Replace the entire site configuration form provided by Drupal core
+    // with a custom callback function defined by this installation profile.
+    $tasks['install_configure_form']['function'] = 'my_profile_install_configure_form';
 }
 
 // phpcs:disable Drupal.Commenting.DocComment.ParamNotFirst
@@ -710,59 +721,60 @@ function hook_install_tasks_alter(array &$tasks, $install_state): void {
  */
 // phpcs:enable
 // phpcs:ignore Drupal.Commenting.FunctionComment.Missing, Drupal.Commenting.FunctionComment.MissingReturnComment
-function hook_update_N(array &$sandbox) {
-  // For non-batch updates, the signature can simply be:
-  // "function hook_update_N() {".
+function hook_update_N(array &$sandbox)
+{
+    // For non-batch updates, the signature can simply be:
+    // "function hook_update_N() {".
 
-  // Example function body for adding a field to a database table, which does
-  // not require a batch operation:
-  $spec = [
-    'type' => 'varchar',
-    'description' => "New Col",
-    'length' => 20,
-    'not null' => FALSE,
-  ];
-  $schema = Database::getConnection()->schema();
-  $schema->addField('my_table', 'newcol', $spec);
+    // Example function body for adding a field to a database table, which does
+    // not require a batch operation:
+    $spec = [
+      'type' => 'varchar',
+      'description' => 'New Col',
+      'length' => 20,
+      'not null' => false,
+    ];
+    $schema = Database::getConnection()->schema();
+    $schema->addField('my_table', 'newcol', $spec);
 
-  // Example of what to do if there is an error during your update.
-  if ($some_error_condition_met) {
-    throw new UpdateException('Something went wrong; here is what you should do.');
-  }
+    // Example of what to do if there is an error during your update.
+    if ($some_error_condition_met) {
+        throw new UpdateException('Something went wrong; here is what you should do.');
+    }
 
-  // Example function body for a batch update. In this example, the values in
-  // a database field are updated.
-  if (!isset($sandbox['progress'])) {
-    // This must be the first run. Initialize the sandbox.
-    $sandbox['progress'] = 0;
-    $sandbox['current_pk'] = 0;
-    $sandbox['max'] = Database::getConnection()->query('SELECT COUNT([my_primary_key]) FROM {my_table}')->fetchField();
-  }
+    // Example function body for a batch update. In this example, the values in
+    // a database field are updated.
+    if (!isset($sandbox['progress'])) {
+        // This must be the first run. Initialize the sandbox.
+        $sandbox['progress'] = 0;
+        $sandbox['current_pk'] = 0;
+        $sandbox['max'] = Database::getConnection()->query('SELECT COUNT([my_primary_key]) FROM {my_table}')->fetchField();
+    }
 
-  // Update in chunks of 20.
-  $records = Database::getConnection()->select('my_table', 'm')
-    ->fields('m', ['my_primary_key', 'other_field'])
-    ->condition('my_primary_key', $sandbox['current_pk'], '>')
-    ->range(0, 20)
-    ->orderBy('my_primary_key', 'ASC')
-    ->execute();
-  foreach ($records as $record) {
-    // Here, you would make an update something related to this record. In this
-    // example, some text is added to the other field.
-    Database::getConnection()->update('my_table')
-      ->fields(['other_field' => $record->other_field . '-suffix'])
-      ->condition('my_primary_key', $record->my_primary_key)
+    // Update in chunks of 20.
+    $records = Database::getConnection()->select('my_table', 'm')
+      ->fields('m', ['my_primary_key', 'other_field'])
+      ->condition('my_primary_key', $sandbox['current_pk'], '>')
+      ->range(0, 20)
+      ->orderBy('my_primary_key', 'ASC')
       ->execute();
+    foreach ($records as $record) {
+        // Here, you would make an update something related to this record. In this
+        // example, some text is added to the other field.
+        Database::getConnection()->update('my_table')
+          ->fields(['other_field' => $record->other_field . '-suffix'])
+          ->condition('my_primary_key', $record->my_primary_key)
+          ->execute();
 
-    $sandbox['progress']++;
-    $sandbox['current_pk'] = $record->my_primary_key;
-  }
+        $sandbox['progress']++;
+        $sandbox['current_pk'] = $record->my_primary_key;
+    }
 
-  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+    $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
 
-  // To display a message to the user when the update is completed, return it.
-  // If you do not want to display a completion message, return nothing.
-  return t('All foo bars were updated with the new suffix');
+    // To display a message to the user when the update is completed, return it.
+    // If you do not want to display a completion message, return nothing.
+    return t('All foo bars were updated with the new suffix');
 }
 
 // phpcs:disable Drupal.Commenting.DocComment.ParamNotFirst
@@ -828,21 +840,22 @@ function hook_update_N(array &$sandbox) {
  */
 // phpcs:enable
 // phpcs:ignore Drupal.Commenting.FunctionComment.Missing
-function hook_post_update_NAME(&$sandbox) {
-  // Example of updating some content.
-  $node = \Drupal\node\Entity\Node::load(123);
-  $node->setTitle('foo');
-  $node->save();
+function hook_post_update_NAME(&$sandbox)
+{
+    // Example of updating some content.
+    $node = \Drupal\node\Entity\Node::load(123);
+    $node->setTitle('foo');
+    $node->save();
 
-  $result = t('Node %nid saved', ['%nid' => $node->id()]);
+    $result = t('Node %nid saved', ['%nid' => $node->id()]);
 
-  // Example of updating some config.
-  if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
-    // Update the dependencies of all Vocabulary configuration entities.
-    \Drupal::classResolver(\Drupal\Core\Config\Entity\ConfigEntityUpdater::class)->update($sandbox, 'taxonomy_vocabulary');
-  }
+    // Example of updating some config.
+    if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
+        // Update the dependencies of all Vocabulary configuration entities.
+        \Drupal::classResolver(\Drupal\Core\Config\Entity\ConfigEntityUpdater::class)->update($sandbox, 'taxonomy_vocabulary');
+    }
 
-  return $result;
+    return $result;
 }
 
 /**
@@ -863,13 +876,14 @@ function hook_post_update_NAME(&$sandbox) {
  *
  * @see hook_post_update_NAME()
  */
-function hook_removed_post_updates(): array {
-  return [
-    'my_module_post_update_foo' => '8.x-2.0',
-    'my_module_post_update_bar' => '3.0.0',
-    'my_module_post_update_baz' => '4.0.0',
-    'my_module_post_update_qux' => '4.0.0',
-  ];
+function hook_removed_post_updates(): array
+{
+    return [
+      'my_module_post_update_foo' => '8.x-2.0',
+      'my_module_post_update_bar' => '3.0.0',
+      'my_module_post_update_baz' => '4.0.0',
+      'my_module_post_update_qux' => '4.0.0',
+    ];
 }
 
 /**
@@ -901,24 +915,25 @@ function hook_removed_post_updates(): array {
  * @see update_resolve_dependencies()
  * @see hook_update_N()
  */
-function hook_update_dependencies(): array {
-  // Indicate that the my_module_update_8001() function provided by this module
-  // must run after the another_module_update_8003() function provided by the
-  // 'another_module' module.
-  $dependencies['my_module'][8001] = [
-    'another_module' => 8003,
-  ];
-  // Indicate that the my_module_update_8002() function provided by this module
-  // must run before the yet_another_module_update_8005() function provided by
-  // the 'yet_another_module' module. (Note that declaring dependencies in this
-  // direction should be done only in rare situations, since it can lead to the
-  // following problem: If a site has already run the yet_another_module
-  // module's database updates before it updates its codebase to pick up the
-  // newest my_module code, then the dependency declared here will be ignored.)
-  $dependencies['yet_another_module'][8005] = [
-    'my_module' => 8002,
-  ];
-  return $dependencies;
+function hook_update_dependencies(): array
+{
+    // Indicate that the my_module_update_8001() function provided by this module
+    // must run after the another_module_update_8003() function provided by the
+    // 'another_module' module.
+    $dependencies['my_module'][8001] = [
+      'another_module' => 8003,
+    ];
+    // Indicate that the my_module_update_8002() function provided by this module
+    // must run before the yet_another_module_update_8005() function provided by
+    // the 'yet_another_module' module. (Note that declaring dependencies in this
+    // direction should be done only in rare situations, since it can lead to the
+    // following problem: If a site has already run the yet_another_module
+    // module's database updates before it updates its codebase to pick up the
+    // newest my_module code, then the dependency declared here will be ignored.)
+    $dependencies['yet_another_module'][8005] = [
+      'my_module' => 8002,
+    ];
+    return $dependencies;
 }
 
 /**
@@ -941,10 +956,11 @@ function hook_update_dependencies(): array {
  *
  * @see hook_update_N()
  */
-function hook_update_last_removed(): int {
-  // We've removed the 8.x-1.x version of my_module, including database updates.
-  // The next update function is my_module_update_8200().
-  return 8103;
+function hook_update_last_removed(): int
+{
+    // We've removed the 8.x-1.x version of my_module, including database updates.
+    // The next update function is my_module_update_8200().
+    return 8103;
 }
 
 /**
@@ -1005,49 +1021,49 @@ function hook_update_last_removed(): int {
  *   - severity: The requirement's severity. Defaults to RequirementSeverity::OK
  *     when installing, or RequirementSeverity::Info otherwise.
  */
-function hook_requirements($phase): array {
-  $requirements = [];
+function hook_requirements($phase): array
+{
+    $requirements = [];
 
-  // Report Drupal version.
-  if ($phase == 'runtime') {
-    $requirements['drupal'] = [
-      'title' => t('Drupal'),
-      'value' => \Drupal::VERSION,
-      'severity' => RequirementSeverity::Info,
+    // Report Drupal version.
+    if ($phase == 'runtime') {
+        $requirements['drupal'] = [
+          'title' => t('Drupal'),
+          'value' => \Drupal::VERSION,
+          'severity' => RequirementSeverity::Info,
+        ];
+    }
+
+    // Test PHP version.
+    $requirements['php'] = [
+      'title' => t('PHP'),
+      'value' => ($phase == 'runtime') ? Link::fromTextAndUrl(phpversion(), Url::fromRoute('system.php'))->toString() : phpversion(),
     ];
-  }
-
-  // Test PHP version.
-  $requirements['php'] = [
-    'title' => t('PHP'),
-    'value' => ($phase == 'runtime') ? Link::fromTextAndUrl(phpversion(), Url::fromRoute('system.php'))->toString() : phpversion(),
-  ];
-  if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
-    $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
-    $requirements['php']['severity'] = RequirementSeverity::Error;
-  }
-
-  // Report cron status.
-  if ($phase == 'runtime') {
-    $cron_last = \Drupal::state()->get('system.cron_last');
-
-    if (is_numeric($cron_last)) {
-      $requirements['cron']['value'] = t('Last run @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
-    }
-    else {
-      $requirements['cron'] = [
-        'description' => t('Cron has not run. It appears cron jobs have not been setup on your system. Check the help pages for <a href=":url">configuring cron jobs</a>.', [':url' => 'https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks/cron-automated-tasks-overview']),
-        'severity' => RequirementSeverity::Error,
-        'value' => t('Never run'),
-      ];
+    if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
+        $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
+        $requirements['php']['severity'] = RequirementSeverity::Error;
     }
 
-    $requirements['cron']['description'] .= ' ' . t('You can <a href=":cron">run cron manually</a>.', [':cron' => Url::fromRoute('system.run_cron')->toString()]);
+    // Report cron status.
+    if ($phase == 'runtime') {
+        $cron_last = \Drupal::state()->get('system.cron_last');
 
-    $requirements['cron']['title'] = t('Cron maintenance tasks');
-  }
+        if (is_numeric($cron_last)) {
+            $requirements['cron']['value'] = t('Last run @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
+        } else {
+            $requirements['cron'] = [
+              'description' => t('Cron has not run. It appears cron jobs have not been setup on your system. Check the help pages for <a href=":url">configuring cron jobs</a>.', [':url' => 'https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks/cron-automated-tasks-overview']),
+              'severity' => RequirementSeverity::Error,
+              'value' => t('Never run'),
+            ];
+        }
 
-  return $requirements;
+        $requirements['cron']['description'] .= ' ' . t('You can <a href=":cron">run cron manually</a>.', [':cron' => Url::fromRoute('system.run_cron')->toString()]);
+
+        $requirements['cron']['title'] = t('Cron maintenance tasks');
+    }
+
+    return $requirements;
 }
 
 /**
@@ -1062,15 +1078,16 @@ function hook_requirements($phase): array {
  *
  * @see hook_requirements()
  */
-function hook_requirements_alter(array &$requirements): void {
-  // Change the title from 'PHP' to 'PHP version'.
-  $requirements['php']['title'] = t('PHP version');
+function hook_requirements_alter(array &$requirements): void
+{
+    // Change the title from 'PHP' to 'PHP version'.
+    $requirements['php']['title'] = t('PHP version');
 
-  // Decrease the 'update status' requirement severity from warning to info.
-  $requirements['update status']['severity'] = RequirementSeverity::Info;
+    // Decrease the 'update status' requirement severity from warning to info.
+    $requirements['update status']['severity'] = RequirementSeverity::Info;
 
-  // Remove a requirements entry.
-  unset($requirements['foo']);
+    // Remove a requirements entry.
+    unset($requirements['foo']);
 }
 
 /**
@@ -1099,41 +1116,41 @@ function hook_requirements_alter(array &$requirements): void {
  *     \Drupal\Core\Extension\Requirement\RequirementSeverity enum. Defaults to
  *     RequirementSeverity::OK.
  */
-function hook_runtime_requirements(): array {
-  $requirements = [];
+function hook_runtime_requirements(): array
+{
+    $requirements = [];
 
-  // Report Drupal version.
-  $requirements['drupal'] = [
-    'title' => t('Drupal'),
-    'value' => \Drupal::VERSION,
-    'severity' => RequirementSeverity::Info,
-  ];
+    // Report Drupal version.
+    $requirements['drupal'] = [
+      'title' => t('Drupal'),
+      'value' => \Drupal::VERSION,
+      'severity' => RequirementSeverity::Info,
+    ];
 
-  // Test PHP version.
-  $requirements['php'] = [
-    'title' => t('PHP'),
-    'value' => Link::fromTextAndUrl(phpversion(), Url::fromRoute('system.php'))->toString(),
-  ];
-  if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
-    $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
-    $requirements['php']['severity'] = RequirementSeverity::Error;
-  }
+    // Test PHP version.
+    $requirements['php'] = [
+      'title' => t('PHP'),
+      'value' => Link::fromTextAndUrl(phpversion(), Url::fromRoute('system.php'))->toString(),
+    ];
+    if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
+        $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
+        $requirements['php']['severity'] = RequirementSeverity::Error;
+    }
 
-  // Report cron status.
-  $cron_last = \Drupal::state()->get('system.cron_last');
-  $requirements['cron']['title'] = t('Cron maintenance tasks');
-  if (is_numeric($cron_last)) {
-    $requirements['cron']['description'] = '';
-    $requirements['cron']['value'] = t('Last run @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
-  }
-  else {
-    $requirements['cron']['description'] = t('Cron has not run. It appears cron jobs have not been setup on your system. Check the help pages for <a href=":url">configuring cron jobs</a>.', [':url' => 'https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks/cron-automated-tasks-overview']);
-    $requirements['cron']['value'] = t('Never run');
-    $requirements['cron']['severity'] = RequirementSeverity::Error;
-  }
-  $requirements['cron']['description'] .= ' ' . t('You can <a href=":cron">run cron manually</a>.', [':cron' => Url::fromRoute('system.run_cron')->toString()]);
+    // Report cron status.
+    $cron_last = \Drupal::state()->get('system.cron_last');
+    $requirements['cron']['title'] = t('Cron maintenance tasks');
+    if (is_numeric($cron_last)) {
+        $requirements['cron']['description'] = '';
+        $requirements['cron']['value'] = t('Last run @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
+    } else {
+        $requirements['cron']['description'] = t('Cron has not run. It appears cron jobs have not been setup on your system. Check the help pages for <a href=":url">configuring cron jobs</a>.', [':url' => 'https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks/cron-automated-tasks-overview']);
+        $requirements['cron']['value'] = t('Never run');
+        $requirements['cron']['severity'] = RequirementSeverity::Error;
+    }
+    $requirements['cron']['description'] .= ' ' . t('You can <a href=":cron">run cron manually</a>.', [':cron' => Url::fromRoute('system.run_cron')->toString()]);
 
-  return $requirements;
+    return $requirements;
 }
 
 /**
@@ -1148,15 +1165,16 @@ function hook_runtime_requirements(): array {
  *
  * @see hook_runtime_requirements()
  */
-function hook_runtime_requirements_alter(array &$requirements): void {
-  // Change the title from 'PHP' to 'PHP version'.
-  $requirements['php']['title'] = t('PHP version');
+function hook_runtime_requirements_alter(array &$requirements): void
+{
+    // Change the title from 'PHP' to 'PHP version'.
+    $requirements['php']['title'] = t('PHP version');
 
-  // Decrease the 'update status' requirement severity from warning to info.
-  $requirements['update status']['severity'] = RequirementSeverity::Info;
+    // Decrease the 'update status' requirement severity from warning to info.
+    $requirements['update status']['severity'] = RequirementSeverity::Info;
 
-  // Remove a requirements entry.
-  unset($requirements['foo']);
+    // Remove a requirements entry.
+    unset($requirements['foo']);
 }
 
 /**
@@ -1176,20 +1194,21 @@ function hook_runtime_requirements_alter(array &$requirements): void {
  *     \Drupal\Core\Extension\Requirement\RequirementSeverity enum. Defaults to
  *     RequirementSeverity::OK.
  */
-function hook_update_requirements(): array {
-  $requirements = [];
+function hook_update_requirements(): array
+{
+    $requirements = [];
 
-  // Test PHP version.
-  $requirements['php'] = [
-    'title' => t('PHP'),
-    'value' => phpversion(),
-  ];
-  if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
-    $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
-    $requirements['php']['severity'] = RequirementSeverity::Error;
-  }
+    // Test PHP version.
+    $requirements['php'] = [
+      'title' => t('PHP'),
+      'value' => phpversion(),
+    ];
+    if (version_compare(phpversion(), \Drupal::MINIMUM_PHP) < 0) {
+        $requirements['php']['description'] = t('Your PHP installation is too old. Drupal requires at least PHP %version.', ['%version' => \Drupal::MINIMUM_PHP]);
+        $requirements['php']['severity'] = RequirementSeverity::Error;
+    }
 
-  return $requirements;
+    return $requirements;
 }
 
 /**
@@ -1204,15 +1223,16 @@ function hook_update_requirements(): array {
  *
  * @see hook_update_requirements()
  */
-function hook_update_requirements_alter(array &$requirements): void {
-  // Change the title from 'PHP' to 'PHP version'.
-  $requirements['php']['title'] = t('PHP version');
+function hook_update_requirements_alter(array &$requirements): void
+{
+    // Change the title from 'PHP' to 'PHP version'.
+    $requirements['php']['title'] = t('PHP version');
 
-  // Decrease the 'update status' requirement severity from warning to info.
-  $requirements['update status']['severity'] = RequirementSeverity::Info;
+    // Decrease the 'update status' requirement severity from warning to info.
+    $requirements['update status']['severity'] = RequirementSeverity::Info;
 
-  // Remove a requirements entry.
-  unset($requirements['foo']);
+    // Remove a requirements entry.
+    unset($requirements['foo']);
 }
 
 /**

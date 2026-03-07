@@ -21,91 +21,97 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ExtensionPathResolver::class)]
 #[Group('Bootstrap')]
 #[RunTestsInSeparateProcesses]
-class ExtensionPathResolverTest extends KernelTestBase {
+class ExtensionPathResolverTest extends KernelTestBase
+{
+    /**
+     * Tests extension path resolving.
+     *
+     * @legacy-covers ::getPathname
+     */
+    public function testExtensionPathResolving(): void
+    {
+        // Retrieving the location of a module.
+        $this->assertSame('core/modules/system/system.info.yml', \Drupal::service('extension.list.module')
+          ->getPathname('system'));
 
-  /**
-   * Tests extension path resolving.
-   *
-   * @legacy-covers ::getPathname
-   */
-  public function testExtensionPathResolving(): void {
-    // Retrieving the location of a module.
-    $this->assertSame('core/modules/system/system.info.yml', \Drupal::service('extension.list.module')
-      ->getPathname('system'));
+        // Retrieving the location of a theme.
+        \Drupal::service('theme_installer')->install(['stark']);
+        $this->assertSame('core/themes/stark/stark.info.yml', \Drupal::service('extension.list.theme')
+          ->getPathname('stark'));
 
-    // Retrieving the location of a theme.
-    \Drupal::service('theme_installer')->install(['stark']);
-    $this->assertSame('core/themes/stark/stark.info.yml', \Drupal::service('extension.list.theme')
-      ->getPathname('stark'));
+        // Retrieving the location of a profile. Profiles are a special case with
+        // a fixed location and naming.
+        $this->assertSame('core/profiles/tests/testing/testing.info.yml', \Drupal::service('extension.list.profile')
+          ->getPathname('testing'));
+    }
 
-    // Retrieving the location of a profile. Profiles are a special case with
-    // a fixed location and naming.
-    $this->assertSame('core/profiles/tests/testing/testing.info.yml', \Drupal::service('extension.list.profile')
-      ->getPathname('testing'));
-  }
+    /**
+     * Tests extension path resolving path.
+     *
+     * @legacy-covers ::getPath
+     */
+    public function testExtensionPathResolvingPath(): void
+    {
+        $this->assertSame('core/modules/system/tests/modules/driver_test', \Drupal::service('extension.list.module')
+          ->getPath('driver_test'));
+    }
 
-  /**
-   * Tests extension path resolving path.
-   *
-   * @legacy-covers ::getPath
-   */
-  public function testExtensionPathResolvingPath(): void {
-    $this->assertSame('core/modules/system/tests/modules/driver_test', \Drupal::service('extension.list.module')
-      ->getPath('driver_test'));
-  }
+    /**
+     * Tests extension path resolving with non existing module.
+     *
+     * @legacy-covers ::getPathname
+     */
+    public function testExtensionPathResolvingWithNonExistingModule(): void
+    {
+        $this->expectException(UnknownExtensionException::class);
+        $this->expectExceptionMessage('The module there_is_a_module_for_that does not exist.');
+        $this->assertNull(\Drupal::service('extension.list.module')
+          ->getPathname('there_is_a_module_for_that'), 'Searching for an item that does not exist returns NULL.');
+    }
 
-  /**
-   * Tests extension path resolving with non existing module.
-   *
-   * @legacy-covers ::getPathname
-   */
-  public function testExtensionPathResolvingWithNonExistingModule(): void {
-    $this->expectException(UnknownExtensionException::class);
-    $this->expectExceptionMessage('The module there_is_a_module_for_that does not exist.');
-    $this->assertNull(\Drupal::service('extension.list.module')
-      ->getPathname('there_is_a_module_for_that'), 'Searching for an item that does not exist returns NULL.');
-  }
+    /**
+     * Tests extension path resolving with non existing theme.
+     *
+     * @legacy-covers ::getPathname
+     */
+    public function testExtensionPathResolvingWithNonExistingTheme(): void
+    {
+        $this->expectException(UnknownExtensionException::class);
+        $this->expectExceptionMessage('The theme there_is_a_theme_for_you does not exist.');
+        $this->assertNull(\Drupal::service('extension.list.theme')
+          ->getPathname('there_is_a_theme_for_you'), 'Searching for an item that does not exist returns NULL.');
+    }
 
-  /**
-   * Tests extension path resolving with non existing theme.
-   *
-   * @legacy-covers ::getPathname
-   */
-  public function testExtensionPathResolvingWithNonExistingTheme(): void {
-    $this->expectException(UnknownExtensionException::class);
-    $this->expectExceptionMessage('The theme there_is_a_theme_for_you does not exist.');
-    $this->assertNull(\Drupal::service('extension.list.theme')
-      ->getPathname('there_is_a_theme_for_you'), 'Searching for an item that does not exist returns NULL.');
-  }
+    /**
+     * Tests extension path resolving with non existing profile.
+     *
+     * @legacy-covers ::getPathname
+     */
+    public function testExtensionPathResolvingWithNonExistingProfile(): void
+    {
+        $this->expectException(UnknownExtensionException::class);
+        $this->expectExceptionMessage('The profile there_is_an_install_profile_for_you does not exist.');
+        $this->assertNull(\Drupal::service('extension.list.profile')
+          ->getPathname('there_is_an_install_profile_for_you'), 'Searching for an item that does not exist returns NULL.');
+    }
 
-  /**
-   * Tests extension path resolving with non existing profile.
-   *
-   * @legacy-covers ::getPathname
-   */
-  public function testExtensionPathResolvingWithNonExistingProfile(): void {
-    $this->expectException(UnknownExtensionException::class);
-    $this->expectExceptionMessage('The profile there_is_an_install_profile_for_you does not exist.');
-    $this->assertNull(\Drupal::service('extension.list.profile')
-      ->getPathname('there_is_an_install_profile_for_you'), 'Searching for an item that does not exist returns NULL.');
-  }
+    /**
+     * Tests the getPath() method with an unknown extension.
+     */
+    public function testUnknownExtension(): void
+    {
+        $module_extension_list = $this->prophesize(ModuleExtensionList::class);
+        $profile_extension_list = $this->prophesize(ProfileExtensionList::class);
+        $theme_extension_list = $this->prophesize(ThemeExtensionList::class);
+        $resolver = new ExtensionPathResolver(
+            $module_extension_list->reveal(),
+            $profile_extension_list->reveal(),
+            $theme_extension_list->reveal(),
+        );
 
-  /**
-   * Tests the getPath() method with an unknown extension.
-   */
-  public function testUnknownExtension(): void {
-    $module_extension_list = $this->prophesize(ModuleExtensionList::class);
-    $profile_extension_list = $this->prophesize(ProfileExtensionList::class);
-    $theme_extension_list = $this->prophesize(ThemeExtensionList::class);
-    $resolver = new ExtensionPathResolver(
-      $module_extension_list->reveal(),
-      $profile_extension_list->reveal(),
-      $theme_extension_list->reveal(),
-    );
-
-    $this->expectException(UnknownExtensionTypeException::class);
-    $this->expectExceptionMessage('Extension type foo is unknown.');
-    $resolver->getPath('foo', 'bar');
-  }
+        $this->expectException(UnknownExtensionTypeException::class);
+        $this->expectExceptionMessage('Extension type foo is unknown.');
+        $resolver->getPath('foo', 'bar');
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\HttpFoundation;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -13,62 +15,65 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * For local URLs we use LocalRedirectResponse which opts
  * out of external redirects.
  */
-abstract class SecuredRedirectResponse extends RedirectResponse {
-
-  /**
-   * Copies an existing redirect response into a safe one.
-   *
-   * The safe one cannot accidentally redirect to an external URL, unless
-   * actively wanted (see TrustedRedirectResponse).
-   *
-   * @param \Symfony\Component\HttpFoundation\RedirectResponse $response
-   *   The original redirect.
-   *
-   * @return static
-   */
-  public static function createFromRedirectResponse(RedirectResponse $response) {
-    $safe_response = new static($response->getTargetUrl(), $response->getStatusCode(), $response->headers->allPreserveCase());
-    $safe_response->fromResponse($response);
-    return $safe_response;
-  }
-
-  /**
-   * Copies over the values from the given response.
-   *
-   * @param \Symfony\Component\HttpFoundation\RedirectResponse $response
-   *   The redirect response object.
-   */
-  protected function fromResponse(RedirectResponse $response) {
-    $this->setProtocolVersion($response->getProtocolVersion());
-    if ($response->getCharset()) {
-      $this->setCharset($response->getCharset());
+abstract class SecuredRedirectResponse extends RedirectResponse
+{
+    /**
+     * Copies an existing redirect response into a safe one.
+     *
+     * The safe one cannot accidentally redirect to an external URL, unless
+     * actively wanted (see TrustedRedirectResponse).
+     *
+     * @param \Symfony\Component\HttpFoundation\RedirectResponse $response
+     *   The original redirect.
+     *
+     * @return static
+     */
+    public static function createFromRedirectResponse(RedirectResponse $response)
+    {
+        $safe_response = new static($response->getTargetUrl(), $response->getStatusCode(), $response->headers->allPreserveCase());
+        $safe_response->fromResponse($response);
+        return $safe_response;
     }
-    // Cookies are separate from other headers and have to be copied over
-    // directly.
-    foreach ($response->headers->getCookies() as $cookie) {
-      $this->headers->setCookie($cookie);
-    }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setTargetUrl($url): static {
-    if (!$this->isSafe($url)) {
-      throw new \InvalidArgumentException(sprintf('It is not safe to redirect to %s', $url));
+    /**
+     * Copies over the values from the given response.
+     *
+     * @param \Symfony\Component\HttpFoundation\RedirectResponse $response
+     *   The redirect response object.
+     */
+    protected function fromResponse(RedirectResponse $response)
+    {
+        $this->setProtocolVersion($response->getProtocolVersion());
+        if ($response->getCharset()) {
+            $this->setCharset($response->getCharset());
+        }
+        // Cookies are separate from other headers and have to be copied over
+        // directly.
+        foreach ($response->headers->getCookies() as $cookie) {
+            $this->headers->setCookie($cookie);
+        }
     }
-    return parent::setTargetUrl($url);
-  }
 
-  /**
-   * Returns whether the URL is considered as safe to redirect to.
-   *
-   * @param string $url
-   *   The URL checked for safety.
-   *
-   * @return bool
-   *   Returns TRUE if the URL is safe, FALSE otherwise.
-   */
-  abstract protected function isSafe($url);
+    /**
+     * {@inheritdoc}
+     */
+    public function setTargetUrl($url): static
+    {
+        if (!$this->isSafe($url)) {
+            throw new \InvalidArgumentException(sprintf('It is not safe to redirect to %s', $url));
+        }
+        return parent::setTargetUrl($url);
+    }
+
+    /**
+     * Returns whether the URL is considered as safe to redirect to.
+     *
+     * @param string $url
+     *   The URL checked for safety.
+     *
+     * @return bool
+     *   Returns TRUE if the URL is safe, FALSE otherwise.
+     */
+    abstract protected function isSafe($url);
 
 }

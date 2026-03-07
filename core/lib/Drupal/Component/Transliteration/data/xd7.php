@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Generic transliteration data for the PhpTransliteration class.
@@ -16,10 +18,10 @@ $base = [
   0x70 => 'huin', 'huinj', 'huinh', 'huid', 'huil', 'huilg', 'huilm', 'huilb', 'huils', 'huilt', 'huilp', 'huilh', 'huim', 'huib', 'huibs', 'huis',
   0x80 => 'huiss', 'huing', 'huij', 'huich', 'huik', 'huit', 'huip', 'huih', 'hi', 'hig', 'hikk', 'higs', 'hin', 'hinj', 'hinh', 'hid',
   0x90 => 'hil', 'hilg', 'hilm', 'hilb', 'hils', 'hilt', 'hilp', 'hilh', 'him', 'hib', 'hibs', 'his', 'hiss', 'hing', 'hij', 'hich',
-  0xA0 => 'hik', 'hit', 'hip', 'hih', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xB0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xC0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xD0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xE0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  0xF0 => NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+  0xA0 => 'hik', 'hit', 'hip', 'hih', null, null, null, null, null, null, null, null, null, null, null, null,
+  0xB0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+  0xC0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+  0xD0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+  0xE0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+  0xF0 => null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
 ];

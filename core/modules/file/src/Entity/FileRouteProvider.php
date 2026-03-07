@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Entity;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -10,25 +12,26 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Provides routes for files.
  */
-class FileRouteProvider implements EntityRouteProviderInterface {
+class FileRouteProvider implements EntityRouteProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection
+    {
+        $route_collection = new RouteCollection();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
-    $route_collection = new RouteCollection();
+        $route = (new Route('/file/{file}/delete'))
+          ->addDefaults([
+            '_entity_form' => 'file.delete',
+            '_title' => 'Delete',
+          ])
+          ->setRequirement('file', '\d+')
+          ->setRequirement('_entity_access', 'file.delete')
+          ->setOption('_admin_route', true);
+        $route_collection->add('entity.file.delete_form', $route);
 
-    $route = (new Route('/file/{file}/delete'))
-      ->addDefaults([
-        '_entity_form' => 'file.delete',
-        '_title' => 'Delete',
-      ])
-      ->setRequirement('file', '\d+')
-      ->setRequirement('_entity_access', 'file.delete')
-      ->setOption('_admin_route', TRUE);
-    $route_collection->add('entity.file.delete_form', $route);
-
-    return $route_collection;
-  }
+        return $route_collection;
+    }
 
 }

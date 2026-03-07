@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Layout;
 
 use Drupal\Component\Plugin\Discovery\AttributeBridgeDecorator;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\Core\Layout\Attribute\Layout;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\Discovery\AttributeDiscoveryWithAnnotations;
 use Drupal\Core\Plugin\Discovery\ContainerDerivativeDiscoveryDecorator;
 use Drupal\Core\Plugin\Discovery\YamlDiscoveryDecorator;
-use Drupal\Core\Layout\Attribute\Layout;
 use Drupal\Core\Plugin\FilteredPluginManagerTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\layout_discovery\Hook\LayoutDiscoveryThemeHooks;
@@ -19,237 +20,243 @@ use Drupal\layout_discovery\Hook\LayoutDiscoveryThemeHooks;
 /**
  * Provides a plugin manager for layouts.
  */
-class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginManagerInterface {
+class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginManagerInterface
+{
+    use FilteredPluginManagerTrait;
 
-  use FilteredPluginManagerTrait;
+    /**
+     * LayoutPluginManager constructor.
+     *
+     * @param \Traversable $namespaces
+     *   An object that implements \Traversable which contains the root paths
+     *   keyed by the corresponding namespace to look for plugin implementations.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   Cache backend instance to use.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler to invoke the alter hook with.
+     * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+     *   The theme handler to invoke the alter hook with.
+     */
+    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
+    {
+        parent::__construct('Plugin/Layout', $namespaces, $module_handler, LayoutInterface::class, Layout::class, \Drupal\Core\Layout\Annotation\Layout::class);
 
-  /**
-   * LayoutPluginManager constructor.
-   *
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler to invoke the alter hook with.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
-   *   The theme handler to invoke the alter hook with.
-   */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler) {
-    parent::__construct('Plugin/Layout', $namespaces, $module_handler, LayoutInterface::class, Layout::class, \Drupal\Core\Layout\Annotation\Layout::class);
-
-    $type = $this->getType();
-    $this->setCacheBackend($cache_backend, $type);
-    $this->alterInfo($type);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getType(): string {
-    return 'layout';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function providerExists($provider): bool
-  {
-      if ($this->moduleHandler->moduleExists($provider)) {
-          return true;
-      }
-      return $this->themeHandler->themeExists($provider);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDiscovery() {
-    if (!$this->discovery) {
-      $discovery = new AttributeDiscoveryWithAnnotations($this->subdir, $this->namespaces, $this->pluginDefinitionAttributeName, $this->pluginDefinitionAnnotationName, $this->additionalAnnotationNamespaces);
-      $discovery = new YamlDiscoveryDecorator($discovery, 'layouts', $this->moduleHandler->getModuleDirectories() + $this->themeHandler->getThemeDirectories());
-      $discovery
-        ->addTranslatableProperty('label')
-        ->addTranslatableProperty('description')
-        ->addTranslatableProperty('category');
-      $discovery = new AttributeBridgeDecorator($discovery, $this->pluginDefinitionAttributeName);
-      $discovery = new ContainerDerivativeDiscoveryDecorator($discovery);
-      $this->discovery = $discovery;
-    }
-    return $this->discovery;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processDefinition(&$definition, $plugin_id): void {
-    parent::processDefinition($definition, $plugin_id);
-
-    if (!$definition instanceof LayoutDefinition) {
-      throw new InvalidPluginDefinitionException($plugin_id, sprintf('The "%s" layout definition must extend %s', $plugin_id, LayoutDefinition::class));
+        $type = $this->getType();
+        $this->setCacheBackend($cache_backend, $type);
+        $this->alterInfo($type);
     }
 
-    if (empty($definition->getLabel())) {
-      @trigger_error('A layout plugin not having a label is deprecated in drupal:11.4.0 and having a label will be enforced in drupal:12.0.0. See https://www.drupal.org/node/3464076', E_USER_DEPRECATED);
+    /**
+     * {@inheritdoc}
+     */
+    protected function getType(): string
+    {
+        return 'layout';
     }
 
-    // Ensure that every plugin has a category.
-    $provider = $definition->getProvider();
-    if ($this->moduleHandler->moduleExists($provider)) {
-      $extension = $this->moduleHandler->getModule($provider);
-    }
-    elseif ($this->themeHandler->themeExists($provider)) {
-      $extension = $this->themeHandler->getTheme($provider);
-    }
-    else {
-      $extension = NULL;
-    }
-    if (empty($definition->getCategory())) {
-      // Default to the human-readable name if the provider is a module or
-      // theme; otherwise the provider machine name is used.
-      $category = $extension ? $extension->getName() : $provider;
-      $definition->setCategory($category);
+    /**
+     * {@inheritdoc}
+     */
+    protected function providerExists($provider): bool
+    {
+        if ($this->moduleHandler->moduleExists($provider)) {
+            return true;
+        }
+        return $this->themeHandler->themeExists($provider);
     }
 
-    // Add the module or theme path to the 'path'.
-    $base_path = $extension ? $extension->getPath() : '';
-
-    $path = $definition->getPath();
-    $path = !empty($path) ? $base_path . '/' . $path : $base_path;
-    $definition->setPath($path);
-
-    // Add the base path to the icon path.
-    if ($icon_path = $definition->getIconPath()) {
-      $definition->setIconPath($path . '/' . $icon_path);
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDiscovery()
+    {
+        if (!$this->discovery) {
+            $discovery = new AttributeDiscoveryWithAnnotations($this->subdir, $this->namespaces, $this->pluginDefinitionAttributeName, $this->pluginDefinitionAnnotationName, $this->additionalAnnotationNamespaces);
+            $discovery = new YamlDiscoveryDecorator($discovery, 'layouts', $this->moduleHandler->getModuleDirectories() + $this->themeHandler->getThemeDirectories());
+            $discovery
+              ->addTranslatableProperty('label')
+              ->addTranslatableProperty('description')
+              ->addTranslatableProperty('category');
+            $discovery = new AttributeBridgeDecorator($discovery, $this->pluginDefinitionAttributeName);
+            $discovery = new ContainerDerivativeDiscoveryDecorator($discovery);
+            $this->discovery = $discovery;
+        }
+        return $this->discovery;
     }
 
-    // Add a dependency on the provider of the library.
-    if ($library = $definition->getLibrary()) {
-      $config_dependencies = $definition->getConfigDependencies();
-      [$library_provider] = explode('/', $library, 2);
-      if ($this->moduleHandler->moduleExists($library_provider)) {
-        $config_dependencies['module'][] = $library_provider;
-      }
-      elseif ($this->themeHandler->themeExists($library_provider)) {
-        $config_dependencies['theme'][] = $library_provider;
-      }
-      $definition->setConfigDependencies($config_dependencies);
+    /**
+     * {@inheritdoc}
+     */
+    public function processDefinition(&$definition, $plugin_id): void
+    {
+        parent::processDefinition($definition, $plugin_id);
+
+        if (!$definition instanceof LayoutDefinition) {
+            throw new InvalidPluginDefinitionException($plugin_id, sprintf('The "%s" layout definition must extend %s', $plugin_id, LayoutDefinition::class));
+        }
+
+        if (empty($definition->getLabel())) {
+            @trigger_error('A layout plugin not having a label is deprecated in drupal:11.4.0 and having a label will be enforced in drupal:12.0.0. See https://www.drupal.org/node/3464076', E_USER_DEPRECATED);
+        }
+
+        // Ensure that every plugin has a category.
+        $provider = $definition->getProvider();
+        if ($this->moduleHandler->moduleExists($provider)) {
+            $extension = $this->moduleHandler->getModule($provider);
+        } elseif ($this->themeHandler->themeExists($provider)) {
+            $extension = $this->themeHandler->getTheme($provider);
+        } else {
+            $extension = null;
+        }
+        if (empty($definition->getCategory())) {
+            // Default to the human-readable name if the provider is a module or
+            // theme; otherwise the provider machine name is used.
+            $category = $extension ? $extension->getName() : $provider;
+            $definition->setCategory($category);
+        }
+
+        // Add the module or theme path to the 'path'.
+        $base_path = $extension ? $extension->getPath() : '';
+
+        $path = $definition->getPath();
+        $path = !empty($path) ? $base_path . '/' . $path : $base_path;
+        $definition->setPath($path);
+
+        // Add the base path to the icon path.
+        if ($icon_path = $definition->getIconPath()) {
+            $definition->setIconPath($path . '/' . $icon_path);
+        }
+
+        // Add a dependency on the provider of the library.
+        if ($library = $definition->getLibrary()) {
+            $config_dependencies = $definition->getConfigDependencies();
+            [$library_provider] = explode('/', $library, 2);
+            if ($this->moduleHandler->moduleExists($library_provider)) {
+                $config_dependencies['module'][] = $library_provider;
+            } elseif ($this->themeHandler->themeExists($library_provider)) {
+                $config_dependencies['theme'][] = $library_provider;
+            }
+            $definition->setConfigDependencies($config_dependencies);
+        }
+
+        // If 'template' is set, then we'll derive 'template_path' and 'theme_hook'.
+        $template = $definition->getTemplate();
+        if (!empty($template)) {
+            $template_parts = explode('/', $template);
+
+            $template = array_pop($template_parts);
+            $template_path = $path;
+            if (count($template_parts) > 0) {
+                $template_path .= '/' . implode('/', $template_parts);
+            }
+            $definition->setTemplate($template);
+            $definition->setThemeHook(strtr($template, '-', '_'));
+            $definition->setTemplatePath($template_path);
+        }
+
+        if (!$definition->getDefaultRegion()) {
+            $definition->setDefaultRegion(key($definition->getRegions()));
+        }
+        // Makes sure region names are translatable.
+        $regions = array_map(function (array $region): array {
+            if (!$region['label'] instanceof TranslatableMarkup) {
+                // Region labels from YAML discovery needs translation.
+                // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+                $region['label'] = new TranslatableMarkup($region['label'], [], ['context' => 'layout_region']);
+            }
+            return $region;
+        }, $definition->getRegions());
+        $definition->setRegions($regions);
     }
 
-    // If 'template' is set, then we'll derive 'template_path' and 'theme_hook'.
-    $template = $definition->getTemplate();
-    if (!empty($template)) {
-      $template_parts = explode('/', $template);
-
-      $template = array_pop($template_parts);
-      $template_path = $path;
-      if (count($template_parts) > 0) {
-        $template_path .= '/' . implode('/', $template_parts);
-      }
-      $definition->setTemplate($template);
-      $definition->setThemeHook(strtr($template, '-', '_'));
-      $definition->setTemplatePath($template_path);
-    }
-
-    if (!$definition->getDefaultRegion()) {
-      $definition->setDefaultRegion(key($definition->getRegions()));
-    }
-    // Makes sure region names are translatable.
-    $regions = array_map(function (array $region): array {
-      if (!$region['label'] instanceof TranslatableMarkup) {
-        // Region labels from YAML discovery needs translation.
-        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        $region['label'] = new TranslatableMarkup($region['label'], [], ['context' => 'layout_region']);
-      }
-      return $region;
-    }, $definition->getRegions());
-    $definition->setRegions($regions);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getThemeImplementations(): array {
-    $hooks = [];
-    $hooks['layout'] = [
-      'render element' => 'content',
-      'initial preprocess' => LayoutDiscoveryThemeHooks::class . ':preprocessLayout',
-    ];
-    /** @var \Drupal\Core\Layout\LayoutDefinition[] $definitions */
-    $definitions = $this->getDefinitions();
-    foreach ($definitions as $definition) {
-      if ($template = $definition->getTemplate()) {
-        $hooks[$definition->getThemeHook()] = [
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getThemeImplementations(): array
+    {
+        $hooks = [];
+        $hooks['layout'] = [
           'render element' => 'content',
-          'base hook' => 'layout',
-          'template' => $template,
-          'path' => $definition->getTemplatePath(),
+          'initial preprocess' => LayoutDiscoveryThemeHooks::class . ':preprocessLayout',
         ];
-      }
+        /** @var \Drupal\Core\Layout\LayoutDefinition[] $definitions */
+        $definitions = $this->getDefinitions();
+        foreach ($definitions as $definition) {
+            if ($template = $definition->getTemplate()) {
+                $hooks[$definition->getThemeHook()] = [
+                  'render element' => 'content',
+                  'base hook' => 'layout',
+                  'template' => $template,
+                  'path' => $definition->getTemplatePath(),
+                ];
+            }
+        }
+        return $hooks;
     }
-    return $hooks;
-  }
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getCategories(): array {
-    // Fetch all categories from definitions and remove duplicates.
-    $categories = array_unique(array_values(array_map(fn(LayoutDefinition $definition) => $definition->getCategory(), $this->getDefinitions())));
-    natcasesort($categories);
-    return $categories;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\Core\Layout\LayoutDefinition[]
-   *   An array of plugin definitions, sorted by category and label.
-   */
-  public function getSortedDefinitions(?array $definitions = NULL, string $label_key = 'label'): ?array {
-    // Sort the plugins first by category, then by label.
-    $definitions ??= $this->getDefinitions();
-    uasort($definitions, function (LayoutDefinition $a, LayoutDefinition $b): int {
-      if ($a->getCategory() != $b->getCategory()) {
-        return strnatcasecmp($a->getCategory(), $b->getCategory());
-      }
-      return strnatcasecmp($a->getLabel(), $b->getLabel());
-    });
-    return $definitions;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\Core\Layout\LayoutDefinition[][]
-   *   Keys are category names, and values are arrays of which the keys are
-   *   plugin IDs and the values are plugin definitions.
-   */
-  public function getGroupedDefinitions(?array $definitions = NULL, string $label_key = 'label'): array {
-    $definitions = $this->getSortedDefinitions($definitions ?? $this->getDefinitions(), $label_key);
-    $grouped_definitions = [];
-    foreach ($definitions as $id => $definition) {
-      $grouped_definitions[(string) $definition->getCategory()][$id] = $definition;
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getCategories(): array
+    {
+        // Fetch all categories from definitions and remove duplicates.
+        $categories = array_unique(array_values(array_map(fn (LayoutDefinition $definition) => $definition->getCategory(), $this->getDefinitions())));
+        natcasesort($categories);
+        return $categories;
     }
-    return $grouped_definitions;
-  }
 
-  /**
-   * {@inheritdoc}
-   * @return non-empty-array[]
-   */
-  public function getLayoutOptions(): array {
-    $layout_options = [];
-    $filtered_definitions = $this->getFilteredDefinitions($this->getType());
-    foreach ($this->getGroupedDefinitions($filtered_definitions) as $category => $layout_definitions) {
-      foreach ($layout_definitions as $name => $layout_definition) {
-        $layout_options[$category][$name] = $layout_definition->getLabel();
-      }
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\Core\Layout\LayoutDefinition[]
+     *   An array of plugin definitions, sorted by category and label.
+     */
+    public function getSortedDefinitions(?array $definitions = null, string $label_key = 'label'): ?array
+    {
+        // Sort the plugins first by category, then by label.
+        $definitions ??= $this->getDefinitions();
+        uasort($definitions, function (LayoutDefinition $a, LayoutDefinition $b): int {
+            if ($a->getCategory() != $b->getCategory()) {
+                return strnatcasecmp($a->getCategory(), $b->getCategory());
+            }
+            return strnatcasecmp($a->getLabel(), $b->getLabel());
+        });
+        return $definitions;
     }
-    return $layout_options;
-  }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\Core\Layout\LayoutDefinition[][]
+     *   Keys are category names, and values are arrays of which the keys are
+     *   plugin IDs and the values are plugin definitions.
+     */
+    public function getGroupedDefinitions(?array $definitions = null, string $label_key = 'label'): array
+    {
+        $definitions = $this->getSortedDefinitions($definitions ?? $this->getDefinitions(), $label_key);
+        $grouped_definitions = [];
+        foreach ($definitions as $id => $definition) {
+            $grouped_definitions[(string) $definition->getCategory()][$id] = $definition;
+        }
+        return $grouped_definitions;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return non-empty-array[]
+     */
+    public function getLayoutOptions(): array
+    {
+        $layout_options = [];
+        $filtered_definitions = $this->getFilteredDefinitions($this->getType());
+        foreach ($this->getGroupedDefinitions($filtered_definitions) as $category => $layout_definitions) {
+            foreach ($layout_definitions as $name => $layout_definition) {
+                $layout_options[$category][$name] = $layout_definition->getLabel();
+            }
+        }
+        return $layout_options;
+    }
 
 }

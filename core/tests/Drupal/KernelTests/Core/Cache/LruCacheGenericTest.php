@@ -14,23 +14,24 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Cache')]
 #[RunTestsInSeparateProcesses]
-class LruCacheGenericTest extends GenericCacheBackendUnitTestBase {
+class LruCacheGenericTest extends GenericCacheBackendUnitTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected bool $testObjectProperties = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected bool $testObjectProperties = FALSE;
-
-  /**
-   * Creates a new instance of LruMemoryCache.
-   *
-   * @return \Drupal\Core\Cache\CacheBackendInterface
-   *   A new MemoryBackend object.
-   */
-  protected function createCacheBackend($bin): LruMemoryCache {
-    $backend = new LruMemoryCache(\Drupal::service(TimeInterface::class), 300);
-    \Drupal::service('cache_tags.invalidator')->addInvalidator($backend);
-    return $backend;
-  }
+    /**
+     * Creates a new instance of LruMemoryCache.
+     *
+     * @return \Drupal\Core\Cache\CacheBackendInterface
+     *   A new MemoryBackend object.
+     */
+    protected function createCacheBackend($bin): LruMemoryCache
+    {
+        $backend = new LruMemoryCache(\Drupal::service(TimeInterface::class), 300);
+        \Drupal::service('cache_tags.invalidator')->addInvalidator($backend);
+        return $backend;
+    }
 
 }

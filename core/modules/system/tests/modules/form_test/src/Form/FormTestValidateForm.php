@@ -22,64 +22,68 @@ use Drupal\form_test\Callbacks;
  *
  * @internal
  */
-class FormTestValidateForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_validate_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $object = new Callbacks();
-
-    $form['name'] = [
-      '#type' => 'textfield',
-      '#title' => 'Name',
-      '#default_value' => '',
-      '#element_validate' => [[$object, 'validateName']],
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Save',
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    if ($form_state->getValue('name') == 'validate') {
-      // Alter the form element.
-      $form['name']['#value'] = '#value changed by #validate';
-      // Alter the submitted value in $form_state.
-      $form_state->setValueForElement($form['name'], 'value changed by setValueForElement() in #validate');
-      // Output the element's value from $form_state.
-      $this->messenger()
-        ->addStatus($this->t('@label value: @value', [
-          '@label' => $form['name']['#title'],
-          '@value' => $form_state->getValue('name'),
-        ]));
-
-      // Trigger a form validation error to see our changes.
-      $form_state->setErrorByName('');
-
-      // To simplify this test, enable form caching and use form storage to
-      // remember our alteration.
-      $form_state->setCached();
+class FormTestValidateForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_validate_form';
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $object = new Callbacks();
+
+        $form['name'] = [
+          '#type' => 'textfield',
+          '#title' => 'Name',
+          '#default_value' => '',
+          '#element_validate' => [[$object, 'validateName']],
+        ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Save',
+        ];
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+        if ($form_state->getValue('name') == 'validate') {
+            // Alter the form element.
+            $form['name']['#value'] = '#value changed by #validate';
+            // Alter the submitted value in $form_state.
+            $form_state->setValueForElement($form['name'], 'value changed by setValueForElement() in #validate');
+            // Output the element's value from $form_state.
+            $this->messenger()
+              ->addStatus($this->t('@label value: @value', [
+                '@label' => $form['name']['#title'],
+                '@value' => $form_state->getValue('name'),
+              ]));
+
+            // Trigger a form validation error to see our changes.
+            $form_state->setErrorByName('');
+
+            // To simplify this test, enable form caching and use form storage to
+            // remember our alteration.
+            $form_state->setCached();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path_alias\Entity;
 
 use Drupal\Core\Entity\Attribute\ContentEntityType;
@@ -18,157 +20,167 @@ use Drupal\path_alias\PathAliasStorageSchema;
  * Defines the path_alias entity class.
  */
 #[ContentEntityType(
-  id: 'path_alias',
-  label: new TranslatableMarkup('URL alias'),
-  label_collection: new TranslatableMarkup('URL aliases'),
-  label_singular: new TranslatableMarkup('URL alias'),
-  label_plural: new TranslatableMarkup('URL aliases'),
-  entity_keys: [
+    id: 'path_alias',
+    label: new TranslatableMarkup('URL alias'),
+    label_collection: new TranslatableMarkup('URL aliases'),
+    label_singular: new TranslatableMarkup('URL alias'),
+    label_plural: new TranslatableMarkup('URL aliases'),
+    entity_keys: [
     'id' => 'id',
     'revision' => 'revision_id',
     'langcode' => 'langcode',
     'uuid' => 'uuid',
     'published' => 'status',
   ],
-  handlers: [
+    handlers: [
     'storage' => PathAliasStorage::class,
     'storage_schema' => PathAliasStorageSchema::class,
   ],
-  admin_permission: 'administer url aliases',
-  base_table: 'path_alias',
-  revision_table: 'path_alias_revision',
-  label_count: [
+    admin_permission: 'administer url aliases',
+    base_table: 'path_alias',
+    revision_table: 'path_alias_revision',
+    label_count: [
     'singular' => '@count URL alias',
     'plural' => '@count URL aliases',
   ],
-  list_cache_tags: ['route_match'],
-  constraints: [
+    list_cache_tags: ['route_match'],
+    constraints: [
     'UniquePathAlias' => [],
   ],
 )]
-class PathAlias extends ContentEntityBase implements PathAliasInterface {
+class PathAlias extends ContentEntityBase implements PathAliasInterface
+{
+    use EntityPublishedTrait;
 
-  use EntityPublishedTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    {
+        $fields = parent::baseFieldDefinitions($entity_type);
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
+        $fields['path'] = BaseFieldDefinition::create('string')
+          ->setLabel(new TranslatableMarkup('System path'))
+          ->setDescription(new TranslatableMarkup('The path that this alias belongs to.'))
+          ->setRequired(true)
+          ->setRevisionable(true)
+          ->addPropertyConstraints('value', [
+            'Regex' => [
+              'pattern' => '/^\//i',
+              'message' => new TranslatableMarkup('The source path has to start with a slash.'),
+            ],
+          ])
+          ->addPropertyConstraints('value', ['ValidPath' => []]);
 
-    $fields['path'] = BaseFieldDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('System path'))
-      ->setDescription(new TranslatableMarkup('The path that this alias belongs to.'))
-      ->setRequired(TRUE)
-      ->setRevisionable(TRUE)
-      ->addPropertyConstraints('value', [
-        'Regex' => [
-          'pattern' => '/^\//i',
-          'message' => new TranslatableMarkup('The source path has to start with a slash.'),
-        ],
-      ])
-      ->addPropertyConstraints('value', ['ValidPath' => []]);
+        $fields['alias'] = BaseFieldDefinition::create('string')
+          ->setLabel(new TranslatableMarkup('URL alias'))
+          ->setDescription(new TranslatableMarkup('An alias used with this path.'))
+          ->setRequired(true)
+          ->setRevisionable(true)
+          ->addPropertyConstraints('value', [
+            'Regex' => [
+              'pattern' => '/^\//i',
+              'message' => new TranslatableMarkup('The alias path has to start with a slash.'),
+            ],
+          ]);
 
-    $fields['alias'] = BaseFieldDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('URL alias'))
-      ->setDescription(new TranslatableMarkup('An alias used with this path.'))
-      ->setRequired(TRUE)
-      ->setRevisionable(TRUE)
-      ->addPropertyConstraints('value', [
-        'Regex' => [
-          'pattern' => '/^\//i',
-          'message' => new TranslatableMarkup('The alias path has to start with a slash.'),
-        ],
-      ]);
+        $fields['langcode']->setDefaultValue(LanguageInterface::LANGCODE_NOT_SPECIFIED);
 
-    $fields['langcode']->setDefaultValue(LanguageInterface::LANGCODE_NOT_SPECIFIED);
+        // Add the published field.
+        $fields += static::publishedBaseFieldDefinitions($entity_type);
+        $fields['status']->setTranslatable(false);
 
-    // Add the published field.
-    $fields += static::publishedBaseFieldDefinitions($entity_type);
-    $fields['status']->setTranslatable(FALSE);
-
-    return $fields;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-    parent::preSave($storage);
-
-    // Trim the alias value of whitespace and slashes. Ensure to not trim the
-    // slash on the left side.
-    $alias = rtrim(trim($this->getAlias()), "\\/");
-    $this->setAlias($alias);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage, $update);
-
-    $alias_manager = \Drupal::service('path_alias.manager');
-    $alias_manager->cacheClear($this->getPath());
-    if ($update) {
-      $alias_manager->cacheClear($this->getOriginal()->getPath());
+        return $fields;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
-    parent::postDelete($storage, $entities);
+    /**
+     * {@inheritdoc}
+     */
+    public function preSave(EntityStorageInterface $storage): void
+    {
+        parent::preSave($storage);
 
-    $alias_manager = \Drupal::service('path_alias.manager');
-    foreach ($entities as $entity) {
-      $alias_manager->cacheClear($entity->getPath());
+        // Trim the alias value of whitespace and slashes. Ensure to not trim the
+        // slash on the left side.
+        $alias = rtrim(trim($this->getAlias()), '\\/');
+        $this->setAlias($alias);
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath() {
-    return $this->get('path')->value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave(EntityStorageInterface $storage, $update = true): void
+    {
+        parent::postSave($storage, $update);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPath($path): static {
-    $this->set('path', $path);
-    return $this;
-  }
+        $alias_manager = \Drupal::service('path_alias.manager');
+        $alias_manager->cacheClear($this->getPath());
+        if ($update) {
+            $alias_manager->cacheClear($this->getOriginal()->getPath());
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAlias() {
-    return $this->get('alias')->value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    {
+        parent::postDelete($storage, $entities);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setAlias($alias): static {
-    $this->set('alias', $alias);
-    return $this;
-  }
+        $alias_manager = \Drupal::service('path_alias.manager');
+        foreach ($entities as $entity) {
+            $alias_manager->cacheClear($entity->getPath());
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getAlias();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPath()
+    {
+        return $this->get('path')->value;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTagsToInvalidate(): array {
-    return ['route_match'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setPath($path): static
+    {
+        $this->set('path', $path);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAlias()
+    {
+        return $this->get('alias')->value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setAlias($alias): static
+    {
+        $this->set('alias', $alias);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getAlias();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTagsToInvalidate(): array
+    {
+        return ['route_match'];
+    }
 
 }

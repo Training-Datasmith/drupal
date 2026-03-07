@@ -15,49 +15,51 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('language')]
 #[RunTestsInSeparateProcesses]
-class ConfigActionsTest extends KernelTestBase {
+class ConfigActionsTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language'];
+    /**
+     * The configuration action manager.
+     */
+    private readonly ConfigActionManager $configActionManager;
 
-  /**
-   * The configuration action manager.
-   */
-  private readonly ConfigActionManager $configActionManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installConfig('language');
+        $this->configActionManager = $this->container->get('plugin.manager.config_action');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installConfig('language');
-    $this->configActionManager = $this->container->get('plugin.manager.config_action');
-  }
+    /**
+     * Tests the application of configuration actions on a language.
+     */
+    public function testConfigActions(): void
+    {
+        $language = ConfigurableLanguage::load('en');
+        $this->assertSame('English', $language->getName());
+        $this->assertSame(0, $language->getWeight());
 
-  /**
-   * Tests the application of configuration actions on a language.
-   */
-  public function testConfigActions(): void {
-    $language = ConfigurableLanguage::load('en');
-    $this->assertSame('English', $language->getName());
-    $this->assertSame(0, $language->getWeight());
+        $this->configActionManager->applyAction(
+            'entity_method:language.entity:setName',
+            $language->getConfigDependencyName(),
+            'Wacky language',
+        );
+        $this->configActionManager->applyAction(
+            'entity_method:language.entity:setWeight',
+            $language->getConfigDependencyName(),
+            39,
+        );
 
-    $this->configActionManager->applyAction(
-      'entity_method:language.entity:setName',
-      $language->getConfigDependencyName(),
-      'Wacky language',
-    );
-    $this->configActionManager->applyAction(
-      'entity_method:language.entity:setWeight',
-      $language->getConfigDependencyName(),
-      39,
-    );
-
-    $language = ConfigurableLanguage::load('en');
-    $this->assertSame('Wacky language', $language->getName());
-    $this->assertSame(39, $language->getWeight());
-  }
+        $language = ConfigurableLanguage::load('en');
+        $this->assertSame('Wacky language', $language->getName());
+        $this->assertSame(39, $language->getWeight());
+    }
 
 }

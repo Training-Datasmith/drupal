@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -10,8 +12,8 @@ use Drupal\views\Attribute\ViewsArgument;
  * @ingroup views_argument_handlers
   */
 #[ViewsArgument(
-  id: 'standard',
+    id: 'standard',
 )]
-class Standard extends ArgumentPluginBase {
-
+class Standard extends ArgumentPluginBase
+{
 }

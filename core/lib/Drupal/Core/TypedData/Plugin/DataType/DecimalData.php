@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -15,17 +17,18 @@ use Drupal\Core\TypedData\Type\DecimalInterface;
  * unexpected rounding behavior, it is implemented and displayed as string.
  */
 #[DataType(
-  id: "decimal",
-  label: new TranslatableMarkup("Decimal"),
+    id: 'decimal',
+    label: new TranslatableMarkup('Decimal'),
 )]
-class DecimalData extends StringData implements DecimalInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'string', 'format' => 'number'])]
-  public function getCastedValue() {
-    return $this->getString() ?: '0.0';
-  }
+class DecimalData extends StringData implements DecimalInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'string', 'format' => 'number'])]
+    public function getCastedValue()
+    {
+        return $this->getString() ?: '0.0';
+    }
 
 }

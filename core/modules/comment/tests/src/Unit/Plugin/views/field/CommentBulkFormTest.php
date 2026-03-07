@@ -18,91 +18,93 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(CommentBulkForm::class)]
 #[Group('comment')]
-class CommentBulkFormTest extends UnitTestCase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown(): void {
-    parent::tearDown();
-    $container = new ContainerBuilder();
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests the constructor assignment of actions.
-   */
-  public function testConstructor(): void {
-    $actions = [];
-
-    for ($i = 1; $i <= 2; $i++) {
-      $action = $this->createMock('\Drupal\system\ActionConfigEntityInterface');
-      $action->expects($this->any())
-        ->method('getType')
-        ->willReturn('comment');
-      $actions[$i] = $action;
+class CommentBulkFormTest extends UnitTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $container = new ContainerBuilder();
+        \Drupal::setContainer($container);
     }
 
-    $action = $this->createMock('\Drupal\system\ActionConfigEntityInterface');
-    $action->expects($this->any())
-      ->method('getType')
-      ->willReturn('user');
-    $actions[] = $action;
+    /**
+     * Tests the constructor assignment of actions.
+     */
+    public function testConstructor(): void
+    {
+        $actions = [];
 
-    $entity_storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
-    $entity_storage->expects($this->any())
-      ->method('loadMultiple')
-      ->willReturn($actions);
+        for ($i = 1; $i <= 2; $i++) {
+            $action = $this->createMock('\Drupal\system\ActionConfigEntityInterface');
+            $action->expects($this->any())
+              ->method('getType')
+              ->willReturn('comment');
+            $actions[$i] = $action;
+        }
 
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager->expects($this->once())
-      ->method('getStorage')
-      ->with('action')
-      ->willReturn($entity_storage);
+        $action = $this->createMock('\Drupal\system\ActionConfigEntityInterface');
+        $action->expects($this->any())
+          ->method('getType')
+          ->willReturn('user');
+        $actions[] = $action;
 
-    $entity_repository = $this->createMock(EntityRepositoryInterface::class);
+        $entity_storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
+        $entity_storage->expects($this->any())
+          ->method('loadMultiple')
+          ->willReturn($actions);
 
-    $language_manager = $this->createMock('Drupal\Core\Language\LanguageManagerInterface');
+        $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+        $entity_type_manager->expects($this->once())
+          ->method('getStorage')
+          ->with('action')
+          ->willReturn($entity_storage);
 
-    $messenger = $this->createMock('Drupal\Core\Messenger\MessengerInterface');
+        $entity_repository = $this->createMock(EntityRepositoryInterface::class);
 
-    $route_match = $this->createMock(ResettableStackedRouteMatchInterface::class);
+        $language_manager = $this->createMock('Drupal\Core\Language\LanguageManagerInterface');
 
-    $views_data = $this->getMockBuilder('Drupal\views\ViewsData')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $views_data->expects($this->any())
-      ->method('get')
-      ->with('comment')
-      ->willReturn(['table' => ['entity type' => 'comment']]);
-    $container = new ContainerBuilder();
-    $container->set('views.views_data', $views_data);
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
+        $messenger = $this->createMock('Drupal\Core\Messenger\MessengerInterface');
 
-    $storage = $this->createMock('Drupal\views\ViewEntityInterface');
-    $storage->expects($this->any())
-      ->method('get')
-      ->with('base_table')
-      ->willReturn('comment');
+        $route_match = $this->createMock(ResettableStackedRouteMatchInterface::class);
 
-    $executable = $this->getMockBuilder('Drupal\views\ViewExecutable')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $executable->storage = $storage;
+        $views_data = $this->getMockBuilder('Drupal\views\ViewsData')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $views_data->expects($this->any())
+          ->method('get')
+          ->with('comment')
+          ->willReturn(['table' => ['entity type' => 'comment']]);
+        $container = new ContainerBuilder();
+        $container->set('views.views_data', $views_data);
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
 
-    $display = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')
-      ->disableOriginalConstructor()
-      ->getMock();
+        $storage = $this->createMock('Drupal\views\ViewEntityInterface');
+        $storage->expects($this->any())
+          ->method('get')
+          ->with('base_table')
+          ->willReturn('comment');
 
-    $definition['title'] = '';
-    $options = [];
+        $executable = $this->getMockBuilder('Drupal\views\ViewExecutable')
+          ->disableOriginalConstructor()
+          ->getMock();
+        $executable->storage = $storage;
 
-    $comment_bulk_form = new CommentBulkForm([], 'comment_bulk_form', $definition, $entity_type_manager, $language_manager, $messenger, $entity_repository, $route_match);
-    $comment_bulk_form->init($executable, $display, $options);
+        $display = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')
+          ->disableOriginalConstructor()
+          ->getMock();
 
-    $reflected_actions = (new \ReflectionObject($comment_bulk_form))->getProperty('actions');
-    $this->assertEquals(array_slice($actions, 0, -1, TRUE), $reflected_actions->getValue($comment_bulk_form));
-  }
+        $definition['title'] = '';
+        $options = [];
+
+        $comment_bulk_form = new CommentBulkForm([], 'comment_bulk_form', $definition, $entity_type_manager, $language_manager, $messenger, $entity_repository, $route_match);
+        $comment_bulk_form->init($executable, $display, $options);
+
+        $reflected_actions = (new \ReflectionObject($comment_bulk_form))->getProperty('actions');
+        $this->assertEquals(array_slice($actions, 0, -1, true), $reflected_actions->getValue($comment_bulk_form));
+    }
 
 }

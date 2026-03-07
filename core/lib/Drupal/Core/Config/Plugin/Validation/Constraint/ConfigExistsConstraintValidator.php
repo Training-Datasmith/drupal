@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Config\Plugin\Validation\Constraint;
 
@@ -14,46 +14,47 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates that a given config object exists.
  */
-class ConfigExistsConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
-
-  /**
-   * Constructs a ConfigExistsConstraintValidator object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory service.
-   */
-  public function __construct(
-      /**
-       * The config factory service.
-       */
-      protected ConfigFactoryInterface $configFactory
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate(mixed $name, Constraint $constraint): void {
-    assert($constraint instanceof ConfigExistsConstraint);
-
-    // This constraint may be used to validate nullable (optional) values.
-    if ($name === NULL) {
-      return;
+class ConfigExistsConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    /**
+     * Constructs a ConfigExistsConstraintValidator object.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory service.
+     */
+    public function __construct(
+        /**
+         * The config factory service.
+         */
+        protected ConfigFactoryInterface $configFactory
+    ) {
     }
 
-    $constraint->prefix = TypeResolver::resolveDynamicTypeName($constraint->prefix, $this->context->getObject());
-
-    if (!in_array($constraint->prefix . $name, $this->configFactory->listAll($constraint->prefix), TRUE)) {
-      $this->context->addViolation($constraint->message, ['@name' => $constraint->prefix . $name]);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static($container->get('config.factory'));
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validate(mixed $name, Constraint $constraint): void
+    {
+        assert($constraint instanceof ConfigExistsConstraint);
+
+        // This constraint may be used to validate nullable (optional) values.
+        if ($name === null) {
+            return;
+        }
+
+        $constraint->prefix = TypeResolver::resolveDynamicTypeName($constraint->prefix, $this->context->getObject());
+
+        if (!in_array($constraint->prefix . $name, $this->configFactory->listAll($constraint->prefix), true)) {
+            $this->context->addViolation($constraint->message, ['@name' => $constraint->prefix . $name]);
+        }
+    }
 
 }

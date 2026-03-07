@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 /**
@@ -10,33 +12,34 @@ namespace Drupal\Core\Field;
  * @see \Drupal\Core\Field\FieldConfigBase
  * @see \Drupal\Core\Field\BaseFieldDefinition
  */
-trait FieldInputValueNormalizerTrait {
-
-  /**
-   * Ensure a field value is transformed into a format keyed by delta.
-   *
-   * @param mixed $value
-   *   The raw field value to normalize.
-   * @param string|null $main_property_name
-   *   The main field property name.
-   *
-   * @return array
-   *   A field value normalized into a format keyed by delta.
-   */
-  protected static function normalizeValue(&$value, $main_property_name): array {
-    if (!isset($value) || $value === NULL) {
-      return [];
+trait FieldInputValueNormalizerTrait
+{
+    /**
+     * Ensure a field value is transformed into a format keyed by delta.
+     *
+     * @param mixed $value
+     *   The raw field value to normalize.
+     * @param string|null $main_property_name
+     *   The main field property name.
+     *
+     * @return array
+     *   A field value normalized into a format keyed by delta.
+     */
+    protected static function normalizeValue(&$value, $main_property_name): array
+    {
+        if (!isset($value) || $value === null) {
+            return [];
+        }
+        if (!is_array($value)) {
+            if ($main_property_name === null) {
+                throw new \InvalidArgumentException('A main property is required when normalizing scalar field values.');
+            }
+            return [[$main_property_name => $value]];
+        }
+        if (!empty($value) && !is_numeric(array_keys($value)[0])) {
+            return [0 => $value];
+        }
+        return $value;
     }
-    if (!is_array($value)) {
-      if ($main_property_name === NULL) {
-        throw new \InvalidArgumentException('A main property is required when normalizing scalar field values.');
-      }
-      return [[$main_property_name => $value]];
-    }
-    if (!empty($value) && !is_numeric(array_keys($value)[0])) {
-      return [0 => $value];
-    }
-    return $value;
-  }
 
 }

@@ -10,25 +10,27 @@ use Drupal\Core\Plugin\PluginFormBase;
 /**
  * Provides a form for a block that is empty.
  */
-class EmptyBlockForm extends PluginFormBase {
+class EmptyBlockForm extends PluginFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public $plugin;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $plugin;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    // Intentionally empty.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+        // Intentionally empty.
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,54 +17,55 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class CssCommand implements CommandInterface {
+class CssCommand implements CommandInterface
+{
+    /**
+     * Constructs a CssCommand object.
+     *
+     * @param string $selector
+     *   A CSS selector for elements to which the CSS will be applied.
+     * @param array $css
+     *   An array of CSS property/value pairs to set.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string.
+         *
+         * If the command is a response to a request from an #ajax form element then
+         * this value can be NULL.
+         */
+        protected $selector,
+        protected array $css = []
+    ) {
+    }
 
-  /**
-   * Constructs a CssCommand object.
-   *
-   * @param string $selector
-   *   A CSS selector for elements to which the CSS will be applied.
-   * @param array $css
-   *   An array of CSS property/value pairs to set.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string.
-       *
-       * If the command is a response to a request from an #ajax form element then
-       * this value can be NULL.
-       */
-      protected $selector,
-      protected array $css = []
-  )
-  {
-  }
+    /**
+     * Adds a property/value pair to the CSS to be added to this element.
+     *
+     * @param string $property
+     *   The CSS property to be changed.
+     * @param string $value
+     *   The new value of the CSS property.
+     *
+     * @return $this
+     */
+    public function setProperty($property, $value): static
+    {
+        $this->css[$property] = $value;
+        return $this;
+    }
 
-  /**
-   * Adds a property/value pair to the CSS to be added to this element.
-   *
-   * @param string $property
-   *   The CSS property to be changed.
-   * @param string $value
-   *   The new value of the CSS property.
-   *
-   * @return $this
-   */
-  public function setProperty($property, $value): static {
-    $this->css[$property] = $value;
-    return $this;
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'css',
-      'selector' => $this->selector,
-      'argument' => $this->css,
-    ];
-  }
+        return [
+          'command' => 'css',
+          'selector' => $this->selector,
+          'argument' => $this->css,
+        ];
+    }
 
 }

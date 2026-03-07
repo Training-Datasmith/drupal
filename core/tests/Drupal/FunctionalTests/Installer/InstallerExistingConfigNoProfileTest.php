@@ -12,17 +12,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerExistingConfigNoProfileTest extends InstallerExistingConfigTest {
+class InstallerExistingConfigNoProfileTest extends InstallerExistingConfigTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = false;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpRequirementsProblem(): void {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpRequirementsProblem(): void
+    {
+    }
 
 }

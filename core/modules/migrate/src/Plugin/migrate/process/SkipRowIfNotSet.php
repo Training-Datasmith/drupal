@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\Row;
 use Drupal\migrate\MigrateSkipRowException;
+use Drupal\migrate\ProcessPluginBase;
+use Drupal\migrate\Row;
 
 /**
  * Skips processing the current row when a source value is not set.
@@ -39,20 +41,21 @@ use Drupal\migrate\MigrateSkipRowException;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "skip_row_if_not_set",
-  handle_multiples: TRUE,
+    id: 'skip_row_if_not_set',
+    handle_multiples: true,
 )]
-class SkipRowIfNotSet extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if (!isset($value[$this->configuration['index']])) {
-      $message = !empty($this->configuration['message']) ? $this->configuration['message'] : '';
-      throw new MigrateSkipRowException($message);
+class SkipRowIfNotSet extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if (!isset($value[$this->configuration['index']])) {
+            $message = !empty($this->configuration['message']) ? $this->configuration['message'] : '';
+            throw new MigrateSkipRowException($message);
+        }
+        return $value[$this->configuration['index']];
     }
-    return $value[$this->configuration['index']];
-  }
 
 }

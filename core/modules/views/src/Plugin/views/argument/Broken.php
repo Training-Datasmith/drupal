@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -11,9 +13,10 @@ use Drupal\views\Plugin\views\BrokenHandlerTrait;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'broken',
+    id: 'broken',
 )]
-class Broken extends ArgumentPluginBase {
-  use BrokenHandlerTrait;
+class Broken extends ArgumentPluginBase
+{
+    use BrokenHandlerTrait;
 
 }

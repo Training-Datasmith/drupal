@@ -13,41 +13,42 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeLinksTest extends NodeTestBase {
+class NodeLinksTest extends NodeTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['views'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests that the links can be hidden in the view display settings.
+     */
+    public function testHideLinks(): void
+    {
+        $node = $this->drupalCreateNode([
+          'type' => 'article',
+          'promote' => NodeInterface::PROMOTED,
+        ]);
 
-  /**
-   * Tests that the links can be hidden in the view display settings.
-   */
-  public function testHideLinks(): void {
-    $node = $this->drupalCreateNode([
-      'type' => 'article',
-      'promote' => NodeInterface::PROMOTED,
-    ]);
+        // Links are displayed by default.
+        $this->drupalGet('node');
+        $this->assertSession()->pageTextContains($node->getTitle());
+        $this->assertSession()->linkExists('Read more');
 
-    // Links are displayed by default.
-    $this->drupalGet('node');
-    $this->assertSession()->pageTextContains($node->getTitle());
-    $this->assertSession()->linkExists('Read more');
+        // Hide links.
+        \Drupal::service('entity_display.repository')
+          ->getViewDisplay('node', 'article', 'teaser')
+          ->removeComponent('links')
+          ->save();
 
-    // Hide links.
-    \Drupal::service('entity_display.repository')
-      ->getViewDisplay('node', 'article', 'teaser')
-      ->removeComponent('links')
-      ->save();
-
-    $this->drupalGet('node');
-    $this->assertSession()->pageTextContains($node->getTitle());
-    $this->assertSession()->linkNotExists('Read more');
-  }
+        $this->drupalGet('node');
+        $this->assertSession()->pageTextContains($node->getTitle());
+        $this->assertSession()->linkNotExists('Read more');
+    }
 
 }

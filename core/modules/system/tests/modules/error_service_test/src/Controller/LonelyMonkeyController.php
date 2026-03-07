@@ -12,28 +12,31 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a controller which calls out to a service with missing dependencies.
  */
-class LonelyMonkeyController extends ControllerBase implements ContainerInjectionInterface {
+class LonelyMonkeyController extends ControllerBase implements ContainerInjectionInterface
+{
+    /**
+     * The lonely monkey class.
+     */
+    protected LonelyMonkeyClass $class;
 
-  /**
-   * The lonely monkey class.
-   */
-  protected LonelyMonkeyClass $class;
+    public function __construct(LonelyMonkeyClass $class)
+    {
+        $this->class = $class;
+    }
 
-  public function __construct(LonelyMonkeyClass $class) {
-    $this->class = $class;
-  }
+    public function testBrokenClass()
+    {
+        return [
+          '#markup' => $this->t('This should be broken.'),
+        ];
+    }
 
-  public function testBrokenClass() {
-    return [
-      '#markup' => $this->t('This should be broken.'),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static($container->get('broken_class_with_missing_dependency'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static($container->get('broken_class_with_missing_dependency'));
+    }
 
 }

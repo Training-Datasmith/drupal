@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Annotation;
 
 /**
@@ -7,33 +9,35 @@ namespace Drupal\Component\Annotation;
  *
  * @Annotation
  */
-class PluginID extends AnnotationBase {
+class PluginID extends AnnotationBase
+{
+    /**
+     * The plugin ID.
+     *
+     * When an annotation is given no key, 'value' is assumed by Doctrine.
+     *
+     * @var string
+     */
+    public $value;
 
-  /**
-   * The plugin ID.
-   *
-   * When an annotation is given no key, 'value' is assumed by Doctrine.
-   *
-   * @var string
-   */
-  public $value;
+    /**
+     * {@inheritdoc}
+     */
+    public function get(): array
+    {
+        return [
+          'id' => $this->value,
+          'class' => $this->class,
+          'provider' => $this->provider,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get(): array {
-    return [
-      'id' => $this->value,
-      'class' => $this->class,
-      'provider' => $this->provider,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getId() {
-    return $this->value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getId()
+    {
+        return $this->value;
+    }
 
 }

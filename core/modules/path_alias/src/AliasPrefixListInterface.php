@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path_alias;
 
 use Drupal\Core\Cache\CacheCollectorInterface;
@@ -12,4 +14,6 @@ use Drupal\Core\Cache\CacheCollectorInterface;
  * This optimization allows skipping the lookup for every /user/{user} path if
  * "user" is not in the list.
  */
-interface AliasPrefixListInterface extends CacheCollectorInterface {}
+interface AliasPrefixListInterface extends CacheCollectorInterface
+{
+}

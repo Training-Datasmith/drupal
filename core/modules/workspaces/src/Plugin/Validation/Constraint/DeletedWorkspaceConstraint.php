@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -10,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Deleted workspace constraint.
  */
 #[Constraint(
-  id: 'DeletedWorkspace',
-  label: new TranslatableMarkup('Deleted workspace', [], ['context' => 'Validation'])
+    id: 'DeletedWorkspace',
+    label: new TranslatableMarkup('Deleted workspace', [], ['context' => 'Validation'])
 )]
-class DeletedWorkspaceConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'A workspace with this ID has been deleted but data still exists for it.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class DeletedWorkspaceConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'A workspace with this ID has been deleted but data still exists for it.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

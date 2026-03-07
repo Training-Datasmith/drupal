@@ -15,71 +15,76 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeTemplateSuggestionsTest extends KernelTestBase {
+class NodeTemplateSuggestionsTest extends KernelTestBase
+{
+    use NodeCreationTrait;
 
-  use NodeCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'node',
+      'user',
+      'system',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'node',
-    'user',
-    'system',
-  ];
+    /**
+     * Tests node template suggestions.
+     *
+     * @see \Drupal\node\Hook\NodeThemeHooks::themeSuggestionsNode
+     */
+    public function testNodeThemeHookSuggestions(): void
+    {
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('node');
 
-  /**
-   * Tests node template suggestions.
-   *
-   * @see \Drupal\node\Hook\NodeThemeHooks::themeSuggestionsNode
-   */
-  public function testNodeThemeHookSuggestions(): void {
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('node');
+        $this->installConfig(['system']);
 
-    $this->installConfig(['system']);
+        NodeType::create([
+          'type' => 'page',
+          'name' => 'Page',
+        ])->save();
 
-    NodeType::create([
-      'type' => 'page',
-      'name' => 'Page',
-    ])->save();
+        // Create node to be rendered.
+        $node = $this->createNode();
+        $view_mode = 'full';
 
-    // Create node to be rendered.
-    $node = $this->createNode();
-    $view_mode = 'full';
+        // Simulate theming of the node.
+        $build = \Drupal::entityTypeManager()->getViewBuilder('node')->view($node, $view_mode);
 
-    // Simulate theming of the node.
-    $build = \Drupal::entityTypeManager()->getViewBuilder('node')->view($node, $view_mode);
+        $variables['elements'] = $build;
+        $suggestions = \Drupal::moduleHandler()->invokeAll('theme_suggestions_node', [$variables]);
 
-    $variables['elements'] = $build;
-    $suggestions = \Drupal::moduleHandler()->invokeAll('theme_suggestions_node', [$variables]);
-
-    $this->assertEquals([
+        $this->assertEquals(
+            [
       'node__full',
       'node__page',
       'node__page__full',
       'node__' . $node->id(),
       'node__' . $node->id() . '__full',
     ],
-    $suggestions,
-    'Found expected node suggestions.');
+            $suggestions,
+            'Found expected node suggestions.'
+        );
 
-    // Change the view mode.
-    $view_mode = 'node.my_custom_view_mode';
-    $build = \Drupal::entityTypeManager()->getViewBuilder('node')->view($node, $view_mode);
+        // Change the view mode.
+        $view_mode = 'node.my_custom_view_mode';
+        $build = \Drupal::entityTypeManager()->getViewBuilder('node')->view($node, $view_mode);
 
-    $variables['elements'] = $build;
-    $suggestions = \Drupal::moduleHandler()->invokeAll('theme_suggestions_node', [$variables]);
+        $variables['elements'] = $build;
+        $suggestions = \Drupal::moduleHandler()->invokeAll('theme_suggestions_node', [$variables]);
 
-    $this->assertEquals([
+        $this->assertEquals(
+            [
       'node__node_my_custom_view_mode',
       'node__page',
       'node__page__node_my_custom_view_mode',
       'node__' . $node->id(),
       'node__' . $node->id() . '__node_my_custom_view_mode',
     ],
-    $suggestions,
-    'Found expected node suggestions.');
-  }
+            $suggestions,
+            'Found expected node suggestions.'
+        );
+    }
 
 }

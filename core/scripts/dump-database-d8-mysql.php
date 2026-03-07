@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * A command line application to dump a database to a generation script.
@@ -12,7 +14,7 @@ use Drupal\Core\Site\Settings;
 use Symfony\Component\HttpFoundation\Request;
 
 if (PHP_SAPI !== 'cli') {
-  return;
+    return;
 }
 
 // Bootstrap.

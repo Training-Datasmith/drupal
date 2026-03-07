@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\sqlite\Driver\Database\sqlite;
 
 use Pdo\Sqlite;
@@ -29,27 +31,30 @@ use Pdo\Sqlite;
  *
  * @see https://www.drupal.org/project/drupal/issues/1120020
  */
-class SqliteConnection extends Sqlite {
+class SqliteConnection extends Sqlite
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function beginTransaction(): bool
+    {
+        return $this->exec('BEGIN IMMEDIATE TRANSACTION') !== false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function beginTransaction(): bool {
-    return $this->exec('BEGIN IMMEDIATE TRANSACTION') !== FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function commit(): bool
+    {
+        return $this->exec('COMMIT') !== false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function commit(): bool {
-    return $this->exec('COMMIT') !== FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rollBack(): bool {
-    return $this->exec('ROLLBACK') !== FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function rollBack(): bool
+    {
+        return $this->exec('ROLLBACK') !== false;
+    }
 
 }

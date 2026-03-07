@@ -19,85 +19,91 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(PluginWithFormsTrait::class)]
 #[Group('Plugin')]
-class PluginWithFormsTraitTest extends UnitTestCase {
+class PluginWithFormsTraitTest extends UnitTestCase
+{
+    /**
+     * Tests get form class.
+     *
+     * @legacy-covers ::getFormClass
+     * @legacy-covers ::hasFormClass
+     */
+    #[DataProvider('providerGetFormClass')]
+    public function testGetFormClass(PluginWithFormsInterface $block_plugin, $operation, $expected_class): void
+    {
+        $this->assertSame($expected_class, $block_plugin->getFormClass($operation));
+        $this->assertSame($expected_class !== null, $block_plugin->hasFormClass($operation));
+    }
 
-  /**
-   * Tests get form class.
-   *
-   * @legacy-covers ::getFormClass
-   * @legacy-covers ::hasFormClass
-   */
-  #[DataProvider('providerGetFormClass')]
-  public function testGetFormClass(PluginWithFormsInterface $block_plugin, $operation, $expected_class): void {
-    $this->assertSame($expected_class, $block_plugin->getFormClass($operation));
-    $this->assertSame($expected_class !== NULL, $block_plugin->hasFormClass($operation));
-  }
-
-  /**
-   * @return array
-   *   Test cases for different block plugins and operations, mapping them to expected form classes.
-   */
-  public static function providerGetFormClass(): array {
-    $block_plugin_without_forms = new TestClass([], 'block_plugin_without_forms', [
-      'provider' => 'block_test',
-    ]);
-    // A block plugin that has a form defined for the 'poke' operation.
-    $block_plugin_with_forms = new TestClass([], 'block_plugin_with_forms', [
-      'provider' => 'block_test',
-      'forms' => [
-        'poke' => static::class,
-      ],
-    ]);
-    return [
-      'block plugin without forms, "configure" operation' => [
-        $block_plugin_without_forms,
-        'configure',
-        TestClass::class,
-      ],
-      'block plugin without forms, "tickle" operation' => [
-        $block_plugin_without_forms,
-        'tickle',
-        NULL,
-      ],
-      'block plugin without forms, "poke" operation' => [
-        $block_plugin_without_forms,
-        'poke',
-        NULL,
-      ],
-      'block plugin with forms, "configure" operation' => [
-        $block_plugin_with_forms,
-        'configure',
-        TestClass::class,
-      ],
-      'block plugin with forms, "tickle" operation' => [
-        $block_plugin_with_forms,
-        'tickle',
-        NULL,
-      ],
-      'block plugin with forms, "poke" operation' => [
-        $block_plugin_with_forms,
-        'poke',
-        static::class,
-      ],
-    ];
-  }
+    /**
+     * @return array
+     *   Test cases for different block plugins and operations, mapping them to expected form classes.
+     */
+    public static function providerGetFormClass(): array
+    {
+        $block_plugin_without_forms = new TestClass([], 'block_plugin_without_forms', [
+          'provider' => 'block_test',
+        ]);
+        // A block plugin that has a form defined for the 'poke' operation.
+        $block_plugin_with_forms = new TestClass([], 'block_plugin_with_forms', [
+          'provider' => 'block_test',
+          'forms' => [
+            'poke' => static::class,
+          ],
+        ]);
+        return [
+          'block plugin without forms, "configure" operation' => [
+            $block_plugin_without_forms,
+            'configure',
+            TestClass::class,
+          ],
+          'block plugin without forms, "tickle" operation' => [
+            $block_plugin_without_forms,
+            'tickle',
+            null,
+          ],
+          'block plugin without forms, "poke" operation' => [
+            $block_plugin_without_forms,
+            'poke',
+            null,
+          ],
+          'block plugin with forms, "configure" operation' => [
+            $block_plugin_with_forms,
+            'configure',
+            TestClass::class,
+          ],
+          'block plugin with forms, "tickle" operation' => [
+            $block_plugin_with_forms,
+            'tickle',
+            null,
+          ],
+          'block plugin with forms, "poke" operation' => [
+            $block_plugin_with_forms,
+            'poke',
+            static::class,
+          ],
+        ];
+    }
 
 }
 
 /**
  * Stub class for testing PluginWithFormsTrait.
  */
-class TestClass extends PluginBase implements PluginWithFormsInterface, PluginFormInterface {
-  use PluginWithFormsTrait;
+class TestClass extends PluginBase implements PluginWithFormsInterface, PluginFormInterface
+{
+    use PluginWithFormsTrait;
 
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    return [];
-  }
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    {
+        return [];
+    }
 
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

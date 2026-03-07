@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Condition;
 
 use Drupal\Core\Executable\ExecutableManagerInterface;
@@ -18,112 +20,123 @@ use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
  *
  * @ingroup plugin_api
  */
-abstract class ConditionPluginBase extends ExecutablePluginBase implements ConditionInterface {
+abstract class ConditionPluginBase extends ExecutablePluginBase implements ConditionInterface
+{
+    use ContextAwarePluginAssignmentTrait;
 
-  use ContextAwarePluginAssignmentTrait;
+    /**
+     * The condition manager to proxy execute calls through.
+     *
+     * @var \Drupal\Core\Executable\ExecutableManagerInterface
+     */
+    protected $executableManager;
 
-  /**
-   * The condition manager to proxy execute calls through.
-   *
-   * @var \Drupal\Core\Executable\ExecutableManagerInterface
-   */
-  protected $executableManager;
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->setConfiguration($configuration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isNegated() {
-    return !empty($this->configuration['negate']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    if ($form_state instanceof SubformStateInterface) {
-      $form_state = $form_state->getCompleteFormState();
+        $this->setConfiguration($configuration);
     }
-    $contexts = $form_state->getTemporaryValue('gathered_contexts') ?: [];
-    $form['context_mapping'] = $this->addContextAssignmentElement($this, $contexts);
-    $form['negate'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Negate the condition'),
-      '#default_value' => $this->configuration['negate'],
-    ];
-    return $form;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $this->configuration['negate'] = $form_state->getValue('negate');
-    if ($form_state->hasValue('context_mapping')) {
-      $this->setContextMapping($form_state->getValue('context_mapping'));
+    /**
+     * {@inheritdoc}
+     */
+    public function isNegated()
+    {
+        return !empty($this->configuration['negate']);
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function execute(?object $object = NULL) {
-    return $this->executableManager->execute($this);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        if ($form_state instanceof SubformStateInterface) {
+            $form_state = $form_state->getCompleteFormState();
+        }
+        $contexts = $form_state->getTemporaryValue('gathered_contexts') ?: [];
+        $form['context_mapping'] = $this->addContextAssignmentElement($this, $contexts);
+        $form['negate'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Negate the condition'),
+          '#default_value' => $this->configuration['negate'],
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration() {
-    return [
-      'id' => $this->getPluginId(),
-    ] + $this->configuration;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setConfiguration(array $configuration) {
-    $this->configuration = $configuration + $this->defaultConfiguration();
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->configuration['negate'] = $form_state->getValue('negate');
+        if ($form_state->hasValue('context_mapping')) {
+            $this->setContextMapping($form_state->getValue('context_mapping'));
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration() {
-    return [
-      'negate' => FALSE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(?object $object = null)
+    {
+        return $this->executableManager->execute($this);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration()
+    {
+        return [
+          'id' => $this->getPluginId(),
+        ] + $this->configuration;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setExecutableManager(ExecutableManagerInterface $executableManager) {
-    $this->executableManager = $executableManager;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setConfiguration(array $configuration)
+    {
+        $this->configuration = $configuration + $this->defaultConfiguration();
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration()
+    {
+        return [
+          'negate' => false,
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setExecutableManager(ExecutableManagerInterface $executableManager)
+    {
+        $this->executableManager = $executableManager;
+        return $this;
+    }
 
 }

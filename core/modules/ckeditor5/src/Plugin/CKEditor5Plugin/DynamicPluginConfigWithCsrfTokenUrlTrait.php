@@ -29,24 +29,25 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-trait DynamicPluginConfigWithCsrfTokenUrlTrait {
-
-  /**
-   * Gets the given URL with all placeholders replaced.
-   *
-   * @param \Drupal\Core\Url $url
-   *   A URL which generates CSRF token placeholders.
-   *
-   * @return string
-   *   The URL string, with all placeholders replaced.
-   */
-  private static function getUrlWithReplacedCsrfTokenPlaceholder(Url $url): string {
-    $generated_url = $url->toString(TRUE);
-    $url_with_csrf_token_placeholder = [
-      '#plain_text' => $generated_url->getGeneratedUrl(),
-    ];
-    $generated_url->applyTo($url_with_csrf_token_placeholder);
-    return (string) \Drupal::service('renderer')->renderInIsolation($url_with_csrf_token_placeholder);
-  }
+trait DynamicPluginConfigWithCsrfTokenUrlTrait
+{
+    /**
+     * Gets the given URL with all placeholders replaced.
+     *
+     * @param \Drupal\Core\Url $url
+     *   A URL which generates CSRF token placeholders.
+     *
+     * @return string
+     *   The URL string, with all placeholders replaced.
+     */
+    private static function getUrlWithReplacedCsrfTokenPlaceholder(Url $url): string
+    {
+        $generated_url = $url->toString(true);
+        $url_with_csrf_token_placeholder = [
+          '#plain_text' => $generated_url->getGeneratedUrl(),
+        ];
+        $generated_url->applyTo($url_with_csrf_token_placeholder);
+        return (string) \Drupal::service('renderer')->renderInIsolation($url_with_csrf_token_placeholder);
+    }
 
 }

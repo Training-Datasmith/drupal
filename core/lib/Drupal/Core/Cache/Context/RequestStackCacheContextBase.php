@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -11,23 +13,24 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * \Drupal\Core\Cache\Context\CacheContextInterface or
  * \Drupal\Core\Cache\Context\CalculatedCacheContextInterface.
  */
-abstract class RequestStackCacheContextBase {
+abstract class RequestStackCacheContextBase
+{
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
-
-  /**
-   * Constructs a new RequestStackCacheContextBase class.
-   *
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack.
-   */
-  public function __construct(RequestStack $request_stack) {
-    $this->requestStack = $request_stack;
-  }
+    /**
+     * Constructs a new RequestStackCacheContextBase class.
+     *
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack.
+     */
+    public function __construct(RequestStack $request_stack)
+    {
+        $this->requestStack = $request_stack;
+    }
 
 }

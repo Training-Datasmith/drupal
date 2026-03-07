@@ -9,5 +9,6 @@ use Drupal\Core\Database\DatabaseExceptionWrapper;
 /**
  * This exception class signals an invalid charset is being used.
  */
-class InvalidCharsetException extends DatabaseExceptionWrapper {
+class InvalidCharsetException extends DatabaseExceptionWrapper
+{
 }

@@ -10,20 +10,22 @@ use Drupal\serialization\Normalizer\NormalizerBase;
 /**
  * Normalizes TraversableObject.
  */
-class TraversableObjectNormalizer extends NormalizerBase {
+class TraversableObjectNormalizer extends NormalizerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        return $object->property;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    return $object->property;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [TraversableObject::class => TRUE];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [TraversableObject::class => true];
+    }
 
 }

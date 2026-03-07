@@ -13,20 +13,21 @@ use Drupal\navigation\TopBarRegion;
  * Provides a top bar item plugin for testing the top bar item weight.
  */
 #[TopBarItem(
-  id: 'test_item_low',
-  region: TopBarRegion::Context,
-  label: new TranslatableMarkup('Low Weight'),
-  weight: -10,
+    id: 'test_item_low',
+    region: TopBarRegion::Context,
+    label: new TranslatableMarkup('Low Weight'),
+    weight: -10,
 )]
-class TopBarItemLow extends TopBarItemBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return [
-      '#markup' => '<span class="top-bar__title" data-plugin-id="test_item_low">Low Weight</span>',
-    ];
-  }
+class TopBarItemLow extends TopBarItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return [
+          '#markup' => '<span class="top-bar__title" data-plugin-id="test_item_low">Low Weight</span>',
+        ];
+    }
 
 }

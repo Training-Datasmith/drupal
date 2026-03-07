@@ -14,16 +14,17 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(MockFileFinder::class)]
 #[Group('Annotation')]
-class MockFileFinderTest extends TestCase {
-
-  /**
-   * @legacy-covers ::create
-   * @legacy-covers ::findFile
-   */
-  public function testFindFile(): void {
-    $tmp = MockFileFinder::create('test_filename.txt');
-    $this->assertEquals('test_filename.txt', $tmp->findFile('n/a'));
-    $this->assertEquals('test_filename.txt', $tmp->findFile('SomeClass'));
-  }
+class MockFileFinderTest extends TestCase
+{
+    /**
+     * @legacy-covers ::create
+     * @legacy-covers ::findFile
+     */
+    public function testFindFile(): void
+    {
+        $tmp = MockFileFinder::create('test_filename.txt');
+        $this->assertEquals('test_filename.txt', $tmp->findFile('n/a'));
+        $this->assertEquals('test_filename.txt', $tmp->findFile('SomeClass'));
+    }
 
 }

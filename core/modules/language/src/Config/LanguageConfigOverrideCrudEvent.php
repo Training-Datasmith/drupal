@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Config;
 
 use Drupal\Component\EventDispatcher\Event;
@@ -9,26 +11,27 @@ use Drupal\Component\EventDispatcher\Event;
  *
  * @see \Drupal\Core\Config\ConfigCrudEvent
  */
-class LanguageConfigOverrideCrudEvent extends Event {
+class LanguageConfigOverrideCrudEvent extends Event
+{
+    /**
+     * Constructs a configuration event object.
+     *
+     * @param \Drupal\language\Config\LanguageConfigOverride $override
+     *   Configuration object.
+     */
+    public function __construct(protected \Drupal\language\Config\LanguageConfigOverride $override)
+    {
+    }
 
-  /**
-   * Constructs a configuration event object.
-   *
-   * @param \Drupal\language\Config\LanguageConfigOverride $override
-   *   Configuration object.
-   */
-  public function __construct(protected \Drupal\language\Config\LanguageConfigOverride $override)
-  {
-  }
-
-  /**
-   * Gets configuration object.
-   *
-   * @return \Drupal\language\Config\LanguageConfigOverride
-   *   The configuration object that caused the event to fire.
-   */
-  public function getLanguageConfigOverride() {
-    return $this->override;
-  }
+    /**
+     * Gets configuration object.
+     *
+     * @return \Drupal\language\Config\LanguageConfigOverride
+     *   The configuration object that caused the event to fire.
+     */
+    public function getLanguageConfigOverride()
+    {
+        return $this->override;
+    }
 
 }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -7,8 +9,8 @@
 
 namespace Drupal\views_ui\ProxyClass\ParamConverter {
 
-    use Drupal\Core\ParamConverter\ParamConverterInterface;
     use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+    use Drupal\Core\ParamConverter\ParamConverterInterface;
     use Symfony\Component\DependencyInjection\ContainerInterface;
     use Symfony\Component\Routing\Route;
 
@@ -19,7 +21,6 @@ namespace Drupal\views_ui\ProxyClass\ParamConverter {
      */
     class ViewUIConverter implements ParamConverterInterface
     {
-
         use DependencySerializationTrait;
 
         /**
@@ -47,7 +48,7 @@ namespace Drupal\views_ui\ProxyClass\ParamConverter {
         public function __construct(ContainerInterface $container, /**
          * The id of the original proxied service.
          */
-        protected $drupalProxyOriginalServiceId)
+            protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
         }

@@ -20,131 +20,134 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class FileItemValidationTest extends KernelTestBase {
+class FileItemValidationTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'file',
+      'image',
+      'entity_test',
+      'field',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'file',
-    'image',
-    'entity_test',
-    'field',
-    'user',
-  ];
+    /**
+     * A user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $user;
 
-  /**
-   * A user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $user;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('entity_test');
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('file');
+        $this->installSchema('file', 'file_usage');
 
-    $this->installEntitySchema('entity_test');
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('file');
-    $this->installSchema('file', 'file_usage');
+        $this->user = User::create([
+          'name' => 'username',
+          'status' => 1,
+        ]);
+        $this->user->save();
+        $this->container->get('current_user')->setAccount($this->user);
+    }
 
-    $this->user = User::create([
-      'name' => 'username',
-      'status' => 1,
-    ]);
-    $this->user->save();
-    $this->container->get('current_user')->setAccount($this->user);
-  }
+    /**
+     * Tests file validation constraint.
+     *
+     * @legacy-covers \Drupal\file\Plugin\Validation\Constraint\FileValidationConstraint
+     * @legacy-covers \Drupal\file\Plugin\Validation\Constraint\FileValidationConstraintValidator
+     */
+    #[DataProvider('getFileTypes')]
+    public function testFileValidationConstraint($file_type): void
+    {
+        $field_storage = FieldStorageConfig::create([
+          'field_name' => 'field_test_file',
+          'entity_type' => 'entity_test',
+          'type' => $file_type,
+        ]);
+        $field_storage->save();
 
-  /**
-   * Tests file validation constraint.
-   *
-   * @legacy-covers \Drupal\file\Plugin\Validation\Constraint\FileValidationConstraint
-   * @legacy-covers \Drupal\file\Plugin\Validation\Constraint\FileValidationConstraintValidator
-   */
-  #[DataProvider('getFileTypes')]
-  public function testFileValidationConstraint($file_type): void {
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_test_file',
-      'entity_type' => 'entity_test',
-      'type' => $file_type,
-    ]);
-    $field_storage->save();
-
-    $field = FieldConfig::create([
-      'field_name' => 'field_test_file',
-      'entity_type' => 'entity_test',
-      'bundle' => 'entity_test',
-      'settings' => [
-        'max_filesize' => '2k',
-        'file_extensions' => 'jpg|png',
-      ],
-    ]);
-    $field->save();
-
-    vfsStream::setup('drupal_root');
-    vfsStream::create([
-      'sites' => [
-        'default' => [
-          'files' => [
-            'test.txt' => str_repeat('a', 3000),
+        $field = FieldConfig::create([
+          'field_name' => 'field_test_file',
+          'entity_type' => 'entity_test',
+          'bundle' => 'entity_test',
+          'settings' => [
+            'max_filesize' => '2k',
+            'file_extensions' => 'jpg|png',
           ],
-        ],
-      ],
-    ]);
+        ]);
+        $field->save();
 
-    // Test for max filesize.
-    $file = File::create([
-      'uri' => 'vfs://drupal_root/sites/default/files/test.txt',
-      'uid' => $this->user->id(),
-    ]);
-    $file->setPermanent();
-    $file->save();
+        vfsStream::setup('drupal_root');
+        vfsStream::create([
+          'sites' => [
+            'default' => [
+              'files' => [
+                'test.txt' => str_repeat('a', 3000),
+              ],
+            ],
+          ],
+        ]);
 
-    $entity_test = EntityTest::create([
-      'uid' => $this->user->id(),
-      'field_test_file' => [
-        'target_id' => $file->id(),
-      ],
-    ]);
+        // Test for max filesize.
+        $file = File::create([
+          'uri' => 'vfs://drupal_root/sites/default/files/test.txt',
+          'uid' => $this->user->id(),
+        ]);
+        $file->setPermanent();
+        $file->save();
 
-    // Enforce the file to be new as file size is checked only for new files.
-    $entity_test->field_test_file->entity->enforceIsNew();
-    $result = $entity_test->validate();
-    $this->assertCount(2, $result);
-    $this->assertEquals('field_test_file.0', $result->get(0)->getPropertyPath());
-    $this->assertEquals('The file is <em class="placeholder">2.93 KB</em> exceeding the maximum file size of <em class="placeholder">2 KB</em>.', (string) $result->get(0)->getMessage());
-    $this->assertEquals('field_test_file.0', $result->get(1)->getPropertyPath());
-    $this->assertEquals('Only files with the following extensions are allowed: <em class="placeholder">jpg|png</em>.', (string) $result->get(1)->getMessage());
+        $entity_test = EntityTest::create([
+          'uid' => $this->user->id(),
+          'field_test_file' => [
+            'target_id' => $file->id(),
+          ],
+        ]);
 
-    // File size is not checked for already existing files.
-    $entity_test->field_test_file->entity->enforceIsNew(FALSE);
-    $result = $entity_test->validate();
-    $this->assertCount(1, $result);
-    $this->assertEquals('field_test_file.0', $result->get(0)->getPropertyPath());
-    $this->assertEquals('Only files with the following extensions are allowed: <em class="placeholder">jpg|png</em>.', (string) $result->get(0)->getMessage());
+        // Enforce the file to be new as file size is checked only for new files.
+        $entity_test->field_test_file->entity->enforceIsNew();
+        $result = $entity_test->validate();
+        $this->assertCount(2, $result);
+        $this->assertEquals('field_test_file.0', $result->get(0)->getPropertyPath());
+        $this->assertEquals('The file is <em class="placeholder">2.93 KB</em> exceeding the maximum file size of <em class="placeholder">2 KB</em>.', (string) $result->get(0)->getMessage());
+        $this->assertEquals('field_test_file.0', $result->get(1)->getPropertyPath());
+        $this->assertEquals('Only files with the following extensions are allowed: <em class="placeholder">jpg|png</em>.', (string) $result->get(1)->getMessage());
 
-    // Refer to a file that does not exist.
-    $entity_test = EntityTest::create([
-      'uid' => $this->user->id(),
-      'field_test_file' => [
-        'target_id' => 2,
-      ],
-    ]);
-    $result = $entity_test->validate();
-    $this->assertCount(1, $result);
-    $this->assertEquals('field_test_file.0.target_id', $result->get(0)->getPropertyPath());
-    $this->assertEquals('The referenced entity (<em class="placeholder">file</em>: <em class="placeholder">2</em>) does not exist.', (string) $result->get(0)->getMessage());
-  }
+        // File size is not checked for already existing files.
+        $entity_test->field_test_file->entity->enforceIsNew(false);
+        $result = $entity_test->validate();
+        $this->assertCount(1, $result);
+        $this->assertEquals('field_test_file.0', $result->get(0)->getPropertyPath());
+        $this->assertEquals('Only files with the following extensions are allowed: <em class="placeholder">jpg|png</em>.', (string) $result->get(0)->getMessage());
 
-  /**
-   * Provides a list of file types to test.
-   */
-  public static function getFileTypes() {
-    return [['file'], ['image']];
-  }
+        // Refer to a file that does not exist.
+        $entity_test = EntityTest::create([
+          'uid' => $this->user->id(),
+          'field_test_file' => [
+            'target_id' => 2,
+          ],
+        ]);
+        $result = $entity_test->validate();
+        $this->assertCount(1, $result);
+        $this->assertEquals('field_test_file.0.target_id', $result->get(0)->getPropertyPath());
+        $this->assertEquals('The referenced entity (<em class="placeholder">file</em>: <em class="placeholder">2</em>) does not exist.', (string) $result->get(0)->getMessage());
+    }
+
+    /**
+     * Provides a list of file types to test.
+     */
+    public static function getFileTypes()
+    {
+        return [['file'], ['image']];
+    }
 
 }

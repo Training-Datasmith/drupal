@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\BundlePermissionHandlerTrait;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,64 +15,68 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see taxonomy.permissions.yml
  */
-class TaxonomyPermissions implements ContainerInjectionInterface {
-  use BundlePermissionHandlerTrait;
-  use StringTranslationTrait;
+class TaxonomyPermissions implements ContainerInjectionInterface
+{
+    use BundlePermissionHandlerTrait;
+    use StringTranslationTrait;
 
-  /**
-   * Constructs a TaxonomyPermissions instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
+    /**
+     * Constructs a TaxonomyPermissions instance.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static($container->get('entity_type.manager'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static($container->get('entity_type.manager'));
+    }
 
-  /**
-   * Get taxonomy permissions.
-   *
-   * @return array
-   *   Permissions array.
-   */
-  public function permissions(): array {
-    return $this->generatePermissions(Vocabulary::loadMultiple(), $this->buildPermissions(...));
-  }
+    /**
+     * Get taxonomy permissions.
+     *
+     * @return array
+     *   Permissions array.
+     */
+    public function permissions(): array
+    {
+        return $this->generatePermissions(Vocabulary::loadMultiple(), $this->buildPermissions(...));
+    }
 
-  /**
-   * Builds a standard list of taxonomy term permissions for a given vocabulary.
-   *
-   * @param \Drupal\taxonomy\VocabularyInterface $vocabulary
-   *   The vocabulary.
-   *
-   * @return array
-   *   An array of permission names and descriptions.
-   */
-  protected function buildPermissions(VocabularyInterface $vocabulary): array {
-    $id = $vocabulary->id();
-    $args = ['%vocabulary' => $vocabulary->label()];
+    /**
+     * Builds a standard list of taxonomy term permissions for a given vocabulary.
+     *
+     * @param \Drupal\taxonomy\VocabularyInterface $vocabulary
+     *   The vocabulary.
+     *
+     * @return array
+     *   An array of permission names and descriptions.
+     */
+    protected function buildPermissions(VocabularyInterface $vocabulary): array
+    {
+        $id = $vocabulary->id();
+        $args = ['%vocabulary' => $vocabulary->label()];
 
-    return [
-      "create terms in $id" => ['title' => $this->t('%vocabulary: Create terms', $args)],
-      "delete terms in $id" => ['title' => $this->t('%vocabulary: Delete terms', $args)],
-      "edit terms in $id" => ['title' => $this->t('%vocabulary: Edit terms', $args)],
-      "view term revisions in $id" => ['title' => $this->t('%vocabulary: View term revisions', $args)],
-      "revert term revisions in $id" => [
-        'title' => $this->t('%vocabulary: Revert term revisions', $args),
-        'description' => $this->t('To revert a revision you also need permission to edit the taxonomy term.'),
-      ],
-      "delete term revisions in $id" => [
-        'title' => $this->t('%vocabulary: Delete term revisions', $args),
-        'description' => $this->t('To delete a revision you also need permission to delete the taxonomy term.'),
-      ],
-    ];
-  }
+        return [
+          "create terms in $id" => ['title' => $this->t('%vocabulary: Create terms', $args)],
+          "delete terms in $id" => ['title' => $this->t('%vocabulary: Delete terms', $args)],
+          "edit terms in $id" => ['title' => $this->t('%vocabulary: Edit terms', $args)],
+          "view term revisions in $id" => ['title' => $this->t('%vocabulary: View term revisions', $args)],
+          "revert term revisions in $id" => [
+            'title' => $this->t('%vocabulary: Revert term revisions', $args),
+            'description' => $this->t('To revert a revision you also need permission to edit the taxonomy term.'),
+          ],
+          "delete term revisions in $id" => [
+            'title' => $this->t('%vocabulary: Delete term revisions', $args),
+            'description' => $this->t('To delete a revision you also need permission to delete the taxonomy term.'),
+          ],
+        ];
+    }
 
 }

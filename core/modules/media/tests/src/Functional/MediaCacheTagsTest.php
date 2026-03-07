@@ -16,69 +16,73 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('media')]
 #[RunTestsInSeparateProcesses]
-class MediaCacheTagsTest extends EntityWithUriCacheTagsTestBase {
+class MediaCacheTagsTest extends EntityWithUriCacheTagsTestBase
+{
+    use MediaTypeCreationTrait;
 
-  use MediaTypeCreationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'media',
-    'media_test_source',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    \Drupal::configFactory()
-      ->getEditable('media.settings')
-      ->set('standalone_url', TRUE)
-      ->save(TRUE);
-    $this->container->get('router.builder')->rebuild();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a media type.
-    $mediaType = $this->createMediaType('test');
-
-    // Create a media item.
-    $media = Media::create([
-      'bundle' => $mediaType->id(),
-      'name' => 'Unnamed',
-    ]);
-    $media->save();
-
-    return $media;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAdditionalCacheContextsForEntity(EntityInterface $media): array {
-    return ['timezone'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAdditionalCacheTagsForEntity(EntityInterface $media): array {
-    // Each media item must have an author and a thumbnail.
-    return [
-      'user:' . $media->getOwnerId(),
-      'config:image.style.thumbnail',
-      'file:' . $media->get('thumbnail')->entity->id(),
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'media',
+      'media_test_source',
     ];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Drupal::configFactory()
+          ->getEditable('media.settings')
+          ->set('standalone_url', true)
+          ->save(true);
+        $this->container->get('router.builder')->rebuild();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a media type.
+        $mediaType = $this->createMediaType('test');
+
+        // Create a media item.
+        $media = Media::create([
+          'bundle' => $mediaType->id(),
+          'name' => 'Unnamed',
+        ]);
+        $media->save();
+
+        return $media;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAdditionalCacheContextsForEntity(EntityInterface $media): array
+    {
+        return ['timezone'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAdditionalCacheTagsForEntity(EntityInterface $media): array
+    {
+        // Each media item must have an author and a thumbnail.
+        return [
+          'user:' . $media->getOwnerId(),
+          'config:image.style.thumbnail',
+          'file:' . $media->get('thumbnail')->entity->id(),
+        ];
+    }
 
 }

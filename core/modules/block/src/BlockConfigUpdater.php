@@ -9,73 +9,76 @@ namespace Drupal\block;
  *
  * @internal
  */
-class BlockConfigUpdater {
+class BlockConfigUpdater
+{
+    /**
+     * Flag determining whether deprecations should be triggered.
+     */
+    protected bool $deprecationsEnabled = true;
 
-  /**
-   * Flag determining whether deprecations should be triggered.
-   */
-  protected bool $deprecationsEnabled = TRUE;
+    /**
+     * Stores which deprecations were triggered.
+     */
+    protected array $triggeredDeprecations = [];
 
-  /**
-   * Stores which deprecations were triggered.
-   */
-  protected array $triggeredDeprecations = [];
-
-  /**
-   * Sets the deprecations enabling status.
-   *
-   * @param bool $enabled
-   *   Whether deprecations should be enabled.
-   */
-  public function setDeprecationsEnabled(bool $enabled): void {
-    $this->deprecationsEnabled = $enabled;
-  }
-
-  /**
-   * Performs the required update.
-   *
-   * @param \Drupal\block\BlockInterface $block
-   *   The block to update.
-   *
-   * @return bool
-   *   Whether the block was updated.
-   */
-  public function updateBlock(BlockInterface $block): bool {
-    $changed = FALSE;
-    if ($this->needsInfoStatusSettingsRemoved($block)) {
-      $settings = $block->get('settings');
-      unset($settings['info'], $settings['status']);
-      $block->set('settings', $settings);
-      $changed = TRUE;
-    }
-    return $changed;
-  }
-
-  /**
-   * Checks if the block contains deprecated info and status settings.
-   *
-   * @param \Drupal\block\BlockInterface $block
-   *   The block to update.
-   *
-   * @return bool
-   *   TRUE if the block has deprecated settings.
-   */
-  public function needsInfoStatusSettingsRemoved(BlockInterface $block): bool {
-    if (!str_starts_with($block->getPluginId(), 'block_content')) {
-      return FALSE;
-    }
-    $settings = $block->get('settings');
-    if (!isset($settings['info']) && !isset($settings['status'])) {
-      return FALSE;
+    /**
+     * Sets the deprecations enabling status.
+     *
+     * @param bool $enabled
+     *   Whether deprecations should be enabled.
+     */
+    public function setDeprecationsEnabled(bool $enabled): void
+    {
+        $this->deprecationsEnabled = $enabled;
     }
 
-    $deprecations_triggered = &$this->triggeredDeprecations['3426302'][$block->id()];
-    if ($this->deprecationsEnabled && !$deprecations_triggered) {
-      $deprecations_triggered = TRUE;
-      @trigger_error('Block content blocks with the "status" and "info" settings is deprecated in drupal:11.3.0 and will be removed in drupal:12.0.0. They were unused, so there is no replacement. Profile, module and theme provided configuration should be updated. See https://www.drupal.org/node/3499836', E_USER_DEPRECATED);
+    /**
+     * Performs the required update.
+     *
+     * @param \Drupal\block\BlockInterface $block
+     *   The block to update.
+     *
+     * @return bool
+     *   Whether the block was updated.
+     */
+    public function updateBlock(BlockInterface $block): bool
+    {
+        $changed = false;
+        if ($this->needsInfoStatusSettingsRemoved($block)) {
+            $settings = $block->get('settings');
+            unset($settings['info'], $settings['status']);
+            $block->set('settings', $settings);
+            $changed = true;
+        }
+        return $changed;
     }
 
-    return TRUE;
-  }
+    /**
+     * Checks if the block contains deprecated info and status settings.
+     *
+     * @param \Drupal\block\BlockInterface $block
+     *   The block to update.
+     *
+     * @return bool
+     *   TRUE if the block has deprecated settings.
+     */
+    public function needsInfoStatusSettingsRemoved(BlockInterface $block): bool
+    {
+        if (!str_starts_with($block->getPluginId(), 'block_content')) {
+            return false;
+        }
+        $settings = $block->get('settings');
+        if (!isset($settings['info']) && !isset($settings['status'])) {
+            return false;
+        }
+
+        $deprecations_triggered = &$this->triggeredDeprecations['3426302'][$block->id()];
+        if ($this->deprecationsEnabled && !$deprecations_triggered) {
+            $deprecations_triggered = true;
+            @trigger_error('Block content blocks with the "status" and "info" settings is deprecated in drupal:11.3.0 and will be removed in drupal:12.0.0. They were unused, so there is no replacement. Profile, module and theme provided configuration should be updated. See https://www.drupal.org/node/3499836', E_USER_DEPRECATED);
+        }
+
+        return true;
+    }
 
 }

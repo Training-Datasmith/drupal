@@ -14,30 +14,31 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(CoreProcessPluginBase::class)]
 #[Group('migrate')]
-class ProcessPluginBaseTest extends UnitTestCase {
-
-  /**
-   * Tests stopping the pipeline.
-   *
-   * @legacy-covers ::isPipelineStopped
-   * @legacy-covers ::stopPipeline
-   * @legacy-covers ::reset
-   */
-  public function testStopPipeline(): void {
-    $plugin = new ProcessPluginBase([], 'plugin_id', []);
-    $this->assertFalse($plugin->isPipelineStopped());
-    $stopPipeline = (new \ReflectionClass($plugin))->getMethod('stopPipeline');
-    $stopPipeline->invoke($plugin);
-    $this->assertTrue($plugin->isPipelineStopped());
-    $plugin->reset();
-    $this->assertFalse($plugin->isPipelineStopped());
-  }
+class ProcessPluginBaseTest extends UnitTestCase
+{
+    /**
+     * Tests stopping the pipeline.
+     *
+     * @legacy-covers ::isPipelineStopped
+     * @legacy-covers ::stopPipeline
+     * @legacy-covers ::reset
+     */
+    public function testStopPipeline(): void
+    {
+        $plugin = new ProcessPluginBase([], 'plugin_id', []);
+        $this->assertFalse($plugin->isPipelineStopped());
+        $stopPipeline = (new \ReflectionClass($plugin))->getMethod('stopPipeline');
+        $stopPipeline->invoke($plugin);
+        $this->assertTrue($plugin->isPipelineStopped());
+        $plugin->reset();
+        $this->assertFalse($plugin->isPipelineStopped());
+    }
 
 }
 
 /**
  * Extends ProcessPluginBase as a non-abstract class.
  */
-class ProcessPluginBase extends CoreProcessPluginBase {
-
+class ProcessPluginBase extends CoreProcessPluginBase
+{
 }

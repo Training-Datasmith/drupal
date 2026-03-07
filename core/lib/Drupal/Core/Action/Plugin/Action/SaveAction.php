@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Action\Plugin\Action;
 
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Action\Plugin\Action\Derivative\EntityChangedActionDeriver;
 use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Action\Plugin\Action\Derivative\EntityChangedActionDeriver;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -13,47 +14,50 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides an action that can save any entity.
  */
 #[Action(
-  id: 'entity:save_action',
-  action_label: new TranslatableMarkup('Save'),
-  deriver: EntityChangedActionDeriver::class
+    id: 'entity:save_action',
+    action_label: new TranslatableMarkup('Save'),
+    deriver: EntityChangedActionDeriver::class
 )]
-class SaveAction extends EntityActionBase {
+class SaveAction extends EntityActionBase
+{
+    /**
+     * Constructs a SaveAction object.
+     *
+     * @param mixed[] $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Component\Datetime\TimeInterface $time)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager);
+    }
 
-  /**
-   * Constructs a SaveAction object.
-   *
-   * @param mixed[] $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Component\Datetime\TimeInterface $time) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function execute($entity = null): void
+    {
+        $entity->setChangedTime($this->time->getRequestTime())->save();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function execute($entity = NULL): void {
-    $entity->setChangedTime($this->time->getRequestTime())->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    // It's not necessary to check the changed field access here, because
-    // Drupal\Core\Field\ChangedFieldItemList would anyway return 'not allowed'.
-    // Also changing the changed field value is only a workaround to trigger an
-    // entity resave. Without a field change, this would not be possible.
-    /** @var \Drupal\Core\Entity\EntityInterface $object */
-    return $object->access('update', $account, $return_as_object);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        // It's not necessary to check the changed field access here, because
+        // Drupal\Core\Field\ChangedFieldItemList would anyway return 'not allowed'.
+        // Also changing the changed field value is only a workaround to trigger an
+        // entity resave. Without a field change, this would not be possible.
+        /** @var \Drupal\Core\Entity\EntityInterface $object */
+        return $object->access('update', $account, $return_as_object);
+    }
 
 }

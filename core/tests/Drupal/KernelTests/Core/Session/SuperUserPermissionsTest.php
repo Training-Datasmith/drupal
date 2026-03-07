@@ -17,42 +17,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Session')]
 #[CoversClass(SuperUserAccessPolicyPass::class)]
 #[RunTestsInSeparateProcesses]
-class SuperUserPermissionsTest extends KernelTestBase {
+class SuperUserPermissionsTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected bool $usesSuperUserAccessPolicy = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected bool $usesSuperUserAccessPolicy = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests the super user access policy grants all permissions.
+     */
+    public function testPermissionChange(): void
+    {
+        $account = $this->createUser();
+        $this->assertSame('1', $account->id());
+        $this->assertTrue($account->hasPermission('administer modules'));
+        $this->assertTrue($account->hasPermission('non-existent permission'));
 
-  /**
-   * Tests the super user access policy grants all permissions.
-   */
-  public function testPermissionChange(): void {
-    $account = $this->createUser();
-    $this->assertSame('1', $account->id());
-    $this->assertTrue($account->hasPermission('administer modules'));
-    $this->assertTrue($account->hasPermission('non-existent permission'));
-
-    // Turn off the super user access policy and try again.
-    $this->usesSuperUserAccessPolicy = FALSE;
-    $this->bootKernel();
-    $this->assertFalse($account->hasPermission('administer modules'));
-    $this->assertFalse($account->hasPermission('non-existent permission'));
-  }
+        // Turn off the super user access policy and try again.
+        $this->usesSuperUserAccessPolicy = false;
+        $this->bootKernel();
+        $this->assertFalse($account->hasPermission('administer modules'));
+        $this->assertFalse($account->hasPermission('non-existent permission'));
+    }
 
 }

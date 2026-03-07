@@ -9,15 +9,16 @@ use Drupal\Core\Database\Connection;
 /**
  * A class with a single dependency.
  */
-class LonelyMonkeyClass {
+class LonelyMonkeyClass
+{
+    /**
+     * The database connection.
+     */
+    protected Connection $connection;
 
-  /**
-   * The database connection.
-   */
-  protected Connection $connection;
-
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
-  }
+    public function __construct(Connection $connection)
+    {
+        $this->connection = $connection;
+    }
 
 }

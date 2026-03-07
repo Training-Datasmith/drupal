@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Generic transliteration data for the PhpTransliteration class.
@@ -20,6 +22,6 @@ $base = [
   0xB0 => 'pao', 'tai', 'tai', 'bing', 'yang', 'tong', 'han', 'zhu', 'zha', 'dian', 'wei', 'shi', 'lian', 'chi', 'huang', 'zhou',
   0xC0 => 'hu', 'shuo', 'lan', 'ting', 'jiao', 'xu', 'heng', 'quan', 'lie', 'huan', 'yang', 'xiu', 'xiu', 'xian', 'yin', 'wu',
   0xD0 => 'zhou', 'yao', 'shi', 'wei', 'tong', 'mie', 'zai', 'kai', 'hong', 'lao', 'xia', 'zhu', 'xuan', 'zheng', 'po', 'yan',
-  0xE0 => 'hui', 'guang', 'che', 'hui', 'kao', 'chen', 'fan', 'shao', 'ye', 'hui', NULL, 'tang', 'jin', 're', 'lie', 'xi',
+  0xE0 => 'hui', 'guang', 'che', 'hui', 'kao', 'chen', 'fan', 'shao', 'ye', 'hui', null, 'tang', 'jin', 're', 'lie', 'xi',
   0xF0 => 'fu', 'jiong', 'xie', 'pu', 'ting', 'zhuo', 'ting', 'wan', 'hai', 'peng', 'lang', 'yan', 'xu', 'feng', 'chi', 'rong',
 ];

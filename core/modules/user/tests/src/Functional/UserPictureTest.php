@@ -20,174 +20,179 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserPictureTest extends BrowserTestBase {
+class UserPictureTest extends BrowserTestBase
+{
+    use TestFileCreationTrait {
+        getTestFiles as drupalGetTestFiles;
+    }
+    use CommentTestTrait;
 
-  use TestFileCreationTrait {
-    getTestFiles as drupalGetTestFiles;
-  }
-  use CommentTestTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'test_user_config',
-    'node',
-    'comment',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * A regular user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $webUser;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // This test expects unused managed files to be marked temporary and then
-    // cleaned up by file_cron().
-    $this->config('file.settings')
-      ->set('make_unused_managed_files_temporary', TRUE)
-      ->save();
-
-    $this->webUser = $this->drupalCreateUser([
-      'access content',
-      'access comments',
-      'post comments',
-      'skip comment approval',
-    ]);
-  }
-
-  /**
-   * Tests creation, display, and deletion of user pictures.
-   */
-  public function testCreateDeletePicture(): void {
-    $this->drupalLogin($this->webUser);
-
-    // Save a new picture.
-    $image = current($this->drupalGetTestFiles('image'));
-    $file = $this->saveUserPicture($image);
-
-    // Verify that the image is displayed on the user account page.
-    $this->drupalGet('user');
-    $this->assertSession()->responseContains(StreamWrapperManager::getTarget($file->getFileUri()));
-
-    // Delete the picture.
-    $edit = [];
-    $this->drupalGet('user/' . $this->webUser->id() . '/edit');
-    $this->submitForm($edit, 'Remove');
-    $this->submitForm([], 'Save');
-
-    // Call file_cron() to clean up the file. Make sure the timestamp
-    // of the file is older than the system.file.temporary_maximum_age
-    // configuration value. We use an UPDATE statement because using the API
-    // would set the timestamp.
-    Database::getConnection()->update('file_managed')
-      ->fields([
-        'changed' => \Drupal::time()->getRequestTime() - ($this->config('system.file')->get('temporary_maximum_age') + 1),
-      ])
-      ->condition('fid', $file->id())
-      ->execute();
-    \Drupal::service('cron')->run();
-
-    // Verify that the image has been deleted.
-    $this->assertNull(File::load($file->id()), 'File was removed from the database.');
-    // Clear out PHP's file stat cache so we see the current value.
-    clearstatcache(TRUE, $file->getFileUri());
-    $this->assertFileDoesNotExist($file->getFileUri());
-  }
-
-  /**
-   * Tests embedded users on node pages.
-   */
-  public function testPictureOnNodeComment(): void {
-    $this->drupalLogin($this->webUser);
-
-    $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
-    $this->addDefaultCommentField('node', 'article');
-
-    // Save a new picture.
-    $image = current($this->drupalGetTestFiles('image'));
-    $file = $this->saveUserPicture($image);
-
-    $node = $this->drupalCreateNode(['type' => 'article']);
-
-    // Enable user pictures on nodes.
-    $this->config('system.theme.global')->set('features.node_user_picture', TRUE)->save();
-
-    $image_style_id = $this->config('core.entity_view_display.user.user.compact')->get('content.user_picture.settings.image_style');
-    $style = ImageStyle::load($image_style_id);
-    $image_url = \Drupal::service('file_url_generator')->transformRelative($style->buildUrl($file->getFileUri()));
-    $alt_text = 'Profile picture for user ' . $this->webUser->getAccountName();
-
-    // Verify that the image is displayed on the node page.
-    $this->drupalGet('node/' . $node->id());
-    $elements = $this->cssSelect('article > footer img[alt="' . $alt_text . '"][src="' . $image_url . '"]');
-    $this->assertCount(1, $elements, 'User picture with alt text found on node page.');
-
-    // Enable user pictures on comments, instead of nodes.
-    $this->config('system.theme.global')
-      ->set('features.node_user_picture', FALSE)
-      ->set('features.comment_user_picture', TRUE)
-      ->save();
-
-    $edit = [
-      'comment_body[0][value]' => $this->randomString(),
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'test_user_config',
+      'node',
+      'comment',
     ];
-    $this->drupalGet('comment/reply/node/' . $node->id() . '/comment');
-    $this->submitForm($edit, 'Save');
-    $elements = $this->cssSelect('#comment-1 img[alt="' . $alt_text . '"][src="' . $image_url . '"]');
-    $this->assertCount(1, $elements, 'User picture with alt text found on the comment.');
 
-    // Disable user pictures on comments and nodes.
-    $this->config('system.theme.global')
-      ->set('features.node_user_picture', FALSE)
-      ->set('features.comment_user_picture', FALSE)
-      ->save();
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-    $this->drupalGet('node/' . $node->id());
-    $this->assertSession()->responseNotContains(StreamWrapperManager::getTarget($file->getFileUri()));
-  }
+    /**
+     * A regular user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $webUser;
 
-  /**
-   * Edits the user picture for the test user.
-   */
-  public function saveUserPicture($image) {
-    $edit = ['files[user_picture_0]' => \Drupal::service('file_system')->realpath($image->uri)];
-    $this->drupalGet('user/' . $this->webUser->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    // Load actual user data from database.
-    $user_storage = $this->container->get('entity_type.manager')->getStorage('user');
-    $account = $user_storage->load($this->webUser->id());
-    return File::load($account->user_picture->target_id);
-  }
+        // This test expects unused managed files to be marked temporary and then
+        // cleaned up by file_cron().
+        $this->config('file.settings')
+          ->set('make_unused_managed_files_temporary', true)
+          ->save();
 
-  /**
-   * Tests user picture field with a non-standard field formatter.
-   *
-   * @see user_user_view_alter()
-   */
-  public function testUserViewAlter(): void {
-    \Drupal::service('module_installer')->install(['image_module_test']);
-    // Set dummy_image_formatter to the default view mode of user entity.
-    EntityViewDisplay::load('user.user.default')->setComponent('user_picture', [
-      'region' => 'content',
-      'type' => 'dummy_image_formatter',
-    ])->save();
-    $this->drupalLogin($this->webUser);
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('Dummy');
-  }
+        $this->webUser = $this->drupalCreateUser([
+          'access content',
+          'access comments',
+          'post comments',
+          'skip comment approval',
+        ]);
+    }
+
+    /**
+     * Tests creation, display, and deletion of user pictures.
+     */
+    public function testCreateDeletePicture(): void
+    {
+        $this->drupalLogin($this->webUser);
+
+        // Save a new picture.
+        $image = current($this->drupalGetTestFiles('image'));
+        $file = $this->saveUserPicture($image);
+
+        // Verify that the image is displayed on the user account page.
+        $this->drupalGet('user');
+        $this->assertSession()->responseContains(StreamWrapperManager::getTarget($file->getFileUri()));
+
+        // Delete the picture.
+        $edit = [];
+        $this->drupalGet('user/' . $this->webUser->id() . '/edit');
+        $this->submitForm($edit, 'Remove');
+        $this->submitForm([], 'Save');
+
+        // Call file_cron() to clean up the file. Make sure the timestamp
+        // of the file is older than the system.file.temporary_maximum_age
+        // configuration value. We use an UPDATE statement because using the API
+        // would set the timestamp.
+        Database::getConnection()->update('file_managed')
+          ->fields([
+            'changed' => \Drupal::time()->getRequestTime() - ($this->config('system.file')->get('temporary_maximum_age') + 1),
+          ])
+          ->condition('fid', $file->id())
+          ->execute();
+        \Drupal::service('cron')->run();
+
+        // Verify that the image has been deleted.
+        $this->assertNull(File::load($file->id()), 'File was removed from the database.');
+        // Clear out PHP's file stat cache so we see the current value.
+        clearstatcache(true, $file->getFileUri());
+        $this->assertFileDoesNotExist($file->getFileUri());
+    }
+
+    /**
+     * Tests embedded users on node pages.
+     */
+    public function testPictureOnNodeComment(): void
+    {
+        $this->drupalLogin($this->webUser);
+
+        $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+        $this->addDefaultCommentField('node', 'article');
+
+        // Save a new picture.
+        $image = current($this->drupalGetTestFiles('image'));
+        $file = $this->saveUserPicture($image);
+
+        $node = $this->drupalCreateNode(['type' => 'article']);
+
+        // Enable user pictures on nodes.
+        $this->config('system.theme.global')->set('features.node_user_picture', true)->save();
+
+        $image_style_id = $this->config('core.entity_view_display.user.user.compact')->get('content.user_picture.settings.image_style');
+        $style = ImageStyle::load($image_style_id);
+        $image_url = \Drupal::service('file_url_generator')->transformRelative($style->buildUrl($file->getFileUri()));
+        $alt_text = 'Profile picture for user ' . $this->webUser->getAccountName();
+
+        // Verify that the image is displayed on the node page.
+        $this->drupalGet('node/' . $node->id());
+        $elements = $this->cssSelect('article > footer img[alt="' . $alt_text . '"][src="' . $image_url . '"]');
+        $this->assertCount(1, $elements, 'User picture with alt text found on node page.');
+
+        // Enable user pictures on comments, instead of nodes.
+        $this->config('system.theme.global')
+          ->set('features.node_user_picture', false)
+          ->set('features.comment_user_picture', true)
+          ->save();
+
+        $edit = [
+          'comment_body[0][value]' => $this->randomString(),
+        ];
+        $this->drupalGet('comment/reply/node/' . $node->id() . '/comment');
+        $this->submitForm($edit, 'Save');
+        $elements = $this->cssSelect('#comment-1 img[alt="' . $alt_text . '"][src="' . $image_url . '"]');
+        $this->assertCount(1, $elements, 'User picture with alt text found on the comment.');
+
+        // Disable user pictures on comments and nodes.
+        $this->config('system.theme.global')
+          ->set('features.node_user_picture', false)
+          ->set('features.comment_user_picture', false)
+          ->save();
+
+        $this->drupalGet('node/' . $node->id());
+        $this->assertSession()->responseNotContains(StreamWrapperManager::getTarget($file->getFileUri()));
+    }
+
+    /**
+     * Edits the user picture for the test user.
+     */
+    public function saveUserPicture($image)
+    {
+        $edit = ['files[user_picture_0]' => \Drupal::service('file_system')->realpath($image->uri)];
+        $this->drupalGet('user/' . $this->webUser->id() . '/edit');
+        $this->submitForm($edit, 'Save');
+
+        // Load actual user data from database.
+        $user_storage = $this->container->get('entity_type.manager')->getStorage('user');
+        $account = $user_storage->load($this->webUser->id());
+        return File::load($account->user_picture->target_id);
+    }
+
+    /**
+     * Tests user picture field with a non-standard field formatter.
+     *
+     * @see user_user_view_alter()
+     */
+    public function testUserViewAlter(): void
+    {
+        \Drupal::service('module_installer')->install(['image_module_test']);
+        // Set dummy_image_formatter to the default view mode of user entity.
+        EntityViewDisplay::load('user.user.default')->setComponent('user_picture', [
+          'region' => 'content',
+          'type' => 'dummy_image_formatter',
+        ])->save();
+        $this->drupalLogin($this->webUser);
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->pageTextContains('Dummy');
+    }
 
 }

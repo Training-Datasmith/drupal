@@ -12,32 +12,35 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestCheckboxTypeJugglingForm extends FormBase {
+class FormTestCheckboxTypeJugglingForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_checkbox_type_juggling';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_checkbox_type_juggling';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $default_value = null, $return_value = null)
+    {
+        $form['checkbox'] = [
+          '#title' => $this->t('Checkbox'),
+          '#type' => 'checkbox',
+          '#return_value' => $return_value,
+          '#default_value' => $default_value,
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $default_value = NULL, $return_value = NULL) {
-    $form['checkbox'] = [
-      '#title' => $this->t('Checkbox'),
-      '#type' => 'checkbox',
-      '#return_value' => $return_value,
-      '#default_value' => $default_value,
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

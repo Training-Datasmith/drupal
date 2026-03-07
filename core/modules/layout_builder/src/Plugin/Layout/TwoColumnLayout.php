@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\Layout;
 
 /**
@@ -8,26 +10,28 @@ namespace Drupal\layout_builder\Plugin\Layout;
  * @internal
  *   Plugin classes are internal.
  */
-class TwoColumnLayout extends MultiWidthLayoutBase {
+class TwoColumnLayout extends MultiWidthLayoutBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWidthOptions(): array
+    {
+        return [
+          '50-50' => '50%/50%',
+          '33-67' => '33%/67%',
+          '67-33' => '67%/33%',
+          '25-75' => '25%/75%',
+          '75-25' => '75%/25%',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getWidthOptions(): array {
-    return [
-      '50-50' => '50%/50%',
-      '33-67' => '33%/67%',
-      '67-33' => '67%/33%',
-      '25-75' => '25%/75%',
-      '75-25' => '75%/25%',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultWidth(): string {
-    return '50-50';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultWidth(): string
+    {
+        return '50-50';
+    }
 
 }

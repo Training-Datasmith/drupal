@@ -14,55 +14,59 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(Plugin::class)]
 #[Group('Attribute')]
-class PluginTest extends TestCase {
+class PluginTest extends TestCase
+{
+    /**
+     * @legacy-covers ::__construct
+     * @legacy-covers ::get
+     */
+    public function testGet(): void
+    {
+        $plugin = new PluginStub(id: 'example', deriver: 'test');
+        $plugin->setClass('foo');
+        $this->assertEquals([
+          'id' => 'example',
+          'class' => 'foo',
+          'deriver' => 'test',
+        ], $plugin->get());
+    }
 
-  /**
-   * @legacy-covers ::__construct
-   * @legacy-covers ::get
-   */
-  public function testGet(): void {
-    $plugin = new PluginStub(id: 'example', deriver: 'test');
-    $plugin->setClass('foo');
-    $this->assertEquals([
-      'id' => 'example',
-      'class' => 'foo',
-      'deriver' => 'test',
-    ], $plugin->get());
-  }
+    /**
+     * @legacy-covers ::setProvider
+     * @legacy-covers ::getProvider
+     */
+    public function testSetProvider(): void
+    {
+        $plugin = new Plugin(id: 'example');
+        $plugin->setProvider('example');
+        $this->assertEquals('example', $plugin->getProvider());
+    }
 
-  /**
-   * @legacy-covers ::setProvider
-   * @legacy-covers ::getProvider
-   */
-  public function testSetProvider(): void {
-    $plugin = new Plugin(id: 'example');
-    $plugin->setProvider('example');
-    $this->assertEquals('example', $plugin->getProvider());
-  }
+    /**
+     * Tests get id.
+     */
+    public function testGetId(): void
+    {
+        $plugin = new Plugin(id: 'example');
+        $this->assertEquals('example', $plugin->getId());
+    }
 
-  /**
-   * Tests get id.
-   */
-  public function testGetId(): void {
-    $plugin = new Plugin(id: 'example');
-    $this->assertEquals('example', $plugin->getId());
-  }
-
-  /**
-   * @legacy-covers ::setClass
-   * @legacy-covers ::getClass
-   */
-  public function testSetClass(): void {
-    $plugin = new Plugin(id: 'test');
-    $plugin->setClass('example');
-    $this->assertEquals('example', $plugin->getClass());
-  }
+    /**
+     * @legacy-covers ::setClass
+     * @legacy-covers ::getClass
+     */
+    public function testSetClass(): void
+    {
+        $plugin = new Plugin(id: 'test');
+        $plugin->setClass('example');
+        $this->assertEquals('example', $plugin->getClass());
+    }
 
 }
 
 /**
  * {@inheritdoc}
  */
-class PluginStub extends Plugin {
-
+class PluginStub extends Plugin
+{
 }

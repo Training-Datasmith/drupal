@@ -13,22 +13,22 @@ use Drupal\entity_test\EntityTestForm;
  * Defines the test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_cache',
-  label: new TranslatableMarkup('Test entity with field cache'),
-  entity_keys: [
+    id: 'entity_test_cache',
+    label: new TranslatableMarkup('Test entity with field cache'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
     'form' => [
       'default' => EntityTestForm::class,
     ],
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_cache',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_cache',
 )]
-class EntityTestCache extends EntityTest {
-
+class EntityTestCache extends EntityTest
+{
 }

@@ -14,35 +14,35 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class FileUploadJsonCookieTest extends FileUploadResourceTestBase {
+class FileUploadJsonCookieTest extends FileUploadResourceTestBase
+{
+    use CookieResourceTestTrait;
 
-  use CookieResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $auth = 'cookie';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $auth = 'cookie';
-
-  /**
-   * Entity type ID for this storage.
-   *
-   * @var string
-   */
-  protected static string $entityTypeId;
+    /**
+     * Entity type ID for this storage.
+     *
+     * @var string
+     */
+    protected static string $entityTypeId;
 
 }

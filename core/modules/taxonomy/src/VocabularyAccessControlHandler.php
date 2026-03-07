@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,30 +14,31 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\taxonomy\Entity\Vocabulary
  */
-class VocabularyAccessControlHandler extends EntityAccessControlHandler {
+class VocabularyAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $viewLabelOperation = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $viewLabelOperation = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    return match ($operation) {
-        'view label' => AccessResult::allowedIfHasPermissions($account, [
-          'view vocabulary labels',
-          'access taxonomy overview',
-          'administer taxonomy',
-        ], 'OR'),
-        'access taxonomy overview', 'view' => AccessResult::allowedIfHasPermissions($account, ['access taxonomy overview', 'administer taxonomy'], 'OR'),
-        'reset all weights' => AccessResult::allowedIfHasPermissions($account, [
-          'administer taxonomy',
-          'edit terms in ' . $entity->id(),
-        ], 'OR'),
-        default => parent::checkAccess($entity, $operation, $account),
-    };
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        return match ($operation) {
+            'view label' => AccessResult::allowedIfHasPermissions($account, [
+              'view vocabulary labels',
+              'access taxonomy overview',
+              'administer taxonomy',
+            ], 'OR'),
+            'access taxonomy overview', 'view' => AccessResult::allowedIfHasPermissions($account, ['access taxonomy overview', 'administer taxonomy'], 'OR'),
+            'reset all weights' => AccessResult::allowedIfHasPermissions($account, [
+              'administer taxonomy',
+              'edit terms in ' . $entity->id(),
+            ], 'OR'),
+            default => parent::checkAccess($entity, $operation, $account),
+        };
+    }
 
 }

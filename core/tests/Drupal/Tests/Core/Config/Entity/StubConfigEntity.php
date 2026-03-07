@@ -9,6 +9,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
 /**
  * A stub extending ConfigEntityBase for testing purposes.
  */
-class StubConfigEntity extends ConfigEntityBase {
-
+class StubConfigEntity extends ConfigEntityBase
+{
 }

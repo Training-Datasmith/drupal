@@ -9,5 +9,6 @@ use Drupal\Component\Plugin\PluginBase;
 /**
  * A class extending PluginBase for testing purposes.
  */
-class StubPluginBase extends PluginBase {
+class StubPluginBase extends PluginBase
+{
 }

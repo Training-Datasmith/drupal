@@ -16,33 +16,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(Migration::class)]
 #[Group('migrate')]
 #[RunTestsInSeparateProcesses]
-class MigrationTest extends KernelTestBase {
+class MigrationTest extends KernelTestBase
+{
+    /**
+     * Enable field because we are using one of its source plugins.
+     *
+     * @var array
+     */
+    protected static $modules = ['migrate', 'field'];
 
-  /**
-   * Enable field because we are using one of its source plugins.
-   *
-   * @var array
-   */
-  protected static $modules = ['migrate', 'field'];
+    /**
+     * Tests Migration::set().
+     */
+    public function testSetInvalidation(): void
+    {
+        $migration = \Drupal::service('plugin.manager.migration')->createStubMigration([
+          'source' => ['plugin' => 'empty'],
+          'destination' => ['plugin' => 'entity:entity_view_mode'],
+        ]);
+        $this->assertEquals('empty', $migration->getSourcePlugin()->getPluginId());
+        $this->assertEquals('entity:entity_view_mode', $migration->getDestinationPlugin()->getPluginId());
 
-  /**
-   * Tests Migration::set().
-   */
-  public function testSetInvalidation(): void {
-    $migration = \Drupal::service('plugin.manager.migration')->createStubMigration([
-      'source' => ['plugin' => 'empty'],
-      'destination' => ['plugin' => 'entity:entity_view_mode'],
-    ]);
-    $this->assertEquals('empty', $migration->getSourcePlugin()->getPluginId());
-    $this->assertEquals('entity:entity_view_mode', $migration->getDestinationPlugin()->getPluginId());
+        // Test the source plugin is invalidated.
+        $migration->set('source', ['plugin' => 'embedded_data', 'data_rows' => [], 'ids' => []]);
+        $this->assertEquals('embedded_data', $migration->getSourcePlugin()->getPluginId());
 
-    // Test the source plugin is invalidated.
-    $migration->set('source', ['plugin' => 'embedded_data', 'data_rows' => [], 'ids' => []]);
-    $this->assertEquals('embedded_data', $migration->getSourcePlugin()->getPluginId());
-
-    // Test the destination plugin is invalidated.
-    $migration->set('destination', ['plugin' => 'null']);
-    $this->assertEquals('null', $migration->getDestinationPlugin()->getPluginId());
-  }
+        // Test the destination plugin is invalidated.
+        $migration->set('destination', ['plugin' => 'null']);
+        $this->assertEquals('null', $migration->getDestinationPlugin()->getPluginId());
+    }
 
 }

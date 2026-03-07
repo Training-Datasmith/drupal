@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Plugin\Validation\Constraint;
 
 use Drupal\Core\Entity\Plugin\Validation\Constraint\EntityChangedConstraint;
@@ -10,9 +12,10 @@ use Drupal\Core\Validation\Attribute\Constraint;
  * Validation constraint for the block content entity changed timestamp.
  */
 #[Constraint(
-  id: 'BlockContentEntityChanged',
-  label: new TranslatableMarkup('Block content entity changed', [], ['context' => 'Validation']),
-  type: ['entity']
+    id: 'BlockContentEntityChanged',
+    label: new TranslatableMarkup('Block content entity changed', [], ['context' => 'Validation']),
+    type: ['entity']
 )]
-class BlockContentEntityChangedConstraint extends EntityChangedConstraint {
+class BlockContentEntityChangedConstraint extends EntityChangedConstraint
+{
 }

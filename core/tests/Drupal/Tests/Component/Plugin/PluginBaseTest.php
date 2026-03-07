@@ -15,105 +15,112 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(PluginBase::class)]
 #[Group('Plugin')]
-class PluginBaseTest extends TestCase {
+class PluginBaseTest extends TestCase
+{
+    /**
+     * Tests get plugin id.
+     */
+    #[DataProvider('providerTestGetPluginId')]
+    public function testGetPluginId($plugin_id, $expected): void
+    {
+        $plugin_base = new StubPluginBase(
+            [],
+            $plugin_id,
+            [],
+        );
 
-  /**
-   * Tests get plugin id.
-   */
-  #[DataProvider('providerTestGetPluginId')]
-  public function testGetPluginId($plugin_id, $expected): void {
-    $plugin_base = new StubPluginBase(
-      [],
-      $plugin_id,
-      [],
-    );
+        $this->assertEquals($expected, $plugin_base->getPluginId());
+    }
 
-    $this->assertEquals($expected, $plugin_base->getPluginId());
-  }
+    /**
+     * Returns test data for testGetPluginId().
+     *
+     * @return array
+     *   An array of test cases, where each item contains a plugin ID and
+     *   the expected plugin ID result.
+     */
+    public static function providerTestGetPluginId(): array
+    {
+        return [
+          ['base_id', 'base_id'],
+          ['base_id:derivative', 'base_id:derivative'],
+        ];
+    }
 
-  /**
-   * Returns test data for testGetPluginId().
-   *
-   * @return array
-   *   An array of test cases, where each item contains a plugin ID and
-   *   the expected plugin ID result.
-   */
-  public static function providerTestGetPluginId(): array {
-    return [
-      ['base_id', 'base_id'],
-      ['base_id:derivative', 'base_id:derivative'],
-    ];
-  }
+    /**
+     * Tests get base id.
+     *
+     * @coves ::getBaseId
+     */
+    #[DataProvider('providerTestGetBaseId')]
+    public function testGetBaseId($plugin_id, $expected): void
+    {
+        $plugin_base = new StubPluginBase(
+            [],
+            $plugin_id,
+            [],
+        );
 
-  /**
-   * Tests get base id.
-   *
-   * @coves ::getBaseId
-   */
-  #[DataProvider('providerTestGetBaseId')]
-  public function testGetBaseId($plugin_id, $expected): void {
-    $plugin_base = new StubPluginBase(
-      [],
-      $plugin_id,
-      [],
-    );
+        $this->assertEquals($expected, $plugin_base->getBaseId());
+    }
 
-    $this->assertEquals($expected, $plugin_base->getBaseId());
-  }
+    /**
+     * Returns test data for testGetBaseId().
+     *
+     * @return array
+     *   An array of test cases, where each item contains a plugin ID and
+     *   the expected base ID result.
+     */
+    public static function providerTestGetBaseId(): array
+    {
+        return [
+          ['base_id', 'base_id'],
+          ['base_id:derivative', 'base_id'],
+        ];
+    }
 
-  /**
-   * Returns test data for testGetBaseId().
-   *
-   * @return array
-   *   An array of test cases, where each item contains a plugin ID and
-   *   the expected base ID result.
-   */
-  public static function providerTestGetBaseId(): array {
-    return [
-      ['base_id', 'base_id'],
-      ['base_id:derivative', 'base_id'],
-    ];
-  }
+    /**
+     * Tests get derivative id.
+     */
+    #[DataProvider('providerTestGetDerivativeId')]
+    public function testGetDerivativeId($plugin_id = null, $expected = null): void
+    {
+        $plugin_base = new StubPluginBase(
+            [],
+            $plugin_id,
+            [],
+        );
 
-  /**
-   * Tests get derivative id.
-   */
-  #[DataProvider('providerTestGetDerivativeId')]
-  public function testGetDerivativeId($plugin_id = NULL, $expected = NULL): void {
-    $plugin_base = new StubPluginBase(
-      [],
-      $plugin_id,
-      [],
-    );
+        $this->assertEquals($expected, $plugin_base->getDerivativeId());
+    }
 
-    $this->assertEquals($expected, $plugin_base->getDerivativeId());
-  }
+    /**
+     * Returns test data for testGetDerivativeId().
+     *
+     * @return array
+     *   An array of test cases, where each item contains a plugin ID and
+     *   the expected derivative ID result.
+     */
+    public static function providerTestGetDerivativeId(): array
+    {
+        return [
+          ['base_id', null],
+          ['base_id:derivative', 'derivative'],
+        ];
+    }
 
-  /**
-   * Returns test data for testGetDerivativeId().
-   *
-   * @return array
-   *   An array of test cases, where each item contains a plugin ID and
-   *   the expected derivative ID result.
-   */
-  public static function providerTestGetDerivativeId(): array {
-    return [
-      ['base_id', NULL],
-      ['base_id:derivative', 'derivative'],
-    ];
-  }
+    /**
+     * Tests get plugin definition.
+     */
+    public function testGetPluginDefinition(): void
+    {
+        $plugin_base = new StubPluginBase(
+            [],
+            'plugin_id',
+            ['value', ['key' => 'value']],
+        );
 
-  /**
-   * Tests get plugin definition.
-   */
-  public function testGetPluginDefinition(): void {
-    $plugin_base = new StubPluginBase(
-      [],
-      'plugin_id',
-      ['value', ['key' => 'value']],
-    );
-
-    $this->assertEquals(['value', ['key' => 'value']], $plugin_base->getPluginDefinition());
-  }
+        $this->assertEquals(['value', ['key' => 'value']], $plugin_base->getPluginDefinition());
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Render;
 
 use Drupal\Component\Utility\Html;
@@ -13,13 +15,14 @@ use Drupal\Component\Utility\Html;
  * Returns a string with HTML tags stripped and HTML entities decoded suitable
  * for email or other non-HTML contexts.
  */
-class PlainTextOutput implements OutputStrategyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function renderFromHtml($string): string {
-    return Html::decodeEntities(strip_tags((string) $string));
-  }
+class PlainTextOutput implements OutputStrategyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function renderFromHtml($string): string
+    {
+        return Html::decodeEntities(strip_tags((string) $string));
+    }
 
 }

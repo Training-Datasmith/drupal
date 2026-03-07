@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Removes the contact module from a fixture database.
@@ -20,15 +22,15 @@ $extensions = $connection->select('config')
   ->fetchField();
 
 if ($extensions) {
-  $data = unserialize($extensions);
-  if (isset($data['module']['contact'])) {
-    unset($data['module']['contact']);
-    $connection->update('config')
-      ->fields(['data' => serialize($data)])
-      ->condition('collection', '')
-      ->condition('name', 'core.extension')
-      ->execute();
-  }
+    $data = unserialize($extensions);
+    if (isset($data['module']['contact'])) {
+        unset($data['module']['contact']);
+        $connection->update('config')
+          ->fields(['data' => serialize($data)])
+          ->condition('collection', '')
+          ->condition('name', 'core.extension')
+          ->execute();
+    }
 }
 
 // Remove contact schema version.

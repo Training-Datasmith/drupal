@@ -14,28 +14,30 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class RouteAliasUpdateTest extends UpdatePathTestBase {
+class RouteAliasUpdateTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
-
-  /**
-   * Tests the upgrade path for adding aliases to the router table.
-   */
-  public function testRunUpdates(): void {
-    $connection = Database::getConnection();
-    $this->assertFalse($connection->schema()->fieldExists('router', 'alias'));
-    $this->runUpdates();
-    $this->assertTrue($connection->schema()->fieldExists('router', 'alias'));
-    $this->assertTrue($connection->schema()->indexExists('router', 'alias'));
-  }
+    /**
+     * Tests the upgrade path for adding aliases to the router table.
+     */
+    public function testRunUpdates(): void
+    {
+        $connection = Database::getConnection();
+        $this->assertFalse($connection->schema()->fieldExists('router', 'alias'));
+        $this->runUpdates();
+        $this->assertTrue($connection->schema()->fieldExists('router', 'alias'));
+        $this->assertTrue($connection->schema()->indexExists('router', 'alias'));
+    }
 
 }

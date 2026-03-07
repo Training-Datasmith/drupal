@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,34 +14,35 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @internal
  */
 #[Constraint(
-  id: 'CKEditor5ToolbarItemDependencyConstraint',
-  label: new TranslatableMarkup('CKEditor 5 toolbar item dependency', [], ['context' => 'Validation'])
+    id: 'CKEditor5ToolbarItemDependencyConstraint',
+    label: new TranslatableMarkup('CKEditor 5 toolbar item dependency', [], ['context' => 'Validation'])
 )]
-class ToolbarItemDependencyConstraint extends SymfonyConstraint {
+class ToolbarItemDependencyConstraint extends SymfonyConstraint
+{
+    /**
+     * The toolbar item that this validation constraint requires to be enabled.
+     *
+     * @var null|string
+     */
+    public $toolbarItem;
 
-  /**
-   * The toolbar item that this validation constraint requires to be enabled.
-   *
-   * @var null|string
-   */
-  public $toolbarItem;
+    public function __construct(
+        mixed $options = null,
+        ?string $toolbarItem = null,
+        public $message = 'Depends on %toolbar_item, which is not enabled.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->toolbarItem = $toolbarItem ?? $this->toolbarItem;
+    }
 
-  public function __construct(
-    mixed $options = NULL,
-    ?string $toolbarItem = NULL,
-    public $message = 'Depends on %toolbar_item, which is not enabled.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->toolbarItem = $toolbarItem ?? $this->toolbarItem;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequiredOptions(): array {
-    return ['toolbarItem'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredOptions(): array
+    {
+        return ['toolbarItem'];
+    }
 
 }

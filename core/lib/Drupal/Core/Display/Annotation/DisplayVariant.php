@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Display\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -32,22 +34,22 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class DisplayVariant extends Plugin {
+class DisplayVariant extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The administrative label.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $admin_label = '';
+    /**
+     * The administrative label.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $admin_label = '';
 
 }

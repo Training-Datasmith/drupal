@@ -18,125 +18,131 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class ConfigurableLanguageTest extends ConfigEntityResourceTestBase {
+class ConfigurableLanguageTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'configurable_language';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'configurable_language';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'configurable_language--configurable_language';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'configurable_language--configurable_language';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\Core\Field\Entity\BaseFieldOverride
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\Core\Field\Entity\BaseFieldOverride
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer languages']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer languages']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $configurable_language = ConfigurableLanguage::create([
-      'id' => 'll',
-      'label' => 'Llama Language',
-    ]);
-    $configurable_language->save();
-
-    return $configurable_language;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/configurable_language/configurable_language/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'configurable_language--configurable_language',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'dependencies' => [],
-          'direction' => 'ltr',
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $configurable_language = ConfigurableLanguage::create([
+          'id' => 'll',
           'label' => 'Llama Language',
-          'langcode' => 'en',
-          'locked' => FALSE,
-          'status' => TRUE,
-          'weight' => 0,
-          'drupal_internal__id' => 'll',
-        ],
-      ],
-    ];
-  }
+        ]);
+        $configurable_language->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+        return $configurable_language;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedCacheContexts(?array $sparse_fieldset = NULL) {
-    return Cache::mergeContexts(parent::getExpectedCacheContexts(), ['languages:language_interface']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/configurable_language/configurable_language/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'configurable_language--configurable_language',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'dependencies' => [],
+              'direction' => 'ltr',
+              'label' => 'Llama Language',
+              'langcode' => 'en',
+              'locked' => false,
+              'status' => true,
+              'weight' => 0,
+              'drupal_internal__id' => 'll',
+            ],
+          ],
+        ];
+    }
 
-  /**
-   * Tests a GET request for a default config entity, which has a _core key.
-   *
-   * @see https://www.drupal.org/project/drupal/issues/2915539
-   */
-  public function testGetIndividualDefaultConfig(): void {
-    // @todo Remove line below in favor of commented line in https://www.drupal.org/project/drupal/issues/2878463.
-    $url = Url::fromRoute('jsonapi.configurable_language--configurable_language.individual', ['entity' => ConfigurableLanguage::load('en')->uuid()]);
-    /* $url = ConfigurableLanguage::load('en')->toUrl('jsonapi'); */
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
-    $request_options = [];
-    $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
-    $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
-    $this->setUpAuthorization('GET');
-    $response = $this->request('GET', $url, $request_options);
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedCacheContexts(?array $sparse_fieldset = null)
+    {
+        return Cache::mergeContexts(parent::getExpectedCacheContexts(), ['languages:language_interface']);
+    }
 
-    $normalization = $this->getDocumentFromResponse($response);
-    $this->assertArrayNotHasKey('_core', $normalization['data']['attributes']);
-  }
+    /**
+     * Tests a GET request for a default config entity, which has a _core key.
+     *
+     * @see https://www.drupal.org/project/drupal/issues/2915539
+     */
+    public function testGetIndividualDefaultConfig(): void
+    {
+        // @todo Remove line below in favor of commented line in https://www.drupal.org/project/drupal/issues/2878463.
+        $url = Url::fromRoute('jsonapi.configurable_language--configurable_language.individual', ['entity' => ConfigurableLanguage::load('en')->uuid()]);
+        /* $url = ConfigurableLanguage::load('en')->toUrl('jsonapi'); */
+
+        $request_options = [];
+        $request_options[RequestOptions::HEADERS]['Accept'] = 'application/vnd.api+json';
+        $request_options = NestedArray::mergeDeep($request_options, $this->getAuthenticationRequestOptions());
+        $this->setUpAuthorization('GET');
+        $response = $this->request('GET', $url, $request_options);
+
+        $normalization = $this->getDocumentFromResponse($response);
+        $this->assertArrayNotHasKey('_core', $normalization['data']['attributes']);
+    }
 
 }

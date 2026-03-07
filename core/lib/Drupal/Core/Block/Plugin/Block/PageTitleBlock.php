@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Block\Plugin\Block;
 
 use Drupal\Core\Block\Attribute\Block;
@@ -11,44 +13,47 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a block to display the page title.
  */
 #[Block(
-  id: "page_title_block",
-  admin_label: new TranslatableMarkup("Page title"),
-  forms: [
-    'settings_tray' => FALSE,
+    id: 'page_title_block',
+    admin_label: new TranslatableMarkup('Page title'),
+    forms: [
+    'settings_tray' => false,
   ]
 )]
-class PageTitleBlock extends BlockBase implements TitleBlockPluginInterface {
+class PageTitleBlock extends BlockBase implements TitleBlockPluginInterface
+{
+    /**
+     * The page title: a string (plain title) or a render array (formatted title).
+     *
+     * @var string|array
+     */
+    protected $title = '';
 
-  /**
-   * The page title: a string (plain title) or a render array (formatted title).
-   *
-   * @var string|array
-   */
-  protected $title = '';
+    /**
+     * {@inheritdoc}
+     */
+    public function setTitle($title): static
+    {
+        $this->title = $title;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setTitle($title): static {
-    $this->title = $title;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return ['label_display' => '0'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return ['label_display' => '0'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return [
-      '#type' => 'page_title',
-      '#title' => $this->title,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return [
+          '#type' => 'page_title',
+          '#title' => $this->title,
+        ];
+    }
 
 }

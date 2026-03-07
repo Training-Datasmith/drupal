@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -15,104 +17,107 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-abstract class PrerenderList extends FieldPluginBase implements MultiItemsFieldHandlerInterface {
+abstract class PrerenderList extends FieldPluginBase implements MultiItemsFieldHandlerInterface
+{
+    /**
+     * Stores all items which are used to render the items.
+     *
+     * It should be keyed first by the id of the base table, for example nid.
+     * The second key is the id of the thing which is displayed multiple times
+     * per row, for example the tid.
+     *
+     * @var array
+     */
+    public $items = [];
 
-  /**
-   * Stores all items which are used to render the items.
-   *
-   * It should be keyed first by the id of the base table, for example nid.
-   * The second key is the id of the thing which is displayed multiple times
-   * per row, for example the tid.
-   *
-   * @var array
-   */
-  public $items = [];
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        $options['type'] = ['default' => 'separator'];
+        $options['separator'] = ['default' => ', '];
 
-    $options['type'] = ['default' => 'separator'];
-    $options['separator'] = ['default' => ', '];
+        return $options;
+    }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['type'] = [
+          '#type' => 'radios',
+          '#title' => $this->t('Display type'),
+          '#options' => [
+            'ul' => $this->t('Unordered list'),
+            'ol' => $this->t('Ordered list'),
+            'separator' => $this->t('Simple separator'),
+          ],
+          '#default_value' => $this->options['type'],
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['type'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Display type'),
-      '#options' => [
-        'ul' => $this->t('Unordered list'),
-        'ol' => $this->t('Ordered list'),
-        'separator' => $this->t('Simple separator'),
-      ],
-      '#default_value' => $this->options['type'],
-    ];
-
-    $form['separator'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Separator'),
-      '#default_value' => $this->options['separator'],
-      '#states' => [
-        'visible' => [
-          ':input[name="options[type]"]' => ['value' => 'separator'],
-        ],
-      ],
-    ];
-    parent::buildOptionsForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function renderItems($items) {
-    if (!empty($items)) {
-      if ($this->options['type'] == 'separator') {
-        $render = [
-          '#type' => 'inline_template',
-          '#template' => '{{ items|safe_join(separator) }}',
-          '#context' => [
-            'items' => $items,
-            'separator' => $this->sanitizeValue($this->options['separator'], 'xss_admin'),
+        $form['separator'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Separator'),
+          '#default_value' => $this->options['separator'],
+          '#states' => [
+            'visible' => [
+              ':input[name="options[type]"]' => ['value' => 'separator'],
+            ],
           ],
         ];
-      }
-      else {
-        $render = [
-          '#theme' => 'item_list',
-          '#items' => $items,
-          '#title' => NULL,
-          '#list_type' => $this->options['type'],
-        ];
-      }
-      return \Drupal::service('renderer')->render($render);
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Items should be stored in the result array, if possible, as an array
-   * with 'value' as the actual displayable value of the item, plus
-   * any items that might be found in the 'alter' options array for
-   * creating links, such as 'path', 'fragment', 'query' etc, such a thing
-   * is to be made. Additionally, items that might be turned into tokens
-   * should also be in this array.
-   */
-  public function getItems(ResultRow $values) {
-    $field = $this->getValue($values);
-    if (!empty($this->items[$field])) {
-      return $this->items[$field];
+        parent::buildOptionsForm($form, $form_state);
     }
 
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function renderItems($items)
+    {
+        if (!empty($items)) {
+            if ($this->options['type'] == 'separator') {
+                $render = [
+                  '#type' => 'inline_template',
+                  '#template' => '{{ items|safe_join(separator) }}',
+                  '#context' => [
+                    'items' => $items,
+                    'separator' => $this->sanitizeValue($this->options['separator'], 'xss_admin'),
+                  ],
+                ];
+            } else {
+                $render = [
+                  '#theme' => 'item_list',
+                  '#items' => $items,
+                  '#title' => null,
+                  '#list_type' => $this->options['type'],
+                ];
+            }
+            return \Drupal::service('renderer')->render($render);
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Items should be stored in the result array, if possible, as an array
+     * with 'value' as the actual displayable value of the item, plus
+     * any items that might be found in the 'alter' options array for
+     * creating links, such as 'path', 'fragment', 'query' etc, such a thing
+     * is to be made. Additionally, items that might be turned into tokens
+     * should also be in this array.
+     */
+    public function getItems(ResultRow $values)
+    {
+        $field = $this->getValue($values);
+        if (!empty($this->items[$field])) {
+            return $this->items[$field];
+        }
+
+        return [];
+    }
 
 }

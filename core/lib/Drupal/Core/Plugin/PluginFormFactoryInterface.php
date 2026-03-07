@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 /**
@@ -11,23 +13,23 @@ namespace Drupal\Core\Plugin;
  * implement \Drupal\Component\Plugin\PluginAwareInterface in order to gain
  * access to the plugin.
  */
-interface PluginFormFactoryInterface {
-
-  /**
-   * Creates a new form instance.
-   *
-   * @param \Drupal\Core\Plugin\PluginWithFormsInterface $plugin
-   *   The plugin the form is for.
-   * @param string $operation
-   *   The name of the operation to use, e.g., 'add' or 'edit'.
-   * @param string $fallback_operation
-   *   (optional) The name of the fallback operation to use.
-   *
-   * @return \Drupal\Core\Plugin\PluginFormInterface
-   *   A plugin form instance.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  public function createInstance(PluginWithFormsInterface $plugin, $operation, $fallback_operation = NULL);
+interface PluginFormFactoryInterface
+{
+    /**
+     * Creates a new form instance.
+     *
+     * @param \Drupal\Core\Plugin\PluginWithFormsInterface $plugin
+     *   The plugin the form is for.
+     * @param string $operation
+     *   The name of the operation to use, e.g., 'add' or 'edit'.
+     * @param string $fallback_operation
+     *   (optional) The name of the fallback operation to use.
+     *
+     * @return \Drupal\Core\Plugin\PluginFormInterface
+     *   A plugin form instance.
+     *
+     * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+     */
+    public function createInstance(PluginWithFormsInterface $plugin, $operation, $fallback_operation = null);
 
 }

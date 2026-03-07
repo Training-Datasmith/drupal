@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter\Plugin\Filter;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,33 +14,36 @@ use Drupal\filter\Plugin\FilterInterface;
  * Provides a filter to display any HTML as plain text.
  */
 #[Filter(
-  id: "filter_html_escape",
-  title: new TranslatableMarkup("Display any HTML as plain text"),
-  type: FilterInterface::TYPE_HTML_RESTRICTOR,
-  weight: -10
+    id: 'filter_html_escape',
+    title: new TranslatableMarkup('Display any HTML as plain text'),
+    type: FilterInterface::TYPE_HTML_RESTRICTOR,
+    weight: -10
 )]
-class FilterHtmlEscape extends FilterBase {
+class FilterHtmlEscape extends FilterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode): \Drupal\filter\FilterProcessResult
+    {
+        return new FilterProcessResult(_filter_html_escape($text));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
-    return new FilterProcessResult(_filter_html_escape($text));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getHTMLRestrictions(): array
+    {
+        // Nothing is allowed.
+        return ['allowed' => []];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getHTMLRestrictions(): array {
-    // Nothing is allowed.
-    return ['allowed' => []];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('No HTML tags allowed.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function tips($long = false): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('No HTML tags allowed.');
+    }
 
 }

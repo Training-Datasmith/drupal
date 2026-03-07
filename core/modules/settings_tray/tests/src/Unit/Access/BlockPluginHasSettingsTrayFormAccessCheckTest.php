@@ -23,83 +23,85 @@ use Prophecy\Argument;
  */
 #[CoversClass(BlockPluginHasSettingsTrayFormAccessCheck::class)]
 #[Group('settings_tray')]
-class BlockPluginHasSettingsTrayFormAccessCheckTest extends UnitTestCase {
+class BlockPluginHasSettingsTrayFormAccessCheckTest extends UnitTestCase
+{
+    /**
+     * Tests access.
+     *
+     * @legacy-covers ::access
+     * @legacy-covers ::accessBlockPlugin
+     */
+    #[DataProvider('providerTestAccess')]
+    public function testAccess($with_forms, array $plugin_definition, AccessResultInterface $expected_access_result): void
+    {
+        $block_plugin = $this->prophesize()->willImplement(BlockPluginInterface::class);
 
-  /**
-   * Tests access.
-   *
-   * @legacy-covers ::access
-   * @legacy-covers ::accessBlockPlugin
-   */
-  #[DataProvider('providerTestAccess')]
-  public function testAccess($with_forms, array $plugin_definition, AccessResultInterface $expected_access_result): void {
-    $block_plugin = $this->prophesize()->willImplement(BlockPluginInterface::class);
+        if ($with_forms) {
+            $block_plugin->willImplement(PluginWithFormsInterface::class);
+            $block_plugin->hasFormClass(Argument::type('string'))->will(function ($arguments) use ($plugin_definition) {
+                return !empty($plugin_definition['forms'][$arguments[0]]);
+            });
+        }
 
-    if ($with_forms) {
-      $block_plugin->willImplement(PluginWithFormsInterface::class);
-      $block_plugin->hasFormClass(Argument::type('string'))->will(function ($arguments) use ($plugin_definition) {
-        return !empty($plugin_definition['forms'][$arguments[0]]);
-      });
+        $block = $this->prophesize(BlockInterface::class);
+        $block->getPlugin()->willReturn($block_plugin->reveal());
+
+        $access_check = new BlockPluginHasSettingsTrayFormAccessCheck();
+        $this->assertEquals($expected_access_result, $access_check->access($block->reveal()));
+        $this->assertEquals($expected_access_result, $access_check->accessBlockPlugin($block_plugin->reveal()));
     }
 
-    $block = $this->prophesize(BlockInterface::class);
-    $block->getPlugin()->willReturn($block_plugin->reveal());
-
-    $access_check = new BlockPluginHasSettingsTrayFormAccessCheck();
-    $this->assertEquals($expected_access_result, $access_check->access($block->reveal()));
-    $this->assertEquals($expected_access_result, $access_check->accessBlockPlugin($block_plugin->reveal()));
-  }
-
-  /**
-   * Provides test data for ::testAccess().
-   */
-  public static function providerTestAccess() {
-    $annotation_forms_settings_tray_class = [
-      'forms' => [
-        'settings_tray' => Random::machineName(),
-      ],
-    ];
-    $annotation_forms_settings_tray_not_set = [];
-    $annotation_forms_settings_tray_false = [
-      'forms' => [
-        'settings_tray' => FALSE,
-      ],
-    ];
-    return [
-      'block plugin with forms, forms[settings_tray] set to class' => [
-        TRUE,
-        $annotation_forms_settings_tray_class,
-        new AccessResultAllowed(),
-      ],
-      'block plugin with forms, forms[settings_tray] not set' => [
-        TRUE,
-        $annotation_forms_settings_tray_not_set,
-        new AccessResultNeutral(),
-      ],
-      'block plugin with forms, forms[settings_tray] set to FALSE' => [
-        TRUE,
-        $annotation_forms_settings_tray_false,
-        new AccessResultNeutral(),
-      ],
-      // In practice, all block plugins extend BlockBase, which means they all
-      // implement PluginWithFormsInterface, but this may change in the future.
-      // This ensures Settings Tray will continue to work correctly.
-      'block plugin without forms, forms[settings_tray] set to class' => [
-        FALSE,
-        $annotation_forms_settings_tray_class,
-        new AccessResultNeutral(),
-      ],
-      'block plugin without forms, forms[settings_tray] not set' => [
-        FALSE,
-        $annotation_forms_settings_tray_not_set,
-        new AccessResultNeutral(),
-      ],
-      'block plugin without forms, forms[settings_tray] set to FALSE' => [
-        FALSE,
-        $annotation_forms_settings_tray_false,
-        new AccessResultNeutral(),
-      ],
-    ];
-  }
+    /**
+     * Provides test data for ::testAccess().
+     */
+    public static function providerTestAccess()
+    {
+        $annotation_forms_settings_tray_class = [
+          'forms' => [
+            'settings_tray' => Random::machineName(),
+          ],
+        ];
+        $annotation_forms_settings_tray_not_set = [];
+        $annotation_forms_settings_tray_false = [
+          'forms' => [
+            'settings_tray' => false,
+          ],
+        ];
+        return [
+          'block plugin with forms, forms[settings_tray] set to class' => [
+            true,
+            $annotation_forms_settings_tray_class,
+            new AccessResultAllowed(),
+          ],
+          'block plugin with forms, forms[settings_tray] not set' => [
+            true,
+            $annotation_forms_settings_tray_not_set,
+            new AccessResultNeutral(),
+          ],
+          'block plugin with forms, forms[settings_tray] set to FALSE' => [
+            true,
+            $annotation_forms_settings_tray_false,
+            new AccessResultNeutral(),
+          ],
+          // In practice, all block plugins extend BlockBase, which means they all
+          // implement PluginWithFormsInterface, but this may change in the future.
+          // This ensures Settings Tray will continue to work correctly.
+          'block plugin without forms, forms[settings_tray] set to class' => [
+            false,
+            $annotation_forms_settings_tray_class,
+            new AccessResultNeutral(),
+          ],
+          'block plugin without forms, forms[settings_tray] not set' => [
+            false,
+            $annotation_forms_settings_tray_not_set,
+            new AccessResultNeutral(),
+          ],
+          'block plugin without forms, forms[settings_tray] set to FALSE' => [
+            false,
+            $annotation_forms_settings_tray_false,
+            new AccessResultNeutral(),
+          ],
+        ];
+    }
 
 }

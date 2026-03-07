@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -27,57 +29,60 @@ use Drupal\Core\Render\Element;
  * @see \Drupal\Core\Render\Element\Textfield
  */
 #[FormElement('password')]
-class Password extends FormElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#size' => 60,
-      '#maxlength' => 128,
-      '#process' => [
-        [static::class, 'processAjaxForm'],
-        [static::class, 'processPattern'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderPassword'],
-      ],
-      '#theme' => 'input__password',
-      '#theme_wrappers' => ['form_element'],
-    ];
-  }
-
-  /**
-   * Prepares a #type 'password' render element for input.html.twig.
-   *
-   * @param array $element
-   *   An associative array containing the properties of the element.
-   *   Properties used: #title, #value, #description, #size, #maxlength,
-   *   #placeholder, #required, #attributes.
-   *
-   * @return array
-   *   The $element with prepared variables ready for input.html.twig.
-   */
-  public static function preRenderPassword(array $element): array {
-    $element['#attributes']['type'] = 'password';
-    Element::setAttributes($element, ['id', 'name', 'size', 'maxlength', 'placeholder']);
-    static::setAttributes($element, ['form-text']);
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
-    if ($input !== FALSE && $input !== NULL) {
-      // This should be a string, but allow other scalars since they might be
-      // valid input in programmatic form submissions.
-      return is_scalar($input) ? (string) $input : '';
+class Password extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#process' => [
+            [static::class, 'processAjaxForm'],
+            [static::class, 'processPattern'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderPassword'],
+          ],
+          '#theme' => 'input__password',
+          '#theme_wrappers' => ['form_element'],
+        ];
     }
-    return NULL;
-  }
+
+    /**
+     * Prepares a #type 'password' render element for input.html.twig.
+     *
+     * @param array $element
+     *   An associative array containing the properties of the element.
+     *   Properties used: #title, #value, #description, #size, #maxlength,
+     *   #placeholder, #required, #attributes.
+     *
+     * @return array
+     *   The $element with prepared variables ready for input.html.twig.
+     */
+    public static function preRenderPassword(array $element): array
+    {
+        $element['#attributes']['type'] = 'password';
+        Element::setAttributes($element, ['id', 'name', 'size', 'maxlength', 'placeholder']);
+        static::setAttributes($element, ['form-text']);
+
+        return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string
+    {
+        if ($input !== false && $input !== null) {
+            // This should be a string, but allow other scalars since they might be
+            // valid input in programmatic form submissions.
+            return is_scalar($input) ? (string) $input : '';
+        }
+        return null;
+    }
 
 }

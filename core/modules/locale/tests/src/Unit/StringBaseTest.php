@@ -16,26 +16,28 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(StringBase::class)]
 #[Group('locale')]
-class StringBaseTest extends UnitTestCase {
+class StringBaseTest extends UnitTestCase
+{
+    /**
+     * Tests save without storage.
+     */
+    public function testSaveWithoutStorage(): void
+    {
+        $string = new SourceString(['source' => 'test']);
+        $this->expectException(StringStorageException::class);
+        $this->expectExceptionMessage('The string cannot be saved because its not bound to a storage: test');
+        $string->save();
+    }
 
-  /**
-   * Tests save without storage.
-   */
-  public function testSaveWithoutStorage(): void {
-    $string = new SourceString(['source' => 'test']);
-    $this->expectException(StringStorageException::class);
-    $this->expectExceptionMessage('The string cannot be saved because its not bound to a storage: test');
-    $string->save();
-  }
-
-  /**
-   * Tests delete without storage.
-   */
-  public function testDeleteWithoutStorage(): void {
-    $string = new SourceString(['lid' => 1, 'source' => 'test']);
-    $this->expectException(StringStorageException::class);
-    $this->expectExceptionMessage('The string cannot be deleted because its not bound to a storage: test');
-    $string->delete();
-  }
+    /**
+     * Tests delete without storage.
+     */
+    public function testDeleteWithoutStorage(): void
+    {
+        $string = new SourceString(['lid' => 1, 'source' => 'test']);
+        $this->expectException(StringStorageException::class);
+        $this->expectExceptionMessage('The string cannot be deleted because its not bound to a storage: test');
+        $string->delete();
+    }
 
 }

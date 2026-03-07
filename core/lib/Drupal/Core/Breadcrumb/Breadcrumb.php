@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Breadcrumb;
 
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
@@ -10,81 +12,85 @@ use Drupal\Core\Render\RenderableInterface;
 /**
  * Used to return generated breadcrumbs with associated cacheability metadata.
  */
-class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInterface {
+class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInterface
+{
+    use RefinableCacheableDependencyTrait;
 
-  use RefinableCacheableDependencyTrait;
+    /**
+     * An ordered list of links for the breadcrumb.
+     *
+     * @var \Drupal\Core\Link[]
+     */
+    protected $links = [];
 
-  /**
-   * An ordered list of links for the breadcrumb.
-   *
-   * @var \Drupal\Core\Link[]
-   */
-  protected $links = [];
-
-  /**
-   * Gets the breadcrumb links.
-   *
-   * @return \Drupal\Core\Link[]
-   *   An ordered list of the links for the breadcrumb.
-   */
-  public function getLinks() {
-    return $this->links;
-  }
-
-  /**
-   * Sets the breadcrumb links.
-   *
-   * @param \Drupal\Core\Link[] $links
-   *   The breadcrumb links.
-   *
-   * @return $this
-   *
-   * @throws \LogicException
-   *   Thrown when setting breadcrumb links after they've already been set.
-   */
-  public function setLinks(array $links): static {
-    if (!empty($this->links)) {
-      throw new \LogicException('Once breadcrumb links are set, only additional breadcrumb links can be added.');
+    /**
+     * Gets the breadcrumb links.
+     *
+     * @return \Drupal\Core\Link[]
+     *   An ordered list of the links for the breadcrumb.
+     */
+    public function getLinks()
+    {
+        return $this->links;
     }
 
-    $this->links = $links;
+    /**
+     * Sets the breadcrumb links.
+     *
+     * @param \Drupal\Core\Link[] $links
+     *   The breadcrumb links.
+     *
+     * @return $this
+     *
+     * @throws \LogicException
+     *   Thrown when setting breadcrumb links after they've already been set.
+     */
+    public function setLinks(array $links): static
+    {
+        if (!empty($this->links)) {
+            throw new \LogicException('Once breadcrumb links are set, only additional breadcrumb links can be added.');
+        }
 
-    return $this;
-  }
+        $this->links = $links;
 
-  /**
-   * Appends a link to the end of the ordered list of breadcrumb links.
-   *
-   * @param \Drupal\Core\Link $link
-   *   The link appended to the breadcrumb.
-   *
-   * @return $this
-   */
-  public function addLink(Link $link): static {
-    $this->links[] = $link;
-
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function toRenderable(): array {
-    $build = [
-      '#cache' => [
-        'contexts' => $this->cacheContexts,
-        'tags' => $this->cacheTags,
-        'max-age' => $this->cacheMaxAge,
-      ],
-    ];
-    if (!empty($this->links)) {
-      $build += [
-        '#theme' => 'breadcrumb',
-        '#links' => $this->links,
-      ];
+        return $this;
     }
-    return $build;
-  }
+
+    /**
+     * Appends a link to the end of the ordered list of breadcrumb links.
+     *
+     * @param \Drupal\Core\Link $link
+     *   The link appended to the breadcrumb.
+     *
+     * @return $this
+     */
+    public function addLink(Link $link): static
+    {
+        $this->links[] = $link;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function toRenderable(): array
+    {
+        $build = [
+          '#cache' => [
+            'contexts' => $this->cacheContexts,
+            'tags' => $this->cacheTags,
+            'max-age' => $this->cacheMaxAge,
+          ],
+        ];
+        if (!empty($this->links)) {
+            $build += [
+              '#theme' => 'breadcrumb',
+              '#links' => $this->links,
+            ];
+        }
+        return $build;
+    }
 
 }

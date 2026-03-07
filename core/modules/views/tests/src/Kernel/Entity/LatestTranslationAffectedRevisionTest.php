@@ -17,64 +17,65 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class LatestTranslationAffectedRevisionTest extends ViewsKernelTestBase {
+class LatestTranslationAffectedRevisionTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_latest_translation_affected_revision_filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_latest_translation_affected_revision_filter'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'node',
+      'language',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'node',
-    'language',
-  ];
+    /**
+     * Tests the 'Latest revision' filter.
+     */
+    public function testLatestRevisionFilter(): void
+    {
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('node');
+        $this->installSchema('node', ['node_access']);
 
-  /**
-   * Tests the 'Latest revision' filter.
-   */
-  public function testLatestRevisionFilter(): void {
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('node');
-    $this->installSchema('node', ['node_access']);
+        ConfigurableLanguage::createFromLangcode('fr')->save();
+        NodeType::create([
+          'type' => 'article',
+          'name' => 'Article',
+        ])->save();
+        $node = Node::create([
+          'title' => 'Original translation - default revision',
+          'type' => 'test',
+        ]);
+        $node->save();
 
-    ConfigurableLanguage::createFromLangcode('fr')->save();
-    NodeType::create([
-      'type' => 'article',
-      'name' => 'Article',
-    ])->save();
-    $node = Node::create([
-      'title' => 'Original translation - default revision',
-      'type' => 'test',
-    ]);
-    $node->save();
+        $translated = $node->addTranslation('fr', ['title' => 'French translation - default revision']);
+        $translated->title = 'French translation - default revision';
+        $translated->save();
 
-    $translated = $node->addTranslation('fr', ['title' => 'French translation - default revision']);
-    $translated->title = 'French translation - default revision';
-    $translated->save();
+        /** @var \Drupal\node\NodeInterface $pending */
+        $pending = clone $node;
+        $pending->setNewRevision(true);
+        $pending->isDefaultRevision(false);
+        $pending->title = 'Original translation - pending revision';
+        $pending->save();
 
-    /** @var \Drupal\node\NodeInterface $pending */
-    $pending = clone $node;
-    $pending->setNewRevision(TRUE);
-    $pending->isDefaultRevision(FALSE);
-    $pending->title = 'Original translation - pending revision';
-    $pending->save();
+        /** @var \Drupal\node\NodeInterface $pending_translated */
+        $pending_translated = clone $translated;
+        $pending_translated->setNewRevision(true);
+        $pending_translated->isDefaultRevision(false);
+        $pending_translated->title = 'French translation - pending revision';
+        $pending_translated->save();
 
-    /** @var \Drupal\node\NodeInterface $pending_translated */
-    $pending_translated = clone $translated;
-    $pending_translated->setNewRevision(TRUE);
-    $pending_translated->isDefaultRevision(FALSE);
-    $pending_translated->title = 'French translation - pending revision';
-    $pending_translated->save();
-
-    $view = Views::getView('test_latest_translation_affected_revision_filter');
-    $this->executeView($view);
-    $this->assertIdenticalResultset($view, [
-      ['title' => 'Original translation - pending revision'],
-      ['title' => 'French translation - pending revision'],
-    ], ['title' => 'title']);
-  }
+        $view = Views::getView('test_latest_translation_affected_revision_filter');
+        $this->executeView($view);
+        $this->assertIdenticalResultset($view, [
+          ['title' => 'Original translation - pending revision'],
+          ['title' => 'French translation - pending revision'],
+        ], ['title' => 'title']);
+    }
 
 }

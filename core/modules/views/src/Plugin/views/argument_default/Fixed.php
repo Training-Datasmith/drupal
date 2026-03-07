@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument_default;
 
 use Drupal\Core\Cache\Cache;
@@ -15,52 +17,57 @@ use Drupal\views\Attribute\ViewsArgumentDefault;
  * )
  */
 #[ViewsArgumentDefault(
-  id: 'fixed',
-  title: new TranslatableMarkup('Fixed'),
+    id: 'fixed',
+    title: new TranslatableMarkup('Fixed'),
 )]
-class Fixed extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
+class Fixed extends ArgumentDefaultPluginBase implements CacheableDependencyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['argument'] = ['default' => ''];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['argument'] = ['default' => ''];
+        return $options;
+    }
 
-    return $options;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+        $form['argument'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Fixed value'),
+          '#default_value' => $this->options['argument'],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-    $form['argument'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Fixed value'),
-      '#default_value' => $this->options['argument'],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getArgument()
+    {
+        return $this->options['argument'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getArgument() {
-    return $this->options['argument'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge(): int
+    {
+        return Cache::PERMANENT;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge(): int {
-    return Cache::PERMANENT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts(): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts(): array
+    {
+        return [];
+    }
 
 }

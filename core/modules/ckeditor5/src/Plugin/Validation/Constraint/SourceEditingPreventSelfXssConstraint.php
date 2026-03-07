@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,18 +14,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @internal
  */
 #[Constraint(
-  id: 'SourceEditingPreventSelfXssConstraint',
-  label: new TranslatableMarkup('Source Editing should never allow self-XSS.', [], ['context' => 'Validation'])
+    id: 'SourceEditingPreventSelfXssConstraint',
+    label: new TranslatableMarkup('Source Editing should never allow self-XSS.', [], ['context' => 'Validation'])
 )]
-class SourceEditingPreventSelfXssConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'The following tag in the Source Editing "Manually editable HTML tags" field is a security risk: %dangerous_tag.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class SourceEditingPreventSelfXssConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'The following tag in the Source Editing "Manually editable HTML tags" field is a security risk: %dangerous_tag.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

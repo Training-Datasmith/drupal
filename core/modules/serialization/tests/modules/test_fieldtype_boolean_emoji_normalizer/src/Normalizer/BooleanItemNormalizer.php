@@ -11,40 +11,43 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * Normalizes boolean fields weirdly: renders them as 👍 (TRUE) or 👎 (FALSE).
  */
-class BooleanItemNormalizer extends FieldItemNormalizer implements DenormalizerInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    $data = parent::normalize($object, $format, $context);
-    $data['value'] = $data['value'] ? '👍' : '👎';
-    return $data;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function constructValue($data, $context) {
-    // Just like \Drupal\serialization\Normalizer\FieldItemNormalizer's logic
-    // for denormalization, which uses TypedDataInterface::setValue(), allow the
-    // keying by main property name ("value") to be implied.
-    if (!is_array($data)) {
-      $data = ['value' => $data];
+class BooleanItemNormalizer extends FieldItemNormalizer implements DenormalizerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        $data = parent::normalize($object, $format, $context);
+        $data['value'] = $data['value'] ? '👍' : '👎';
+        return $data;
     }
 
-    if (!in_array($data['value'], ['👍', '👎'], TRUE)) {
-      throw new \UnexpectedValueException('Only 👍 and 👎 are acceptable values.');
-    }
-    $data['value'] = ($data['value'] === '👍');
-    return $data;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function constructValue($data, $context)
+    {
+        // Just like \Drupal\serialization\Normalizer\FieldItemNormalizer's logic
+        // for denormalization, which uses TypedDataInterface::setValue(), allow the
+        // keying by main property name ("value") to be implied.
+        if (!is_array($data)) {
+            $data = ['value' => $data];
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [BooleanItem::class => TRUE];
-  }
+        if (!in_array($data['value'], ['👍', '👎'], true)) {
+            throw new \UnexpectedValueException('Only 👍 and 👎 are acceptable values.');
+        }
+        $data['value'] = ($data['value'] === '👍');
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [BooleanItem::class => true];
+    }
 
 }

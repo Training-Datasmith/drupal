@@ -16,44 +16,46 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('block')]
 #[CoversFunction('block_post_update_make_weight_integer')]
 #[RunTestsInSeparateProcesses]
-class BlockWeightUpdateTest extends UpdatePathTestBase {
+class BlockWeightUpdateTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles()
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles() {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests update path for blocks' `weight` property.
+     */
+    public function testRunUpdates()
+    {
+        // Find a block and change it to have a null weight.
+        /** @var \Drupal\Core\Database\Connection $database */
+        $database = $this->container->get('database');
+        $block = $database->select('config', 'c')
+          ->fields('c', ['data'])
+          ->condition('name', 'block.block.claro_content')
+          ->execute()
+          ->fetchField();
+        $block = unserialize($block);
+        $block['weight'] = null;
+        $database->update('config')
+          ->fields([
+            'data' => serialize($block),
+          ])
+          ->condition('name', 'block.block.claro_content')
+          ->execute();
 
-  /**
-   * Tests update path for blocks' `weight` property.
-   */
-  public function testRunUpdates() {
-    // Find a block and change it to have a null weight.
-    /** @var \Drupal\Core\Database\Connection $database */
-    $database = $this->container->get('database');
-    $block = $database->select('config', 'c')
-      ->fields('c', ['data'])
-      ->condition('name', 'block.block.claro_content')
-      ->execute()
-      ->fetchField();
-    $block = unserialize($block);
-    $block['weight'] = NULL;
-    $database->update('config')
-      ->fields([
-        'data' => serialize($block),
-      ])
-      ->condition('name', 'block.block.claro_content')
-      ->execute();
-
-    $this->assertNull(Block::load('claro_content')->get('weight'));
-    $this->runUpdates();
-    $this->assertSame(0, Block::load('claro_content')->get('weight'));
-  }
+        $this->assertNull(Block::load('claro_content')->get('weight'));
+        $this->runUpdates();
+        $this->assertSame(0, Block::load('claro_content')->get('weight'));
+    }
 
 }

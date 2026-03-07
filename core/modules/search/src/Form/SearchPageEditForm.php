@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\search\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -9,24 +11,26 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class SearchPageEditForm extends SearchPageFormBase {
+class SearchPageEditForm extends SearchPageFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function actions(array $form, FormStateInterface $form_state)
+    {
+        $actions = parent::actions($form, $form_state);
+        $actions['submit']['#value'] = $this->t('Save search page');
+        return $actions;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function actions(array $form, FormStateInterface $form_state) {
-    $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Save search page');
-    return $actions;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state): void
+    {
+        parent::save($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state): void {
-    parent::save($form, $form_state);
-
-    $this->messenger()->addStatus($this->t('The %label search page has been updated.', ['%label' => $this->entity->label()]));
-  }
+        $this->messenger()->addStatus($this->t('The %label search page has been updated.', ['%label' => $this->entity->label()]));
+    }
 
 }

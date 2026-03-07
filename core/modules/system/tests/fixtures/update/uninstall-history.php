@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Removes the history module from a fixture database.
@@ -20,15 +22,15 @@ $extensions = $connection->select('config')
   ->fetchField();
 
 if ($extensions) {
-  $data = unserialize($extensions);
-  if (isset($data['module']['history'])) {
-    unset($data['module']['history']);
-    $connection->update('config')
-      ->fields(['data' => serialize($data)])
-      ->condition('collection', '')
-      ->condition('name', 'core.extension')
-      ->execute();
-  }
+    $data = unserialize($extensions);
+    if (isset($data['module']['history'])) {
+        unset($data['module']['history']);
+        $connection->update('config')
+          ->fields(['data' => serialize($data)])
+          ->condition('collection', '')
+          ->condition('name', 'core.extension')
+          ->execute();
+    }
 }
 
 // Remove history schema version.
@@ -39,5 +41,5 @@ $connection->delete('key_value')
 
 // Drop history table if exists.
 if ($connection->schema()->tableExists('history')) {
-  $connection->schema()->dropTable('history');
+    $connection->schema()->dropTable('history');
 }

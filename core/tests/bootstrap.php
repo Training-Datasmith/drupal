@@ -24,19 +24,20 @@ use Symfony\Component\ErrorHandler\DebugClassLoader;
  *   An associative array of extension directories found within the scanned
  *   directory, keyed by extension name.
  */
-function drupal_phpunit_find_extension_directories($scan_directory) {
-  $extensions = [];
-  $dirs = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($scan_directory, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS));
-  foreach ($dirs as $dir) {
-    if (str_contains($dir->getPathname(), '.info.yml')) {
-      // Cut off ".info.yml" from the filename for use as the extension name. We
-      // use getRealPath() so that we can scan extensions represented by
-      // directory aliases.
-      $extensions[substr($dir->getFilename(), 0, -9)] = $dir->getPathInfo()
-        ->getRealPath();
+function drupal_phpunit_find_extension_directories($scan_directory)
+{
+    $extensions = [];
+    $dirs = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($scan_directory, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS));
+    foreach ($dirs as $dir) {
+        if (str_contains($dir->getPathname(), '.info.yml')) {
+            // Cut off ".info.yml" from the filename for use as the extension name. We
+            // use getRealPath() so that we can scan extensions represented by
+            // directory aliases.
+            $extensions[substr($dir->getFilename(), 0, -9)] = $dir->getPathInfo()
+              ->getRealPath();
+        }
     }
-  }
-  return $extensions;
+    return $extensions;
 }
 
 /**
@@ -48,30 +49,31 @@ function drupal_phpunit_find_extension_directories($scan_directory) {
  * @return array
  *   An array of directories under which contributed extensions may exist.
  */
-function drupal_phpunit_contrib_extension_directory_roots($root = NULL): array {
-  if ($root === NULL) {
-    $root = dirname(__DIR__, 2);
-  }
-  $paths = [
-    $root . '/core/modules',
-    $root . '/core/profiles',
-    $root . '/core/themes',
-    $root . '/modules',
-    $root . '/profiles',
-    $root . '/themes',
-  ];
-  $sites_path = $root . '/sites';
-  // Note this also checks sites/../modules and sites/../profiles.
-  foreach (scandir($sites_path) as $site) {
-    if ($site[0] === '.' || $site === 'simpletest') {
-      continue;
+function drupal_phpunit_contrib_extension_directory_roots($root = null): array
+{
+    if ($root === null) {
+        $root = dirname(__DIR__, 2);
     }
-    $path = "$sites_path/$site";
-    $paths[] = is_dir("$path/modules") ? realpath("$path/modules") : NULL;
-    $paths[] = is_dir("$path/profiles") ? realpath("$path/profiles") : NULL;
-    $paths[] = is_dir("$path/themes") ? realpath("$path/themes") : NULL;
-  }
-  return array_filter($paths);
+    $paths = [
+      $root . '/core/modules',
+      $root . '/core/profiles',
+      $root . '/core/themes',
+      $root . '/modules',
+      $root . '/profiles',
+      $root . '/themes',
+    ];
+    $sites_path = $root . '/sites';
+    // Note this also checks sites/../modules and sites/../profiles.
+    foreach (scandir($sites_path) as $site) {
+        if ($site[0] === '.' || $site === 'simpletest') {
+            continue;
+        }
+        $path = "$sites_path/$site";
+        $paths[] = is_dir("$path/modules") ? realpath("$path/modules") : null;
+        $paths[] = is_dir("$path/profiles") ? realpath("$path/profiles") : null;
+        $paths[] = is_dir("$path/themes") ? realpath("$path/themes") : null;
+    }
+    return array_filter($paths);
 }
 
 /**
@@ -83,19 +85,20 @@ function drupal_phpunit_contrib_extension_directory_roots($root = NULL): array {
  * @return array
  *   An associative array of extension directories, keyed by their namespace.
  */
-function drupal_phpunit_get_extension_namespaces($dirs) {
-  $namespaces = [];
-  foreach ($dirs as $extension => $dir) {
-    if (is_dir($dir . '/src')) {
-      // Register the PSR-4 directory for module-provided classes.
-      $namespaces['Drupal\\' . $extension . '\\'][] = $dir . '/src';
+function drupal_phpunit_get_extension_namespaces($dirs)
+{
+    $namespaces = [];
+    foreach ($dirs as $extension => $dir) {
+        if (is_dir($dir . '/src')) {
+            // Register the PSR-4 directory for module-provided classes.
+            $namespaces['Drupal\\' . $extension . '\\'][] = $dir . '/src';
+        }
+        if (is_dir($dir . '/tests/src')) {
+            // Register the PSR-4 directory for PHPUnit-based suites.
+            $namespaces['Drupal\\Tests\\' . $extension . '\\'][] = $dir . '/tests/src';
+        }
     }
-    if (is_dir($dir . '/tests/src')) {
-      // Register the PSR-4 directory for PHPUnit-based suites.
-      $namespaces['Drupal\\Tests\\' . $extension . '\\'][] = $dir . '/tests/src';
-    }
-  }
-  return $namespaces;
+    return $namespaces;
 }
 
 // We define the COMPOSER_INSTALL constant, so that PHPUnit knows where to
@@ -103,7 +106,7 @@ function drupal_phpunit_get_extension_namespaces($dirs) {
 // phpunit.xml.dist is located in a non-default directory relative to the
 // PHPUnit executable.
 if (!defined('PHPUNIT_COMPOSER_INSTALL')) {
-  define('PHPUNIT_COMPOSER_INSTALL', __DIR__ . '/../../autoload.php');
+    define('PHPUNIT_COMPOSER_INSTALL', __DIR__ . '/../../autoload.php');
 }
 
 /**
@@ -114,38 +117,39 @@ if (!defined('PHPUNIT_COMPOSER_INSTALL')) {
  * PHPUnit global state change watcher. The class loader can be retrieved from
  * composer at any time by requiring autoload.php.
  */
-function drupal_phpunit_populate_class_loader() {
+function drupal_phpunit_populate_class_loader()
+{
 
-  /** @var \Composer\Autoload\ClassLoader $loader */
-  $loader = require __DIR__ . '/../../autoload.php';
+    /** @var \Composer\Autoload\ClassLoader $loader */
+    $loader = require __DIR__ . '/../../autoload.php';
 
-  // Start with classes in known locations.
-  $loader->add('Drupal\\BuildTests', __DIR__);
-  $loader->add('Drupal\\Tests', __DIR__);
-  $loader->add('Drupal\\TestSite', __DIR__);
-  $loader->add('Drupal\\KernelTests', __DIR__);
-  $loader->add('Drupal\\FunctionalTests', __DIR__);
-  $loader->add('Drupal\\FunctionalJavascriptTests', __DIR__);
-  $loader->add('Drupal\\TestTools', __DIR__);
+    // Start with classes in known locations.
+    $loader->add('Drupal\\BuildTests', __DIR__);
+    $loader->add('Drupal\\Tests', __DIR__);
+    $loader->add('Drupal\\TestSite', __DIR__);
+    $loader->add('Drupal\\KernelTests', __DIR__);
+    $loader->add('Drupal\\FunctionalTests', __DIR__);
+    $loader->add('Drupal\\FunctionalJavascriptTests', __DIR__);
+    $loader->add('Drupal\\TestTools', __DIR__);
 
-  if (!isset($GLOBALS['namespaces'])) {
-    // Scan for arbitrary extension namespaces from core and contrib.
-    $extension_roots = drupal_phpunit_contrib_extension_directory_roots();
+    if (!isset($GLOBALS['namespaces'])) {
+        // Scan for arbitrary extension namespaces from core and contrib.
+        $extension_roots = drupal_phpunit_contrib_extension_directory_roots();
 
-    $dirs = array_map('drupal_phpunit_find_extension_directories', $extension_roots);
-    $dirs = array_reduce($dirs, 'array_merge', []);
-    $GLOBALS['namespaces'] = drupal_phpunit_get_extension_namespaces($dirs);
-  }
-  foreach ($GLOBALS['namespaces'] as $prefix => $paths) {
-    $loader->addPsr4($prefix, $paths);
-  }
+        $dirs = array_map('drupal_phpunit_find_extension_directories', $extension_roots);
+        $dirs = array_reduce($dirs, 'array_merge', []);
+        $GLOBALS['namespaces'] = drupal_phpunit_get_extension_namespaces($dirs);
+    }
+    foreach ($GLOBALS['namespaces'] as $prefix => $paths) {
+        $loader->addPsr4($prefix, $paths);
+    }
 
-  return $loader;
+    return $loader;
 }
 
 // Do class loader population.
 drupal_phpunit_populate_class_loader();
-class_alias('\Drupal\Tests\DocumentElement', '\Behat\Mink\Element\DocumentElement', TRUE);
+class_alias('\Drupal\Tests\DocumentElement', '\Behat\Mink\Element\DocumentElement', true);
 
 // Set sane locale settings, to ensure consistent string, dates, times and
 // numbers handling.
@@ -166,15 +170,15 @@ date_default_timezone_set('Australia/Sydney');
 // Bootstrap the DeprecationHandler extension and the DebugClassloader to report
 // deprecations.
 if ($deprecationBridgeConfiguration = DeprecationHandler::getConfiguration()) {
-  DeprecationHandler::init($deprecationBridgeConfiguration['ignoreFile'] ?? NULL);
+    DeprecationHandler::init($deprecationBridgeConfiguration['ignoreFile'] ?? null);
 
-  // Need to have an early error handler to manage deprecations triggered by
-  // DebugClassLoader, that occur before tests' setUp() methods are called.
-  // We pass an instance of the PHPUnit error handler to redirect any error not
-  // managed by our layer back to PHPUnit.
-  set_error_handler(new BootstrapErrorHandler(PhpUnitErrorHandler::instance()));
+    // Need to have an early error handler to manage deprecations triggered by
+    // DebugClassLoader, that occur before tests' setUp() methods are called.
+    // We pass an instance of the PHPUnit error handler to redirect any error not
+    // managed by our layer back to PHPUnit.
+    set_error_handler(new BootstrapErrorHandler(PhpUnitErrorHandler::instance()));
 
-  // Enable the DebugClassLoader to get deprecations for methods' signature
-  // changes.
-  DebugClassLoader::enable();
+    // Enable the DebugClassLoader to get deprecations for methods' signature
+    // changes.
+    DebugClassLoader::enable();
 }

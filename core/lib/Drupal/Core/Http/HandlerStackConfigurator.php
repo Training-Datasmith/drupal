@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http;
 
 use GuzzleHttp\HandlerStack;
@@ -19,66 +21,68 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \GuzzleHttp\Client
  * @see \Drupal\Core\Test\HttpClientMiddleware\TestHttpClientMiddleware
  */
-class HandlerStackConfigurator {
+class HandlerStackConfigurator
+{
+    /**
+     * Array of middlewares to add to the handler stack.
+     *
+     * @var callable[]
+     */
+    protected $middlewares;
 
-  /**
-   * Array of middlewares to add to the handler stack.
-   *
-   * @var callable[]
-   */
-  protected $middlewares;
+    /**
+     * The service container.
+     *
+     * @var \Symfony\Component\DependencyInjection\ContainerInterface
+     */
+    protected $container;
 
-  /**
-   * The service container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  protected $container;
-
-  /**
-   * Constructs a new HandlerStackConfigurator object.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The service container.
-   * @param string[] $middlewareIds
-   *   The middleware IDs.
-   */
-  public function __construct(ContainerInterface $container, /**
+    /**
+     * Constructs a new HandlerStackConfigurator object.
+     *
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+     *   The service container.
+     * @param string[] $middlewareIds
+     *   The middleware IDs.
+     */
+    public function __construct(ContainerInterface $container, /**
    * A list of used middleware service IDs.
    */
-  protected array $middlewareIds) {
-    $this->container = $container;
-  }
-
-  /**
-   * Ensures that the middlewares are initialized.
-   */
-  protected function initializeMiddlewares() {
-    if (!isset($this->middlewares)) {
-      $this->middlewares = [];
-      foreach ($this->middlewareIds as $middleware_id) {
-        $middleware = $this->container->get($middleware_id);
-        if (is_callable($middleware)) {
-          $this->middlewares[$middleware_id] = $middleware();
-        }
-        else {
-          throw new \InvalidArgumentException('Middlewares need to implement __invoke, see https://guzzle.readthedocs.org/en/latest/handlers-and-middleware.html for more information about middlewares.');
-        }
-      }
+        protected array $middlewareIds)
+    {
+        $this->container = $container;
     }
-  }
 
-  /**
-   * Configures the stack using services tagged as http_client_middleware.
-   *
-   * @param \GuzzleHttp\HandlerStack $handler_stack
-   *   The handler stack.
-   */
-  public function configure(HandlerStack $handler_stack): void {
-    $this->initializeMiddlewares();
-    foreach ($this->middlewares as $middleware_id => $middleware) {
-      $handler_stack->push($middleware, $middleware_id);
+    /**
+     * Ensures that the middlewares are initialized.
+     */
+    protected function initializeMiddlewares()
+    {
+        if (!isset($this->middlewares)) {
+            $this->middlewares = [];
+            foreach ($this->middlewareIds as $middleware_id) {
+                $middleware = $this->container->get($middleware_id);
+                if (is_callable($middleware)) {
+                    $this->middlewares[$middleware_id] = $middleware();
+                } else {
+                    throw new \InvalidArgumentException('Middlewares need to implement __invoke, see https://guzzle.readthedocs.org/en/latest/handlers-and-middleware.html for more information about middlewares.');
+                }
+            }
+        }
     }
-  }
+
+    /**
+     * Configures the stack using services tagged as http_client_middleware.
+     *
+     * @param \GuzzleHttp\HandlerStack $handler_stack
+     *   The handler stack.
+     */
+    public function configure(HandlerStack $handler_stack): void
+    {
+        $this->initializeMiddlewares();
+        foreach ($this->middlewares as $middleware_id => $middleware) {
+            $handler_stack->push($middleware, $middleware_id);
+        }
+    }
 
 }

@@ -15,44 +15,46 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Default widget for Dummy AJAX test.
  */
 #[FieldWidget(
-  id: 'image_module_test_dummy_ajax_widget',
-  label: new TranslatableMarkup('Dummy AJAX widget'),
-  field_types: ['image_module_test_dummy_ajax'],
-  multiple_values: TRUE,
+    id: 'image_module_test_dummy_ajax_widget',
+    label: new TranslatableMarkup('Dummy AJAX widget'),
+    field_types: ['image_module_test_dummy_ajax'],
+    multiple_values: true,
 )]
-class DummyAjaxWidget extends WidgetBase {
+class DummyAjaxWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)
+    {
+        $element['select_widget'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Dummy select'),
+          '#options' => ['pow' => 'Pow!', 'bam' => 'Bam!'],
+          '#required' => true,
+          '#ajax' => [
+            'callback' => static::class . '::dummyAjaxCallback',
+            'effect' => 'fade',
+          ],
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $element['select_widget'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Dummy select'),
-      '#options' => ['pow' => 'Pow!', 'bam' => 'Bam!'],
-      '#required' => TRUE,
-      '#ajax' => [
-        'callback' => static::class . '::dummyAjaxCallback',
-        'effect' => 'fade',
-      ],
-    ];
+        return $element;
+    }
 
-    return $element;
-  }
-
-  /**
-   * Ajax callback for Dummy AJAX test.
-   *
-   * @param array $form
-   *   The build form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   *   Ajax response.
-   */
-  public static function dummyAjaxCallback(array &$form, FormStateInterface $form_state) {
-    return new AjaxResponse();
-  }
+    /**
+     * Ajax callback for Dummy AJAX test.
+     *
+     * @param array $form
+     *   The build form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     *
+     * @return \Drupal\Core\Ajax\AjaxResponse
+     *   Ajax response.
+     */
+    public static function dummyAjaxCallback(array &$form, FormStateInterface $form_state)
+    {
+        return new AjaxResponse();
+    }
 
 }

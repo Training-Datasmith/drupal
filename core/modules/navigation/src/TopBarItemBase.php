@@ -9,32 +9,35 @@ use Drupal\Component\Plugin\PluginBase;
 /**
  * Base class for top bar item plugins.
  */
-abstract class TopBarItemBase extends PluginBase implements TopBarItemPluginInterface {
+abstract class TopBarItemBase extends PluginBase implements TopBarItemPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function label(): string|\Stringable
+    {
+        return $this->pluginDefinition['label'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label(): string|\Stringable {
-    return $this->pluginDefinition['label'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function region(): TopBarRegion
+    {
+        return $this->pluginDefinition['region'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function region(): TopBarRegion {
-    return $this->pluginDefinition['region'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function weight(): int
+    {
+        return $this->pluginDefinition['weight'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function weight(): int {
-    return $this->pluginDefinition['weight'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract public function build(): array;
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function build(): array;
 
 }

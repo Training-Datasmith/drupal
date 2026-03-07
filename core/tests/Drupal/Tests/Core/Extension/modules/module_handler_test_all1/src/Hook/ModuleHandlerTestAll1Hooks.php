@@ -9,11 +9,12 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Hook implementations for module_handler_test_all1.
  */
-class ModuleHandlerTestAll1Hooks {
-
-  #[Hook('order1')]
-  #[Hook('order2')]
-  public static function order(): void {
-  }
+class ModuleHandlerTestAll1Hooks
+{
+    #[Hook('order1')]
+    #[Hook('order2')]
+    public static function order(): void
+    {
+    }
 
 }

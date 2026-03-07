@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block\EventSubscriber;
 
 use Drupal\Core\Render\PageDisplayVariantSelectionEvent;
@@ -11,24 +13,26 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * @see \Drupal\block\Plugin\DisplayVariant\BlockPageVariant
  */
-class BlockPageDisplayVariantSubscriber implements EventSubscriberInterface {
+class BlockPageDisplayVariantSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Selects the block page display variant.
+     *
+     * @param \Drupal\Core\Render\PageDisplayVariantSelectionEvent $event
+     *   The event to process.
+     */
+    public function onSelectPageDisplayVariant(PageDisplayVariantSelectionEvent $event): void
+    {
+        $event->setPluginId('block_page');
+    }
 
-  /**
-   * Selects the block page display variant.
-   *
-   * @param \Drupal\Core\Render\PageDisplayVariantSelectionEvent $event
-   *   The event to process.
-   */
-  public function onSelectPageDisplayVariant(PageDisplayVariantSelectionEvent $event): void {
-    $event->setPluginId('block_page');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[RenderEvents::SELECT_PAGE_DISPLAY_VARIANT][] = ['onSelectPageDisplayVariant'];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[RenderEvents::SELECT_PAGE_DISPLAY_VARIANT][] = ['onSelectPageDisplayVariant'];
+        return $events;
+    }
 
 }

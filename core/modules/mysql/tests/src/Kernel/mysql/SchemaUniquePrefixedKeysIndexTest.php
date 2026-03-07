@@ -13,11 +13,11 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class SchemaUniquePrefixedKeysIndexTest extends SchemaUniquePrefixedKeysIndexTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected string $columnValue = '1234567890 bar';
+class SchemaUniquePrefixedKeysIndexTest extends SchemaUniquePrefixedKeysIndexTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected string $columnValue = '1234567890 bar';
 
 }

@@ -10,5 +10,6 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 /**
  * Stub class to evaluate the override.
  */
-class EntityViewDisplay extends BaseEntityViewDisplay implements EntityViewDisplayInterface {
+class EntityViewDisplay extends BaseEntityViewDisplay implements EntityViewDisplayInterface
+{
 }

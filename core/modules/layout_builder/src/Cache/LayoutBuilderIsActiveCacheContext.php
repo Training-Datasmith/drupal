@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Cache;
 
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\Context\CalculatedCacheContextInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 
 /**
@@ -19,73 +20,77 @@ use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
  * @internal
  *   Tagged services are internal.
  */
-class LayoutBuilderIsActiveCacheContext implements CalculatedCacheContextInterface {
-
-  /**
-   * LayoutBuilderCacheContext constructor.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match.
-   */
-  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Layout Builder');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext($entity_type_id = NULL): string {
-    if (!$entity_type_id) {
-      throw new \LogicException('Missing entity type ID');
+class LayoutBuilderIsActiveCacheContext implements CalculatedCacheContextInterface
+{
+    /**
+     * LayoutBuilderCacheContext constructor.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match.
+     */
+    public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    {
     }
 
-    $display = $this->getDisplay($entity_type_id);
-    return ($display && $display->isOverridable()) ? '1' : '0';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($entity_type_id = NULL): \Drupal\Core\Cache\CacheableMetadata {
-    if (!$entity_type_id) {
-      throw new \LogicException('Missing entity type ID');
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Layout Builder');
     }
 
-    $cacheable_metadata = new CacheableMetadata();
-    if ($display = $this->getDisplay($entity_type_id)) {
-      $cacheable_metadata->addCacheableDependency($display);
-    }
-    return $cacheable_metadata;
-  }
-
-  /**
-   * Returns the entity view display for a given entity type and view mode.
-   *
-   * @param string $entity_type_id
-   *   The entity type ID.
-   *
-   * @return \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface|null
-   *   The entity view display, if it exists.
-   */
-  protected function getDisplay($entity_type_id) {
-    if ($entity = $this->routeMatch->getParameter($entity_type_id)) {
-      if ($entity instanceof FieldableEntityInterface) {
-        // @todo Expand to work for all view modes in
-        //   https://www.drupal.org/node/2907413.
-        $view_mode = 'full';
-        $display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode);
-        if ($display instanceof LayoutEntityDisplayInterface) {
-          return $display;
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext($entity_type_id = null): string
+    {
+        if (!$entity_type_id) {
+            throw new \LogicException('Missing entity type ID');
         }
-      }
+
+        $display = $this->getDisplay($entity_type_id);
+        return ($display && $display->isOverridable()) ? '1' : '0';
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($entity_type_id = null): \Drupal\Core\Cache\CacheableMetadata
+    {
+        if (!$entity_type_id) {
+            throw new \LogicException('Missing entity type ID');
+        }
+
+        $cacheable_metadata = new CacheableMetadata();
+        if ($display = $this->getDisplay($entity_type_id)) {
+            $cacheable_metadata->addCacheableDependency($display);
+        }
+        return $cacheable_metadata;
+    }
+
+    /**
+     * Returns the entity view display for a given entity type and view mode.
+     *
+     * @param string $entity_type_id
+     *   The entity type ID.
+     *
+     * @return \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface|null
+     *   The entity view display, if it exists.
+     */
+    protected function getDisplay($entity_type_id)
+    {
+        if ($entity = $this->routeMatch->getParameter($entity_type_id)) {
+            if ($entity instanceof FieldableEntityInterface) {
+                // @todo Expand to work for all view modes in
+                //   https://www.drupal.org/node/2907413.
+                $view_mode = 'full';
+                $display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode);
+                if ($display instanceof LayoutEntityDisplayInterface) {
+                    return $display;
+                }
+            }
+        }
+    }
 
 }

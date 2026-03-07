@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\Plugin\media\Source;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -13,29 +15,31 @@ use Drupal\media\MediaTypeInterface;
  * @see \Drupal\file\FileInterface
  */
 #[MediaSource(
-  id: "audio_file",
-  label: new TranslatableMarkup("Audio file"),
-  description: new TranslatableMarkup("Use audio files for reusable media."),
-  allowed_field_types: ["file"],
-  default_thumbnail_filename: "audio.png"
+    id: 'audio_file',
+    label: new TranslatableMarkup('Audio file'),
+    description: new TranslatableMarkup('Use audio files for reusable media.'),
+    allowed_field_types: ['file'],
+    default_thumbnail_filename: 'audio.png'
 )]
-class AudioFile extends File {
+class AudioFile extends File
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function createSourceField(MediaTypeInterface $type)
+    {
+        return parent::createSourceField($type)->set('settings', ['file_extensions' => 'mp3 wav aac']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createSourceField(MediaTypeInterface $type) {
-    return parent::createSourceField($type)->set('settings', ['file_extensions' => 'mp3 wav aac']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
-    $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
-      'type' => 'file_audio',
-      'label' => 'visually_hidden',
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void
+    {
+        $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
+          'type' => 'file_audio',
+          'label' => 'visually_hidden',
+        ]);
+    }
 
 }

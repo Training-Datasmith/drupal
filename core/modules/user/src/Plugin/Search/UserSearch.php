@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\Search;
 
+use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\PagerSelectExtender;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\search\Attribute\Search;
 use Drupal\search\Plugin\SearchPluginBase;
@@ -18,130 +18,135 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Executes a keyword search for users against the {users} database table.
  */
 #[Search(
-  id: 'user_search',
-  title: new TranslatableMarkup('Users'),
+    id: 'user_search',
+    title: new TranslatableMarkup('Users'),
 )]
-class UserSearch extends SearchPluginBase implements AccessibleInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $container->get('database'),
-      $container->get('entity_type.manager'),
-      $container->get('module_handler'),
-      $container->get('current_user'),
-      $configuration,
-      $plugin_id,
-      $plugin_definition
-    );
-  }
-
-  /**
-   * Creates a UserSearch object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   */
-  public function __construct(protected \Drupal\Core\Database\Connection $database, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Session\AccountInterface $currentUser, array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->addCacheTags(['user_list']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($operation = 'view', ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowedIf($account instanceof \Drupal\Core\Session\AccountInterface && $account->hasPermission('access user profiles'))->cachePerPermissions();
-    return $return_as_object ? $result : $result->isAllowed();
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return array{title: mixed, link: mixed}[]
-   */
-  public function execute(): array {
-    $results = [];
-    if (!$this->isSearchExecutable()) {
-      return $results;
+class UserSearch extends SearchPluginBase implements AccessibleInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $container->get('database'),
+            $container->get('entity_type.manager'),
+            $container->get('module_handler'),
+            $container->get('current_user'),
+            $configuration,
+            $plugin_id,
+            $plugin_definition
+        );
     }
 
-    // Process the keywords.
-    $keys = $this->keywords;
-    // Escape for LIKE matching.
-    $keys = $this->database->escapeLike($keys);
-    // Replace wildcards with MySQL/PostgreSQL wildcards.
-    $keys = preg_replace('!\*+!', '%', $keys);
+    /**
+     * Creates a UserSearch object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   The database connection.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     * @param \Drupal\Core\Session\AccountInterface $currentUser
+     *   The current user.
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     */
+    public function __construct(protected \Drupal\Core\Database\Connection $database, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Session\AccountInterface $currentUser, array $configuration, $plugin_id, $plugin_definition)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Run the query to find matching users.
-    $query = $this->database
-      ->select('users_field_data', 'users')
-      ->extend(PagerSelectExtender::class);
-    $query->fields('users', ['uid']);
-    $query->condition('default_langcode', 1);
-    if ($this->currentUser->hasPermission('administer users')) {
-      // Administrators can also search in the otherwise private email field,
-      // and they don't need to be restricted to only active users.
-      $query->fields('users', ['mail']);
-      $query->condition($query->orConditionGroup()
+        $this->addCacheTags(['user_list']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($operation = 'view', ?AccountInterface $account = null, $return_as_object = false)
+    {
+        $result = AccessResult::allowedIf($account instanceof \Drupal\Core\Session\AccountInterface && $account->hasPermission('access user profiles'))->cachePerPermissions();
+        return $return_as_object ? $result : $result->isAllowed();
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return array{title: mixed, link: mixed}[]
+     */
+    public function execute(): array
+    {
+        $results = [];
+        if (!$this->isSearchExecutable()) {
+            return $results;
+        }
+
+        // Process the keywords.
+        $keys = $this->keywords;
+        // Escape for LIKE matching.
+        $keys = $this->database->escapeLike($keys);
+        // Replace wildcards with MySQL/PostgreSQL wildcards.
+        $keys = preg_replace('!\*+!', '%', $keys);
+
+        // Run the query to find matching users.
+        $query = $this->database
+          ->select('users_field_data', 'users')
+          ->extend(PagerSelectExtender::class);
+        $query->fields('users', ['uid']);
+        $query->condition('default_langcode', 1);
+        if ($this->currentUser->hasPermission('administer users')) {
+            // Administrators can also search in the otherwise private email field,
+            // and they don't need to be restricted to only active users.
+            $query->fields('users', ['mail']);
+            $query->condition(
+                $query->orConditionGroup()
         ->condition('name', '%' . $keys . '%', 'LIKE')
         ->condition('mail', '%' . $keys . '%', 'LIKE')
-      );
-    }
-    else {
-      // Regular users can only search via usernames, and we do not show them
-      // blocked accounts.
-      $query->condition('name', '%' . $keys . '%', 'LIKE')
-        ->condition('status', 1);
-    }
-    $uids = $query
-      ->limit(15)
-      ->execute()
-      ->fetchCol();
-    $accounts = $this->entityTypeManager->getStorage('user')->loadMultiple($uids);
+            );
+        } else {
+            // Regular users can only search via usernames, and we do not show them
+            // blocked accounts.
+            $query->condition('name', '%' . $keys . '%', 'LIKE')
+              ->condition('status', 1);
+        }
+        $uids = $query
+          ->limit(15)
+          ->execute()
+          ->fetchCol();
+        $accounts = $this->entityTypeManager->getStorage('user')->loadMultiple($uids);
 
-    foreach ($accounts as $account) {
-      $result = [
-        'title' => $account->getDisplayName(),
-        'link' => $account->toUrl('canonical', ['absolute' => TRUE])->toString(),
-      ];
-      if ($this->currentUser->hasPermission('administer users')) {
-        $result['title'] .= ' (' . $account->getEmail() . ')';
-      }
-      $this->addCacheableDependency($account);
-      $results[] = $result;
+        foreach ($accounts as $account) {
+            $result = [
+              'title' => $account->getDisplayName(),
+              'link' => $account->toUrl('canonical', ['absolute' => true])->toString(),
+            ];
+            if ($this->currentUser->hasPermission('administer users')) {
+                $result['title'] .= ' (' . $account->getEmail() . ')';
+            }
+            $this->addCacheableDependency($account);
+            $results[] = $result;
+        }
+
+        return $results;
     }
 
-    return $results;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getHelp(): array {
-    return [
-      'list' => [
-        '#theme' => 'item_list',
-        '#items' => [
-          $this->t('User search looks for user names and partial user names. Example: mar would match usernames mar, delmar, and maryjane.'),
-          $this->t('You can use * as a wildcard within your keyword. Example: m*r would match user names mar, delmar, and elementary.'),
-        ],
-      ],
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getHelp(): array
+    {
+        return [
+          'list' => [
+            '#theme' => 'item_list',
+            '#items' => [
+              $this->t('User search looks for user names and partial user names. Example: mar would match usernames mar, delmar, and maryjane.'),
+              $this->t('You can use * as a wildcard within your keyword. Example: m*r would match user names mar, delmar, and elementary.'),
+            ],
+          ],
+        ];
+    }
 
 }

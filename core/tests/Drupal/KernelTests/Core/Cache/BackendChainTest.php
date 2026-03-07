@@ -15,24 +15,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Cache')]
 #[RunTestsInSeparateProcesses]
-class BackendChainTest extends GenericCacheBackendUnitTestBase {
+class BackendChainTest extends GenericCacheBackendUnitTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function createCacheBackend($bin): BackendChain
+    {
+        $chain = new BackendChain();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createCacheBackend($bin): BackendChain {
-    $chain = new BackendChain();
+        // We need to create some various backends in the chain.
+        $time = \Drupal::service(TimeInterface::class);
+        $chain
+          ->appendBackend(new MemoryBackend($time))
+          ->prependBackend(new MemoryBackend($time))
+          ->appendBackend(new MemoryBackend($time));
 
-    // We need to create some various backends in the chain.
-    $time = \Drupal::service(TimeInterface::class);
-    $chain
-      ->appendBackend(new MemoryBackend($time))
-      ->prependBackend(new MemoryBackend($time))
-      ->appendBackend(new MemoryBackend($time));
+        \Drupal::service('cache_tags.invalidator')->addInvalidator($chain);
 
-    \Drupal::service('cache_tags.invalidator')->addInvalidator($chain);
-
-    return $chain;
-  }
+        return $chain;
+    }
 
 }

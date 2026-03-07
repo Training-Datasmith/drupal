@@ -1,61 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Site;
 
 use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\State\StateInterface;
 
 /**
  * Provides the default implementation of the maintenance mode service.
  */
-class MaintenanceMode implements MaintenanceModeInterface {
-
-  /**
-   * Constructs a new maintenance mode service.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   The config factory.
-   */
-  public function __construct(protected \Drupal\Core\State\StateInterface $state, protected \Drupal\Core\Config\ConfigFactoryInterface $config)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(RouteMatchInterface $route_match): bool {
-    if (!$this->state->get('system.maintenance_mode')) {
-      return FALSE;
+class MaintenanceMode implements MaintenanceModeInterface
+{
+    /**
+     * Constructs a new maintenance mode service.
+     *
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+     *   The config factory.
+     */
+    public function __construct(protected \Drupal\Core\State\StateInterface $state, protected \Drupal\Core\Config\ConfigFactoryInterface $config)
+    {
     }
 
-    if ($route = $route_match->getRouteObject()) {
-      if ($route->getOption('_maintenance_access')) {
-        return FALSE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(RouteMatchInterface $route_match): bool
+    {
+        if (!$this->state->get('system.maintenance_mode')) {
+            return false;
+        }
+
+        if ($route = $route_match->getRouteObject()) {
+            if ($route->getOption('_maintenance_access')) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function exempt(AccountInterface $account)
+    {
+        return $account->hasPermission('access site in maintenance mode');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function exempt(AccountInterface $account) {
-    return $account->hasPermission('access site in maintenance mode');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSiteMaintenanceMessage(): \Drupal\Component\Render\FormattableMarkup {
-    return new FormattableMarkup($this->config->get('system.maintenance')->get('message'), [
-      '@site' => $this->config->get('system.site')->get('name'),
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSiteMaintenanceMessage(): \Drupal\Component\Render\FormattableMarkup
+    {
+        return new FormattableMarkup($this->config->get('system.maintenance')->get('message'), [
+          '@site' => $this->config->get('system.site')->get('name'),
+        ]);
+    }
 
 }

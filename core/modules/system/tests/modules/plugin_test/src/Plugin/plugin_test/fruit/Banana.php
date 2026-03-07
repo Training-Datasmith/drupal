@@ -18,6 +18,6 @@ namespace Drupal\plugin_test\Plugin\plugin_test\fruit;
  *   }
  * )
  */
-class Banana implements FruitInterface {
-
+class Banana implements FruitInterface
+{
 }

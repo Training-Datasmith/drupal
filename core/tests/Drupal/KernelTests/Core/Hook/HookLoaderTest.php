@@ -14,27 +14,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Hook')]
 #[RunTestsInSeparateProcesses]
-class HookLoaderTest extends KernelTestBase {
+class HookLoaderTest extends KernelTestBase
+{
+    use HookOrderTestTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'hook_loader_test',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'hook_loader_test',
+    ];
 
-  use HookOrderTestTrait;
-
-  /**
-   * Test hook implementation order.
-   */
-  public function testHookOrder(): void {
-    $this->assertSameCallList(
-      [
-        CircularDependencyHooks::class . '::testHook',
+    /**
+     * Test hook implementation order.
+     */
+    public function testHookOrder(): void
+    {
+        $this->assertSameCallList(
+            [
+            CircularDependencyHooks::class . '::testHook',
       ],
-      \Drupal::moduleHandler()->invokeAll('test_hook'),
-    );
-  }
+            \Drupal::moduleHandler()->invokeAll('test_hook'),
+        );
+    }
 
 }

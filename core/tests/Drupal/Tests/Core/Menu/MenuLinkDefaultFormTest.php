@@ -23,40 +23,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(MenuLinkDefaultForm::class)]
 #[Group('Menu')]
 #[RunTestsInSeparateProcesses]
-class MenuLinkDefaultFormTest extends UnitTestCase {
+class MenuLinkDefaultFormTest extends UnitTestCase
+{
+    /**
+     * Tests extract form values.
+     */
+    public function testExtractFormValues(): void
+    {
+        $menu_link_manager = $this->prophesize(MenuLinkManagerInterface::class);
+        $menu_parent_form_selector = $this->prophesize(MenuParentFormSelectorInterface::class);
+        $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+        $module_extension_list = $this->prophesize(ModuleExtensionList::class);
+        $menu_link_form = new MenuLinkDefaultForm($menu_link_manager->reveal(), $menu_parent_form_selector->reveal(), $this->getStringTranslationStub(), $module_handler->reveal(), $module_extension_list->reveal());
 
-  /**
-   * Tests extract form values.
-   */
-  public function testExtractFormValues(): void {
-    $menu_link_manager = $this->prophesize(MenuLinkManagerInterface::class);
-    $menu_parent_form_selector = $this->prophesize(MenuParentFormSelectorInterface::class);
-    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
-    $module_extension_list = $this->prophesize(ModuleExtensionList::class);
-    $menu_link_form = new MenuLinkDefaultForm($menu_link_manager->reveal(), $menu_parent_form_selector->reveal(), $this->getStringTranslationStub(), $module_handler->reveal(), $module_extension_list->reveal());
+        $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
+        $menu_link = new MenuLinkDefault([], 'my_plugin_id', [], $static_override->reveal());
+        $menu_link_form->setMenuLinkInstance($menu_link);
 
-    $static_override = $this->prophesize(StaticMenuLinkOverridesInterface::class);
-    $menu_link = new MenuLinkDefault([], 'my_plugin_id', [], $static_override->reveal());
-    $menu_link_form->setMenuLinkInstance($menu_link);
+        $form_state = new FormState();
+        $form_state->setValue('id', 'my_plugin_id');
+        $form_state->setValue('enabled', false);
+        $form_state->setValue('weight', 5);
+        $form_state->setValue('expanded', true);
+        $form_state->setValue('menu_parent', 'foo:bar');
 
-    $form_state = new FormState();
-    $form_state->setValue('id', 'my_plugin_id');
-    $form_state->setValue('enabled', FALSE);
-    $form_state->setValue('weight', 5);
-    $form_state->setValue('expanded', TRUE);
-    $form_state->setValue('menu_parent', 'foo:bar');
+        $form = [];
+        $result = $menu_link_form->extractFormValues($form, $form_state);
 
-    $form = [];
-    $result = $menu_link_form->extractFormValues($form, $form_state);
-
-    $this->assertEquals([
-      'id' => 'my_plugin_id',
-      'enabled' => 0,
-      'weight' => 5,
-      'expanded' => 1,
-      'parent' => 'bar',
-      'menu_name' => 'foo',
-    ], $result);
-  }
+        $this->assertEquals([
+          'id' => 'my_plugin_id',
+          'enabled' => 0,
+          'weight' => 5,
+          'expanded' => 1,
+          'parent' => 'bar',
+          'menu_name' => 'foo',
+        ], $result);
+    }
 
 }

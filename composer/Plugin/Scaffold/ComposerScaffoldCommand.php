@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Plugin\Scaffold;
 
 use Composer\Command\BaseCommand;
@@ -14,18 +16,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @internal
  */
-class ComposerScaffoldCommand extends BaseCommand {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function configure(): void {
-    $this
-      ->setName('drupal:scaffold')
-      ->setAliases(['scaffold'])
-      ->setDescription('Update the Drupal scaffold files.')
-      ->setHelp(
-        <<<EOT
+class ComposerScaffoldCommand extends BaseCommand
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this
+          ->setName('drupal:scaffold')
+          ->setAliases(['scaffold'])
+          ->setDescription('Update the Drupal scaffold files.')
+          ->setHelp(
+              <<<EOT
 The <info>drupal:scaffold</info> command places the scaffold files in their
 respective locations according to the layout stipulated in the composer.json
 file.
@@ -40,17 +43,18 @@ command.
 
 For more information, see https://www.drupal.org/docs/develop/using-composer/using-drupals-composer-scaffold.
 EOT
-            );
+          );
 
-  }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
-    $handler = new Handler($this->requireComposer(), $this->getIO());
-    $handler->scaffold();
-    return 0;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $handler = new Handler($this->requireComposer(), $this->getIO());
+        $handler->scaffold();
+        return 0;
+    }
 
 }

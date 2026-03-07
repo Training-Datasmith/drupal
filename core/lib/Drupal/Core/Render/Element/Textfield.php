@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -36,64 +38,67 @@ use Drupal\Core\Render\Element;
  * @see \Drupal\Core\Render\Element\Textarea
  */
 #[FormElement('textfield')]
-class Textfield extends FormElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#size' => 60,
-      '#maxlength' => 128,
-      '#autocomplete_route_name' => FALSE,
-      '#process' => [
-        [static::class, 'processAutocomplete'],
-        [static::class, 'processAjaxForm'],
-        [static::class, 'processPattern'],
-        [static::class, 'processGroup'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderTextfield'],
-        [static::class, 'preRenderGroup'],
-      ],
-      '#theme' => 'input__textfield',
-      '#theme_wrappers' => ['form_element'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
-    if ($input !== FALSE && $input !== NULL) {
-      // This should be a string, but allow other scalars since they might be
-      // valid input in programmatic form submissions.
-      if (!is_scalar($input)) {
-        $input = '';
-      }
-      return str_replace(["\r", "\n"], '', $input);
+class Textfield extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#autocomplete_route_name' => false,
+          '#process' => [
+            [static::class, 'processAutocomplete'],
+            [static::class, 'processAjaxForm'],
+            [static::class, 'processPattern'],
+            [static::class, 'processGroup'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderTextfield'],
+            [static::class, 'preRenderGroup'],
+          ],
+          '#theme' => 'input__textfield',
+          '#theme_wrappers' => ['form_element'],
+        ];
     }
-    return NULL;
-  }
 
-  /**
-   * Prepares a #type 'textfield' render element for input.html.twig.
-   *
-   * @param array $element
-   *   An associative array containing the properties of the element.
-   *   Properties used: #title, #value, #description, #size, #maxlength,
-   *   #placeholder, #required, #attributes.
-   *
-   * @return array
-   *   The $element with prepared variables ready for input.html.twig.
-   */
-  public static function preRenderTextfield(array $element): array {
-    $element['#attributes']['type'] = 'text';
-    Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
-    static::setAttributes($element, ['form-text']);
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string
+    {
+        if ($input !== false && $input !== null) {
+            // This should be a string, but allow other scalars since they might be
+            // valid input in programmatic form submissions.
+            if (!is_scalar($input)) {
+                $input = '';
+            }
+            return str_replace(["\r", "\n"], '', $input);
+        }
+        return null;
+    }
 
-    return $element;
-  }
+    /**
+     * Prepares a #type 'textfield' render element for input.html.twig.
+     *
+     * @param array $element
+     *   An associative array containing the properties of the element.
+     *   Properties used: #title, #value, #description, #size, #maxlength,
+     *   #placeholder, #required, #attributes.
+     *
+     * @return array
+     *   The $element with prepared variables ready for input.html.twig.
+     */
+    public static function preRenderTextfield(array $element): array
+    {
+        $element['#attributes']['type'] = 'text';
+        Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
+        static::setAttributes($element, ['form-text']);
+
+        return $element;
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views;
 
 use Drupal\Component\Render\FormattableMarkup;
@@ -8,97 +10,104 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * A Trait for Views broken handlers.
  */
-trait BrokenHandlerTrait {
-
-  /**
-   * Returns this handlers name in the UI.
-   *
-   * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
-   */
-  public function adminLabel($short = FALSE) {
-    return $this->t('Broken/missing handler');
-  }
-
-  /**
-   * The option definition for this handler.
-   *
-   * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
-   */
-  public function defineOptions(): array {
-    return [];
-  }
-
-  /**
-   * Ensures that the main table for this handler is in the query.
-   *
-   * @see \Drupal\views\Plugin\views\HandlerBase::ensureMyTable()
-   */
-  public function ensureMyTable(): void {
-    // No table to ensure.
-  }
-
-  /**
-   * Modify the views query.
-   */
-  public function query($group_by = FALSE): void {
-    /* No query to run */
-  }
-
-  /**
-   * Provides a form to edit options for this plugin.
-   *
-   * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
-   */
-  public function buildOptionsForm(array &$form, FormStateInterface $form_state): void {
-    $description_top = $this->t('The handler for this item is broken or missing. The following details are available:');
-
-    foreach ($this->definition['original_configuration'] as $key => $value) {
-      if (is_scalar($value)) {
-        $items[] = new FormattableMarkup('@key: @value', ['@key' => $key, '@value' => $value]);
-      }
+trait BrokenHandlerTrait
+{
+    /**
+     * Returns this handlers name in the UI.
+     *
+     * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
+     */
+    public function adminLabel($short = false)
+    {
+        return $this->t('Broken/missing handler');
     }
 
-    $description_bottom = $this->t('Installing the appropriate module may solve this issue. Otherwise, check to see if there is a module update available.');
+    /**
+     * The option definition for this handler.
+     *
+     * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
+     */
+    public function defineOptions(): array
+    {
+        return [];
+    }
 
-    $form['description'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => ['js-form-item', 'form-item', 'description'],
-      ],
-      'description_top' => [
-        '#markup' => '<p>' . $description_top . '</p>',
-      ],
-      'detail_list' => [
-        '#theme' => 'item_list',
-        '#items' => $items,
-      ],
-      'description_bottom' => [
-        '#markup' => '<p>' . $description_bottom . '</p>',
-      ],
-    ];
-  }
+    /**
+     * Ensures that the main table for this handler is in the query.
+     *
+     * @see \Drupal\views\Plugin\views\HandlerBase::ensureMyTable()
+     */
+    public function ensureMyTable(): void
+    {
+        // No table to ensure.
+    }
 
-  /**
-   * Determines if the handler is considered 'broken'.
-   *
-   * This means it's a placeholder used when a handler can't be found.
-   *
-   * @see \Drupal\views\Plugin\views\HandlerBase::broken()
-   */
-  public function broken(): bool {
-    return TRUE;
-  }
+    /**
+     * Modify the views query.
+     */
+    public function query($group_by = false): void
+    {
+        /* No query to run */
+    }
 
-  /**
-   * Gets dependencies for a broken handler.
-   *
-   * @return array
-   *   The dependencies for the broken handler.
-   *
-   * @see \Drupal\views\Plugin\views\PluginBase::calculateDependencies()
-   */
-  public function calculateDependencies(): array {
-    return [];
-  }
+    /**
+     * Provides a form to edit options for this plugin.
+     *
+     * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
+     */
+    public function buildOptionsForm(array &$form, FormStateInterface $form_state): void
+    {
+        $description_top = $this->t('The handler for this item is broken or missing. The following details are available:');
+
+        foreach ($this->definition['original_configuration'] as $key => $value) {
+            if (is_scalar($value)) {
+                $items[] = new FormattableMarkup('@key: @value', ['@key' => $key, '@value' => $value]);
+            }
+        }
+
+        $description_bottom = $this->t('Installing the appropriate module may solve this issue. Otherwise, check to see if there is a module update available.');
+
+        $form['description'] = [
+          '#type' => 'container',
+          '#attributes' => [
+            'class' => ['js-form-item', 'form-item', 'description'],
+          ],
+          'description_top' => [
+            '#markup' => '<p>' . $description_top . '</p>',
+          ],
+          'detail_list' => [
+            '#theme' => 'item_list',
+            '#items' => $items,
+          ],
+          'description_bottom' => [
+            '#markup' => '<p>' . $description_bottom . '</p>',
+          ],
+        ];
+    }
+
+    /**
+     * Determines if the handler is considered 'broken'.
+     *
+     * This means it's a placeholder used when a handler can't be found.
+     *
+     * @see \Drupal\views\Plugin\views\HandlerBase::broken()
+     */
+    public function broken(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Gets dependencies for a broken handler.
+     *
+     * @return array
+     *   The dependencies for the broken handler.
+     *
+     * @see \Drupal\views\Plugin\views\PluginBase::calculateDependencies()
+     */
+    public function calculateDependencies(): array
+    {
+        return [];
+    }
 
 }

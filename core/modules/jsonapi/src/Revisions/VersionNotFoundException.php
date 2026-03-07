@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Revisions;
 
 /**
@@ -11,13 +13,14 @@ namespace Drupal\jsonapi\Revisions;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-class VersionNotFoundException extends \InvalidArgumentException {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($message = '', $code = 0, ?\Throwable $previous = NULL) {
-    parent::__construct(!is_null($message) ? $message : 'The identified version could not be found.', $code, $previous);
-  }
+class VersionNotFoundException extends \InvalidArgumentException
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct($message = '', $code = 0, ?\Throwable $previous = null)
+    {
+        parent::__construct(!is_null($message) ? $message : 'The identified version could not be found.', $code, $previous);
+    }
 
 }

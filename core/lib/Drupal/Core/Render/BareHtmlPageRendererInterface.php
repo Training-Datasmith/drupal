@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render;
 
 /**
@@ -38,24 +40,24 @@ namespace Drupal\Core\Render;
  *
  * @see \Drupal\Core\Render\MainContent\HtmlRenderer
  */
-interface BareHtmlPageRendererInterface {
-
-  /**
-   * Renders a bare page.
-   *
-   * @param array $content
-   *   The main content to render in the 'content' region.
-   * @param string $title
-   *   The title for this maintenance page.
-   * @param string $page_theme_property
-   *   The #theme property to set on #type 'page'.
-   * @param array $page_additions
-   *   Additional regions to add to the page. May also be used to pass the
-   *   #show_messages property for #type 'page'.
-   *
-   * @return \Drupal\Core\Render\HtmlResponse
-   *   The rendered HTML response, ready to be sent.
-   */
-  public function renderBarePage(array $content, $title, $page_theme_property, array $page_additions = []);
+interface BareHtmlPageRendererInterface
+{
+    /**
+     * Renders a bare page.
+     *
+     * @param array $content
+     *   The main content to render in the 'content' region.
+     * @param string $title
+     *   The title for this maintenance page.
+     * @param string $page_theme_property
+     *   The #theme property to set on #type 'page'.
+     * @param array $page_additions
+     *   Additional regions to add to the page. May also be used to pass the
+     *   #show_messages property for #type 'page'.
+     *
+     * @return \Drupal\Core\Render\HtmlResponse
+     *   The rendered HTML response, ready to be sent.
+     */
+    public function renderBarePage(array $content, $title, $page_theme_property, array $page_additions = []);
 
 }

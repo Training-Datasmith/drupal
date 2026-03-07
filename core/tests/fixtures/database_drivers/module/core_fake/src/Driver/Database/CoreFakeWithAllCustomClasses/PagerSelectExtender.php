@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\core_fake\Driver\Database\CoreFakeWithAllCustomClasses;
 
 use Drupal\Core\Database\Query\PagerSelectExtender as QueryPagerSelectExtender;
@@ -7,6 +9,6 @@ use Drupal\Core\Database\Query\PagerSelectExtender as QueryPagerSelectExtender;
 /**
  * CoreFakeWithAllCustomClasses implementation of \Drupal\Core\Database\Query\PagerSelectExtender.
  */
-class PagerSelectExtender extends QueryPagerSelectExtender {
-
+class PagerSelectExtender extends QueryPagerSelectExtender
+{
 }

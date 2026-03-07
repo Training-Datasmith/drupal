@@ -16,111 +16,114 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldGroupRowsWebTest extends ViewTestBase {
+class FieldGroupRowsWebTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_group_rows', 'test_ungroup_rows'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_group_rows', 'test_ungroup_rows'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The page node type.
+     *
+     * @var \Drupal\node\NodeTypeInterface
+     */
+    protected $nodeType;
 
-  /**
-   * The page node type.
-   *
-   * @var \Drupal\node\NodeTypeInterface
-   */
-  protected $nodeType;
+    /**
+     * The used field name in the test.
+     *
+     * @var string
+     */
+    protected $fieldName;
 
-  /**
-   * The used field name in the test.
-   *
-   * @var string
-   */
-  protected $fieldName;
+    /**
+     * The field storage.
+     *
+     * @var \Drupal\field\Entity\FieldStorageConfig
+     */
+    protected $fieldStorage;
 
-  /**
-   * The field storage.
-   *
-   * @var \Drupal\field\Entity\FieldStorageConfig
-   */
-  protected $fieldStorage;
+    /**
+     * The field config.
+     *
+     * @var \Drupal\field\Entity\FieldConfig
+     */
+    protected $field;
 
-  /**
-   * The field config.
-   *
-   * @var \Drupal\field\Entity\FieldConfig
-   */
-  protected $field;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        // Create content type with unlimited text field.
+        $this->nodeType = $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
 
-    // Create content type with unlimited text field.
-    $this->nodeType = $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
+        // Create the unlimited text field.
+        $this->fieldName = 'field_views_testing_group_rows';
+        $this->fieldStorage = FieldStorageConfig::create([
+          'field_name' => $this->fieldName,
+          'entity_type' => 'node',
+          'type' => 'text',
+          'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+        ]);
+        $this->fieldStorage->save();
 
-    // Create the unlimited text field.
-    $this->fieldName = 'field_views_testing_group_rows';
-    $this->fieldStorage = FieldStorageConfig::create([
-      'field_name' => $this->fieldName,
-      'entity_type' => 'node',
-      'type' => 'text',
-      'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
-    ]);
-    $this->fieldStorage->save();
+        // Create an instance of the text field on the content type.
+        $this->field = FieldConfig::create([
+          'field_storage' => $this->fieldStorage,
+          'bundle' => $this->nodeType->id(),
+        ]);
+        $this->field->save();
 
-    // Create an instance of the text field on the content type.
-    $this->field = FieldConfig::create([
-      'field_storage' => $this->fieldStorage,
-      'bundle' => $this->nodeType->id(),
-    ]);
-    $this->field->save();
-
-    $edit = [
-      'title' => $this->randomMachineName(),
-      $this->fieldName => ['a', 'b', 'c'],
-    ];
-    $this->drupalCreateNode($edit);
-  }
-
-  /**
-   * Testing when "Display all values in the same row" is checked.
-   */
-  public function testGroupRows(): void {
-    $this->drupalGet('test-group-rows');
-    $result = $this->cssSelect('div.views-field-field-views-testing-group- div');
-
-    $rendered_value = [];
-    foreach ($result as $row) {
-      $rendered_value[] = $row->getText();
+        $edit = [
+          'title' => $this->randomMachineName(),
+          $this->fieldName => ['a', 'b', 'c'],
+        ];
+        $this->drupalCreateNode($edit);
     }
-    $this->assertEquals(['a, b, c'], $rendered_value);
-  }
 
-  /**
-   * Testing when "Display all values in the same row" is unchecked.
-   */
-  public function testUngroupedRows(): void {
-    $this->drupalGet('test-ungroup-rows');
-    $result = $this->cssSelect('div.views-field-field-views-testing-group- div');
-    $rendered_value = [];
-    foreach ($result as $row) {
-      $rendered_value[] = $row->getText();
+    /**
+     * Testing when "Display all values in the same row" is checked.
+     */
+    public function testGroupRows(): void
+    {
+        $this->drupalGet('test-group-rows');
+        $result = $this->cssSelect('div.views-field-field-views-testing-group- div');
+
+        $rendered_value = [];
+        foreach ($result as $row) {
+            $rendered_value[] = $row->getText();
+        }
+        $this->assertEquals(['a, b, c'], $rendered_value);
     }
-    $this->assertEquals(['a', 'b', 'c'], $rendered_value);
-  }
+
+    /**
+     * Testing when "Display all values in the same row" is unchecked.
+     */
+    public function testUngroupedRows(): void
+    {
+        $this->drupalGet('test-ungroup-rows');
+        $result = $this->cssSelect('div.views-field-field-views-testing-group- div');
+        $rendered_value = [];
+        foreach ($result as $row) {
+            $rendered_value[] = $row->getText();
+        }
+        $this->assertEquals(['a', 'b', 'c'], $rendered_value);
+    }
 
 }

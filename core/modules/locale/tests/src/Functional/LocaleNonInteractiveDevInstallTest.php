@@ -12,20 +12,21 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('locale')]
 #[RunTestsInSeparateProcesses]
-class LocaleNonInteractiveDevInstallTest extends LocaleNonInteractiveInstallTest {
+class LocaleNonInteractiveDevInstallTest extends LocaleNonInteractiveInstallTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getVersionStringToTest(): string {
-    include_once $this->root . '/core/includes/install.core.inc';
-    $version = _install_get_version_info(\Drupal::VERSION);
-    return $version['major'] . '.' . $version['minor'] . '.x';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getVersionStringToTest(): string
+    {
+        include_once $this->root . '/core/includes/install.core.inc';
+        $version = _install_get_version_info(\Drupal::VERSION);
+        return $version['major'] . '.' . $version['minor'] . '.x';
+    }
 
 }

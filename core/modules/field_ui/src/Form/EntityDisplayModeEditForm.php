@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field_ui\Form;
 
 /**
@@ -7,6 +9,6 @@ namespace Drupal\field_ui\Form;
  *
  * @internal
  */
-class EntityDisplayModeEditForm extends EntityDisplayModeFormBase {
-
+class EntityDisplayModeEditForm extends EntityDisplayModeFormBase
+{
 }

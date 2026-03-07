@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field_ui\Form;
 
 use Drupal\Core\Entity\EntityDeleteForm;
@@ -9,14 +11,15 @@ use Drupal\Core\Entity\EntityDeleteForm;
  *
  * @internal
  */
-class EntityDisplayModeDeleteForm extends EntityDeleteForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    $entity_type = $this->entity->getEntityType();
-    return $this->t('Deleting a @entity-type will cause any output still requesting to use that @entity-type to use the default display settings.', ['@entity-type' => $entity_type->getSingularLabel()]);
-  }
+class EntityDisplayModeDeleteForm extends EntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        $entity_type = $this->entity->getEntityType();
+        return $this->t('Deleting a @entity-type will cause any output still requesting to use that @entity-type to use the default display settings.', ['@entity-type' => $entity_type->getSingularLabel()]);
+    }
 
 }

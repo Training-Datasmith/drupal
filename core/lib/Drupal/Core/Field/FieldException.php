@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 /**
@@ -8,4 +10,6 @@ namespace Drupal\Core\Field;
  * This class has no functionality of its own other than allowing all
  * Entity Field API exceptions to be caught by a single catch block.
  */
-class FieldException extends \RuntimeException {}
+class FieldException extends \RuntimeException
+{
+}

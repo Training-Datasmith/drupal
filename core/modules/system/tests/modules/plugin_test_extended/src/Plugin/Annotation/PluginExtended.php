@@ -11,6 +11,6 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class PluginExtended extends Plugin {
-
+class PluginExtended extends Plugin
+{
 }

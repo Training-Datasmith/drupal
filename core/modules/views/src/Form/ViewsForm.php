@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Form;
 
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\Url;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -22,155 +22,164 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * default is \Drupal\views\Form\ViewsFormMainForm). That way it is actually
  * possible for modules to have a multistep form if they need to.
  */
-class ViewsForm implements FormInterface, ContainerInjectionInterface {
-  use DependencySerializationTrait;
+class ViewsForm implements FormInterface, ContainerInjectionInterface
+{
+    use DependencySerializationTrait;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * Constructs a ViewsForm object.
-   *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
-   *   The class resolver to get the subform form objects.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
-   *   The URL generator to generate the form action.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
-   *   The request stack.
-   * @param string $viewId
-   *   The ID of the view.
-   * @param string $viewDisplayId
-   *   The ID of the active view's display.
-   * @param string[] $viewArguments
-   *   The arguments passed to the active view.
-   */
-  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, RequestStack $requestStack, /**
+    /**
+     * Constructs a ViewsForm object.
+     *
+     * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
+     *   The class resolver to get the subform form objects.
+     * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
+     *   The URL generator to generate the form action.
+     * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+     *   The request stack.
+     * @param string $viewId
+     *   The ID of the view.
+     * @param string $viewDisplayId
+     *   The ID of the active view's display.
+     * @param string[] $viewArguments
+     *   The arguments passed to the active view.
+     */
+    public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, RequestStack $requestStack, /**
    * The ID of the view.
    */
-  protected $viewId, /**
+        protected $viewId, /**
    * The ID of the active view's display.
    */
-  protected $viewDisplayId, /**
+        protected $viewDisplayId, /**
    * The arguments passed to the active view.
    */
-  protected array $viewArguments) {
-    $this->requestStack = $requestStack;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $view_id = NULL, $view_display_id = NULL, ?array $view_args = NULL): static {
-    return new static(
-      $container->get('class_resolver'),
-      $container->get('url_generator'),
-      $container->get('request_stack'),
-      $view_id,
-      $view_display_id,
-      $view_args
-    );
-  }
-
-  /**
-   * Returns a string for the form's base ID.
-   *
-   * @return string
-   *   The string identifying the form's base ID.
-   */
-  public function getBaseFormId(): string {
-    $parts = [
-      'views_form',
-      $this->viewId,
-      $this->viewDisplayId,
-    ];
-
-    return implode('_', $parts);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    $parts = [
-      $this->getBaseFormId(),
-    ];
-
-    if (!empty($this->viewArguments)) {
-      // Append the passed arguments to ensure form uniqueness.
-      $parts = array_merge($parts, $this->viewArguments);
+        protected array $viewArguments)
+    {
+        $this->requestStack = $requestStack;
     }
 
-    return implode('_', $parts);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ViewExecutable $view = NULL, $output = []) {
-    if (!$step = $form_state->get('step')) {
-      $step = 'views_form_views_form';
-      $form_state->set('step', $step);
-    }
-    $form_state->set(['step_controller', 'views_form_views_form'], \Drupal\views\Form\ViewsFormMainForm::class);
-
-    // Views forms without view arguments return the same Base Form ID and
-    // Form ID. Base form ID should only be added when different.
-    if ($this->getBaseFormId() !== $this->getFormId()) {
-      $form_state->addBuildInfo('base_form_id', $this->getBaseFormId());
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $view_id = null, $view_display_id = null, ?array $view_args = null): static
+    {
+        return new static(
+            $container->get('class_resolver'),
+            $container->get('url_generator'),
+            $container->get('request_stack'),
+            $view_id,
+            $view_display_id,
+            $view_args
+        );
     }
 
-    $form = [];
+    /**
+     * Returns a string for the form's base ID.
+     *
+     * @return string
+     *   The string identifying the form's base ID.
+     */
+    public function getBaseFormId(): string
+    {
+        $parts = [
+          'views_form',
+          $this->viewId,
+          $this->viewDisplayId,
+        ];
 
-    $query = $this->requestStack->getCurrentRequest()->query->all();
-    $query = UrlHelper::filterQueryParameters($query, ['_wrapper_format'], '');
+        return implode('_', $parts);
+    }
 
-    $options = ['query' => $query];
-    $form['#action'] = $view->hasUrl() ? $view->getUrl()->setOptions($options)->toString() : Url::fromRoute('<current>')->setOptions($options)->toString();
-    // Tell the preprocessor whether it should hide the header, footer, pager,
-    // etc.
-    $form['show_view_elements'] = [
-      '#type' => 'value',
-      '#value' => ($step == 'views_form_views_form') ? TRUE : FALSE,
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        $parts = [
+          $this->getBaseFormId(),
+        ];
 
-    $form_object = $this->getFormObject($form_state);
+        if (!empty($this->viewArguments)) {
+            // Append the passed arguments to ensure form uniqueness.
+            $parts = array_merge($parts, $this->viewArguments);
+        }
 
-    return $form + $form_object->buildForm($form, $form_state, $view, $output);
-  }
+        return implode('_', $parts);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $form_object = $this->getFormObject($form_state);
-    $form_object->validateForm($form, $form_state);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, ?ViewExecutable $view = null, $output = [])
+    {
+        if (!$step = $form_state->get('step')) {
+            $step = 'views_form_views_form';
+            $form_state->set('step', $step);
+        }
+        $form_state->set(['step_controller', 'views_form_views_form'], \Drupal\views\Form\ViewsFormMainForm::class);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $form_object = $this->getFormObject($form_state);
-    $form_object->submitForm($form, $form_state);
-  }
+        // Views forms without view arguments return the same Base Form ID and
+        // Form ID. Base form ID should only be added when different.
+        if ($this->getBaseFormId() !== $this->getFormId()) {
+            $form_state->addBuildInfo('base_form_id', $this->getBaseFormId());
+        }
 
-  /**
-   * Returns the object used to build the step form.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form_state of the current form.
-   *
-   * @return \Drupal\Core\Form\FormInterface
-   *   The form object to use.
-   */
-  protected function getFormObject(FormStateInterface $form_state) {
-    // If this is a class, instantiate it.
-    $form_step_class = $form_state->get(['step_controller', $form_state->get('step')]) ?: \Drupal\views\Form\ViewsFormMainForm::class;
-    return $this->classResolver->getInstanceFromDefinition($form_step_class);
-  }
+        $form = [];
+
+        $query = $this->requestStack->getCurrentRequest()->query->all();
+        $query = UrlHelper::filterQueryParameters($query, ['_wrapper_format'], '');
+
+        $options = ['query' => $query];
+        $form['#action'] = $view->hasUrl() ? $view->getUrl()->setOptions($options)->toString() : Url::fromRoute('<current>')->setOptions($options)->toString();
+        // Tell the preprocessor whether it should hide the header, footer, pager,
+        // etc.
+        $form['show_view_elements'] = [
+          '#type' => 'value',
+          '#value' => ($step == 'views_form_views_form') ? true : false,
+        ];
+
+        $form_object = $this->getFormObject($form_state);
+
+        return $form + $form_object->buildForm($form, $form_state, $view, $output);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form_object = $this->getFormObject($form_state);
+        $form_object->validateForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form_object = $this->getFormObject($form_state);
+        $form_object->submitForm($form, $form_state);
+    }
+
+    /**
+     * Returns the object used to build the step form.
+     *
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form_state of the current form.
+     *
+     * @return \Drupal\Core\Form\FormInterface
+     *   The form object to use.
+     */
+    protected function getFormObject(FormStateInterface $form_state)
+    {
+        // If this is a class, instantiate it.
+        $form_step_class = $form_state->get(['step_controller', $form_state->get('step')]) ?: \Drupal\views\Form\ViewsFormMainForm::class;
+        return $this->classResolver->getInstanceFromDefinition($form_step_class);
+    }
 
 }

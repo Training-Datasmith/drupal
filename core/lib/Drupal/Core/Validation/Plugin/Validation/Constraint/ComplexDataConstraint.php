@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,60 +14,61 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Validates properties of complex data structures.
  */
 #[Constraint(
-  id: 'ComplexData',
-  label: new TranslatableMarkup('Complex data', [], ['context' => 'Validation'])
+    id: 'ComplexData',
+    label: new TranslatableMarkup('Complex data', [], ['context' => 'Validation'])
 )]
-class ComplexDataConstraint extends SymfonyConstraint {
+class ComplexDataConstraint extends SymfonyConstraint
+{
+    /**
+     * An array of constraints for contained properties, keyed by property name.
+     *
+     * @var array
+     */
+    public $properties;
 
-  /**
-   * An array of constraints for contained properties, keyed by property name.
-   *
-   * @var array
-   */
-  public $properties;
-
-  public function __construct(
-    mixed $options = NULL,
-    ?array $properties = NULL,
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-    ...$otherProperties,
-  ) {
-    // Allow skipping the 'properties' key in the options.
-    if (is_array($options)) {
-      if (!array_key_exists('properties', $options)) {
-        $options = ['properties' => $options];
-      }
-    }
-    elseif ($properties === NULL && !empty($otherProperties)) {
-      $properties = $otherProperties;
-    }
-    parent::__construct($options, $groups, $payload);
-    $this->properties = $properties ?? $this->properties;
-    $constraint_manager = \Drupal::service('validation.constraint');
-
-    // Instantiate constraint objects for array definitions.
-    foreach ($this->properties as &$constraints) {
-      foreach ($constraints as $id => $options) {
-        if (!is_object($options)) {
-          $constraints[$id] = $constraint_manager->create($id, $options);
+    public function __construct(
+        mixed $options = null,
+        ?array $properties = null,
+        ?array $groups = null,
+        mixed $payload = null,
+        ...$otherProperties,
+    ) {
+        // Allow skipping the 'properties' key in the options.
+        if (is_array($options)) {
+            if (!array_key_exists('properties', $options)) {
+                $options = ['properties' => $options];
+            }
+        } elseif ($properties === null && !empty($otherProperties)) {
+            $properties = $otherProperties;
         }
-      }
+        parent::__construct($options, $groups, $payload);
+        $this->properties = $properties ?? $this->properties;
+        $constraint_manager = \Drupal::service('validation.constraint');
+
+        // Instantiate constraint objects for array definitions.
+        foreach ($this->properties as &$constraints) {
+            foreach ($constraints as $id => $options) {
+                if (!is_object($options)) {
+                    $constraints[$id] = $constraint_manager->create($id, $options);
+                }
+            }
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultOption(): ?string {
-    return 'properties';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultOption(): ?string
+    {
+        return 'properties';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequiredOptions(): array {
-    return ['properties'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredOptions(): array
+    {
+        return ['properties'];
+    }
 
 }

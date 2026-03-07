@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -10,78 +12,78 @@ use Drupal\Core\Entity\RevisionLogInterface;
 /**
  * Provides an interface defining a taxonomy term entity.
  */
-interface TermInterface extends ContentEntityInterface, EntityChangedInterface, EntityPublishedInterface, RevisionLogInterface {
+interface TermInterface extends ContentEntityInterface, EntityChangedInterface, EntityPublishedInterface, RevisionLogInterface
+{
+    /**
+     * Gets the term description.
+     *
+     * @return string
+     *   The term description.
+     */
+    public function getDescription();
 
-  /**
-   * Gets the term description.
-   *
-   * @return string
-   *   The term description.
-   */
-  public function getDescription();
+    /**
+     * Sets the term description.
+     *
+     * @param string $description
+     *   The term description.
+     *
+     * @return $this
+     */
+    public function setDescription($description);
 
-  /**
-   * Sets the term description.
-   *
-   * @param string $description
-   *   The term description.
-   *
-   * @return $this
-   */
-  public function setDescription($description);
+    /**
+     * Gets the text format name for the term description.
+     *
+     * @return string
+     *   The text format name.
+     */
+    public function getFormat();
 
-  /**
-   * Gets the text format name for the term description.
-   *
-   * @return string
-   *   The text format name.
-   */
-  public function getFormat();
+    /**
+     * Sets the text format name for the term description.
+     *
+     * @param string $format
+     *   The text format name.
+     *
+     * @return $this
+     */
+    public function setFormat($format);
 
-  /**
-   * Sets the text format name for the term description.
-   *
-   * @param string $format
-   *   The text format name.
-   *
-   * @return $this
-   */
-  public function setFormat($format);
+    /**
+     * Gets the term name.
+     *
+     * @return string
+     *   The term name.
+     */
+    public function getName();
 
-  /**
-   * Gets the term name.
-   *
-   * @return string
-   *   The term name.
-   */
-  public function getName();
+    /**
+     * Sets the term name.
+     *
+     * @param string $name
+     *   The term name.
+     *
+     * @return $this
+     */
+    public function setName($name);
 
-  /**
-   * Sets the term name.
-   *
-   * @param string $name
-   *   The term name.
-   *
-   * @return $this
-   */
-  public function setName($name);
+    /**
+     * Gets the term weight.
+     *
+     * @return int
+     *   The term weight.
+     */
+    public function getWeight();
 
-  /**
-   * Gets the term weight.
-   *
-   * @return int
-   *   The term weight.
-   */
-  public function getWeight();
-
-  /**
-   * Sets the term weight.
-   *
-   * @param int $weight
-   *   The term weight.
-   *
-   * @return $this
-   */
-  public function setWeight($weight);
+    /**
+     * Sets the term weight.
+     *
+     * @param int $weight
+     *   The term weight.
+     *
+     * @return $this
+     */
+    public function setWeight($weight);
 
 }

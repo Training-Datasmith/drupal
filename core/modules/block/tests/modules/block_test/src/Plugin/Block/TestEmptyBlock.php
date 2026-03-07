@@ -12,16 +12,17 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a block that returns an empty array.
  */
 #[Block(
-  id: "test_empty",
-  admin_label: new TranslatableMarkup("Test Empty block"),
+    id: 'test_empty',
+    admin_label: new TranslatableMarkup('Test Empty block'),
 )]
-class TestEmptyBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return [];
-  }
+class TestEmptyBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return [];
+    }
 
 }

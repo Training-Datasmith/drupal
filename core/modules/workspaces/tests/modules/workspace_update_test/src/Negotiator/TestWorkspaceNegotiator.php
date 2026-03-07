@@ -12,34 +12,38 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Defines a workspace negotiator used for testing.
  */
-class TestWorkspaceNegotiator implements WorkspaceNegotiatorInterface, WorkspaceIdNegotiatorInterface {
+class TestWorkspaceNegotiator implements WorkspaceNegotiatorInterface, WorkspaceIdNegotiatorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applies(Request $request)
+    {
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(Request $request) {
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getActiveWorkspaceId(Request $request): ?string
+    {
+        return 'test';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getActiveWorkspaceId(Request $request): ?string {
-    return 'test';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setActiveWorkspace(WorkspaceInterface $workspace)
+    {
+        // Nothing to do here.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setActiveWorkspace(WorkspaceInterface $workspace) {
-    // Nothing to do here.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function unsetActiveWorkspace() {
-    // Nothing to do here.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function unsetActiveWorkspace()
+    {
+        // Nothing to do here.
+    }
 
 }

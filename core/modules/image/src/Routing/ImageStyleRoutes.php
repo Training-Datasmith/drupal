@@ -1,61 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Routing;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 
 /**
  * Defines a route subscriber to register a URL for serving image styles.
  */
-class ImageStyleRoutes implements ContainerInjectionInterface {
+class ImageStyleRoutes implements ContainerInjectionInterface
+{
+    /**
+     * Constructs a new ImageStyleRoutes object.
+     *
+     * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
+     *   The stream wrapper manager service.
+     */
+    public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
+    {
+    }
 
-  /**
-   * Constructs a new ImageStyleRoutes object.
-   *
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
-   *   The stream wrapper manager service.
-   */
-  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('stream_wrapper_manager')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('stream_wrapper_manager')
-    );
-  }
+    /**
+     * Returns an array of route objects.
+     *
+     * @return \Symfony\Component\Routing\Route[]
+     *   An array of route objects.
+     */
+    public function routes(): array
+    {
+        $routes = [];
+        // Generate image derivatives of publicly available files. If clean URLs are
+        // disabled image derivatives will always be served through the menu system.
+        // If clean URLs are enabled and the image derivative already exists, PHP
+        // will be bypassed.
+        $directory_path = $this->streamWrapperManager->getViaScheme('public')->getDirectoryPath();
 
-  /**
-   * Returns an array of route objects.
-   *
-   * @return \Symfony\Component\Routing\Route[]
-   *   An array of route objects.
-   */
-  public function routes(): array {
-    $routes = [];
-    // Generate image derivatives of publicly available files. If clean URLs are
-    // disabled image derivatives will always be served through the menu system.
-    // If clean URLs are enabled and the image derivative already exists, PHP
-    // will be bypassed.
-    $directory_path = $this->streamWrapperManager->getViaScheme('public')->getDirectoryPath();
-
-    $routes['image.style_public'] = new Route(
-      '/' . $directory_path . '/styles/{image_style}/{scheme}',
-      [
-        '_controller' => 'Drupal\image\Controller\ImageStyleDownloadController::deliver',
-        'required_derivative_scheme' => 'public',
+        $routes['image.style_public'] = new Route(
+            '/' . $directory_path . '/styles/{image_style}/{scheme}',
+            [
+            '_controller' => 'Drupal\image\Controller\ImageStyleDownloadController::deliver',
+            'required_derivative_scheme' => 'public',
       ],
-      [
-        '_access' => 'TRUE',
+            [
+            '_access' => 'TRUE',
       ]
-    );
-    return $routes;
-  }
+        );
+        return $routes;
+    }
 
 }

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\area;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Tokenized base class for area handlers.
@@ -15,107 +17,111 @@ use Drupal\Component\Utility\Xss;
  *
  * @ingroup views_area_handlers
  */
-abstract class TokenizeAreaPluginBase extends AreaPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['tokenize'] = ['default' => FALSE];
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-
-    // Add tokenization form elements.
-    $this->tokenForm($form, $form_state);
-  }
-
-  /**
-   * Adds tokenization form elements.
-   */
-  public function tokenForm(array &$form, FormStateInterface $form_state): void {
-    $form['tokenize'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Include tokens from the first row'),
-      '#description' => $this->t('Enable this to use tokens from fields in the first result row, if present. Global tokens (e.g., site name) and contextual argument tokens are always available.'),
-      '#default_value' => $this->options['tokenize'],
-    ];
-
-    // Get a list of the available fields and arguments for token replacement.
-    $options = [];
-    $optgroup_arguments = (string) $this->t('Arguments');
-    $optgroup_fields = (string) $this->t('Fields');
-    foreach ($this->view->display_handler->getHandlers('field') as $field => $handler) {
-      $options[$optgroup_fields]["{{ $field }}"] = $handler->adminLabel();
+abstract class TokenizeAreaPluginBase extends AreaPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['tokenize'] = ['default' => false];
+        return $options;
     }
 
-    foreach ($this->view->display_handler->getHandlers('argument') as $arg => $handler) {
-      $options[$optgroup_arguments]["{{ arguments.$arg }}"] = $this->t('@argument title', ['@argument' => $handler->adminLabel()]);
-      $options[$optgroup_arguments]["{{ raw_arguments.$arg }}"] = $this->t('@argument input', ['@argument' => $handler->adminLabel()]);
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+
+        // Add tokenization form elements.
+        $this->tokenForm($form, $form_state);
     }
 
-    if (!empty($options)) {
-      $form['tokens'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Replacement patterns'),
-        '#open' => TRUE,
-        '#id' => 'edit-options-token-help',
-        '#states' => [
-          'visible' => [
-            ':input[name="options[tokenize]"]' => ['checked' => TRUE],
-          ],
-        ],
-      ];
-      $form['tokens']['help'] = [
-        '#markup' => '<p>' . $this->t('The following tokens are available. You may use Twig syntax in this field.') . '</p>',
-      ];
-      foreach (array_keys($options) as $type) {
-        if (!empty($options[$type])) {
-          $items = [];
-          foreach ($options[$type] as $key => $value) {
-            $items[] = $key . ' == ' . $value;
-          }
-          $form['tokens'][$type]['tokens'] = [
-            '#theme' => 'item_list',
-            '#items' => $items,
-          ];
+    /**
+     * Adds tokenization form elements.
+     */
+    public function tokenForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form['tokenize'] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Include tokens from the first row'),
+          '#description' => $this->t('Enable this to use tokens from fields in the first result row, if present. Global tokens (e.g., site name) and contextual argument tokens are always available.'),
+          '#default_value' => $this->options['tokenize'],
+        ];
+
+        // Get a list of the available fields and arguments for token replacement.
+        $options = [];
+        $optgroup_arguments = (string) $this->t('Arguments');
+        $optgroup_fields = (string) $this->t('Fields');
+        foreach ($this->view->display_handler->getHandlers('field') as $field => $handler) {
+            $options[$optgroup_fields]["{{ $field }}"] = $handler->adminLabel();
         }
-      }
-      $form['tokens']['html_help'] = [
-        '#markup' => '<p>' . $this->t('You may include the following allowed HTML tags with these "Replacement patterns": <code>@tags</code>', [
-          '@tags' => '<' . implode('> <', Xss::getAdminTagList()) . '>',
-        ]) . '</p>',
-      ];
+
+        foreach ($this->view->display_handler->getHandlers('argument') as $arg => $handler) {
+            $options[$optgroup_arguments]["{{ arguments.$arg }}"] = $this->t('@argument title', ['@argument' => $handler->adminLabel()]);
+            $options[$optgroup_arguments]["{{ raw_arguments.$arg }}"] = $this->t('@argument input', ['@argument' => $handler->adminLabel()]);
+        }
+
+        if (!empty($options)) {
+            $form['tokens'] = [
+              '#type' => 'details',
+              '#title' => $this->t('Replacement patterns'),
+              '#open' => true,
+              '#id' => 'edit-options-token-help',
+              '#states' => [
+                'visible' => [
+                  ':input[name="options[tokenize]"]' => ['checked' => true],
+                ],
+              ],
+            ];
+            $form['tokens']['help'] = [
+              '#markup' => '<p>' . $this->t('The following tokens are available. You may use Twig syntax in this field.') . '</p>',
+            ];
+            foreach (array_keys($options) as $type) {
+                if (!empty($options[$type])) {
+                    $items = [];
+                    foreach ($options[$type] as $key => $value) {
+                        $items[] = $key . ' == ' . $value;
+                    }
+                    $form['tokens'][$type]['tokens'] = [
+                      '#theme' => 'item_list',
+                      '#items' => $items,
+                    ];
+                }
+            }
+            $form['tokens']['html_help'] = [
+              '#markup' => '<p>' . $this->t('You may include the following allowed HTML tags with these "Replacement patterns": <code>@tags</code>', [
+                '@tags' => '<' . implode('> <', Xss::getAdminTagList()) . '>',
+              ]) . '</p>',
+            ];
+        }
+
+        $this->globalTokenForm($form, $form_state);
     }
 
-    $this->globalTokenForm($form, $form_state);
-  }
+    /**
+     * Replaces value with special views tokens and global tokens.
+     *
+     * @param string $value
+     *   The value to eventually tokenize.
+     *
+     * @return string
+     *   Tokenized value if tokenize option is enabled. In any case global tokens
+     *   will be replaced.
+     */
+    public function tokenizeValue($value)
+    {
+        // As we add the globalTokenForm() we also should replace the token here.
+        $value = $this->globalTokenReplace($value);
 
-  /**
-   * Replaces value with special views tokens and global tokens.
-   *
-   * @param string $value
-   *   The value to eventually tokenize.
-   *
-   * @return string
-   *   Tokenized value if tokenize option is enabled. In any case global tokens
-   *   will be replaced.
-   */
-  public function tokenizeValue($value) {
-    // As we add the globalTokenForm() we also should replace the token here.
-    $value = $this->globalTokenReplace($value);
+        if ($this->options['tokenize']) {
+            return $this->view->getStyle()->tokenizeValue($value, 0);
+        }
 
-    if ($this->options['tokenize']) {
-      return $this->view->getStyle()->tokenizeValue($value, 0);
+        return $value;
     }
-
-    return $value;
-  }
 
 }

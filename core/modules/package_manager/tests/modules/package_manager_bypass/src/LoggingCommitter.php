@@ -16,38 +16,40 @@ use PhpTuf\ComposerStager\API\Process\Service\ProcessInterface;
  *
  * @internal
  */
-final class LoggingCommitter implements CommitterInterface {
+final class LoggingCommitter implements CommitterInterface
+{
+    use ComposerStagerExceptionTrait;
+    use LoggingDecoratorTrait;
 
-  use ComposerStagerExceptionTrait;
-  use LoggingDecoratorTrait;
+    /**
+     * The decorated service.
+     *
+     * @var \PhpTuf\ComposerStager\API\Core\CommitterInterface
+     */
+    private $inner;
 
-  /**
-   * The decorated service.
-   *
-   * @var \PhpTuf\ComposerStager\API\Core\CommitterInterface
-   */
-  private $inner;
+    /**
+     * Constructs a Committer object.
+     *
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state service.
+     * @param \PhpTuf\ComposerStager\API\Core\CommitterInterface $inner
+     *   The decorated committer service.
+     */
+    public function __construct(StateInterface $state, CommitterInterface $inner)
+    {
+        $this->state = $state;
+        $this->inner = $inner;
+    }
 
-  /**
-   * Constructs a Committer object.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service.
-   * @param \PhpTuf\ComposerStager\API\Core\CommitterInterface $inner
-   *   The decorated committer service.
-   */
-  public function __construct(StateInterface $state, CommitterInterface $inner) {
-    $this->state = $state;
-    $this->inner = $inner;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function commit(PathInterface $stagingDir, PathInterface $activeDir, ?PathListInterface $exclusions = NULL, ?OutputCallbackInterface $callback = NULL, ?int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    $this->saveInvocationArguments($stagingDir, $activeDir, $exclusions?->getAll(), $timeout);
-    $this->throwExceptionIfSet();
-    $this->inner->commit($stagingDir, $activeDir, $exclusions, $callback, $timeout);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function commit(PathInterface $stagingDir, PathInterface $activeDir, ?PathListInterface $exclusions = null, ?OutputCallbackInterface $callback = null, ?int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        $this->saveInvocationArguments($stagingDir, $activeDir, $exclusions?->getAll(), $timeout);
+        $this->throwExceptionIfSet();
+        $this->inner->commit($stagingDir, $activeDir, $exclusions, $callback, $timeout);
+    }
 
 }

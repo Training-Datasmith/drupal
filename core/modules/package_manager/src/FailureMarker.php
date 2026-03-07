@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\package_manager;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\package_manager\Event\CollectPathsToExcludeEvent;
+use Drupal\package_manager\Exception\FailureMarkerExistsException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\package_manager\Exception\FailureMarkerExistsException;
 
 /**
  * Handles failure marker file operation.
@@ -25,139 +25,147 @@ use Drupal\package_manager\Exception\FailureMarkerExistsException;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class FailureMarker implements EventSubscriberInterface {
-
-  public function __construct(private PathLocator $pathLocator) {
-  }
-
-  /**
-   * Gets the marker file path.
-   *
-   * @return string
-   *   The absolute path of the marker file.
-   */
-  public function getPath(): string {
-    return $this->pathLocator->getProjectRoot() . '/PACKAGE_MANAGER_FAILURE.yml';
-  }
-
-  /**
-   * Deletes the marker file.
-   */
-  public function clear(): void {
-    unlink($this->getPath());
-  }
-
-  /**
-   * Writes data to marker file.
-   *
-   * @param \Drupal\package_manager\SandboxManagerBase $sandbox_manager
-   *   The stage.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message
-   *   Failure message to be added.
-   * @param \Throwable|null $throwable
-   *   (optional) The throwable that caused the failure.
-   */
-  public function write(SandboxManagerBase $sandbox_manager, TranslatableMarkup $message, ?\Throwable $throwable = NULL): void {
-    $data = [
-      'stage_class' => $sandbox_manager::class,
-      'stage_type' => $sandbox_manager->getType(),
-      'stage_file' => (new \ReflectionObject($sandbox_manager))->getFileName(),
-      'message' => (string) $message,
-      'throwable_class' => $throwable ? $throwable::class : FALSE,
-      'throwable_message' => $throwable?->getMessage() ?? 'Not available',
-      'throwable_backtrace' => $throwable?->getTraceAsString() ?? 'Not available.',
-    ];
-    file_put_contents($this->getPath(), Yaml::dump($data));
-  }
-
-  /**
-   * Gets the data from the file if it exists.
-   *
-   * @return array|null
-   *   The data from the file if it exists.
-   *
-   * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
-   *   Thrown if failure marker exists but cannot be decoded.
-   */
-  private function getData(): ?array {
-    $path = $this->getPath();
-    if (file_exists($path)) {
-      $data = file_get_contents($path);
-      try {
-        return Yaml::parse($data);
-
-      }
-      catch (ParseException $exception) {
-        throw new FailureMarkerExistsException('Failure marker file exists but cannot be decoded.', $exception->getCode(), $exception);
-      }
+final readonly class FailureMarker implements EventSubscriberInterface
+{
+    public function __construct(private PathLocator $pathLocator)
+    {
     }
-    return NULL;
-  }
 
-  /**
-   * Gets the message from the file if it exists.
-   *
-   * @param bool $include_backtrace
-   *   Whether to include the backtrace in the message. Defaults to TRUE. May be
-   *   set to FALSE in a context where it does not make sense to include, such
-   *   as emails.
-   *
-   * @return string|null
-   *   The message from the file if it exists, otherwise NULL.
-   *
-   * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
-   *   Thrown if failure marker exists but cannot be decoded.
-   */
-  public function getMessage(bool $include_backtrace = TRUE): ?string {
-    $data = $this->getData();
-    if ($data === NULL) {
-      return NULL;
+    /**
+     * Gets the marker file path.
+     *
+     * @return string
+     *   The absolute path of the marker file.
+     */
+    public function getPath(): string
+    {
+        return $this->pathLocator->getProjectRoot() . '/PACKAGE_MANAGER_FAILURE.yml';
     }
-    $message = $data['message'];
-    if ($data['throwable_class']) {
-      $message .= sprintf(
-        ' Caused by %s, with this message: %s',
-        $data['throwable_class'],
-        $data['throwable_message'],
-      );
-      if ($include_backtrace) {
-        $message .= "\nBacktrace:\n" . $data['throwable_backtrace'];
-      }
+
+    /**
+     * Deletes the marker file.
+     */
+    public function clear(): void
+    {
+        unlink($this->getPath());
     }
-    return $message;
-  }
 
-  /**
-   * Asserts the failure file doesn't exist.
-   *
-   * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
-   *   Thrown if the marker file exists.
-   */
-  public function assertNotExists(): void {
-    if ($message = $this->getMessage()) {
-      throw new FailureMarkerExistsException($message);
+    /**
+     * Writes data to marker file.
+     *
+     * @param \Drupal\package_manager\SandboxManagerBase $sandbox_manager
+     *   The stage.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message
+     *   Failure message to be added.
+     * @param \Throwable|null $throwable
+     *   (optional) The throwable that caused the failure.
+     */
+    public function write(SandboxManagerBase $sandbox_manager, TranslatableMarkup $message, ?\Throwable $throwable = null): void
+    {
+        $data = [
+          'stage_class' => $sandbox_manager::class,
+          'stage_type' => $sandbox_manager->getType(),
+          'stage_file' => (new \ReflectionObject($sandbox_manager))->getFileName(),
+          'message' => (string) $message,
+          'throwable_class' => $throwable ? $throwable::class : false,
+          'throwable_message' => $throwable?->getMessage() ?? 'Not available',
+          'throwable_backtrace' => $throwable?->getTraceAsString() ?? 'Not available.',
+        ];
+        file_put_contents($this->getPath(), Yaml::dump($data));
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      CollectPathsToExcludeEvent::class => 'excludeMarkerFile',
-    ];
-  }
+    /**
+     * Gets the data from the file if it exists.
+     *
+     * @return array|null
+     *   The data from the file if it exists.
+     *
+     * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
+     *   Thrown if failure marker exists but cannot be decoded.
+     */
+    private function getData(): ?array
+    {
+        $path = $this->getPath();
+        if (file_exists($path)) {
+            $data = file_get_contents($path);
+            try {
+                return Yaml::parse($data);
 
-  /**
-   * Excludes the failure marker file from stage operations.
-   *
-   * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
-   *   The event being handled.
-   */
-  public function excludeMarkerFile(CollectPathsToExcludeEvent $event): void {
-    $event->addPathsRelativeToProjectRoot([
-      $this->getPath(),
-    ]);
-  }
+            } catch (ParseException $exception) {
+                throw new FailureMarkerExistsException('Failure marker file exists but cannot be decoded.', $exception->getCode(), $exception);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the message from the file if it exists.
+     *
+     * @param bool $include_backtrace
+     *   Whether to include the backtrace in the message. Defaults to TRUE. May be
+     *   set to FALSE in a context where it does not make sense to include, such
+     *   as emails.
+     *
+     * @return string|null
+     *   The message from the file if it exists, otherwise NULL.
+     *
+     * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
+     *   Thrown if failure marker exists but cannot be decoded.
+     */
+    public function getMessage(bool $include_backtrace = true): ?string
+    {
+        $data = $this->getData();
+        if ($data === null) {
+            return null;
+        }
+        $message = $data['message'];
+        if ($data['throwable_class']) {
+            $message .= sprintf(
+                ' Caused by %s, with this message: %s',
+                $data['throwable_class'],
+                $data['throwable_message'],
+            );
+            if ($include_backtrace) {
+                $message .= "\nBacktrace:\n" . $data['throwable_backtrace'];
+            }
+        }
+        return $message;
+    }
+
+    /**
+     * Asserts the failure file doesn't exist.
+     *
+     * @throws \Drupal\package_manager\Exception\FailureMarkerExistsException
+     *   Thrown if the marker file exists.
+     */
+    public function assertNotExists(): void
+    {
+        if ($message = $this->getMessage()) {
+            throw new FailureMarkerExistsException($message);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          CollectPathsToExcludeEvent::class => 'excludeMarkerFile',
+        ];
+    }
+
+    /**
+     * Excludes the failure marker file from stage operations.
+     *
+     * @param \Drupal\package_manager\Event\CollectPathsToExcludeEvent $event
+     *   The event being handled.
+     */
+    public function excludeMarkerFile(CollectPathsToExcludeEvent $event): void
+    {
+        $event->addPathsRelativeToProjectRoot([
+          $this->getPath(),
+        ]);
+    }
 
 }

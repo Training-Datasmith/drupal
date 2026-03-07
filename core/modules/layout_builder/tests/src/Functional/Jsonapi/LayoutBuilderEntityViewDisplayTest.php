@@ -15,46 +15,48 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('jsonapi')]
 #[Group('layout_builder')]
 #[RunTestsInSeparateProcesses]
-class LayoutBuilderEntityViewDisplayTest extends EntityViewDisplayTest {
+class LayoutBuilderEntityViewDisplayTest extends EntityViewDisplayTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['layout_builder'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['layout_builder'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        /** @var \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay $entity */
+        $entity = parent::createEntity();
+        $entity
+          ->enableLayoutBuilder()
+          ->setOverridable()
+          ->save();
+        $this->assertCount(1, $entity->getThirdPartySetting('layout_builder', 'sections'));
+        return $entity;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    /** @var \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay $entity */
-    $entity = parent::createEntity();
-    $entity
-      ->enableLayoutBuilder()
-      ->setOverridable()
-      ->save();
-    $this->assertCount(1, $entity->getThirdPartySetting('layout_builder', 'sections'));
-    return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $document = parent::getExpectedDocument();
-    array_unshift($document['data']['attributes']['dependencies']['module'], 'layout_builder');
-    $document['data']['attributes']['hidden'][OverridesSectionStorage::FIELD_NAME] = TRUE;
-    $document['data']['attributes']['hidden']['links'] = TRUE;
-    $document['data']['attributes']['third_party_settings']['layout_builder'] = [
-      'enabled' => TRUE,
-      'allow_custom' => TRUE,
-    ];
-    $document['data']['attributes']['content'] = [];
-    return $document;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $document = parent::getExpectedDocument();
+        array_unshift($document['data']['attributes']['dependencies']['module'], 'layout_builder');
+        $document['data']['attributes']['hidden'][OverridesSectionStorage::FIELD_NAME] = true;
+        $document['data']['attributes']['hidden']['links'] = true;
+        $document['data']['attributes']['third_party_settings']['layout_builder'] = [
+          'enabled' => true,
+          'allow_custom' => true,
+        ];
+        $document['data']['attributes']['content'] = [];
+        return $document;
+    }
 
 }

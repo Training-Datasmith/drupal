@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\DatabaseException;
@@ -10,4 +12,6 @@ use Drupal\Core\Database\DatabaseException;
  * It is not allowed to specify a field as default and insert field, this
  * exception is thrown if that is the case.
  */
-class FieldsOverlapException extends \InvalidArgumentException implements DatabaseException {}
+class FieldsOverlapException extends \InvalidArgumentException implements DatabaseException
+{
+}

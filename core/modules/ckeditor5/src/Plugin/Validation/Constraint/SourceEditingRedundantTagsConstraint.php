@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,20 +14,20 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @internal
  */
 #[Constraint(
-  id: 'SourceEditingRedundantTags',
-  label: new TranslatableMarkup('Source editing should only use otherwise unavailable tags and attributes', [], ['context' => 'Validation'])
+    id: 'SourceEditingRedundantTags',
+    label: new TranslatableMarkup('Source editing should only use otherwise unavailable tags and attributes', [], ['context' => 'Validation'])
 )]
-class SourceEditingRedundantTagsConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $enabledPluginsMessage = 'The following @element_type(s) are already supported by enabled plugins and should not be added to the Source Editing "Manually editable HTML tags" field: %overlapping_tags.',
-    public $enabledPluginsOptionalMessage = 'The following @element_type(s) can optionally be supported by enabled plugins and should not be added to the Source Editing "Manually editable HTML tags" field: %overlapping_tags.',
-    public $availablePluginsMessage = 'The following @element_type(s) are already supported by available plugins and should not be added to the Source Editing "Manually editable HTML tags" field. Instead, enable the following plugins to support these @element_types: %overlapping_tags.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class SourceEditingRedundantTagsConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $enabledPluginsMessage = 'The following @element_type(s) are already supported by enabled plugins and should not be added to the Source Editing "Manually editable HTML tags" field: %overlapping_tags.',
+        public $enabledPluginsOptionalMessage = 'The following @element_type(s) can optionally be supported by enabled plugins and should not be added to the Source Editing "Manually editable HTML tags" field: %overlapping_tags.',
+        public $availablePluginsMessage = 'The following @element_type(s) are already supported by available plugins and should not be added to the Source Editing "Manually editable HTML tags" field. Instead, enable the following plugins to support these @element_types: %overlapping_tags.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views_ui\Form\Ajax;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -10,53 +12,57 @@ use Drupal\views\Views;
  *
  * @internal
  */
-class Analyze extends ViewsFormBase {
+class Analyze extends ViewsFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormKey(): string
+    {
+        return 'analyze';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormKey(): string {
-    return 'analyze';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'views_ui_analyze_view_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'views_ui_analyze_view_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state): array
+    {
+        $view = $form_state->get('view');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-    $view = $form_state->get('view');
+        $form['#title'] = $this->t('View analysis');
+        $form['#section'] = 'analyze';
 
-    $form['#title'] = $this->t('View analysis');
-    $form['#section'] = 'analyze';
+        $analyzer = Views::analyzer();
+        $messages = $analyzer->getMessages($view->getExecutable());
 
-    $analyzer = Views::analyzer();
-    $messages = $analyzer->getMessages($view->getExecutable());
+        $form['analysis'] = [
+          '#prefix' => '<div class="js-form-item form-item">',
+          '#suffix' => '</div>',
+          '#markup' => $analyzer->formatMessages($messages),
+        ];
 
-    $form['analysis'] = [
-      '#prefix' => '<div class="js-form-item form-item">',
-      '#suffix' => '</div>',
-      '#markup' => $analyzer->formatMessages($messages),
-    ];
+        // Inform the standard button function that we want an OK button.
+        $form_state->set('ok_button', true);
+        $view->getStandardButtons($form, $form_state, 'views_ui_analyze_view_form');
+        return $form;
+    }
 
-    // Inform the standard button function that we want an OK button.
-    $form_state->set('ok_button', TRUE);
-    $view->getStandardButtons($form, $form_state, 'views_ui_analyze_view_form');
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    /** @var \Drupal\views_ui\ViewUI $view */
-    $view = $form_state->get('view');
-    $form_state->setRedirectUrl($view->toUrl('edit-form'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        /** @var \Drupal\views_ui\ViewUI $view */
+        $view = $form_state->get('view');
+        $form_state->setRedirectUrl($view->toUrl('edit-form'));
+    }
 
 }

@@ -10,37 +10,42 @@ use Drupal\Core\Database\Transaction\TransactionManagerBase;
 /**
  * SQLite implementation of TransactionManagerInterface.
  */
-class TransactionManager extends TransactionManagerBase {
+class TransactionManager extends TransactionManagerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function beginClientTransaction(): bool
+    {
+        return $this->connection->getClientConnection()->beginTransaction();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function beginClientTransaction(): bool {
-    return $this->connection->getClientConnection()->beginTransaction();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function rollbackClientTransaction(): bool {
-    $clientRollback = $this->connection->getClientConnection()->rollBack();
-    $this->setConnectionTransactionState($clientRollback ?
+    /**
+     * {@inheritdoc}
+     */
+    protected function rollbackClientTransaction(): bool
+    {
+        $clientRollback = $this->connection->getClientConnection()->rollBack();
+        $this->setConnectionTransactionState(
+            $clientRollback ?
       ClientConnectionTransactionState::RolledBack :
       ClientConnectionTransactionState::RollbackFailed
-    );
-    return $clientRollback;
-  }
+        );
+        return $clientRollback;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function commitClientTransaction(): bool {
-    $clientCommit = $this->connection->getClientConnection()->commit();
-    $this->setConnectionTransactionState($clientCommit ?
+    /**
+     * {@inheritdoc}
+     */
+    protected function commitClientTransaction(): bool
+    {
+        $clientCommit = $this->connection->getClientConnection()->commit();
+        $this->setConnectionTransactionState(
+            $clientCommit ?
       ClientConnectionTransactionState::Committed :
       ClientConnectionTransactionState::CommitFailed
-    );
-    return $clientCommit;
-  }
+        );
+        return $clientCommit;
+    }
 
 }

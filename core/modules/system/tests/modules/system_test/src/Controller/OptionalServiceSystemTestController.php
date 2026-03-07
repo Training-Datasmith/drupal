@@ -11,11 +11,12 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 /**
  * A controller that specifies an optional dependency.
  */
-class OptionalServiceSystemTestController extends ControllerBase {
-
-  public function __construct(
-    #[Autowire('logger.dblog')]
-    public readonly ?DbLog $dbLog,
-  ) {}
+class OptionalServiceSystemTestController extends ControllerBase
+{
+    public function __construct(
+        #[Autowire('logger.dblog')]
+        public readonly ?DbLog $dbLog,
+    ) {
+    }
 
 }

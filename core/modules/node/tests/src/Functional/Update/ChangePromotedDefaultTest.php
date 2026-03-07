@@ -14,42 +14,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class ChangePromotedDefaultTest extends UpdatePathTestBase {
+class ChangePromotedDefaultTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests run updates.
+     *
+     * @legacy-covers node_post_update_create_promote_base_field_overrides
+     */
+    public function testRunUpdates(): void
+    {
+        /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager */
+        $entityFieldManager = \Drupal::service(EntityFieldManagerInterface::class);
+        $promoteFieldDefinition = $entityFieldManager->getBaseFieldDefinitions('node')['promote'];
+        $false_result = [0 => ['value' => 0]];
+        $true_result = [0 => ['value' => 1]];
 
-  /**
-   * Tests run updates.
-   *
-   * @legacy-covers node_post_update_create_promote_base_field_overrides
-   */
-  public function testRunUpdates(): void {
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager */
-    $entityFieldManager = \Drupal::service(EntityFieldManagerInterface::class);
-    $promoteFieldDefinition = $entityFieldManager->getBaseFieldDefinitions('node')['promote'];
-    $false_result = [0 => ['value' => 0]];
-    $true_result = [0 => ['value' => 1]];
+        $article_promote_1 = $promoteFieldDefinition->getConfig('article');
+        $this->assertTrue($article_promote_1->isNew());
+        $page_promote_1 = $promoteFieldDefinition->getConfig('page');
+        $this->assertEquals($false_result, $page_promote_1->getDefaultValueLiteral());
 
-    $article_promote_1 = $promoteFieldDefinition->getConfig('article');
-    $this->assertTrue($article_promote_1->isNew());
-    $page_promote_1 = $promoteFieldDefinition->getConfig('page');
-    $this->assertEquals($false_result, $page_promote_1->getDefaultValueLiteral());
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $article_promote_2 = $promoteFieldDefinition->getConfig('article');
-    $this->assertEquals($true_result, $article_promote_2->getDefaultValueLiteral());
-    $page_promote_2 = $promoteFieldDefinition->getConfig('page');
-    $this->assertEquals($false_result, $page_promote_2->getDefaultValueLiteral());
-  }
+        $article_promote_2 = $promoteFieldDefinition->getConfig('article');
+        $this->assertEquals($true_result, $article_promote_2->getDefaultValueLiteral());
+        $page_promote_2 = $promoteFieldDefinition->getConfig('page');
+        $this->assertEquals($false_result, $page_promote_2->getDefaultValueLiteral());
+    }
 
 }

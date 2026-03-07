@@ -14,25 +14,29 @@ use Symfony\Component\HttpKernel\KernelInterface;
 /**
  * A test controller.
  */
-class TestController implements ContainerInjectionInterface {
-  use AutowireTrait;
+class TestController implements ContainerInjectionInterface
+{
+    use AutowireTrait;
 
-  public function __construct(protected DrupalKernelInterface $kernel) {
-  }
+    public function __construct(protected DrupalKernelInterface $kernel)
+    {
+    }
 
-  /**
-   * Return an empty response.
-   */
-  public function get() {
-    return new Response();
-  }
+    /**
+     * Return an empty response.
+     */
+    public function get()
+    {
+        return new Response();
+    }
 
-  /**
-   * Return an empty response.
-   */
-  public function subRequest(): Response {
-    $sub_request = Request::create('/http-kernel-test-sub-sub-request');
-    return $this->kernel->handle($sub_request, KernelInterface::SUB_REQUEST);
-  }
+    /**
+     * Return an empty response.
+     */
+    public function subRequest(): Response
+    {
+        $sub_request = Request::create('/http-kernel-test-sub-sub-request');
+        return $this->kernel->handle($sub_request, KernelInterface::SUB_REQUEST);
+    }
 
 }

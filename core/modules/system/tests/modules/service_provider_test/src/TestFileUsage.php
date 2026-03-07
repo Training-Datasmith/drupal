@@ -10,25 +10,28 @@ use Drupal\file\FileUsage\FileUsageBase;
 /**
  * Test class of database file usage backend implementation.
  */
-class TestFileUsage extends FileUsageBase {
+class TestFileUsage extends FileUsageBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function add(FileInterface $file, $module, $type, $id, $count = 1)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function add(FileInterface $file, $module, $type, $id, $count = 1) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(FileInterface $file, $module, $type = null, $id = null, $count = 1)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(FileInterface $file, $module, $type = NULL, $id = NULL, $count = 1) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function listUsage(FileInterface $file) {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function listUsage(FileInterface $file)
+    {
+        return [];
+    }
 
 }

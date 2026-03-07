@@ -12,25 +12,27 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines a class for a context-aware block.
  */
 #[Block(
-  id:'preview_aware_block',
-  admin_label: new TranslatableMarkup('Preview-aware block'),
-  category: new TranslatableMarkup('Test'))
+    id:'preview_aware_block',
+    admin_label: new TranslatableMarkup('Preview-aware block'),
+    category: new TranslatableMarkup('Test')
+)
 ]
-class PreviewAwareBlock extends BlockBase {
+class PreviewAwareBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        $markup = $this->t('This block is being rendered normally.');
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    $markup = $this->t('This block is being rendered normally.');
+        if ($this->inPreview) {
+            $markup = $this->t('This block is being rendered in preview mode.');
+        }
 
-    if ($this->inPreview) {
-      $markup = $this->t('This block is being rendered in preview mode.');
+        return [
+          '#markup' => $markup,
+        ];
     }
-
-    return [
-      '#markup' => $markup,
-    ];
-  }
 
 }

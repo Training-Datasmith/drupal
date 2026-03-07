@@ -21,27 +21,28 @@ use Symfony\Component\Serializer\Serializer;
  */
 #[CoversClass(DefaultExceptionSubscriber::class)]
 #[Group('serialization')]
-class DefaultExceptionSubscriberTest extends UnitTestCase {
+class DefaultExceptionSubscriberTest extends UnitTestCase
+{
+    /**
+     * Tests on 4xx.
+     */
+    public function testOn4xx(): void
+    {
+        $kernel = $this->prophesize(HttpKernelInterface::class);
+        $request = Request::create('/test');
+        $request->setRequestFormat('json');
 
-  /**
-   * Tests on 4xx.
-   */
-  public function testOn4xx(): void {
-    $kernel = $this->prophesize(HttpKernelInterface::class);
-    $request = Request::create('/test');
-    $request->setRequestFormat('json');
+        $e = new MethodNotAllowedHttpException(['POST', 'PUT'], 'test message');
+        $event = new ExceptionEvent($kernel->reveal(), $request, HttpKernelInterface::MAIN_REQUEST, $e);
+        $subscriber = new DefaultExceptionSubscriber(new Serializer([], [new JsonEncoder()]), []);
+        $subscriber->on4xx($event);
+        $response = $event->getResponse();
 
-    $e = new MethodNotAllowedHttpException(['POST', 'PUT'], 'test message');
-    $event = new ExceptionEvent($kernel->reveal(), $request, HttpKernelInterface::MAIN_REQUEST, $e);
-    $subscriber = new DefaultExceptionSubscriber(new Serializer([], [new JsonEncoder()]), []);
-    $subscriber->on4xx($event);
-    $response = $event->getResponse();
-
-    $this->assertInstanceOf(Response::class, $response);
-    $this->assertEquals('{"message":"test message"}', $response->getContent());
-    $this->assertEquals(405, $response->getStatusCode());
-    $this->assertEquals('POST, PUT', $response->headers->get('Allow'));
-    $this->assertEquals('application/json', $response->headers->get('Content-Type'));
-  }
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertEquals('{"message":"test message"}', $response->getContent());
+        $this->assertEquals(405, $response->getStatusCode());
+        $this->assertEquals('POST, PUT', $response->headers->get('Allow'));
+        $this->assertEquals('application/json', $response->headers->get('Content-Type'));
+    }
 
 }

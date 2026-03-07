@@ -19,88 +19,90 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(NodeViewBuilder::class)]
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeViewBuilderTest extends EntityKernelTestBase {
+class NodeViewBuilderTest extends EntityKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
+    /**
+     * The node storage.
+     *
+     * @var \Drupal\node\NodeStorageInterface
+     */
+    protected $storage;
 
-  /**
-   * The node storage.
-   *
-   * @var \Drupal\node\NodeStorageInterface
-   */
-  protected $storage;
+    /**
+     * The node view builder.
+     *
+     * @var \Drupal\Core\Entity\EntityViewBuilderInterface
+     */
+    protected $viewBuilder;
 
-  /**
-   * The node view builder.
-   *
-   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
-   */
-  protected $viewBuilder;
+    /**
+     * The renderer.
+     *
+     * @var \Drupal\Core\Render\RendererInterface
+     */
+    protected $renderer;
 
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->storage = $this->entityTypeManager->getStorage('node');
+        $this->viewBuilder = $this->entityTypeManager->getViewBuilder('node');
+        $this->renderer = $this->container->get('renderer');
 
-    $this->storage = $this->entityTypeManager->getStorage('node');
-    $this->viewBuilder = $this->entityTypeManager->getViewBuilder('node');
-    $this->renderer = $this->container->get('renderer');
+        $type = NodeType::create([
+          'type' => 'article',
+          'name' => 'Article',
+        ]);
+        $type->save();
 
-    $type = NodeType::create([
-      'type' => 'article',
-      'name' => 'Article',
-    ]);
-    $type->save();
+        $this->installSchema('node', 'node_access');
+        $this->installConfig(['system', 'node']);
+    }
 
-    $this->installSchema('node', 'node_access');
-    $this->installConfig(['system', 'node']);
-  }
+    /**
+     * Tests that node links are displayed correctly in pending revisions.
+     *
+     * @legacy-covers ::buildComponents
+     * @legacy-covers ::renderLinks
+     * @legacy-covers ::buildLinks
+     */
+    public function testPendingRevisionLinks(): void
+    {
+        $account = User::create([
+          'name' => $this->randomString(),
+        ]);
+        $account->save();
 
-  /**
-   * Tests that node links are displayed correctly in pending revisions.
-   *
-   * @legacy-covers ::buildComponents
-   * @legacy-covers ::renderLinks
-   * @legacy-covers ::buildLinks
-   */
-  public function testPendingRevisionLinks(): void {
-    $account = User::create([
-      'name' => $this->randomString(),
-    ]);
-    $account->save();
+        $title = $this->randomMachineName();
+        $node = Node::create([
+          'type' => 'article',
+          'title' => $title,
+          'uid' => $account->id(),
+        ]);
+        $node->save();
 
-    $title = $this->randomMachineName();
-    $node = Node::create([
-      'type' => 'article',
-      'title' => $title,
-      'uid' => $account->id(),
-    ]);
-    $node->save();
+        /** @var \Drupal\node\NodeInterface $pending_revision */
+        $pending_revision = $this->storage->createRevision($node, false);
+        $draft_title = $title . ' draft';
+        $pending_revision->setTitle($draft_title);
+        $pending_revision->save();
 
-    /** @var \Drupal\node\NodeInterface $pending_revision */
-    $pending_revision = $this->storage->createRevision($node, FALSE);
-    $draft_title = $title . ' draft';
-    $pending_revision->setTitle($draft_title);
-    $pending_revision->save();
+        $build = $this->viewBuilder->view($node, 'teaser');
+        $output = (string) $this->renderer->renderInIsolation($build);
+        $this->assertStringContainsString("title=\"$title\"", $output);
 
-    $build = $this->viewBuilder->view($node, 'teaser');
-    $output = (string) $this->renderer->renderInIsolation($build);
-    $this->assertStringContainsString("title=\"$title\"", $output);
-
-    $build = $this->viewBuilder->view($pending_revision, 'teaser');
-    $output = (string) $this->renderer->renderInIsolation($build);
-    $this->assertStringContainsString("title=\"$draft_title\"", $output);
-  }
+        $build = $this->viewBuilder->view($pending_revision, 'teaser');
+        $output = (string) $this->renderer->renderInIsolation($build);
+        $this->assertStringContainsString("title=\"$draft_title\"", $output);
+    }
 
 }

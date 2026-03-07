@@ -1,59 +1,65 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin\Discovery;
 
 /**
  * A decorator that allows manual registration of undiscoverable definitions.
  */
-class StaticDiscoveryDecorator extends StaticDiscovery {
+class StaticDiscoveryDecorator extends StaticDiscovery
+{
+    /**
+     * A callback or closure used for registering additional definitions.
+     *
+     * @var callable
+     */
+    protected $registerDefinitions;
 
-  /**
-   * A callback or closure used for registering additional definitions.
-   *
-   * @var callable
-   */
-  protected $registerDefinitions;
-
-  /**
-   * Constructs StaticDiscoveryDecorator object.
-   *
-   * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
-   *   The discovery object that is being decorated.
-   * @param callable|null $registerDefinitions
-   *   (optional) A callback or closure used for registering additional
-   *   definitions.
-   */
-  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, $registerDefinitions = NULL) {
-    $this->registerDefinitions = $registerDefinitions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefinition($base_plugin_id, $exception_on_invalid = TRUE) {
-    if (isset($this->registerDefinitions)) {
-      call_user_func($this->registerDefinitions);
+    /**
+     * Constructs StaticDiscoveryDecorator object.
+     *
+     * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
+     *   The discovery object that is being decorated.
+     * @param callable|null $registerDefinitions
+     *   (optional) A callback or closure used for registering additional
+     *   definitions.
+     */
+    public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, $registerDefinitions = null)
+    {
+        $this->registerDefinitions = $registerDefinitions;
     }
-    $this->definitions += $this->decorated->getDefinitions();
-    return parent::getDefinition($base_plugin_id, $exception_on_invalid);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefinitions() {
-    if (isset($this->registerDefinitions)) {
-      call_user_func($this->registerDefinitions);
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinition($base_plugin_id, $exception_on_invalid = true)
+    {
+        if (isset($this->registerDefinitions)) {
+            call_user_func($this->registerDefinitions);
+        }
+        $this->definitions += $this->decorated->getDefinitions();
+        return parent::getDefinition($base_plugin_id, $exception_on_invalid);
     }
-    $this->definitions += $this->decorated->getDefinitions();
-    return parent::getDefinitions();
-  }
 
-  /**
-   * Passes through all unknown calls onto the decorated object.
-   */
-  public function __call(string $method, array $args) {
-    return call_user_func_array([$this->decorated, $method], $args);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinitions()
+    {
+        if (isset($this->registerDefinitions)) {
+            call_user_func($this->registerDefinitions);
+        }
+        $this->definitions += $this->decorated->getDefinitions();
+        return parent::getDefinitions();
+    }
+
+    /**
+     * Passes through all unknown calls onto the decorated object.
+     */
+    public function __call(string $method, array $args)
+    {
+        return call_user_func_array([$this->decorated, $method], $args);
+    }
 
 }

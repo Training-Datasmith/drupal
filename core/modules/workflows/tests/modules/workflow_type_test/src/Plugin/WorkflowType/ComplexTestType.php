@@ -13,34 +13,36 @@ use Drupal\workflows\Plugin\WorkflowTypeBase;
  * Test workflow type.
  */
 #[WorkflowType(
-  id: 'workflow_type_complex_test',
-  label: new TranslatableMarkup('Workflow Type Complex Test'),
-  forms: [
+    id: 'workflow_type_complex_test',
+    label: new TranslatableMarkup('Workflow Type Complex Test'),
+    forms: [
     'configure' => '\Drupal\workflow_type_test\Form\ComplexTestTypeConfigureForm',
     'state' => '\Drupal\workflow_type_test\Form\ComplexTestTypeStateForm',
     'transition' => '\Drupal\workflow_type_test\Form\ComplexTestTypeTransitionForm',
   ]
 )]
-class ComplexTestType extends WorkflowTypeBase {
+class ComplexTestType extends WorkflowTypeBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function onDependencyRemoval(array $dependencies)
+    {
+        // Always return TRUE to allow the logic in
+        // \Drupal\workflows\Entity\Workflow::onDependencyRemoval() to be tested.
+        return true;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onDependencyRemoval(array $dependencies) {
-    // Always return TRUE to allow the logic in
-    // \Drupal\workflows\Entity\Workflow::onDependencyRemoval() to be tested.
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration() {
-    return parent::defaultConfiguration() + [
-      'example_setting' => '',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration()
+    {
+        return parent::defaultConfiguration() + [
+          'example_setting' => '',
+        ];
+    }
 
 }

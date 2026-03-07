@@ -11,26 +11,29 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestTableSelectEmptyForm extends FormTestTableSelectFormBase {
+class FormTestTableSelectEmptyForm extends FormTestTableSelectFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return '_form_test_tableselect_empty_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return '_form_test_tableselect_empty_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        return $this->tableselectFormBuilder($form, $form_state, ['#options' => []]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    return $this->tableselectFormBuilder($form, $form_state, ['#options' => []]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

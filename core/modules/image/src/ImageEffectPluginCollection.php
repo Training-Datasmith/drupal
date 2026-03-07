@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image;
 
 use Drupal\Core\Plugin\DefaultLazyPluginCollection;
@@ -7,23 +9,25 @@ use Drupal\Core\Plugin\DefaultLazyPluginCollection;
 /**
  * A collection of image effects.
  */
-class ImageEffectPluginCollection extends DefaultLazyPluginCollection {
+class ImageEffectPluginCollection extends DefaultLazyPluginCollection
+{
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\image\ImageEffectInterface
+     *   The image effect plugin.
+     */
+    public function &get($instance_id)
+    {
+        return parent::get($instance_id);
+    }
 
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\image\ImageEffectInterface
-   *   The image effect plugin.
-   */
-  public function &get($instance_id) {
-    return parent::get($instance_id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function sortHelper($aID, $bID): int {
-    return $this->get($aID)->getWeight() <=> $this->get($bID)->getWeight();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function sortHelper($aID, $bID): int
+    {
+        return $this->get($aID)->getWeight() <=> $this->get($bID)->getWeight();
+    }
 
 }

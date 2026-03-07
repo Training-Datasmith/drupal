@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 use Drupal\Component\Assertion\Inspector;
@@ -20,199 +22,215 @@ use Drupal\Component\Datetime\TimeInterface;
  *
  * @ingroup cache
  */
-class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterface {
+class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterface
+{
+    /**
+     * Array to store cache objects.
+     *
+     * @var object[]
+     */
+    protected $cache = [];
 
-  /**
-   * Array to store cache objects.
-   *
-   * @var object[]
-   */
-  protected $cache = [];
-
-  /**
-   * Constructs a MemoryBackend object.
-   *
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(protected TimeInterface $time) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($cid, $allow_invalid = FALSE) {
-    if (isset($this->cache[$cid])) {
-      return $this->prepareItem($this->cache[$cid], $allow_invalid);
-    }
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
-    $ret = [];
-
-    $items = array_intersect_key($this->cache, array_flip($cids));
-
-    foreach ($items as $item) {
-      $item = $this->prepareItem($item, $allow_invalid);
-      if ($item) {
-        $ret[$item->cid] = $item;
-      }
+    /**
+     * Constructs a MemoryBackend object.
+     *
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(protected TimeInterface $time)
+    {
     }
 
-    $cids = array_diff($cids, array_keys($ret));
-
-    return $ret;
-  }
-
-  /**
-   * Prepares a cached item.
-   *
-   * Checks that items are either permanent or did not expire, and returns data
-   * as appropriate.
-   *
-   * @param object $cache
-   *   An item loaded from self::get() or self::getMultiple().
-   * @param bool $allow_invalid
-   *   (optional) If TRUE, cache items may be returned even if they have expired
-   *   or been invalidated.
-   *
-   * @return mixed
-   *   The item with data as appropriate or FALSE if there is no
-   *   valid item to load.
-   */
-  protected function prepareItem($cache, $allow_invalid): false|object {
-    if (!isset($cache->data)) {
-      return FALSE;
-    }
-    // The object passed into this function is the one stored in $this->cache.
-    // We must clone it as part of the preparation step so that the actual
-    // cache object is not affected by the unserialize() call or other
-    // manipulations of the returned object.
-
-    $prepared = clone $cache;
-    $prepared->data = unserialize($prepared->data);
-
-    // Check expire time.
-    $prepared->valid = $prepared->expire == Cache::PERMANENT || $prepared->expire >= $this->time->getRequestTime();
-
-    if (!$allow_invalid && !$prepared->valid) {
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function get($cid, $allow_invalid = false)
+    {
+        if (isset($this->cache[$cid])) {
+            return $this->prepareItem($this->cache[$cid], $allow_invalid);
+        }
+        return false;
     }
 
-    return $prepared;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getMultiple(&$cids, $allow_invalid = false): array
+    {
+        $ret = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
-    assert(Inspector::assertAllStrings($tags), 'Cache Tags must be strings.');
-    $tags = array_unique($tags);
-    // Sort the cache tags so that they are stored consistently in the database.
-    sort($tags);
-    $this->cache[$cid] = (object) [
-      'cid' => $cid,
-      'data' => serialize($data),
-      'created' => $this->time->getRequestTime(),
-      'expire' => $expire,
-      'tags' => $tags,
-    ];
-  }
+        $items = array_intersect_key($this->cache, array_flip($cids));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $items = []): void {
-    foreach ($items as $cid => $item) {
-      $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
+        foreach ($items as $item) {
+            $item = $this->prepareItem($item, $allow_invalid);
+            if ($item) {
+                $ret[$item->cid] = $item;
+            }
+        }
+
+        $cids = array_diff($cids, array_keys($ret));
+
+        return $ret;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid): void {
-    unset($this->cache[$cid]);
-  }
+    /**
+     * Prepares a cached item.
+     *
+     * Checks that items are either permanent or did not expire, and returns data
+     * as appropriate.
+     *
+     * @param object $cache
+     *   An item loaded from self::get() or self::getMultiple().
+     * @param bool $allow_invalid
+     *   (optional) If TRUE, cache items may be returned even if they have expired
+     *   or been invalidated.
+     *
+     * @return mixed
+     *   The item with data as appropriate or FALSE if there is no
+     *   valid item to load.
+     */
+    protected function prepareItem($cache, $allow_invalid): false|object
+    {
+        if (!isset($cache->data)) {
+            return false;
+        }
+        // The object passed into this function is the one stored in $this->cache.
+        // We must clone it as part of the preparation step so that the actual
+        // cache object is not affected by the unserialize() call or other
+        // manipulations of the returned object.
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $cids): void {
-    $this->cache = array_diff_key($this->cache, array_flip($cids));
-  }
+        $prepared = clone $cache;
+        $prepared->data = unserialize($prepared->data);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll(): void {
-    $this->cache = [];
-  }
+        // Check expire time.
+        $prepared->valid = $prepared->expire == Cache::PERMANENT || $prepared->expire >= $this->time->getRequestTime();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidate($cid): void {
-    if (isset($this->cache[$cid])) {
-      $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
+        if (!$allow_invalid && !$prepared->valid) {
+            return false;
+        }
+
+        return $prepared;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateMultiple(array $cids): void {
-    $items = array_intersect_key($this->cache, array_flip($cids));
-    foreach ($items as $cid => $item) {
-      $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
+    /**
+     * {@inheritdoc}
+     */
+    public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void
+    {
+        assert(Inspector::assertAllStrings($tags), 'Cache Tags must be strings.');
+        $tags = array_unique($tags);
+        // Sort the cache tags so that they are stored consistently in the database.
+        sort($tags);
+        $this->cache[$cid] = (object) [
+          'cid' => $cid,
+          'data' => serialize($data),
+          'created' => $this->time->getRequestTime(),
+          'expire' => $expire,
+          'tags' => $tags,
+        ];
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateTags(array $tags): void {
-    foreach ($this->cache as $cid => $item) {
-      if (array_intersect($tags, $item->tags)) {
-        $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $items = []): void
+    {
+        foreach ($items as $cid => $item) {
+            $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection(): void {
-    $requestTime = $this->time->getRequestTime();
-    $this->cache = array_filter($this->cache, fn(object $item) => $item->expire == Cache::PERMANENT || $item->expire >= $requestTime);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid): void
+    {
+        unset($this->cache[$cid]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function removeBin(): void {
-    $this->cache = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $cids): void
+    {
+        $this->cache = array_diff_key($this->cache, array_flip($cids));
+    }
 
-  /**
-   * Prevents data stored in memory backends from being serialized.
-   */
-  public function __sleep(): array {
-    return ['time'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll(): void
+    {
+        $this->cache = [];
+    }
 
-  /**
-   * Reset statically cached variables.
-   *
-   * This is only used by tests.
-   */
-  public function reset(): void {
-    $this->cache = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidate($cid): void
+    {
+        if (isset($this->cache[$cid])) {
+            $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateMultiple(array $cids): void
+    {
+        $items = array_intersect_key($this->cache, array_flip($cids));
+        foreach ($items as $cid => $item) {
+            $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags): void
+    {
+        foreach ($this->cache as $cid => $item) {
+            if (array_intersect($tags, $item->tags)) {
+                $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection(): void
+    {
+        $requestTime = $this->time->getRequestTime();
+        $this->cache = array_filter($this->cache, fn (object $item) => $item->expire == Cache::PERMANENT || $item->expire >= $requestTime);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeBin(): void
+    {
+        $this->cache = [];
+    }
+
+    /**
+     * Prevents data stored in memory backends from being serialized.
+     */
+    public function __sleep(): array
+    {
+        return ['time'];
+    }
+
+    /**
+     * Reset statically cached variables.
+     *
+     * This is only used by tests.
+     */
+    public function reset(): void
+    {
+        $this->cache = [];
+    }
 
 }

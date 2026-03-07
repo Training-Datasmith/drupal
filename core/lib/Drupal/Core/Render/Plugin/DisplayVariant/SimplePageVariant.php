@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Plugin\DisplayVariant;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -12,67 +14,70 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a page display variant that simply renders the main content.
  */
 #[PageDisplayVariant(
-  id: 'simple_page',
-  admin_label: new TranslatableMarkup('Simple page')
+    id: 'simple_page',
+    admin_label: new TranslatableMarkup('Simple page')
 )]
-class SimplePageVariant extends VariantBase implements PageVariantInterface {
+class SimplePageVariant extends VariantBase implements PageVariantInterface
+{
+    /**
+     * The render array representing the main content.
+     *
+     * @var array
+     */
+    protected $mainContent;
 
-  /**
-   * The render array representing the main content.
-   *
-   * @var array
-   */
-  protected $mainContent;
+    /**
+     * The page title: a string (plain title) or a render array (formatted title).
+     *
+     * @var string|array
+     */
+    protected $title = '';
 
-  /**
-   * The page title: a string (plain title) or a render array (formatted title).
-   *
-   * @var string|array
-   */
-  protected $title = '';
+    /**
+     * {@inheritdoc}
+     */
+    public function setMainContent(array $main_content): static
+    {
+        $this->mainContent = $main_content;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMainContent(array $main_content): static {
-    $this->mainContent = $main_content;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setTitle($title): static
+    {
+        $this->title = $title;
+        return $this;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setTitle($title): static {
-    $this->title = $title;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function build(): array
+    {
+        $build = [
+          'content' => [
+            'messages' => [
+              '#type' => 'status_messages',
+              '#weight' => -1000,
+              '#include_fallback' => true,
+            ],
+            'page_title' => [
+              '#type' => 'page_title',
+              '#title' => $this->title,
+              '#weight' => -900,
+            ],
+            'main_content' => ['#weight' => -800] + $this->mainContent,
+          ],
+        ];
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function build(): array {
-    $build = [
-      'content' => [
-        'messages' => [
-          '#type' => 'status_messages',
-          '#weight' => -1000,
-          '#include_fallback' => TRUE,
-        ],
-        'page_title' => [
-          '#type' => 'page_title',
-          '#title' => $this->title,
-          '#weight' => -900,
-        ],
-        'main_content' => ['#weight' => -800] + $this->mainContent,
-      ],
-    ];
+        $cache = new CacheableMetadata();
+        $cache->addCacheableDependency($this);
+        $cache->applyTo($build);
 
-    $cache = new CacheableMetadata();
-    $cache->addCacheableDependency($this);
-    $cache->applyTo($build);
-
-    return $build;
-  }
+        return $build;
+    }
 
 }

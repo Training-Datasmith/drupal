@@ -11,16 +11,18 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 /**
  * A transport only used to test the transport factory adapter.
  */
-class CanaryTransport extends AbstractTransport implements TransportInterface {
+class CanaryTransport extends AbstractTransport implements TransportInterface
+{
+    protected function doSend(SentMessage $message): void
+    {
+    }
 
-  protected function doSend(SentMessage $message): void {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return 'drupal.test-canary://default';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return 'drupal.test-canary://default';
+    }
 
 }

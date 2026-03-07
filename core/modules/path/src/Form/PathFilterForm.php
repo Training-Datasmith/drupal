@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path\Form;
 
 use Drupal\Core\Form\FormBase;
@@ -10,62 +12,66 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class PathFilterForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'path_admin_filter_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $keys = NULL): array {
-    $form['#attributes'] = ['class' => ['search-form']];
-    $form['basic'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Filter aliases'),
-      '#open' => TRUE,
-      '#attributes' => ['class' => ['container-inline']],
-    ];
-    $form['basic']['filter'] = [
-      '#type' => 'search',
-      '#title' => $this->t('Path alias'),
-      '#title_display' => 'invisible',
-      '#default_value' => $keys,
-      '#maxlength' => 128,
-      '#size' => 25,
-    ];
-    $form['basic']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Filter'),
-    ];
-    if ($keys) {
-      $form['basic']['reset'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Reset'),
-        '#submit' => ['::resetForm'],
-      ];
+class PathFilterForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'path_admin_filter_form';
     }
-    return $form;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $form_state->setRedirect('entity.path_alias.collection', [], [
-      'query' => ['search' => trim((string) $form_state->getValue('filter'))],
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $keys = null): array
+    {
+        $form['#attributes'] = ['class' => ['search-form']];
+        $form['basic'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Filter aliases'),
+          '#open' => true,
+          '#attributes' => ['class' => ['container-inline']],
+        ];
+        $form['basic']['filter'] = [
+          '#type' => 'search',
+          '#title' => $this->t('Path alias'),
+          '#title_display' => 'invisible',
+          '#default_value' => $keys,
+          '#maxlength' => 128,
+          '#size' => 25,
+        ];
+        $form['basic']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Filter'),
+        ];
+        if ($keys) {
+            $form['basic']['reset'] = [
+              '#type' => 'submit',
+              '#value' => $this->t('Reset'),
+              '#submit' => ['::resetForm'],
+            ];
+        }
+        return $form;
+    }
 
-  /**
-   * Resets the filter selections.
-   */
-  public function resetForm(array &$form, FormStateInterface $form_state): void {
-    $form_state->setRedirect('entity.path_alias.collection');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form_state->setRedirect('entity.path_alias.collection', [], [
+          'query' => ['search' => trim((string) $form_state->getValue('filter'))],
+        ]);
+    }
+
+    /**
+     * Resets the filter selections.
+     */
+    public function resetForm(array &$form, FormStateInterface $form_state): void
+    {
+        $form_state->setRedirect('entity.path_alias.collection');
+    }
 
 }

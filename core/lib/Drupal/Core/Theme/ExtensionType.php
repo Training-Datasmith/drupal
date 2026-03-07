@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Theme;
 
 /**
@@ -10,7 +12,8 @@ namespace Drupal\Core\Theme;
  *
  * @internal
  */
-enum ExtensionType: string {
-  case Module = 'module';
-  case Theme = 'theme';
+enum ExtensionType: string
+{
+    case Module = 'module';
+    case Theme = 'theme';
 }

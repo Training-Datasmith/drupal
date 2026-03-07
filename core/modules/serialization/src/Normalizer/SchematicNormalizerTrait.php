@@ -16,42 +16,44 @@ namespace Drupal\serialization\Normalizer;
  * call ::getNormalizationSchema() in ::normalize(). See
  * DateTimeIso8601Normalizer::normalize() for an example.
  */
-trait SchematicNormalizerTrait {
+trait SchematicNormalizerTrait
+{
+    use SchematicNormalizerHelperTrait;
+    use SchematicNormalizerFallbackTrait;
 
-  use SchematicNormalizerHelperTrait;
-  use SchematicNormalizerFallbackTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    if ($format === 'json_schema') {
-      return $this->getNormalizationSchema($object, $context);
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        if ($format === 'json_schema') {
+            return $this->getNormalizationSchema($object, $context);
+        }
+        return $this->doNormalize($object, $format, $context);
     }
-    return $this->doNormalize($object, $format, $context);
-  }
 
-  /**
-   * Normalizes an object into a set of arrays/scalars.
-   *
-   * @param mixed $object
-   *   Object to normalize.
-   * @param string|null $format
-   *   Format the normalization result will be encoded as.
-   * @param array $context
-   *   Context options for the normalizer.
-   *
-   * @return array|string|int|float|bool|\ArrayObject|null
-   *   The normalization. An \ArrayObject is used to make sure an empty object
-   *   is encoded as an object not an array.
-   */
-  abstract protected function doNormalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL;
+    /**
+     * Normalizes an object into a set of arrays/scalars.
+     *
+     * @param mixed $object
+     *   Object to normalize.
+     * @param string|null $format
+     *   Format the normalization result will be encoded as.
+     * @param array $context
+     *   Context options for the normalizer.
+     *
+     * @return array|string|int|float|bool|\ArrayObject|null
+     *   The normalization. An \ArrayObject is used to make sure an empty object
+     *   is encoded as an object not an array.
+     */
+    abstract protected function doNormalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getNormalizationSchema(mixed $object, array $context = []): array {
-    return $this->getJsonSchemaForMethod($this, 'doNormalize', ['$comment' => static::generateNoSchemaAvailableMessage($object)]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNormalizationSchema(mixed $object, array $context = []): array
+    {
+        return $this->getJsonSchemaForMethod($this, 'doNormalize', ['$comment' => static::generateNoSchemaAvailableMessage($object)]);
+    }
 
 }

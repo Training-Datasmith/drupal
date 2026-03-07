@@ -14,21 +14,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * A dummy constraint for testing \Drupal\Core\Validation\ConstraintFactory.
  */
 #[Constraint(
-  id: 'EntityTestContainerFactoryPlugin',
-  label: new TranslatableMarkup('Constraint that implements ContainerFactoryPluginInterface.'),
-  type: 'entity'
+    id: 'EntityTestContainerFactoryPlugin',
+    label: new TranslatableMarkup('Constraint that implements ContainerFactoryPluginInterface.'),
+    type: 'entity'
 )]
-class EntityTestContainerFactoryPlugin extends PluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-    );
-  }
+class EntityTestContainerFactoryPlugin extends PluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition)
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+        );
+    }
 
 }

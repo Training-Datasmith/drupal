@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\EventSubscriber;
 
 use Drupal\Core\Routing\RouteBuildEvent;
@@ -9,47 +11,49 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Alters user authentication routes to support added serialization formats.
  */
-class UserRouteAlterSubscriber implements EventSubscriberInterface {
-
-  /**
-   * UserRouteAlterSubscriber constructor.
-   *
-   * @param array $serializerFormats
-   *   The available serializer formats.
-   */
-  public function __construct(protected array $serializerFormats)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[RoutingEvents::ALTER][] = 'onRoutingAlterAddFormats';
-    return $events;
-  }
-
-  /**
-   * Adds supported formats to the user authentication HTTP routes.
-   *
-   * @param \Drupal\Core\Routing\RouteBuildEvent $event
-   *   The event to process.
-   */
-  public function onRoutingAlterAddFormats(RouteBuildEvent $event): void {
-    $route_names = [
-      'user.login_status.http',
-      'user.login.http',
-      'user.logout.http',
-      'user.pass.http',
-    ];
-    $routes = $event->getRouteCollection();
-    foreach ($route_names as $route_name) {
-      if (($route = $routes->get($route_name)) && $route->hasRequirement('_format')) {
-        $formats = explode('|', (string) $route->getRequirement('_format'));
-        $formats = array_unique(array_merge($formats, $this->serializerFormats));
-        $route->setRequirement('_format', implode('|', $formats));
-      }
+class UserRouteAlterSubscriber implements EventSubscriberInterface
+{
+    /**
+     * UserRouteAlterSubscriber constructor.
+     *
+     * @param array $serializerFormats
+     *   The available serializer formats.
+     */
+    public function __construct(protected array $serializerFormats)
+    {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[RoutingEvents::ALTER][] = 'onRoutingAlterAddFormats';
+        return $events;
+    }
+
+    /**
+     * Adds supported formats to the user authentication HTTP routes.
+     *
+     * @param \Drupal\Core\Routing\RouteBuildEvent $event
+     *   The event to process.
+     */
+    public function onRoutingAlterAddFormats(RouteBuildEvent $event): void
+    {
+        $route_names = [
+          'user.login_status.http',
+          'user.login.http',
+          'user.logout.http',
+          'user.pass.http',
+        ];
+        $routes = $event->getRouteCollection();
+        foreach ($route_names as $route_name) {
+            if (($route = $routes->get($route_name)) && $route->hasRequirement('_format')) {
+                $formats = explode('|', (string) $route->getRequirement('_format'));
+                $formats = array_unique(array_merge($formats, $this->serializerFormats));
+                $route->setRequirement('_format', implode('|', $formats));
+            }
+        }
+    }
 
 }

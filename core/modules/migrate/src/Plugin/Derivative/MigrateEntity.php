@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\Derivative;
 
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
@@ -8,66 +10,68 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * The migrate entity deriver.
  */
-class MigrateEntity implements ContainerDeriverInterface {
+class MigrateEntity implements ContainerDeriverInterface
+{
+    /**
+     * List of derivative definitions.
+     *
+     * @var array
+     */
+    protected $derivatives = [];
 
-  /**
-   * List of derivative definitions.
-   *
-   * @var array
-   */
-  protected $derivatives = [];
-
-  /**
-   * Constructs a MigrateEntity object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entityDefinitions
-   *   A list of entity definition objects.
-   */
-  public function __construct(
-      /**
-       * The entity definitions.
-       */
-      protected array $entityDefinitions
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $container->get('entity_type.manager')->getDefinitions()
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinition($derivative_id, $base_plugin_definition) {
-    if (!empty($this->derivatives) && !empty($this->derivatives[$derivative_id])) {
-      return $this->derivatives[$derivative_id];
+    /**
+     * Constructs a MigrateEntity object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface[] $entityDefinitions
+     *   A list of entity definition objects.
+     */
+    public function __construct(
+        /**
+         * The entity definitions.
+         */
+        protected array $entityDefinitions
+    ) {
     }
-    $this->getDerivativeDefinitions($base_plugin_definition);
-    return $this->derivatives[$derivative_id];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    foreach ($this->entityDefinitions as $entity_type => $entity_info) {
-      $class = is_subclass_of($entity_info->getClass(), \Drupal\Core\Config\Entity\ConfigEntityInterface::class) ?
-        \Drupal\migrate\Plugin\migrate\destination\EntityConfigBase::class :
-        \Drupal\migrate\Plugin\migrate\destination\EntityContentBase::class;
-      $this->derivatives[$entity_type] = [
-        'id' => "entity:$entity_type",
-        'class' => $class,
-        'requirements_met' => 1,
-        'provider' => $entity_info->getProvider(),
-      ];
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $container->get('entity_type.manager')->getDefinitions()
+        );
     }
-    return $this->derivatives;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinition($derivative_id, $base_plugin_definition)
+    {
+        if (!empty($this->derivatives) && !empty($this->derivatives[$derivative_id])) {
+            return $this->derivatives[$derivative_id];
+        }
+        $this->getDerivativeDefinitions($base_plugin_definition);
+        return $this->derivatives[$derivative_id];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        foreach ($this->entityDefinitions as $entity_type => $entity_info) {
+            $class = is_subclass_of($entity_info->getClass(), \Drupal\Core\Config\Entity\ConfigEntityInterface::class) ?
+              \Drupal\migrate\Plugin\migrate\destination\EntityConfigBase::class :
+              \Drupal\migrate\Plugin\migrate\destination\EntityContentBase::class;
+            $this->derivatives[$entity_type] = [
+              'id' => "entity:$entity_type",
+              'class' => $class,
+              'requirements_met' => 1,
+              'provider' => $entity_info->getProvider(),
+            ];
+        }
+        return $this->derivatives;
+    }
 
 }

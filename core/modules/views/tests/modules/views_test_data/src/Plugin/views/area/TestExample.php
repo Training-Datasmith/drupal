@@ -14,45 +14,49 @@ use Drupal\views\Plugin\views\area\AreaPluginBase;
  *
  * @see \Drupal\views\Tests\Handler\AreaTest
  */
-#[ViewsArea("test_example")]
-class TestExample extends AreaPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access(AccountInterface $account) {
-    return $this->options['custom_access'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defineOptions() {
-    $options = parent::defineOptions();
-    $options['string'] = ['default' => ''];
-    $options['custom_access'] = ['default' => TRUE];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    parent::buildOptionsForm($form, $form_state);
-    $this->globalTokenForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($empty = FALSE) {
-    if (!$empty || !empty($this->options['empty'])) {
-      return [
-        '#markup' => $this->globalTokenReplace($this->options['string']),
-      ];
+#[ViewsArea('test_example')]
+class TestExample extends AreaPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function access(AccountInterface $account)
+    {
+        return $this->options['custom_access'];
     }
-    return [];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['string'] = ['default' => ''];
+        $options['custom_access'] = ['default' => true];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state)
+    {
+        parent::buildOptionsForm($form, $form_state);
+        $this->globalTokenForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render($empty = false)
+    {
+        if (!$empty || !empty($this->options['empty'])) {
+            return [
+              '#markup' => $this->globalTokenReplace($this->options['string']),
+            ];
+        }
+        return [];
+    }
 
 }

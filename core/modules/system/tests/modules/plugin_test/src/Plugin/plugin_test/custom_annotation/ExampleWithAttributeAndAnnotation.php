@@ -16,4 +16,6 @@ use Drupal\plugin_test\Plugin\Attribute\PluginExample;
  * )
  */
 #[PluginExample('example_attribute_not_annotation')]
-class ExampleWithAttributeAndAnnotation {}
+class ExampleWithAttributeAndAnnotation
+{
+}

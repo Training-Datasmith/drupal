@@ -19,92 +19,94 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ConfigEntityNormalizer::class)]
 #[Group('serialization')]
-class ConfigEntityNormalizerTest extends UnitTestCase {
+class ConfigEntityNormalizerTest extends UnitTestCase
+{
+    /**
+     * Tests the normalize() method.
+     */
+    public function testNormalize(): void
+    {
+        $test_export_properties = [
+          'test' => 'test',
+          '_core' => [
+            'default_config_hash' => $this->randomMachineName(),
+            $this->randomMachineName() => 'some random key',
+          ],
+        ];
 
-  /**
-   * Tests the normalize() method.
-   */
-  public function testNormalize(): void {
-    $test_export_properties = [
-      'test' => 'test',
-      '_core' => [
-        'default_config_hash' => $this->randomMachineName(),
-        $this->randomMachineName() => 'some random key',
-      ],
-    ];
+        $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
+        $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+        $entity_type_repository = $this->createMock(EntityTypeRepositoryInterface::class);
+        $normalizer = new ConfigEntityNormalizer(
+            $entity_type_manager,
+            $entity_type_repository,
+            $entity_field_manager
+        );
 
-    $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_repository = $this->createMock(EntityTypeRepositoryInterface::class);
-    $normalizer = new ConfigEntityNormalizer(
-      $entity_type_manager,
-      $entity_type_repository,
-      $entity_field_manager
-    );
+        $config_entity = $this->createMock('Drupal\Core\Config\Entity\ConfigEntityInterface');
+        $config_entity->expects($this->once())
+          ->method('toArray')
+          ->willReturn($test_export_properties);
 
-    $config_entity = $this->createMock('Drupal\Core\Config\Entity\ConfigEntityInterface');
-    $config_entity->expects($this->once())
-      ->method('toArray')
-      ->willReturn($test_export_properties);
+        $this->assertSame(['test' => 'test'], $normalizer->normalize($config_entity));
+    }
 
-    $this->assertSame(['test' => 'test'], $normalizer->normalize($config_entity));
-  }
+    /**
+     * Tests denormalize.
+     */
+    public function testDenormalize(): void
+    {
+        $test_value = $this->randomMachineName();
+        $data = [
+          'test' => $test_value,
+          '_core' => [
+            'default_config_hash' => $this->randomMachineName(),
+            $this->randomMachineName() => 'some random key',
+          ],
+        ];
 
-  /**
-   * Tests denormalize.
-   */
-  public function testDenormalize(): void {
-    $test_value = $this->randomMachineName();
-    $data = [
-      'test' => $test_value,
-      '_core' => [
-        'default_config_hash' => $this->randomMachineName(),
-        $this->randomMachineName() => 'some random key',
-      ],
-    ];
+        $expected_storage_data = [
+          'test' => $test_value,
+        ];
 
-    $expected_storage_data = [
-      'test' => $test_value,
-    ];
+        // Mock of the entity storage, to test our expectation that the '_core' key
+        // never makes it to that point, thanks to the denormalizer omitting it.
+        $entity_storage = $this->prophesize(EntityStorageInterface::class);
+        $entity_storage->create($expected_storage_data)
+          ->shouldBeCalled()
+          ->will(function ($args) {
+              $entity = new \stdClass();
+              $entity->received_data = $args[0];
+              return $entity;
+          });
 
-    // Mock of the entity storage, to test our expectation that the '_core' key
-    // never makes it to that point, thanks to the denormalizer omitting it.
-    $entity_storage = $this->prophesize(EntityStorageInterface::class);
-    $entity_storage->create($expected_storage_data)
-      ->shouldBeCalled()
-      ->will(function ($args) {
-        $entity = new \stdClass();
-        $entity->received_data = $args[0];
-        return $entity;
-      });
+        // Stubs for the denormalizer going from entity type manager to entity
+        // storage.
+        $entity_type_id = $this->randomMachineName();
+        $entity_type_class = $this->randomMachineName();
+        $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
+        $entity_type_manager->getDefinition($entity_type_id, false)
+          ->willReturn($this->prophesize(ConfigEntityTypeInterface::class)->reveal());
+        $entity_type_manager->getStorage($entity_type_id)
+          ->willReturn($entity_storage->reveal());
+        $entity_type_repository = $this->prophesize(EntityTypeRepositoryInterface::class);
+        $entity_type_repository->getEntityTypeFromClass($entity_type_class)
+          ->willReturn($entity_type_id);
+        $entity_field_manager = $this->prophesize(EntityFieldManagerInterface::class);
+        $normalizer = new ConfigEntityNormalizer($entity_type_manager->reveal(), $entity_type_repository->reveal(), $entity_field_manager->reveal());
 
-    // Stubs for the denormalizer going from entity type manager to entity
-    // storage.
-    $entity_type_id = $this->randomMachineName();
-    $entity_type_class = $this->randomMachineName();
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $entity_type_manager->getDefinition($entity_type_id, FALSE)
-      ->willReturn($this->prophesize(ConfigEntityTypeInterface::class)->reveal());
-    $entity_type_manager->getStorage($entity_type_id)
-      ->willReturn($entity_storage->reveal());
-    $entity_type_repository = $this->prophesize(EntityTypeRepositoryInterface::class);
-    $entity_type_repository->getEntityTypeFromClass($entity_type_class)
-      ->willReturn($entity_type_id);
-    $entity_field_manager = $this->prophesize(EntityFieldManagerInterface::class);
-    $normalizer = new ConfigEntityNormalizer($entity_type_manager->reveal(), $entity_type_repository->reveal(), $entity_field_manager->reveal());
-
-    // Verify the denormalizer still works correctly: the mock above creates an
-    // artificial entity object containing exactly the data it received. It also
-    // should still set _restSubmittedFields correctly.
-    $expected_denormalization = (object) [
-      '_restSubmittedFields' => [
-        'test',
-      ],
-      'received_data' => [
-        'test' => $test_value,
-      ],
-    ];
-    $this->assertEquals($expected_denormalization, $normalizer->denormalize($data, $entity_type_class, 'json'));
-  }
+        // Verify the denormalizer still works correctly: the mock above creates an
+        // artificial entity object containing exactly the data it received. It also
+        // should still set _restSubmittedFields correctly.
+        $expected_denormalization = (object) [
+          '_restSubmittedFields' => [
+            'test',
+          ],
+          'received_data' => [
+            'test' => $test_value,
+          ],
+        ];
+        $this->assertEquals($expected_denormalization, $normalizer->denormalize($data, $entity_type_class, 'json'));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -19,48 +21,51 @@ use Drupal\Core\TypedData\Type\DurationInterface;
  * @see \Drupal\Core\TypedData\Type\DurationIso8601
  */
 #[DataType(
-  id: "timespan",
-  label: new TranslatableMarkup("Time span in seconds"),
+    id: 'timespan',
+    label: new TranslatableMarkup('Time span in seconds'),
 )]
-class TimeSpan extends IntegerData implements DurationInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDuration() {
-    if ($this->value) {
-      // Keep the duration in seconds as there is generally no valid way to
-      // convert it to days, months or years.
-      return new \DateInterval($this->getDurationAsIso8601Abnf());
+class TimeSpan extends IntegerData implements DurationInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getDuration()
+    {
+        if ($this->value) {
+            // Keep the duration in seconds as there is generally no valid way to
+            // convert it to days, months or years.
+            return new \DateInterval($this->getDurationAsIso8601Abnf());
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'string', 'format' => 'duration'])]
-  public function getDurationAsIso8601Abnf(): string {
-    return 'PT' . $this->value . 'S';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setDuration(\DateInterval $duration, $notify = TRUE): void {
-    // Note that this applies the assumption of 12 month's a 30 days and
-    // each year having 365 days. There is no accurate conversion for time spans
-    // exceeding a day.
-    $this->value = ($duration->y * 365 * 24 * 60 * 60) +
-      ($duration->m * 30 * 24 * 60 * 60) +
-      ($duration->d * 24 * 60 * 60) +
-      ($duration->h * 60 * 60) +
-      ($duration->i * 60) +
-       $duration->s;
-
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'string', 'format' => 'duration'])]
+    public function getDurationAsIso8601Abnf(): string
+    {
+        return 'PT' . $this->value . 'S';
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDuration(\DateInterval $duration, $notify = true): void
+    {
+        // Note that this applies the assumption of 12 month's a 30 days and
+        // each year having 365 days. There is no accurate conversion for time spans
+        // exceeding a day.
+        $this->value = ($duration->y * 365 * 24 * 60 * 60) +
+          ($duration->m * 30 * 24 * 60 * 60) +
+          ($duration->d * 24 * 60 * 60) +
+          ($duration->h * 60 * 60) +
+          ($duration->i * 60) +
+           $duration->s;
+
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
+    }
 
 }

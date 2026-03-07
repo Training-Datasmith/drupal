@@ -15,31 +15,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Update')]
 #[CoversFunction('views_update_11201')]
 #[RunTestsInSeparateProcesses]
-class ConfigUpdateTest extends UpdatePathTestBase {
+class ConfigUpdateTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
+          __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-10.3.0.filled.standard.php.gz',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-ban.php',
-      __DIR__ . '/../../../../../system/tests/fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Tests updating views.settings configuration.
+     */
+    public function testConfigUpdate(): void
+    {
+        $config = \Drupal::configFactory()->get('views.settings');
+        $this->assertFalse($config->get('ui.show.advanced_column'));
 
-  /**
-   * Tests updating views.settings configuration.
-   */
-  public function testConfigUpdate(): void {
-    $config = \Drupal::configFactory()->get('views.settings');
-    $this->assertFalse($config->get('ui.show.advanced_column'));
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $config = \Drupal::configFactory()->get('views.settings');
-    $this->assertNull($config->get('ui.show.advanced_column'));
-  }
+        $config = \Drupal::configFactory()->get('views.settings');
+        $this->assertNull($config->get('ui.show.advanced_column'));
+    }
 
 }

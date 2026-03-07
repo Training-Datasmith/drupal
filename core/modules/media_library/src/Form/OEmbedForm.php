@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library\Form;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -7,8 +9,6 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\media\OEmbed\ResourceException;
-use Drupal\media\OEmbed\ResourceFetcherInterface;
-use Drupal\media\OEmbed\UrlResolverInterface;
 use Drupal\media\Plugin\media\Source\OEmbedInterface;
 use Drupal\media_library\MediaLibraryUiBuilder;
 use Drupal\media_library\OpenerResolverInterface;
@@ -20,143 +20,149 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Form classes are internal.
  */
-class OEmbedForm extends AddFormBase {
-
-  /**
-   * Constructs a new OEmbedForm.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
-   *   The media library UI builder.
-   * @param \Drupal\media\OEmbed\UrlResolverInterface $urlResolver
-   *   The oEmbed URL resolver service.
-   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher
-   *   The oEmbed resource fetcher service.
-   * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
-   *   The opener resolver.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\media\OEmbed\UrlResolverInterface $urlResolver, protected \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher, ?OpenerResolverInterface $opener_resolver = NULL) {
-    parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('media_library.ui_builder'),
-      $container->get('media.oembed.url_resolver'),
-      $container->get('media.oembed.resource_fetcher'),
-      $container->get('media_library.opener_resolver')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return $this->getBaseFormId() . '_oembed';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getMediaType(FormStateInterface $form_state) {
-    if ($this->mediaType) {
-      return $this->mediaType;
+class OEmbedForm extends AddFormBase
+{
+    /**
+     * Constructs a new OEmbedForm.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
+     *   The media library UI builder.
+     * @param \Drupal\media\OEmbed\UrlResolverInterface $urlResolver
+     *   The oEmbed URL resolver service.
+     * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher
+     *   The oEmbed resource fetcher service.
+     * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
+     *   The opener resolver.
+     */
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\media\OEmbed\UrlResolverInterface $urlResolver, protected \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher, ?OpenerResolverInterface $opener_resolver = null)
+    {
+        parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
     }
 
-    $media_type = parent::getMediaType($form_state);
-    if (!$media_type->getSource() instanceof OEmbedInterface) {
-      throw new \InvalidArgumentException('Can only add media types which use an oEmbed source plugin.');
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity_type.manager'),
+            $container->get('media_library.ui_builder'),
+            $container->get('media.oembed.url_resolver'),
+            $container->get('media.oembed.resource_fetcher'),
+            $container->get('media_library.opener_resolver')
+        );
     }
-    return $media_type;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function buildInputElement(array $form, FormStateInterface $form_state): array {
-    $media_type = $this->getMediaType($form_state);
-    $providers = $media_type->getSource()->getProviders();
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return $this->getBaseFormId() . '_oembed';
+    }
 
-    // Add a container to group the input elements for styling purposes.
-    $form['container'] = [
-      '#type' => 'container',
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function getMediaType(FormStateInterface $form_state)
+    {
+        if ($this->mediaType) {
+            return $this->mediaType;
+        }
 
-    $form['container']['url'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Add @type via URL', [
-        '@type' => $this->getMediaType($form_state)->label(),
-      ]),
-      '#description' => $this->t('Allowed providers: @providers.', [
-        '@providers' => implode(', ', $providers),
-      ]),
-      '#required' => TRUE,
-      '#attributes' => [
-        'placeholder' => 'https://',
-      ],
-    ];
+        $media_type = parent::getMediaType($form_state);
+        if (!$media_type->getSource() instanceof OEmbedInterface) {
+            throw new \InvalidArgumentException('Can only add media types which use an oEmbed source plugin.');
+        }
+        return $media_type;
+    }
 
-    $form['container']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Add'),
-      '#button_type' => 'primary',
-      '#validate' => ['::validateUrl'],
-      '#submit' => ['::addButtonSubmit'],
-      // @todo Move validation in https://www.drupal.org/node/2988215
-      '#ajax' => [
-        'callback' => '::updateFormCallback',
-        'wrapper' => 'media-library-wrapper',
-        // Add a fixed URL to post the form since AJAX forms are automatically
-        // posted to <current> instead of $form['#action'].
-        // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
-        //   is fixed.
-        'url' => Url::fromRoute('media_library.ui'),
-        'options' => [
-          'query' => $this->getMediaLibraryState($form_state)->all() + [
-            FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildInputElement(array $form, FormStateInterface $form_state): array
+    {
+        $media_type = $this->getMediaType($form_state);
+        $providers = $media_type->getSource()->getProviders();
+
+        // Add a container to group the input elements for styling purposes.
+        $form['container'] = [
+          '#type' => 'container',
+        ];
+
+        $form['container']['url'] = [
+          '#type' => 'url',
+          '#title' => $this->t('Add @type via URL', [
+            '@type' => $this->getMediaType($form_state)->label(),
+          ]),
+          '#description' => $this->t('Allowed providers: @providers.', [
+            '@providers' => implode(', ', $providers),
+          ]),
+          '#required' => true,
+          '#attributes' => [
+            'placeholder' => 'https://',
           ],
-        ],
-      ],
-    ];
-    return $form;
-  }
+        ];
 
-  /**
-   * Validates the oEmbed URL.
-   *
-   * @param array $form
-   *   The complete form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current form state.
-   */
-  public function validateUrl(array &$form, FormStateInterface $form_state): void {
-    $url = $form_state->getValue('url');
-    if ($url) {
-      try {
-        $resource_url = $this->urlResolver->getResourceUrl($url);
-        $this->resourceFetcher->fetchResource($resource_url);
-      }
-      catch (ResourceException $e) {
-        $form_state->setErrorByName('url', $e->getMessage());
-      }
+        $form['container']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Add'),
+          '#button_type' => 'primary',
+          '#validate' => ['::validateUrl'],
+          '#submit' => ['::addButtonSubmit'],
+          // @todo Move validation in https://www.drupal.org/node/2988215
+          '#ajax' => [
+            'callback' => '::updateFormCallback',
+            'wrapper' => 'media-library-wrapper',
+            // Add a fixed URL to post the form since AJAX forms are automatically
+            // posted to <current> instead of $form['#action'].
+            // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
+            //   is fixed.
+            'url' => Url::fromRoute('media_library.ui'),
+            'options' => [
+              'query' => $this->getMediaLibraryState($form_state)->all() + [
+                FormBuilderInterface::AJAX_FORM_REQUEST => true,
+              ],
+            ],
+          ],
+        ];
+        return $form;
     }
-  }
 
-  /**
-   * Submit handler for the add button.
-   *
-   * @param array $form
-   *   The form render array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   */
-  public function addButtonSubmit(array $form, FormStateInterface $form_state): void {
-    $this->processInputValues([$form_state->getValue('url')], $form, $form_state);
-  }
+    /**
+     * Validates the oEmbed URL.
+     *
+     * @param array $form
+     *   The complete form.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current form state.
+     */
+    public function validateUrl(array &$form, FormStateInterface $form_state): void
+    {
+        $url = $form_state->getValue('url');
+        if ($url) {
+            try {
+                $resource_url = $this->urlResolver->getResourceUrl($url);
+                $this->resourceFetcher->fetchResource($resource_url);
+            } catch (ResourceException $e) {
+                $form_state->setErrorByName('url', $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Submit handler for the add button.
+     *
+     * @param array $form
+     *   The form render array.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The form state.
+     */
+    public function addButtonSubmit(array $form, FormStateInterface $form_state): void
+    {
+        $this->processInputValues([$form_state->getValue('url')], $form, $form_state);
+    }
 
 }

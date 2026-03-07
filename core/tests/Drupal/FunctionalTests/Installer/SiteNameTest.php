@@ -13,36 +13,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class SiteNameTest extends BrowserTestBase {
+class SiteNameTest extends BrowserTestBase
+{
+    /**
+     * The site name to be used when testing.
+     *
+     * @var string
+     */
+    protected $siteName;
 
-  /**
-   * The site name to be used when testing.
-   *
-   * @var string
-   */
-  protected $siteName;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function installParameters()
+    {
+        $this->siteName = $this->randomMachineName();
+        $parameters = parent::installParameters();
+        $parameters['forms']['install_configure_form']['site_name'] = $this->siteName;
+        return $parameters;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function installParameters() {
-    $this->siteName = $this->randomMachineName();
-    $parameters = parent::installParameters();
-    $parameters['forms']['install_configure_form']['site_name'] = $this->siteName;
-    return $parameters;
-  }
-
-  /**
-   * Tests that the desired site name appears on the page after installation.
-   */
-  public function testSiteName(): void {
-    $this->drupalGet('');
-    $this->assertSession()->pageTextContains($this->siteName);
-  }
+    /**
+     * Tests that the desired site name appears on the page after installation.
+     */
+    public function testSiteName(): void
+    {
+        $this->drupalGet('');
+        $this->assertSession()->pageTextContains($this->siteName);
+    }
 
 }

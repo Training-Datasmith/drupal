@@ -21,105 +21,112 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(\Drupal\Component\Datetime\Time::class)]
 #[Group('Datetime')]
-#[PreserveGlobalState(FALSE)]
+#[PreserveGlobalState(false)]
 #[RunTestsInSeparateProcesses]
-class TimeTest extends TestCase {
+class TimeTest extends TestCase
+{
+    /**
+     * The request stack stub.
+     */
+    protected RequestStack&Stub $requestStack;
 
-  /**
-   * The request stack stub.
-   */
-  protected RequestStack&Stub $requestStack;
+    /**
+     * The mocked time class.
+     *
+     * @var \Drupal\Component\Datetime\Time
+     */
+    protected $time;
 
-  /**
-   * The mocked time class.
-   *
-   * @var \Drupal\Component\Datetime\Time
-   */
-  protected $time;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->requestStack = $this->createStub(RequestStack::class);
+        $this->time = new Time($this->requestStack);
+    }
 
-    $this->requestStack = $this->createStub(RequestStack::class);
-    $this->time = new Time($this->requestStack);
-  }
+    /**
+     * Tests the getRequestTime method.
+     */
+    public function testGetRequestTime(): void
+    {
+        $expected = 12345678;
 
-  /**
-   * Tests the getRequestTime method.
-   */
-  public function testGetRequestTime(): void {
-    $expected = 12345678;
+        $request = Request::createFromGlobals();
+        $request->server->set('REQUEST_TIME', $expected);
 
-    $request = Request::createFromGlobals();
-    $request->server->set('REQUEST_TIME', $expected);
+        // Mocks a the request stack getting the current request.
+        $this->requestStack
+          ->method('getCurrentRequest')
+          ->willReturn($request);
 
-    // Mocks a the request stack getting the current request.
-    $this->requestStack
-      ->method('getCurrentRequest')
-      ->willReturn($request);
+        $this->assertEquals($expected, $this->time->getRequestTime());
+    }
 
-    $this->assertEquals($expected, $this->time->getRequestTime());
-  }
+    /**
+     * Tests the getRequestMicroTime method.
+     */
+    public function testGetRequestMicroTime(): void
+    {
+        $expected = 1234567.89;
 
-  /**
-   * Tests the getRequestMicroTime method.
-   */
-  public function testGetRequestMicroTime(): void {
-    $expected = 1234567.89;
+        $request = Request::createFromGlobals();
+        $request->server->set('REQUEST_TIME_FLOAT', $expected);
 
-    $request = Request::createFromGlobals();
-    $request->server->set('REQUEST_TIME_FLOAT', $expected);
+        // Mocks a the request stack getting the current request.
+        $this->requestStack
+          ->method('getCurrentRequest')
+          ->willReturn($request);
 
-    // Mocks a the request stack getting the current request.
-    $this->requestStack
-      ->method('getCurrentRequest')
-      ->willReturn($request);
+        $this->assertEquals($expected, $this->time->getRequestMicroTime());
+    }
 
-    $this->assertEquals($expected, $this->time->getRequestMicroTime());
-  }
+    /**
+     * Tests get request time no request.
+     */
+    public function testGetRequestTimeNoRequest(): void
+    {
+        // With no request, and no global variable, we expect to get the int part
+        // of the microtime.
+        $expected = 1234567;
+        unset($_SERVER['REQUEST_TIME']);
+        $this->assertEquals($expected, $this->time->getRequestTime());
+        $_SERVER['REQUEST_TIME'] = 23456789;
+        $this->assertEquals(23456789, $this->time->getRequestTime());
+    }
 
-  /**
-   * Tests get request time no request.
-   */
-  public function testGetRequestTimeNoRequest(): void {
-    // With no request, and no global variable, we expect to get the int part
-    // of the microtime.
-    $expected = 1234567;
-    unset($_SERVER['REQUEST_TIME']);
-    $this->assertEquals($expected, $this->time->getRequestTime());
-    $_SERVER['REQUEST_TIME'] = 23456789;
-    $this->assertEquals(23456789, $this->time->getRequestTime());
-  }
+    /**
+     * Tests get request micro time no request.
+     */
+    public function testGetRequestMicroTimeNoRequest(): void
+    {
+        $expected = 1234567.89;
+        unset($_SERVER['REQUEST_TIME_FLOAT']);
+        $this->assertEquals($expected, $this->time->getRequestMicroTime());
+        $_SERVER['REQUEST_TIME_FLOAT'] = 2345678.90;
+        $this->assertEquals(2345678.90, $this->time->getRequestMicroTime());
+    }
 
-  /**
-   * Tests get request micro time no request.
-   */
-  public function testGetRequestMicroTimeNoRequest(): void {
-    $expected = 1234567.89;
-    unset($_SERVER['REQUEST_TIME_FLOAT']);
-    $this->assertEquals($expected, $this->time->getRequestMicroTime());
-    $_SERVER['REQUEST_TIME_FLOAT'] = 2345678.90;
-    $this->assertEquals(2345678.90, $this->time->getRequestMicroTime());
-  }
+    /**
+     * Tests the getCurrentTime method.
+     */
+    public function testGetCurrentTime(): void
+    {
+        $expected = 12345678;
+        $this->assertEquals($expected, $this->time->getCurrentTime());
+    }
 
-  /**
-   * Tests the getCurrentTime method.
-   */
-  public function testGetCurrentTime(): void {
-    $expected = 12345678;
-    $this->assertEquals($expected, $this->time->getCurrentTime());
-  }
-
-  /**
-   * Tests the getCurrentMicroTime method.
-   */
-  public function testGetCurrentMicroTime(): void {
-    $expected = 1234567.89;
-    $this->assertEquals($expected, $this->time->getCurrentMicroTime());
-  }
+    /**
+     * Tests the getCurrentMicroTime method.
+     */
+    public function testGetCurrentMicroTime(): void
+    {
+        $expected = 1234567.89;
+        $this->assertEquals($expected, $this->time->getCurrentMicroTime());
+    }
 
 }
 
@@ -131,8 +138,9 @@ namespace Drupal\Component\Datetime;
  * @return int
  *   The fixed integer timestamp used for testing purposes.
  */
-function time(): int {
-  return 12345678;
+function time(): int
+{
+    return 12345678;
 }
 
 /**
@@ -141,6 +149,7 @@ function time(): int {
  * @return float
  *   The fixed float timestamp used for testing purposes.
  */
-function microtime(bool $as_float = FALSE): float {
-  return 1234567.89;
+function microtime(bool $as_float = false): float
+{
+    return 1234567.89;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\Action;
 
 use Drupal\Core\Action\Attribute\Action;
@@ -11,17 +13,18 @@ use Drupal\node\NodeInterface;
  * Promotes a node.
  */
 #[Action(
-  id: 'node_promote_action',
-  label: new TranslatableMarkup('Promote selected content to front page'),
-  type: 'node'
+    id: 'node_promote_action',
+    label: new TranslatableMarkup('Promote selected content to front page'),
+    type: 'node'
 )]
-class PromoteNode extends FieldUpdateActionBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getFieldsToUpdate(): array {
-    return ['promote' => NodeInterface::PROMOTED];
-  }
+class PromoteNode extends FieldUpdateActionBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getFieldsToUpdate(): array
+    {
+        return ['promote' => NodeInterface::PROMOTED];
+    }
 
 }

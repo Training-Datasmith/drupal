@@ -14,18 +14,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @see \Drupal\Core\TypedData\OptionsProviderInterface
  */
 #[Constraint(
-  id: 'rest_test_validation',
-  label: new TranslatableMarkup('REST test validation', [], ['context' => 'Validation'])
+    id: 'rest_test_validation',
+    label: new TranslatableMarkup('REST test validation', [], ['context' => 'Validation'])
 )]
-class RestTestConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public string $message = 'REST test validation failed',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class RestTestConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public string $message = 'REST test validation failed',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

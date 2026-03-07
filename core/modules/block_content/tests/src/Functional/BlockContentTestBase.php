@@ -10,59 +10,60 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Sets up block content types.
  */
-abstract class BlockContentTestBase extends BrowserTestBase {
+abstract class BlockContentTestBase extends BrowserTestBase
+{
+    use BlockContentCreationTrait;
 
-  use BlockContentCreationTrait;
+    /**
+     * Profile to use.
+     *
+     * @var string
+     */
+    protected $profile = 'testing';
 
-  /**
-   * Profile to use.
-   *
-   * @var string
-   */
-  protected $profile = 'testing';
+    /**
+     * Admin user.
+     *
+     * @var \Drupal\user\UserInterface
+     */
+    protected $adminUser;
 
-  /**
-   * Admin user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $adminUser;
+    /**
+     * Permissions to grant admin user.
+     *
+     * @var array
+     */
+    protected $permissions = [
+      'administer blocks',
+      'access block library',
+      'administer block types',
+      'administer block content',
+    ];
 
-  /**
-   * Permissions to grant admin user.
-   *
-   * @var array
-   */
-  protected $permissions = [
-    'administer blocks',
-    'access block library',
-    'administer block types',
-    'administer block content',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block', 'block_content'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block', 'block_content'];
+    /**
+     * Whether or not to auto-create the basic block type during setup.
+     *
+     * @var bool
+     */
+    protected $autoCreateBasicBlockType = true;
 
-  /**
-   * Whether or not to auto-create the basic block type during setup.
-   *
-   * @var bool
-   */
-  protected $autoCreateBasicBlockType = TRUE;
+    /**
+     * Sets the test up.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if ($this->autoCreateBasicBlockType) {
+            $this->createBlockContentType(['id' => 'basic'], true);
+        }
 
-  /**
-   * Sets the test up.
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    if ($this->autoCreateBasicBlockType) {
-      $this->createBlockContentType(['id' => 'basic'], TRUE);
+        $this->adminUser = $this->drupalCreateUser($this->permissions);
+        $this->drupalPlaceBlock('local_actions_block');
     }
-
-    $this->adminUser = $this->drupalCreateUser($this->permissions);
-    $this->drupalPlaceBlock('local_actions_block');
-  }
 
 }

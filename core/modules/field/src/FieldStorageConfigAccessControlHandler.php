@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,20 +14,21 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\field\Entity\FieldStorageConfig
  */
-class FieldStorageConfigAccessControlHandler extends EntityAccessControlHandler {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\field\FieldStorageConfigInterface $entity */
-    if ($operation !== 'delete') {
-      return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields');
+class FieldStorageConfigAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        /** @var \Drupal\field\FieldStorageConfigInterface $entity */
+        if ($operation !== 'delete') {
+            return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields');
+        }
+        if ($entity->isLocked()) {
+            return AccessResult::forbidden()->addCacheableDependency($entity);
+        }
+        return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields')->addCacheableDependency($entity);
     }
-    if ($entity->isLocked()) {
-      return AccessResult::forbidden()->addCacheableDependency($entity);
-    }
-    return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields')->addCacheableDependency($entity);
-  }
 
 }

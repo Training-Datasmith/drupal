@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -13,56 +15,59 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * validated value is an *entity* of a particular bundle.
  */
 #[Constraint(
-  id: 'Bundle',
-  label: new TranslatableMarkup('Bundle', [], ['context' => 'Validation']),
-  type: ['entity', 'entity_reference']
+    id: 'Bundle',
+    label: new TranslatableMarkup('Bundle', [], ['context' => 'Validation']),
+    type: ['entity', 'entity_reference']
 )]
-class BundleConstraint extends SymfonyConstraint {
+class BundleConstraint extends SymfonyConstraint
+{
+    /**
+     * The bundle option.
+     *
+     * @var string|array
+     */
+    public $bundle;
 
-  /**
-   * The bundle option.
-   *
-   * @var string|array
-   */
-  public $bundle;
-
-  public function __construct(
-    mixed $options = NULL,
-    string|array|null $bundle = NULL,
-    public $message = 'The entity must be of bundle %bundle.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->bundle = $bundle ?? $this->bundle;
-  }
-
-  /**
-   * Gets the bundle option as array.
-   *
-   * @return array
-   *   An array of bundle options.
-   */
-  public function getBundleOption() {
-    // Support passing the bundle as string, but force it to be an array.
-    if (!is_array($this->bundle)) {
-      $this->bundle = [$this->bundle];
+    public function __construct(
+        mixed $options = null,
+        string|array|null $bundle = null,
+        public $message = 'The entity must be of bundle %bundle.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->bundle = $bundle ?? $this->bundle;
     }
-    return $this->bundle;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultOption(): ?string {
-    return 'bundle';
-  }
+    /**
+     * Gets the bundle option as array.
+     *
+     * @return array
+     *   An array of bundle options.
+     */
+    public function getBundleOption()
+    {
+        // Support passing the bundle as string, but force it to be an array.
+        if (!is_array($this->bundle)) {
+            $this->bundle = [$this->bundle];
+        }
+        return $this->bundle;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequiredOptions(): array {
-    return ['bundle'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultOption(): ?string
+    {
+        return 'bundle';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredOptions(): array
+    {
+        return ['bundle'];
+    }
 
 }

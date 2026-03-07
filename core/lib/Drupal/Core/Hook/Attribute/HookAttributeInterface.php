@@ -12,4 +12,6 @@ namespace Drupal\Core\Hook\Attribute;
  *
  * @internal
  */
-interface HookAttributeInterface {}
+interface HookAttributeInterface
+{
+}

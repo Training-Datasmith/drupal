@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ImageToolkit;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -17,113 +19,118 @@ use Psr\Log\LoggerInterface;
  * @see \Drupal\Core\ImageToolkit\ImageToolkitManager
  * @see plugin_api
  */
-abstract class ImageToolkitBase extends PluginBase implements ImageToolkitInterface, ContainerFactoryPluginInterface {
+abstract class ImageToolkitBase extends PluginBase implements ImageToolkitInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * Path of the image file.
+     *
+     * @var string
+     */
+    protected $source = '';
 
-  /**
-   * Path of the image file.
-   *
-   * @var string
-   */
-  protected $source = '';
-
-  /**
-   * Constructs an ImageToolkitBase object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\ImageToolkit\ImageToolkitOperationManagerInterface $operationManager
-   *   The toolkit operation manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   */
-  public function __construct(
-    array $configuration,
-    string $plugin_id,
-    array $plugin_definition,
-    protected readonly ImageToolkitOperationManagerInterface $operationManager,
-    protected readonly LoggerInterface $logger,
-    protected readonly ConfigFactoryInterface $configFactory,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setSource($source) {
-    // If a previous image has been loaded, there is no way to know if the
-    // toolkit implementation needs to perform any additional actions like
-    // freeing memory. Therefore, the source image cannot be changed once set.
-    if ($this->source) {
-      throw new \BadMethodCallException(__METHOD__ . '() may only be called once');
+    /**
+     * Constructs an ImageToolkitBase object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param array $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\ImageToolkit\ImageToolkitOperationManagerInterface $operationManager
+     *   The toolkit operation manager.
+     * @param \Psr\Log\LoggerInterface $logger
+     *   A logger instance.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+     *   The config factory.
+     */
+    public function __construct(
+        array $configuration,
+        string $plugin_id,
+        array $plugin_definition,
+        protected readonly ImageToolkitOperationManagerInterface $operationManager,
+        protected readonly LoggerInterface $logger,
+        protected readonly ConfigFactoryInterface $configFactory,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    $this->source = $source;
-    return $this;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSource() {
-    return $this->source;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequirements() {
-    return [];
-  }
-
-  /**
-   * Gets a toolkit operation plugin instance.
-   *
-   * @param string $operation
-   *   The toolkit operation requested.
-   *
-   * @return \Drupal\Core\ImageToolkit\ImageToolkitOperationInterface
-   *   An instance of the requested toolkit operation plugin.
-   */
-  protected function getToolkitOperation($operation) {
-    return $this->operationManager->getToolkitOperation($this, $operation);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function apply($operation, array $arguments = []) {
-    try {
-      // Get the plugin to use for the operation and apply the operation.
-      return $this->getToolkitOperation($operation)->apply($arguments);
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
     }
-    catch (PluginNotFoundException) {
-      $this->logger->error("The selected image handling toolkit '@toolkit' can not process operation '@operation'.", [
-        '@toolkit' => $this->getPluginId(),
-        '@operation' => $operation,
-      ]);
-      return FALSE;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setSource($source)
+    {
+        // If a previous image has been loaded, there is no way to know if the
+        // toolkit implementation needs to perform any additional actions like
+        // freeing memory. Therefore, the source image cannot be changed once set.
+        if ($this->source) {
+            throw new \BadMethodCallException(__METHOD__ . '() may only be called once');
+        }
+        $this->source = $source;
+        return $this;
     }
-    catch (\Throwable $t) {
-      $this->logger->warning("The image toolkit '@toolkit' failed processing '@operation' for image '@image'. Reported error: @class - @message", [
-        '@toolkit' => $this->getPluginId(),
-        '@operation' => $operation,
-        '@image' => $this->getSource(),
-        '@class' => $t::class,
-        '@message' => $t->getMessage(),
-      ]);
-      return FALSE;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSource()
+    {
+        return $this->source;
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequirements()
+    {
+        return [];
+    }
+
+    /**
+     * Gets a toolkit operation plugin instance.
+     *
+     * @param string $operation
+     *   The toolkit operation requested.
+     *
+     * @return \Drupal\Core\ImageToolkit\ImageToolkitOperationInterface
+     *   An instance of the requested toolkit operation plugin.
+     */
+    protected function getToolkitOperation($operation)
+    {
+        return $this->operationManager->getToolkitOperation($this, $operation);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function apply($operation, array $arguments = [])
+    {
+        try {
+            // Get the plugin to use for the operation and apply the operation.
+            return $this->getToolkitOperation($operation)->apply($arguments);
+        } catch (PluginNotFoundException) {
+            $this->logger->error("The selected image handling toolkit '@toolkit' can not process operation '@operation'.", [
+              '@toolkit' => $this->getPluginId(),
+              '@operation' => $operation,
+            ]);
+            return false;
+        } catch (\Throwable $t) {
+            $this->logger->warning("The image toolkit '@toolkit' failed processing '@operation' for image '@image'. Reported error: @class - @message", [
+              '@toolkit' => $this->getPluginId(),
+              '@operation' => $operation,
+              '@image' => $this->getSource(),
+              '@class' => $t::class,
+              '@message' => $t->getMessage(),
+            ]);
+            return false;
+        }
+    }
 
 }

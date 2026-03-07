@@ -16,6 +16,6 @@ namespace Drupal\Core\Hook\Attribute;
  * - hook_preprocess_HOOK()
  */
 #[\Attribute(\Attribute::TARGET_FUNCTION)]
-class ProceduralHookScanStop {
-
+class ProceduralHookScanStop
+{
 }

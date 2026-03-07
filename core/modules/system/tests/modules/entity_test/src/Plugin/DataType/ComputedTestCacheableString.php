@@ -17,11 +17,11 @@ use Drupal\Core\TypedData\Plugin\DataType\StringData;
  * any PHP variable that casts to a string may be passed.
  */
 #[DataType(
-  id: "computed_test_cacheable_string",
-  label: new TranslatableMarkup("Computed Test Cacheable String"),
+    id: 'computed_test_cacheable_string',
+    label: new TranslatableMarkup('Computed Test Cacheable String'),
 )]
-class ComputedTestCacheableString extends StringData implements RefinableCacheableDependencyInterface {
-
-  use RefinableCacheableDependencyTrait;
+class ComputedTestCacheableString extends StringData implements RefinableCacheableDependencyInterface
+{
+    use RefinableCacheableDependencyTrait;
 
 }

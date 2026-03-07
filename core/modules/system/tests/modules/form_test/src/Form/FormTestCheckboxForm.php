@@ -13,88 +13,91 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  *
  * @internal
  */
-class FormTestCheckboxForm extends FormBase {
+class FormTestCheckboxForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return '_test_checkbox_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return '_test_checkbox_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        // A required checkbox.
+        $form['required_checkbox'] = [
+          '#type' => 'checkbox',
+          '#required' => true,
+          '#title' => 'required_checkbox',
+        ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    // A required checkbox.
-    $form['required_checkbox'] = [
-      '#type' => 'checkbox',
-      '#required' => TRUE,
-      '#title' => 'required_checkbox',
-    ];
+        // A disabled checkbox should get its default value back.
+        $form['disabled_checkbox_on'] = [
+          '#type' => 'checkbox',
+          '#disabled' => true,
+          '#return_value' => 'disabled_checkbox_on',
+          '#default_value' => 'disabled_checkbox_on',
+          '#title' => 'disabled_checkbox_on',
+        ];
+        $form['disabled_checkbox_off'] = [
+          '#type' => 'checkbox',
+          '#disabled' => true,
+          '#return_value' => 'disabled_checkbox_off',
+          '#default_value' => null,
+          '#title' => 'disabled_checkbox_off',
+        ];
 
-    // A disabled checkbox should get its default value back.
-    $form['disabled_checkbox_on'] = [
-      '#type' => 'checkbox',
-      '#disabled' => TRUE,
-      '#return_value' => 'disabled_checkbox_on',
-      '#default_value' => 'disabled_checkbox_on',
-      '#title' => 'disabled_checkbox_on',
-    ];
-    $form['disabled_checkbox_off'] = [
-      '#type' => 'checkbox',
-      '#disabled' => TRUE,
-      '#return_value' => 'disabled_checkbox_off',
-      '#default_value' => NULL,
-      '#title' => 'disabled_checkbox_off',
-    ];
+        // A checkbox is active when #default_value == #return_value.
+        $form['checkbox_on'] = [
+          '#type' => 'checkbox',
+          '#return_value' => 'checkbox_on',
+          '#default_value' => 'checkbox_on',
+          '#title' => 'checkbox_on',
+        ];
 
-    // A checkbox is active when #default_value == #return_value.
-    $form['checkbox_on'] = [
-      '#type' => 'checkbox',
-      '#return_value' => 'checkbox_on',
-      '#default_value' => 'checkbox_on',
-      '#title' => 'checkbox_on',
-    ];
+        // But inactive in any other case.
+        $form['checkbox_off'] = [
+          '#type' => 'checkbox',
+          '#return_value' => 'checkbox_off',
+          '#default_value' => 'checkbox_on',
+          '#title' => 'checkbox_off',
+        ];
 
-    // But inactive in any other case.
-    $form['checkbox_off'] = [
-      '#type' => 'checkbox',
-      '#return_value' => 'checkbox_off',
-      '#default_value' => 'checkbox_on',
-      '#title' => 'checkbox_off',
-    ];
+        // Checkboxes with a #return_value of '0' are supported.
+        $form['zero_checkbox_on'] = [
+          '#type' => 'checkbox',
+          '#return_value' => '0',
+          '#default_value' => '0',
+          '#title' => 'zero_checkbox_on',
+        ];
 
-    // Checkboxes with a #return_value of '0' are supported.
-    $form['zero_checkbox_on'] = [
-      '#type' => 'checkbox',
-      '#return_value' => '0',
-      '#default_value' => '0',
-      '#title' => 'zero_checkbox_on',
-    ];
+        // In that case, passing a #default_value != '0'
+        // means that the checkbox is off.
+        $form['zero_checkbox_off'] = [
+          '#type' => 'checkbox',
+          '#return_value' => '0',
+          '#default_value' => '1',
+          '#title' => 'zero_checkbox_off',
+        ];
 
-    // In that case, passing a #default_value != '0'
-    // means that the checkbox is off.
-    $form['zero_checkbox_off'] = [
-      '#type' => 'checkbox',
-      '#return_value' => '0',
-      '#default_value' => '1',
-      '#title' => 'zero_checkbox_off',
-    ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Submit'),
+        ];
 
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit'),
-    ];
+        return $form;
+    }
 
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setResponse(new JsonResponse($form_state->getValues()));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $form_state->setResponse(new JsonResponse($form_state->getValues()));
+    }
 
 }

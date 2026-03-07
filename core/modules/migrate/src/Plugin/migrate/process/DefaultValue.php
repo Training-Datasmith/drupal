@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
@@ -43,19 +45,20 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "default_value",
-  handle_multiples: TRUE,
+    id: 'default_value',
+    handle_multiples: true,
 )]
-class DefaultValue extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if (!empty($this->configuration['strict'])) {
-      return $value ?? $this->configuration['default_value'];
+class DefaultValue extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if (!empty($this->configuration['strict'])) {
+            return $value ?? $this->configuration['default_value'];
+        }
+        return $value ?: $this->configuration['default_value'];
     }
-    return $value ?: $this->configuration['default_value'];
-  }
 
 }

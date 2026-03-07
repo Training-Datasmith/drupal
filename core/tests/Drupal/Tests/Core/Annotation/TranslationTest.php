@@ -17,65 +17,68 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Translation::class)]
 #[Group('Annotation')]
-class TranslationTest extends UnitTestCase {
+class TranslationTest extends UnitTestCase
+{
+    /**
+     * The translation manager used for testing.
+     *
+     * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $translationManager;
 
-  /**
-   * The translation manager used for testing.
-   *
-   * @var \Drupal\Core\StringTranslation\TranslationInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $translationManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->translationManager = $this->getStringTranslationStub();
+    }
 
-    $this->translationManager = $this->getStringTranslationStub();
-  }
+    /**
+     * Tests get.
+     */
+    #[DataProvider('providerTestGet')]
+    public function testGet(array $values, $expected): void
+    {
+        $container = new ContainerBuilder();
+        $container->set('string_translation', $this->translationManager);
+        \Drupal::setContainer($container);
 
-  /**
-   * Tests get.
-   */
-  #[DataProvider('providerTestGet')]
-  public function testGet(array $values, $expected): void {
-    $container = new ContainerBuilder();
-    $container->set('string_translation', $this->translationManager);
-    \Drupal::setContainer($container);
+        $annotation = new Translation($values);
 
-    $annotation = new Translation($values);
+        $this->assertSame($expected, (string) $annotation->get());
+    }
 
-    $this->assertSame($expected, (string) $annotation->get());
-  }
+    /**
+     * Provides data to self::testGet().
+     */
+    public static function providerTestGet(): array
+    {
+        $data = [];
+        $data[] = [
+          [
+            'value' => 'Foo',
+          ],
+          'Foo',
+        ];
+        $random = Random::machineName();
+        $random_html_entity = '&' . $random;
+        $data[] = [
+          [
+            'value' => 'Foo @bar @baz %qux',
+            'arguments' => [
+              '@bar' => $random,
+              '@baz' => $random_html_entity,
+              '%qux' => $random_html_entity,
+            ],
+            'context' => Random::machineName(),
+          ],
+          'Foo ' . $random . ' &amp;' . $random . ' <em class="placeholder">&amp;' . $random . '</em>',
+        ];
 
-  /**
-   * Provides data to self::testGet().
-   */
-  public static function providerTestGet(): array {
-    $data = [];
-    $data[] = [
-      [
-        'value' => 'Foo',
-      ],
-      'Foo',
-    ];
-    $random = Random::machineName();
-    $random_html_entity = '&' . $random;
-    $data[] = [
-      [
-        'value' => 'Foo @bar @baz %qux',
-        'arguments' => [
-          '@bar' => $random,
-          '@baz' => $random_html_entity,
-          '%qux' => $random_html_entity,
-        ],
-        'context' => Random::machineName(),
-      ],
-      'Foo ' . $random . ' &amp;' . $random . ' <em class="placeholder">&amp;' . $random . '</em>',
-    ];
-
-    return $data;
-  }
+        return $data;
+    }
 
 }

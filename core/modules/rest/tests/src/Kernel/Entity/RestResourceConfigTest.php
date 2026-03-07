@@ -17,40 +17,41 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(RestResourceConfig::class)]
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class RestResourceConfigTest extends KernelTestBase {
+class RestResourceConfigTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'rest',
+      'entity_test',
+      'serialization',
+      'basic_auth',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'rest',
-    'entity_test',
-    'serialization',
-    'basic_auth',
-    'user',
-  ];
+    /**
+     * Tests calculate dependencies.
+     */
+    public function testCalculateDependencies(): void
+    {
+        $rest_config = RestResourceConfig::create([
+          'plugin_id' => 'entity:entity_test',
+          'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
+          'configuration' => [
+            'GET' => [
+              'supported_auth' => ['cookie'],
+              'supported_formats' => ['json'],
+            ],
+            'POST' => [
+              'supported_auth' => ['basic_auth'],
+              'supported_formats' => ['json'],
+            ],
+          ],
+        ]);
 
-  /**
-   * Tests calculate dependencies.
-   */
-  public function testCalculateDependencies(): void {
-    $rest_config = RestResourceConfig::create([
-      'plugin_id' => 'entity:entity_test',
-      'granularity' => RestResourceConfigInterface::METHOD_GRANULARITY,
-      'configuration' => [
-        'GET' => [
-          'supported_auth' => ['cookie'],
-          'supported_formats' => ['json'],
-        ],
-        'POST' => [
-          'supported_auth' => ['basic_auth'],
-          'supported_formats' => ['json'],
-        ],
-      ],
-    ]);
-
-    $rest_config->calculateDependencies();
-    $this->assertEquals(['module' => ['basic_auth', 'entity_test', 'serialization', 'user']], $rest_config->getDependencies());
-  }
+        $rest_config->calculateDependencies();
+        $this->assertEquals(['module' => ['basic_auth', 'entity_test', 'serialization', 'user']], $rest_config->getDependencies());
+    }
 
 }

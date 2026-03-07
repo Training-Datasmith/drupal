@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Component\EventDispatcher\Event;
@@ -7,39 +9,41 @@ use Drupal\Component\EventDispatcher\Event;
 /**
  * Defines a base class for all entity type events.
  */
-class EntityTypeEvent extends Event {
+class EntityTypeEvent extends Event
+{
+    /**
+     * Constructs a new EntityTypeEvent.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
+     *   The field storage definition.
+     * @param \Drupal\Core\Entity\EntityTypeInterface $original
+     *   (optional) The original entity type. This should be passed only when
+     *   updating the entity type.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeInterface $entityType, protected ?\Drupal\Core\Entity\EntityTypeInterface $original = null)
+    {
+    }
 
-  /**
-   * Constructs a new EntityTypeEvent.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
-   *   The field storage definition.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $original
-   *   (optional) The original entity type. This should be passed only when
-   *   updating the entity type.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeInterface $entityType, protected ?\Drupal\Core\Entity\EntityTypeInterface $original = NULL)
-  {
-  }
+    /**
+     * The entity type the event refers to.
+     *
+     * @return \Drupal\Core\Entity\EntityTypeInterface
+     *   The entity type.
+     */
+    public function getEntityType()
+    {
+        return $this->entityType;
+    }
 
-  /**
-   * The entity type the event refers to.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
-   *   The entity type.
-   */
-  public function getEntityType() {
-    return $this->entityType;
-  }
-
-  /**
-   * The original entity type.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
-   *   The original entity type.
-   */
-  public function getOriginal() {
-    return $this->original;
-  }
+    /**
+     * The original entity type.
+     *
+     * @return \Drupal\Core\Entity\EntityTypeInterface
+     *   The original entity type.
+     */
+    public function getOriginal()
+    {
+        return $this->original;
+    }
 
 }

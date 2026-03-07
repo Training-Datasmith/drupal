@@ -15,20 +15,21 @@ use Symfony\Component\Routing\Route;
 /**
  * Provides an access check for non-reusable block content entities.
  */
-class BlockContentIsReusableAccessCheck implements AccessInterface {
-
-  /**
-   * Checks a block_content entity is reusable.
-   */
-  public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account): AccessResultInterface {
-    $parameters = $route_match->getParameters();
-    if ($parameters->has('block_content')) {
-      $entity = $parameters->get('block_content');
-      if ($entity instanceof BlockContentInterface) {
-        return AccessResult::allowedIf($entity->isReusable());
-      }
+class BlockContentIsReusableAccessCheck implements AccessInterface
+{
+    /**
+     * Checks a block_content entity is reusable.
+     */
+    public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account): AccessResultInterface
+    {
+        $parameters = $route_match->getParameters();
+        if ($parameters->has('block_content')) {
+            $entity = $parameters->get('block_content');
+            if ($entity instanceof BlockContentInterface) {
+                return AccessResult::allowedIf($entity->isReusable());
+            }
+        }
+        return AccessResult::neutral();
     }
-    return AccessResult::neutral();
-  }
 
 }

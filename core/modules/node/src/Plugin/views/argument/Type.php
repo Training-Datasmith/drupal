@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\argument;
 
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\views\Attribute\ViewsArgument;
 use Drupal\views\Plugin\views\argument\StringArgument;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -11,59 +12,64 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Argument handler to accept a node type.
  */
 #[ViewsArgument(
-  id: 'node_type',
+    id: 'node_type',
 )]
-class Type extends StringArgument {
+class Type extends StringArgument
+{
+    /**
+     * Constructs a new Node Type object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $nodeTypeStorage
+     *   The entity storage class.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityStorageInterface $nodeTypeStorage)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+    }
 
-  /**
-   * Constructs a new Node Type object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $nodeTypeStorage
-   *   The entity storage class.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityStorageInterface $nodeTypeStorage) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        $entity_type_manager = $container->get('entity_type.manager');
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $entity_type_manager->getStorage('node_type')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    $entity_type_manager = $container->get('entity_type.manager');
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $entity_type_manager->getStorage('node_type')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryName($data)
+    {
+        return $this->node_type($data->{$this->name_alias});
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryName($data) {
-    return $this->node_type($data->{$this->name_alias});
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function title()
+    {
+        return $this->node_type($this->argument);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function title() {
-    return $this->node_type($this->argument);
-  }
-
-  /**
-   * Returns the label for the given node type.
-   */
-  public function node_type($type_name) {
-    $type = $this->nodeTypeStorage->load($type_name);
-    return $type ? $type->label() : $this->t('Unknown content type');
-  }
+    /**
+     * Returns the label for the given node type.
+     */
+    public function node_type($type_name)
+    {
+        $type = $this->nodeTypeStorage->load($type_name);
+        return $type ? $type->label() : $this->t('Unknown content type');
+    }
 
 }

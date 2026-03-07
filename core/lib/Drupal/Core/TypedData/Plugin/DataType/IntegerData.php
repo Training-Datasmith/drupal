@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -15,17 +17,18 @@ use Drupal\Core\TypedData\Type\IntegerInterface;
  * any PHP variable that casts to an integer may be passed.
  */
 #[DataType(
-  id: "integer",
-  label: new TranslatableMarkup("Integer")
+    id: 'integer',
+    label: new TranslatableMarkup('Integer')
 )]
-class IntegerData extends PrimitiveBase implements IntegerInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'integer'])]
-  public function getCastedValue(): int {
-    return (int) $this->value;
-  }
+class IntegerData extends PrimitiveBase implements IntegerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'integer'])]
+    public function getCastedValue(): int
+    {
+        return (int) $this->value;
+    }
 
 }

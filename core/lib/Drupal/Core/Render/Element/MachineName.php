@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Component\Utility\NestedArray;
@@ -72,241 +74,244 @@ use Drupal\Core\Render\Attribute\FormElement;
  * @see \Drupal\Core\Render\Element\Textfield
  */
 #[FormElement('machine_name')]
-class MachineName extends Textfield {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#default_value' => NULL,
-      '#required' => TRUE,
-      '#maxlength' => 64,
-      '#size' => 60,
-      '#autocomplete_route_name' => FALSE,
-      '#process' => [
-        [static::class, 'processMachineName'],
-        [static::class, 'processAutocomplete'],
-        [static::class, 'processAjaxForm'],
-      ],
-      '#element_validate' => [
-        [static::class, 'validateMachineName'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderTextfield'],
-      ],
-      '#theme' => 'input__textfield',
-      '#theme_wrappers' => ['form_element'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
-    if ($input !== FALSE && $input !== NULL) {
-      // This should be a string, but allow other scalars since they might be
-      // valid input in programmatic form submissions.
-      return is_scalar($input) ? (string) $input : '';
-    }
-    return NULL;
-  }
-
-  /**
-   * Processes a machine-readable name form element.
-   *
-   * @param array $element
-   *   The form element to process. See main class documentation for properties.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param array $complete_form
-   *   The complete form structure.
-   *
-   * @return array
-   *   The processed element.
-   */
-  public static function processMachineName(array &$element, FormStateInterface $form_state, &$complete_form): array {
-    // We need to pass the langcode to the client.
-    $language = \Drupal::languageManager()->getCurrentLanguage();
-
-    // Apply default form element properties.
-    $element += [
-      '#title' => t('Machine-readable name'),
-      '#description' => t('A unique machine-readable name. Can only contain lowercase letters, numbers, and underscores.'),
-      '#machine_name' => [],
-      '#field_prefix' => '',
-      '#field_suffix' => '',
-      '#suffix' => '',
-    ];
-    // A form element that only wants to set one #machine_name property (usually
-    // 'source' only) would leave all other properties undefined, if the
-    // defaults were defined by an element plugin. Therefore, we apply the
-    // defaults here.
-    $element['#machine_name'] += [
-      'source' => ['label'],
-      'target' => '#' . $element['#id'],
-      'label' => t('Machine name'),
-      'replace_pattern' => '[^a-z0-9_]+',
-      'replace' => '_',
-      'standalone' => FALSE,
-      'field_prefix' => $element['#field_prefix'],
-      'field_suffix' => $element['#field_suffix'],
-    ];
-
-    // Store the initial value in form state. The machine name needs this to
-    // ensure that the exists function is not called for existing values when
-    // editing them.
-    $initial_values = $form_state->get('machine_name.initial_values') ?: [];
-    // Store the initial values in an array so we can differentiate between a
-    // NULL default value and a new machine name element.
-    if (!array_key_exists($element['#name'], $initial_values)) {
-      $initial_values[$element['#name']] = $element['#default_value'];
-      $form_state->set('machine_name.initial_values', $initial_values);
+class MachineName extends Textfield
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#default_value' => null,
+          '#required' => true,
+          '#maxlength' => 64,
+          '#size' => 60,
+          '#autocomplete_route_name' => false,
+          '#process' => [
+            [static::class, 'processMachineName'],
+            [static::class, 'processAutocomplete'],
+            [static::class, 'processAjaxForm'],
+          ],
+          '#element_validate' => [
+            [static::class, 'validateMachineName'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderTextfield'],
+          ],
+          '#theme' => 'input__textfield',
+          '#theme_wrappers' => ['form_element'],
+        ];
     }
 
-    // By default, machine names are restricted to Latin alphanumeric
-    // characters. So, default to LTR directionality.
-    if (!isset($element['#attributes'])) {
-      $element['#attributes'] = [];
-    }
-    $element['#attributes'] += ['dir' => LanguageInterface::DIRECTION_LTR];
-
-    // The source element defaults to ['name'], but may have been overridden.
-    if (empty($element['#machine_name']['source'])) {
-      return $element;
-    }
-
-    // Retrieve the form element containing the human-readable name from the
-    // complete form in $form_state. By reference, because we may need to append
-    // a #field_suffix that will hold the live preview.
-    $key_exists = NULL;
-    $source = NestedArray::getValue($form_state->getCompleteForm(), $element['#machine_name']['source'], $key_exists);
-    if (!$key_exists) {
-      return $element;
-    }
-
-    // The source element must be defined before the machine name element.
-    if (!isset($source['#id'])) {
-      $element_parents = implode('][', $element['#array_parents']);
-      $source_parents = implode('][', $element['#machine_name']['source']);
-      throw new \LogicException(sprintf('The machine name element "%s" is defined before the source element "%s", it must be defined after or the source element must specify an id.', $element_parents, $source_parents));
-    }
-
-    $suffix_id = $source['#id'] . '-machine-name-suffix';
-    $element['#machine_name']['suffix'] = '#' . $suffix_id;
-
-    if ($element['#machine_name']['standalone']) {
-      $element['#suffix'] = $element['#suffix'] . ' <small id="' . $suffix_id . '">&nbsp;</small>';
-    }
-    else {
-      // Append a field suffix to the source form element, which will contain
-      // the live preview of the machine name.
-      $source += ['#field_suffix' => ''];
-      $source['#field_suffix'] = $source['#field_suffix'] . ' <small id="' . $suffix_id . '">&nbsp;</small>';
-
-      $parents = array_merge($element['#machine_name']['source'], ['#field_suffix']);
-      NestedArray::setValue($form_state->getCompleteForm(), $parents, $source['#field_suffix']);
-    }
-
-    $element['#attached']['library'][] = 'core/drupal.machine-name';
-    $options = [
-      'replace_pattern',
-      'replace_token',
-      'replace',
-      'maxlength',
-      'target',
-      'label',
-      'field_prefix',
-      'field_suffix',
-      'suffix',
-    ];
-
-    /** @var \Drupal\Core\Access\CsrfTokenGenerator $token_generator */
-    $token_generator = \Drupal::service('csrf_token');
-    $element['#machine_name']['replace_token'] = $token_generator->get($element['#machine_name']['replace_pattern']);
-
-    $element['#attached']['drupalSettings']['machineName']['#' . $source['#id']] = array_intersect_key($element['#machine_name'], array_flip($options));
-    $element['#attached']['drupalSettings']['langcode'] = $language->getId();
-    $element['#attached']['drupalSettings']['transliteration_language_overrides'] = static::getTransliterationLanguageOverrides($language);
-
-    return $element;
-  }
-
-  /**
-   * Form element validation handler for machine_name elements.
-   *
-   * Note that #maxlength is validated by _form_validate() already.
-   *
-   * This checks that the submitted value:
-   * - Does not contain the replacement character only.
-   * - Does not contain disallowed characters.
-   * - Is unique; i.e., does not already exist.
-   * - Does not exceed the maximum length (via #maxlength).
-   * - Cannot be changed after creation (via #disabled).
-   */
-  public static function validateMachineName(array &$element, FormStateInterface $form_state, &$complete_form): void {
-    // Verify that the machine name not only consists of replacement tokens.
-    if (preg_match('@^' . $element['#machine_name']['replace'] . '+$@', (string) $element['#value'])) {
-      $form_state->setError($element, t('The machine-readable name must contain unique characters.'));
-    }
-
-    // Verify that the machine name contains no disallowed characters.
-    if (preg_match('@' . $element['#machine_name']['replace_pattern'] . '@', (string) $element['#value'])) {
-      if (!isset($element['#machine_name']['error'])) {
-        // Since a hyphen is the most common alternative replacement character,
-        // a corresponding validation error message is supported here.
-        if ($element['#machine_name']['replace'] == '-') {
-          $form_state->setError($element, t('The machine-readable name must contain only lowercase letters, numbers, and hyphens.'));
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string
+    {
+        if ($input !== false && $input !== null) {
+            // This should be a string, but allow other scalars since they might be
+            // valid input in programmatic form submissions.
+            return is_scalar($input) ? (string) $input : '';
         }
-        // Otherwise, we assume the default (underscore).
-        else {
-          $form_state->setError($element, t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
+        return null;
+    }
+
+    /**
+     * Processes a machine-readable name form element.
+     *
+     * @param array $element
+     *   The form element to process. See main class documentation for properties.
+     * @param \Drupal\Core\Form\FormStateInterface $form_state
+     *   The current state of the form.
+     * @param array $complete_form
+     *   The complete form structure.
+     *
+     * @return array
+     *   The processed element.
+     */
+    public static function processMachineName(array &$element, FormStateInterface $form_state, &$complete_form): array
+    {
+        // We need to pass the langcode to the client.
+        $language = \Drupal::languageManager()->getCurrentLanguage();
+
+        // Apply default form element properties.
+        $element += [
+          '#title' => t('Machine-readable name'),
+          '#description' => t('A unique machine-readable name. Can only contain lowercase letters, numbers, and underscores.'),
+          '#machine_name' => [],
+          '#field_prefix' => '',
+          '#field_suffix' => '',
+          '#suffix' => '',
+        ];
+        // A form element that only wants to set one #machine_name property (usually
+        // 'source' only) would leave all other properties undefined, if the
+        // defaults were defined by an element plugin. Therefore, we apply the
+        // defaults here.
+        $element['#machine_name'] += [
+          'source' => ['label'],
+          'target' => '#' . $element['#id'],
+          'label' => t('Machine name'),
+          'replace_pattern' => '[^a-z0-9_]+',
+          'replace' => '_',
+          'standalone' => false,
+          'field_prefix' => $element['#field_prefix'],
+          'field_suffix' => $element['#field_suffix'],
+        ];
+
+        // Store the initial value in form state. The machine name needs this to
+        // ensure that the exists function is not called for existing values when
+        // editing them.
+        $initial_values = $form_state->get('machine_name.initial_values') ?: [];
+        // Store the initial values in an array so we can differentiate between a
+        // NULL default value and a new machine name element.
+        if (!array_key_exists($element['#name'], $initial_values)) {
+            $initial_values[$element['#name']] = $element['#default_value'];
+            $form_state->set('machine_name.initial_values', $initial_values);
         }
-      }
-      else {
-        $form_state->setError($element, $element['#machine_name']['error']);
-      }
+
+        // By default, machine names are restricted to Latin alphanumeric
+        // characters. So, default to LTR directionality.
+        if (!isset($element['#attributes'])) {
+            $element['#attributes'] = [];
+        }
+        $element['#attributes'] += ['dir' => LanguageInterface::DIRECTION_LTR];
+
+        // The source element defaults to ['name'], but may have been overridden.
+        if (empty($element['#machine_name']['source'])) {
+            return $element;
+        }
+
+        // Retrieve the form element containing the human-readable name from the
+        // complete form in $form_state. By reference, because we may need to append
+        // a #field_suffix that will hold the live preview.
+        $key_exists = null;
+        $source = NestedArray::getValue($form_state->getCompleteForm(), $element['#machine_name']['source'], $key_exists);
+        if (!$key_exists) {
+            return $element;
+        }
+
+        // The source element must be defined before the machine name element.
+        if (!isset($source['#id'])) {
+            $element_parents = implode('][', $element['#array_parents']);
+            $source_parents = implode('][', $element['#machine_name']['source']);
+            throw new \LogicException(sprintf('The machine name element "%s" is defined before the source element "%s", it must be defined after or the source element must specify an id.', $element_parents, $source_parents));
+        }
+
+        $suffix_id = $source['#id'] . '-machine-name-suffix';
+        $element['#machine_name']['suffix'] = '#' . $suffix_id;
+
+        if ($element['#machine_name']['standalone']) {
+            $element['#suffix'] = $element['#suffix'] . ' <small id="' . $suffix_id . '">&nbsp;</small>';
+        } else {
+            // Append a field suffix to the source form element, which will contain
+            // the live preview of the machine name.
+            $source += ['#field_suffix' => ''];
+            $source['#field_suffix'] = $source['#field_suffix'] . ' <small id="' . $suffix_id . '">&nbsp;</small>';
+
+            $parents = array_merge($element['#machine_name']['source'], ['#field_suffix']);
+            NestedArray::setValue($form_state->getCompleteForm(), $parents, $source['#field_suffix']);
+        }
+
+        $element['#attached']['library'][] = 'core/drupal.machine-name';
+        $options = [
+          'replace_pattern',
+          'replace_token',
+          'replace',
+          'maxlength',
+          'target',
+          'label',
+          'field_prefix',
+          'field_suffix',
+          'suffix',
+        ];
+
+        /** @var \Drupal\Core\Access\CsrfTokenGenerator $token_generator */
+        $token_generator = \Drupal::service('csrf_token');
+        $element['#machine_name']['replace_token'] = $token_generator->get($element['#machine_name']['replace_pattern']);
+
+        $element['#attached']['drupalSettings']['machineName']['#' . $source['#id']] = array_intersect_key($element['#machine_name'], array_flip($options));
+        $element['#attached']['drupalSettings']['langcode'] = $language->getId();
+        $element['#attached']['drupalSettings']['transliteration_language_overrides'] = static::getTransliterationLanguageOverrides($language);
+
+        return $element;
     }
 
-    // Verify that the machine name is unique. If the value matches the initial
-    // default value then it does not need to be validated as the machine name
-    // element assumes the form is editing the existing value.
-    $initial_values = $form_state->get('machine_name.initial_values') ?: [];
-    if (!array_key_exists($element['#name'], $initial_values) || $initial_values[$element['#name']] !== $element['#value']) {
-      $function = $element['#machine_name']['exists'];
-      if (call_user_func($function, $element['#value'], $element, $form_state)) {
-        $form_state->setError($element, t('The machine-readable name is already in use. It must be unique.'));
-      }
+    /**
+     * Form element validation handler for machine_name elements.
+     *
+     * Note that #maxlength is validated by _form_validate() already.
+     *
+     * This checks that the submitted value:
+     * - Does not contain the replacement character only.
+     * - Does not contain disallowed characters.
+     * - Is unique; i.e., does not already exist.
+     * - Does not exceed the maximum length (via #maxlength).
+     * - Cannot be changed after creation (via #disabled).
+     */
+    public static function validateMachineName(array &$element, FormStateInterface $form_state, &$complete_form): void
+    {
+        // Verify that the machine name not only consists of replacement tokens.
+        if (preg_match('@^' . $element['#machine_name']['replace'] . '+$@', (string) $element['#value'])) {
+            $form_state->setError($element, t('The machine-readable name must contain unique characters.'));
+        }
+
+        // Verify that the machine name contains no disallowed characters.
+        if (preg_match('@' . $element['#machine_name']['replace_pattern'] . '@', (string) $element['#value'])) {
+            if (!isset($element['#machine_name']['error'])) {
+                // Since a hyphen is the most common alternative replacement character,
+                // a corresponding validation error message is supported here.
+                if ($element['#machine_name']['replace'] == '-') {
+                    $form_state->setError($element, t('The machine-readable name must contain only lowercase letters, numbers, and hyphens.'));
+                }
+                // Otherwise, we assume the default (underscore).
+                else {
+                    $form_state->setError($element, t('The machine-readable name must contain only lowercase letters, numbers, and underscores.'));
+                }
+            } else {
+                $form_state->setError($element, $element['#machine_name']['error']);
+            }
+        }
+
+        // Verify that the machine name is unique. If the value matches the initial
+        // default value then it does not need to be validated as the machine name
+        // element assumes the form is editing the existing value.
+        $initial_values = $form_state->get('machine_name.initial_values') ?: [];
+        if (!array_key_exists($element['#name'], $initial_values) || $initial_values[$element['#name']] !== $element['#value']) {
+            $function = $element['#machine_name']['exists'];
+            if (call_user_func($function, $element['#value'], $element, $form_state)) {
+                $form_state->setError($element, t('The machine-readable name is already in use. It must be unique.'));
+            }
+        }
     }
-  }
 
-  /**
-   * Gets transliteration language overrides for a language.
-   *
-   * This is duplicating
-   * \Drupal\Core\Transliteration\PhpTransliteration::readLanguageOverrides().
-   *
-   * @see \Drupal\Core\Transliteration\PhpTransliteration::readLanguageOverrides()
-   */
-  private static function getTransliterationLanguageOverrides(LanguageInterface $language) {
-    $overrides = &drupal_static(self::class . '_' . __METHOD__, []);
-    $langcode = $language->getId();
+    /**
+     * Gets transliteration language overrides for a language.
+     *
+     * This is duplicating
+     * \Drupal\Core\Transliteration\PhpTransliteration::readLanguageOverrides().
+     *
+     * @see \Drupal\Core\Transliteration\PhpTransliteration::readLanguageOverrides()
+     */
+    private static function getTransliterationLanguageOverrides(LanguageInterface $language)
+    {
+        $overrides = &drupal_static(self::class . '_' . __METHOD__, []);
+        $langcode = $language->getId();
 
-    if (isset($overrides[$langcode])) {
-      return $overrides[$langcode];
+        if (isset($overrides[$langcode])) {
+            return $overrides[$langcode];
+        }
+
+        $file = dirname(__DIR__, 3) . '/Component/Transliteration/data/' . preg_replace('/[^a-zA-Z\-]/', '', $langcode) . '.php';
+
+        $overrides[$langcode] = [];
+        if (is_file($file)) {
+            include $file;
+        }
+
+        \Drupal::moduleHandler()->alter('transliteration_overrides', $overrides[$langcode], $langcode);
+
+        return [$langcode => $overrides[$langcode]];
     }
-
-    $file = dirname(__DIR__, 3) . '/Component/Transliteration/data/' . preg_replace('/[^a-zA-Z\-]/', '', $langcode) . '.php';
-
-    $overrides[$langcode] = [];
-    if (is_file($file)) {
-      include $file;
-    }
-
-    \Drupal::moduleHandler()->alter('transliteration_overrides', $overrides[$langcode], $langcode);
-
-    return [$langcode => $overrides[$langcode]];
-  }
 
 }

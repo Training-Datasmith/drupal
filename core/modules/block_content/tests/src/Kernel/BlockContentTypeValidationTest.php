@@ -17,29 +17,30 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class BlockContentTypeValidationTest extends ConfigEntityValidationTestBase {
+class BlockContentTypeValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block_content'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block_content'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static array $propertiesWithOptionalValues = ['description'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static array $propertiesWithOptionalValues = ['description'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = BlockContentType::create([
-      'id' => 'test',
-      'label' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = BlockContentType::create([
+          'id' => 'test',
+          'label' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

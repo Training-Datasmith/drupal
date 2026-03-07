@@ -12,31 +12,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class UserPathTest extends ViewTestBase {
+class UserPathTest extends ViewTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['views', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['views', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The test views to use.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_user_path'];
 
-  /**
-   * The test views to use.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_user_path'];
-
-  /**
-   * Tests if the login page is still available when using a wildcard path.
-   */
-  public function testUserLoginPage(): void {
-    $this->drupalGet('user/login');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Tests if the login page is still available when using a wildcard path.
+     */
+    public function testUserLoginPage(): void
+    {
+        $this->drupalGet('user/login');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

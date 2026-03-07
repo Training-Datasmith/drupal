@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\inline_form_errors;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -9,19 +11,20 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Overrides the form_error_handler service to enable inline form errors.
  */
-class InlineFormErrorsServiceProvider extends ServiceProviderBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    $container->getDefinition('form_error_handler')
-      ->setClass(FormErrorHandler::class)
-      ->setArguments([
-        new Reference('string_translation'),
-        new Reference('renderer'),
-        new Reference('messenger'),
-      ]);
-  }
+class InlineFormErrorsServiceProvider extends ServiceProviderBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        $container->getDefinition('form_error_handler')
+          ->setClass(FormErrorHandler::class)
+          ->setArguments([
+            new Reference('string_translation'),
+            new Reference('renderer'),
+            new Reference('messenger'),
+          ]);
+    }
 
 }

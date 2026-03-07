@@ -18,65 +18,66 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(NoSourcePluginDecorator::class)]
 #[Group('migrate')]
-class NoSourcePluginDecoratorTest extends UnitTestCase {
+class NoSourcePluginDecoratorTest extends UnitTestCase
+{
+    /**
+     * Tests get definitions.
+     */
+    #[DataProvider('providerGetDefinitions')]
+    public function testGetDefinitions(array $definition, bool $source_exists): void
+    {
+        $source_manager = $this->createMock(MigrateSourcePluginManager::class);
+        $source_manager->expects($this->any())
+          ->method('hasDefinition')
+          ->willReturn($source_exists);
+        $container = new ContainerBuilder();
+        $container->set('plugin.manager.migrate.source', $source_manager);
+        \Drupal::setContainer($container);
 
-  /**
-   * Tests get definitions.
-   */
-  #[DataProvider('providerGetDefinitions')]
-  public function testGetDefinitions(array $definition, bool $source_exists): void {
-    $source_manager = $this->createMock(MigrateSourcePluginManager::class);
-    $source_manager->expects($this->any())
-      ->method('hasDefinition')
-      ->willReturn($source_exists);
-    $container = new ContainerBuilder();
-    $container->set('plugin.manager.migrate.source', $source_manager);
-    \Drupal::setContainer($container);
+        $discovery_interface = $this->createMock(DiscoveryInterface::class);
+        $discovery_interface->expects($this->once())
+          ->method('getDefinitions')
+          ->willReturn([$definition]);
 
-    $discovery_interface = $this->createMock(DiscoveryInterface::class);
-    $discovery_interface->expects($this->once())
-      ->method('getDefinitions')
-      ->willReturn([$definition]);
-
-    $decorator = new NoSourcePluginDecorator($discovery_interface);
-    $results = $decorator->getDefinitions();
-    if ($source_exists) {
-      $this->assertEquals([$definition], $results);
+        $decorator = new NoSourcePluginDecorator($discovery_interface);
+        $results = $decorator->getDefinitions();
+        if ($source_exists) {
+            $this->assertEquals([$definition], $results);
+        } else {
+            $this->assertEquals([], $results);
+        }
     }
-    else {
-      $this->assertEquals([], $results);
-    }
-  }
 
-  /**
-   * Provides data for testGetDefinitions().
-   */
-  public static function providerGetDefinitions(): array {
-    return [
-      'source exists' => [
-        [
-          'source' => ['plugin' => 'valid_plugin'],
-          'process' => [],
-          'destination' => [],
-        ],
-        TRUE,
-      ],
-      'source does not exist' => [
-        [
-          'source' => ['plugin' => 'invalid_plugin'],
-          'process' => [],
-          'destination' => [],
-        ],
-        FALSE,
-      ],
-      'source is not defined' => [
-        [
-          'process' => [],
-          'destination' => [],
-        ],
-        FALSE,
-      ],
-    ];
-  }
+    /**
+     * Provides data for testGetDefinitions().
+     */
+    public static function providerGetDefinitions(): array
+    {
+        return [
+          'source exists' => [
+            [
+              'source' => ['plugin' => 'valid_plugin'],
+              'process' => [],
+              'destination' => [],
+            ],
+            true,
+          ],
+          'source does not exist' => [
+            [
+              'source' => ['plugin' => 'invalid_plugin'],
+              'process' => [],
+              'destination' => [],
+            ],
+            false,
+          ],
+          'source is not defined' => [
+            [
+              'process' => [],
+              'destination' => [],
+            ],
+            false,
+          ],
+        ];
+    }
 
 }

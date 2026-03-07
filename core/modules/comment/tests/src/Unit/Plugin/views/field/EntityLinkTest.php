@@ -18,28 +18,30 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(EntityLink::class)]
 #[Group('comment')]
-class EntityLinkTest extends UnitTestCase {
+class EntityLinkTest extends UnitTestCase
+{
+    use ViewsLoggerTestTrait;
 
-  use ViewsLoggerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMockLoggerWithMissingEntity();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->setUpMockLoggerWithMissingEntity();
-  }
-
-  /**
-   * Test the render method when getEntity returns NULL.
-   */
-  public function testRenderNullEntity(): void {
-    $row = new ResultRow();
-    $field = new EntityLink(['entity_type' => 'foo', 'entity field' => 'bar'], '', []);
-    $view = $this->createMock(ViewExecutable::class);
-    $display = $this->createMock(DisplayPluginBase::class);
-    $field->init($view, $display);
-    $this->assertEmpty($field->render($row));
-  }
+    /**
+     * Test the render method when getEntity returns NULL.
+     */
+    public function testRenderNullEntity(): void
+    {
+        $row = new ResultRow();
+        $field = new EntityLink(['entity_type' => 'foo', 'entity field' => 'bar'], '', []);
+        $view = $this->createMock(ViewExecutable::class);
+        $display = $this->createMock(DisplayPluginBase::class);
+        $field->init($view, $display);
+        $this->assertEmpty($field->render($row));
+    }
 
 }

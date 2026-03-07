@@ -13,27 +13,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class TestingProfileHooksTest extends BrowserTestBase {
+class TestingProfileHooksTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'testing_hooks';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'testing_hooks';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Test hooks are picked up.
-   */
-  public function testHookPickup(): void {
-    $this->assertFalse(isset($GLOBALS['profile_procedural']));
-    $this->assertFalse(isset($GLOBALS['profile_oop']));
-    drupal_flush_all_caches();
-    $this->assertTrue(isset($GLOBALS['profile_procedural']));
-    $this->assertTrue(isset($GLOBALS['profile_oop']));
-  }
+    /**
+     * Test hooks are picked up.
+     */
+    public function testHookPickup(): void
+    {
+        $this->assertFalse(isset($GLOBALS['profile_procedural']));
+        $this->assertFalse(isset($GLOBALS['profile_oop']));
+        drupal_flush_all_caches();
+        $this->assertTrue(isset($GLOBALS['profile_procedural']));
+        $this->assertTrue(isset($GLOBALS['profile_oop']));
+    }
 
 }

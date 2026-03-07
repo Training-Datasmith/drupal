@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Normalizer;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
@@ -14,27 +16,29 @@ use Drupal\jsonapi\ResourceType\ResourceType;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-final class ConfigEntityDenormalizer extends EntityDenormalizerBase {
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context): array {
-    $prepared = [];
-    foreach ($data as $key => $value) {
-      $prepared[$resource_type->getInternalName($key)] = $value;
+final class ConfigEntityDenormalizer extends EntityDenormalizerBase
+{
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context): array
+    {
+        $prepared = [];
+        foreach ($data as $key => $value) {
+            $prepared[$resource_type->getInternalName($key)] = $value;
+        }
+        return $prepared;
     }
-    return $prepared;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      ConfigEntityInterface::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          ConfigEntityInterface::class => true,
+        ];
+    }
 
 }

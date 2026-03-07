@@ -1,44 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Serialization;
 
 /**
  * Defines an interface for serialization formats.
  */
-interface SerializationInterface {
+interface SerializationInterface
+{
+    /**
+     * Encodes data into the serialization format.
+     *
+     * @param mixed $data
+     *   The data to encode.
+     *
+     * @return string
+     *   The encoded data.
+     *
+     * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
+     */
+    public static function encode($data);
 
-  /**
-   * Encodes data into the serialization format.
-   *
-   * @param mixed $data
-   *   The data to encode.
-   *
-   * @return string
-   *   The encoded data.
-   *
-   * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
-   */
-  public static function encode($data);
+    /**
+     * Decodes data from the serialization format.
+     *
+     * @param string $raw
+     *   The raw data string to decode.
+     *
+     * @return mixed
+     *   The decoded data.
+     *
+     * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
+     */
+    public static function decode($raw);
 
-  /**
-   * Decodes data from the serialization format.
-   *
-   * @param string $raw
-   *   The raw data string to decode.
-   *
-   * @return mixed
-   *   The decoded data.
-   *
-   * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
-   */
-  public static function decode($raw);
-
-  /**
-   * Gets the file extension for this serialization format.
-   *
-   * @return string
-   *   The file extension, without leading dot.
-   */
-  public static function getFileExtension();
+    /**
+     * Gets the file extension for this serialization format.
+     *
+     * @return string
+     *   The file extension, without leading dot.
+     */
+    public static function getFileExtension();
 
 }

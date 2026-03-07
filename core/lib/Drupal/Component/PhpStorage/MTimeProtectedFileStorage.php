@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\PhpStorage;
 
 /**
@@ -29,45 +31,49 @@ namespace Drupal\Component\PhpStorage;
  * name (slashes replaced with hash marks) to assist with debugging, since the
  * file itself is stored with a name that's meaningless to humans.
  */
-class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load($name) {
-    if (($filename = $this->checkFile($name)) !== FALSE) {
-      // Inline parent::load() to avoid an expensive getFullPath() call.
-      return (@include_once $filename) !== FALSE;
+class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function load($name)
+    {
+        if (($filename = $this->checkFile($name)) !== false) {
+            // Inline parent::load() to avoid an expensive getFullPath() call.
+            return (@include_once $filename) !== false;
+        }
+        return false;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function exists($name): bool {
-    return $this->checkFile($name) !== FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function exists($name): bool
+    {
+        return $this->checkFile($name) !== false;
+    }
 
-  /**
-   * Determines whether a protected file exists and sets the filename too.
-   *
-   * @param string $name
-   *   The virtual file name. Can be a relative path.
-   *
-   * @return string|false
-   *   The full path where the file is if it is valid, FALSE otherwise.
-   */
-  protected function checkFile($name) {
-    $filename = $this->getFullPath($name, $directory, $directory_mtime);
-    return file_exists($filename) && filemtime($filename) <= $directory_mtime ? $filename : FALSE;
-  }
+    /**
+     * Determines whether a protected file exists and sets the filename too.
+     *
+     * @param string $name
+     *   The virtual file name. Can be a relative path.
+     *
+     * @return string|false
+     *   The full path where the file is if it is valid, FALSE otherwise.
+     */
+    protected function checkFile($name)
+    {
+        $filename = $this->getFullPath($name, $directory, $directory_mtime);
+        return file_exists($filename) && filemtime($filename) <= $directory_mtime ? $filename : false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath($name) {
-    return $this->checkFile($name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPath($name)
+    {
+        return $this->checkFile($name);
+    }
 
 }

@@ -14,17 +14,17 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
  * @ingroup views_style_plugins
  */
 #[ViewsStyle(
-  id: "test_template_style",
-  title: new TranslatableMarkup("Test style template plugin"),
-  help: new TranslatableMarkup("Provides a generic style template test plugin."),
-  theme: "views_view_style_template_test",
-  display_types: ["normal", "test"],
+    id: 'test_template_style',
+    title: new TranslatableMarkup('Test style template plugin'),
+    help: new TranslatableMarkup('Provides a generic style template test plugin.'),
+    theme: 'views_view_style_template_test',
+    display_types: ['normal', 'test'],
 )]
-class StyleTemplateTest extends StylePluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $usesRowPlugin = TRUE;
+class StyleTemplateTest extends StylePluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $usesRowPlugin = true;
 
 }

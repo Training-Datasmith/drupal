@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\ckeditor5\Plugin\Validation\Constraint;
 
@@ -14,18 +14,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * @internal
  */
 #[Constraint(
-  id: 'CKEditor5EnabledConfigurablePlugins',
-  label: new TranslatableMarkup('CKEditor 5 enabled configurable plugins', [], ['context' => 'Validation'])
+    id: 'CKEditor5EnabledConfigurablePlugins',
+    label: new TranslatableMarkup('CKEditor 5 enabled configurable plugins', [], ['context' => 'Validation'])
 )]
-class EnabledConfigurablePluginsConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'Configuration for the enabled plugin "%plugin_label" (%plugin_id) is missing.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class EnabledConfigurablePluginsConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'Configuration for the enabled plugin "%plugin_label" (%plugin_id) is missing.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

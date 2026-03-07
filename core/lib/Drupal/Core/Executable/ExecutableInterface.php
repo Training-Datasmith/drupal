@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Executable;
 
 /**
@@ -7,14 +9,14 @@ namespace Drupal\Core\Executable;
  *
  * @ingroup plugin_api
  */
-interface ExecutableInterface {
-
-  /**
-   * Executes the plugin.
-   *
-   * @param object|null $object
-   *   (optional) An object to execute the plugin on/with.
-   */
-  public function execute(?object $object = NULL);
+interface ExecutableInterface
+{
+    /**
+     * Executes the plugin.
+     *
+     * @param object|null $object
+     *   (optional) An object to execute the plugin on/with.
+     */
+    public function execute(?object $object = null);
 
 }

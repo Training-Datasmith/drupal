@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Entity;
 
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EntityDisplayModeBase;
 use Drupal\Core\Entity\EntityFormModeInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the entity form mode configuration entity class.
@@ -25,14 +27,14 @@ use Drupal\Core\Entity\EntityFormModeInterface;
  * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getFormModes()
  */
 #[ConfigEntityType(
-  id: 'entity_form_mode',
-  label: new TranslatableMarkup('Form mode'),
-  entity_keys: [
+    id: 'entity_form_mode',
+    label: new TranslatableMarkup('Form mode'),
+    entity_keys: [
     'id' => 'id',
     'label' => 'label',
     'description' => 'description',
   ],
-  constraints: [
+    constraints: [
     'ImmutableProperties' => [
       'properties' => [
         'id',
@@ -40,14 +42,14 @@ use Drupal\Core\Entity\EntityFormModeInterface;
       ],
     ],
   ],
-  config_export: [
+    config_export: [
     'id',
     'label',
     'description',
     'targetEntityType',
     'cache',
   ],
-  )]
-class EntityFormMode extends EntityDisplayModeBase implements EntityFormModeInterface {
-
+)]
+class EntityFormMode extends EntityDisplayModeBase implements EntityFormModeInterface
+{
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue;
 
 /**
@@ -11,92 +13,99 @@ namespace Drupal\Core\Queue;
  *
  * @ingroup queue
  */
-class Memory implements QueueInterface {
+class Memory implements QueueInterface
+{
+    /**
+     * The queue data.
+     */
+    protected array $queue;
 
-  /**
-   * The queue data.
-   */
-  protected array $queue;
+    /**
+     * Counter for item ids.
+     */
+    protected int $idSequence;
 
-  /**
-   * Counter for item ids.
-   */
-  protected int $idSequence;
-
-  /**
-   * Constructs a Memory object.
-   */
-  public function __construct()
-  {
-      $this->queue = [];
-      $this->idSequence = 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createItem($data): int|float {
-    $item = new \stdClass();
-    $item->item_id = $this->idSequence++;
-    $item->data = $data;
-    $item->created = \Drupal::time()->getCurrentTime();
-    $item->expire = 0;
-    $this->queue[$item->item_id] = $item;
-    return $item->item_id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function numberOfItems(): int {
-    return count($this->queue);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function claimItem($lease_time = 30) {
-    foreach ($this->queue as $key => $item) {
-      if ($item->expire == 0) {
-        $item->expire = \Drupal::time()->getCurrentTime() + $lease_time;
-        $this->queue[$key] = $item;
-        return $item;
-      }
+    /**
+     * Constructs a Memory object.
+     */
+    public function __construct()
+    {
+        $this->queue = [];
+        $this->idSequence = 0;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteItem($item): void {
-    unset($this->queue[$item->item_id]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function releaseItem($item): bool {
-    if (isset($this->queue[$item->item_id]) && $this->queue[$item->item_id]->expire != 0) {
-      $this->queue[$item->item_id]->expire = 0;
-      return TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function createItem($data): int|float
+    {
+        $item = new \stdClass();
+        $item->item_id = $this->idSequence++;
+        $item->data = $data;
+        $item->created = \Drupal::time()->getCurrentTime();
+        $item->expire = 0;
+        $this->queue[$item->item_id] = $item;
+        return $item->item_id;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createQueue(): void {
-    // Nothing needed here.
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function numberOfItems(): int
+    {
+        return count($this->queue);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteQueue(): void {
-    $this->queue = [];
-    $this->idSequence = 0;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function claimItem($lease_time = 30)
+    {
+        foreach ($this->queue as $key => $item) {
+            if ($item->expire == 0) {
+                $item->expire = \Drupal::time()->getCurrentTime() + $lease_time;
+                $this->queue[$key] = $item;
+                return $item;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteItem($item): void
+    {
+        unset($this->queue[$item->item_id]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function releaseItem($item): bool
+    {
+        if (isset($this->queue[$item->item_id]) && $this->queue[$item->item_id]->expire != 0) {
+            $this->queue[$item->item_id]->expire = 0;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createQueue(): void
+    {
+        // Nothing needed here.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteQueue(): void
+    {
+        $this->queue = [];
+        $this->idSequence = 0;
+    }
 
 }

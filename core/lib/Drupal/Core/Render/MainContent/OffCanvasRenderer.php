@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\MainContent;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\OpenOffCanvasDialogCommand;
 use Drupal\Core\Controller\TitleResolverInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Ajax\OpenOffCanvasDialogCommand;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -14,54 +16,56 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class OffCanvasRenderer extends DialogRenderer {
+class OffCanvasRenderer extends DialogRenderer
+{
+    /**
+     * The renderer.
+     *
+     * @var \Drupal\Core\Render\RendererInterface
+     */
+    protected $renderer;
 
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * Constructs a new OffCanvasRenderer.
-   *
-   * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
-   *   The title resolver.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
-   * @param string $position
-   *   (optional) The position to render the off-canvas dialog.
-   */
-  public function __construct(TitleResolverInterface $title_resolver, RendererInterface $renderer, /**
+    /**
+     * Constructs a new OffCanvasRenderer.
+     *
+     * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
+     *   The title resolver.
+     * @param \Drupal\Core\Render\RendererInterface $renderer
+     *   The renderer.
+     * @param string $position
+     *   (optional) The position to render the off-canvas dialog.
+     */
+    public function __construct(TitleResolverInterface $title_resolver, RendererInterface $renderer, /**
    * The position to render the off-canvas dialog.
    */
-  protected $position = 'side') {
-    parent::__construct($title_resolver, $renderer);
-    $this->renderer = $renderer;
-  }
+        protected $position = 'side')
+    {
+        parent::__construct($title_resolver, $renderer);
+        $this->renderer = $renderer;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Ajax\AjaxResponse {
-    $response = new AjaxResponse();
+    /**
+     * {@inheritdoc}
+     */
+    public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Ajax\AjaxResponse
+    {
+        $response = new AjaxResponse();
 
-    // First render the main content, because it might provide a title.
-    $content = $this->renderer->renderRoot($main_content);
-    // Attach the library necessary for using the OpenOffCanvasDialogCommand and
-    // set the attachments for this Ajax response.
-    $main_content['#attached']['library'][] = 'core/drupal.dialog.off_canvas';
-    $response->setAttachments($main_content['#attached']);
+        // First render the main content, because it might provide a title.
+        $content = $this->renderer->renderRoot($main_content);
+        // Attach the library necessary for using the OpenOffCanvasDialogCommand and
+        // set the attachments for this Ajax response.
+        $main_content['#attached']['library'][] = 'core/drupal.dialog.off_canvas';
+        $response->setAttachments($main_content['#attached']);
 
-    // Determine the title.
-    $title = $this->getTitleAsStringable($main_content, $request, $route_match);
+        // Determine the title.
+        $title = $this->getTitleAsStringable($main_content, $request, $route_match);
 
-    // Determine the title: use the title provided by the main content if any,
-    // otherwise get it from the routing information.
-    $options = $request->request->all('dialogOptions');
-    $response->addCommand(new OpenOffCanvasDialogCommand($title, $content, $options, NULL, $this->position));
-    return $response;
-  }
+        // Determine the title: use the title provided by the main content if any,
+        // otherwise get it from the routing information.
+        $options = $request->request->all('dialogOptions');
+        $response->addCommand(new OpenOffCanvasDialogCommand($title, $content, $options, null, $this->position));
+        return $response;
+    }
 
 }

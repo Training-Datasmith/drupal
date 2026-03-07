@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Twig\Compiler;
@@ -13,33 +15,35 @@ use Twig\Node\Node;
  * @see \Drupal\Core\Template\TwigNodeVisitorCheckDeprecations
  * @see \Drupal\Core\Template\TwigExtension::checkDeprecations()
  */
-class TwigNodeCheckDeprecations extends Node {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(/**
+class TwigNodeCheckDeprecations extends Node
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(/**
    * The named variables used in the template.
    */
-  protected array $usedNames) {
-    parent::__construct();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function compile(Compiler $compiler): void {
-    $usedNamesNode = new ArrayExpression([], $this->getTemplateLine());
-    foreach ($this->usedNames as $name) {
-      $usedNamesNode->addElement(new ConstantExpression($name, $this->getTemplateLine()));
+        protected array $usedNames
+    ) {
+        parent::__construct();
     }
 
-    $compiler->write("\$this->env->getExtension('\Drupal\Core\Template\TwigExtension')\n");
-    $compiler->indent();
-    $compiler->write("->checkDeprecations(\$context, ");
-    $compiler->subcompile($usedNamesNode);
-    $compiler->raw(");");
-    $compiler->outdent();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function compile(Compiler $compiler): void
+    {
+        $usedNamesNode = new ArrayExpression([], $this->getTemplateLine());
+        foreach ($this->usedNames as $name) {
+            $usedNamesNode->addElement(new ConstantExpression($name, $this->getTemplateLine()));
+        }
+
+        $compiler->write("\$this->env->getExtension('\Drupal\Core\Template\TwigExtension')\n");
+        $compiler->indent();
+        $compiler->write('->checkDeprecations($context, ');
+        $compiler->subcompile($usedNamesNode);
+        $compiler->raw(');');
+        $compiler->outdent();
+    }
 
 }

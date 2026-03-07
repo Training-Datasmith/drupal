@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -12,47 +14,50 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("file_size")]
-class FileSize extends FieldPluginBase {
+#[ViewsField('file_size')]
+class FileSize extends FieldPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        $options['file_size_display'] = ['default' => 'formatted'];
 
-    $options['file_size_display'] = ['default' => 'formatted'];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-    $form['file_size_display'] = [
-      '#title' => $this->t('File size display'),
-      '#type' => 'select',
-      '#options' => [
-        'formatted' => $this->t('Formatted (in KB or MB)'),
-        'bytes' => $this->t('Raw bytes'),
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $this->getValue($values);
-    if ($value) {
-      return match ($this->options['file_size_display']) {
-          'bytes' => $value,
-          default => ByteSizeMarkup::create((int) $value),
-      };
+        return $options;
     }
-    return '';
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+        $form['file_size_display'] = [
+          '#title' => $this->t('File size display'),
+          '#type' => 'select',
+          '#options' => [
+            'formatted' => $this->t('Formatted (in KB or MB)'),
+            'bytes' => $this->t('Raw bytes'),
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $this->getValue($values);
+        if ($value) {
+            return match ($this->options['file_size_display']) {
+                'bytes' => $value,
+                default => ByteSizeMarkup::create((int) $value),
+            };
+        }
+        return '';
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
@@ -13,72 +15,75 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'email_default' widget.
  */
 #[FieldWidget(
-  id: 'email_default',
-  label: new TranslatableMarkup('Email'),
-  field_types: ['email'],
+    id: 'email_default',
+    label: new TranslatableMarkup('Email'),
+    field_types: ['email'],
 )]
-class EmailDefaultWidget extends WidgetBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'size' => 60,
-      'placeholder' => '',
-    ] + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $element['size'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Textfield size'),
-      '#default_value' => $this->getSetting('size'),
-      '#required' => TRUE,
-      '#min' => 1,
-    ];
-    $element['placeholder'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Placeholder'),
-      '#default_value' => $this->getSetting('placeholder'),
-      '#description' => $this->t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
-    ];
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary(): array {
-    $summary = [];
-
-    $placeholder = $this->getSetting('placeholder');
-    if (!empty($placeholder)) {
-      $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
+class EmailDefaultWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+          'size' => 60,
+          'placeholder' => '',
+        ] + parent::defaultSettings();
     }
-    else {
-      $summary[] = $this->t('No placeholder');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $element['size'] = [
+          '#type' => 'number',
+          '#title' => $this->t('Textfield size'),
+          '#default_value' => $this->getSetting('size'),
+          '#required' => true,
+          '#min' => 1,
+        ];
+        $element['placeholder'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Placeholder'),
+          '#default_value' => $this->getSetting('placeholder'),
+          '#description' => $this->t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
+        ];
+        return $element;
     }
-    $summary[] = $this->t('Textfield size: @size', ['@size' => $this->getSetting('size')]);
 
-    return $summary;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary(): array
+    {
+        $summary = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
-    $element['value'] = $element + [
-      '#type' => 'email',
-      '#default_value' => $items[$delta]->value ?? NULL,
-      '#placeholder' => $this->getSetting('placeholder'),
-      '#size' => $this->getSetting('size'),
-      '#maxlength' => Email::EMAIL_MAX_LENGTH,
-    ];
-    return $element;
-  }
+        $placeholder = $this->getSetting('placeholder');
+        if (!empty($placeholder)) {
+            $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
+        } else {
+            $summary[] = $this->t('No placeholder');
+        }
+        $summary[] = $this->t('Textfield size: @size', ['@size' => $this->getSetting('size')]);
+
+        return $summary;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array
+    {
+        $element['value'] = $element + [
+          '#type' => 'email',
+          '#default_value' => $items[$delta]->value ?? null,
+          '#placeholder' => $this->getSetting('placeholder'),
+          '#size' => $this->getSetting('size'),
+          '#maxlength' => Email::EMAIL_MAX_LENGTH,
+        ];
+        return $element;
+    }
 
 }

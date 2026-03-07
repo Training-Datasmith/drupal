@@ -20,249 +20,260 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(UnroutedUrlAssembler::class)]
 #[Group('Utility')]
-class UnroutedUrlAssemblerTest extends UnitTestCase {
+class UnroutedUrlAssemblerTest extends UnitTestCase
+{
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
+    /**
+     * The mocked config factory.
+     *
+     * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $configFactory;
 
-  /**
-   * The mocked config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $configFactory;
+    /**
+     * The tested unrouted URL assembler.
+     *
+     * @var \Drupal\Core\Utility\UnroutedUrlAssembler
+     */
+    protected $unroutedUrlAssembler;
 
-  /**
-   * The tested unrouted URL assembler.
-   *
-   * @var \Drupal\Core\Utility\UnroutedUrlAssembler
-   */
-  protected $unroutedUrlAssembler;
+    /**
+     * The mocked outbound path processor.
+     *
+     * @var \Drupal\Core\PathProcessor\OutboundPathProcessorInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $pathProcessor;
 
-  /**
-   * The mocked outbound path processor.
-   *
-   * @var \Drupal\Core\PathProcessor\OutboundPathProcessorInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $pathProcessor;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->requestStack = new RequestStack();
+        $this->pathProcessor = $this->createMock('Drupal\Core\PathProcessor\OutboundPathProcessorInterface');
+        $this->unroutedUrlAssembler = new UnroutedUrlAssembler($this->requestStack, $this->pathProcessor);
+    }
 
-    $this->requestStack = new RequestStack();
-    $this->pathProcessor = $this->createMock('Drupal\Core\PathProcessor\OutboundPathProcessorInterface');
-    $this->unroutedUrlAssembler = new UnroutedUrlAssembler($this->requestStack, $this->pathProcessor);
-  }
+    /**
+     * Tests assemble with neither external nor domain local uri.
+     */
+    public function testAssembleWithNeitherExternalNorDomainLocalUri(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->unroutedUrlAssembler->assemble('wrong-url');
+    }
 
-  /**
-   * Tests assemble with neither external nor domain local uri.
-   */
-  public function testAssembleWithNeitherExternalNorDomainLocalUri(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->unroutedUrlAssembler->assemble('wrong-url');
-  }
+    /**
+     * Tests assemble with leading slash.
+     */
+    public function testAssembleWithLeadingSlash(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->unroutedUrlAssembler->assemble('/drupal.org');
+    }
 
-  /**
-   * Tests assemble with leading slash.
-   */
-  public function testAssembleWithLeadingSlash(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->unroutedUrlAssembler->assemble('/drupal.org');
-  }
+    /**
+     * Tests assemble with external url.
+     *
+     * @legacy-covers ::assemble
+     * @legacy-covers ::buildExternalUrl
+     */
+    #[DataProvider('providerTestAssembleWithExternalUrl')]
+    public function testAssembleWithExternalUrl($uri, array $options, $expected): void
+    {
+        $this->setupRequestStack(false);
+        $this->assertEquals($expected, $this->unroutedUrlAssembler->assemble($uri, $options));
+        $generated_url = $this->unroutedUrlAssembler->assemble($uri, $options, true);
+        $this->assertEquals($expected, $generated_url->getGeneratedUrl());
+        $this->assertInstanceOf('\Drupal\Core\Render\BubbleableMetadata', $generated_url);
+    }
 
-  /**
-   * Tests assemble with external url.
-   *
-   * @legacy-covers ::assemble
-   * @legacy-covers ::buildExternalUrl
-   */
-  #[DataProvider('providerTestAssembleWithExternalUrl')]
-  public function testAssembleWithExternalUrl($uri, array $options, $expected): void {
-    $this->setupRequestStack(FALSE);
-    $this->assertEquals($expected, $this->unroutedUrlAssembler->assemble($uri, $options));
-    $generated_url = $this->unroutedUrlAssembler->assemble($uri, $options, TRUE);
-    $this->assertEquals($expected, $generated_url->getGeneratedUrl());
-    $this->assertInstanceOf('\Drupal\Core\Render\BubbleableMetadata', $generated_url);
-  }
+    /**
+     * Provides test data for testAssembleWithExternalUrl.
+     */
+    public static function providerTestAssembleWithExternalUrl(): array
+    {
+        return [
+          ['http://example.com/test', [], 'http://example.com/test'],
+          ['http://example.com/test', ['fragment' => 'example'], 'http://example.com/test#example'],
+          ['http://example.com/test', ['fragment' => 'example'], 'http://example.com/test#example'],
+          ['http://example.com/test', ['query' => ['foo' => 'bar']], 'http://example.com/test?foo=bar'],
+          ['http://example.com/test', ['https' => true], 'https://example.com/test'],
+          ['https://example.com/test', ['https' => false], 'http://example.com/test'],
+          ['https://example.com/test?foo=1#bar', [], 'https://example.com/test?foo=1#bar'],
+          'override-query' => [
+            'https://example.com/test?foo=1#bar',
+            ['query' => ['foo' => 2]],
+            'https://example.com/test?foo=2#bar',
+          ],
+          'override-query-merge' => [
+            'https://example.com/test?foo=1#bar',
+            ['query' => ['bar' => 2]],
+            'https://example.com/test?foo=1&bar=2#bar',
+          ],
+          'override-deep-query-merge' => [
+            'https://example.com/test?foo=1#bar',
+            ['query' => ['bar' => ['baz' => 'foo']]],
+            'https://example.com/test?foo=1&bar%5Bbaz%5D=foo#bar',
+          ],
+          'override-deep-query-merge-int-ket' => [
+            'https://example.com/test?120=1',
+            ['query' => ['bar' => ['baz' => 'foo']]],
+            'https://example.com/test?120=1&bar%5Bbaz%5D=foo',
+          ],
+          'override-fragment' => [
+            'https://example.com/test?foo=1#bar',
+            ['fragment' => 'baz'],
+            'https://example.com/test?foo=1#baz',
+          ],
+          ['//www.drupal.org', [], '//www.drupal.org'],
+        ];
+    }
 
-  /**
-   * Provides test data for testAssembleWithExternalUrl.
-   */
-  public static function providerTestAssembleWithExternalUrl(): array {
-    return [
-      ['http://example.com/test', [], 'http://example.com/test'],
-      ['http://example.com/test', ['fragment' => 'example'], 'http://example.com/test#example'],
-      ['http://example.com/test', ['fragment' => 'example'], 'http://example.com/test#example'],
-      ['http://example.com/test', ['query' => ['foo' => 'bar']], 'http://example.com/test?foo=bar'],
-      ['http://example.com/test', ['https' => TRUE], 'https://example.com/test'],
-      ['https://example.com/test', ['https' => FALSE], 'http://example.com/test'],
-      ['https://example.com/test?foo=1#bar', [], 'https://example.com/test?foo=1#bar'],
-      'override-query' => [
-        'https://example.com/test?foo=1#bar',
-        ['query' => ['foo' => 2]],
-        'https://example.com/test?foo=2#bar',
-      ],
-      'override-query-merge' => [
-        'https://example.com/test?foo=1#bar',
-        ['query' => ['bar' => 2]],
-        'https://example.com/test?foo=1&bar=2#bar',
-      ],
-      'override-deep-query-merge' => [
-        'https://example.com/test?foo=1#bar',
-        ['query' => ['bar' => ['baz' => 'foo']]],
-        'https://example.com/test?foo=1&bar%5Bbaz%5D=foo#bar',
-      ],
-      'override-deep-query-merge-int-ket' => [
-        'https://example.com/test?120=1',
-        ['query' => ['bar' => ['baz' => 'foo']]],
-        'https://example.com/test?120=1&bar%5Bbaz%5D=foo',
-      ],
-      'override-fragment' => [
-        'https://example.com/test?foo=1#bar',
-        ['fragment' => 'baz'],
-        'https://example.com/test?foo=1#baz',
-      ],
-      ['//www.drupal.org', [], '//www.drupal.org'],
-    ];
-  }
+    /**
+     * Tests assemble with local uri.
+     *
+     * @legacy-covers ::assemble
+     * @legacy-covers ::buildLocalUrl
+     */
+    #[DataProvider('providerTestAssembleWithLocalUri')]
+    public function testAssembleWithLocalUri($uri, array $options, $subdir, $expected): void
+    {
+        $this->setupRequestStack($subdir);
 
-  /**
-   * Tests assemble with local uri.
-   *
-   * @legacy-covers ::assemble
-   * @legacy-covers ::buildLocalUrl
-   */
-  #[DataProvider('providerTestAssembleWithLocalUri')]
-  public function testAssembleWithLocalUri($uri, array $options, $subdir, $expected): void {
-    $this->setupRequestStack($subdir);
+        $this->assertEquals($expected, $this->unroutedUrlAssembler->assemble($uri, $options));
+    }
 
-    $this->assertEquals($expected, $this->unroutedUrlAssembler->assemble($uri, $options));
-  }
+    /**
+     * @return array
+     *   An array of test data for testAssembleWithLocalUri.
+     */
+    public static function providerTestAssembleWithLocalUri(): array
+    {
+        return [
+          ['base:example', [], false, '/example'],
+          ['base:example', ['query' => ['foo' => 'bar']], false, '/example?foo=bar'],
+          ['base:example', ['query' => ['foo' => '"bar"']], false, '/example?foo=%22bar%22'],
+          ['base:example', ['query' => ['foo' => '"bar"', 'zoo' => 'baz']], false, '/example?foo=%22bar%22&zoo=baz'],
+          ['base:example', ['fragment' => 'example'], false, '/example#example'],
+          ['base:example', [], true, '/subdir/example'],
+          ['base:example', ['query' => ['foo' => 'bar']], true, '/subdir/example?foo=bar'],
+          ['base:example', ['fragment' => 'example'], true, '/subdir/example#example'],
+          ['base:/drupal.org', [], false, '/drupal.org'],
+        ];
+    }
 
-  /**
-   * @return array
-   *   An array of test data for testAssembleWithLocalUri.
-   */
-  public static function providerTestAssembleWithLocalUri(): array {
-    return [
-      ['base:example', [], FALSE, '/example'],
-      ['base:example', ['query' => ['foo' => 'bar']], FALSE, '/example?foo=bar'],
-      ['base:example', ['query' => ['foo' => '"bar"']], FALSE, '/example?foo=%22bar%22'],
-      ['base:example', ['query' => ['foo' => '"bar"', 'zoo' => 'baz']], FALSE, '/example?foo=%22bar%22&zoo=baz'],
-      ['base:example', ['fragment' => 'example'], FALSE, '/example#example'],
-      ['base:example', [], TRUE, '/subdir/example'],
-      ['base:example', ['query' => ['foo' => 'bar']], TRUE, '/subdir/example?foo=bar'],
-      ['base:example', ['fragment' => 'example'], TRUE, '/subdir/example#example'],
-      ['base:/drupal.org', [], FALSE, '/drupal.org'],
-    ];
-  }
+    /**
+     * Tests assemble with not enabled processing.
+     */
+    public function testAssembleWithNotEnabledProcessing(): void
+    {
+        $this->setupRequestStack(false);
+        $this->pathProcessor->expects($this->never())
+          ->method('processOutbound');
+        $result = $this->unroutedUrlAssembler->assemble('base:test-uri', []);
+        $this->assertEquals('/test-uri', $result);
+    }
 
-  /**
-   * Tests assemble with not enabled processing.
-   */
-  public function testAssembleWithNotEnabledProcessing(): void {
-    $this->setupRequestStack(FALSE);
-    $this->pathProcessor->expects($this->never())
-      ->method('processOutbound');
-    $result = $this->unroutedUrlAssembler->assemble('base:test-uri', []);
-    $this->assertEquals('/test-uri', $result);
-  }
+    /**
+     * Tests assemble with enabled processing.
+     */
+    public function testAssembleWithEnabledProcessing(): void
+    {
+        $this->setupRequestStack(false);
+        $this->pathProcessor->expects($this->exactly(2))
+          ->method('processOutbound')
+          ->willReturnCallback(function ($path, &$options = [], ?Request $request = null, ?BubbleableMetadata $bubbleable_metadata = null) {
+              if ($bubbleable_metadata) {
+                  $bubbleable_metadata->setCacheContexts(['some-cache-context']);
+              }
+              return '/test-other-uri';
+          });
 
-  /**
-   * Tests assemble with enabled processing.
-   */
-  public function testAssembleWithEnabledProcessing(): void {
-    $this->setupRequestStack(FALSE);
-    $this->pathProcessor->expects($this->exactly(2))
-      ->method('processOutbound')
-      ->willReturnCallback(function ($path, &$options = [], ?Request $request = NULL, ?BubbleableMetadata $bubbleable_metadata = NULL) {
-        if ($bubbleable_metadata) {
-          $bubbleable_metadata->setCacheContexts(['some-cache-context']);
+        $result = $this->unroutedUrlAssembler->assemble('base:test-uri', ['path_processing' => true]);
+        $this->assertEquals('/test-other-uri', $result);
+
+        $result = $this->unroutedUrlAssembler->assemble('base:test-uri', ['path_processing' => true], true);
+        $expected_generated_url = new GeneratedUrl();
+        $expected_generated_url->setGeneratedUrl('/test-other-uri')
+          ->setCacheContexts(['some-cache-context']);
+        $this->assertEquals($expected_generated_url, $result);
+    }
+
+    /**
+     * Tests assemble with starting slash enabled processing.
+     */
+    public function testAssembleWithStartingSlashEnabledProcessing(): void
+    {
+        $this->setupRequestStack(false);
+        $this->pathProcessor->expects($this->exactly(2))
+          ->method('processOutbound')
+          ->with('/test-uri', $this->anything(), $this->anything(), $this->anything())
+          ->willReturnCallback(function ($path, &$options = [], ?Request $request = null, ?BubbleableMetadata $bubbleable_metadata = null) {
+              $bubbleable_metadata?->setCacheContexts(['some-cache-context']);
+              return '/test-other-uri';
+          });
+
+        $result = $this->unroutedUrlAssembler->assemble('base:/test-uri', ['path_processing' => true]);
+        $this->assertEquals('/test-other-uri', $result);
+
+        $result = $this->unroutedUrlAssembler->assemble('base:/test-uri', ['path_processing' => true], true);
+        $expected_generated_url = new GeneratedUrl();
+        $expected_generated_url->setGeneratedUrl('/test-other-uri')
+          ->setCacheContexts(['some-cache-context']);
+        $this->assertEquals($expected_generated_url, $result);
+    }
+
+    /**
+     * Tests external URLs are only processed if necessary.
+     */
+    // phpcs:disable Drupal.Arrays.Array.LongLineDeclaration
+    #[TestWith(['http://example.org', 'http://example.org'])]
+    #[TestWith(['http://example.org?flag', 'http://example.org?flag'])]
+    #[TestWith(['http://example.org?flag=', 'http://example.org?flag='])]
+    #[TestWith(['http://example.org?flag=', 'http://example.org?flag', ['query' => ['flag' => '']]])]
+    #[TestWith(['http://example.org?tag=one&tag=two', 'http://example.org?tag=one&tag=two'])]
+    #[TestWith(['http://example.org?tag%5B0%5D=three', 'http://example.org?tag=one&tag=two', ['query' => ['tag' => ['three']]]])]
+    // phpcs:enable
+    public function testAssembleExternalUrls(string $expected, string $uri, array $options = []): void
+    {
+        $this->setupRequestStack(false);
+        $result = $this->unroutedUrlAssembler->assemble($uri, $options);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Setups the request stack for a given subdir.
+     *
+     * @param bool $subdir
+     *   TRUE to use a subdir.
+     */
+    protected function setupRequestStack($subdir): void
+    {
+        $server = [];
+        if ($subdir) {
+            // Setup a fake request which looks like a Drupal installed under the
+            // subdir "subdir" on the domain www.example.com.
+            // To reproduce the values install Drupal like that and use a debugger.
+            $server = [
+              'SCRIPT_NAME' => '/subdir/index.php',
+              'SCRIPT_FILENAME' => $this->root . '/index.php',
+              'SERVER_NAME' => 'www.example.com',
+            ];
+            $request = Request::create('/subdir/');
+        } else {
+            $request = Request::create('/');
         }
-        return '/test-other-uri';
-      });
-
-    $result = $this->unroutedUrlAssembler->assemble('base:test-uri', ['path_processing' => TRUE]);
-    $this->assertEquals('/test-other-uri', $result);
-
-    $result = $this->unroutedUrlAssembler->assemble('base:test-uri', ['path_processing' => TRUE], TRUE);
-    $expected_generated_url = new GeneratedUrl();
-    $expected_generated_url->setGeneratedUrl('/test-other-uri')
-      ->setCacheContexts(['some-cache-context']);
-    $this->assertEquals($expected_generated_url, $result);
-  }
-
-  /**
-   * Tests assemble with starting slash enabled processing.
-   */
-  public function testAssembleWithStartingSlashEnabledProcessing(): void {
-    $this->setupRequestStack(FALSE);
-    $this->pathProcessor->expects($this->exactly(2))
-      ->method('processOutbound')
-      ->with('/test-uri', $this->anything(), $this->anything(), $this->anything())
-      ->willReturnCallback(function ($path, &$options = [], ?Request $request = NULL, ?BubbleableMetadata $bubbleable_metadata = NULL) {
-        $bubbleable_metadata?->setCacheContexts(['some-cache-context']);
-        return '/test-other-uri';
-      });
-
-    $result = $this->unroutedUrlAssembler->assemble('base:/test-uri', ['path_processing' => TRUE]);
-    $this->assertEquals('/test-other-uri', $result);
-
-    $result = $this->unroutedUrlAssembler->assemble('base:/test-uri', ['path_processing' => TRUE], TRUE);
-    $expected_generated_url = new GeneratedUrl();
-    $expected_generated_url->setGeneratedUrl('/test-other-uri')
-      ->setCacheContexts(['some-cache-context']);
-    $this->assertEquals($expected_generated_url, $result);
-  }
-
-  /**
-   * Tests external URLs are only processed if necessary.
-   */
-  // phpcs:disable Drupal.Arrays.Array.LongLineDeclaration
-  #[TestWith(['http://example.org', 'http://example.org'])]
-  #[TestWith(['http://example.org?flag', 'http://example.org?flag'])]
-  #[TestWith(['http://example.org?flag=', 'http://example.org?flag='])]
-  #[TestWith(['http://example.org?flag=', 'http://example.org?flag', ['query' => ['flag' => '']]])]
-  #[TestWith(['http://example.org?tag=one&tag=two', 'http://example.org?tag=one&tag=two'])]
-  #[TestWith(['http://example.org?tag%5B0%5D=three', 'http://example.org?tag=one&tag=two', ['query' => ['tag' => ['three']]]])]
-  // phpcs:enable
-  public function testAssembleExternalUrls(string $expected, string $uri, array $options = []): void {
-    $this->setupRequestStack(FALSE);
-    $result = $this->unroutedUrlAssembler->assemble($uri, $options);
-    $this->assertEquals($expected, $result);
-  }
-
-  /**
-   * Setups the request stack for a given subdir.
-   *
-   * @param bool $subdir
-   *   TRUE to use a subdir.
-   */
-  protected function setupRequestStack($subdir): void {
-    $server = [];
-    if ($subdir) {
-      // Setup a fake request which looks like a Drupal installed under the
-      // subdir "subdir" on the domain www.example.com.
-      // To reproduce the values install Drupal like that and use a debugger.
-      $server = [
-        'SCRIPT_NAME' => '/subdir/index.php',
-        'SCRIPT_FILENAME' => $this->root . '/index.php',
-        'SERVER_NAME' => 'www.example.com',
-      ];
-      $request = Request::create('/subdir/');
+        $request->server->add($server);
+        $this->requestStack->push($request);
     }
-    else {
-      $request = Request::create('/');
-    }
-    $request->server->add($server);
-    $this->requestStack->push($request);
-  }
 
 }

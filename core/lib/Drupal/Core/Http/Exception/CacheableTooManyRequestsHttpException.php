@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Http\Exception;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -9,16 +11,17 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 /**
  * A cacheable TooManyRequestsHttpException.
  */
-class CacheableTooManyRequestsHttpException extends TooManyRequestsHttpException implements CacheableDependencyInterface {
+class CacheableTooManyRequestsHttpException extends TooManyRequestsHttpException implements CacheableDependencyInterface
+{
+    use CacheableDependencyTrait;
 
-  use CacheableDependencyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(CacheableDependencyInterface $cacheability, $retryAfter = NULL, $message = '', ?\Throwable $previous = NULL, $code = 0) {
-    $this->setCacheability($cacheability);
-    parent::__construct($retryAfter, $message, $previous, $code);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(CacheableDependencyInterface $cacheability, $retryAfter = null, $message = '', ?\Throwable $previous = null, $code = 0)
+    {
+        $this->setCacheability($cacheability);
+        parent::__construct($retryAfter, $message, $previous, $code);
+    }
 
 }

@@ -20,44 +20,45 @@ use Symfony\Component\Console\Output\NullOutput;
 #[CoversClass(EnvironmentCleaner::class)]
 #[Group('Test')]
 #[RunTestsInSeparateProcesses]
-class EnvironmentCleanerTest extends KernelTestBase {
-
-  /**
-   * Tests do clean temporary directories.
-   */
-  public function testDoCleanTemporaryDirectories(): void {
-    vfsStream::setup('cleanup_test', NULL, [
-      'sites' => [
-        'simpletest' => [
-          'delete_dir' => [
-            'delete.me' => 'I am gone.',
+class EnvironmentCleanerTest extends KernelTestBase
+{
+    /**
+     * Tests do clean temporary directories.
+     */
+    public function testDoCleanTemporaryDirectories(): void
+    {
+        vfsStream::setup('cleanup_test', null, [
+          'sites' => [
+            'simpletest' => [
+              'delete_dir' => [
+                'delete.me' => 'I am gone.',
+              ],
+              'delete_me.too' => 'delete this file.',
+            ],
           ],
-          'delete_me.too' => 'delete this file.',
-        ],
-      ],
-    ]);
+        ]);
 
-    $connection = $this->prophesize(Connection::class);
-    $test_run_results_storage = $this->prophesize(TestRunResultsStorageInterface::class);
+        $connection = $this->prophesize(Connection::class);
+        $test_run_results_storage = $this->prophesize(TestRunResultsStorageInterface::class);
 
-    $cleaner = new EnvironmentCleaner(
-      vfsStream::url('cleanup_test'),
-      $connection->reveal(),
-      $test_run_results_storage->reveal(),
-      new NullOutput(),
-      \Drupal::service('file_system')
-    );
+        $cleaner = new EnvironmentCleaner(
+            vfsStream::url('cleanup_test'),
+            $connection->reveal(),
+            $test_run_results_storage->reveal(),
+            new NullOutput(),
+            \Drupal::service('file_system')
+        );
 
-    $do_cleanup_ref = new \ReflectionMethod($cleaner, 'doCleanTemporaryDirectories');
+        $do_cleanup_ref = new \ReflectionMethod($cleaner, 'doCleanTemporaryDirectories');
 
-    $this->assertFileExists(vfsStream::url('cleanup_test/sites/simpletest/delete_dir/delete.me'));
-    $this->assertFileExists(vfsStream::url('cleanup_test/sites/simpletest/delete_me.too'));
+        $this->assertFileExists(vfsStream::url('cleanup_test/sites/simpletest/delete_dir/delete.me'));
+        $this->assertFileExists(vfsStream::url('cleanup_test/sites/simpletest/delete_me.too'));
 
-    $this->assertEquals(2, $do_cleanup_ref->invoke($cleaner));
+        $this->assertEquals(2, $do_cleanup_ref->invoke($cleaner));
 
-    $this->assertDirectoryDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_dir'));
-    $this->assertFileDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_dir/delete.me'));
-    $this->assertFileDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_me.too'));
-  }
+        $this->assertDirectoryDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_dir'));
+        $this->assertFileDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_dir/delete.me'));
+        $this->assertFileDoesNotExist(vfsStream::url('cleanup_test/sites/simpletest/delete_me.too'));
+    }
 
 }

@@ -16,61 +16,64 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class ViewsTemplateTest extends ViewsKernelTestBase {
+class ViewsTemplateTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_page_display', 'test_view_display_template'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_page_display', 'test_view_display_template'];
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
+        // Enable Twig debugging.
+        $parameters = $container->getParameter('twig.config');
+        $parameters['debug'] = true;
+        $container->setParameter('twig.config', $parameters);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
-    // Enable Twig debugging.
-    $parameters = $container->getParameter('twig.config');
-    $parameters['debug'] = TRUE;
-    $container->setParameter('twig.config', $parameters);
-  }
+    /**
+     * Tests render functionality.
+     */
+    public function testTemplate(): void
+    {
+        // Make sure that the rendering just calls the preprocess function once.
+        $output = Views::getView('test_view_display_template')->preview();
+        $renderer = $this->container->get('renderer');
 
-  /**
-   * Tests render functionality.
-   */
-  public function testTemplate(): void {
-    // Make sure that the rendering just calls the preprocess function once.
-    $output = Views::getView('test_view_display_template')->preview();
-    $renderer = $this->container->get('renderer');
+        // Check that the rendered output uses the correct template file.
+        $this->assertStringContainsString('This module defines its own display template.', (string) $renderer->renderRoot($output));
+    }
 
-    // Check that the rendered output uses the correct template file.
-    $this->assertStringContainsString('This module defines its own display template.', (string) $renderer->renderRoot($output));
-  }
+    /**
+     * Tests theme suggestions container alter.
+     *
+     * @throws \Exception
+     *
+     * @legacy-covers \Drupal\views\Hook\ViewsHooks::themeSuggestionsContainerAlter
+     */
+    public function testThemeSuggestionsContainerAlter(): void
+    {
+        $build = [
+          '#type' => 'view',
+          '#name' => 'test_page_display',
+          '#display_id' => 'default',
+          '#arguments' => [],
+        ];
 
-  /**
-   * Tests theme suggestions container alter.
-   *
-   * @throws \Exception
-   *
-   * @legacy-covers \Drupal\views\Hook\ViewsHooks::themeSuggestionsContainerAlter
-   */
-  public function testThemeSuggestionsContainerAlter(): void {
-    $build = [
-      '#type' => 'view',
-      '#name' => 'test_page_display',
-      '#display_id' => 'default',
-      '#arguments' => [],
-    ];
-
-    $output = $this->render($build);
-    $extension = '.html.twig';
-    $expected = '<!-- FILE NAME SUGGESTIONS:' . PHP_EOL
-      . '   ▪️ container--more-link--test-page-display--default' . $extension . PHP_EOL
-      . '   ▪️ container--more-link--default' . $extension . PHP_EOL
-      . '   ▪️ container--more-link--test-page-display' . $extension . PHP_EOL
-      . '   ▪️ container--more-link' . $extension . PHP_EOL
-      . '   ✅ container' . $extension . PHP_EOL
-      . '-->' . PHP_EOL;
-    $this->assertStringContainsString($expected, $output, 'Views more link container suggestions found in Twig debug output');
-  }
+        $output = $this->render($build);
+        $extension = '.html.twig';
+        $expected = '<!-- FILE NAME SUGGESTIONS:' . PHP_EOL
+          . '   ▪️ container--more-link--test-page-display--default' . $extension . PHP_EOL
+          . '   ▪️ container--more-link--default' . $extension . PHP_EOL
+          . '   ▪️ container--more-link--test-page-display' . $extension . PHP_EOL
+          . '   ▪️ container--more-link' . $extension . PHP_EOL
+          . '   ✅ container' . $extension . PHP_EOL
+          . '-->' . PHP_EOL;
+        $this->assertStringContainsString($expected, $output, 'Views more link container suggestions found in Twig debug output');
+    }
 
 }

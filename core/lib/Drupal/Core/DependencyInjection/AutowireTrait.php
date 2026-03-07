@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -10,18 +12,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * This trait uses reflection and may cause performance issues with classes
  * that will be instantiated multiple times.
  */
-trait AutowireTrait {
+trait AutowireTrait
+{
+    use AutowiredInstanceTrait;
 
-  use AutowiredInstanceTrait;
-
-  /**
-   * Instantiates a new instance of the implementing class using autowiring.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The service container this instance should use.
-   */
-  public static function create(ContainerInterface $container): static {
-    return static::createInstanceAutowired($container);
-  }
+    /**
+     * Instantiates a new instance of the implementing class using autowiring.
+     *
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+     *   The service container this instance should use.
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return static::createInstanceAutowired($container);
+    }
 
 }

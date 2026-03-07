@@ -10,17 +10,18 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Hook implementations for block_content_theme_suggestions_test.
  */
-class BlockContentThemeSuggestionsTestThemeHooks {
-
-  /**
-   * Implements hook_preprocess_block().
-   */
-  #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
-    $block_content = $variables['elements']['content']['#block_content'] ?? NULL;
-    if ($block_content instanceof BlockContentInterface) {
-      $variables['label'] = $block_content->label();
+class BlockContentThemeSuggestionsTestThemeHooks
+{
+    /**
+     * Implements hook_preprocess_block().
+     */
+    #[Hook('preprocess_block')]
+    public function preprocessBlock(&$variables): void
+    {
+        $block_content = $variables['elements']['content']['#block_content'] ?? null;
+        if ($block_content instanceof BlockContentInterface) {
+            $variables['label'] = $block_content->label();
+        }
     }
-  }
 
 }

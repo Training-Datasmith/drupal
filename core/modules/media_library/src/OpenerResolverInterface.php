@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media_library;
 
 /**
@@ -15,21 +17,21 @@ namespace Drupal\media_library;
  *   is only implemented by \Drupal\media_library\OpenerResolver. It is not a
  *   public API.
  */
-interface OpenerResolverInterface {
-
-  /**
-   * Gets a media library opener service from the container.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   A value object representing the state of the media library.
-   *
-   * @return \Drupal\media_library\MediaLibraryOpenerInterface
-   *   The media library opener service.
-   *
-   * @throws \RuntimeException
-   *   If the requested opener service does not implement
-   *   \Drupal\media_library\MediaLibraryOpenerInterface.
-   */
-  public function get(MediaLibraryState $state);
+interface OpenerResolverInterface
+{
+    /**
+     * Gets a media library opener service from the container.
+     *
+     * @param \Drupal\media_library\MediaLibraryState $state
+     *   A value object representing the state of the media library.
+     *
+     * @return \Drupal\media_library\MediaLibraryOpenerInterface
+     *   The media library opener service.
+     *
+     * @throws \RuntimeException
+     *   If the requested opener service does not implement
+     *   \Drupal\media_library\MediaLibraryOpenerInterface.
+     */
+    public function get(MediaLibraryState $state);
 
 }

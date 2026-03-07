@@ -15,32 +15,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views_ui')]
 #[RunTestsInSeparateProcesses]
-class StyleTableTest extends UITestBase {
+class StyleTableTest extends UITestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests created a table style view.
+     */
+    public function testWizard(): void
+    {
+        // Create a new view and check that the first field has a label.
+        $view = [];
+        $view['label'] = $this->randomMachineName(16);
+        $view['id'] = $this->randomMachineName(16);
+        $view['show[wizard_key]'] = 'node';
+        $view['page[create]'] = true;
+        $view['page[style][style_plugin]'] = 'table';
+        $view['page[title]'] = $this->randomMachineName(16);
+        $view['page[path]'] = $view['id'];
+        $this->drupalGet('admin/structure/views/add');
+        $this->submitForm($view, 'Save and edit');
 
-  /**
-   * Tests created a table style view.
-   */
-  public function testWizard(): void {
-    // Create a new view and check that the first field has a label.
-    $view = [];
-    $view['label'] = $this->randomMachineName(16);
-    $view['id'] = $this->randomMachineName(16);
-    $view['show[wizard_key]'] = 'node';
-    $view['page[create]'] = TRUE;
-    $view['page[style][style_plugin]'] = 'table';
-    $view['page[title]'] = $this->randomMachineName(16);
-    $view['page[path]'] = $view['id'];
-    $this->drupalGet('admin/structure/views/add');
-    $this->submitForm($view, 'Save and edit');
-
-    $view = Views::getView($view['id']);
-    $view->initHandlers();
-    $this->assertEquals('Title', $view->field['title']->options['label'], 'The field label for table styles is not empty.');
-  }
+        $view = Views::getView($view['id']);
+        $view->initHandlers();
+        $this->assertEquals('Title', $view->field['title']->options['label'], 'The field label for table styles is not empty.');
+    }
 
 }

@@ -14,11 +14,11 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheTagsPurgeInterface {
-
-  /**
-   * Purge cache tag invalidations.
-   */
-  public function purge(): void;
+interface CacheTagsPurgeInterface
+{
+    /**
+     * Purge cache tag invalidations.
+     */
+    public function purge(): void;
 
 }

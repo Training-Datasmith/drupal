@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class TemporaryQueryTest extends BaseMySqlTest {
+class TemporaryQueryTest extends BaseMySqlTest
+{
 }

@@ -29,161 +29,166 @@ use Psr\Log\LoggerInterface;
 #[CoversClass(WorkspacePublisher::class)]
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspacePublisherTest extends KernelTestBase {
+class WorkspacePublisherTest extends KernelTestBase
+{
+    use NodeCreationTrait;
+    use UserCreationTrait;
+    use WorkspaceTestTrait;
 
-  use NodeCreationTrait;
-  use UserCreationTrait;
-  use WorkspaceTestTrait;
+    /**
+     * The entity type manager.
+     */
+    protected EntityTypeManagerInterface $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'node',
+      'user',
+      'workspaces',
+      'workspaces_ui',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'node',
-    'user',
-    'workspaces',
-    'workspaces_ui',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entityTypeManager = \Drupal::entityTypeManager();
 
-    $this->entityTypeManager = \Drupal::entityTypeManager();
+        $this->installEntitySchema('node');
+        $this->installEntitySchema('user');
+        $this->installEntitySchema('workspace');
 
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('workspace');
+        $this->installSchema('node', ['node_access']);
+        $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
+    }
 
-    $this->installSchema('node', ['node_access']);
-    $this->installSchema('workspaces', ['workspace_association', 'workspace_association_revision']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
+        $container->getDefinition('datetime.time')
+          ->setClass(TestTime::class);
+    }
 
-    $container->getDefinition('datetime.time')
-      ->setClass(TestTime::class);
-  }
+    /**
+     * Tests that publishing a workspace updates the changed time of its entities.
+     */
+    public function testPublishingChangedTime(): void
+    {
+        // Create an entity in Live.
+        $entity = $this->createNode(['status' => true]);
 
-  /**
-   * Tests that publishing a workspace updates the changed time of its entities.
-   */
-  public function testPublishingChangedTime(): void {
-    // Create an entity in Live.
-    $entity = $this->createNode(['status' => TRUE]);
+        $initial_request_time = \Drupal::time()->getRequestTime();
+        $this->assertEquals($initial_request_time, $entity->getChangedTime());
 
-    $initial_request_time = \Drupal::time()->getRequestTime();
-    $this->assertEquals($initial_request_time, $entity->getChangedTime());
+        // Create a new workspace, activate it, and make some changes to the entity.
+        $workspace = Workspace::create(['id' => 'test_changed', 'label' => 'Test changed']);
+        $workspace->save();
+        $this->switchToWorkspace('test_changed');
 
-    // Create a new workspace, activate it, and make some changes to the entity.
-    $workspace = Workspace::create(['id' => 'test_changed', 'label' => 'Test changed']);
-    $workspace->save();
-    $this->switchToWorkspace('test_changed');
+        // Simulate passing time.
+        TestTime::$offset = 1;
 
-    // Simulate passing time.
-    TestTime::$offset = 1;
+        $entity = $this->entityTypeManager->getStorage('node')->loadUnchanged($entity->id());
+        $entity->title = $this->randomString();
+        $entity->save();
 
-    $entity = $this->entityTypeManager->getStorage('node')->loadUnchanged($entity->id());
-    $entity->title = $this->randomString();
-    $entity->save();
+        $this->assertEquals($initial_request_time + 1, $entity->getChangedTime());
 
-    $this->assertEquals($initial_request_time + 1, $entity->getChangedTime());
+        // Publish the workspace and check that the changed time has been updated.
+        TestTime::$offset = 2;
+        $workspace->publish();
 
-    // Publish the workspace and check that the changed time has been updated.
-    TestTime::$offset = 2;
-    $workspace->publish();
+        $entity = $this->entityTypeManager->getStorage('node')->loadUnchanged($entity->id());
+        $this->assertEquals($initial_request_time + 2, $entity->getChangedTime());
+    }
 
-    $entity = $this->entityTypeManager->getStorage('node')->loadUnchanged($entity->id());
-    $this->assertEquals($initial_request_time + 2, $entity->getChangedTime());
-  }
+    /**
+     * Tests submit form with exception.
+     *
+     * @legacy-covers \Drupal\workspaces\Form\WorkspacePublishForm::submitForm
+     */
+    public function testSubmitFormWithException(): void
+    {
+        /** @var \Drupal\Core\Messenger\MessengerInterface $messenger */
+        $messenger = \Drupal::service('messenger');
 
-  /**
-   * Tests submit form with exception.
-   *
-   * @legacy-covers \Drupal\workspaces\Form\WorkspacePublishForm::submitForm
-   */
-  public function testSubmitFormWithException(): void {
-    /** @var \Drupal\Core\Messenger\MessengerInterface $messenger */
-    $messenger = \Drupal::service('messenger');
+        $workspaceOperationFactory = $this->createMock(WorkspaceOperationFactory::class);
+        $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+        /** @var \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory */
+        $loggerFactory = \Drupal::service('logger.factory');
+        $loggerFactory->addLogger($logger);
 
-    $workspaceOperationFactory = $this->createMock(WorkspaceOperationFactory::class);
-    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $logger = $this->createMock(LoggerInterface::class);
-    /** @var \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory */
-    $loggerFactory = \Drupal::service('logger.factory');
-    $loggerFactory->addLogger($logger);
+        $workspace = $this->createMock(Workspace::class);
+        $workspacePublisher = $this->createMock(WorkspacePublisherInterface::class);
 
-    $workspace = $this->createMock(Workspace::class);
-    $workspacePublisher = $this->createMock(WorkspacePublisherInterface::class);
+        $workspace
+          ->expects($this->any())
+          ->method('label');
 
-    $workspace
-      ->expects($this->any())
-      ->method('label');
+        $workspace
+          ->expects($this->once())
+          ->method('publish')
+          ->willThrowException(new \Exception('Unexpected error'));
 
-    $workspace
-      ->expects($this->once())
-      ->method('publish')
-      ->willThrowException(new \Exception('Unexpected error'));
+        $workspaceOperationFactory
+          ->expects($this->once())
+          ->method('getPublisher')
+          ->willReturn($workspacePublisher);
 
-    $workspaceOperationFactory
-      ->expects($this->once())
-      ->method('getPublisher')
-      ->willReturn($workspacePublisher);
+        $workspacePublisher
+          ->expects($this->once())
+          ->method('getTargetLabel');
 
-    $workspacePublisher
-      ->expects($this->once())
-      ->method('getTargetLabel');
+        $publishForm = new WorkspacePublishForm(
+            $workspaceOperationFactory,
+            $entityTypeManager
+        );
 
-    $publishForm = new WorkspacePublishForm(
-      $workspaceOperationFactory,
-      $entityTypeManager
-    );
+        $form = [];
+        $formState = new FormState();
 
-    $form = [];
-    $formState = new FormState();
+        $publishForm->buildForm($form, $formState, $workspace);
 
-    $publishForm->buildForm($form, $formState, $workspace);
+        $logger
+          ->expects($this->once())
+          ->method('log')
+          ->with(RfcLogLevel::ERROR, 'Unexpected error');
 
-    $logger
-      ->expects($this->once())
-      ->method('log')
-      ->with(RfcLogLevel::ERROR, 'Unexpected error');
+        $publishForm->submitForm($form, $formState);
 
-    $publishForm->submitForm($form, $formState);
-
-    $messages = $messenger->messagesByType(MessengerInterface::TYPE_ERROR);
-    $this->assertCount(1, $messages);
-    $this->assertEquals('Publication failed. All errors have been logged.', $messages[0]);
-  }
+        $messages = $messenger->messagesByType(MessengerInterface::TYPE_ERROR);
+        $this->assertCount(1, $messages);
+        $this->assertEquals('Publication failed. All errors have been logged.', $messages[0]);
+    }
 
 }
 
 /**
  * A test-only implementation of the time service.
  */
-class TestTime extends Time {
+class TestTime extends Time
+{
+    /**
+     * An offset to add to the request time.
+     */
+    public static int $offset = 0;
 
-  /**
-   * An offset to add to the request time.
-   */
-  public static int $offset = 0;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRequestTime() {
-    return parent::getRequestTime() + static::$offset;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequestTime()
+    {
+        return parent::getRequestTime() + static::$offset;
+    }
 
 }

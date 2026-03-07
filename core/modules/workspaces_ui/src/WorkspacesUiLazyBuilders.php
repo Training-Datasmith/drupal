@@ -16,73 +16,77 @@ use Drupal\workspaces\WorkspaceManagerInterface;
  *
  * @internal
  */
-final class WorkspacesUiLazyBuilders implements TrustedCallbackInterface {
+final class WorkspacesUiLazyBuilders implements TrustedCallbackInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    public function __construct(
+        protected readonly WorkspaceManagerInterface $workspaceManager,
+        protected readonly ElementInfoManagerInterface $elementInfo,
+    ) {
+    }
 
-  public function __construct(
-    protected readonly WorkspaceManagerInterface $workspaceManager,
-    protected readonly ElementInfoManagerInterface $elementInfo,
-  ) {}
+    /**
+     * Lazy builder callback for rendering the workspace toolbar tab.
+     *
+     * @return array
+     *   A render array.
+     */
+    public function renderToolbarTab(): array
+    {
+        $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-  /**
-   * Lazy builder callback for rendering the workspace toolbar tab.
-   *
-   * @return array
-   *   A render array.
-   */
-  public function renderToolbarTab(): array {
-    $active_workspace = $this->workspaceManager->getActiveWorkspace();
-
-    $build = [
-      '#type' => 'link',
-      '#title' => $active_workspace ? $active_workspace->label() : $this->t('Live'),
-      '#url' => Url::fromRoute('entity.workspace.collection', [], ['query' => \Drupal::destination()->getAsArray()]),
-      '#attributes' => [
-        'title' => $this->t('Switch workspace'),
-        'class' => [
-          'toolbar-item',
-          'toolbar-icon',
-          'toolbar-icon-workspace',
-          'use-ajax',
-        ],
-        'data-dialog-type' => 'dialog',
-        'data-dialog-renderer' => 'off_canvas_top',
-        'data-dialog-options' => Json::encode([
-          'height' => 161,
-          'classes' => [
-            'ui-dialog' => 'workspaces-dialog',
+        $build = [
+          '#type' => 'link',
+          '#title' => $active_workspace ? $active_workspace->label() : $this->t('Live'),
+          '#url' => Url::fromRoute('entity.workspace.collection', [], ['query' => \Drupal::destination()->getAsArray()]),
+          '#attributes' => [
+            'title' => $this->t('Switch workspace'),
+            'class' => [
+              'toolbar-item',
+              'toolbar-icon',
+              'toolbar-icon-workspace',
+              'use-ajax',
+            ],
+            'data-dialog-type' => 'dialog',
+            'data-dialog-renderer' => 'off_canvas_top',
+            'data-dialog-options' => Json::encode([
+              'height' => 161,
+              'classes' => [
+                'ui-dialog' => 'workspaces-dialog',
+              ],
+            ]),
           ],
-        ]),
-      ],
-      '#attached' => [
-        'library' => ['workspaces_ui/drupal.workspaces_ui.toolbar'],
-      ],
-      '#cache' => [
-        'max-age' => 0,
-      ],
-    ];
+          '#attached' => [
+            'library' => ['workspaces_ui/drupal.workspaces_ui.toolbar'],
+          ],
+          '#cache' => [
+            'max-age' => 0,
+          ],
+        ];
 
-    // The renderer has already added element defaults by the time the lazy
-    // builder is run.
-    // @see https://www.drupal.org/project/drupal/issues/2609250
-    $build += $this->elementInfo->getInfo('link');
-    return $build;
-  }
+        // The renderer has already added element defaults by the time the lazy
+        // builder is run.
+        // @see https://www.drupal.org/project/drupal/issues/2609250
+        $build += $this->elementInfo->getInfo('link');
+        return $build;
+    }
 
-  /**
-   * Render callback for the workspace toolbar tab.
-   */
-  public static function removeTabAttributes(array $element): array {
-    unset($element['tab']['#attributes']);
-    return $element;
-  }
+    /**
+     * Render callback for the workspace toolbar tab.
+     */
+    public static function removeTabAttributes(array $element): array
+    {
+        unset($element['tab']['#attributes']);
+        return $element;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks(): array {
-    return ['removeTabAttributes', 'renderToolbarTab'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function trustedCallbacks(): array
+    {
+        return ['removeTabAttributes', 'renderToolbarTab'];
+    }
 
 }

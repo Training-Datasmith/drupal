@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\link\Plugin\Validation\Constraint;
 
-use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\link\LinkItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -13,53 +14,55 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 /**
  * Validates the LinkAccess constraint.
  */
-class LinkAccessConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
-
-  /**
-   * Constructs an instance of the LinkAccessConstraintValidator class.
-   *
-   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
-   *   The current user account.
-   */
-  public function __construct(protected \Drupal\Core\Session\AccountProxyInterface $current_user)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('current_user')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    if (!$value instanceof LinkItemInterface) {
-      throw new UnexpectedValueException($value, LinkItemInterface::class);
-    }
-    if ($value->isEmpty()) {
-      return;
+class LinkAccessConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    /**
+     * Constructs an instance of the LinkAccessConstraintValidator class.
+     *
+     * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+     *   The current user account.
+     */
+    public function __construct(protected \Drupal\Core\Session\AccountProxyInterface $current_user)
+    {
     }
 
-    try {
-      $url = $value->getUrl();
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
+            $container->get('current_user')
+        );
     }
-    // If the URL is malformed this constraint cannot check access.
-    catch (\InvalidArgumentException) {
-      return;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        if (!$value instanceof LinkItemInterface) {
+            throw new UnexpectedValueException($value, LinkItemInterface::class);
+        }
+        if ($value->isEmpty()) {
+            return;
+        }
+
+        try {
+            $url = $value->getUrl();
+        }
+        // If the URL is malformed this constraint cannot check access.
+        catch (\InvalidArgumentException) {
+            return;
+        }
+        // Disallow URLs if the current user doesn't have the 'link to any page'
+        // permission nor can access this URI.
+        $allowed = $this->current_user->hasPermission('link to any page') || $url->access();
+        if (!$allowed) {
+            $this->context->buildViolation($constraint->message, ['@uri' => $value->uri])
+              ->atPath('uri')
+              ->addViolation();
+        }
     }
-    // Disallow URLs if the current user doesn't have the 'link to any page'
-    // permission nor can access this URI.
-    $allowed = $this->current_user->hasPermission('link to any page') || $url->access();
-    if (!$allowed) {
-      $this->context->buildViolation($constraint->message, ['@uri' => $value->uri])
-        ->atPath('uri')
-        ->addViolation();
-    }
-  }
 
 }

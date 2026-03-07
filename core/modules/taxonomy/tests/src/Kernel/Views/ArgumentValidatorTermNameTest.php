@@ -14,174 +14,177 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('taxonomy')]
 #[RunTestsInSeparateProcesses]
-class ArgumentValidatorTermNameTest extends TaxonomyTestBase {
+class ArgumentValidatorTermNameTest extends TaxonomyTestBase
+{
+    /**
+     * Stores the taxonomy term used by this test.
+     *
+     * @var array
+     */
+    protected $terms = [];
 
-  /**
-   * Stores the taxonomy term used by this test.
-   *
-   * @var array
-   */
-  protected $terms = [];
+    /**
+     * Stores the taxonomy names used by this test.
+     *
+     * @var array
+     */
+    protected $names = [];
 
-  /**
-   * Stores the taxonomy names used by this test.
-   *
-   * @var array
-   */
-  protected $names = [];
+    /**
+     * Stores the taxonomy IDs used by this test.
+     *
+     * @var array
+     */
+    protected $ids = [];
 
-  /**
-   * Stores the taxonomy IDs used by this test.
-   *
-   * @var array
-   */
-  protected $ids = [];
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_taxonomy_name_argument'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_taxonomy_name_argument'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true): void
+    {
+        parent::setUp($import_test_views);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE): void {
-    parent::setUp($import_test_views);
+        // Add three terms to the 'tags' vocabulary.
+        for ($i = 0; $i < 3; $i++) {
+            $this->terms[] = $term = $this->createTerm();
+            $this->names[] = $term->label();
+            $this->ids[] = $term->id();
+        }
 
-    // Add three terms to the 'tags' vocabulary.
-    for ($i = 0; $i < 3; $i++) {
-      $this->terms[] = $term = $this->createTerm();
-      $this->names[] = $term->label();
-      $this->ids[] = $term->id();
+        // Create a second vocabulary.
+        $vocabulary2 = Vocabulary::create([
+          'name' => 'Views testing tags 2',
+          'vid' => 'views_testing_tags_2',
+        ]);
+        $vocabulary2->save();
+        // Add term in this vocabulary that has same name as term 3.
+        $duplicate = $this->createTerm([
+          'name' => $this->names[2],
+          'vid' => 'views_testing_tags_2',
+        ]);
+        $this->terms[] = $duplicate;
+        $this->names[] = $duplicate->label();
+        $this->ids[] = $duplicate->id();
+
+        // Add uniquely named term in second vocab as well.
+        $unique = $this->createTerm([
+          'vid' => 'views_testing_tags_2',
+        ]);
+        $this->terms[] = $unique;
+        $this->names[] = $unique->label();
+        $this->ids[] = $unique->id();
     }
 
-    // Create a second vocabulary.
-    $vocabulary2 = Vocabulary::create([
-      'name' => 'Views testing tags 2',
-      'vid' => 'views_testing_tags_2',
-    ]);
-    $vocabulary2->save();
-    // Add term in this vocabulary that has same name as term 3.
-    $duplicate = $this->createTerm([
-      'name' => $this->names[2],
-      'vid' => 'views_testing_tags_2',
-    ]);
-    $this->terms[] = $duplicate;
-    $this->names[] = $duplicate->label();
-    $this->ids[] = $duplicate->id();
+    /**
+     * Tests the term name argument validator plugin.
+     */
+    public function testArgumentValidatorTermName(): void
+    {
+        $view = Views::getView('test_taxonomy_name_argument');
+        $view->initHandlers();
 
-    // Add uniquely named term in second vocab as well.
-    $unique = $this->createTerm([
-      'vid' => 'views_testing_tags_2',
-    ]);
-    $this->terms[] = $unique;
-    $this->names[] = $unique->label();
-    $this->ids[] = $unique->id();
-  }
+        // Test with name that does not correspond to any term.
+        $this->assertFalse($view->argument['name']->setArgument('not a term name'));
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-  /**
-   * Tests the term name argument validator plugin.
-   */
-  public function testArgumentValidatorTermName(): void {
-    $view = Views::getView('test_taxonomy_name_argument');
-    $view->initHandlers();
+        // Test with term in the wrong vocabulary.
+        $this->assertFalse($view->argument['name']->setArgument($this->names[4]));
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Test with name that does not correspond to any term.
-    $this->assertFalse($view->argument['name']->setArgument('not a term name'));
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Test with a couple valid names.
+        $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
+        $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Test with term in the wrong vocabulary.
-    $this->assertFalse($view->argument['name']->setArgument($this->names[4]));
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        $this->assertTrue($view->argument['name']->setArgument($this->names[1]));
+        $this->assertEquals($this->names[1], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Test with a couple valid names.
-    $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
-    $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Test that multiple valid terms don't validate because multiple arguments
+        // are currently not supported.
+        $multiple_terms = $this->names[0] . '+' . $this->names[1];
+        $this->assertFalse($view->argument['name']->setArgument($multiple_terms));
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    $this->assertTrue($view->argument['name']->setArgument($this->names[1]));
-    $this->assertEquals($this->names[1], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Test term whose name is shared by term in disallowed bundle.
+        $this->assertTrue($view->argument['name']->setArgument($this->names[2]));
+        $this->assertEquals($this->names[2], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Test that multiple valid terms don't validate because multiple arguments
-    // are currently not supported.
-    $multiple_terms = $this->names[0] . '+' . $this->names[1];
-    $this->assertFalse($view->argument['name']->setArgument($multiple_terms));
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Add the second vocabulary as an allowed bundle.
+        $view->argument['name']->options['validate_options']['bundles']['views_testing_tags_2'] = 'views_testing_tags_2';
 
-    // Test term whose name is shared by term in disallowed bundle.
-    $this->assertTrue($view->argument['name']->setArgument($this->names[2]));
-    $this->assertEquals($this->names[2], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Test that an array of bundles is handled by passing terms with unique
+        // names in each bundle.
+        $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
+        $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Add the second vocabulary as an allowed bundle.
-    $view->argument['name']->options['validate_options']['bundles']['views_testing_tags_2'] = 'views_testing_tags_2';
+        $this->assertTrue($view->argument['name']->setArgument($this->names[4]));
+        $this->assertEquals($this->names[4], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Test that an array of bundles is handled by passing terms with unique
-    // names in each bundle.
-    $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
-    $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Allow any and all bundles.
+        $view->argument['name']->options['validate_options']['bundles'] = [];
 
-    $this->assertTrue($view->argument['name']->setArgument($this->names[4]));
-    $this->assertEquals($this->names[4], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+        // Test that an empty array of bundles is handled by testing terms with
+        // unique names in each bundle.
+        $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
+        $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Allow any and all bundles.
-    $view->argument['name']->options['validate_options']['bundles'] = [];
+        $this->assertTrue($view->argument['name']->setArgument($this->names[4]));
+        $this->assertEquals($this->names[4], $view->argument['name']->getTitle());
+    }
 
-    // Test that an empty array of bundles is handled by testing terms with
-    // unique names in each bundle.
-    $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
-    $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
+    /**
+     * Tests the access checking in term name argument validator plugin.
+     */
+    public function testArgumentValidatorTermNameAccess(): void
+    {
+        $this->installConfig(['user']);
+        $this->setCurrentUser($this->createUser(['access content']));
+        $view = Views::getView('test_taxonomy_name_argument');
+        $view->initHandlers();
 
-    $this->assertTrue($view->argument['name']->setArgument($this->names[4]));
-    $this->assertEquals($this->names[4], $view->argument['name']->getTitle());
-  }
+        // Enable access checking on validator.
+        $view->argument['name']->options['validate_options']['access'] = true;
+        // Allow all bundles.
+        $view->argument['name']->options['validate_options']['bundles'] = [];
 
-  /**
-   * Tests the access checking in term name argument validator plugin.
-   */
-  public function testArgumentValidatorTermNameAccess(): void {
-    $this->installConfig(['user']);
-    $this->setCurrentUser($this->createUser(['access content']));
-    $view = Views::getView('test_taxonomy_name_argument');
-    $view->initHandlers();
+        // A uniquely named unpublished term in an allowed bundle.
+        $this->terms[0]->setUnpublished()->save();
+        $this->assertFalse($view->argument['name']->setArgument($this->names[0]));
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // Enable access checking on validator.
-    $view->argument['name']->options['validate_options']['access'] = TRUE;
-    // Allow all bundles.
-    $view->argument['name']->options['validate_options']['bundles'] = [];
+        // A name used by two terms in a single vocabulary. One is unpublished.
+        // We re-name the second term to match the first one.
+        $this->terms[1]->set('name', $this->names[0])->save();
+        $this->names[1] = $this->terms[1]->label();
+        $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
+        $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
+        $view->argument['name']->validated_title = null;
+        $view->argument['name']->argument_validated = null;
 
-    // A uniquely named unpublished term in an allowed bundle.
-    $this->terms[0]->setUnpublished()->save();
-    $this->assertFalse($view->argument['name']->setArgument($this->names[0]));
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
-
-    // A name used by two terms in a single vocabulary. One is unpublished.
-    // We re-name the second term to match the first one.
-    $this->terms[1]->set('name', $this->names[0])->save();
-    $this->names[1] = $this->terms[1]->label();
-    $this->assertTrue($view->argument['name']->setArgument($this->names[0]));
-    $this->assertEquals($this->names[0], $view->argument['name']->getTitle());
-    $view->argument['name']->validated_title = NULL;
-    $view->argument['name']->argument_validated = NULL;
-
-    // A name shared by a term in each vocabulary. One is unpublished.
-    $this->terms[3]->setUnpublished()->save();
-    $this->assertTrue($view->argument['name']->setArgument($this->names[3]));
-    $this->assertEquals($this->names[3], $view->argument['name']->getTitle());
-  }
+        // A name shared by a term in each vocabulary. One is unpublished.
+        $this->terms[3]->setUnpublished()->save();
+        $this->assertTrue($view->argument['name']->setArgument($this->names[3]));
+        $this->assertEquals($this->names[3], $view->argument['name']->getTitle());
+    }
 
 }

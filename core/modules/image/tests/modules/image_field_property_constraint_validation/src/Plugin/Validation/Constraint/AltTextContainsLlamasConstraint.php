@@ -12,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Provides a Contains Llamas constraint.
  */
 #[Constraint(
-  id: 'AltTextContainsLlamas',
-  label: new TranslatableMarkup('Contains Llamas', options: ['context' => 'Validation'])
+    id: 'AltTextContainsLlamas',
+    label: new TranslatableMarkup('Contains Llamas', options: ['context' => 'Validation'])
 )]
-final class AltTextContainsLlamasConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public string $message = 'Alternative text must contain some llamas.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+final class AltTextContainsLlamasConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public string $message = 'Alternative text must contain some llamas.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

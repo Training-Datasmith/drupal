@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 use Drupal\Component\HttpFoundation\SecuredRedirectResponse;
@@ -10,23 +12,23 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 /**
  * Provides a common base class for cacheable safe redirects.
  */
-abstract class CacheableSecuredRedirectResponse extends SecuredRedirectResponse implements CacheableResponseInterface {
+abstract class CacheableSecuredRedirectResponse extends SecuredRedirectResponse implements CacheableResponseInterface
+{
+    use CacheableResponseTrait;
 
-  use CacheableResponseTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function fromResponse(RedirectResponse $response)
+    {
+        parent::fromResponse($response);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function fromResponse(RedirectResponse $response) {
-    parent::fromResponse($response);
-
-    $metadata = $this->getCacheableMetadata();
-    if ($response instanceof CacheableResponseInterface) {
-      $metadata->addCacheableDependency($response->getCacheableMetadata());
+        $metadata = $this->getCacheableMetadata();
+        if ($response instanceof CacheableResponseInterface) {
+            $metadata->addCacheableDependency($response->getCacheableMetadata());
+        } else {
+            $metadata->setCacheMaxAge(0);
+        }
     }
-    else {
-      $metadata->setCacheMaxAge(0);
-    }
-  }
 
 }

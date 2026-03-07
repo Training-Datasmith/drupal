@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class PrefixInfoTest extends BaseMySqlTest {
+class PrefixInfoTest extends BaseMySqlTest
+{
 }

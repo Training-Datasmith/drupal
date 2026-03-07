@@ -16,26 +16,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class RoleValidationTest extends ConfigEntityValidationTestBase {
+class RoleValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installConfig('user');
 
-    $this->installConfig('user');
-
-    $this->entity = Role::create([
-      'id' => 'test',
-      'label' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = Role::create([
+          'id' => 'test',
+          'label' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

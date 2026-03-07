@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -15,65 +17,85 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class NullBackend implements CacheBackendInterface {
+class NullBackend implements CacheBackendInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function get($cid, $allow_invalid = false): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($cid, $allow_invalid = FALSE): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultiple(&$cids, $allow_invalid = false): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = [])
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $items = [])
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $items = []) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $cids)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $cids) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll()
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll() {}
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidate($cid)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidate($cid) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateMultiple(array $cids)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateMultiple(array $cids) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection()
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection() {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeBin() {}
+    /**
+     * {@inheritdoc}
+     */
+    public function removeBin()
+    {
+    }
 
 }

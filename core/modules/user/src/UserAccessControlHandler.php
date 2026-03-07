@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultReasonInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -15,151 +17,154 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\user\Entity\User
  */
-class UserAccessControlHandler extends EntityAccessControlHandler {
+class UserAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * Allow access to user label.
+     *
+     * @var bool
+     */
+    protected $viewLabelOperation = true;
 
-  /**
-   * Allow access to user label.
-   *
-   * @var bool
-   */
-  protected $viewLabelOperation = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        /** @var \Drupal\user\UserInterface $entity*/
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\user\UserInterface $entity*/
-
-    // We don't treat the user label as privileged information, so this check
-    // has to be the first one in order to allow labels for all users to be
-    // viewed, including the special anonymous user.
-    if ($operation === 'view label') {
-      return AccessResult::allowed();
-    }
-
-    // The anonymous user's profile can neither be viewed, updated nor deleted.
-    if ($entity->isAnonymous()) {
-      return AccessResult::forbidden();
-    }
-
-    // Administrators can view/update/delete all user profiles.
-    if ($account->hasPermission('administer users')) {
-      return AccessResult::allowed()->cachePerPermissions();
-    }
-
-    switch ($operation) {
-      case 'view':
-      case 'view linked label':
-        // Only allow view access if the account is active.
-        $result = AccessResult::allowedIfHasPermission($account, 'access user profiles');
-
-        if ($result->isAllowed()) {
-          $result = $result->andIf(
-            AccessResult::allowedIf($entity->isActive())->addCacheableDependency($entity)
-          );
-
-          if ($result instanceof AccessResultReasonInterface) {
-            $result->setReason("The 'access user profiles' permission is required and the user must be active.");
-          }
-
-          if ($result->isAllowed()) {
-            return $result;
-          }
+        // We don't treat the user label as privileged information, so this check
+        // has to be the first one in order to allow labels for all users to be
+        // viewed, including the special anonymous user.
+        if ($operation === 'view label') {
+            return AccessResult::allowed();
         }
 
-        if ($operation === 'view linked label') {
-          // For cacheability and consistent user experience, the 'view linked
-          // label' operation can be used for checking access to view the user
-          // name as a link to the profile, in contexts such as displaying an
-          // entity's author information. This ignores whether the viewing user
-          // is the author.
-          return $result;
+        // The anonymous user's profile can neither be viewed, updated nor deleted.
+        if ($entity->isAnonymous()) {
+            return AccessResult::forbidden();
         }
-        // Users can view own profiles at all times.
-        return $result->orIf(AccessResult::allowedIf($account->id() == $entity->id())->addCacheContexts(['user']));
 
-      case 'update':
-        // Users can always edit their own account.
-        $access_result = AccessResult::allowedIf($account->id() == $entity->id())->cachePerUser();
-        if (!$access_result->isAllowed() && $access_result instanceof AccessResultReasonInterface) {
-          $access_result->setReason("Users can only update their own account, unless they have the 'administer users' permission.");
+        // Administrators can view/update/delete all user profiles.
+        if ($account->hasPermission('administer users')) {
+            return AccessResult::allowed()->cachePerPermissions();
         }
-        return $access_result;
 
-      case 'delete':
-        // Users with 'cancel account' permission can cancel their own account.
-        return AccessResult::allowedIfHasPermission($account, 'cancel account')
-          ->andIf(AccessResult::allowedIf($account->id() == $entity->id())->cachePerUser());
-    }
+        switch ($operation) {
+            case 'view':
+            case 'view linked label':
+                // Only allow view access if the account is active.
+                $result = AccessResult::allowedIfHasPermission($account, 'access user profiles');
 
-    // No opinion.
-    return AccessResult::neutral();
-  }
+                if ($result->isAllowed()) {
+                    $result = $result->andIf(
+                        AccessResult::allowedIf($entity->isActive())->addCacheableDependency($entity)
+                    );
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkFieldAccess($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
-    // Fields that are not implicitly allowed to administrative users.
-    $explicit_check_fields = [
-      'pass',
-    ];
+                    if ($result instanceof AccessResultReasonInterface) {
+                        $result->setReason("The 'access user profiles' permission is required and the user must be active.");
+                    }
 
-    // Administrative users are allowed to edit and view all fields.
-    if (!in_array($field_definition->getName(), $explicit_check_fields) && $account->hasPermission('administer users')) {
-      return AccessResult::allowed()->cachePerPermissions();
-    }
+                    if ($result->isAllowed()) {
+                        return $result;
+                    }
+                }
 
-    // Flag to indicate if this user entity is the own user account.
-    $is_own_account = $items && $items->getEntity()->id() == $account->id();
-    switch ($field_definition->getName()) {
-      case 'name':
-        // Allow view access to anyone with access to the entity.
-        // The username field is editable during the registration process.
-        if ($operation == 'view' || ($items && $items->getEntity()->isNew())) {
-          return AccessResult::allowed()->cachePerPermissions();
+                if ($operation === 'view linked label') {
+                    // For cacheability and consistent user experience, the 'view linked
+                    // label' operation can be used for checking access to view the user
+                    // name as a link to the profile, in contexts such as displaying an
+                    // entity's author information. This ignores whether the viewing user
+                    // is the author.
+                    return $result;
+                }
+                // Users can view own profiles at all times.
+                return $result->orIf(AccessResult::allowedIf($account->id() == $entity->id())->addCacheContexts(['user']));
+
+            case 'update':
+                // Users can always edit their own account.
+                $access_result = AccessResult::allowedIf($account->id() == $entity->id())->cachePerUser();
+                if (!$access_result->isAllowed() && $access_result instanceof AccessResultReasonInterface) {
+                    $access_result->setReason("Users can only update their own account, unless they have the 'administer users' permission.");
+                }
+                return $access_result;
+
+            case 'delete':
+                // Users with 'cancel account' permission can cancel their own account.
+                return AccessResult::allowedIfHasPermission($account, 'cancel account')
+                  ->andIf(AccessResult::allowedIf($account->id() == $entity->id())->cachePerUser());
         }
-        // Allow edit access for the own user name if the permission is
-        // satisfied.
-        if ($is_own_account && $account->hasPermission('change own username')) {
-          return AccessResult::allowed()->cachePerPermissions()->cachePerUser();
-        }
-        return AccessResult::neutral();
 
-      case 'mail':
-        // Only check for the 'view user email addresses' permission and a view
-        // operation. Use case fall-through for all other cases.
-        if ($operation == 'view' && $account->hasPermission('view user email addresses')) {
-          return AccessResult::allowed()->cachePerPermissions();
-        }
-      case 'preferred_langcode':
-      case 'preferred_admin_langcode':
-      case 'timezone':
-        // Allow view access to own mail address and other personalization
-        // settings.
-        if ($operation == 'view') {
-          return AccessResult::allowedIf($is_own_account)->cachePerUser();
-        }
-        // Anyone that can edit the user can also edit this field.
-        return AccessResult::allowed()->cachePerPermissions();
-
-      case 'pass':
-        // Allow editing the password, but not viewing it.
-        return ($operation == 'edit') ? AccessResult::allowed() : AccessResult::forbidden();
-
-      case 'created':
-        // Allow viewing the created date, but not editing it.
-        return ($operation == 'view') ? AccessResult::allowed() : AccessResult::neutral();
-
-      case 'roles':
-      case 'status':
-      case 'access':
-      case 'login':
-      case 'init':
+        // No opinion.
         return AccessResult::neutral();
     }
 
-    return parent::checkFieldAccess($operation, $field_definition, $account, $items);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkFieldAccess($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = null)
+    {
+        // Fields that are not implicitly allowed to administrative users.
+        $explicit_check_fields = [
+          'pass',
+        ];
+
+        // Administrative users are allowed to edit and view all fields.
+        if (!in_array($field_definition->getName(), $explicit_check_fields) && $account->hasPermission('administer users')) {
+            return AccessResult::allowed()->cachePerPermissions();
+        }
+
+        // Flag to indicate if this user entity is the own user account.
+        $is_own_account = $items && $items->getEntity()->id() == $account->id();
+        switch ($field_definition->getName()) {
+            case 'name':
+                // Allow view access to anyone with access to the entity.
+                // The username field is editable during the registration process.
+                if ($operation == 'view' || ($items && $items->getEntity()->isNew())) {
+                    return AccessResult::allowed()->cachePerPermissions();
+                }
+                // Allow edit access for the own user name if the permission is
+                // satisfied.
+                if ($is_own_account && $account->hasPermission('change own username')) {
+                    return AccessResult::allowed()->cachePerPermissions()->cachePerUser();
+                }
+                return AccessResult::neutral();
+
+            case 'mail':
+                // Only check for the 'view user email addresses' permission and a view
+                // operation. Use case fall-through for all other cases.
+                if ($operation == 'view' && $account->hasPermission('view user email addresses')) {
+                    return AccessResult::allowed()->cachePerPermissions();
+                }
+                // no break
+            case 'preferred_langcode':
+            case 'preferred_admin_langcode':
+            case 'timezone':
+                // Allow view access to own mail address and other personalization
+                // settings.
+                if ($operation == 'view') {
+                    return AccessResult::allowedIf($is_own_account)->cachePerUser();
+                }
+                // Anyone that can edit the user can also edit this field.
+                return AccessResult::allowed()->cachePerPermissions();
+
+            case 'pass':
+                // Allow editing the password, but not viewing it.
+                return ($operation == 'edit') ? AccessResult::allowed() : AccessResult::forbidden();
+
+            case 'created':
+                // Allow viewing the created date, but not editing it.
+                return ($operation == 'view') ? AccessResult::allowed() : AccessResult::neutral();
+
+            case 'roles':
+            case 'status':
+            case 'access':
+            case 'login':
+            case 'init':
+                return AccessResult::neutral();
+        }
+
+        return parent::checkFieldAccess($operation, $field_definition, $account, $items);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 /**
@@ -11,76 +13,83 @@ namespace Drupal\Core\Entity;
  * @see \Symfony\Component\EventDispatcher\EventSubscriberInterface
  * @see \Drupal\Core\Entity\EntityTypeListenerInterface
  */
-trait EntityTypeEventSubscriberTrait {
-
-  /**
-   * Gets the subscribed events.
-   *
-   * @return array
-   *   An array of subscribed event names.
-   *
-   * @see \Symfony\Component\EventDispatcher\EventSubscriberInterface::getSubscribedEvents()
-   */
-  public static function getEntityTypeEvents(): array {
-    $event = ['onEntityTypeEvent', 100];
-    $events[EntityTypeEvents::CREATE][] = $event;
-    $events[EntityTypeEvents::UPDATE][] = $event;
-    $events[EntityTypeEvents::DELETE][] = $event;
-    return $events;
-  }
-
-  /**
-   * Listener method for any entity type definition event.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeEvent $event
-   *   The field storage definition event object.
-   * @param string $event_name
-   *   The event name.
-   */
-  public function onEntityTypeEvent(EntityTypeEvent $event, $event_name): void {
-    switch ($event_name) {
-      case EntityTypeEvents::CREATE:
-        $this->onEntityTypeCreate($event->getEntityType());
-        break;
-
-      case EntityTypeEvents::UPDATE:
-        $this->onEntityTypeUpdate($event->getEntityType(), $event->getOriginal());
-        break;
-
-      case EntityTypeEvents::DELETE:
-        $this->onEntityTypeDelete($event->getEntityType());
-        break;
+trait EntityTypeEventSubscriberTrait
+{
+    /**
+     * Gets the subscribed events.
+     *
+     * @return array
+     *   An array of subscribed event names.
+     *
+     * @see \Symfony\Component\EventDispatcher\EventSubscriberInterface::getSubscribedEvents()
+     */
+    public static function getEntityTypeEvents(): array
+    {
+        $event = ['onEntityTypeEvent', 100];
+        $events[EntityTypeEvents::CREATE][] = $event;
+        $events[EntityTypeEvents::UPDATE][] = $event;
+        $events[EntityTypeEvents::DELETE][] = $event;
+        return $events;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
-  }
+    /**
+     * Listener method for any entity type definition event.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeEvent $event
+     *   The field storage definition event object.
+     * @param string $event_name
+     *   The event name.
+     */
+    public function onEntityTypeEvent(EntityTypeEvent $event, $event_name): void
+    {
+        switch ($event_name) {
+            case EntityTypeEvents::CREATE:
+                $this->onEntityTypeCreate($event->getEntityType());
+                break;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
-  }
+            case EntityTypeEvents::UPDATE:
+                $this->onEntityTypeUpdate($event->getEntityType(), $event->getOriginal());
+                break;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
-  }
+            case EntityTypeEvents::DELETE:
+                $this->onEntityTypeDelete($event->getEntityType());
+                break;
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function onEntityTypeCreate(EntityTypeInterface $entity_type)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = null)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onEntityTypeDelete(EntityTypeInterface $entity_type)
+    {
+    }
 
 }

@@ -11,19 +11,20 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * An image toolkit operation that throws a \RuntimeException.
  */
 #[ImageToolkitOperation(
-  id: "failing",
-  toolkit: "test",
-  operation: "failing",
-  label: new TranslatableMarkup("An image toolkit operation that throws a \\RuntimeException"),
-  description: new TranslatableMarkup("An image toolkit operation that throws a \\RuntimeException.")
+    id: 'failing',
+    toolkit: 'test',
+    operation: 'failing',
+    label: new TranslatableMarkup('An image toolkit operation that throws a \\RuntimeException'),
+    description: new TranslatableMarkup('An image toolkit operation that throws a \\RuntimeException.')
 )]
-class Failing extends OperationBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function execute(array $arguments) {
-    throw new \RuntimeException('Ahem, this image operation failed');
-  }
+class Failing extends OperationBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(array $arguments)
+    {
+        throw new \RuntimeException('Ahem, this image operation failed');
+    }
 
 }

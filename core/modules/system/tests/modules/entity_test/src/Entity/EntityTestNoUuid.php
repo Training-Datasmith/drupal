@@ -12,23 +12,23 @@ use Drupal\entity_test\EntityTestAccessControlHandler;
  * Test entity class with revisions but without UUIDs.
  */
 #[ContentEntityType(
-  id: 'entity_test_no_uuid',
-  label: new TranslatableMarkup('Test entity without UUID'),
-  persistent_cache: FALSE,
-  entity_keys: [
+    id: 'entity_test_no_uuid',
+    label: new TranslatableMarkup('Test entity without UUID'),
+    persistent_cache: false,
+    entity_keys: [
     'id' => 'id',
     'revision' => 'vid',
     'bundle' => 'type',
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'access' => EntityTestAccessControlHandler::class,
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_no_uuid',
-  revision_table: 'entity_test_no_uuid_revision',
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_no_uuid',
+    revision_table: 'entity_test_no_uuid_revision',
 )]
-class EntityTestNoUuid extends EntityTest {
-
+class EntityTestNoUuid extends EntityTest
+{
 }

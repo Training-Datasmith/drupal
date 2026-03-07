@@ -17,63 +17,67 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @internal
  *   Event subscribers are internal.
  */
-final readonly class DefaultContentSubscriber implements EventSubscriberInterface {
-
-  public function __construct(
-    private EntityRepositoryInterface $entityRepository,
-    #[AutowireServiceClosure('logger.channel.default_content')]
-    private \Closure $logger,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      PreExportEvent::class => 'preExport',
-    ];
-  }
-
-  /**
-   * Reacts before an entity is exported.
-   *
-   * Adds an export callback to ensure parent menu links are marked as
-   * dependencies, when exporting menu link content entities.
-   *
-   * @param \Drupal\Core\DefaultContent\PreExportEvent $event
-   *   The event object.
-   */
-  public function preExport(PreExportEvent $event): void {
-    if (!$event->entity instanceof MenuLinkContentInterface) {
-      return;
+final readonly class DefaultContentSubscriber implements EventSubscriberInterface
+{
+    public function __construct(
+        private EntityRepositoryInterface $entityRepository,
+        #[AutowireServiceClosure('logger.channel.default_content')]
+        private \Closure $logger,
+    ) {
     }
 
-    $parentId = $event->entity->getParentId();
-    if (!str_starts_with($parentId, 'menu_link_content:')) {
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          PreExportEvent::class => 'preExport',
+        ];
     }
 
-    [, $uuid] = explode(':', $parentId);
-    $parent = $this->entityRepository->loadEntityByUuid('menu_link_content', $uuid);
-    if ($parent instanceof MenuLinkContentInterface) {
-      $event->metadata->addDependency($parent);
-      return;
+    /**
+     * Reacts before an entity is exported.
+     *
+     * Adds an export callback to ensure parent menu links are marked as
+     * dependencies, when exporting menu link content entities.
+     *
+     * @param \Drupal\Core\DefaultContent\PreExportEvent $event
+     *   The event object.
+     */
+    public function preExport(PreExportEvent $event): void
+    {
+        if (!$event->entity instanceof MenuLinkContentInterface) {
+            return;
+        }
+
+        $parentId = $event->entity->getParentId();
+        if (!str_starts_with($parentId, 'menu_link_content:')) {
+            return;
+        }
+
+        [, $uuid] = explode(':', $parentId);
+        $parent = $this->entityRepository->loadEntityByUuid('menu_link_content', $uuid);
+        if ($parent instanceof MenuLinkContentInterface) {
+            $event->metadata->addDependency($parent);
+            return;
+        }
+
+        $this->getLogger()->error('The parent (%parent) of menu link %uuid could not be loaded.', [
+          '%parent' => $uuid,
+          '%uuid' => $event->entity->uuid(),
+        ]);
     }
 
-    $this->getLogger()->error("The parent (%parent) of menu link %uuid could not be loaded.", [
-      '%parent' => $uuid,
-      '%uuid' => $event->entity->uuid(),
-    ]);
-  }
-
-  /**
-   * Gets the logging service.
-   *
-   * @return \Psr\Log\LoggerInterface
-   *   The logging service.
-   */
-  private function getLogger(): LoggerInterface {
-    return ($this->logger)();
-  }
+    /**
+     * Gets the logging service.
+     *
+     * @return \Psr\Log\LoggerInterface
+     *   The logging service.
+     */
+    private function getLogger(): LoggerInterface
+    {
+        return ($this->logger)();
+    }
 
 }

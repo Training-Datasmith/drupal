@@ -24,96 +24,98 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(PluginExistsConstraint::class)]
 #[CoversClass(PluginExistsConstraintValidator::class)]
 #[RunTestsInSeparateProcesses]
-class PluginExistsConstraintValidatorTest extends KernelTestBase {
+class PluginExistsConstraintValidatorTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['action_test', 'system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['action_test', 'system'];
+    /**
+     * Tests validation of plugin existence.
+     */
+    public function testValidation(): void
+    {
+        $definition = DataDefinition::create('string')
+          ->addConstraint('PluginExists', ['manager' => 'plugin.manager.action']);
 
-  /**
-   * Tests validation of plugin existence.
-   */
-  public function testValidation(): void {
-    $definition = DataDefinition::create('string')
-      ->addConstraint('PluginExists', ['manager' => 'plugin.manager.action']);
+        // An existing action plugin should pass validation.
+        $data = $this->container->get('typed_data_manager')->create($definition);
+        $data->setValue('action_test_save_entity');
+        $this->assertCount(0, $data->validate());
 
-    // An existing action plugin should pass validation.
-    $data = $this->container->get('typed_data_manager')->create($definition);
-    $data->setValue('action_test_save_entity');
-    $this->assertCount(0, $data->validate());
+        // It should also pass validation if we check for an interface it actually
+        // implements.
+        $definition->setConstraints([
+          'PluginExists' => [
+            'manager' => 'plugin.manager.action',
+            'interface' => ActionInterface::class,
+          ],
+        ]);
+        $this->assertCount(0, $data->validate());
 
-    // It should also pass validation if we check for an interface it actually
-    // implements.
-    $definition->setConstraints([
-      'PluginExists' => [
-        'manager' => 'plugin.manager.action',
-        'interface' => ActionInterface::class,
-      ],
-    ]);
-    $this->assertCount(0, $data->validate());
+        // A non-existent plugin should be invalid, regardless of interface.
+        $data->setValue('non_existent_plugin');
+        $violations = $data->validate();
+        $this->assertCount(1, $violations);
+        $this->assertSame("The 'non_existent_plugin' plugin does not exist.", (string) $violations->get(0)->getMessage());
 
-    // A non-existent plugin should be invalid, regardless of interface.
-    $data->setValue('non_existent_plugin');
-    $violations = $data->validate();
-    $this->assertCount(1, $violations);
-    $this->assertSame("The 'non_existent_plugin' plugin does not exist.", (string) $violations->get(0)->getMessage());
+        // An existing plugin that doesn't implement the specified interface should
+        // raise an error.
+        $definition->setConstraints([
+          'PluginExists' => [
+            'manager' => 'plugin.manager.action',
+            'interface' => MenuInterface::class,
+          ],
+        ]);
+        $data->setValue('action_test_save_entity');
+        $violations = $data->validate();
+        $this->assertCount(1, $violations);
+        $this->assertSame("The 'action_test_save_entity' plugin must implement or extend " . MenuInterface::class . '.', (string) $violations->get(0)->getMessage());
 
-    // An existing plugin that doesn't implement the specified interface should
-    // raise an error.
-    $definition->setConstraints([
-      'PluginExists' => [
-        'manager' => 'plugin.manager.action',
-        'interface' => MenuInterface::class,
-      ],
-    ]);
-    $data->setValue('action_test_save_entity');
-    $violations = $data->validate();
-    $this->assertCount(1, $violations);
-    $this->assertSame("The 'action_test_save_entity' plugin must implement or extend " . MenuInterface::class . '.', (string) $violations->get(0)->getMessage());
+        // No validation is attempted on a NULL value.
+        $data->setValue(null);
+        $violations = $data->validate();
+        $this->assertCount(0, $violations);
+    }
 
-    // No validation is attempted on a NULL value.
-    $data->setValue(NULL);
-    $violations = $data->validate();
-    $this->assertCount(0, $violations);
-  }
+    /**
+     * Tests that fallback plugin IDs can be considered valid or invalid.
+     */
+    public function testFallbackPluginIds(): void
+    {
+        $plugin_manager = $this->prophesize(PluginManagerInterface::class)
+          ->willImplement(FallbackPluginManagerInterface::class);
+        $plugin_manager->getFallbackPluginId('non_existent')
+          ->shouldBeCalledOnce()
+          ->willReturn('broken');
+        $plugin_manager->getDefinition('non_existent', false)
+          ->shouldBeCalled()
+          ->willReturn(null);
+        $plugin_manager->getDefinition('broken', false)
+          ->shouldBeCalled()
+          ->willReturn(['id' => 'broken']);
+        $this->container->set('plugin.manager.test_fallback', $plugin_manager->reveal());
 
-  /**
-   * Tests that fallback plugin IDs can be considered valid or invalid.
-   */
-  public function testFallbackPluginIds(): void {
-    $plugin_manager = $this->prophesize(PluginManagerInterface::class)
-      ->willImplement(FallbackPluginManagerInterface::class);
-    $plugin_manager->getFallbackPluginId('non_existent')
-      ->shouldBeCalledOnce()
-      ->willReturn('broken');
-    $plugin_manager->getDefinition('non_existent', FALSE)
-      ->shouldBeCalled()
-      ->willReturn(NULL);
-    $plugin_manager->getDefinition('broken', FALSE)
-      ->shouldBeCalled()
-      ->willReturn(['id' => 'broken']);
-    $this->container->set('plugin.manager.test_fallback', $plugin_manager->reveal());
+        // If fallback plugin IDs are allowed, then an invalid plugin ID should not
+        // raise an error.
+        $definition = DataDefinition::create('string')
+          ->addConstraint('PluginExists', [
+            'manager' => 'plugin.manager.test_fallback',
+            'allowFallback' => true,
+          ]);
+        $data = $this->container->get('typed_data_manager')->create($definition);
+        $data->setValue('non_existent');
+        $this->assertCount(0, $data->validate());
 
-    // If fallback plugin IDs are allowed, then an invalid plugin ID should not
-    // raise an error.
-    $definition = DataDefinition::create('string')
-      ->addConstraint('PluginExists', [
-        'manager' => 'plugin.manager.test_fallback',
-        'allowFallback' => TRUE,
-      ]);
-    $data = $this->container->get('typed_data_manager')->create($definition);
-    $data->setValue('non_existent');
-    $this->assertCount(0, $data->validate());
-
-    // If fallback plugin IDs are not considered valid (the default behavior),
-    // then we should get a validation error.
-    $definition->addConstraint('PluginExists', [
-      'manager' => 'plugin.manager.test_fallback',
-    ]);
-    $violations = $data->validate();
-    $this->assertCount(1, $violations);
-    $this->assertSame("The 'non_existent' plugin does not exist.", (string) $violations->get(0)->getMessage());
-  }
+        // If fallback plugin IDs are not considered valid (the default behavior),
+        // then we should get a validation error.
+        $definition->addConstraint('PluginExists', [
+          'manager' => 'plugin.manager.test_fallback',
+        ]);
+        $violations = $data->validate();
+        $this->assertCount(1, $violations);
+        $this->assertSame("The 'non_existent' plugin does not exist.", (string) $violations->get(0)->getMessage());
+    }
 
 }

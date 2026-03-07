@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Render\Attribute;
 
@@ -25,5 +25,6 @@ use Drupal\Component\Plugin\Attribute\Plugin;
  * @ingroup theme_render
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class RenderElement extends Plugin {
+class RenderElement extends Plugin
+{
 }

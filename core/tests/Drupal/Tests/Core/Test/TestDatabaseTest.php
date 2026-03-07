@@ -17,72 +17,77 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('Test')]
 #[Group('simpletest')]
 #[Group('Template')]
-class TestDatabaseTest extends UnitTestCase {
+class TestDatabaseTest extends UnitTestCase
+{
+    /**
+     * Tests constructor exception.
+     *
+     * @legacy-covers ::__construct
+     */
+    public function testConstructorException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid database prefix: blah1253');
+        new TestDatabase('blah1253');
+    }
 
-  /**
-   * Tests constructor exception.
-   *
-   * @legacy-covers ::__construct
-   */
-  public function testConstructorException(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage("Invalid database prefix: blah1253");
-    new TestDatabase('blah1253');
-  }
+    /**
+     * Tests constructor.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::getDatabasePrefix
+     * @legacy-covers ::getTestSitePath
+     * @legacy-covers ::getPhpErrorLogPath
+     */
+    #[DataProvider('providerTestConstructor')]
+    public function testConstructor($db_prefix, $expected_db_prefix, $expected_site_path): void
+    {
+        $test_db = new TestDatabase($db_prefix);
+        $this->assertEquals($expected_db_prefix, $test_db->getDatabasePrefix());
+        $this->assertEquals($expected_site_path, $test_db->getTestSitePath());
+        $this->assertEquals($expected_site_path . '/error.log', $test_db->getPhpErrorLogPath());
+    }
 
-  /**
-   * Tests constructor.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::getDatabasePrefix
-   * @legacy-covers ::getTestSitePath
-   * @legacy-covers ::getPhpErrorLogPath
-   */
-  #[DataProvider('providerTestConstructor')]
-  public function testConstructor($db_prefix, $expected_db_prefix, $expected_site_path): void {
-    $test_db = new TestDatabase($db_prefix);
-    $this->assertEquals($expected_db_prefix, $test_db->getDatabasePrefix());
-    $this->assertEquals($expected_site_path, $test_db->getTestSitePath());
-    $this->assertEquals($expected_site_path . '/error.log', $test_db->getPhpErrorLogPath());
-  }
+    /**
+     * Data provider for self::testConstructor()
+     */
+    public static function providerTestConstructor(): array
+    {
+        return [
+          ['test1234', 'test1234', 'sites/simpletest/1234'],
+          ['test123456test234567', 'test123456test234567', 'sites/simpletest/234567'],
+        ];
+    }
 
-  /**
-   * Data provider for self::testConstructor()
-   */
-  public static function providerTestConstructor(): array {
-    return [
-      ['test1234', 'test1234', 'sites/simpletest/1234'],
-      ['test123456test234567', 'test123456test234567', 'sites/simpletest/234567'],
-    ];
-  }
+    /**
+     * Verify that a test lock is generated if there is no provided prefix.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::getDatabasePrefix
+     * @legacy-covers ::getTestSitePath
+     * @legacy-covers ::getPhpErrorLogPath
+     */
+    public function testConstructorNullPrefix(): void
+    {
+        // We use a stub class here because we can't mock getTestLock() so that it's
+        // available before the constructor is called.
+        $test_db = new TestTestDatabase(null);
 
-  /**
-   * Verify that a test lock is generated if there is no provided prefix.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::getDatabasePrefix
-   * @legacy-covers ::getTestSitePath
-   * @legacy-covers ::getPhpErrorLogPath
-   */
-  public function testConstructorNullPrefix(): void {
-    // We use a stub class here because we can't mock getTestLock() so that it's
-    // available before the constructor is called.
-    $test_db = new TestTestDatabase(NULL);
-
-    $this->assertEquals('test23', $test_db->getDatabasePrefix());
-    $this->assertEquals('sites/simpletest/23', $test_db->getTestSitePath());
-    $this->assertEquals('sites/simpletest/23/error.log', $test_db->getPhpErrorLogPath());
-  }
+        $this->assertEquals('test23', $test_db->getDatabasePrefix());
+        $this->assertEquals('sites/simpletest/23', $test_db->getTestSitePath());
+        $this->assertEquals('sites/simpletest/23/error.log', $test_db->getPhpErrorLogPath());
+    }
 
 }
 
 /**
  * Stub class supports TestDatabaseTest::testConstructorNullPrefix().
  */
-class TestTestDatabase extends TestDatabase {
-
-  protected function getTestLock(bool $create_lock = FALSE): int {
-    return 23;
-  }
+class TestTestDatabase extends TestDatabase
+{
+    protected function getTestLock(bool $create_lock = false): int
+    {
+        return 23;
+    }
 
 }

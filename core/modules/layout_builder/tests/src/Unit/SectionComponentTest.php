@@ -23,54 +23,55 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 #[CoversClass(SectionComponent::class)]
 #[Group('layout_builder')]
-class SectionComponentTest extends UnitTestCase {
+class SectionComponentTest extends UnitTestCase
+{
+    /**
+     * Tests to render array.
+     */
+    public function testToRenderArray(): void
+    {
+        $existing_block = $this->prophesize(BlockPluginInterface::class);
+        $existing_block->getPluginId()->willReturn('block_plugin_id');
 
-  /**
-   * Tests to render array.
-   */
-  public function testToRenderArray(): void {
-    $existing_block = $this->prophesize(BlockPluginInterface::class);
-    $existing_block->getPluginId()->willReturn('block_plugin_id');
+        $block_manager = $this->prophesize(BlockManagerInterface::class);
+        $block_manager->createInstance('some_block_id', ['id' => 'some_block_id'])->willReturn($existing_block->reveal());
 
-    $block_manager = $this->prophesize(BlockManagerInterface::class);
-    $block_manager->createInstance('some_block_id', ['id' => 'some_block_id'])->willReturn($existing_block->reveal());
+        // Imitate an event subscriber by setting a resulting build on the event.
+        $event_dispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $event_dispatcher
+          ->dispatch(Argument::type(SectionComponentBuildRenderArrayEvent::class), LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY)
+          ->shouldBeCalled()
+          ->will(function ($args) {
+              /** @var \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event */
+              $event = $args[0];
+              $event->setBuild(['#markup' => $event->getPlugin()->getPluginId()]);
+              return $event;
+          });
 
-    // Imitate an event subscriber by setting a resulting build on the event.
-    $event_dispatcher = $this->prophesize(EventDispatcherInterface::class);
-    $event_dispatcher
-      ->dispatch(Argument::type(SectionComponentBuildRenderArrayEvent::class), LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY)
-      ->shouldBeCalled()
-      ->will(function ($args) {
-        /** @var \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event */
-        $event = $args[0];
-        $event->setBuild(['#markup' => $event->getPlugin()->getPluginId()]);
-        return $event;
-      });
+        $layout_plugin = $this->prophesize(LayoutInterface::class);
+        $layout_plugin->build(Argument::type('array'))->willReturnArgument(0);
 
-    $layout_plugin = $this->prophesize(LayoutInterface::class);
-    $layout_plugin->build(Argument::type('array'))->willReturnArgument(0);
+        $layout_manager = $this->prophesize(LayoutPluginManagerInterface::class);
+        $layout_manager->createInstance('layout_onecol', [])->willReturn($layout_plugin->reveal());
 
-    $layout_manager = $this->prophesize(LayoutPluginManagerInterface::class);
-    $layout_manager->createInstance('layout_onecol', [])->willReturn($layout_plugin->reveal());
+        $container = new ContainerBuilder();
+        $container->set('plugin.manager.block', $block_manager->reveal());
+        $container->set('event_dispatcher', $event_dispatcher->reveal());
+        $container->set('plugin.manager.core.layout', $layout_manager->reveal());
+        \Drupal::setContainer($container);
 
-    $container = new ContainerBuilder();
-    $container->set('plugin.manager.block', $block_manager->reveal());
-    $container->set('event_dispatcher', $event_dispatcher->reveal());
-    $container->set('plugin.manager.core.layout', $layout_manager->reveal());
-    \Drupal::setContainer($container);
+        $expected = [
+          '#cache' => [
+            'contexts' => [],
+            'tags' => [],
+            'max-age' => -1,
+          ],
+          '#markup' => 'block_plugin_id',
+        ];
 
-    $expected = [
-      '#cache' => [
-        'contexts' => [],
-        'tags' => [],
-        'max-age' => -1,
-      ],
-      '#markup' => 'block_plugin_id',
-    ];
-
-    $component = new SectionComponent('some-uuid', 'some-region', ['id' => 'some_block_id']);
-    $result = $component->toRenderArray();
-    $this->assertEquals($expected, $result);
-  }
+        $component = new SectionComponent('some-uuid', 'some-region', ['id' => 'some_block_id']);
+        $result = $component->toRenderArray();
+        $this->assertEquals($expected, $result);
+    }
 
 }

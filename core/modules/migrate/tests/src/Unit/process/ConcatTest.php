@@ -12,59 +12,65 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests the concat process plugin.
  */
 #[Group('migrate')]
-class ConcatTest extends MigrateProcessTestCase {
+class ConcatTest extends MigrateProcessTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->plugin = new TestConcat();
+        parent::setUp();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->plugin = new TestConcat();
-    parent::setUp();
-  }
+    /**
+     * Tests concat works without a delimiter.
+     */
+    public function testConcatWithoutDelimiter(): void
+    {
+        $value = $this->plugin->transform(['foo', 'bar'], $this->migrateExecutable, $this->row, 'destination_property');
+        $this->assertSame('foobar', $value);
+    }
 
-  /**
-   * Tests concat works without a delimiter.
-   */
-  public function testConcatWithoutDelimiter(): void {
-    $value = $this->plugin->transform(['foo', 'bar'], $this->migrateExecutable, $this->row, 'destination_property');
-    $this->assertSame('foobar', $value);
-  }
+    /**
+     * Tests concat fails properly on non-arrays.
+     */
+    public function testConcatWithNonArray(): void
+    {
+        $this->expectException(MigrateException::class);
+        $this->plugin->transform('foo', $this->migrateExecutable, $this->row, 'destination_property');
+    }
 
-  /**
-   * Tests concat fails properly on non-arrays.
-   */
-  public function testConcatWithNonArray(): void {
-    $this->expectException(MigrateException::class);
-    $this->plugin->transform('foo', $this->migrateExecutable, $this->row, 'destination_property');
-  }
-
-  /**
-   * Tests concat works without a delimiter.
-   */
-  public function testConcatWithDelimiter(): void {
-    $this->plugin->setDelimiter('_');
-    $value = $this->plugin->transform(['foo', 'bar'], $this->migrateExecutable, $this->row, 'destination_property');
-    $this->assertSame('foo_bar', $value);
-  }
+    /**
+     * Tests concat works without a delimiter.
+     */
+    public function testConcatWithDelimiter(): void
+    {
+        $this->plugin->setDelimiter('_');
+        $value = $this->plugin->transform(['foo', 'bar'], $this->migrateExecutable, $this->row, 'destination_property');
+        $this->assertSame('foo_bar', $value);
+    }
 
 }
 
 /**
  * Mock class for the concat process plugin.
  */
-class TestConcat extends Concat {
+class TestConcat extends Concat
+{
+    public function __construct()
+    {
+    }
 
-  public function __construct() {
-  }
-
-  /**
-   * Set the delimiter.
-   *
-   * @param string $delimiter
-   *   The new delimiter.
-   */
-  public function setDelimiter($delimiter): void {
-    $this->configuration['delimiter'] = $delimiter;
-  }
+    /**
+     * Set the delimiter.
+     *
+     * @param string $delimiter
+     *   The new delimiter.
+     */
+    public function setDelimiter($delimiter): void
+    {
+        $this->configuration['delimiter'] = $delimiter;
+    }
 
 }

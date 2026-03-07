@@ -13,13 +13,14 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the 'entity_reference_subclass' field type.
  */
 #[FieldType(
-  id: "entity_reference_subclass",
-  label: new TranslatableMarkup("Entity reference subclass"),
-  description: new TranslatableMarkup("An entity field containing an entity reference."),
-  category: "reference",
-  default_widget: "entity_reference_autocomplete",
-  default_formatter: "entity_reference_label",
-  list_class: EntityReferenceFieldItemList::class,
+    id: 'entity_reference_subclass',
+    label: new TranslatableMarkup('Entity reference subclass'),
+    description: new TranslatableMarkup('An entity field containing an entity reference.'),
+    category: 'reference',
+    default_widget: 'entity_reference_autocomplete',
+    default_formatter: 'entity_reference_label',
+    list_class: EntityReferenceFieldItemList::class,
 )]
-class EntityReferenceItemSubclass extends EntityReferenceItem {
+class EntityReferenceItemSubclass extends EntityReferenceItem
+{
 }

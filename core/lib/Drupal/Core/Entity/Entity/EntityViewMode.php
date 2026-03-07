@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity\Entity;
 
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EntityDisplayModeBase;
 use Drupal\Core\Entity\EntityViewModeInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the entity view mode configuration entity class.
@@ -27,14 +29,14 @@ use Drupal\Core\Entity\EntityViewModeInterface;
  * @see hook_entity_view_mode_info_alter()
  */
 #[ConfigEntityType(
-  id: 'entity_view_mode',
-  label: new TranslatableMarkup('View mode'),
-  entity_keys: [
+    id: 'entity_view_mode',
+    label: new TranslatableMarkup('View mode'),
+    entity_keys: [
     'id' => 'id',
     'label' => 'label',
     'description' => 'description',
   ],
-  constraints: [
+    constraints: [
     'ImmutableProperties' => [
       'properties' => [
         'id',
@@ -42,14 +44,14 @@ use Drupal\Core\Entity\EntityViewModeInterface;
       ],
     ],
   ],
-  config_export: [
+    config_export: [
     'id',
     'label',
     'description',
     'targetEntityType',
     'cache',
   ],
-  )]
-class EntityViewMode extends EntityDisplayModeBase implements EntityViewModeInterface {
-
+)]
+class EntityViewMode extends EntityDisplayModeBase implements EntityViewModeInterface
+{
 }

@@ -14,14 +14,15 @@ use Drupal\Core\Hook\Order\OrderBefore;
  * to the alphabetical module names. Some of the implementations are reordered
  * using order attributes.
  */
-class TestHookBefore {
-
-  /**
-   * This pair tests OrderBefore.
-   */
-  #[Hook('custom_hook_test_hook_before', order: new OrderBefore(['aaa_hook_collector_test']))]
-  public function hookBefore(): string {
-    return __METHOD__;
-  }
+class TestHookBefore
+{
+    /**
+     * This pair tests OrderBefore.
+     */
+    #[Hook('custom_hook_test_hook_before', order: new OrderBefore(['aaa_hook_collector_test']))]
+    public function hookBefore(): string
+    {
+        return __METHOD__;
+    }
 
 }

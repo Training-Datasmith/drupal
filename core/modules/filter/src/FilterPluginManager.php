@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\filter;
 
 use Drupal\Component\Plugin\FallbackPluginManagerInterface;
@@ -18,30 +20,32 @@ use Drupal\filter\Plugin\FilterInterface;
  * @see \Drupal\filter\Plugin\FilterBase
  * @see plugin_api
  */
-class FilterPluginManager extends DefaultPluginManager implements FallbackPluginManagerInterface {
+class FilterPluginManager extends DefaultPluginManager implements FallbackPluginManagerInterface
+{
+    /**
+     * Constructs a FilterPluginManager object.
+     *
+     * @param \Traversable $namespaces
+     *   An object that implements \Traversable which contains the root paths
+     *   keyed by the corresponding namespace to look for plugin implementations.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+     *   Cache backend instance to use.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+     *   The module handler to invoke the alter hook with.
+     */
+    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler)
+    {
+        parent::__construct('Plugin/Filter', $namespaces, $module_handler, FilterInterface::class, Filter::class, \Drupal\filter\Annotation\Filter::class);
+        $this->alterInfo('filter_info');
+        $this->setCacheBackend($cache_backend, 'filter_plugins');
+    }
 
-  /**
-   * Constructs a FilterPluginManager object.
-   *
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler to invoke the alter hook with.
-   */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/Filter', $namespaces, $module_handler, FilterInterface::class, Filter::class, \Drupal\filter\Annotation\Filter::class);
-    $this->alterInfo('filter_info');
-    $this->setCacheBackend($cache_backend, 'filter_plugins');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
-    return 'filter_null';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFallbackPluginId($plugin_id, array $configuration = []): string
+    {
+        return 'filter_null';
+    }
 
 }

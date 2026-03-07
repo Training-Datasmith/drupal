@@ -1,51 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TempStore;
 
 /**
  * Provides a value object representing the lock from a TempStore.
  */
-final class Lock {
+final class Lock
+{
+    /**
+     * Constructs a new Lock object.
+     *
+     * @param int $ownerId
+     *   The owner ID.
+     * @param int $updated
+     *   The updated timestamp.
+     */
+    public function __construct(
+        /**
+         * The owner ID.
+         */
+        private $ownerId,
+        /**
+         * The timestamp the lock was last updated.
+         */
+        private $updated
+    ) {
+    }
 
-  /**
-   * Constructs a new Lock object.
-   *
-   * @param int $ownerId
-   *   The owner ID.
-   * @param int $updated
-   *   The updated timestamp.
-   */
-  public function __construct(
-      /**
-       * The owner ID.
-       */
-      private $ownerId,
-      /**
-       * The timestamp the lock was last updated.
-       */
-      private $updated
-  )
-  {
-  }
+    /**
+     * Gets the owner ID.
+     *
+     * @return int
+     *   The owner ID.
+     */
+    public function getOwnerId()
+    {
+        return $this->ownerId;
+    }
 
-  /**
-   * Gets the owner ID.
-   *
-   * @return int
-   *   The owner ID.
-   */
-  public function getOwnerId() {
-    return $this->ownerId;
-  }
-
-  /**
-   * Gets the timestamp of the last update to the lock.
-   *
-   * @return int
-   *   The updated timestamp.
-   */
-  public function getUpdated() {
-    return $this->updated;
-  }
+    /**
+     * Gets the timestamp of the last update to the lock.
+     *
+     * @return int
+     *   The updated timestamp.
+     */
+    public function getUpdated()
+    {
+        return $this->updated;
+    }
 
 }

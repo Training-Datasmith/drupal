@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\Routing;
 
 use Drupal\Core\Routing\RequestFormatRouteFilter;
@@ -22,19 +24,20 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @internal
  */
-final class EarlyFormatSetter extends RequestFormatRouteFilter {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function filter(RouteCollection $collection, Request $request): \Symfony\Component\Routing\RouteCollection {
-    if (is_null($request->getRequestFormat(NULL))) {
-      $possible_formats = static::getAvailableFormats($collection);
-      if ($possible_formats === ['api_json']) {
-        $request->setRequestFormat('api_json');
-      }
+final class EarlyFormatSetter extends RequestFormatRouteFilter
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function filter(RouteCollection $collection, Request $request): \Symfony\Component\Routing\RouteCollection
+    {
+        if (is_null($request->getRequestFormat(null))) {
+            $possible_formats = static::getAvailableFormats($collection);
+            if ($possible_formats === ['api_json']) {
+                $request->setRequestFormat('api_json');
+            }
+        }
+        return $collection;
     }
-    return $collection;
-  }
 
 }

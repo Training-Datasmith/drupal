@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Component\EventDispatcher\Event;
 
 /**
  * Event fired when rendering main content, to select a page display variant.
@@ -19,119 +20,125 @@ use Drupal\Component\EventDispatcher\Event;
  * @see \Drupal\Core\Render\RenderEvents::SELECT_PAGE_DISPLAY_VARIANT
  * @see \Drupal\Core\Render\MainContent\HtmlRenderer
  */
-class PageDisplayVariantSelectionEvent extends Event implements RefinableCacheableDependencyInterface {
+class PageDisplayVariantSelectionEvent extends Event implements RefinableCacheableDependencyInterface
+{
+    use RefinableCacheableDependencyTrait;
 
-  use RefinableCacheableDependencyTrait;
+    /**
+     * The configuration for the selected page display variant.
+     *
+     * @var array
+     */
+    protected $pluginConfiguration = [];
 
-  /**
-   * The configuration for the selected page display variant.
-   *
-   * @var array
-   */
-  protected $pluginConfiguration = [];
+    /**
+     * An array of collected contexts to pass to the page display variant.
+     *
+     * @var \Drupal\Component\Plugin\Context\ContextInterface[]
+     */
+    protected $contexts = [];
 
-  /**
-   * An array of collected contexts to pass to the page display variant.
-   *
-   * @var \Drupal\Component\Plugin\Context\ContextInterface[]
-   */
-  protected $contexts = [];
+    /**
+     * Constructs the page display variant plugin selection event.
+     *
+     * @param string $pluginId
+     *   The ID of the page display variant plugin to use by default.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match, for context.
+     */
+    public function __construct(
+        /**
+         * The selected page display variant plugin ID.
+         */
+        protected $pluginId,
+        protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+    ) {
+    }
 
-  /**
-   * Constructs the page display variant plugin selection event.
-   *
-   * @param string $pluginId
-   *   The ID of the page display variant plugin to use by default.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match, for context.
-   */
-  public function __construct(
-      /**
-       * The selected page display variant plugin ID.
-       */
-      protected $pluginId,
-      protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-  )
-  {
-  }
+    /**
+     * The selected page display variant plugin ID.
+     *
+     * @param string $plugin_id
+     *   The ID of the page display variant plugin to use.
+     *
+     * @return $this
+     */
+    public function setPluginId($plugin_id): static
+    {
+        $this->pluginId = $plugin_id;
+        return $this;
+    }
 
-  /**
-   * The selected page display variant plugin ID.
-   *
-   * @param string $plugin_id
-   *   The ID of the page display variant plugin to use.
-   *
-   * @return $this
-   */
-  public function setPluginId($plugin_id): static {
-    $this->pluginId = $plugin_id;
-    return $this;
-  }
+    /**
+     * The selected page display variant plugin ID.
+     *
+     * @return string
+     *   The plugin ID.
+     */
+    public function getPluginId()
+    {
+        return $this->pluginId;
+    }
 
-  /**
-   * The selected page display variant plugin ID.
-   *
-   * @return string
-   *   The plugin ID.
-   */
-  public function getPluginId() {
-    return $this->pluginId;
-  }
+    /**
+     * Set the configuration for the selected page display variant.
+     *
+     * @param array $configuration
+     *   The configuration for the selected page display variant.
+     *
+     * @return $this
+     */
+    public function setPluginConfiguration(array $configuration): static
+    {
+        $this->pluginConfiguration = $configuration;
+        return $this;
+    }
 
-  /**
-   * Set the configuration for the selected page display variant.
-   *
-   * @param array $configuration
-   *   The configuration for the selected page display variant.
-   *
-   * @return $this
-   */
-  public function setPluginConfiguration(array $configuration): static {
-    $this->pluginConfiguration = $configuration;
-    return $this;
-  }
+    /**
+     * Get the configuration for the selected page display variant.
+     *
+     * @return array
+     *   The plugin configuration.
+     */
+    public function getPluginConfiguration()
+    {
+        return $this->pluginConfiguration;
+    }
 
-  /**
-   * Get the configuration for the selected page display variant.
-   *
-   * @return array
-   *   The plugin configuration.
-   */
-  public function getPluginConfiguration() {
-    return $this->pluginConfiguration;
-  }
+    /**
+     * Gets the current route match.
+     *
+     * @return \Drupal\Core\Routing\RouteMatchInterface
+     *   The current route match, for context.
+     */
+    public function getRouteMatch()
+    {
+        return $this->routeMatch;
+    }
 
-  /**
-   * Gets the current route match.
-   *
-   * @return \Drupal\Core\Routing\RouteMatchInterface
-   *   The current route match, for context.
-   */
-  public function getRouteMatch() {
-    return $this->routeMatch;
-  }
+    /**
+     * Gets the contexts that were set during event dispatch.
+     *
+     * @return \Drupal\Component\Plugin\Context\ContextInterface[]
+     *   An array of set contexts, keyed by context name.
+     */
+    public function getContexts()
+    {
+        return $this->contexts;
+    }
 
-  /**
-   * Gets the contexts that were set during event dispatch.
-   *
-   * @return \Drupal\Component\Plugin\Context\ContextInterface[]
-   *   An array of set contexts, keyed by context name.
-   */
-  public function getContexts() {
-    return $this->contexts;
-  }
-
-  /**
-   * Sets the contexts to be passed to the page display variant.
-   *
-   * @param \Drupal\Component\Plugin\Context\ContextInterface[] $contexts
-   *   An array of contexts, keyed by context name.
-   *
-   * @return $this
-   */
-  public function setContexts(array $contexts): static {
-    $this->contexts = $contexts;
-    return $this;
-  }
+    /**
+     * Sets the contexts to be passed to the page display variant.
+     *
+     * @param \Drupal\Component\Plugin\Context\ContextInterface[] $contexts
+     *   An array of contexts, keyed by context name.
+     *
+     * @return $this
+     */
+    public function setContexts(array $contexts): static
+    {
+        $this->contexts = $contexts;
+        return $this;
+    }
 
 }

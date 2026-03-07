@@ -10,13 +10,14 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Mock for testing JavaScript in local tasks title.
  */
-class TestTaskWithUserInput extends LocalTaskDefault {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(?Request $request = NULL) {
-    return "<script>alert('Welcome to the jungle!')</script>";
-  }
+class TestTaskWithUserInput extends LocalTaskDefault
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(?Request $request = null)
+    {
+        return "<script>alert('Welcome to the jungle!')</script>";
+    }
 
 }

@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
 use Drupal\user\Event\UserEvents;
 use Drupal\user\Event\UserFloodEvent;
-use Drupal\Core\Flood\FloodInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -13,70 +13,75 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * @see: \Drupal\Core\Flood\DatabaseBackend
  */
-class UserFloodControl implements UserFloodControlInterface {
+class UserFloodControl implements UserFloodControlInterface
+{
+    /**
+     * The request stack.
+     *
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
 
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
-
-  /**
-   * Construct the UserFloodControl.
-   *
-   * @param \Drupal\Core\Flood\FloodInterface $flood
-   *   The flood service.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher service.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack used to retrieve the current request.
-   */
-  public function __construct(protected \Drupal\Core\Flood\FloodInterface $flood, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, RequestStack $request_stack) {
-    $this->requestStack = $request_stack;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL): bool {
-    if ($this->flood->isAllowed($name, $threshold, $window, $identifier)) {
-      return TRUE;
+    /**
+     * Construct the UserFloodControl.
+     *
+     * @param \Drupal\Core\Flood\FloodInterface $flood
+     *   The flood service.
+     * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
+     *   The event dispatcher service.
+     * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+     *   The request stack used to retrieve the current request.
+     */
+    public function __construct(protected \Drupal\Core\Flood\FloodInterface $flood, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, RequestStack $request_stack)
+    {
+        $this->requestStack = $request_stack;
     }
-    // Register flood control blocked login event.
-    $event_map['user.failed_login_ip'] = UserEvents::FLOOD_BLOCKED_IP;
-    $event_map['user.failed_login_user'] = UserEvents::FLOOD_BLOCKED_USER;
-    $event_map['user.http_login'] = UserEvents::FLOOD_BLOCKED_USER;
 
-    if (isset($event_map[$name])) {
-      if (empty($identifier)) {
-        $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
-      }
-      $event = new UserFloodEvent($name, $threshold, $window, $identifier);
-      $this->eventDispatcher->dispatch($event, $event_map[$name]);
+    /**
+     * {@inheritdoc}
+     */
+    public function isAllowed($name, $threshold, $window = 3600, $identifier = null): bool
+    {
+        if ($this->flood->isAllowed($name, $threshold, $window, $identifier)) {
+            return true;
+        }
+        // Register flood control blocked login event.
+        $event_map['user.failed_login_ip'] = UserEvents::FLOOD_BLOCKED_IP;
+        $event_map['user.failed_login_user'] = UserEvents::FLOOD_BLOCKED_USER;
+        $event_map['user.http_login'] = UserEvents::FLOOD_BLOCKED_USER;
+
+        if (isset($event_map[$name])) {
+            if (empty($identifier)) {
+                $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
+            }
+            $event = new UserFloodEvent($name, $threshold, $window, $identifier);
+            $this->eventDispatcher->dispatch($event, $event_map[$name]);
+        }
+        return false;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register($name, $window = 3600, $identifier = NULL) {
-    return $this->flood->register($name, $window, $identifier);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function register($name, $window = 3600, $identifier = null)
+    {
+        return $this->flood->register($name, $window, $identifier);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clear($name, $identifier = NULL) {
-    return $this->flood->clear($name, $identifier);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function clear($name, $identifier = null)
+    {
+        return $this->flood->clear($name, $identifier);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function garbageCollection() {
-    return $this->flood->garbageCollection();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function garbageCollection()
+    {
+        return $this->flood->garbageCollection();
+    }
 
 }

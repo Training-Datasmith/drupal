@@ -11,16 +11,18 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 /**
  * Stub of http_middleware class taking a service closure for the inner kernel.
  */
-class TestClosureHttpMiddlewareClass implements HttpKernelInterface {
+class TestClosureHttpMiddlewareClass implements HttpKernelInterface
+{
+    public function __construct(protected readonly \Closure $inner)
+    {
+    }
 
-  public function __construct(protected readonly \Closure $inner) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = TRUE): Response {
-    return new Response();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response
+    {
+        return new Response();
+    }
 
 }

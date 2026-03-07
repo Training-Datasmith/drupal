@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Extension\Plugin\Validation\Constraint;
 
@@ -14,75 +14,76 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates that a given extension exists.
  */
-class ExtensionExistsConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
-
-  /**
-   * Constructs a ExtensionExistsConstraintValidator object.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler service.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
-   *   The theme handler service.
-   */
-  public function __construct(
-      /**
-       * The module handler service.
-       */
-      protected ModuleHandlerInterface $moduleHandler,
-      /**
-       * The theme handler service.
-       */
-      protected ThemeHandlerInterface $themeHandler
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('module_handler'),
-      $container->get('theme_handler')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate(mixed $extension_name, Constraint $constraint): void {
-    $variables = ['@name' => $extension_name];
-
-    switch ($constraint->type) {
-      case 'module':
-        // This constraint may be used to validate nullable (optional) values.
-        if ($extension_name === NULL) {
-          return;
-        }
-        // Some plugins are shipped in `core/lib`, which corresponds to the
-        // special `core` extension name.
-        // For example: \Drupal\Core\Menu\Plugin\Block\LocalActionsBlock.
-        if ($extension_name === 'core') {
-          return;
-        }
-        if (!$this->moduleHandler->moduleExists($extension_name)) {
-          $this->context->addViolation($constraint->moduleMessage, $variables);
-        }
-        break;
-
-      case 'theme':
-        // This constraint may be used to validate nullable (optional) values.
-        if ($extension_name === NULL) {
-          return;
-        }
-        if (!$this->themeHandler->themeExists($extension_name)) {
-          $this->context->addViolation($constraint->themeMessage, $variables);
-        }
-        break;
-
-      default:
-        throw new \InvalidArgumentException("Unknown extension type: '$constraint->type'");
+class ExtensionExistsConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface
+{
+    /**
+     * Constructs a ExtensionExistsConstraintValidator object.
+     *
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler service.
+     * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+     *   The theme handler service.
+     */
+    public function __construct(
+        /**
+         * The module handler service.
+         */
+        protected ModuleHandlerInterface $moduleHandler,
+        /**
+         * The theme handler service.
+         */
+        protected ThemeHandlerInterface $themeHandler
+    ) {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
+            $container->get('module_handler'),
+            $container->get('theme_handler')
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validate(mixed $extension_name, Constraint $constraint): void
+    {
+        $variables = ['@name' => $extension_name];
+
+        switch ($constraint->type) {
+            case 'module':
+                // This constraint may be used to validate nullable (optional) values.
+                if ($extension_name === null) {
+                    return;
+                }
+                // Some plugins are shipped in `core/lib`, which corresponds to the
+                // special `core` extension name.
+                // For example: \Drupal\Core\Menu\Plugin\Block\LocalActionsBlock.
+                if ($extension_name === 'core') {
+                    return;
+                }
+                if (!$this->moduleHandler->moduleExists($extension_name)) {
+                    $this->context->addViolation($constraint->moduleMessage, $variables);
+                }
+                break;
+
+            case 'theme':
+                // This constraint may be used to validate nullable (optional) values.
+                if ($extension_name === null) {
+                    return;
+                }
+                if (!$this->themeHandler->themeExists($extension_name)) {
+                    $this->context->addViolation($constraint->themeMessage, $variables);
+                }
+                break;
+
+            default:
+                throw new \InvalidArgumentException("Unknown extension type: '$constraint->type'");
+        }
+    }
 
 }

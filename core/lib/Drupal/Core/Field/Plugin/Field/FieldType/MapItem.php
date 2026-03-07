@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
@@ -12,108 +14,114 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines the 'map' entity field type.
  */
 #[FieldType(
-  id: "map",
-  label: new TranslatableMarkup("Map"),
-  description: new TranslatableMarkup("An entity field for storing a serialized array of values."),
-  no_ui: TRUE,
-  list_class: MapFieldItemList::class,
+    id: 'map',
+    label: new TranslatableMarkup('Map'),
+    description: new TranslatableMarkup('An entity field for storing a serialized array of values.'),
+    no_ui: true,
+    list_class: MapFieldItemList::class,
 )]
-class MapItem extends FieldItemBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
-    // The properties are dynamic and can not be defined statically.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => 'blob',
-          'size' => 'big',
-          'serialize' => TRUE,
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function toArray() {
-    // The default implementation of toArray() only returns known properties.
-    // For a map, return everything as the properties are not pre-defined.
-    return $this->getValue();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($values, $notify = TRUE): void {
-    $this->values = [];
-    if (!isset($values)) {
-      return;
+class MapItem extends FieldItemBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array
+    {
+        // The properties are dynamic and can not be defined statically.
+        return [];
     }
 
-    if (!is_array($values)) {
-      if ($values instanceof MapItem) {
-        $values = $values->getValue();
-      }
-      else {
-        $values = unserialize($values, ['allowed_classes' => FALSE]);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_definition): array
+    {
+        return [
+          'columns' => [
+            'value' => [
+              'type' => 'blob',
+              'size' => 'big',
+              'serialize' => true,
+            ],
+          ],
+        ];
     }
 
-    $this->values = $values;
-
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __get($name) {
-    if (!isset($this->values[$name])) {
-      $this->values[$name] = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray()
+    {
+        // The default implementation of toArray() only returns known properties.
+        // For a map, return everything as the properties are not pre-defined.
+        return $this->getValue();
     }
 
-    return $this->values[$name];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($values, $notify = true): void
+    {
+        $this->values = [];
+        if (!isset($values)) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __set($name, $value) {
-    if (isset($value)) {
-      $this->values[$name] = $value;
+        if (!is_array($values)) {
+            if ($values instanceof MapItem) {
+                $values = $values->getValue();
+            } else {
+                $values = unserialize($values, ['allowed_classes' => false]);
+            }
+        }
+
+        $this->values = $values;
+
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-    else {
-      unset($this->values[$name]);
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __get($name)
+    {
+        if (!isset($this->values[$name])) {
+            $this->values[$name] = [];
+        }
+
+        return $this->values[$name];
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function mainPropertyName(): null {
-    // A map item has no main property.
-    return NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __set($name, $value)
+    {
+        if (isset($value)) {
+            $this->values[$name] = $value;
+        } else {
+            unset($this->values[$name]);
+        }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isEmpty(): bool {
-    return empty($this->values);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function mainPropertyName(): null
+    {
+        // A map item has no main property.
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty(): bool
+    {
+        return empty($this->values);
+    }
 
 }

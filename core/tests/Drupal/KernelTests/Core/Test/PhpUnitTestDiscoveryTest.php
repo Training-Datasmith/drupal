@@ -28,86 +28,91 @@ use Symfony\Component\Process\Process;
 #[Group('#slow')]
 #[IgnoreDeprecations]
 #[RunTestsInSeparateProcesses]
-class PhpUnitTestDiscoveryTest extends KernelTestBase {
+class PhpUnitTestDiscoveryTest extends KernelTestBase
+{
+    private const TEST_LIST_MISMATCH_MESSAGE =
+        "The list of test classes to be executed misses some files, see below. Make sure to:\n" .
+        "1) give test classes a name that ends with a *Test suffix, and that the file is named accordingly;\n" .
+        "2) the file of the test class is reachable by the directories specified in the <testsuites> section of the phpunit.xml file;\n" .
+        "3) your version of the phpunit.xml configuration file is aligned with the PHPUnit and Drupal versions being used in testing.\n";
 
-  private const TEST_LIST_MISMATCH_MESSAGE =
-    "The list of test classes to be executed misses some files, see below. Make sure to:\n" .
-    "1) give test classes a name that ends with a *Test suffix, and that the file is named accordingly;\n" .
-    "2) the file of the test class is reachable by the directories specified in the <testsuites> section of the phpunit.xml file;\n" .
-    "3) your version of the phpunit.xml configuration file is aligned with the PHPUnit and Drupal versions being used in testing.\n";
+    /**
+     * The filepath to the XML file to be used for dumping the test list.
+     */
+    private string $xmlOutputFile;
 
-  /**
-   * The filepath to the XML file to be used for dumping the test list.
-   */
-  private string $xmlOutputFile;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setUp(): void {
-    parent::setUp();
-    $xmlOutputFile = $this->container->getParameter('app.root') . DIRECTORY_SEPARATOR . 'test-list.xml';
-    touch($xmlOutputFile);
-    $this->xmlOutputFile = realpath($xmlOutputFile);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tearDown(): void {
-    @unlink($this->xmlOutputFile);
-    parent::tearDown();
-  }
-
-  /**
-   * Tests equality of test discovery between run-tests.sh and PHPUnit CLI.
-   */
-  public function testPhpUnitTestDiscoveryEqualsInternal(): void {
-    // Drupal's test discovery, used by run-tests.sh.
-    $testDiscovery = new TestDiscovery(
-      $this->container->getParameter('app.root'),
-      $this->container->get('class_loader')
-    );
-    $internalList = [];
-    foreach ($testDiscovery->getTestClasses() as $group) {
-      foreach (array_keys($group) as $class) {
-        $internalList[] = $class;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $xmlOutputFile = $this->container->getParameter('app.root') . DIRECTORY_SEPARATOR . 'test-list.xml';
+        touch($xmlOutputFile);
+        $this->xmlOutputFile = realpath($xmlOutputFile);
     }
-    $internalList = array_unique($internalList);
-    asort($internalList);
 
-    // Location of PHPUnit configuration file.
-    $configurationFilePath = $this->root . \DIRECTORY_SEPARATOR . 'core';
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown(): void
+    {
+        @unlink($this->xmlOutputFile);
+        parent::tearDown();
+    }
 
-    // PHPUnit's test discovery - via CLI execution.
-    $process = new Process([
-      'vendor/bin/phpunit',
-      '--configuration',
-      $configurationFilePath,
-      '--list-tests-xml',
-      $this->xmlOutputFile,
-    ], $this->root);
-    $process
-      ->setTimeout(300)
-      ->setIdleTimeout(300)
-      ->run();
-    $this->assertEquals(0, $process->getExitCode(),
-      'COMMAND: ' . $process->getCommandLine() . "\n" .
+    /**
+     * Tests equality of test discovery between run-tests.sh and PHPUnit CLI.
+     */
+    public function testPhpUnitTestDiscoveryEqualsInternal(): void
+    {
+        // Drupal's test discovery, used by run-tests.sh.
+        $testDiscovery = new TestDiscovery(
+            $this->container->getParameter('app.root'),
+            $this->container->get('class_loader')
+        );
+        $internalList = [];
+        foreach ($testDiscovery->getTestClasses() as $group) {
+            foreach (array_keys($group) as $class) {
+                $internalList[] = $class;
+            }
+        }
+        $internalList = array_unique($internalList);
+        asort($internalList);
+
+        // Location of PHPUnit configuration file.
+        $configurationFilePath = $this->root . \DIRECTORY_SEPARATOR . 'core';
+
+        // PHPUnit's test discovery - via CLI execution.
+        $process = new Process([
+          'vendor/bin/phpunit',
+          '--configuration',
+          $configurationFilePath,
+          '--list-tests-xml',
+          $this->xmlOutputFile,
+        ], $this->root);
+        $process
+          ->setTimeout(300)
+          ->setIdleTimeout(300)
+          ->run();
+        $this->assertEquals(
+            0,
+            $process->getExitCode(),
+            'COMMAND: ' . $process->getCommandLine() . "\n" .
       'OUTPUT: ' . $process->getOutput() . "\n" .
       'ERROR: ' . $process->getErrorOutput() . "\n"
-    );
+        );
 
-    $phpUnitXmlList = new \DOMDocument();
-    $phpUnitXmlList->loadXML(file_get_contents($this->xmlOutputFile));
-    $phpUnitClientList = [];
-    foreach ($phpUnitXmlList->getElementsByTagName('testClass') as $node) {
-      $phpUnitClientList[] = $node->getAttribute('name');
+        $phpUnitXmlList = new \DOMDocument();
+        $phpUnitXmlList->loadXML(file_get_contents($this->xmlOutputFile));
+        $phpUnitClientList = [];
+        foreach ($phpUnitXmlList->getElementsByTagName('testClass') as $node) {
+            $phpUnitClientList[] = $node->getAttribute('name');
+        }
+        asort($phpUnitClientList);
+
+        // Check against Drupal's discovery.
+        $this->assertEquals(implode("\n", $phpUnitClientList), implode("\n", $internalList), self::TEST_LIST_MISMATCH_MESSAGE);
     }
-    asort($phpUnitClientList);
-
-    // Check against Drupal's discovery.
-    $this->assertEquals(implode("\n", $phpUnitClientList), implode("\n", $internalList), self::TEST_LIST_MISMATCH_MESSAGE);
-  }
 
 }

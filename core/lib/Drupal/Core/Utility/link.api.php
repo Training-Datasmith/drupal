@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks and documentation related to links.
@@ -51,11 +53,12 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\Core\Utility\UnroutedUrlAssembler::assemble()
  * @see \Drupal\Core\Routing\UrlGenerator::generateFromRoute()
  */
-function hook_link_alter(array &$variables): void {
-  // Add a warning to the end of route links to the admin section.
-  if (isset($variables['route_name']) && str_contains($variables['route_name'], 'admin')) {
-    $variables['text'] = new TranslatableMarkup('@text (Warning!)', ['@text' => $variables['text']]);
-  }
+function hook_link_alter(array &$variables): void
+{
+    // Add a warning to the end of route links to the admin section.
+    if (isset($variables['route_name']) && str_contains($variables['route_name'], 'admin')) {
+        $variables['text'] = new TranslatableMarkup('@text (Warning!)', ['@text' => $variables['text']]);
+    }
 }
 
 /**

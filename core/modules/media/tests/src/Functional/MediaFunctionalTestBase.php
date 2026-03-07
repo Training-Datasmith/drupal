@@ -10,21 +10,21 @@ use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 /**
  * Base class for Media functional tests.
  */
-abstract class MediaFunctionalTestBase extends BrowserTestBase {
+abstract class MediaFunctionalTestBase extends BrowserTestBase
+{
+    use MediaFunctionalTestTrait;
+    use MediaTypeCreationTrait;
 
-  use MediaFunctionalTestTrait;
-  use MediaTypeCreationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'node',
-    'field_ui',
-    'views_ui',
-    'media',
-    'media_test_source',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'node',
+      'field_ui',
+      'views_ui',
+      'media',
+      'media_test_source',
+    ];
 
 }

@@ -15,100 +15,104 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class BlockContentTypeTest extends ConfigEntityResourceTestBase {
+class BlockContentTypeTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['block_content'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['block_content'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'block_content_type';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'block_content_type';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'block_content_type--block_content_type';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'block_content_type--block_content_type';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\block_content\BlockContentTypeInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\block_content\BlockContentTypeInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer block types']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer block types']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $block_content_type = BlockContentType::create([
-      'id' => 'pascal',
-      'label' => 'Pascal',
-      'revision' => FALSE,
-      'description' => 'Provides a competitive alternative to the "basic" type',
-    ]);
-
-    $block_content_type->save();
-
-    return $block_content_type;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/block_content_type/block_content_type/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'block_content_type--block_content_type',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'dependencies' => [],
-          'description' => 'Provides a competitive alternative to the "basic" type',
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $block_content_type = BlockContentType::create([
+          'id' => 'pascal',
           'label' => 'Pascal',
-          'langcode' => 'en',
-          'revision' => FALSE,
-          'status' => TRUE,
-          'drupal_internal__id' => 'pascal',
-        ],
-      ],
-    ];
-  }
+          'revision' => false,
+          'description' => 'Provides a competitive alternative to the "basic" type',
+        ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+        $block_content_type->save();
+
+        return $block_content_type;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/block_content_type/block_content_type/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'block_content_type--block_content_type',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'dependencies' => [],
+              'description' => 'Provides a competitive alternative to the "basic" type',
+              'label' => 'Pascal',
+              'langcode' => 'en',
+              'revision' => false,
+              'status' => true,
+              'drupal_internal__id' => 'pascal',
+            ],
+          ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -9,25 +11,27 @@ use Drupal\Core\Ajax\CommandInterface;
  *
  * This command is implemented in Drupal.AjaxCommands.prototype.setBrowserUrl.
  */
-class SetBrowserUrl implements CommandInterface {
+class SetBrowserUrl implements CommandInterface
+{
+    /**
+     * Constructs a new command instance.
+     *
+     * @param string $url
+     *   The URL to be set in the browser.
+     */
+    public function __construct(protected string $url)
+    {
+    }
 
-  /**
-   * Constructs a new command instance.
-   *
-   * @param string $url
-   *   The URL to be set in the browser.
-   */
-  public function __construct(protected string $url) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'setBrowserUrl',
-      'url' => $this->url,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'setBrowserUrl',
+          'url' => $this->url,
+        ];
+    }
 
 }

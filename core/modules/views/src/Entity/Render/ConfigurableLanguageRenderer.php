@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Entity\Render;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -10,32 +12,34 @@ use Drupal\views\ViewExecutable;
 /**
  * Renders entities in a configured language.
  */
-class ConfigurableLanguageRenderer extends EntityTranslationRendererBase {
-
-  /**
-   * Constructs a renderer object.
-   *
-   * @param \Drupal\views\ViewExecutable $view
-   *   The entity row being rendered.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   * @param string|null $langcode
-   *   A specific language code to set, if available.
-   */
-  public function __construct(ViewExecutable $view, LanguageManagerInterface $language_manager, EntityTypeInterface $entity_type, /**
+class ConfigurableLanguageRenderer extends EntityTranslationRendererBase
+{
+    /**
+     * Constructs a renderer object.
+     *
+     * @param \Drupal\views\ViewExecutable $view
+     *   The entity row being rendered.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+     *   The language manager.
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     * @param string|null $langcode
+     *   A specific language code to set, if available.
+     */
+    public function __construct(ViewExecutable $view, LanguageManagerInterface $language_manager, EntityTypeInterface $entity_type, /**
    * A specific language code for rendering if available.
    */
-  protected $langcode) {
-    parent::__construct($view, $language_manager, $entity_type);
-  }
+        protected $langcode)
+    {
+        parent::__construct($view, $language_manager, $entity_type);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcode(ResultRow $row) {
-    return $this->langcode;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcode(ResultRow $row)
+    {
+        return $this->langcode;
+    }
 
 }

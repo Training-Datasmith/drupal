@@ -11,20 +11,22 @@ use Drupal\Core\Plugin\RemovableDependentPluginReturn;
 /**
  * A configurable plugin implementation used for testing.
  */
-class TestConfigurablePlugin extends ConfigurablePluginBase implements RemovableDependentPluginInterface {
+class TestConfigurablePlugin extends ConfigurablePluginBase implements RemovableDependentPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onCollectionDependencyRemoval(array $dependencies): RemovableDependentPluginReturn {
-    return RemovableDependentPluginReturn::Unchanged;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function onCollectionDependencyRemoval(array $dependencies): RemovableDependentPluginReturn
+    {
+        return RemovableDependentPluginReturn::Unchanged;
+    }
 
 }

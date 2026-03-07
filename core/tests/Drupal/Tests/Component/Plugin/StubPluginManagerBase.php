@@ -9,5 +9,6 @@ use Drupal\Component\Plugin\PluginManagerBase;
 /**
  * A class extending PluginManagerBase for testing purposes.
  */
-class StubPluginManagerBase extends PluginManagerBase {
+class StubPluginManagerBase extends PluginManagerBase
+{
 }

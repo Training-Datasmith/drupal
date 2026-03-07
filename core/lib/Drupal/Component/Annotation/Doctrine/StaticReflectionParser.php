@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 // cspell:ignore paamayim nekudotayim
 
@@ -27,7 +29,20 @@
 
 namespace Drupal\Component\Annotation\Doctrine;
 
+use function array_merge;
+use function file_get_contents;
+use function is_array;
+use function ltrim;
+use function preg_match;
+
 use ReflectionException;
+
+use function sprintf;
+use function strpos;
+use function strrpos;
+use function strtolower;
+use function substr;
+
 use const T_CLASS;
 use const T_DOC_COMMENT;
 use const T_EXTENDS;
@@ -41,16 +56,6 @@ use const T_STRING;
 use const T_USE;
 use const T_VAR;
 use const T_VARIABLE;
-use function array_merge;
-use function file_get_contents;
-use function is_array;
-use function ltrim;
-use function preg_match;
-use function sprintf;
-use function strpos;
-use function strrpos;
-use function strtolower;
-use function substr;
 
 /**
  * Parses a file for namespaces/use/class declarations.
@@ -143,7 +148,7 @@ class StaticReflectionParser
     public function __construct($className, $finder, /**
      * Whether the caller only wants class annotations.
      */
-    protected $classAnnotationOptimize = false)
+        protected $classAnnotationOptimize = false)
     {
         $this->className = ltrim($className, '\\');
         $lastNsPos       = strrpos($this->className, '\\');
@@ -222,7 +227,7 @@ class StaticReflectionParser
                         // For example, it can be T_FINAL.
                         continue 2;
                     }
-                    // No break.
+                    // no break.
                 case T_FUNCTION:
                     // The next string after function is the name, but
                     // there can be & before the function name so find the
@@ -312,10 +317,11 @@ class StaticReflectionParser
         return $name ? $this->docComment[$type][$name] : $this->docComment[$type];
     }
 
-    public function getMethodAttributes(): array {
-      $this->parse();
+    public function getMethodAttributes(): array
+    {
+        $this->parse();
 
-      return $this->methodAttributes;
+        return $this->methodAttributes;
     }
 
     /**
@@ -354,12 +360,12 @@ class StaticReflectionParser
     public static function hasAttribute(array $existingAttributes, string $attributeLookingFor): bool
     {
         foreach ($existingAttributes as $existingAttribute) {
-            if (is_a($existingAttribute, $attributeLookingFor, TRUE)) {
-                return TRUE;
+            if (is_a($existingAttribute, $attributeLookingFor, true)) {
+                return true;
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     /**

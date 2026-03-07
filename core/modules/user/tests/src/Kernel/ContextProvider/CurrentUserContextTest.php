@@ -18,51 +18,53 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(CurrentUserContext::class)]
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class CurrentUserContextTest extends KernelTestBase {
+class CurrentUserContextTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('user');
+    }
 
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests get available contexts.
+     */
+    public function testGetAvailableContexts(): void
+    {
+        $context_repository = $this->container->get('context.repository');
 
-  /**
-   * Tests get available contexts.
-   */
-  public function testGetAvailableContexts(): void {
-    $context_repository = $this->container->get('context.repository');
+        // Test an authenticated account.
+        $authenticated = User::create([
+          'name' => $this->randomMachineName(),
+        ]);
+        $authenticated->save();
+        $authenticated = User::load($authenticated->id());
+        $this->container->get('current_user')->setAccount($authenticated);
 
-    // Test an authenticated account.
-    $authenticated = User::create([
-      'name' => $this->randomMachineName(),
-    ]);
-    $authenticated->save();
-    $authenticated = User::load($authenticated->id());
-    $this->container->get('current_user')->setAccount($authenticated);
+        $contexts = $context_repository->getAvailableContexts();
+        $this->assertArrayHasKey('@user.current_user_context:current_user', $contexts);
+        $this->assertSame('entity:user', $contexts['@user.current_user_context:current_user']->getContextDefinition()->getDataType());
+        $this->assertTrue($contexts['@user.current_user_context:current_user']->hasContextValue());
+        $this->assertNotNull($contexts['@user.current_user_context:current_user']->getContextValue());
 
-    $contexts = $context_repository->getAvailableContexts();
-    $this->assertArrayHasKey('@user.current_user_context:current_user', $contexts);
-    $this->assertSame('entity:user', $contexts['@user.current_user_context:current_user']->getContextDefinition()->getDataType());
-    $this->assertTrue($contexts['@user.current_user_context:current_user']->hasContextValue());
-    $this->assertNotNull($contexts['@user.current_user_context:current_user']->getContextValue());
+        // Test an anonymous account.
+        $anonymous = $this->prophesize(AccountInterface::class);
+        $anonymous->id()->willReturn(0);
+        $this->container->get('current_user')->setAccount($anonymous->reveal());
 
-    // Test an anonymous account.
-    $anonymous = $this->prophesize(AccountInterface::class);
-    $anonymous->id()->willReturn(0);
-    $this->container->get('current_user')->setAccount($anonymous->reveal());
-
-    $contexts = $context_repository->getAvailableContexts();
-    $this->assertArrayHasKey('@user.current_user_context:current_user', $contexts);
-    $this->assertSame('entity:user', $contexts['@user.current_user_context:current_user']->getContextDefinition()->getDataType());
-    $this->assertFalse($contexts['@user.current_user_context:current_user']->hasContextValue());
-  }
+        $contexts = $context_repository->getAvailableContexts();
+        $this->assertArrayHasKey('@user.current_user_context:current_user', $contexts);
+        $this->assertSame('entity:user', $contexts['@user.current_user_context:current_user']->getContextDefinition()->getDataType());
+        $this->assertFalse($contexts['@user.current_user_context:current_user']->hasContextValue());
+    }
 
 }

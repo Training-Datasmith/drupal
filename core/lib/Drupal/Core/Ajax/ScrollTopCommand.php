@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -7,31 +9,31 @@ namespace Drupal\Core\Ajax;
  *
  * This command is implemented in Drupal.AjaxCommands.prototype.scrollTop.
  */
-class ScrollTopCommand implements CommandInterface {
+class ScrollTopCommand implements CommandInterface
+{
+    /**
+     * Constructs a \Drupal\Core\Ajax\ScrollTopCommand object.
+     *
+     * @param string $selector
+     *   A CSS selector.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string.
+         */
+        protected $selector
+    ) {
+    }
 
-  /**
-   * Constructs a \Drupal\Core\Ajax\ScrollTopCommand object.
-   *
-   * @param string $selector
-   *   A CSS selector.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string.
-       */
-      protected $selector
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'scrollTop',
-      'selector' => $this->selector,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'scrollTop',
+          'selector' => $this->selector,
+        ];
+    }
 
 }

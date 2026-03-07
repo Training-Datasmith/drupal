@@ -10,66 +10,70 @@ use Drupal\user\Entity\Role;
 /**
  * Resource test base for the UserRole entity.
  */
-abstract class RoleResourceTestBase extends ConfigEntityResourceTestBase {
+abstract class RoleResourceTestBase extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'user_role';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'user_role';
+    /**
+     * @var \Drupal\user\RoleInterface
+     */
+    protected $entity;
 
-  /**
-   * @var \Drupal\user\RoleInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method)
+    {
+        $this->grantPermissionsToTestedRole(['administer permissions']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method) {
-    $this->grantPermissionsToTestedRole(['administer permissions']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        $role = Role::create([
+          'id' => 'llama',
+          'label' => 'Llama',
+        ]);
+        $role->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    $role = Role::create([
-      'id' => 'llama',
-      'label' => 'Llama',
-    ]);
-    $role->save();
+        return $role;
+    }
 
-    return $role;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedNormalizedEntity()
+    {
+        return [
+          'uuid' => $this->entity->uuid(),
+          'weight' => 2,
+          'langcode' => 'en',
+          'status' => true,
+          'dependencies' => [],
+          'id' => 'llama',
+          'label' => 'Llama',
+          'is_admin' => false,
+          'permissions' => [],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedNormalizedEntity() {
-    return [
-      'uuid' => $this->entity->uuid(),
-      'weight' => 2,
-      'langcode' => 'en',
-      'status' => TRUE,
-      'dependencies' => [],
-      'id' => 'llama',
-      'label' => 'Llama',
-      'is_admin' => FALSE,
-      'permissions' => [],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getNormalizedPostEntity() {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNormalizedPostEntity()
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
 
 }

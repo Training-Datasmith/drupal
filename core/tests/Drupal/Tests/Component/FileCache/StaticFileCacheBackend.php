@@ -9,65 +9,70 @@ use Drupal\Component\FileCache\FileCacheBackendInterface;
 /**
  * Allows to cache data based on file modification dates in a static cache.
  */
-class StaticFileCacheBackend implements FileCacheBackendInterface {
+class StaticFileCacheBackend implements FileCacheBackendInterface
+{
+    /**
+     * Internal static cache.
+     *
+     * @var array
+     */
+    protected static $cache = [];
 
-  /**
-   * Internal static cache.
-   *
-   * @var array
-   */
-  protected static $cache = [];
+    /**
+     * Bin used for storing the data in the static cache.
+     *
+     * @var string
+     */
+    protected $bin;
 
-  /**
-   * Bin used for storing the data in the static cache.
-   *
-   * @var string
-   */
-  protected $bin;
-
-  /**
-   * Constructs a PHP Storage FileCache backend.
-   *
-   * @param array $configuration
-   *   (optional) Configuration used to configure this object.
-   */
-  public function __construct($configuration) {
-    $this->bin = $configuration['bin'] ?? 'file_cache';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetch(array $cids) {
-    $result = [];
-    foreach ($cids as $cid) {
-      if (isset(static::$cache[$this->bin][$cid])) {
-        $result[$cid] = static::$cache[$this->bin][$cid];
-      }
+    /**
+     * Constructs a PHP Storage FileCache backend.
+     *
+     * @param array $configuration
+     *   (optional) Configuration used to configure this object.
+     */
+    public function __construct($configuration)
+    {
+        $this->bin = $configuration['bin'] ?? 'file_cache';
     }
 
-    return $result;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fetch(array $cids)
+    {
+        $result = [];
+        foreach ($cids as $cid) {
+            if (isset(static::$cache[$this->bin][$cid])) {
+                $result[$cid] = static::$cache[$this->bin][$cid];
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function store($cid, $data): void {
-    static::$cache[$this->bin][$cid] = $data;
-  }
+        return $result;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($cid): void {
-    unset(static::$cache[$this->bin][$cid]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function store($cid, $data): void
+    {
+        static::$cache[$this->bin][$cid] = $data;
+    }
 
-  /**
-   * Allows tests to reset the static cache to avoid side effects.
-   */
-  public static function reset(): void {
-    static::$cache = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($cid): void
+    {
+        unset(static::$cache[$this->bin][$cid]);
+    }
+
+    /**
+     * Allows tests to reset the static cache to avoid side effects.
+     */
+    public static function reset(): void
+    {
+        static::$cache = [];
+    }
 
 }

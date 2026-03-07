@@ -11,18 +11,19 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Decorate core's default path-based breadcrumb builder when it is available.
  */
-class MenuTestServiceProvider implements ServiceModifierInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    if ($container->has('system.breadcrumb.default')) {
-      $container->register('menu_test.breadcrumb.default', SkippablePathBasedBreadcrumbBuilder::class)
-        ->setDecoratedService('system.breadcrumb.default')
-        ->addArgument(new Reference('menu_test.breadcrumb.default.inner'))
-        ->addArgument(new Reference('request_stack'));
+class MenuTestServiceProvider implements ServiceModifierInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        if ($container->has('system.breadcrumb.default')) {
+            $container->register('menu_test.breadcrumb.default', SkippablePathBasedBreadcrumbBuilder::class)
+              ->setDecoratedService('system.breadcrumb.default')
+              ->addArgument(new Reference('menu_test.breadcrumb.default.inner'))
+              ->addArgument(new Reference('request_stack'));
+        }
     }
-  }
 
 }

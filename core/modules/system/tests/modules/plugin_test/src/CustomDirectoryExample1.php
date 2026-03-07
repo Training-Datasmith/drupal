@@ -12,4 +12,6 @@ namespace Drupal\plugin_test;
  *   custom = "Tim"
  * )
  */
-class CustomDirectoryExample1 {}
+class CustomDirectoryExample1
+{
+}

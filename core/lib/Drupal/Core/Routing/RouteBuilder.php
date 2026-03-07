@@ -1,203 +1,205 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
-use Drupal\Core\Access\CheckProviderInterface;
-use Drupal\Core\Controller\ControllerResolverInterface;
-use Drupal\Core\Discovery\YamlDiscovery;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Lock\LockBackendInterface;
-use Drupal\Core\DestructableInterface;
 use Drupal\Component\EventDispatcher\Event;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Routing\RouteCollection;
+use Drupal\Core\DestructableInterface;
+use Drupal\Core\Discovery\YamlDiscovery;
 use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Managing class for rebuilding the router table.
  */
-class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
+class RouteBuilder implements RouteBuilderInterface, DestructableInterface
+{
+    /**
+     * The route collection during the rebuild.
+     *
+     * @var \Symfony\Component\Routing\RouteCollection
+     */
+    protected $routeCollection;
 
-  /**
-   * The route collection during the rebuild.
-   *
-   * @var \Symfony\Component\Routing\RouteCollection
-   */
-  protected $routeCollection;
+    /**
+     * Flag that indicates if we are currently rebuilding the routes.
+     *
+     * @var bool
+     */
+    protected $building = false;
 
-  /**
-   * Flag that indicates if we are currently rebuilding the routes.
-   *
-   * @var bool
-   */
-  protected $building = FALSE;
+    /**
+     * Flag that indicates if we should rebuild at the end of the request.
+     *
+     * @var bool
+     */
+    protected $rebuildNeeded = false;
 
-  /**
-   * Flag that indicates if we should rebuild at the end of the request.
-   *
-   * @var bool
-   */
-  protected $rebuildNeeded = FALSE;
-
-  /**
-   * Constructs the RouteBuilder using the passed MatcherDumperInterface.
-   *
-   * @param \Drupal\Core\Routing\MatcherDumperInterface $dumper
-   *   The matcher dumper used to store the route information.
-   * @param \Drupal\Core\Lock\LockBackendInterface $lock
-   *   The lock backend.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
-   *   The event dispatcher to notify of routes.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   * @param \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver
-   *   The controller resolver.
-   * @param \Drupal\Core\Access\CheckProviderInterface $checkProvider
-   *   The check provider.
-   */
-  public function __construct(protected \Drupal\Core\Routing\MatcherDumperInterface $dumper, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver, protected \Drupal\Core\Access\CheckProviderInterface $checkProvider)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setRebuildNeeded(): void {
-    $this->rebuildNeeded = TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rebuild(): bool {
-    if ($this->building) {
-      throw new \RuntimeException('Recursive router rebuild detected.');
+    /**
+     * Constructs the RouteBuilder using the passed MatcherDumperInterface.
+     *
+     * @param \Drupal\Core\Routing\MatcherDumperInterface $dumper
+     *   The matcher dumper used to store the route information.
+     * @param \Drupal\Core\Lock\LockBackendInterface $lock
+     *   The lock backend.
+     * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
+     *   The event dispatcher to notify of routes.
+     * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+     *   The module handler.
+     * @param \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver
+     *   The controller resolver.
+     * @param \Drupal\Core\Access\CheckProviderInterface $checkProvider
+     *   The check provider.
+     */
+    public function __construct(protected \Drupal\Core\Routing\MatcherDumperInterface $dumper, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver, protected \Drupal\Core\Access\CheckProviderInterface $checkProvider)
+    {
     }
 
-    if (!$this->lock->acquire('router_rebuild')) {
-      // Wait for another request that is already doing this work.
-      // We choose to block here since otherwise the routes might not be
-      // available, resulting in a 404.
-      $this->lock->wait('router_rebuild');
-      return FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function setRebuildNeeded(): void
+    {
+        $this->rebuildNeeded = true;
     }
 
-    $this->building = TRUE;
-
-    $collection = new RouteCollection();
-    foreach ($this->getRouteDefinitions() as $routes) {
-      // The top-level 'routes_callback' is a list of methods in controller
-      // syntax, see \Drupal\Core\Controller\ControllerResolver. These methods
-      // should return a set of \Symfony\Component\Routing\Route objects, either
-      // in an associative array keyed by the route name, which will be iterated
-      // over and added to the collection for this provider, or as a new
-      // \Symfony\Component\Routing\RouteCollection object, which will be added
-      // to the collection.
-      if (isset($routes['route_callbacks'])) {
-        foreach ($routes['route_callbacks'] as $route_callback) {
-          $callback = $this->controllerResolver->getControllerFromDefinition($route_callback);
-          if ($callback_routes = call_user_func($callback)) {
-            // If a RouteCollection is returned, add the whole collection.
-            if ($callback_routes instanceof RouteCollection) {
-              $collection->addCollection($callback_routes);
-            }
-            // Otherwise, add each Route object individually.
-            else {
-              foreach ($callback_routes as $name => $callback_route) {
-                $collection->add($name, $callback_route);
-              }
-            }
-          }
+    /**
+     * {@inheritdoc}
+     */
+    public function rebuild(): bool
+    {
+        if ($this->building) {
+            throw new \RuntimeException('Recursive router rebuild detected.');
         }
-        unset($routes['route_callbacks']);
-      }
-      foreach ($routes as $name => $route_info) {
-        if (isset($route_info['alias'])) {
-          $alias = $collection->addAlias($name, $route_info['alias']);
-          $deprecation = $route_info['deprecated'] ?? NULL;
-          if (isset($deprecation)) {
-            $alias->setDeprecated(
-              $deprecation['package'],
-              $deprecation['version'],
-              $deprecation['message'] ?? ''
-            );
-          }
-          continue;
+
+        if (!$this->lock->acquire('router_rebuild')) {
+            // Wait for another request that is already doing this work.
+            // We choose to block here since otherwise the routes might not be
+            // available, resulting in a 404.
+            $this->lock->wait('router_rebuild');
+            return false;
         }
-        $route_info += [
-          'defaults' => [],
-          'requirements' => [],
-          'options' => [],
-          'host' => NULL,
-          'schemes' => [],
-          'methods' => [],
-          'condition' => '',
-        ];
-        // Ensure routes default to using Drupal's route compiler instead of
-        // Symfony's.
-        $route_info['options'] += [
-          'compiler_class' => RouteCompiler::class,
-        ];
 
-        $route = new Route($route_info['path'], $route_info['defaults'], $route_info['requirements'], $route_info['options'], $route_info['host'], $route_info['schemes'], $route_info['methods'], $route_info['condition']);
-        $collection->add($name, $route);
-      }
+        $this->building = true;
+
+        $collection = new RouteCollection();
+        foreach ($this->getRouteDefinitions() as $routes) {
+            // The top-level 'routes_callback' is a list of methods in controller
+            // syntax, see \Drupal\Core\Controller\ControllerResolver. These methods
+            // should return a set of \Symfony\Component\Routing\Route objects, either
+            // in an associative array keyed by the route name, which will be iterated
+            // over and added to the collection for this provider, or as a new
+            // \Symfony\Component\Routing\RouteCollection object, which will be added
+            // to the collection.
+            if (isset($routes['route_callbacks'])) {
+                foreach ($routes['route_callbacks'] as $route_callback) {
+                    $callback = $this->controllerResolver->getControllerFromDefinition($route_callback);
+                    if ($callback_routes = call_user_func($callback)) {
+                        // If a RouteCollection is returned, add the whole collection.
+                        if ($callback_routes instanceof RouteCollection) {
+                            $collection->addCollection($callback_routes);
+                        }
+                        // Otherwise, add each Route object individually.
+                        else {
+                            foreach ($callback_routes as $name => $callback_route) {
+                                $collection->add($name, $callback_route);
+                            }
+                        }
+                    }
+                }
+                unset($routes['route_callbacks']);
+            }
+            foreach ($routes as $name => $route_info) {
+                if (isset($route_info['alias'])) {
+                    $alias = $collection->addAlias($name, $route_info['alias']);
+                    $deprecation = $route_info['deprecated'] ?? null;
+                    if (isset($deprecation)) {
+                        $alias->setDeprecated(
+                            $deprecation['package'],
+                            $deprecation['version'],
+                            $deprecation['message'] ?? ''
+                        );
+                    }
+                    continue;
+                }
+                $route_info += [
+                  'defaults' => [],
+                  'requirements' => [],
+                  'options' => [],
+                  'host' => null,
+                  'schemes' => [],
+                  'methods' => [],
+                  'condition' => '',
+                ];
+                // Ensure routes default to using Drupal's route compiler instead of
+                // Symfony's.
+                $route_info['options'] += [
+                  'compiler_class' => RouteCompiler::class,
+                ];
+
+                $route = new Route($route_info['path'], $route_info['defaults'], $route_info['requirements'], $route_info['options'], $route_info['host'], $route_info['schemes'], $route_info['methods'], $route_info['condition']);
+                $collection->add($name, $route);
+            }
+        }
+
+        // DYNAMIC is supposed to be used to add new routes based upon all the
+        // static defined ones.
+        $this->dispatcher->dispatch(new RouteBuildEvent($collection), RoutingEvents::DYNAMIC);
+
+        // ALTER is the final step to alter all the existing routes. We cannot stop
+        // people from adding new routes here, but we define two separate steps to
+        // make it clear.
+        $this->dispatcher->dispatch(new RouteBuildEvent($collection), RoutingEvents::ALTER);
+
+        $this->checkProvider->setChecks($collection);
+
+        $this->dumper->addRoutes($collection);
+        $this->dumper->dump();
+
+        $this->lock->release('router_rebuild');
+        $this->dispatcher->dispatch(new Event(), RoutingEvents::FINISHED);
+        $this->building = false;
+
+        $this->rebuildNeeded = false;
+
+        return true;
     }
 
-    // DYNAMIC is supposed to be used to add new routes based upon all the
-    // static defined ones.
-    $this->dispatcher->dispatch(new RouteBuildEvent($collection), RoutingEvents::DYNAMIC);
-
-    // ALTER is the final step to alter all the existing routes. We cannot stop
-    // people from adding new routes here, but we define two separate steps to
-    // make it clear.
-    $this->dispatcher->dispatch(new RouteBuildEvent($collection), RoutingEvents::ALTER);
-
-    $this->checkProvider->setChecks($collection);
-
-    $this->dumper->addRoutes($collection);
-    $this->dumper->dump();
-
-    $this->lock->release('router_rebuild');
-    $this->dispatcher->dispatch(new Event(), RoutingEvents::FINISHED);
-    $this->building = FALSE;
-
-    $this->rebuildNeeded = FALSE;
-
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rebuildIfNeeded() {
-    if ($this->rebuildNeeded) {
-      return $this->rebuild();
+    /**
+     * {@inheritdoc}
+     */
+    public function rebuildIfNeeded()
+    {
+        if ($this->rebuildNeeded) {
+            return $this->rebuild();
+        }
+        return false;
     }
-    return FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function destruct(): void {
-    // Rebuild routes only once at the end of the request lifecycle to not
-    // trigger multiple rebuilds and also make the page more responsive for the
-    // user.
-    $this->rebuildIfNeeded();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function destruct(): void
+    {
+        // Rebuild routes only once at the end of the request lifecycle to not
+        // trigger multiple rebuilds and also make the page more responsive for the
+        // user.
+        $this->rebuildIfNeeded();
+    }
 
-  /**
-   * Retrieves all defined routes from .routing.yml files.
-   *
-   * @return array
-   *   The defined routes, keyed by provider.
-   */
-  protected function getRouteDefinitions(): array {
-    // Always instantiate a new YamlDiscovery object so that we always search on
-    // the up-to-date list of modules.
-    $discovery = new YamlDiscovery('routing', $this->moduleHandler->getModuleDirectories());
-    return $discovery->findAll();
-  }
+    /**
+     * Retrieves all defined routes from .routing.yml files.
+     *
+     * @return array
+     *   The defined routes, keyed by provider.
+     */
+    protected function getRouteDefinitions(): array
+    {
+        // Always instantiate a new YamlDiscovery object so that we always search on
+        // the up-to-date list of modules.
+        $discovery = new YamlDiscovery('routing', $this->moduleHandler->getModuleDirectories());
+        return $discovery->findAll();
+    }
 
 }

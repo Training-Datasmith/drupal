@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache;
 
 /**
@@ -12,43 +14,43 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheableDependencyInterface {
+interface CacheableDependencyInterface
+{
+    /**
+     * The cache contexts associated with this object.
+     *
+     * These identify a specific variation/representation of the object.
+     *
+     * Cache contexts are tokens: placeholders that are converted to cache keys by
+     * the @cache_contexts_manager service. The replacement value depends on the
+     * request context (the current URL, language, and so on). They're converted
+     * before storing an object in cache.
+     *
+     * @return list<string>
+     *   An array of cache context tokens, used to generate a cache ID.
+     *
+     * @see \Drupal\Core\Cache\Context\CacheContextsManager::convertTokensToKeys()
+     */
+    public function getCacheContexts();
 
-  /**
-   * The cache contexts associated with this object.
-   *
-   * These identify a specific variation/representation of the object.
-   *
-   * Cache contexts are tokens: placeholders that are converted to cache keys by
-   * the @cache_contexts_manager service. The replacement value depends on the
-   * request context (the current URL, language, and so on). They're converted
-   * before storing an object in cache.
-   *
-   * @return list<string>
-   *   An array of cache context tokens, used to generate a cache ID.
-   *
-   * @see \Drupal\Core\Cache\Context\CacheContextsManager::convertTokensToKeys()
-   */
-  public function getCacheContexts();
+    /**
+     * The cache tags associated with this object.
+     *
+     * When this object is modified, these cache tags will be invalidated.
+     *
+     * @return list<string>
+     *   A set of cache tags.
+     */
+    public function getCacheTags();
 
-  /**
-   * The cache tags associated with this object.
-   *
-   * When this object is modified, these cache tags will be invalidated.
-   *
-   * @return list<string>
-   *   A set of cache tags.
-   */
-  public function getCacheTags();
-
-  /**
-   * The maximum age for which this object may be cached.
-   *
-   * @return int
-   *   The maximum time in seconds that this object may be cached.
-   *   An object may be cached permanently by returning
-   *   \Drupal\Core\Cache\Cache::PERMANENT.
-   */
-  public function getCacheMaxAge();
+    /**
+     * The maximum age for which this object may be cached.
+     *
+     * @return int
+     *   The maximum time in seconds that this object may be cached.
+     *   An object may be cached permanently by returning
+     *   \Drupal\Core\Cache\Cache::PERMANENT.
+     */
+    public function getCacheMaxAge();
 
 }

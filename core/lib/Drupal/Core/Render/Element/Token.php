@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -14,31 +16,33 @@ use Drupal\Core\Render\Attribute\FormElement;
  * have to add one yourself.
  */
 #[FormElement('token')]
-class Token extends Hidden {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#pre_render' => [
-        [static::class, 'preRenderHidden'],
-      ],
-      '#theme' => 'input__hidden',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
-    if ($input !== FALSE && $input !== NULL) {
-      // This should be a string, but allow other scalars since they might be
-      // valid input in programmatic form submissions.
-      return is_scalar($input) ? (string) $input : '';
+class Token extends Hidden
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#pre_render' => [
+            [static::class, 'preRenderHidden'],
+          ],
+          '#theme' => 'input__hidden',
+        ];
     }
-    return NULL;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string
+    {
+        if ($input !== false && $input !== null) {
+            // This should be a string, but allow other scalars since they might be
+            // valid input in programmatic form submissions.
+            return is_scalar($input) ? (string) $input : '';
+        }
+        return null;
+    }
 
 }

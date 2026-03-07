@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\datetime\Plugin\views\argument;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -25,55 +27,57 @@ use Drupal\views\Plugin\views\argument\Date as NumericDate;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'datetime',
+    id: 'datetime',
 )]
-class Date extends NumericDate {
+class Date extends NumericDate
+{
+    use FieldAPIHandlerTrait;
 
-  use FieldAPIHandlerTrait;
+    /**
+     * Determines if the timezone offset is calculated.
+     *
+     * @var bool
+     */
+    protected $calculateOffset = true;
 
-  /**
-   * Determines if the timezone offset is calculated.
-   *
-   * @var bool
-   */
-  protected $calculateOffset = TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        RouteMatchInterface $route_match,
+        DateFormatterInterface $date_formatter,
+        TimeInterface $time,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter, $time);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    RouteMatchInterface $route_match,
-    DateFormatterInterface $date_formatter,
-    TimeInterface $time,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter, $time);
-
-    $definition = $this->getFieldStorageDefinition();
-    if ($definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE) {
-      // Timezone offset calculation is not applicable to dates that are stored
-      // as date-only.
-      $this->calculateOffset = FALSE;
+        $definition = $this->getFieldStorageDefinition();
+        if ($definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE) {
+            // Timezone offset calculation is not applicable to dates that are stored
+            // as date-only.
+            $this->calculateOffset = false;
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDateField() {
-    // Use string date storage/formatting since datetime fields are stored as
-    // strings rather than UNIX timestamps.
-    return $this->query->getDateField("$this->tableAlias.$this->realField", TRUE, $this->calculateOffset);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDateField()
+    {
+        // Use string date storage/formatting since datetime fields are stored as
+        // strings rather than UNIX timestamps.
+        return $this->query->getDateField("$this->tableAlias.$this->realField", true, $this->calculateOffset);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDateFormat($format) {
-    // Pass in the string-field option.
-    return $this->query->getDateFormat($this->getDateField(), $format, TRUE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDateFormat($format)
+    {
+        // Pass in the string-field option.
+        return $this->query->getDateFormat($this->getDateField(), $format, true);
+    }
 
 }

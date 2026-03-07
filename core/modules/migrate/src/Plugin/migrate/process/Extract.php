@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\Variable;
-use Drupal\migrate\ProcessPluginBase;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
@@ -59,29 +61,29 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "extract",
-  handle_multiples: TRUE,
+    id: 'extract',
+    handle_multiples: true,
 )]
-class Extract extends ProcessPluginBase {
+class Extract extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if (!is_array($value)) {
+            throw new MigrateException(sprintf("Input should be an array, instead it was of type '%s'", gettype($value)));
+        }
+        $new_value = NestedArray::getValue($value, $this->configuration['index'], $key_exists);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if (!is_array($value)) {
-      throw new MigrateException(sprintf("Input should be an array, instead it was of type '%s'", gettype($value)));
+        if (!$key_exists) {
+            if (array_key_exists('default', $this->configuration)) {
+                $new_value = $this->configuration['default'];
+            } else {
+                throw new MigrateException(sprintf("Array index missing, extraction failed for '%s'. Consider adding a `default` key to the configuration.", Variable::export($value)));
+            }
+        }
+        return $new_value;
     }
-    $new_value = NestedArray::getValue($value, $this->configuration['index'], $key_exists);
-
-    if (!$key_exists) {
-      if (array_key_exists('default', $this->configuration)) {
-        $new_value = $this->configuration['default'];
-      }
-      else {
-        throw new MigrateException(sprintf("Array index missing, extraction failed for '%s'. Consider adding a `default` key to the configuration.", Variable::export($value)));
-      }
-    }
-    return $new_value;
-  }
 
 }

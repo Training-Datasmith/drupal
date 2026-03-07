@@ -9,33 +9,35 @@ namespace Drupal\new_dependency_test;
  *
  * @see new_dependency_test.services.yml
  */
-class Service {
+class Service
+{
+    /**
+     * The decorated service.
+     *
+     * @var \Drupal\new_dependency_test\Service
+     */
+    protected $inner;
 
-  /**
-   * The decorated service.
-   *
-   * @var \Drupal\new_dependency_test\Service
-   */
-  protected $inner;
+    /**
+     * Service constructor.
+     *
+     * @param \Drupal\new_dependency_test\Service|null $inner
+     *   The service to decorate.
+     */
+    public function __construct(?Service $inner = null)
+    {
+        $this->inner = $inner;
+    }
 
-  /**
-   * Service constructor.
-   *
-   * @param \Drupal\new_dependency_test\Service|null $inner
-   *   The service to decorate.
-   */
-  public function __construct(?Service $inner = NULL) {
-    $this->inner = $inner;
-  }
-
-  /**
-   * Determines if the service is decorated.
-   *
-   * @return bool
-   *   TRUE if the services is decorated, FALSE if not.
-   */
-  public function isDecorated() {
-    return isset($this->inner);
-  }
+    /**
+     * Determines if the service is decorated.
+     *
+     * @return bool
+     *   TRUE if the services is decorated, FALSE if not.
+     */
+    public function isDecorated()
+    {
+        return isset($this->inner);
+    }
 
 }

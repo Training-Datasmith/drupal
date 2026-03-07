@@ -12,37 +12,40 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestRangeInvalidForm extends FormBase {
+class FormTestRangeInvalidForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_range_invalid';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_range_invalid';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['minmax'] = [
+          '#type' => 'range',
+          '#min' => 10,
+          '#max' => 5,
+          '#title' => 'Invalid range',
+          '#description' => 'Minimum greater than maximum.',
+        ];
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Submit',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['minmax'] = [
-      '#type' => 'range',
-      '#min' => 10,
-      '#max' => 5,
-      '#title' => 'Invalid range',
-      '#description' => 'Minimum greater than maximum.',
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Submit',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

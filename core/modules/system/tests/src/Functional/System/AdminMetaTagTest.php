@@ -13,21 +13,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class AdminMetaTagTest extends BrowserTestBase {
+class AdminMetaTagTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Verify that the meta tag HTML is generated correctly.
-   */
-  public function testMetaTag(): void {
-    [$version] = explode('.', \Drupal::VERSION);
-    $string = '<meta name="Generator" content="Drupal ' . $version . ' (https://www.drupal.org)" />';
-    $this->drupalGet('node');
-    $this->assertSession()->responseContains($string);
-  }
+    /**
+     * Verify that the meta tag HTML is generated correctly.
+     */
+    public function testMetaTag(): void
+    {
+        [$version] = explode('.', \Drupal::VERSION);
+        $string = '<meta name="Generator" content="Drupal ' . $version . ' (https://www.drupal.org)" />';
+        $this->drupalGet('node');
+        $this->assertSession()->responseContains($string);
+    }
 
 }

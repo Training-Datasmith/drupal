@@ -10,26 +10,27 @@ use Drupal\Tests\UnitTestCase;
 /**
  * Base class used for testing the various LanguageNegotiation plugins.
  */
-abstract class LanguageNegotiationTestBase extends UnitTestCase {
+abstract class LanguageNegotiationTestBase extends UnitTestCase
+{
+    /**
+     * Returns the plugin class to use for creating the language negotiation plugin.
+     *
+     * @return string
+     *   The plugin class name.
+     */
+    abstract protected function getPluginClass(): string;
 
-  /**
-   * Returns the plugin class to use for creating the language negotiation plugin.
-   *
-   * @return string
-   *   The plugin class name.
-   */
-  abstract protected function getPluginClass(): string;
-
-  /**
-   * Creates a @LanguageNegotiation plugin using the factory ::create method.
-   *
-   * @return \Drupal\language\LanguageNegotiationMethodInterface
-   *   The created language negotiation plugin.
-   */
-  protected function createLanguageNegotiationPlugin(array $configuration = [], $plugin_definition = NULL) {
-    $class = $this->getPluginClass();
-    $this->assertTrue(in_array(ContainerFactoryPluginInterface::class, class_implements($class)));
-    return $class::create(\Drupal::getContainer(), $configuration, $class::METHOD_ID, $plugin_definition);
-  }
+    /**
+     * Creates a @LanguageNegotiation plugin using the factory ::create method.
+     *
+     * @return \Drupal\language\LanguageNegotiationMethodInterface
+     *   The created language negotiation plugin.
+     */
+    protected function createLanguageNegotiationPlugin(array $configuration = [], $plugin_definition = null)
+    {
+        $class = $this->getPluginClass();
+        $this->assertTrue(in_array(ContainerFactoryPluginInterface::class, class_implements($class)));
+        return $class::create(\Drupal::getContainer(), $configuration, $class::METHOD_ID, $plugin_definition);
+    }
 
 }

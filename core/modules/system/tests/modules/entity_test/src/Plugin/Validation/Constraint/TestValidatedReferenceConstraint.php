@@ -12,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Validates referenced entities.
  */
 #[Constraint(
-  id: 'TestValidatedReferenceConstraint',
-  label: new TranslatableMarkup('Test validated reference constraint.')
+    id: 'TestValidatedReferenceConstraint',
+    label: new TranslatableMarkup('Test validated reference constraint.')
 )]
-class TestValidatedReferenceConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'Invalid referenced entity.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class TestValidatedReferenceConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'Invalid referenced entity.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

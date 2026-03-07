@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Plugin\ImageEffect;
 
 use Drupal\Core\Image\ImageInterface;
@@ -11,26 +13,27 @@ use Drupal\image\ImageEffectBase;
  * Desaturates (grayscale) an image resource.
  */
 #[ImageEffect(
-  id: "image_desaturate",
-  label: new TranslatableMarkup("Desaturate"),
-  description: new TranslatableMarkup("Desaturate converts an image to grayscale."),
+    id: 'image_desaturate',
+    label: new TranslatableMarkup('Desaturate'),
+    description: new TranslatableMarkup('Desaturate converts an image to grayscale.'),
 )]
-class DesaturateImageEffect extends ImageEffectBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyEffect(ImageInterface $image): bool {
-    if (!$image->desaturate()) {
-      $this->logger->error('Image desaturate failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
-        '%toolkit' => $image->getToolkitId(),
-        '%path' => $image->getSource(),
-        '%mimetype' => $image->getMimeType(),
-        '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
-      ]);
-      return FALSE;
+class DesaturateImageEffect extends ImageEffectBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applyEffect(ImageInterface $image): bool
+    {
+        if (!$image->desaturate()) {
+            $this->logger->error('Image desaturate failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
+              '%toolkit' => $image->getToolkitId(),
+              '%path' => $image->getSource(),
+              '%mimetype' => $image->getMimeType(),
+              '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
+            ]);
+            return false;
+        }
+        return true;
     }
-    return TRUE;
-  }
 
 }

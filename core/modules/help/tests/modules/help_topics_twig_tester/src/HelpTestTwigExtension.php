@@ -9,15 +9,16 @@ use Twig\Extension\AbstractExtension;
 /**
  * Defines and registers Drupal Twig extensions for testing help topics.
  */
-class HelpTestTwigExtension extends AbstractExtension {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNodeVisitors(): array {
-    return [
-      new HelpTestTwigNodeVisitor(),
-    ];
-  }
+class HelpTestTwigExtension extends AbstractExtension
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getNodeVisitors(): array
+    {
+        return [
+          new HelpTestTwigNodeVisitor(),
+        ];
+    }
 
 }

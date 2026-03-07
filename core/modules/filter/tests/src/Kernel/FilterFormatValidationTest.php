@@ -16,24 +16,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class FilterFormatValidationTest extends ConfigEntityValidationTestBase {
+class FilterFormatValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['filter'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = FilterFormat::create([
-      'format' => 'test',
-      'name' => 'Test',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = FilterFormat::create([
+          'format' => 'test',
+          'name' => 'Test',
+        ]);
+        $this->entity->save();
+    }
 
 }

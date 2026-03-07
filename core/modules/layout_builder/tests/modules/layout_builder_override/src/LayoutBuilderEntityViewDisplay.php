@@ -9,5 +9,6 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay as BaseLayoutBui
 /**
  * Provides an entity view display entity that has a layout.
  */
-class LayoutBuilderEntityViewDisplay extends BaseLayoutBuilderEntityViewDisplay {
+class LayoutBuilderEntityViewDisplay extends BaseLayoutBuilderEntityViewDisplay
+{
 }

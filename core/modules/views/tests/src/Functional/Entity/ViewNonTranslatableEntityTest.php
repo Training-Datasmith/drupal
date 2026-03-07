@@ -15,39 +15,40 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class ViewNonTranslatableEntityTest extends BrowserTestBase {
+class ViewNonTranslatableEntityTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'entity_test',
+      'content_translation',
+      'language_test',
+      'views_ui',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'entity_test',
-    'content_translation',
-    'language_test',
-    'views_ui',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests displaying a view of non-translatable entities.
+     */
+    public function testViewNoTranslatableEntity(): void
+    {
+        // Add a new language.
+        ConfigurableLanguage::createFromLangcode('sr')->save();
 
-  /**
-   * Tests displaying a view of non-translatable entities.
-   */
-  public function testViewNoTranslatableEntity(): void {
-    // Add a new language.
-    ConfigurableLanguage::createFromLangcode('sr')->save();
+        // Create a non-translatable entity.
+        $no_language_entity = NoLanguageEntityTest::create();
+        $no_language_entity->save();
 
-    // Create a non-translatable entity.
-    $no_language_entity = NoLanguageEntityTest::create();
-    $no_language_entity->save();
-
-    // Visit the view page and assert it is displayed properly.
-    $this->drupalGet('no-entity-translation-view');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('No Entity Translation View');
-    $this->assertSession()->pageTextContains($no_language_entity->uuid());
-  }
+        // Visit the view page and assert it is displayed properly.
+        $this->drupalGet('no-entity-translation-view');
+        $this->assertSession()->statusCodeEquals(200);
+        $this->assertSession()->pageTextContains('No Entity Translation View');
+        $this->assertSession()->pageTextContains($no_language_entity->uuid());
+    }
 
 }

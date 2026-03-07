@@ -12,27 +12,28 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Base class for databases database tests.
  */
-abstract class DatabaseTestBase extends BrowserTestBase {
+abstract class DatabaseTestBase extends BrowserTestBase
+{
+    use DatabaseTestSchemaDataTrait;
 
-  use DatabaseTestSchemaDataTrait;
+    /**
+     * The database connection for testing.
+     */
+    protected Connection $connection;
 
-  /**
-   * The database connection for testing.
-   */
-  protected Connection $connection;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['database_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['database_test'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->connection = Database::getConnection();
-    $this->addSampleData();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->connection = Database::getConnection();
+        $this->addSampleData();
+    }
 
 }

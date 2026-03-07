@@ -13,32 +13,35 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a test settings validation block.
  */
 #[Block(
-  id: "test_settings_validation",
-  admin_label: new TranslatableMarkup("Test settings validation block"),
+    id: 'test_settings_validation',
+    admin_label: new TranslatableMarkup('Test settings validation block'),
 )]
-class TestSettingsValidationBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockForm($form, FormStateInterface $form_state) {
-    return ['digits' => ['#type' => 'textfield']] + $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockValidate($form, FormStateInterface $form_state) {
-    if (!ctype_digit($form_state->getValue('digits'))) {
-      $form_state->setErrorByName('digits', $this->t('Only digits are allowed'));
+class TestSettingsValidationBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function blockForm($form, FormStateInterface $form_state)
+    {
+        return ['digits' => ['#type' => 'textfield']] + $form;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return ['#markup' => 'foo'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function blockValidate($form, FormStateInterface $form_state)
+    {
+        if (!ctype_digit($form_state->getValue('digits'))) {
+            $form_state->setErrorByName('digits', $this->t('Only digits are allowed'));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return ['#markup' => 'foo'];
+    }
 
 }

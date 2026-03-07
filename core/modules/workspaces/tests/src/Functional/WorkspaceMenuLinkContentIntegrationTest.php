@@ -14,120 +14,122 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('workspaces')]
 #[Group('menu_link_content')]
 #[RunTestsInSeparateProcesses]
-class WorkspaceMenuLinkContentIntegrationTest extends BrowserTestBase {
+class WorkspaceMenuLinkContentIntegrationTest extends BrowserTestBase
+{
+    use WorkspaceTestUtilities;
 
-  use WorkspaceTestUtilities;
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block',
-    'menu_link_content',
-    'menu_ui',
-    'node',
-    'workspaces',
-    'workspaces_ui',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $permissions = [
-      'access administration pages',
-      'administer menu',
-      'administer site configuration',
-      'administer workspaces',
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block',
+      'menu_link_content',
+      'menu_ui',
+      'node',
+      'workspaces',
+      'workspaces_ui',
     ];
-    $this->drupalLogin($this->drupalCreateUser($permissions));
-    $this->drupalPlaceBlock('system_menu_block:main');
-  }
 
-  /**
-   * Tests custom menu links in non-default workspaces.
-   */
-  public function testWorkspacesWithCustomMenuLinks(): void {
-    $stage = $this->createWorkspaceThroughUi('Stage', 'stage');
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-    $this->setupWorkspaceSwitcherBlock();
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    $default_title = 'default';
-    $default_link = '#live';
+        $permissions = [
+          'access administration pages',
+          'administer menu',
+          'administer site configuration',
+          'administer workspaces',
+        ];
+        $this->drupalLogin($this->drupalCreateUser($permissions));
+        $this->drupalPlaceBlock('system_menu_block:main');
+    }
 
-    // Add a new menu link in Live.
-    $this->drupalGet('admin/structure/menu/manage/main/add');
-    $this->submitForm([
-      'title[0][value]' => $default_title,
-      'link[0][uri]' => $default_link,
-    ], 'Save');
-    $menu_links = \Drupal::entityTypeManager()
-      ->getStorage('menu_link_content')
-      ->loadByProperties(['title' => $default_title]);
-    $menu_link = reset($menu_links);
+    /**
+     * Tests custom menu links in non-default workspaces.
+     */
+    public function testWorkspacesWithCustomMenuLinks(): void
+    {
+        $stage = $this->createWorkspaceThroughUi('Stage', 'stage');
 
-    $pending_title = 'pending';
-    $pending_link = 'http://example.com';
+        $this->setupWorkspaceSwitcherBlock();
 
-    // Change the menu link in 'stage' and check that the updated values are
-    // visible in that workspace.
-    $this->switchToWorkspace($stage);
-    $this->drupalGet("admin/structure/menu/item/{$menu_link->id()}/edit");
-    $this->submitForm([
-      'title[0][value]' => $pending_title,
-      'link[0][uri]' => $pending_link,
-    ], 'Save');
+        $default_title = 'default';
+        $default_link = '#live';
 
-    $this->drupalGet('');
-    $assert_session = $this->assertSession();
-    $assert_session->linkExists($pending_title);
-    $assert_session->linkByHrefExists($pending_link);
+        // Add a new menu link in Live.
+        $this->drupalGet('admin/structure/menu/manage/main/add');
+        $this->submitForm([
+          'title[0][value]' => $default_title,
+          'link[0][uri]' => $default_link,
+        ], 'Save');
+        $menu_links = \Drupal::entityTypeManager()
+          ->getStorage('menu_link_content')
+          ->loadByProperties(['title' => $default_title]);
+        $menu_link = reset($menu_links);
 
-    // Add a new menu link in the Stage workspace.
-    $this->drupalGet('admin/structure/menu/manage/main/add');
-    $this->submitForm([
-      'title[0][value]' => 'stage link',
-      'link[0][uri]' => '#stage',
-    ], 'Save');
+        $pending_title = 'pending';
+        $pending_link = 'http://example.com';
 
-    $this->drupalGet('');
-    $assert_session->linkExists('stage link');
-    $assert_session->linkByHrefExists('#stage');
+        // Change the menu link in 'stage' and check that the updated values are
+        // visible in that workspace.
+        $this->switchToWorkspace($stage);
+        $this->drupalGet("admin/structure/menu/item/{$menu_link->id()}/edit");
+        $this->submitForm([
+          'title[0][value]' => $pending_title,
+          'link[0][uri]' => $pending_link,
+        ], 'Save');
 
-    // Switch back to the Live workspace and check that the menu link has the
-    // default values.
-    $this->switchToLive();
-    $this->drupalGet('');
-    $assert_session->linkExists($default_title);
-    $assert_session->linkByHrefExists($default_link);
-    $assert_session->linkNotExists($pending_title);
-    $assert_session->linkByHrefNotExists($pending_link);
-    $assert_session->linkNotExists('stage link');
-    $assert_session->linkByHrefNotExists('#stage');
+        $this->drupalGet('');
+        $assert_session = $this->assertSession();
+        $assert_session->linkExists($pending_title);
+        $assert_session->linkByHrefExists($pending_link);
 
-    // Publish the workspace and check that the menu link has been updated.
-    $stage->publish();
-    $this->drupalGet('');
-    $assert_session->linkNotExists($default_title);
-    $assert_session->linkByHrefNotExists($default_link);
-    $assert_session->linkExists($pending_title);
-    $assert_session->linkByHrefExists($pending_link);
-    $assert_session->linkExists('stage link');
-    $assert_session->linkByHrefExists('#stage');
-  }
+        // Add a new menu link in the Stage workspace.
+        $this->drupalGet('admin/structure/menu/manage/main/add');
+        $this->submitForm([
+          'title[0][value]' => 'stage link',
+          'link[0][uri]' => '#stage',
+        ], 'Save');
+
+        $this->drupalGet('');
+        $assert_session->linkExists('stage link');
+        $assert_session->linkByHrefExists('#stage');
+
+        // Switch back to the Live workspace and check that the menu link has the
+        // default values.
+        $this->switchToLive();
+        $this->drupalGet('');
+        $assert_session->linkExists($default_title);
+        $assert_session->linkByHrefExists($default_link);
+        $assert_session->linkNotExists($pending_title);
+        $assert_session->linkByHrefNotExists($pending_link);
+        $assert_session->linkNotExists('stage link');
+        $assert_session->linkByHrefNotExists('#stage');
+
+        // Publish the workspace and check that the menu link has been updated.
+        $stage->publish();
+        $this->drupalGet('');
+        $assert_session->linkNotExists($default_title);
+        $assert_session->linkByHrefNotExists($default_link);
+        $assert_session->linkExists($pending_title);
+        $assert_session->linkByHrefExists($pending_link);
+        $assert_session->linkExists('stage link');
+        $assert_session->linkByHrefExists('#stage');
+    }
 
 }

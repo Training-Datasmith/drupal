@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\search\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\WorkspaceSafeFormInterface;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
-use Drupal\search\SearchPageRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,98 +16,103 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface {
+class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface
+{
+    /**
+     * The config factory.
+     *
+     * @var \Drupal\Core\Config\ConfigFactoryInterface
+     */
+    protected $configFactory;
 
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * Constructs a new SearchBlockForm.
-   *
-   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
-   *   The search page repository.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
-   */
-  public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Render\RendererInterface $renderer) {
-    $this->configFactory = $config_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('search.search_page_repository'),
-      $container->get('config.factory'),
-      $container->get('renderer')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'search_block_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $entity_id = NULL): array {
-    // Set up the form to submit using GET to the correct search page.
-    if (!$entity_id) {
-      $entity_id = $this->searchPageRepository->getDefaultSearchPage();
-      // SearchPageRepository::getDefaultSearchPage() depends on
-      // search.settings.  The dependency needs to be added before the
-      // conditional return, otherwise the block would get cached without the
-      // necessary cacheability metadata in case there is no default search page
-      // and would not be invalidated if that changes.
-      $this->renderer->addCacheableDependency($form, $this->configFactory->get('search.settings'));
+    /**
+     * Constructs a new SearchBlockForm.
+     *
+     * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
+     *   The search page repository.
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   The config factory.
+     * @param \Drupal\Core\Render\RendererInterface $renderer
+     *   The renderer.
+     */
+    public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Render\RendererInterface $renderer)
+    {
+        $this->configFactory = $config_factory;
     }
 
-    if (!$entity_id) {
-      $form['message'] = [
-        '#markup' => $this->t('Search is currently disabled'),
-      ];
-      return $form;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('search.search_page_repository'),
+            $container->get('config.factory'),
+            $container->get('renderer')
+        );
     }
 
-    $route = 'search.view_' . $entity_id;
-    $form['#action'] = Url::fromRoute($route)->toString();
-    $form['#method'] = 'get';
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'search_block_form';
+    }
 
-    $form['keys'] = [
-      '#type' => 'search',
-      '#title' => $this->t('Search'),
-      '#title_display' => 'invisible',
-      '#size' => 15,
-      '#default_value' => '',
-      '#attributes' => ['title' => $this->t('Enter the terms you wish to search for.')],
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $entity_id = null): array
+    {
+        // Set up the form to submit using GET to the correct search page.
+        if (!$entity_id) {
+            $entity_id = $this->searchPageRepository->getDefaultSearchPage();
+            // SearchPageRepository::getDefaultSearchPage() depends on
+            // search.settings.  The dependency needs to be added before the
+            // conditional return, otherwise the block would get cached without the
+            // necessary cacheability metadata in case there is no default search page
+            // and would not be invalidated if that changes.
+            $this->renderer->addCacheableDependency($form, $this->configFactory->get('search.settings'));
+        }
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Search'),
-      // Prevent op from showing up in the query string.
-      '#name' => '',
-    ];
+        if (!$entity_id) {
+            $form['message'] = [
+              '#markup' => $this->t('Search is currently disabled'),
+            ];
+            return $form;
+        }
 
-    return $form;
-  }
+        $route = 'search.view_' . $entity_id;
+        $form['#action'] = Url::fromRoute($route)->toString();
+        $form['#method'] = 'get';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // This form submits to the search page, so processing happens there.
-  }
+        $form['keys'] = [
+          '#type' => 'search',
+          '#title' => $this->t('Search'),
+          '#title_display' => 'invisible',
+          '#size' => 15,
+          '#default_value' => '',
+          '#attributes' => ['title' => $this->t('Enter the terms you wish to search for.')],
+        ];
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Search'),
+          // Prevent op from showing up in the query string.
+          '#name' => '',
+        ];
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        // This form submits to the search page, so processing happens there.
+    }
 
 }

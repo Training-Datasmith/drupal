@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -12,60 +14,64 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Formatter to render the file MIME type, with an optional icon.
  */
 #[FieldFormatter(
-  id: 'file_filemime',
-  label: new TranslatableMarkup('File MIME'),
-  field_types: [
+    id: 'file_filemime',
+    label: new TranslatableMarkup('File MIME'),
+    field_types: [
     'string',
   ],
 )]
-class FilemimeFormatter extends BaseFieldFileFormatterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
-    return parent::isApplicable($field_definition) && $field_definition->getName() === 'filemime';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $settings = parent::defaultSettings();
-
-    $settings['filemime_image'] = FALSE;
-
-    return $settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-
-    $form['filemime_image'] = [
-      '#title' => $this->t('Display an icon'),
-      '#description' => $this->t('The icon is representing the file type, instead of the MIME text (such as "image/jpeg")'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->getSetting('filemime_image'),
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function viewValue(FieldItemInterface $item) {
-    $value = $item->value;
-    if ($this->getSetting('filemime_image') && $value) {
-      return [
-        '#theme' => 'image__file_icon',
-        '#file' => $item->getEntity(),
-      ];
+class FilemimeFormatter extends BaseFieldFileFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function isApplicable(FieldDefinitionInterface $field_definition): bool
+    {
+        return parent::isApplicable($field_definition) && $field_definition->getName() === 'filemime';
     }
-    return $value;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        $settings = parent::defaultSettings();
+
+        $settings['filemime_image'] = false;
+
+        return $settings;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::settingsForm($form, $form_state);
+
+        $form['filemime_image'] = [
+          '#title' => $this->t('Display an icon'),
+          '#description' => $this->t('The icon is representing the file type, instead of the MIME text (such as "image/jpeg")'),
+          '#type' => 'checkbox',
+          '#default_value' => $this->getSetting('filemime_image'),
+        ];
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function viewValue(FieldItemInterface $item)
+    {
+        $value = $item->value;
+        if ($this->getSetting('filemime_image') && $value) {
+            return [
+              '#theme' => 'image__file_icon',
+              '#file' => $item->getEntity(),
+            ];
+        }
+        return $value;
+    }
 
 }

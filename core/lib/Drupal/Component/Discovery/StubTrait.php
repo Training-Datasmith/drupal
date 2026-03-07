@@ -9,4 +9,6 @@ namespace Drupal\Component\Discovery;
  *
  * @internal
  */
-trait StubTrait {}
+trait StubTrait
+{
+}

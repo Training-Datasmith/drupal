@@ -13,42 +13,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('sdc')]
 #[RunTestsInSeparateProcesses]
-class ComponentPluginManagerTest extends ComponentKernelTestBase {
+class ComponentPluginManagerTest extends ComponentKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'sdc_test', 'sdc_test_replacements'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'sdc_test', 'sdc_test_replacements'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $themes = ['sdc_theme_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $themes = ['sdc_theme_test'];
+    /**
+     * Test that components render correctly.
+     */
+    public function testFindEmptyMetadataFile(): void
+    {
+        // Test that empty component metadata files are valid, since there is no
+        // required property.
+        $this->assertNotEmpty(
+            $this->manager->find('sdc_theme_test:bar'),
+        );
+        // Test that if the folder name does not match the machine name, the
+        // component is still available.
+        $this->assertNotEmpty(
+            $this->manager->find('sdc_theme_test:foo'),
+        );
+    }
 
-  /**
-   * Test that components render correctly.
-   */
-  public function testFindEmptyMetadataFile(): void {
-    // Test that empty component metadata files are valid, since there is no
-    // required property.
-    $this->assertNotEmpty(
-      $this->manager->find('sdc_theme_test:bar'),
-    );
-    // Test that if the folder name does not match the machine name, the
-    // component is still available.
-    $this->assertNotEmpty(
-      $this->manager->find('sdc_theme_test:foo'),
-    );
-  }
-
-  /**
-   * Test that the machine name is grabbed from the *.component.yml.
-   *
-   * And not from the enclosing directory.
-   */
-  public function testMismatchingFolderName(): void {
-    $this->expectException(ComponentNotFoundException::class);
-    $this->manager->find('sdc_theme_test:mismatching-folder-name');
-  }
+    /**
+     * Test that the machine name is grabbed from the *.component.yml.
+     *
+     * And not from the enclosing directory.
+     */
+    public function testMismatchingFolderName(): void
+    {
+        $this->expectException(ComponentNotFoundException::class);
+        $this->manager->find('sdc_theme_test:mismatching-folder-name');
+    }
 
 }

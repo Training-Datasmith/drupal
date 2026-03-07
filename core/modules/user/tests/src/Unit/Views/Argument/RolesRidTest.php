@@ -19,71 +19,72 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RolesRid::class)]
 #[Group('user')]
-class RolesRidTest extends UnitTestCase {
+class RolesRidTest extends UnitTestCase
+{
+    /**
+     * Tests the titleQuery method.
+     */
+    public function testTitleQuery(): void
+    {
+        $role1 = new Role([
+          'id' => 'test_rid_1',
+          'label' => 'test rid 1',
+        ], 'user_role');
+        $role2 = new Role([
+          'id' => 'test_rid_2',
+          'label' => 'test <strong>rid 2</strong>',
+        ], 'user_role');
 
-  /**
-   * Tests the titleQuery method.
-   */
-  public function testTitleQuery(): void {
-    $role1 = new Role([
-      'id' => 'test_rid_1',
-      'label' => 'test rid 1',
-    ], 'user_role');
-    $role2 = new Role([
-      'id' => 'test_rid_2',
-      'label' => 'test <strong>rid 2</strong>',
-    ], 'user_role');
+        // Creates a stub entity storage.
+        $role_storage = $this->createStub(EntityStorageInterface::class);
+        $role_storage
+          ->method('loadMultiple')
+          ->willReturnMap([
+            [[], []],
+            [['test_rid_1'], ['test_rid_1' => $role1]],
+            [
+              ['test_rid_1', 'test_rid_2'],
+              ['test_rid_1' => $role1, 'test_rid_2' => $role2],
+            ],
+          ]);
 
-    // Creates a stub entity storage.
-    $role_storage = $this->createStub(EntityStorageInterface::class);
-    $role_storage
-      ->method('loadMultiple')
-      ->willReturnMap([
-        [[], []],
-        [['test_rid_1'], ['test_rid_1' => $role1]],
-        [
-          ['test_rid_1', 'test_rid_2'],
-          ['test_rid_1' => $role1, 'test_rid_2' => $role2],
-        ],
-      ]);
+        $entity_type = $this->createStub(EntityTypeInterface::class);
+        $entity_type
+          ->method('getKey')
+          ->with('label')
+          ->willReturn('label');
 
-    $entity_type = $this->createStub(EntityTypeInterface::class);
-    $entity_type
-      ->method('getKey')
-      ->with('label')
-      ->willReturn('label');
+        $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+        $entity_type_manager
+          ->method('getDefinition')
+          ->with($this->equalTo('user_role'))
+          ->willReturn($entity_type);
 
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager
-      ->method('getDefinition')
-      ->with($this->equalTo('user_role'))
-      ->willReturn($entity_type);
+        $entity_type_manager
+          ->expects($this->once())
+          ->method('getStorage')
+          ->with($this->equalTo('user_role'))
+          ->willReturn($role_storage);
 
-    $entity_type_manager
-      ->expects($this->once())
-      ->method('getStorage')
-      ->with($this->equalTo('user_role'))
-      ->willReturn($role_storage);
+        // Set up a minimal container to satisfy Drupal\Core\Entity\EntityBase's
+        // dependency on it.
+        $container = new ContainerBuilder();
+        $container->set('entity_type.manager', $entity_type_manager);
+        \Drupal::setContainer($container);
 
-    // Set up a minimal container to satisfy Drupal\Core\Entity\EntityBase's
-    // dependency on it.
-    $container = new ContainerBuilder();
-    $container->set('entity_type.manager', $entity_type_manager);
-    \Drupal::setContainer($container);
+        $roles_rid_argument = new RolesRid([], 'user__roles_rid', [], $entity_type_manager);
 
-    $roles_rid_argument = new RolesRid([], 'user__roles_rid', [], $entity_type_manager);
+        $roles_rid_argument->value = [];
+        $titles = $roles_rid_argument->titleQuery();
+        $this->assertEquals([], $titles);
 
-    $roles_rid_argument->value = [];
-    $titles = $roles_rid_argument->titleQuery();
-    $this->assertEquals([], $titles);
+        $roles_rid_argument->value = ['test_rid_1'];
+        $titles = $roles_rid_argument->titleQuery();
+        $this->assertEquals(['test rid 1'], $titles);
 
-    $roles_rid_argument->value = ['test_rid_1'];
-    $titles = $roles_rid_argument->titleQuery();
-    $this->assertEquals(['test rid 1'], $titles);
-
-    $roles_rid_argument->value = ['test_rid_1', 'test_rid_2'];
-    $titles = $roles_rid_argument->titleQuery();
-    $this->assertEquals(['test rid 1', 'test <strong>rid 2</strong>'], $titles);
-  }
+        $roles_rid_argument->value = ['test_rid_1', 'test_rid_2'];
+        $titles = $roles_rid_argument->titleQuery();
+        $this->assertEquals(['test rid 1', 'test <strong>rid 2</strong>'], $titles);
+    }
 
 }

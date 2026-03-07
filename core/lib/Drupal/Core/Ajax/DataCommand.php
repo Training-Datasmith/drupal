@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -13,51 +15,51 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class DataCommand implements CommandInterface {
+class DataCommand implements CommandInterface
+{
+    /**
+     * Constructs a DataCommand object.
+     *
+     * @param string $selector
+     *   A CSS selector for the elements to which the data will be attached.
+     * @param string $name
+     *   The key of the data to be attached to elements matched by the selector.
+     * @param mixed $value
+     *   The value of the data to be attached to elements matched by the selector.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string for elements to which data will be attached.
+         *
+         * If the command is a response to a request from an #ajax form element then
+         * this value can be NULL.
+         */
+        protected $selector,
+        /**
+         * The key of the data attached to elements matched by the selector.
+         */
+        protected $name,
+        /**
+         * The value of the data to be attached to elements matched by the selector.
+         *
+         * The data is not limited to strings; it can be any format.
+         */
+        protected $value
+    ) {
+    }
 
-  /**
-   * Constructs a DataCommand object.
-   *
-   * @param string $selector
-   *   A CSS selector for the elements to which the data will be attached.
-   * @param string $name
-   *   The key of the data to be attached to elements matched by the selector.
-   * @param mixed $value
-   *   The value of the data to be attached to elements matched by the selector.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string for elements to which data will be attached.
-       *
-       * If the command is a response to a request from an #ajax form element then
-       * this value can be NULL.
-       */
-      protected $selector,
-      /**
-       * The key of the data attached to elements matched by the selector.
-       */
-      protected $name,
-      /**
-       * The value of the data to be attached to elements matched by the selector.
-       *
-       * The data is not limited to strings; it can be any format.
-       */
-      protected $value
-  )
-  {
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'data',
-      'selector' => $this->selector,
-      'name' => $this->name,
-      'value' => $this->value,
-    ];
-  }
+        return [
+          'command' => 'data',
+          'selector' => $this->selector,
+          'name' => $this->name,
+          'value' => $this->value,
+        ];
+    }
 
 }

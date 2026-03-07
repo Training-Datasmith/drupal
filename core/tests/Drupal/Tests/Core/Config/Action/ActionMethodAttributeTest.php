@@ -15,18 +15,19 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ActionMethod::class)]
 #[Group('Config')]
-class ActionMethodAttributeTest extends UnitTestCase {
-
-  /**
-   * Tests invalid function name.
-   *
-   * @legacy-covers ::__construct
-   */
-  public function testInvalidFunctionName(): void {
-    $name = "hello Goodbye";
-    $this->expectException(InvalidPluginDefinitionException::class);
-    $this->expectExceptionMessage("'$name' is not a valid PHP function name.");
-    new ActionMethod(name: $name);
-  }
+class ActionMethodAttributeTest extends UnitTestCase
+{
+    /**
+     * Tests invalid function name.
+     *
+     * @legacy-covers ::__construct
+     */
+    public function testInvalidFunctionName(): void
+    {
+        $name = 'hello Goodbye';
+        $this->expectException(InvalidPluginDefinitionException::class);
+        $this->expectExceptionMessage("'$name' is not a valid PHP function name.");
+        new ActionMethod(name: $name);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\Layout;
 
 /**
@@ -8,25 +10,27 @@ namespace Drupal\layout_builder\Plugin\Layout;
  * @internal
  *   Plugin classes are internal.
  */
-class ThreeColumnLayout extends MultiWidthLayoutBase {
+class ThreeColumnLayout extends MultiWidthLayoutBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWidthOptions(): array
+    {
+        return [
+          '25-50-25' => '25%/50%/25%',
+          '33-34-33' => '33%/34%/33%',
+          '25-25-50' => '25%/25%/50%',
+          '50-25-25' => '50%/25%/25%',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getWidthOptions(): array {
-    return [
-      '25-50-25' => '25%/50%/25%',
-      '33-34-33' => '33%/34%/33%',
-      '25-25-50' => '25%/25%/50%',
-      '50-25-25' => '50%/25%/25%',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultWidth(): string {
-    return '33-34-33';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultWidth(): string
+    {
+        return '33-34-33';
+    }
 
 }

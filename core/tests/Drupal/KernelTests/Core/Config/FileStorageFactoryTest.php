@@ -19,32 +19,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(FileStorageFactory::class)]
 #[Group('config')]
 #[RunTestsInSeparateProcesses]
-class FileStorageFactoryTest extends KernelTestBase {
+class FileStorageFactoryTest extends KernelTestBase
+{
+    /**
+     * Tests get sync.
+     */
+    public function testGetSync(): void
+    {
 
-  /**
-   * Tests get sync.
-   */
-  public function testGetSync(): void {
+        // Write some random data to the sync storage.
+        $name = $this->randomMachineName();
+        $data = (array) $this->getRandomGenerator()->object();
+        $storage = new FileStorage(Settings::get('config_sync_directory'));
+        $storage->write($name, $data);
 
-    // Write some random data to the sync storage.
-    $name = $this->randomMachineName();
-    $data = (array) $this->getRandomGenerator()->object();
-    $storage = new FileStorage(Settings::get('config_sync_directory'));
-    $storage->write($name, $data);
+        // Get the sync storage and read from it.
+        $sync = FileStorageFactory::getSync();
+        $this->assertEquals($data, $sync->read($name));
 
-    // Get the sync storage and read from it.
-    $sync = FileStorageFactory::getSync();
-    $this->assertEquals($data, $sync->read($name));
+        // Unset the sync directory setting.
+        $settings = Settings::getInstance() ? Settings::getAll() : [];
+        unset($settings['config_sync_directory']);
+        new Settings($settings);
 
-    // Unset the sync directory setting.
-    $settings = Settings::getInstance() ? Settings::getAll() : [];
-    unset($settings['config_sync_directory']);
-    new Settings($settings);
-
-    // On an empty settings there is an exception thrown.
-    $this->expectException(ConfigDirectoryNotDefinedException::class);
-    $this->expectExceptionMessage('The config sync directory is not defined in $settings["config_sync_directory"]');
-    FileStorageFactory::getSync();
-  }
+        // On an empty settings there is an exception thrown.
+        $this->expectException(ConfigDirectoryNotDefinedException::class);
+        $this->expectExceptionMessage('The config sync directory is not defined in $settings["config_sync_directory"]');
+        FileStorageFactory::getSync();
+    }
 
 }

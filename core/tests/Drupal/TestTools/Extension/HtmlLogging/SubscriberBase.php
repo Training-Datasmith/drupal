@@ -9,15 +9,16 @@ namespace Drupal\TestTools\Extension\HtmlLogging;
  *
  * @internal
  */
-abstract class SubscriberBase {
+abstract class SubscriberBase
+{
+    public function __construct(
+        private readonly HtmlOutputLogger $logger,
+    ) {
+    }
 
-  public function __construct(
-    private readonly HtmlOutputLogger $logger,
-  ) {
-  }
-
-  protected function logger(): HtmlOutputLogger {
-    return $this->logger;
-  }
+    protected function logger(): HtmlOutputLogger
+    {
+        return $this->logger;
+    }
 
 }

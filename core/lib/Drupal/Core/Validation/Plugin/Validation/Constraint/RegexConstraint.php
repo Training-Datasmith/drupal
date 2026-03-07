@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Validation\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,16 +14,17 @@ use Symfony\Component\Validator\Constraints\Regex;
  * Overrides the symfony constraint to use Drupal-style replacement patterns.
  */
 #[Constraint(
-  id: 'Regex',
-  label: new TranslatableMarkup('Regex', [], ['context' => 'Validation'])
+    id: 'Regex',
+    label: new TranslatableMarkup('Regex', [], ['context' => 'Validation'])
 )]
-class RegexConstraint extends Regex {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validatedBy(): string {
-    return '\Symfony\Component\Validator\Constraints\RegexValidator';
-  }
+class RegexConstraint extends Regex
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy(): string
+    {
+        return '\Symfony\Component\Validator\Constraints\RegexValidator';
+    }
 
 }

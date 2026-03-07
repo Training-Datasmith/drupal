@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\StringTranslation\Translator;
 
 /**
@@ -7,58 +9,60 @@ namespace Drupal\Core\StringTranslation\Translator;
  *
  * This is a high performance way to provide a handful of string replacements.
  */
-class StaticTranslation implements TranslatorInterface {
-
-  /**
-   * Constructs a translator from an array of translations.
-   *
-   * @param array $translations
-   *   Array of override strings indexed by language and context.
-   */
-  public function __construct(
-      /**
-       * String translations.
-       */
-      protected $translations = []
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStringTranslation($langcode, $string, $context) {
-    if (!isset($this->translations[$langcode])) {
-      $this->translations[$langcode] = $this->getLanguage($langcode);
+class StaticTranslation implements TranslatorInterface
+{
+    /**
+     * Constructs a translator from an array of translations.
+     *
+     * @param array $translations
+     *   Array of override strings indexed by language and context.
+     */
+    public function __construct(
+        /**
+         * String translations.
+         */
+        protected $translations = []
+    ) {
     }
-    return $this->translations[$langcode][$context][$string] ?? FALSE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function reset(): void {
-    $this->translations = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getStringTranslation($langcode, $string, $context)
+    {
+        if (!isset($this->translations[$langcode])) {
+            $this->translations[$langcode] = $this->getLanguage($langcode);
+        }
+        return $this->translations[$langcode][$context][$string] ?? false;
+    }
 
-  /**
-   * Retrieves translations for a given language.
-   *
-   * @param string $langcode
-   *   The langcode of the language.
-   *
-   * @return array
-   *   A multidimensional array of translations, indexed by the context the
-   *   source string belongs to. The second level is using original strings as
-   *   keys. An empty array will be returned when no translations are available.
-   */
-  protected function getLanguage($langcode): array {
-    // This class is usually a base class but we do not declare as abstract
-    // because it can be used on its own, by passing a simple array on the
-    // constructor. This can be useful while testing, but it does not support
-    // loading specific languages. All available languages should be passed
-    // in the constructor array.
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function reset(): void
+    {
+        $this->translations = [];
+    }
+
+    /**
+     * Retrieves translations for a given language.
+     *
+     * @param string $langcode
+     *   The langcode of the language.
+     *
+     * @return array
+     *   A multidimensional array of translations, indexed by the context the
+     *   source string belongs to. The second level is using original strings as
+     *   keys. An empty array will be returned when no translations are available.
+     */
+    protected function getLanguage($langcode): array
+    {
+        // This class is usually a base class but we do not declare as abstract
+        // because it can be used on its own, by passing a simple array on the
+        // constructor. This can be useful while testing, but it does not support
+        // loading specific languages. All available languages should be passed
+        // in the constructor array.
+        return [];
+    }
 
 }

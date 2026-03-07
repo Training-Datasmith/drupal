@@ -25,161 +25,167 @@ use Symfony\Component\Routing\RouteCollection;
  */
 #[Group('Routing')]
 #[RunTestsInSeparateProcesses]
-class MatcherDumperTest extends KernelTestBase {
+class MatcherDumperTest extends KernelTestBase
+{
+    /**
+     * A collection of shared fixture data for tests.
+     *
+     * @var \Drupal\Tests\Core\Routing\RoutingFixtures
+     */
+    protected $fixtures;
 
-  /**
-   * A collection of shared fixture data for tests.
-   *
-   * @var \Drupal\Tests\Core\Routing\RoutingFixtures
-   */
-  protected $fixtures;
+    /**
+     * The state.
+     *
+     * @var \Drupal\Core\State\StateInterface
+     */
+    protected $state;
 
-  /**
-   * The state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+    /**
+     * The logger.
+     */
+    protected TestLogger $logger;
 
-  /**
-   * The logger.
-   */
-  protected TestLogger $logger;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->fixtures = new RoutingFixtures();
-    $time = $this->prophesize(TimeInterface::class)->reveal();
-    $this->state = new State(new KeyValueMemoryFactory(), new MemoryBackend($time), new NullLockBackend());
-    $this->logger = new TestLogger();
-  }
-
-  /**
-   * Confirms that the dumper can be instantiated successfully.
-   */
-  public function testCreate(): void {
-    $connection = Database::getConnection();
-    $dumper = new MatcherDumper($connection, $this->state, $this->logger);
-
-    $class_name = 'Drupal\Core\Routing\MatcherDumper';
-    $this->assertInstanceOf($class_name, $dumper);
-  }
-
-  /**
-   * Confirms that we can add routes to the dumper.
-   */
-  public function testAddRoutes(): void {
-    $connection = Database::getConnection();
-    $dumper = new MatcherDumper($connection, $this->state, $this->logger);
-
-    $route = new Route('test');
-    $collection = new RouteCollection();
-    $collection->add('test_route', $route);
-
-    $dumper->addRoutes($collection);
-
-    $dumper_routes = $dumper->getRoutes()->all();
-    $collection_routes = $collection->all();
-
-    foreach ($dumper_routes as $name => $route) {
-      $this->assertEquals($collection_routes[$name]->getPath(), $route->getPath(), 'Routes match');
+        $this->fixtures = new RoutingFixtures();
+        $time = $this->prophesize(TimeInterface::class)->reveal();
+        $this->state = new State(new KeyValueMemoryFactory(), new MemoryBackend($time), new NullLockBackend());
+        $this->logger = new TestLogger();
     }
-  }
 
-  /**
-   * Confirms that we can add routes to the dumper when it already has some.
-   */
-  public function testAddAdditionalRoutes(): void {
-    $connection = Database::getConnection();
-    $dumper = new MatcherDumper($connection, $this->state, $this->logger);
+    /**
+     * Confirms that the dumper can be instantiated successfully.
+     */
+    public function testCreate(): void
+    {
+        $connection = Database::getConnection();
+        $dumper = new MatcherDumper($connection, $this->state, $this->logger);
 
-    $route = new Route('test');
-    $collection = new RouteCollection();
-    $collection->add('test_route', $route);
-    $dumper->addRoutes($collection);
-
-    $route = new Route('test2');
-    $collection2 = new RouteCollection();
-    $collection2->add('test_route2', $route);
-    $dumper->addRoutes($collection2);
-
-    // Merge the two collections together so we can test them.
-    $collection->addCollection(clone $collection2);
-
-    $dumper_routes = $dumper->getRoutes()->all();
-    $collection_routes = $collection->all();
-
-    foreach ($collection_routes as $name => $route) {
-      $this->assertNotEmpty($dumper_routes[$name], "Route $name should be present in the dumper.");
+        $class_name = 'Drupal\Core\Routing\MatcherDumper';
+        $this->assertInstanceOf($class_name, $dumper);
     }
-  }
 
-  /**
-   * Confirm that we can dump a route collection to the database.
-   */
-  public function testDump(): void {
-    $connection = Database::getConnection();
-    $dumper = new MatcherDumper($connection, $this->state, $this->logger, 'test_routes');
+    /**
+     * Confirms that we can add routes to the dumper.
+     */
+    public function testAddRoutes(): void
+    {
+        $connection = Database::getConnection();
+        $dumper = new MatcherDumper($connection, $this->state, $this->logger);
 
-    $route = new Route('/test/{my}/path');
-    $route->setOption('compiler_class', RouteCompiler::class);
-    $collection = new RouteCollection();
-    $collection->add('test_route', $route);
+        $route = new Route('test');
+        $collection = new RouteCollection();
+        $collection->add('test_route', $route);
 
-    $dumper->addRoutes($collection);
+        $dumper->addRoutes($collection);
 
-    $this->fixtures->createTables($connection);
+        $dumper_routes = $dumper->getRoutes()->all();
+        $collection_routes = $collection->all();
 
-    $dumper->dump(['provider' => 'test']);
+        foreach ($dumper_routes as $name => $route) {
+            $this->assertEquals($collection_routes[$name]->getPath(), $route->getPath(), 'Routes match');
+        }
+    }
 
-    $record = $connection->select('test_routes', 'tr')
-      ->fields('tr')
-      ->condition('name', 'test_route')
-      ->execute()
-      ->fetchObject();
+    /**
+     * Confirms that we can add routes to the dumper when it already has some.
+     */
+    public function testAddAdditionalRoutes(): void
+    {
+        $connection = Database::getConnection();
+        $dumper = new MatcherDumper($connection, $this->state, $this->logger);
 
-    $loaded_route = unserialize($record->route);
+        $route = new Route('test');
+        $collection = new RouteCollection();
+        $collection->add('test_route', $route);
+        $dumper->addRoutes($collection);
 
-    $this->assertEquals('test_route', $record->name, 'Dumped route has correct name.');
-    $this->assertEquals('/test/{my}/path', $record->path, 'Dumped route has correct pattern.');
-    $this->assertEquals('/test/%/path', $record->pattern_outline, 'Dumped route has correct pattern outline.');
-    // Verify that the dumped route has the correct fit. Note that 5 decimal
-    // equals 101 binary.
-    $this->assertEquals(5, $record->fit, 'Dumped route has correct fit.');
-    $this->assertInstanceOf(Route::class, $loaded_route);
-  }
+        $route = new Route('test2');
+        $collection2 = new RouteCollection();
+        $collection2->add('test_route2', $route);
+        $dumper->addRoutes($collection2);
 
-  /**
-   * Tests the determination of the masks generation.
-   */
-  public function testMenuMasksGeneration(): void {
-    $connection = Database::getConnection();
-    $dumper = new MatcherDumper($connection, $this->state, $this->logger, 'test_routes');
+        // Merge the two collections together so we can test them.
+        $collection->addCollection(clone $collection2);
 
-    $collection = new RouteCollection();
-    $collection->add('test_route_1', new Route('/test-length-3/{my}/path'));
-    $collection->add('test_route_2', new Route('/test-length-3/hello/path'));
-    $collection->add('test_route_3', new Route('/test-length-5/{my}/path/marvin/android'));
-    $collection->add('test_route_4', new Route('/test-length-7/{my}/path/marvin/android/earth/ursa-minor'));
+        $dumper_routes = $dumper->getRoutes()->all();
+        $collection_routes = $collection->all();
 
-    $dumper->addRoutes($collection);
+        foreach ($collection_routes as $name => $route) {
+            $this->assertNotEmpty($dumper_routes[$name], "Route $name should be present in the dumper.");
+        }
+    }
 
-    $this->fixtures->createTables($connection);
+    /**
+     * Confirm that we can dump a route collection to the database.
+     */
+    public function testDump(): void
+    {
+        $connection = Database::getConnection();
+        $dumper = new MatcherDumper($connection, $this->state, $this->logger, 'test_routes');
 
-    $dumper->dump(['provider' => 'test']);
-    // Using binary for readability, we expect a 0 at any wildcard slug. They
-    // should be ordered from longest to shortest.
-    $expected = [
-      bindec('1011111'),
-      bindec('10111'),
-      bindec('111'),
-      bindec('101'),
-    ];
-    $this->assertEquals($expected, $this->state->get('routing.menu_masks.test_routes'));
-  }
+        $route = new Route('/test/{my}/path');
+        $route->setOption('compiler_class', RouteCompiler::class);
+        $collection = new RouteCollection();
+        $collection->add('test_route', $route);
+
+        $dumper->addRoutes($collection);
+
+        $this->fixtures->createTables($connection);
+
+        $dumper->dump(['provider' => 'test']);
+
+        $record = $connection->select('test_routes', 'tr')
+          ->fields('tr')
+          ->condition('name', 'test_route')
+          ->execute()
+          ->fetchObject();
+
+        $loaded_route = unserialize($record->route);
+
+        $this->assertEquals('test_route', $record->name, 'Dumped route has correct name.');
+        $this->assertEquals('/test/{my}/path', $record->path, 'Dumped route has correct pattern.');
+        $this->assertEquals('/test/%/path', $record->pattern_outline, 'Dumped route has correct pattern outline.');
+        // Verify that the dumped route has the correct fit. Note that 5 decimal
+        // equals 101 binary.
+        $this->assertEquals(5, $record->fit, 'Dumped route has correct fit.');
+        $this->assertInstanceOf(Route::class, $loaded_route);
+    }
+
+    /**
+     * Tests the determination of the masks generation.
+     */
+    public function testMenuMasksGeneration(): void
+    {
+        $connection = Database::getConnection();
+        $dumper = new MatcherDumper($connection, $this->state, $this->logger, 'test_routes');
+
+        $collection = new RouteCollection();
+        $collection->add('test_route_1', new Route('/test-length-3/{my}/path'));
+        $collection->add('test_route_2', new Route('/test-length-3/hello/path'));
+        $collection->add('test_route_3', new Route('/test-length-5/{my}/path/marvin/android'));
+        $collection->add('test_route_4', new Route('/test-length-7/{my}/path/marvin/android/earth/ursa-minor'));
+
+        $dumper->addRoutes($collection);
+
+        $this->fixtures->createTables($connection);
+
+        $dumper->dump(['provider' => 'test']);
+        // Using binary for readability, we expect a 0 at any wildcard slug. They
+        // should be ordered from longest to shortest.
+        $expected = [
+          bindec('1011111'),
+          bindec('10111'),
+          bindec('111'),
+          bindec('101'),
+        ];
+        $this->assertEquals($expected, $this->state->get('routing.menu_masks.test_routes'));
+    }
 
 }

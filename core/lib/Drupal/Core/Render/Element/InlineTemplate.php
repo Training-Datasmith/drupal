@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -24,36 +26,38 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * @endcode
  */
 #[RenderElement('inline_template')]
-class InlineTemplate extends RenderElementBase {
+class InlineTemplate extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#pre_render' => [
+            [static::class, 'preRenderInlineTemplate'],
+          ],
+          '#template' => '',
+          '#context' => [],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#pre_render' => [
-        [static::class, 'preRenderInlineTemplate'],
-      ],
-      '#template' => '',
-      '#context' => [],
-    ];
-  }
-
-  /**
-   * Renders a twig string directly.
-   *
-   * @param array $element
-   *   The element.
-   *
-   * @return array
-   *   The modified element with the rendered #markup in it.
-   */
-  public static function preRenderInlineTemplate(array $element): array {
-    /** @var \Drupal\Core\Template\TwigEnvironment $environment */
-    $environment = \Drupal::service('twig');
-    $markup = $environment->renderInline($element['#template'], $element['#context']);
-    $element['#markup'] = $markup;
-    return $element;
-  }
+    /**
+     * Renders a twig string directly.
+     *
+     * @param array $element
+     *   The element.
+     *
+     * @return array
+     *   The modified element with the rendered #markup in it.
+     */
+    public static function preRenderInlineTemplate(array $element): array
+    {
+        /** @var \Drupal\Core\Template\TwigEnvironment $environment */
+        $environment = \Drupal::service('twig');
+        $markup = $environment->renderInline($element['#template'], $element['#context']);
+        $element['#markup'] = $markup;
+        return $element;
+    }
 
 }

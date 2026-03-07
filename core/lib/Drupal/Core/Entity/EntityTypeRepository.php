@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Entity\Exception\AmbiguousBundleClassException;
@@ -12,103 +14,103 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * @see \Drupal\Core\Entity\EntityTypeManagerInterface
  */
-class EntityTypeRepository implements EntityTypeRepositoryInterface {
+class EntityTypeRepository implements EntityTypeRepositoryInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Contains cached mappings of class names to entity types.
+     *
+     * @var array
+     */
+    protected $classNameEntityTypeMap = [];
 
-  /**
-   * Contains cached mappings of class names to entity types.
-   *
-   * @var array
-   */
-  protected $classNameEntityTypeMap = [];
-
-  public function __construct(
-      /**
-       * The entity type manager.
-       */
-      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
-      protected EntityTypeBundleInfoInterface $entityTypeBundleInfo
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getEntityTypeLabels($group = FALSE): array {
-    $options = [];
-    $definitions = $this->entityTypeManager->getDefinitions();
-
-    foreach ($definitions as $entity_type_id => $definition) {
-      if ($group) {
-        $options[(string) $definition->getGroupLabel()][$entity_type_id] = $definition->getLabel();
-      }
-      else {
-        $options[$entity_type_id] = $definition->getLabel();
-      }
+    public function __construct(
+        /**
+         * The entity type manager.
+         */
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+        protected EntityTypeBundleInfoInterface $entityTypeBundleInfo
+    ) {
     }
 
-    if ($group) {
-      foreach ($options as &$group_options) {
-        // Sort the list alphabetically by group label.
-        array_multisort($group_options, SORT_ASC, SORT_NATURAL);
-      }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getEntityTypeLabels($group = false): array
+    {
+        $options = [];
+        $definitions = $this->entityTypeManager->getDefinitions();
 
-      // Make sure that the 'Content' group is situated at the top.
-      $content = $this->t('Content', [], ['context' => 'Entity type group']);
-      $options = [(string) $content => $options[(string) $content]] + $options;
-    }
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityTypeFromClass($class_name) {
-    // Check the already calculated classes first.
-    if (isset($this->classNameEntityTypeMap[$class_name])) {
-      return $this->classNameEntityTypeMap[$class_name];
-    }
-
-    $same_class = 0;
-    $entity_type_id = NULL;
-    $definitions = $this->entityTypeManager->getDefinitions();
-    foreach ($definitions as $entity_type) {
-      if (in_array($class_name, $entity_type->getDecoratedClasses(), TRUE) || $entity_type->getClass() == $class_name) {
-        $entity_type_id = $entity_type->id();
-        if ($same_class++) {
-          throw new AmbiguousEntityClassException($class_name);
-        }
-      }
-    }
-
-    // If no match was found check if it is a bundle class. This needs to be in
-    // a separate loop to avoid false positives, since an entity class can
-    // subclass another entity class.
-    if (!$entity_type_id) {
-      $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
-      foreach ($bundle_info as $info_entity_type_id => $bundles) {
-        foreach ($bundles as $info) {
-          if (isset($info['class']) && $info['class'] === $class_name) {
-            $entity_type_id = $info_entity_type_id;
-            if ($same_class++) {
-              throw new AmbiguousBundleClassException($class_name);
+        foreach ($definitions as $entity_type_id => $definition) {
+            if ($group) {
+                $options[(string) $definition->getGroupLabel()][$entity_type_id] = $definition->getLabel();
+            } else {
+                $options[$entity_type_id] = $definition->getLabel();
             }
-          }
         }
-      }
+
+        if ($group) {
+            foreach ($options as &$group_options) {
+                // Sort the list alphabetically by group label.
+                array_multisort($group_options, SORT_ASC, SORT_NATURAL);
+            }
+
+            // Make sure that the 'Content' group is situated at the top.
+            $content = $this->t('Content', [], ['context' => 'Entity type group']);
+            $options = [(string) $content => $options[(string) $content]] + $options;
+        }
+
+        return $options;
     }
 
-    // Return the matching entity type ID if there is one.
-    if ($entity_type_id) {
-      $this->classNameEntityTypeMap[$class_name] = $entity_type_id;
-      return $entity_type_id;
-    }
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityTypeFromClass($class_name)
+    {
+        // Check the already calculated classes first.
+        if (isset($this->classNameEntityTypeMap[$class_name])) {
+            return $this->classNameEntityTypeMap[$class_name];
+        }
 
-    throw new NoCorrespondingEntityClassException($class_name);
-  }
+        $same_class = 0;
+        $entity_type_id = null;
+        $definitions = $this->entityTypeManager->getDefinitions();
+        foreach ($definitions as $entity_type) {
+            if (in_array($class_name, $entity_type->getDecoratedClasses(), true) || $entity_type->getClass() == $class_name) {
+                $entity_type_id = $entity_type->id();
+                if ($same_class++) {
+                    throw new AmbiguousEntityClassException($class_name);
+                }
+            }
+        }
+
+        // If no match was found check if it is a bundle class. This needs to be in
+        // a separate loop to avoid false positives, since an entity class can
+        // subclass another entity class.
+        if (!$entity_type_id) {
+            $bundle_info = $this->entityTypeBundleInfo->getAllBundleInfo();
+            foreach ($bundle_info as $info_entity_type_id => $bundles) {
+                foreach ($bundles as $info) {
+                    if (isset($info['class']) && $info['class'] === $class_name) {
+                        $entity_type_id = $info_entity_type_id;
+                        if ($same_class++) {
+                            throw new AmbiguousBundleClassException($class_name);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Return the matching entity type ID if there is one.
+        if ($entity_type_id) {
+            $this->classNameEntityTypeMap[$class_name] = $entity_type_id;
+            return $entity_type_id;
+        }
+
+        throw new NoCorrespondingEntityClassException($class_name);
+    }
 
 }

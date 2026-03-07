@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Plugin;
 
 /**
@@ -7,32 +9,32 @@ namespace Drupal\Component\Plugin;
  *
  * @ingroup plugin_api
  */
-interface DependentPluginInterface {
-
-  /**
-   * Calculates dependencies for the configured plugin.
-   *
-   * Dependencies are saved in the plugin's configuration entity and are used to
-   * determine configuration synchronization order. For example, if the plugin
-   * integrates with specific user roles, this method should return an array of
-   * dependencies listing the specified roles.
-   *
-   * @return array
-   *   An array of dependencies grouped by type (config, content, module,
-   *   theme). For example:
-   *   @code
-   *   [
-   *     'config' => ['user.role.anonymous', 'user.role.authenticated'],
-   *     'content' => ['node:article:f0a189e6-55fb-47fb-8005-5bef81c44d6d'],
-   *     'module' => ['node', 'user'],
-   *     'theme' => ['claro'],
-   *   ];
-   *   @endcode
-   *
-   * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
-   * @see \Drupal\Core\Entity\EntityInterface::getConfigDependencyName()
-   * @see \Drupal\Core\Plugin\RemovableDependentPluginInterface
-   */
-  public function calculateDependencies();
+interface DependentPluginInterface
+{
+    /**
+     * Calculates dependencies for the configured plugin.
+     *
+     * Dependencies are saved in the plugin's configuration entity and are used to
+     * determine configuration synchronization order. For example, if the plugin
+     * integrates with specific user roles, this method should return an array of
+     * dependencies listing the specified roles.
+     *
+     * @return array
+     *   An array of dependencies grouped by type (config, content, module,
+     *   theme). For example:
+     *   @code
+     *   [
+     *     'config' => ['user.role.anonymous', 'user.role.authenticated'],
+     *     'content' => ['node:article:f0a189e6-55fb-47fb-8005-5bef81c44d6d'],
+     *     'module' => ['node', 'user'],
+     *     'theme' => ['claro'],
+     *   ];
+     *   @endcode
+     *
+     * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
+     * @see \Drupal\Core\Entity\EntityInterface::getConfigDependencyName()
+     * @see \Drupal\Core\Plugin\RemovableDependentPluginInterface
+     */
+    public function calculateDependencies();
 
 }

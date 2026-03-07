@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -14,7 +16,6 @@ namespace Drupal\Core\ProxyClass\ParamConverter {
      */
     class MenuLinkPluginConverter implements \Drupal\Core\ParamConverter\ParamConverterInterface
     {
-
         use \Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
         /**
@@ -42,7 +43,7 @@ namespace Drupal\Core\ProxyClass\ParamConverter {
         public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, /**
          * The id of the original proxied service.
          */
-        protected $drupalProxyOriginalServiceId)
+            protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
         }

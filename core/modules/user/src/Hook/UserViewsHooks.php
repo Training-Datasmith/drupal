@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
@@ -8,18 +10,19 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Hook implementations for user.
  */
-class UserViewsHooks {
+class UserViewsHooks
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Implements hook_views_plugins_argument_validator_alter().
-   */
-  #[Hook('views_plugins_argument_validator_alter')]
-  public function viewsPluginsArgumentValidatorAlter(array &$plugins): void {
-    $plugins['entity:user']['title'] = $this->t('User ID');
-    $plugins['entity:user']['class'] = \Drupal\user\Plugin\views\argument_validator\User::class;
-    $plugins['entity:user']['provider'] = 'user';
-  }
+    /**
+     * Implements hook_views_plugins_argument_validator_alter().
+     */
+    #[Hook('views_plugins_argument_validator_alter')]
+    public function viewsPluginsArgumentValidatorAlter(array &$plugins): void
+    {
+        $plugins['entity:user']['title'] = $this->t('User ID');
+        $plugins['entity:user']['class'] = \Drupal\user\Plugin\views\argument_validator\User::class;
+        $plugins['entity:user']['provider'] = 'user';
+    }
 
 }

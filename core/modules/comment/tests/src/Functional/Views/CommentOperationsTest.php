@@ -12,32 +12,33 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('comment')]
 #[RunTestsInSeparateProcesses]
-class CommentOperationsTest extends CommentTestBase {
+class CommentOperationsTest extends CommentTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_comment_operations'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_comment_operations'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests the operations field plugin.
-   */
-  public function testCommentOperations(): void {
-    $admin_account = $this->drupalCreateUser(['administer comments']);
-    $this->drupalLogin($admin_account);
-    $this->drupalGet('test-comment-operations');
-    $this->assertSession()->statusCodeEquals(200);
-    // Assert Edit operation is present.
-    $this->assertSession()->elementsCount('xpath', '//td[contains(@class, "views-field-operations")]//li/a[text() = "Edit"]', 1);
-    // Assert Delete operation is present.
-    $this->assertSession()->elementsCount('xpath', '//td[contains(@class, "views-field-operations")]//li/a[text() = "Delete"]', 1);
-  }
+    /**
+     * Tests the operations field plugin.
+     */
+    public function testCommentOperations(): void
+    {
+        $admin_account = $this->drupalCreateUser(['administer comments']);
+        $this->drupalLogin($admin_account);
+        $this->drupalGet('test-comment-operations');
+        $this->assertSession()->statusCodeEquals(200);
+        // Assert Edit operation is present.
+        $this->assertSession()->elementsCount('xpath', '//td[contains(@class, "views-field-operations")]//li/a[text() = "Edit"]', 1);
+        // Assert Delete operation is present.
+        $this->assertSession()->elementsCount('xpath', '//td[contains(@class, "views-field-operations")]//li/a[text() = "Delete"]', 1);
+    }
 
 }

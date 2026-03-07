@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\wizard;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -12,10 +14,10 @@ use Drupal\views\Plugin\Derivative\DefaultWizardDeriver;
  * @ingroup views_wizard_plugins
  */
 #[ViewsWizard(
-  id: 'standard',
-  title: new TranslatableMarkup('Default wizard'),
-  deriver: DefaultWizardDeriver::class,
+    id: 'standard',
+    title: new TranslatableMarkup('Default wizard'),
+    deriver: DefaultWizardDeriver::class,
 )]
-class Standard extends WizardPluginBase {
-
+class Standard extends WizardPluginBase
+{
 }

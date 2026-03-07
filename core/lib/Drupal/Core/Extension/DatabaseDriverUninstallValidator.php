@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 use Drupal\Core\Database\Connection;
@@ -9,40 +11,44 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 /**
  * Ensures installed modules providing a database driver are not uninstalled.
  */
-class DatabaseDriverUninstallValidator implements ModuleUninstallValidatorInterface {
+class DatabaseDriverUninstallValidator implements ModuleUninstallValidatorInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * Constructs a new DatabaseDriverUninstallValidator.
-   *
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
-   *   The module extension list.
-   * @param \Drupal\Core\Database\Connection $connection
-   *   The database connection.
-   */
-  public function __construct(TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected \Drupal\Core\Database\Connection $connection) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return list
-   */
-  public function validate($module): array {
-    $reasons = [];
-
-    // When the database driver is provided by a module, then that module
-    // cannot be uninstalled.
-    if ($module === $this->connection->getProvider()) {
-      $module_name = $this->moduleExtensionList->get($module)->info['name'];
-      $reasons[] = $this->t("The module '@module_name' is providing the database driver '@driver_name'.",
-        ['@module_name' => $module_name, '@driver_name' => $this->connection->driver()]);
+    /**
+     * Constructs a new DatabaseDriverUninstallValidator.
+     *
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation service.
+     * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
+     *   The module extension list.
+     * @param \Drupal\Core\Database\Connection $connection
+     *   The database connection.
+     */
+    public function __construct(TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected \Drupal\Core\Database\Connection $connection)
+    {
+        $this->stringTranslation = $string_translation;
     }
 
-    return $reasons;
-  }
+    /**
+     * {@inheritdoc}
+     * @return list
+     */
+    public function validate($module): array
+    {
+        $reasons = [];
+
+        // When the database driver is provided by a module, then that module
+        // cannot be uninstalled.
+        if ($module === $this->connection->getProvider()) {
+            $module_name = $this->moduleExtensionList->get($module)->info['name'];
+            $reasons[] = $this->t(
+                "The module '@module_name' is providing the database driver '@driver_name'.",
+                ['@module_name' => $module_name, '@driver_name' => $this->connection->driver()]
+            );
+        }
+
+        return $reasons;
+    }
 
 }

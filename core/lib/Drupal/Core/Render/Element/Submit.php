@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\FormElement;
@@ -27,15 +29,16 @@ use Drupal\Core\Render\Attribute\FormElement;
  * @see \Drupal\Core\Render\Element\Button
  */
 #[FormElement('submit')]
-class Submit extends Button {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#executes_submit_callback' => TRUE,
-    ] + parent::getInfo();
-  }
+class Submit extends Button
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#executes_submit_callback' => true,
+        ] + parent::getInfo();
+    }
 
 }

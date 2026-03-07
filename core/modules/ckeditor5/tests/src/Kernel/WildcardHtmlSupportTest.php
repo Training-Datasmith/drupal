@@ -23,222 +23,225 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
 #[Group('ckeditor5')]
 #[CoversMethod(CKEditor5PluginManager::class, 'getCKEditor5PluginConfig')]
 #[RunTestsInSeparateProcesses]
-class WildcardHtmlSupportTest extends KernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'ckeditor5',
-    'filter',
-    'editor',
-  ];
-
-  /**
-   * The manager for "CKEditor 5 plugin" plugins.
-   *
-   * @var \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface
-   */
-  protected $manager;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->manager = $this->container->get('plugin.manager.ckeditor5.plugin');
-  }
-
-  /**
-   * Tests ghs configuration.
-   *
-   * @legacy-covers \Drupal\ckeditor5\Plugin\CKEditor5Plugin\SourceEditing::getDynamicPluginConfig
-   */
-  #[DataProvider('providerGhsConfiguration')]
-  public function testGhsConfiguration(string $filter_html_allowed, array $source_editing_tags, array $expected_ghs_configuration, ?array $additional_toolbar_items = []): void {
-    FilterFormat::create([
-      'format' => 'test_format',
-      'name' => 'Test format',
-      'filters' => [
-        'filter_html' => [
-          'status' => TRUE,
-          'settings' => [
-            'allowed_html' => $filter_html_allowed,
-          ],
-        ],
-      ],
-    ])->save();
-    $editor_config = [
-      'editor' => 'ckeditor5',
-      'format' => 'test_format',
-      'settings' => [
-        'toolbar' => [
-          'items' => array_merge(['sourceEditing'], $additional_toolbar_items),
-        ],
-        'plugins' => [
-          'ckeditor5_sourceEditing' => [
-            'allowed_tags' => $source_editing_tags,
-          ],
-        ],
-      ],
-      'image_upload' => [
-        'status' => FALSE,
-      ],
+class WildcardHtmlSupportTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'ckeditor5',
+      'filter',
+      'editor',
     ];
-    if (in_array('alignment', $additional_toolbar_items, TRUE)) {
-      $editor_config['settings']['plugins']['ckeditor5_alignment'] = [
-        'enabled_alignments' => ['left', 'center', 'right', 'justify'],
-      ];
+
+    /**
+     * The manager for "CKEditor 5 plugin" plugins.
+     *
+     * @var \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface
+     */
+    protected $manager;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->manager = $this->container->get('plugin.manager.ckeditor5.plugin');
     }
 
-    $editor = Editor::create($editor_config);
-    $editor->save();
-    $this->assertSame([], array_map(
-      function (ConstraintViolationInterface $v) {
-        return (string) $v->getMessage();
-      },
-      iterator_to_array(CKEditor5::validatePair(
-        Editor::load('test_format'),
-        FilterFormat::load('test_format')
-      ))
-    ));
-    $config = $this->manager->getCKEditor5PluginConfig($editor);
-    $ghs_configuration = $config['config']['htmlSupport']['allow'];
-    // The first two entries in the GHS configuration are from the
-    // `ckeditor5_globalAttributeDir` and `ckeditor5_globalAttributeLang`
-    // plugins. They are out of scope for this test, so omit them.
-    $ghs_configuration = array_slice($ghs_configuration, 2);
-    $this->assertEquals($expected_ghs_configuration, $ghs_configuration);
-  }
+    /**
+     * Tests ghs configuration.
+     *
+     * @legacy-covers \Drupal\ckeditor5\Plugin\CKEditor5Plugin\SourceEditing::getDynamicPluginConfig
+     */
+    #[DataProvider('providerGhsConfiguration')]
+    public function testGhsConfiguration(string $filter_html_allowed, array $source_editing_tags, array $expected_ghs_configuration, ?array $additional_toolbar_items = []): void
+    {
+        FilterFormat::create([
+          'format' => 'test_format',
+          'name' => 'Test format',
+          'filters' => [
+            'filter_html' => [
+              'status' => true,
+              'settings' => [
+                'allowed_html' => $filter_html_allowed,
+              ],
+            ],
+          ],
+        ])->save();
+        $editor_config = [
+          'editor' => 'ckeditor5',
+          'format' => 'test_format',
+          'settings' => [
+            'toolbar' => [
+              'items' => array_merge(['sourceEditing'], $additional_toolbar_items),
+            ],
+            'plugins' => [
+              'ckeditor5_sourceEditing' => [
+                'allowed_tags' => $source_editing_tags,
+              ],
+            ],
+          ],
+          'image_upload' => [
+            'status' => false,
+          ],
+        ];
+        if (in_array('alignment', $additional_toolbar_items, true)) {
+            $editor_config['settings']['plugins']['ckeditor5_alignment'] = [
+              'enabled_alignments' => ['left', 'center', 'right', 'justify'],
+            ];
+        }
 
-  /**
-   * Provides test cases for CKEditor 5 General HTML Support (GHS) configuration.
-   */
-  public static function providerGhsConfiguration(): array {
-    return [
-      'empty source editing' => [
-        '<p> <br>',
-        [],
-        [],
-      ],
-      'without wildcard' => [
-        '<p> <br> <a href> <blockquote> <div data-llama>',
-        ['<div data-llama>'],
-        [
-          [
-            'name' => 'div',
-            'attributes' => [
+        $editor = Editor::create($editor_config);
+        $editor->save();
+        $this->assertSame([], array_map(
+            function (ConstraintViolationInterface $v) {
+                return (string) $v->getMessage();
+            },
+            iterator_to_array(CKEditor5::validatePair(
+                Editor::load('test_format'),
+                FilterFormat::load('test_format')
+            ))
+        ));
+        $config = $this->manager->getCKEditor5PluginConfig($editor);
+        $ghs_configuration = $config['config']['htmlSupport']['allow'];
+        // The first two entries in the GHS configuration are from the
+        // `ckeditor5_globalAttributeDir` and `ckeditor5_globalAttributeLang`
+        // plugins. They are out of scope for this test, so omit them.
+        $ghs_configuration = array_slice($ghs_configuration, 2);
+        $this->assertEquals($expected_ghs_configuration, $ghs_configuration);
+    }
+
+    /**
+     * Provides test cases for CKEditor 5 General HTML Support (GHS) configuration.
+     */
+    public static function providerGhsConfiguration(): array
+    {
+        return [
+          'empty source editing' => [
+            '<p> <br>',
+            [],
+            [],
+          ],
+          'without wildcard' => [
+            '<p> <br> <a href> <blockquote> <div data-llama>',
+            ['<div data-llama>'],
+            [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'div',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
               ],
             ],
+            ['link', 'blockQuote'],
           ],
-        ],
-        ['link', 'blockQuote'],
-      ],
-      '<$text-container> minimal configuration' => [
-        '<p data-llama> <br>',
-        ['<$text-container data-llama>'],
-        [
-          [
-            'name' => 'p',
-            'attributes' => [
+          '<$text-container> minimal configuration' => [
+            '<p data-llama> <br>',
+            ['<$text-container data-llama>'],
+            [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'p',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
               ],
             ],
           ],
-        ],
-      ],
-      '<$text-container> from multiple plugins' => [
-        '<p data-llama class="text-align-left text-align-center text-align-right text-align-justify"> <br>',
-        ['<$text-container data-llama>'],
-        [
-          [
-            'name' => 'p',
-            'attributes' => [
+          '<$text-container> from multiple plugins' => [
+            '<p data-llama class="text-align-left text-align-center text-align-right text-align-justify"> <br>',
+            ['<$text-container data-llama>'],
+            [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'p',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
+                'classes' => [
+                  'regexp' => [
+                    'pattern' => '/^(text-align-left|text-align-center|text-align-right|text-align-justify)$/',
+                  ],
+                ],
               ],
             ],
-            'classes' => [
-              'regexp' => [
-                'pattern' => '/^(text-align-left|text-align-center|text-align-right|text-align-justify)$/',
-              ],
-            ],
+            ['alignment'],
           ],
-        ],
-        ['alignment'],
-      ],
-      '<$text-container> with attribute from multiple plugins' => [
-        '<p data-llama class> <br>',
-        ['<$text-container data-llama>', '<p class>'],
-        [
-          [
-            'name' => 'p',
-            'classes' => TRUE,
-          ],
-          [
-            'name' => 'p',
-            'attributes' => [
+          '<$text-container> with attribute from multiple plugins' => [
+            '<p data-llama class> <br>',
+            ['<$text-container data-llama>', '<p class>'],
+            [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'p',
+                'classes' => true,
               ],
-            ],
-            'classes' => [
-              'regexp' => [
-                'pattern' => '/^(text-align-left|text-align-center|text-align-right|text-align-justify)$/',
-              ],
-            ],
-          ],
-        ],
-        ['alignment'],
-      ],
-      '<$text-container> realistic configuration' => [
-        '<p data-llama> <br> <a href> <blockquote> <div data-llama> <mark> <abbr title>',
-        ['<$text-container data-llama>', '<div>', '<mark>', '<abbr title>'],
-        [
-          [
-            'name' => 'div',
-          ],
-          [
-            'name' => 'mark',
-          ],
-          [
-            'name' => 'abbr',
-            'attributes' => [
               [
-                'key' => 'title',
-                'value' => TRUE,
+                'name' => 'p',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
+                'classes' => [
+                  'regexp' => [
+                    'pattern' => '/^(text-align-left|text-align-center|text-align-right|text-align-justify)$/',
+                  ],
+                ],
               ],
             ],
+            ['alignment'],
           ],
-          [
-            'name' => 'p',
-            'attributes' => [
+          '<$text-container> realistic configuration' => [
+            '<p data-llama> <br> <a href> <blockquote> <div data-llama> <mark> <abbr title>',
+            ['<$text-container data-llama>', '<div>', '<mark>', '<abbr title>'],
+            [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'div',
               ],
-            ],
-          ],
-          [
-            'name' => 'div',
-            'attributes' => [
               [
-                'key' => 'data-llama',
-                'value' => TRUE,
+                'name' => 'mark',
+              ],
+              [
+                'name' => 'abbr',
+                'attributes' => [
+                  [
+                    'key' => 'title',
+                    'value' => true,
+                  ],
+                ],
+              ],
+              [
+                'name' => 'p',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
+              ],
+              [
+                'name' => 'div',
+                'attributes' => [
+                  [
+                    'key' => 'data-llama',
+                    'value' => true,
+                  ],
+                ],
               ],
             ],
+            ['link', 'blockQuote'],
           ],
-        ],
-        ['link', 'blockQuote'],
-      ],
-    ];
-  }
+        ];
+    }
 
 }

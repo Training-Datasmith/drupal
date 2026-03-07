@@ -16,29 +16,30 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class FileUriItemTest extends FileManagedUnitTestBase {
+class FileUriItemTest extends FileManagedUnitTestBase
+{
+    /**
+     * Tests the file entity override of the URI field.
+     */
+    public function testCustomFileUriField(): void
+    {
+        $uri = 'public://druplicon.txt';
 
-  /**
-   * Tests the file entity override of the URI field.
-   */
-  public function testCustomFileUriField(): void {
-    $uri = 'public://druplicon.txt';
+        // Create a new file entity.
+        $file = File::create([
+          'uid' => 1,
+          'filename' => 'druplicon.txt',
+          'uri' => $uri,
+          'filemime' => 'text/plain',
+        ]);
+        $file->setPermanent();
+        file_put_contents($file->getFileUri(), 'hello world');
 
-    // Create a new file entity.
-    $file = File::create([
-      'uid' => 1,
-      'filename' => 'druplicon.txt',
-      'uri' => $uri,
-      'filemime' => 'text/plain',
-    ]);
-    $file->setPermanent();
-    file_put_contents($file->getFileUri(), 'hello world');
+        $file->save();
 
-    $file->save();
-
-    $this->assertSame($uri, $file->uri->value);
-    $expected_url = base_path() . $this->siteDirectory . '/files/druplicon.txt';
-    $this->assertSame($expected_url, $file->uri->url);
-  }
+        $this->assertSame($uri, $file->uri->value);
+        $expected_url = base_path() . $this->siteDirectory . '/files/druplicon.txt';
+        $this->assertSame($expected_url, $file->uri->url);
+    }
 
 }

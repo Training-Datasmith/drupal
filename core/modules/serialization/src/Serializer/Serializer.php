@@ -9,8 +9,8 @@ use Symfony\Component\Serializer\Serializer as SymfonySerializer;
 /**
  * Serializer with JSON Schema generation convenience methods.
  */
-class Serializer extends SymfonySerializer implements JsonSchemaProviderSerializerInterface {
-
-  use JsonSchemaProviderSerializerTrait;
+class Serializer extends SymfonySerializer implements JsonSchemaProviderSerializerInterface
+{
+    use JsonSchemaProviderSerializerTrait;
 
 }

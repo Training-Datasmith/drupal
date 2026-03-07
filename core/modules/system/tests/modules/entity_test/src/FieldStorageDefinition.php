@@ -15,13 +15,14 @@ use Drupal\Core\Field\BaseFieldDefinition;
  * @todo Provide and make use of a proper FieldStorageDefinition class instead:
  *   https://www.drupal.org/node/2280639.
  */
-class FieldStorageDefinition extends BaseFieldDefinition {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isBaseField() {
-    return FALSE;
-  }
+class FieldStorageDefinition extends BaseFieldDefinition
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function isBaseField()
+    {
+        return false;
+    }
 
 }

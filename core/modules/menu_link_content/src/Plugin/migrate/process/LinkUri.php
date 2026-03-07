@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\menu_link_content\Plugin\migrate\process;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -40,69 +41,68 @@ use Drupal\migrate\Row;
  * 'entity:node/12'.
  */
 #[MigrateProcess('link_uri')]
-class LinkUri extends ProcessPluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a LinkUri object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager, used to fetch entity link templates.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
-    $configuration += [
-      'validate_route' => TRUE,
-    ];
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-
-    $path = ltrim((string) $value, '/');
-
-    if (parse_url($path, PHP_URL_SCHEME) === NULL) {
-      if ($path == '<front>') {
-        $path = '';
-      }
-      elseif (empty($path) || in_array($path, ['<nolink>', '<none>'])) {
-        return 'route:<nolink>';
-      }
-      elseif ($path == '<button>') {
-        return 'route:<button>';
-      }
-      $path = 'internal:/' . $path;
-
-      // Convert entity URIs to the entity scheme, if the path matches a route
-      // of the form "entity.$entity_type_id.canonical".
-      // @see \Drupal\Core\Url::fromEntityUri()
-      $url = Url::fromUri($path);
-      if ($url->isRouted()) {
-        $route_name = $url->getRouteName();
-        foreach (array_keys($this->entityTypeManager->getDefinitions()) as $entity_type_id) {
-          if ($route_name == "entity.$entity_type_id.canonical" && isset($url->getRouteParameters()[$entity_type_id])) {
-            return "entity:$entity_type_id/" . $url->getRouteParameters()[$entity_type_id];
-          }
-        }
-      }
-      else {
-        // If the URL is not routed, we might want to get something back to do
-        // other processing. If this is the case, the "validate_route"
-        // configuration option can be set to FALSE to return the URI.
-        if (!$this->configuration['validate_route']) {
-          return $url->getUri();
-        }
-        throw new MigrateException(sprintf('The path "%s" failed validation.', $path));
-      }
+class LinkUri extends ProcessPluginBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a LinkUri object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager, used to fetch entity link templates.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
+        $configuration += [
+          'validate_route' => true,
+        ];
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $path;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+
+        $path = ltrim((string) $value, '/');
+
+        if (parse_url($path, PHP_URL_SCHEME) === null) {
+            if ($path == '<front>') {
+                $path = '';
+            } elseif (empty($path) || in_array($path, ['<nolink>', '<none>'])) {
+                return 'route:<nolink>';
+            } elseif ($path == '<button>') {
+                return 'route:<button>';
+            }
+            $path = 'internal:/' . $path;
+
+            // Convert entity URIs to the entity scheme, if the path matches a route
+            // of the form "entity.$entity_type_id.canonical".
+            // @see \Drupal\Core\Url::fromEntityUri()
+            $url = Url::fromUri($path);
+            if ($url->isRouted()) {
+                $route_name = $url->getRouteName();
+                foreach (array_keys($this->entityTypeManager->getDefinitions()) as $entity_type_id) {
+                    if ($route_name == "entity.$entity_type_id.canonical" && isset($url->getRouteParameters()[$entity_type_id])) {
+                        return "entity:$entity_type_id/" . $url->getRouteParameters()[$entity_type_id];
+                    }
+                }
+            } else {
+                // If the URL is not routed, we might want to get something back to do
+                // other processing. If this is the case, the "validate_route"
+                // configuration option can be set to FALSE to return the URI.
+                if (!$this->configuration['validate_route']) {
+                    return $url->getUri();
+                }
+                throw new MigrateException(sprintf('The path "%s" failed validation.', $path));
+            }
+        }
+        return $path;
+    }
 
 }

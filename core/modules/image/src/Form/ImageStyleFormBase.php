@@ -1,72 +1,76 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Form;
 
 use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base form for image style add and edit forms.
  */
-abstract class ImageStyleFormBase extends EntityForm {
+abstract class ImageStyleFormBase extends EntityForm
+{
+    /**
+     * The entity being used by this form.
+     *
+     * @var \Drupal\image\ImageStyleInterface
+     */
+    protected $entity;
 
-  /**
-   * The entity being used by this form.
-   *
-   * @var \Drupal\image\ImageStyleInterface
-   */
-  protected $entity;
+    /**
+     * Constructs a base class for image style add and edit forms.
+     *
+     * @param \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage
+     *   The image style entity storage.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage)
+    {
+    }
 
-  /**
-   * Constructs a base class for image style add and edit forms.
-   *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage
-   *   The image style entity storage.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
+            $container->get('entity_type.manager')->getStorage('image_style')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')->getStorage('image_style')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function form(array $form, FormStateInterface $form_state): array
+    {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function form(array $form, FormStateInterface $form_state): array {
+        $form['label'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Image style name'),
+          '#default_value' => $this->entity->label(),
+          '#required' => true,
+        ];
+        $form['name'] = [
+          '#type' => 'machine_name',
+          '#machine_name' => [
+            'exists' => $this->imageStyleStorage->load(...),
+          ],
+          '#default_value' => $this->entity->id(),
+          '#required' => true,
+        ];
 
-    $form['label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Image style name'),
-      '#default_value' => $this->entity->label(),
-      '#required' => TRUE,
-    ];
-    $form['name'] = [
-      '#type' => 'machine_name',
-      '#machine_name' => [
-        'exists' => $this->imageStyleStorage->load(...),
-      ],
-      '#default_value' => $this->entity->id(),
-      '#required' => TRUE,
-    ];
+        return parent::form($form, $form_state);
+    }
 
-    return parent::form($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state): void {
-    parent::save($form, $form_state);
-    $form_state->setRedirectUrl($this->entity->toUrl('edit-form'));
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function save(array $form, FormStateInterface $form_state): void
+    {
+        parent::save($form, $form_state);
+        $form_state->setRedirectUrl($this->entity->toUrl('edit-form'));
+    }
 
 }

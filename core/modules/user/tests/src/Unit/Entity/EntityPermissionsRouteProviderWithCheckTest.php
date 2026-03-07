@@ -18,27 +18,28 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 #[CoversClass(EntityPermissionsRouteProviderWithCheck::class)]
 #[Group('user')]
 #[IgnoreDeprecations]
-class EntityPermissionsRouteProviderWithCheckTest extends UnitTestCase {
+class EntityPermissionsRouteProviderWithCheckTest extends UnitTestCase
+{
+    /**
+     * Tests the route provider deprecation.
+     *
+     * @legacy-covers ::getEntityPermissionsRoute
+     */
+    #[IgnoreDeprecations]
+    public function testEntityPermissionsRouteProviderWithCheck(): void
+    {
 
-  /**
-   * Tests the route provider deprecation.
-   *
-   * @legacy-covers ::getEntityPermissionsRoute
-   */
-  #[IgnoreDeprecations]
-  public function testEntityPermissionsRouteProviderWithCheck(): void {
+        // Mock the constructor parameters.
+        $prophecy = $this->prophesize(EntityTypeInterface::class);
+        $entity_type = $prophecy->reveal();
+        $prophecy = $this->prophesize(EntityTypeManagerInterface::class);
+        $prophecy->getDefinition('entity_type')
+          ->willReturn($entity_type);
+        $entity_type_manager = $prophecy->reveal();
 
-    // Mock the constructor parameters.
-    $prophecy = $this->prophesize(EntityTypeInterface::class);
-    $entity_type = $prophecy->reveal();
-    $prophecy = $this->prophesize(EntityTypeManagerInterface::class);
-    $prophecy->getDefinition('entity_type')
-      ->willReturn($entity_type);
-    $entity_type_manager = $prophecy->reveal();
-
-    $this->expectDeprecation('Drupal\user\Entity\EntityPermissionsRouteProviderWithCheck is deprecated in drupal:11.1.0 and is removed from drupal:12.0.0. Use EntityPermissionsRouteProvider instead. See https://www.drupal.org/node/3384745');
-    (new EntityPermissionsRouteProviderWithCheck($entity_type_manager))
-      ->getRoutes($entity_type);
-  }
+        $this->expectDeprecation('Drupal\user\Entity\EntityPermissionsRouteProviderWithCheck is deprecated in drupal:11.1.0 and is removed from drupal:12.0.0. Use EntityPermissionsRouteProvider instead. See https://www.drupal.org/node/3384745');
+        (new EntityPermissionsRouteProviderWithCheck($entity_type_manager))
+          ->getRoutes($entity_type);
+    }
 
 }

@@ -11,20 +11,22 @@ use Drupal\Core\Form\ConfigFormBase;
  *
  * @internal
  */
-class SystemConfigFormTestForm extends ConfigFormBase {
+class SystemConfigFormTestForm extends ConfigFormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_system_config_test_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_system_config_test_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEditableConfigNames()
+    {
+        return [];
+    }
 
 }

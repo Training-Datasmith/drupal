@@ -12,29 +12,30 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 /**
  * Defines a big pipe middleware that removes Content-Length headers.
  */
-final readonly class ContentLength implements HttpKernelInterface {
-
-  /**
-   * Constructs a new ContentLength instance.
-   *
-   * @param \Symfony\Component\HttpKernel\HttpKernelInterface $httpKernel
-   *   The wrapped HTTP kernel.
-   */
-  public function __construct(
-    protected HttpKernelInterface $httpKernel,
-  ) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function handle(Request $request, $type = self::MAIN_REQUEST, $catch = TRUE): Response {
-    $response = $this->httpKernel->handle($request, $type, $catch);
-    if (!$response instanceof BigPipeResponse) {
-      return $response;
+final readonly class ContentLength implements HttpKernelInterface
+{
+    /**
+     * Constructs a new ContentLength instance.
+     *
+     * @param \Symfony\Component\HttpKernel\HttpKernelInterface $httpKernel
+     *   The wrapped HTTP kernel.
+     */
+    public function __construct(
+        protected HttpKernelInterface $httpKernel,
+    ) {
     }
-    $response->headers->remove('Content-Length');
-    return $response;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handle(Request $request, $type = self::MAIN_REQUEST, $catch = true): Response
+    {
+        $response = $this->httpKernel->handle($request, $type, $catch);
+        if (!$response instanceof BigPipeResponse) {
+            return $response;
+        }
+        $response->headers->remove('Content-Length');
+        return $response;
+    }
 
 }

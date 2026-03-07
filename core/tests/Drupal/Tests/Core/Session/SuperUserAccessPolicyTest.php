@@ -23,116 +23,123 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[CoversClass(SuperUserAccessPolicy::class)]
 #[Group('Session')]
-class SuperUserAccessPolicyTest extends UnitTestCase {
+class SuperUserAccessPolicyTest extends UnitTestCase
+{
+    /**
+     * The access policy to test.
+     *
+     * @var \Drupal\Core\Session\SuperUserAccessPolicy
+     */
+    protected $accessPolicy;
 
-  /**
-   * The access policy to test.
-   *
-   * @var \Drupal\Core\Session\SuperUserAccessPolicy
-   */
-  protected $accessPolicy;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->accessPolicy = new SuperUserAccessPolicy();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->accessPolicy = new SuperUserAccessPolicy();
+        $cache_context_manager = $this->prophesize(CacheContextsManager::class);
+        $cache_context_manager->assertValidTokens(Argument::any())->willReturn(true);
 
-    $cache_context_manager = $this->prophesize(CacheContextsManager::class);
-    $cache_context_manager->assertValidTokens(Argument::any())->willReturn(TRUE);
-
-    $container = $this->prophesize(ContainerInterface::class);
-    $container->get('cache_contexts_manager')->willReturn($cache_context_manager->reveal());
-    \Drupal::setContainer($container->reveal());
-  }
-
-  /**
-   * Tests applies.
-   */
-  public function testApplies(): void {
-    $this->assertTrue($this->accessPolicy->applies(AccessPolicyInterface::SCOPE_DRUPAL));
-    $this->assertFalse($this->accessPolicy->applies('another scope'));
-    $this->assertFalse($this->accessPolicy->applies($this->randomString()));
-  }
-
-  /**
-   * Tests the calculatePermissions method.
-   *
-   * @param int $uid
-   *   The UID for the account the policy checks.
-   * @param bool $expect_admin_rights
-   *   Whether to expect admin rights to be granted.
-   */
-  #[DataProvider('calculatePermissionsProvider')]
-  public function testCalculatePermissions(int $uid, bool $expect_admin_rights): void {
-    $account = $this->prophesize(AccountInterface::class);
-    $account->id()->willReturn($uid);
-    $calculated_permissions = $this->accessPolicy->calculatePermissions($account->reveal(), AccessPolicyInterface::SCOPE_DRUPAL);
-
-    if ($expect_admin_rights) {
-      $this->assertCount(1, $calculated_permissions->getItems(), 'Only one calculated permissions item was added.');
-      $item = $calculated_permissions->getItem();
-      $this->assertSame([], $item->getPermissions());
-      $this->assertTrue($item->isAdmin());
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('cache_contexts_manager')->willReturn($cache_context_manager->reveal());
+        \Drupal::setContainer($container->reveal());
     }
 
-    $this->assertSame([], $calculated_permissions->getCacheTags());
-    $this->assertSame(['user.is_super_user'], $calculated_permissions->getCacheContexts());
-    $this->assertSame(Cache::PERMANENT, $calculated_permissions->getCacheMaxAge());
-  }
+    /**
+     * Tests applies.
+     */
+    public function testApplies(): void
+    {
+        $this->assertTrue($this->accessPolicy->applies(AccessPolicyInterface::SCOPE_DRUPAL));
+        $this->assertFalse($this->accessPolicy->applies('another scope'));
+        $this->assertFalse($this->accessPolicy->applies($this->randomString()));
+    }
 
-  /**
-   * Data provider for testCalculatePermissions.
-   *
-   * @return array
-   *   A list of test scenarios.
-   */
-  public static function calculatePermissionsProvider(): array {
-    $cases['is-super-user'] = [1, TRUE];
-    $cases['is-normal-user'] = [2, FALSE];
-    return $cases;
-  }
+    /**
+     * Tests the calculatePermissions method.
+     *
+     * @param int $uid
+     *   The UID for the account the policy checks.
+     * @param bool $expect_admin_rights
+     *   Whether to expect admin rights to be granted.
+     */
+    #[DataProvider('calculatePermissionsProvider')]
+    public function testCalculatePermissions(int $uid, bool $expect_admin_rights): void
+    {
+        $account = $this->prophesize(AccountInterface::class);
+        $account->id()->willReturn($uid);
+        $calculated_permissions = $this->accessPolicy->calculatePermissions($account->reveal(), AccessPolicyInterface::SCOPE_DRUPAL);
 
-  /**
-   * Tests the alterPermissions method.
-   *
-   * @param int $uid
-   *   The UID for the account the policy checks.
-   */
-  #[DataProvider('alterPermissionsProvider')]
-  public function testAlterPermissions(int $uid): void {
-    $account = $this->prophesize(AccountInterface::class);
-    $account->id()->willReturn($uid);
+        if ($expect_admin_rights) {
+            $this->assertCount(1, $calculated_permissions->getItems(), 'Only one calculated permissions item was added.');
+            $item = $calculated_permissions->getItem();
+            $this->assertSame([], $item->getPermissions());
+            $this->assertTrue($item->isAdmin());
+        }
 
-    $calculated_permissions = new RefinableCalculatedPermissions();
-    $calculated_permissions->addItem(new CalculatedPermissionsItem(['foo']));
-    $calculated_permissions->addCacheTags(['bar']);
-    $calculated_permissions->addCacheContexts(['baz']);
+        $this->assertSame([], $calculated_permissions->getCacheTags());
+        $this->assertSame(['user.is_super_user'], $calculated_permissions->getCacheContexts());
+        $this->assertSame(Cache::PERMANENT, $calculated_permissions->getCacheMaxAge());
+    }
 
-    $this->accessPolicy->alterPermissions($account->reveal(), AccessPolicyInterface::SCOPE_DRUPAL, $calculated_permissions);
-    $this->assertSame(['foo'], $calculated_permissions->getItem()->getPermissions());
-    $this->assertSame(['bar'], $calculated_permissions->getCacheTags());
-    $this->assertSame(['baz'], $calculated_permissions->getCacheContexts());
-  }
+    /**
+     * Data provider for testCalculatePermissions.
+     *
+     * @return array
+     *   A list of test scenarios.
+     */
+    public static function calculatePermissionsProvider(): array
+    {
+        $cases['is-super-user'] = [1, true];
+        $cases['is-normal-user'] = [2, false];
+        return $cases;
+    }
 
-  /**
-   * Data provider for testAlterPermissions.
-   *
-   * @return array
-   *   A list of test scenarios.
-   */
-  public static function alterPermissionsProvider(): array {
-    $cases['is-super-user'] = [1];
-    $cases['is-normal-user'] = [2];
-    return $cases;
-  }
+    /**
+     * Tests the alterPermissions method.
+     *
+     * @param int $uid
+     *   The UID for the account the policy checks.
+     */
+    #[DataProvider('alterPermissionsProvider')]
+    public function testAlterPermissions(int $uid): void
+    {
+        $account = $this->prophesize(AccountInterface::class);
+        $account->id()->willReturn($uid);
 
-  /**
-   * Tests the getPersistentCacheContexts method.
-   */
-  public function testGetPersistentCacheContexts(): void {
-    $this->assertSame(['user.is_super_user'], $this->accessPolicy->getPersistentCacheContexts(AccessPolicyInterface::SCOPE_DRUPAL));
-  }
+        $calculated_permissions = new RefinableCalculatedPermissions();
+        $calculated_permissions->addItem(new CalculatedPermissionsItem(['foo']));
+        $calculated_permissions->addCacheTags(['bar']);
+        $calculated_permissions->addCacheContexts(['baz']);
+
+        $this->accessPolicy->alterPermissions($account->reveal(), AccessPolicyInterface::SCOPE_DRUPAL, $calculated_permissions);
+        $this->assertSame(['foo'], $calculated_permissions->getItem()->getPermissions());
+        $this->assertSame(['bar'], $calculated_permissions->getCacheTags());
+        $this->assertSame(['baz'], $calculated_permissions->getCacheContexts());
+    }
+
+    /**
+     * Data provider for testAlterPermissions.
+     *
+     * @return array
+     *   A list of test scenarios.
+     */
+    public static function alterPermissionsProvider(): array
+    {
+        $cases['is-super-user'] = [1];
+        $cases['is-normal-user'] = [2];
+        return $cases;
+    }
+
+    /**
+     * Tests the getPersistentCacheContexts method.
+     */
+    public function testGetPersistentCacheContexts(): void
+    {
+        $this->assertSame(['user.is_super_user'], $this->accessPolicy->getPersistentCacheContexts(AccessPolicyInterface::SCOPE_DRUPAL));
+    }
 
 }

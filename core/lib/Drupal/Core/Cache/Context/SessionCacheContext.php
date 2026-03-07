@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Cache\Context;
 
 use Drupal\Component\Utility\Crypt;
@@ -9,20 +11,22 @@ use Drupal\Component\Utility\Crypt;
  *
  * Cache context ID: 'session'.
  */
-class SessionCacheContext extends RequestStackCacheContextBase {
+class SessionCacheContext extends RequestStackCacheContextBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Session');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Session');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext(): string {
-    return Crypt::hashBase64($this->requestStack->getSession()->getId());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): string
+    {
+        return Crypt::hashBase64($this->requestStack->getSession()->getId());
+    }
 
 }

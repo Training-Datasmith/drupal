@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -37,77 +39,79 @@ use Drupal\Core\Render\Element;
  * @see \Drupal\Core\Render\Element\Submit
  */
 #[FormElement('button')]
-class Button extends FormElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#input' => TRUE,
-      '#name' => 'op',
-      '#is_button' => TRUE,
-      '#submit_button' => TRUE,
-      '#executes_submit_callback' => FALSE,
-      '#limit_validation_errors' => FALSE,
-      '#process' => [
-        [static::class, 'processButton'],
-        [static::class, 'processAjaxForm'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderButton'],
-      ],
-      '#theme_wrappers' => ['input__submit'],
-    ];
-  }
-
-  /**
-   * Processes a form button element.
-   */
-  public static function processButton(array &$element, FormStateInterface $form_state, &$complete_form): array {
-    // If this is a button intentionally allowing incomplete form submission
-    // (e.g., a "Previous" or "Add another item" button), then also skip
-    // client-side validation.
-    if (isset($element['#limit_validation_errors']) && $element['#limit_validation_errors'] !== FALSE) {
-      $element['#attributes']['formnovalidate'] = 'formnovalidate';
-    }
-    return $element;
-  }
-
-  /**
-   * Prepares a #type 'button' render element for input.html.twig.
-   *
-   * @param array $element
-   *   An associative array containing the properties of the element.
-   *   Properties used: #attributes, #button_type, #name, #submit_button,
-   *   #value. The #button_type property accepts any value, though core themes
-   *   have CSS that styles the following button_types appropriately:
-   *   'primary', 'danger'.
-   *
-   * @return array
-   *   The $element with prepared variables ready for input.html.twig.
-   */
-  public static function preRenderButton(array $element): array {
-    if ($element['#submit_button']) {
-      $element['#attributes']['type'] = 'submit';
-    }
-    else {
-      $element['#attributes']['type'] = 'button';
-    }
-    Element::setAttributes($element, ['id', 'name', 'value']);
-
-    $element['#attributes']['class'][] = 'button';
-    if (!empty($element['#button_type'])) {
-      $element['#attributes']['class'][] = 'button--' . $element['#button_type'];
-    }
-    $element['#attributes']['class'][] = 'js-form-submit';
-    $element['#attributes']['class'][] = 'form-submit';
-
-    if (!empty($element['#attributes']['disabled'])) {
-      $element['#attributes']['class'][] = 'is-disabled';
+class Button extends FormElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#input' => true,
+          '#name' => 'op',
+          '#is_button' => true,
+          '#submit_button' => true,
+          '#executes_submit_callback' => false,
+          '#limit_validation_errors' => false,
+          '#process' => [
+            [static::class, 'processButton'],
+            [static::class, 'processAjaxForm'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderButton'],
+          ],
+          '#theme_wrappers' => ['input__submit'],
+        ];
     }
 
-    return $element;
-  }
+    /**
+     * Processes a form button element.
+     */
+    public static function processButton(array &$element, FormStateInterface $form_state, &$complete_form): array
+    {
+        // If this is a button intentionally allowing incomplete form submission
+        // (e.g., a "Previous" or "Add another item" button), then also skip
+        // client-side validation.
+        if (isset($element['#limit_validation_errors']) && $element['#limit_validation_errors'] !== false) {
+            $element['#attributes']['formnovalidate'] = 'formnovalidate';
+        }
+        return $element;
+    }
+
+    /**
+     * Prepares a #type 'button' render element for input.html.twig.
+     *
+     * @param array $element
+     *   An associative array containing the properties of the element.
+     *   Properties used: #attributes, #button_type, #name, #submit_button,
+     *   #value. The #button_type property accepts any value, though core themes
+     *   have CSS that styles the following button_types appropriately:
+     *   'primary', 'danger'.
+     *
+     * @return array
+     *   The $element with prepared variables ready for input.html.twig.
+     */
+    public static function preRenderButton(array $element): array
+    {
+        if ($element['#submit_button']) {
+            $element['#attributes']['type'] = 'submit';
+        } else {
+            $element['#attributes']['type'] = 'button';
+        }
+        Element::setAttributes($element, ['id', 'name', 'value']);
+
+        $element['#attributes']['class'][] = 'button';
+        if (!empty($element['#button_type'])) {
+            $element['#attributes']['class'][] = 'button--' . $element['#button_type'];
+        }
+        $element['#attributes']['class'][] = 'js-form-submit';
+        $element['#attributes']['class'][] = 'form-submit';
+
+        if (!empty($element['#attributes']['disabled'])) {
+            $element['#attributes']['class'][] = 'is-disabled';
+        }
+
+        return $element;
+    }
 
 }

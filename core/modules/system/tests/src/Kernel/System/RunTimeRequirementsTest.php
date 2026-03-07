@@ -15,38 +15,39 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class RunTimeRequirementsTest extends KernelTestBase {
+class RunTimeRequirementsTest extends KernelTestBase
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system'];
+    /**
+     * Tests hook_runtime_requirements() and hook_runtime_requirements_alter().
+     */
+    public function testRuntimeRequirements(): void
+    {
+        // Enable the test module.
+        \Drupal::service('module_installer')->install(['module_runtime_requirements']);
+        $testRequirements = [
+          'title' => 'RuntimeError',
+          'value' => 'None',
+          'description' => 'Runtime Error.',
+          'severity' => RequirementSeverity::Error,
+        ];
+        $requirements = \Drupal::service('system.manager')->listRequirements()['test.runtime.error'];
+        $this->assertEquals($testRequirements, $requirements);
 
-  /**
-   * Tests hook_runtime_requirements() and hook_runtime_requirements_alter().
-   */
-  public function testRuntimeRequirements(): void {
-    // Enable the test module.
-    \Drupal::service('module_installer')->install(['module_runtime_requirements']);
-    $testRequirements = [
-      'title' => 'RuntimeError',
-      'value' => 'None',
-      'description' => 'Runtime Error.',
-      'severity' => RequirementSeverity::Error,
-    ];
-    $requirements = \Drupal::service('system.manager')->listRequirements()['test.runtime.error'];
-    $this->assertEquals($testRequirements, $requirements);
-
-    $testRequirementsAlter = [
-      'title' => 'RuntimeWarning',
-      'value' => 'None',
-      'description' => 'Runtime Warning.',
-      'severity' => RequirementSeverity::Warning,
-    ];
-    $requirementsAlter = \Drupal::service('system.manager')->listRequirements()['test.runtime.error.alter'];
-    $this->assertEquals($testRequirementsAlter, $requirementsAlter);
-  }
+        $testRequirementsAlter = [
+          'title' => 'RuntimeWarning',
+          'value' => 'None',
+          'description' => 'Runtime Warning.',
+          'severity' => RequirementSeverity::Warning,
+        ];
+        $requirementsAlter = \Drupal::service('system.manager')->listRequirements()['test.runtime.error.alter'];
+        $this->assertEquals($testRequirementsAlter, $requirementsAlter);
+    }
 
 }

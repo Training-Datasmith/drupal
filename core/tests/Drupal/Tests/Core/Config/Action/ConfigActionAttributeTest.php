@@ -15,17 +15,18 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ConfigAction::class)]
 #[Group('Config')]
-class ConfigActionAttributeTest extends UnitTestCase {
-
-  /**
-   * Tests no label no deriver.
-   *
-   * @legacy-covers ::__construct
-   */
-  public function testNoLabelNoDeriver(): void {
-    $this->expectException(InvalidPluginDefinitionException::class);
-    $this->expectExceptionMessage("The 'test' config action plugin must have either an admin label or a deriver");
-    new ConfigAction('test');
-  }
+class ConfigActionAttributeTest extends UnitTestCase
+{
+    /**
+     * Tests no label no deriver.
+     *
+     * @legacy-covers ::__construct
+     */
+    public function testNoLabelNoDeriver(): void
+    {
+        $this->expectException(InvalidPluginDefinitionException::class);
+        $this->expectExceptionMessage("The 'test' config action plugin must have either an admin label or a deriver");
+        new ConfigAction('test');
+    }
 
 }

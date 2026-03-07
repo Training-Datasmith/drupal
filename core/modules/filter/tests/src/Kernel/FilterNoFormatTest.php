@@ -13,29 +13,30 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('filter')]
 #[RunTestsInSeparateProcesses]
-class FilterNoFormatTest extends KernelTestBase {
+class FilterNoFormatTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['filter'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['filter'];
+    /**
+     * Tests text without format.
+     *
+     * Tests if text with no format is filtered the same way as text in the
+     * fallback format.
+     */
+    public function testCheckMarkupNoFormat(): void
+    {
+        $this->installConfig(['filter']);
 
-  /**
-   * Tests text without format.
-   *
-   * Tests if text with no format is filtered the same way as text in the
-   * fallback format.
-   */
-  public function testCheckMarkupNoFormat(): void {
-    $this->installConfig(['filter']);
+        // Create some text. Include some HTML and line breaks, so we get a good
+        // test of the filtering that is applied to it.
+        $text = '<strong>' . $this->randomMachineName(32) . "</strong>\n\n<div>" . $this->randomMachineName(32) . '</div>';
 
-    // Create some text. Include some HTML and line breaks, so we get a good
-    // test of the filtering that is applied to it.
-    $text = "<strong>" . $this->randomMachineName(32) . "</strong>\n\n<div>" . $this->randomMachineName(32) . "</div>";
-
-    // Make sure that when this text is run through check_markup() with no text
-    // format, it is filtered as though it is in the fallback format.
-    $this->assertEquals(check_markup($text), check_markup($text, filter_fallback_format()));
-  }
+        // Make sure that when this text is run through check_markup() with no text
+        // format, it is filtered as though it is in the fallback format.
+        $this->assertEquals(check_markup($text), check_markup($text, filter_fallback_format()));
+    }
 
 }

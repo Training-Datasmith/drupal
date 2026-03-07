@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Drupal\Component\Utility\Html;
@@ -24,20 +26,22 @@ use Drupal\Component\Utility\Html;
  *
  * @see \Drupal\Core\Template\Attribute
  */
-class AttributeBoolean extends AttributeValueBase {
+class AttributeBoolean extends AttributeValueBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function render()
+    {
+        return $this->__toString();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render() {
-    return $this->__toString();
-  }
-
-  /**
-   * Implements the magic __toString() method.
-   */
-  public function __toString(): string {
-    return $this->value === FALSE ? '' : Html::escape($this->name);
-  }
+    /**
+     * Implements the magic __toString() method.
+     */
+    public function __toString(): string
+    {
+        return $this->value === false ? '' : Html::escape($this->name);
+    }
 
 }

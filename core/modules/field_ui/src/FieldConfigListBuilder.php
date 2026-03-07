@@ -1,279 +1,285 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\field_ui;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Field\FieldTypePluginManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field\FieldConfigInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides lists of field config entities.
  */
-class FieldConfigListBuilder extends ConfigEntityListBuilder {
+class FieldConfigListBuilder extends ConfigEntityListBuilder
+{
+    /**
+     * The name of the entity type the listed fields are attached to.
+     *
+     * @var string
+     */
+    protected $targetEntityTypeId;
 
-  /**
-   * The name of the entity type the listed fields are attached to.
-   *
-   * @var string
-   */
-  protected $targetEntityTypeId;
+    /**
+     * The name of the bundle the listed fields are attached to.
+     *
+     * @var string
+     */
+    protected $targetBundle;
 
-  /**
-   * The name of the bundle the listed fields are attached to.
-   *
-   * @var string
-   */
-  protected $targetBundle;
+    /**
+     * The entity type manager.
+     */
+    protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   */
-  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager;
+    /**
+     * Constructs a new class instance.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
+     *   The field type manager.
+     * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entityFieldManager
+     *   The entity field manager.
+     */
+    public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
+    {
+        parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
 
-  /**
-   * Constructs a new class instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
-   *   The field type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entityFieldManager
-   *   The entity field manager.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager) {
-    parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
-
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager'),
-      $container->get('plugin.manager.field.field_type'),
-      $container->get('entity_field.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($target_entity_type_id = NULL, $target_bundle = NULL): array {
-    $this->targetEntityTypeId = $target_entity_type_id;
-    $this->targetBundle = $target_bundle;
-
-    $build = parent::render();
-    $build['table']['#attributes']['id'] = 'field-overview';
-    $build['table']['#empty'] = $this->t('No fields are present yet.');
-    $build['#attached']['library'][] = 'field_ui/drupal.field_ui';
-
-    return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function load(): array {
-    $entities = array_filter($this->entityFieldManager->getFieldDefinitions($this->targetEntityTypeId, $this->targetBundle), fn(\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $field_definition instanceof FieldConfigInterface);
-
-    // Sort the entities using the entity class's sort() method.
-    // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
-    uasort($entities, [$this->entityType->getClass(), 'sort']);
-    return $entities;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header = [
-      'label' => $this->t('Field'),
-      'settings_summary' => $this->t('Field type'),
-    ];
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $field_config): array {
-    /** @var \Drupal\field\FieldConfigInterface $field_config */
-    $field_storage = $field_config->getFieldStorageDefinition();
-
-    $storage_summary = $this->fieldTypeManager->getStorageSettingsSummary($field_storage);
-    $instance_summary = $this->fieldTypeManager->getFieldSettingsSummary($field_config);
-    $summary_list = [...$storage_summary, ...$instance_summary];
-
-    $secondary_summary_items = [];
-    foreach ($summary_list as $item) {
-      $secondary_summary_items[] = [
-        '#type' => 'html_tag',
-        '#tag' => 'div',
-        '#value' => $item,
-        '#attributes' => [
-          'class' => ['field-ui-secondary-text'],
-        ],
-      ];
+        $this->entityTypeManager = $entity_type_manager;
     }
 
-    $settings_summary = [
-      'data' => [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['field-settings-summary-container']],
-        'field_type' => [
-          '#type' => 'html_tag',
-          '#tag' => 'div',
-          '#value' => $this->fieldTypeManager->getDefinitions()[$field_storage->getType()]['label'],
-          '#attributes' => [
-            'class' => ['field-type-label'],
-          ],
-        ],
-        'summary_items' => [
-          '#type' => 'container',
-          '#attributes' => ['class' => ['field-settings-summary-items']],
-          ...$secondary_summary_items,
-        ],
-      ],
-      'class' => ['field-settings-summary-cell'],
-    ];
-
-    $cardinality = $field_storage->getCardinality();
-    if ($cardinality === -1) {
-      $cardinality_text = $this->t('Unlimited');
-    }
-    else {
-      $cardinality_text = $this->formatPlural($cardinality, 'Single', 'Limited to @count');
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager'),
+            $container->get('plugin.manager.field.field_type'),
+            $container->get('entity_field.manager')
+        );
     }
 
-    $label_data = [
-      'data' => [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['field-label-container']],
-        'label_wrapper' => [
-          '#type' => 'container',
-          '#attributes' => ['class' => ['field-label-wrapper']],
-          'label' => [
-            '#type' => 'html_tag',
-            '#tag' => 'span',
-            '#plain_text' => $field_config->getLabel(),
-            '#attributes' => [
-              'class' => ['field-label-text'],
+    /**
+     * {@inheritdoc}
+     */
+    public function render($target_entity_type_id = null, $target_bundle = null): array
+    {
+        $this->targetEntityTypeId = $target_entity_type_id;
+        $this->targetBundle = $target_bundle;
+
+        $build = parent::render();
+        $build['table']['#attributes']['id'] = 'field-overview';
+        $build['table']['#empty'] = $this->t('No fields are present yet.');
+        $build['#attached']['library'][] = 'field_ui/drupal.field_ui';
+
+        return $build;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function load(): array
+    {
+        $entities = array_filter($this->entityFieldManager->getFieldDefinitions($this->targetEntityTypeId, $this->targetBundle), fn (\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $field_definition instanceof FieldConfigInterface);
+
+        // Sort the entities using the entity class's sort() method.
+        // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
+        uasort($entities, [$this->entityType->getClass(), 'sort']);
+        return $entities;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header = [
+          'label' => $this->t('Field'),
+          'settings_summary' => $this->t('Field type'),
+        ];
+        return $header + parent::buildHeader();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $field_config): array
+    {
+        /** @var \Drupal\field\FieldConfigInterface $field_config */
+        $field_storage = $field_config->getFieldStorageDefinition();
+
+        $storage_summary = $this->fieldTypeManager->getStorageSettingsSummary($field_storage);
+        $instance_summary = $this->fieldTypeManager->getFieldSettingsSummary($field_config);
+        $summary_list = [...$storage_summary, ...$instance_summary];
+
+        $secondary_summary_items = [];
+        foreach ($summary_list as $item) {
+            $secondary_summary_items[] = [
+              '#type' => 'html_tag',
+              '#tag' => 'div',
+              '#value' => $item,
+              '#attributes' => [
+                'class' => ['field-ui-secondary-text'],
+              ],
+            ];
+        }
+
+        $settings_summary = [
+          'data' => [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['field-settings-summary-container']],
+            'field_type' => [
+              '#type' => 'html_tag',
+              '#tag' => 'div',
+              '#value' => $this->fieldTypeManager->getDefinitions()[$field_storage->getType()]['label'],
+              '#attributes' => [
+                'class' => ['field-type-label'],
+              ],
+            ],
+            'summary_items' => [
+              '#type' => 'container',
+              '#attributes' => ['class' => ['field-settings-summary-items']],
+              ...$secondary_summary_items,
             ],
           ],
-          'machine_name' => [
-            '#type' => 'html_tag',
-            '#tag' => 'span',
-            '#plain_text' => ' ' . $field_config->getName(),
-            '#attributes' => [
-              'class' => ['field-ui-secondary-text', 'field-machine-name'],
+          'class' => ['field-settings-summary-cell'],
+        ];
+
+        $cardinality = $field_storage->getCardinality();
+        if ($cardinality === -1) {
+            $cardinality_text = $this->t('Unlimited');
+        } else {
+            $cardinality_text = $this->formatPlural($cardinality, 'Single', 'Limited to @count');
+        }
+
+        $label_data = [
+          'data' => [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['field-label-container']],
+            'label_wrapper' => [
+              '#type' => 'container',
+              '#attributes' => ['class' => ['field-label-wrapper']],
+              'label' => [
+                '#type' => 'html_tag',
+                '#tag' => 'span',
+                '#plain_text' => $field_config->getLabel(),
+                '#attributes' => [
+                  'class' => ['field-label-text'],
+                ],
+              ],
+              'machine_name' => [
+                '#type' => 'html_tag',
+                '#tag' => 'span',
+                '#plain_text' => ' ' . $field_config->getName(),
+                '#attributes' => [
+                  'class' => ['field-ui-secondary-text', 'field-machine-name'],
+                ],
+              ],
+            ],
+            'details' => [
+              '#type' => 'container',
+              '#attributes' => ['class' => ['field-details-container']],
+              'cardinality_pill' => [
+                '#type' => 'html_tag',
+                '#tag' => 'span',
+                '#value' => $cardinality_text,
+                '#attributes' => [
+                  'class' => ['field-ui-pill'],
+                ],
+              ],
             ],
           ],
-        ],
-        'details' => [
-          '#type' => 'container',
-          '#attributes' => ['class' => ['field-details-container']],
-          'cardinality_pill' => [
-            '#type' => 'html_tag',
-            '#tag' => 'span',
-            '#value' => $cardinality_text,
-            '#attributes' => [
-              'class' => ['field-ui-pill'],
-            ],
+        ];
+
+        // Add required pill if field is required.
+        if ($field_config->isRequired()) {
+            $label_data['data']['details']['required_pill'] = [
+              '#type' => 'html_tag',
+              '#tag' => 'span',
+              '#value' => $this->t('Required'),
+              '#attributes' => [
+                'class' => ['field-ui-pill'],
+              ],
+            ];
+        }
+
+        $row = [
+          'id' => Html::getClass($field_config->getName()),
+          'data' => [
+            'label' => $label_data,
+            'settings_summary' => $settings_summary,
           ],
-        ],
-      ],
-    ];
+        ];
 
-    // Add required pill if field is required.
-    if ($field_config->isRequired()) {
-      $label_data['data']['details']['required_pill'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'span',
-        '#value' => $this->t('Required'),
-        '#attributes' => [
-          'class' => ['field-ui-pill'],
-        ],
-      ];
+        // Add the operations.
+        $row['data'] = $row['data'] + parent::buildRow($field_config);
+
+        if ($field_storage->isLocked()) {
+            $row['data']['operations'] = ['data' => ['#markup' => $this->t('Locked')]];
+            $row['class'][] = 'menu-disabled';
+        }
+
+        return $row;
     }
 
-    $row = [
-      'id' => Html::getClass($field_config->getName()),
-      'data' => [
-        'label' => $label_data,
-        'settings_summary' => $settings_summary,
-      ],
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        /** @var \Drupal\field\FieldConfigInterface $entity */
+        $operations = parent::getDefaultOperations($entity, $cacheability);
 
-    // Add the operations.
-    $row['data'] = $row['data'] + parent::buildRow($field_config);
+        $update_access = $entity->access('update', return_as_object: true);
+        $cacheability->addCacheableDependency($update_access);
+        if ($update_access->isAllowed() && $entity->hasLinkTemplate("{$entity->getTargetEntityTypeId()}-field-edit-form")) {
+            $operations['edit'] = [
+              'title' => $this->t('Edit'),
+              'weight' => 10,
+              'url' => $entity->toUrl("{$entity->getTargetEntityTypeId()}-field-edit-form"),
+              'attributes' => [
+                'title' => $this->t('Edit field settings.'),
+                'class' => ['use-ajax'],
+                'data-dialog-type' => 'modal',
+                'data-dialog-options' => Json::encode([
+                  'width' => 1100,
+                ]),
+              ],
+            ];
+        }
+        $delete_access = $entity->access('delete', return_as_object: true);
+        $cacheability->addCacheableDependency($delete_access);
+        if ($delete_access->isAllowed() && $entity->hasLinkTemplate("{$entity->getTargetEntityTypeId()}-field-delete-form")) {
+            $operations['delete'] = [
+              'title' => $this->t('Delete'),
+              'weight' => 100,
+              'url' => $entity->toUrl("{$entity->getTargetEntityTypeId()}-field-delete-form"),
+              'attributes' => [
+                'title' => $this->t('Delete field.'),
+                'class' => ['use-ajax'],
+                'data-dialog-type' => 'modal',
+                'data-dialog-options' => Json::encode([
+                  'width' => 880,
+                ]),
+              ],
+            ];
+        }
 
-    if ($field_storage->isLocked()) {
-      $row['data']['operations'] = ['data' => ['#markup' => $this->t('Locked')]];
-      $row['class'][] = 'menu-disabled';
+        return $operations;
     }
-
-    return $row;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    /** @var \Drupal\field\FieldConfigInterface $entity */
-    $operations = parent::getDefaultOperations($entity, $cacheability);
-
-    $update_access = $entity->access('update', return_as_object: TRUE);
-    $cacheability->addCacheableDependency($update_access);
-    if ($update_access->isAllowed() && $entity->hasLinkTemplate("{$entity->getTargetEntityTypeId()}-field-edit-form")) {
-      $operations['edit'] = [
-        'title' => $this->t('Edit'),
-        'weight' => 10,
-        'url' => $entity->toUrl("{$entity->getTargetEntityTypeId()}-field-edit-form"),
-        'attributes' => [
-          'title' => $this->t('Edit field settings.'),
-          'class' => ['use-ajax'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => Json::encode([
-            'width' => 1100,
-          ]),
-        ],
-      ];
-    }
-    $delete_access = $entity->access('delete', return_as_object: TRUE);
-    $cacheability->addCacheableDependency($delete_access);
-    if ($delete_access->isAllowed() && $entity->hasLinkTemplate("{$entity->getTargetEntityTypeId()}-field-delete-form")) {
-      $operations['delete'] = [
-        'title' => $this->t('Delete'),
-        'weight' => 100,
-        'url' => $entity->toUrl("{$entity->getTargetEntityTypeId()}-field-delete-form"),
-        'attributes' => [
-          'title' => $this->t('Delete field.'),
-          'class' => ['use-ajax'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => Json::encode([
-            'width' => 880,
-          ]),
-        ],
-      ];
-    }
-
-    return $operations;
-  }
 
 }

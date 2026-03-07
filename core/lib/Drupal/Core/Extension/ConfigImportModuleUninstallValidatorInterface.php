@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 use Drupal\Core\Config\StorageInterface;
@@ -13,23 +15,23 @@ use Drupal\Core\Config\StorageInterface;
  * module_install.uninstall_validator. If autoconfiguration is enabled, the
  * service will be automatically tagged.
  */
-interface ConfigImportModuleUninstallValidatorInterface extends ModuleUninstallValidatorInterface {
-
-  /**
-   * Determines reasons a module can not be uninstalled prior to config import.
-   *
-   * @param string $module
-   *   A module name.
-   * @param \Drupal\Core\Config\StorageInterface $source_storage
-   *   Storage object used to read configuration that is about to be imported.
-   *
-   * @return string[]
-   *   An array of reasons the module can not be uninstalled, empty if it can.
-   *   Each reason should not end with any punctuation since multiple reasons
-   *   can be displayed together.
-   *
-   * @see \Drupal\Core\EventSubscriber\ConfigImportSubscriber::validateModules()
-   */
-  public function validateConfigImport(string $module, StorageInterface $source_storage): array;
+interface ConfigImportModuleUninstallValidatorInterface extends ModuleUninstallValidatorInterface
+{
+    /**
+     * Determines reasons a module can not be uninstalled prior to config import.
+     *
+     * @param string $module
+     *   A module name.
+     * @param \Drupal\Core\Config\StorageInterface $source_storage
+     *   Storage object used to read configuration that is about to be imported.
+     *
+     * @return string[]
+     *   An array of reasons the module can not be uninstalled, empty if it can.
+     *   Each reason should not end with any punctuation since multiple reasons
+     *   can be displayed together.
+     *
+     * @see \Drupal\Core\EventSubscriber\ConfigImportSubscriber::validateModules()
+     */
+    public function validateConfigImport(string $module, StorageInterface $source_storage): array;
 
 }

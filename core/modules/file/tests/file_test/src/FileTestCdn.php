@@ -7,16 +7,16 @@ namespace Drupal\file_test;
 /**
  * Test Cdn.
  */
-enum FileTestCdn: string {
+enum FileTestCdn: string
+{
+    /*
+     * First Cdn.
+     */
+    case First = 'http://cdn1.example.com';
 
-  /*
-   * First Cdn.
-   */
-  case First = 'http://cdn1.example.com';
-
-  /*
-   * Second Cdn.
-   */
-  case Second = 'http://cdn2.example.com';
+    /*
+     * Second Cdn.
+     */
+    case Second = 'http://cdn2.example.com';
 
 }

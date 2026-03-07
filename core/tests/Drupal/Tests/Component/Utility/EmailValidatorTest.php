@@ -15,30 +15,32 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(EmailValidator::class)]
 #[Group('Utility')]
-class EmailValidatorTest extends TestCase {
+class EmailValidatorTest extends TestCase
+{
+    /**
+     * Tests is valid.
+     */
+    public function testIsValid(): void
+    {
+        // Note that \Drupal\Component\Utility\EmailValidator wraps
+        // \Egulias\EmailValidator\EmailValidator so we don't do anything more than
+        // test that the wrapping works since the dependency has its own test
+        // coverage.
+        $validator = new EmailValidator();
+        $this->assertTrue($validator->isValid('example@example.com'));
+        $this->assertFalse($validator->isValid('example@example.com@'));
+        $this->assertFalse($validator->isValid('example@example .com'));
+    }
 
-  /**
-   * Tests is valid.
-   */
-  public function testIsValid(): void {
-    // Note that \Drupal\Component\Utility\EmailValidator wraps
-    // \Egulias\EmailValidator\EmailValidator so we don't do anything more than
-    // test that the wrapping works since the dependency has its own test
-    // coverage.
-    $validator = new EmailValidator();
-    $this->assertTrue($validator->isValid('example@example.com'));
-    $this->assertFalse($validator->isValid('example@example.com@'));
-    $this->assertFalse($validator->isValid('example@example .com'));
-  }
-
-  /**
-   * Tests is valid exception.
-   */
-  public function testIsValidException(): void {
-    $validator = new EmailValidator();
-    $this->expectException(\BadMethodCallException::class);
-    $this->expectExceptionMessage('Calling \Drupal\Component\Utility\EmailValidator::isValid() with the second argument is not supported. See https://www.drupal.org/node/2997196');
-    $validator->isValid('example@example.com', (new RFCValidation()));
-  }
+    /**
+     * Tests is valid exception.
+     */
+    public function testIsValidException(): void
+    {
+        $validator = new EmailValidator();
+        $this->expectException(\BadMethodCallException::class);
+        $this->expectExceptionMessage('Calling \Drupal\Component\Utility\EmailValidator::isValid() with the second argument is not supported. See https://www.drupal.org/node/2997196');
+        $validator->isValid('example@example.com', (new RFCValidation()));
+    }
 
 }

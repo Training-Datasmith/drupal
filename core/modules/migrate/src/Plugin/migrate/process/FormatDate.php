@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
-use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\Component\Datetime\DateTimePlus;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
@@ -88,50 +90,50 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('format_date')]
-class FormatDate extends ProcessPluginBase {
+class FormatDate extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if (empty($value) && $value !== '0' && $value !== 0) {
+            return '';
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if (empty($value) && $value !== '0' && $value !== 0) {
-      return '';
-    }
+        // Validate the configuration.
+        if (empty($this->configuration['from_format'])) {
+            throw new MigrateException('Format date plugin is missing from_format configuration.');
+        }
+        if (empty($this->configuration['to_format'])) {
+            throw new MigrateException('Format date plugin is missing to_format configuration.');
+        }
 
-    // Validate the configuration.
-    if (empty($this->configuration['from_format'])) {
-      throw new MigrateException('Format date plugin is missing from_format configuration.');
-    }
-    if (empty($this->configuration['to_format'])) {
-      throw new MigrateException('Format date plugin is missing to_format configuration.');
-    }
+        $fromFormat = $this->configuration['from_format'];
+        $toFormat = $this->configuration['to_format'];
+        $system_timezone = date_default_timezone_get();
+        $default_timezone = !empty($system_timezone) ? $system_timezone : 'UTC';
+        $from_timezone = $this->configuration['from_timezone'] ?? $default_timezone;
+        $to_timezone = $this->configuration['to_timezone'] ?? $default_timezone;
+        $settings = $this->configuration['settings'] ?? [];
 
-    $fromFormat = $this->configuration['from_format'];
-    $toFormat = $this->configuration['to_format'];
-    $system_timezone = date_default_timezone_get();
-    $default_timezone = !empty($system_timezone) ? $system_timezone : 'UTC';
-    $from_timezone = $this->configuration['from_timezone'] ?? $default_timezone;
-    $to_timezone = $this->configuration['to_timezone'] ?? $default_timezone;
-    $settings = $this->configuration['settings'] ?? [];
+        // Older versions of Drupal where omitting certain granularity values (also
+        // known as "collected date attributes") resulted in invalid timestamps
+        // getting stored.
+        if ($fromFormat === 'Y-m-d\TH:i:s') {
+            $value = str_replace(['-00-00T', '-00T'], ['-01-01T', '-01T'], $value);
+        }
 
-    // Older versions of Drupal where omitting certain granularity values (also
-    // known as "collected date attributes") resulted in invalid timestamps
-    // getting stored.
-    if ($fromFormat === 'Y-m-d\TH:i:s') {
-      $value = str_replace(['-00-00T', '-00T'], ['-01-01T', '-01T'], $value);
-    }
+        // Attempts to transform the supplied date using the defined input format.
+        // DateTimePlus::createFromFormat can throw exceptions, so we need to
+        // explicitly check for problems.
+        try {
+            $transformed = DateTimePlus::createFromFormat($fromFormat, $value, $from_timezone, $settings)->format($toFormat, ['timezone' => $to_timezone]);
+        } catch (\InvalidArgumentException|\UnexpectedValueException $e) {
+            throw new MigrateException(sprintf("Format date plugin could not transform '%s' using the format '%s'. Error: %s", $value, $fromFormat, $e->getMessage()), $e->getCode(), $e);
+        }
 
-    // Attempts to transform the supplied date using the defined input format.
-    // DateTimePlus::createFromFormat can throw exceptions, so we need to
-    // explicitly check for problems.
-    try {
-      $transformed = DateTimePlus::createFromFormat($fromFormat, $value, $from_timezone, $settings)->format($toFormat, ['timezone' => $to_timezone]);
+        return $transformed;
     }
-    catch (\InvalidArgumentException|\UnexpectedValueException $e) {
-      throw new MigrateException(sprintf("Format date plugin could not transform '%s' using the format '%s'. Error: %s", $value, $fromFormat, $e->getMessage()), $e->getCode(), $e);
-    }
-
-    return $transformed;
-  }
 
 }

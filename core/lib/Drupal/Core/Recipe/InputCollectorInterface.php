@@ -17,23 +17,23 @@ use Drupal\Core\TypedData\DataDefinitionInterface;
  * @see \Drupal\Core\Recipe\FormInputCollector
  * @see \Drupal\Core\Recipe\PredefinedInputCollector
  */
-interface InputCollectorInterface {
-
-  /**
-   * Collects a single input value for a recipe.
-   *
-   * @param string $name
-   *   The machine name of the input to collect, in the form
-   *   RECIPE_NAME.INPUT_NAME.
-   * @param \Drupal\Core\TypedData\DataDefinitionInterface $definition
-   *   The data definition that describes the expected type, constraints, and
-   *   metadata for the input value.
-   * @param mixed $default_value
-   *   The default value to return if no input is provided.
-   *
-   * @return mixed
-   *   The collected input value that satisfies the provided definition.
-   */
-  public function collectValue(string $name, DataDefinitionInterface $definition, mixed $default_value): mixed;
+interface InputCollectorInterface
+{
+    /**
+     * Collects a single input value for a recipe.
+     *
+     * @param string $name
+     *   The machine name of the input to collect, in the form
+     *   RECIPE_NAME.INPUT_NAME.
+     * @param \Drupal\Core\TypedData\DataDefinitionInterface $definition
+     *   The data definition that describes the expected type, constraints, and
+     *   metadata for the input value.
+     * @param mixed $default_value
+     *   The default value to return if no input is provided.
+     *
+     * @return mixed
+     *   The collected input value that satisfies the provided definition.
+     */
+    public function collectValue(string $name, DataDefinitionInterface $definition, mixed $default_value): mixed;
 
 }

@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\EventSubscriber;
 
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\migrate\Event\EventBase;
 use Drupal\migrate\Event\MigrateEvents;
 use Drupal\migrate\Event\MigrateImportEvent;
@@ -25,74 +25,78 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @see \Drupal\node\NodeServiceProvider
  * @see \Drupal\node\EventSubscriber\NodeTranslationExceptionSubscriber
  */
-class NodeTranslationMigrateSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Constructs the NodeTranslationMigrateSubscriber.
-   *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
-   *   The key value factory.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service.
-   */
-  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\State\StateInterface $state)
-  {
-  }
-
-  /**
-   * Helper method to check if we are migrating translated nodes.
-   *
-   * @param \Drupal\migrate\Event\EventBase $event
-   *   The migrate event.
-   *
-   * @return bool
-   *   True if we are migrating translated nodes, false otherwise.
-   */
-  protected function isNodeTranslationsMigration(EventBase $event): bool {
-    $migration = $event->getMigration();
-    $source_configuration = $migration->getSourceConfiguration();
-    $destination_configuration = $migration->getDestinationConfiguration();
-    return !empty($source_configuration['translations']) && $destination_configuration['plugin'] === 'entity:node';
-  }
-
-  /**
-   * Maps the old nid to the new one in the key value collection.
-   *
-   * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
-   *   The migrate post row save event.
-   */
-  public function onPostRowSave(MigratePostRowSaveEvent $event): void {
-    if ($this->isNodeTranslationsMigration($event)) {
-      $row = $event->getRow();
-      $source = $row->getSource();
-      $destination = $row->getDestination();
-      $collection = $this->keyValue->get('node_translation_redirect');
-      $collection->set($source['nid'], [$destination['nid'], $destination['langcode']]);
+class NodeTranslationMigrateSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs the NodeTranslationMigrateSubscriber.
+     *
+     * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
+     *   The key value factory.
+     * @param \Drupal\Core\State\StateInterface $state
+     *   The state service.
+     */
+    public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\State\StateInterface $state)
+    {
     }
-  }
 
-  /**
-   * Set the node_translation_redirect state to enable the redirects.
-   *
-   * @param \Drupal\migrate\Event\MigrateImportEvent $event
-   *   The migrate import event.
-   */
-  public function onPostImport(MigrateImportEvent $event): void {
-    if ($this->isNodeTranslationsMigration($event)) {
-      $this->state->set('node_translation_redirect', TRUE);
+    /**
+     * Helper method to check if we are migrating translated nodes.
+     *
+     * @param \Drupal\migrate\Event\EventBase $event
+     *   The migrate event.
+     *
+     * @return bool
+     *   True if we are migrating translated nodes, false otherwise.
+     */
+    protected function isNodeTranslationsMigration(EventBase $event): bool
+    {
+        $migration = $event->getMigration();
+        $source_configuration = $migration->getSourceConfiguration();
+        $destination_configuration = $migration->getDestinationConfiguration();
+        return !empty($source_configuration['translations']) && $destination_configuration['plugin'] === 'entity:node';
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events = [];
+    /**
+     * Maps the old nid to the new one in the key value collection.
+     *
+     * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
+     *   The migrate post row save event.
+     */
+    public function onPostRowSave(MigratePostRowSaveEvent $event): void
+    {
+        if ($this->isNodeTranslationsMigration($event)) {
+            $row = $event->getRow();
+            $source = $row->getSource();
+            $destination = $row->getDestination();
+            $collection = $this->keyValue->get('node_translation_redirect');
+            $collection->set($source['nid'], [$destination['nid'], $destination['langcode']]);
+        }
+    }
 
-    $events[MigrateEvents::POST_ROW_SAVE] = ['onPostRowSave'];
-    $events[MigrateEvents::POST_IMPORT] = ['onPostImport'];
+    /**
+     * Set the node_translation_redirect state to enable the redirects.
+     *
+     * @param \Drupal\migrate\Event\MigrateImportEvent $event
+     *   The migrate import event.
+     */
+    public function onPostImport(MigrateImportEvent $event): void
+    {
+        if ($this->isNodeTranslationsMigration($event)) {
+            $this->state->set('node_translation_redirect', true);
+        }
+    }
 
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events = [];
+
+        $events[MigrateEvents::POST_ROW_SAVE] = ['onPostRowSave'];
+        $events[MigrateEvents::POST_IMPORT] = ['onPostImport'];
+
+        return $events;
+    }
 
 }

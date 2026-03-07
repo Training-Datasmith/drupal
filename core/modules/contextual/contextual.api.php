@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by Contextual module.
@@ -31,10 +33,11 @@
  * @see hook_contextual_links_plugins_alter()
  * @see \Drupal\contextual\Element\ContextualLinks::preRenderLinks()
  */
-function hook_contextual_links_view_alter(array &$element, $items): void {
-  // Add another class to all contextual link lists to facilitate custom
-  // styling.
-  $element['#attributes']['class'][] = 'custom-class';
+function hook_contextual_links_view_alter(array &$element, $items): void
+{
+    // Add another class to all contextual link lists to facilitate custom
+    // styling.
+    $element['#attributes']['class'][] = 'custom-class';
 }
 
 /**

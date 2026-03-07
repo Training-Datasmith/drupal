@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\taxonomy\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
@@ -10,36 +12,40 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-class TermDeleteForm extends ContentEntityDeleteForm {
+class TermDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        // The cancel URL is the vocabulary collection, terms have no global
+        // list page.
+        return new Url('entity.taxonomy_vocabulary.collection');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    // The cancel URL is the vocabulary collection, terms have no global
-    // list page.
-    return new Url('entity.taxonomy_vocabulary.collection');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRedirectUrl()
+    {
+        return $this->getCancelUrl();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    return $this->getCancelUrl();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Deleting a term will delete all its children if there are any. This action cannot be undone.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Deleting a term will delete all its children if there are any. This action cannot be undone.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Deleted term %name.', ['%name' => $this->entity->label()]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Deleted term %name.', ['%name' => $this->entity->label()]);
+    }
 
 }

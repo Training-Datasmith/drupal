@@ -10,5 +10,6 @@ namespace Drupal\Core\Config\Checkpoint;
  * @internal
  *   This API is experimental.
  */
-final class CheckpointExistsException extends \RuntimeException {
+final class CheckpointExistsException extends \RuntimeException
+{
 }

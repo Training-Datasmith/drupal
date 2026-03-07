@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Annotation;
 
 /**
@@ -22,6 +24,6 @@ namespace Drupal\Core\Render\Annotation;
  *
  * @Annotation
  */
-class FormElement extends RenderElement {
-
+class FormElement extends RenderElement
+{
 }

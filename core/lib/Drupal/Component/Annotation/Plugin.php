@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Annotation;
 
 use Drupal\Component\Utility\NestedArray;
@@ -17,94 +19,100 @@ use Drupal\Component\Utility\NestedArray;
  *
  * @Annotation
  */
-class Plugin implements AnnotationInterface {
+class Plugin implements AnnotationInterface
+{
+    /**
+     * The plugin definition read from the class annotation.
+     *
+     * @var array
+     */
+    protected $definition;
 
-  /**
-   * The plugin definition read from the class annotation.
-   *
-   * @var array
-   */
-  protected $definition;
-
-  /**
-   * Constructs a Plugin object.
-   *
-   * Builds up the plugin definition and invokes the get() method for any
-   * classed annotations that were used.
-   */
-  public function __construct(array $values) {
-    $reflection = new \ReflectionClass($this);
-    // Only keep actual default values by ignoring NULL values.
-    $defaults = array_filter($reflection->getDefaultProperties(), fn($value) => $value !== NULL);
-    $parsed_values = $this->parse($values);
-    $this->definition = NestedArray::mergeDeepArray([$defaults, $parsed_values], TRUE);
-  }
-
-  /**
-   * Parses an annotation into its definition.
-   *
-   * @param array $values
-   *   The annotation array.
-   *
-   * @return array
-   *   The parsed annotation as a definition.
-   */
-  protected function parse(array $values): array {
-    $definitions = [];
-    foreach ($values as $key => $value) {
-      if ($value instanceof AnnotationInterface) {
-        $definitions[$key] = $value->get();
-      }
-      elseif (is_array($value)) {
-        $definitions[$key] = $this->parse($value);
-      }
-      else {
-        $definitions[$key] = $value;
-      }
+    /**
+     * Constructs a Plugin object.
+     *
+     * Builds up the plugin definition and invokes the get() method for any
+     * classed annotations that were used.
+     */
+    public function __construct(array $values)
+    {
+        $reflection = new \ReflectionClass($this);
+        // Only keep actual default values by ignoring NULL values.
+        $defaults = array_filter($reflection->getDefaultProperties(), fn ($value) => $value !== null);
+        $parsed_values = $this->parse($values);
+        $this->definition = NestedArray::mergeDeepArray([$defaults, $parsed_values], true);
     }
-    return $definitions;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get() {
-    return $this->definition;
-  }
+    /**
+     * Parses an annotation into its definition.
+     *
+     * @param array $values
+     *   The annotation array.
+     *
+     * @return array
+     *   The parsed annotation as a definition.
+     */
+    protected function parse(array $values): array
+    {
+        $definitions = [];
+        foreach ($values as $key => $value) {
+            if ($value instanceof AnnotationInterface) {
+                $definitions[$key] = $value->get();
+            } elseif (is_array($value)) {
+                $definitions[$key] = $this->parse($value);
+            } else {
+                $definitions[$key] = $value;
+            }
+        }
+        return $definitions;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getProvider() {
-    return $this->definition['provider'] ?? FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get()
+    {
+        return $this->definition;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setProvider($provider): void {
-    $this->definition['provider'] = $provider;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getProvider()
+    {
+        return $this->definition['provider'] ?? false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getId() {
-    return $this->definition['id'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setProvider($provider): void
+    {
+        $this->definition['provider'] = $provider;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getClass() {
-    return $this->definition['class'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getId()
+    {
+        return $this->definition['id'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setClass($class): void {
-    $this->definition['class'] = $class;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getClass()
+    {
+        return $this->definition['class'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setClass($class): void
+    {
+        $this->definition['class'] = $class;
+    }
 
 }

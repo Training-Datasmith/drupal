@@ -20,49 +20,50 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 #[CoversClass(TimeZoneResolver::class)]
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class TimezoneResolverTest extends KernelTestBase {
+class TimezoneResolverTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'user',
-  ];
+    /**
+     * Tests time zone resolution.
+     */
+    public function testGetTimeZone(): void
+    {
+        $this->installEntitySchema('user');
+        $this->installConfig(['system']);
 
-  /**
-   * Tests time zone resolution.
-   */
-  public function testGetTimeZone(): void {
-    $this->installEntitySchema('user');
-    $this->installConfig(['system']);
+        // Check the default test timezone.
+        $this->assertEquals('Australia/Sydney', date_default_timezone_get());
 
-    // Check the default test timezone.
-    $this->assertEquals('Australia/Sydney', date_default_timezone_get());
+        // Test the configured system timezone.
+        $configFactory = $this->container->get('config.factory');
+        $timeZoneConfig = $configFactory->getEditable('system.date');
+        $timeZoneConfig->set('timezone.default', 'Australia/Adelaide');
+        $timeZoneConfig->save();
 
-    // Test the configured system timezone.
-    $configFactory = $this->container->get('config.factory');
-    $timeZoneConfig = $configFactory->getEditable('system.date');
-    $timeZoneConfig->set('timezone.default', 'Australia/Adelaide');
-    $timeZoneConfig->save();
+        $eventDispatcher = $this->container->get('event_dispatcher');
+        $kernel = $this->container->get('kernel');
 
-    $eventDispatcher = $this->container->get('event_dispatcher');
-    $kernel = $this->container->get('kernel');
+        $eventDispatcher->dispatch(new RequestEvent($kernel, Request::create('http://www.example.com'), HttpKernelInterface::MAIN_REQUEST));
 
-    $eventDispatcher->dispatch(new RequestEvent($kernel, Request::create('http://www.example.com'), HttpKernelInterface::MAIN_REQUEST));
+        $this->assertEquals('Australia/Adelaide', date_default_timezone_get());
 
-    $this->assertEquals('Australia/Adelaide', date_default_timezone_get());
+        $user = $this->createUser([]);
+        $user->set('timezone', 'Australia/Lord_Howe');
+        $user->save();
 
-    $user = $this->createUser([]);
-    $user->set('timezone', 'Australia/Lord_Howe');
-    $user->save();
+        $this->setCurrentUser($user);
 
-    $this->setCurrentUser($user);
+        $this->assertEquals('Australia/Lord_Howe', date_default_timezone_get());
 
-    $this->assertEquals('Australia/Lord_Howe', date_default_timezone_get());
-
-  }
+    }
 
 }

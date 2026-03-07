@@ -13,20 +13,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class ContentModerationAdminPathEntityConverterLanguageTest extends AdminPathEntityConverterLanguageTest {
+class ContentModerationAdminPathEntityConverterLanguageTest extends AdminPathEntityConverterLanguageTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'language',
+      'language_test',
+      'content_moderation',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'language',
-    'language_test',
-    'content_moderation',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
 }

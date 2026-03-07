@@ -11,33 +11,36 @@ use Drupal\migrate\Plugin\migrate\source\SqlBase;
  * Source plugin for Sql count cache test.
  */
 #[MigrateSource('sql_count_cache')]
-class SqlCountCache extends SqlBase {
+class SqlCountCache extends SqlBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function fields()
+    {
+        return [
+          'id' => $this->t('Id'),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields() {
-    return [
-      'id' => $this->t('Id'),
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        return [
+          'id' => [
+            'type' => 'integer',
+          ],
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    return [
-      'id' => [
-        'type' => 'integer',
-      ],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query() {
-    return $this->select('source_table', 's')->fields('s', ['id']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query()
+    {
+        return $this->select('source_table', 's')->fields('s', ['id']);
+    }
 
 }

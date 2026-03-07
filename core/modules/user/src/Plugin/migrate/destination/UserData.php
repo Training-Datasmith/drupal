@@ -1,84 +1,90 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\migrate\destination;
 
-use Drupal\migrate\Attribute\MigrateDestination;
-use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\user\UserData as UserDataStorage;
-use Drupal\migrate\Row;
-use Drupal\migrate\Plugin\migrate\destination\DestinationBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\migrate\Attribute\MigrateDestination;
+use Drupal\migrate\Plugin\migrate\destination\DestinationBase;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate\Row;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Migration destination for user data.
  */
 #[MigrateDestination('user_data')]
-class UserData extends DestinationBase implements ContainerFactoryPluginInterface {
+class UserData extends DestinationBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Builds a user data entity destination.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+     *   The migration.
+     * @param \Drupal\user\UserData $userData
+     *   The user data service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, protected \Drupal\user\UserData $userData)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
+    }
 
-  /**
-   * Builds a user data entity destination.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\migrate\Plugin\MigrationInterface $migration
-   *   The migration.
-   * @param \Drupal\user\UserData $userData
-   *   The user data service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, protected \Drupal\user\UserData $userData) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = null): static
+    {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $migration,
+            $container->get('user.data')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $migration,
-      $container->get('user.data')
-    );
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = []): array
+    {
+        $uid = $row->getDestinationProperty('uid');
+        $module = $row->getDestinationProperty('module');
+        $key = $row->getDestinationProperty('key');
+        $this->userData->set($module, $uid, $key, $row->getDestinationProperty('settings'));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []): array {
-    $uid = $row->getDestinationProperty('uid');
-    $module = $row->getDestinationProperty('module');
-    $key = $row->getDestinationProperty('key');
-    $this->userData->set($module, $uid, $key, $row->getDestinationProperty('settings'));
+        return [$uid, $module, $key];
+    }
 
-    return [$uid, $module, $key];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds(): array
+    {
+        $ids['uid']['type'] = 'integer';
+        $ids['module']['type'] = 'string';
+        $ids['key']['type'] = 'string';
+        return $ids;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds(): array {
-    $ids['uid']['type'] = 'integer';
-    $ids['module']['type'] = 'string';
-    $ids['key']['type'] = 'string';
-    return $ids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): array {
-    return [
-      'uid' => 'The user id.',
-      'module' => 'The module name responsible for the settings.',
-      'key' => 'The setting key to save under.',
-      'settings' => 'The settings to save.',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): array
+    {
+        return [
+          'uid' => 'The user id.',
+          'module' => 'The module name responsible for the settings.',
+          'key' => 'The setting key to save under.',
+          'settings' => 'The settings to save.',
+        ];
+    }
 
 }

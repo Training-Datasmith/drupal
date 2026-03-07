@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\PageCache\RequestPolicy;
 
 use Drupal\Core\PageCache\RequestPolicyInterface;
-use Drupal\Core\Session\SessionConfigurationInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -14,25 +15,26 @@ use Symfony\Component\HttpFoundation\Request;
  * messages from a form submission, the contents of a shopping cart, or other
  * user-specific content that should not be cached and displayed to other users.
  */
-class NoSessionOpen implements RequestPolicyInterface {
-
-  /**
-   * Constructs a new page cache session policy.
-   *
-   * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
-   *   The session configuration.
-   */
-  public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    if (!$this->sessionConfiguration->hasSession($request)) {
-      return static::ALLOW;
+class NoSessionOpen implements RequestPolicyInterface
+{
+    /**
+     * Constructs a new page cache session policy.
+     *
+     * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
+     *   The session configuration.
+     */
+    public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration)
+    {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        if (!$this->sessionConfiguration->hasSession($request)) {
+            return static::ALLOW;
+        }
+    }
 
 }

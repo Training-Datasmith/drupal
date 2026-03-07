@@ -17,66 +17,71 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversTrait(SectionListTrait::class)]
 #[Group('layout_builder')]
 #[RunTestsInSeparateProcesses]
-class SectionListTraitTest extends SectionListTestBase {
+class SectionListTraitTest extends SectionListTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getSectionList(array $section_data)
+    {
+        return new TestSectionList($section_data);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSectionList(array $section_data) {
-    return new TestSectionList($section_data);
-  }
-
-  /**
-   * Tests add blank section.
-   */
-  public function testAddBlankSection(): void {
-    $this->expectException(\Exception::class);
-    $this->expectExceptionMessage('A blank section must only be added to an empty list');
-    $this->sectionList->addBlankSection();
-  }
+    /**
+     * Tests add blank section.
+     */
+    public function testAddBlankSection(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('A blank section must only be added to an empty list');
+        $this->sectionList->addBlankSection();
+    }
 
 }
 
 /**
  * Test item list class for layout section fields.
  */
-class TestSectionList implements SectionListInterface {
-
-  use SectionListTrait {
-    addBlankSection as public;
-  }
-
-  /**
-   * An array of sections.
-   *
-   * @var \Drupal\layout_builder\Section[]
-   */
-  protected $sections;
-
-  /**
-   * TestSectionList constructor.
-   */
-  public function __construct(array $sections) {
-    // Loop through each section and reconstruct it to ensure that all default
-    // values are present.
-    foreach ($sections as $section) {
-      $this->sections[] = Section::fromArray($section->toArray());
+class TestSectionList implements SectionListInterface
+{
+    use SectionListTrait {
+        addBlankSection as public;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setSections(array $sections): array {
-    $this->sections = array_values($sections);
-    return $sections;
-  }
+    /**
+     * An array of sections.
+     *
+     * @var \Drupal\layout_builder\Section[]
+     */
+    protected $sections;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSections() {
-    return $this->sections;
-  }
+    /**
+     * TestSectionList constructor.
+     */
+    public function __construct(array $sections)
+    {
+        // Loop through each section and reconstruct it to ensure that all default
+        // values are present.
+        foreach ($sections as $section) {
+            $this->sections[] = Section::fromArray($section->toArray());
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setSections(array $sections): array
+    {
+        $this->sections = array_values($sections);
+        return $sections;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSections()
+    {
+        return $this->sections;
+    }
 
 }

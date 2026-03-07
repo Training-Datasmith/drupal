@@ -19,15 +19,16 @@ use Twig\Node\CheckToStringNode;
  * @see \Drupal\Core\Template\TwigSandboxPolicy
  * @see \Drupal\Core\Template\RemoveCheckToStringNodeVisitor
  */
-final class TwigSimpleCheckToStringNode extends CheckToStringNode {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function compile(Compiler $compiler): void {
-    $expr = $this->getNode('expr');
-    $compiler
-      ->subcompile($expr);
-  }
+final class TwigSimpleCheckToStringNode extends CheckToStringNode
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function compile(Compiler $compiler): void
+    {
+        $expr = $this->getNode('expr');
+        $compiler
+          ->subcompile($expr);
+    }
 
 }

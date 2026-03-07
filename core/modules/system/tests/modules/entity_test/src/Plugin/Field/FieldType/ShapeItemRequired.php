@@ -12,19 +12,20 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines the 'shape_required' field type.
  */
 #[FieldType(
-  id: "shape_required",
-  label: new TranslatableMarkup("Shape (required)"),
-  description: new TranslatableMarkup("Yet another dummy field type."),
+    id: 'shape_required',
+    label: new TranslatableMarkup('Shape (required)'),
+    description: new TranslatableMarkup('Yet another dummy field type.'),
 )]
-class ShapeItemRequired extends ShapeItem {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties = parent::propertyDefinitions($field_definition);
-    $properties['shape']->setRequired(TRUE);
-    return $properties;
-  }
+class ShapeItemRequired extends ShapeItem
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties = parent::propertyDefinitions($field_definition);
+        $properties['shape']->setRequired(true);
+        return $properties;
+    }
 
 }

@@ -1,116 +1,141 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\KeyValueStore;
 
 /**
  * Defines a null key/value store implementation.
  */
-class NullStorageExpirable implements KeyValueStoreExpirableInterface {
+class NullStorageExpirable implements KeyValueStoreExpirableInterface
+{
+    /**
+     * The actual storage of key-value pairs.
+     *
+     * @var array
+     */
+    protected $data = [];
 
-  /**
-   * The actual storage of key-value pairs.
-   *
-   * @var array
-   */
-  protected $data = [];
+    /**
+     * Creates a new expirable null key/value store.
+     * @param string $collection
+     */
+    public function __construct(
+        /**
+         * The name of the collection holding key and value pairs.
+         */
+        protected $collection
+    ) {
+    }
 
-  /**
-   * Creates a new expirable null key/value store.
-   * @param string $collection
-   */
-  public function __construct(
-      /**
-       * The name of the collection holding key and value pairs.
-       */
-      protected $collection
-  )
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function has($key): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function has($key): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function get($key, $default = null): null
+    {
+        return null;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function get($key, $default = NULL): null {
-    return NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultiple(array $keys): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getMultiple(array $keys): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAll(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAll(): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function set($key, $value) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function setIfNotExists($key, $value)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setIfNotExists($key, $value) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple(array $data)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultiple(array $data) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function rename($key, $new_key)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function rename($key, $new_key) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($key)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete($key) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple(array $keys)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteMultiple(array $keys) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteAll()
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAll() {}
+    /**
+     * {@inheritdoc}
+     */
+    public function getCollectionName()
+    {
+        return $this->collection;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCollectionName() {
-    return $this->collection;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultipleWithExpire(array $data, $expire)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setMultipleWithExpire(array $data, $expire) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function setWithExpire($key, $value, $expire)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setWithExpire($key, $value, $expire) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setWithExpireIfNotExists($key, $value, $expire) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function setWithExpireIfNotExists($key, $value, $expire)
+    {
+    }
 
 }

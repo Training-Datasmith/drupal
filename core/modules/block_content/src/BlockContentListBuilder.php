@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -11,50 +13,54 @@ use Drupal\Core\Entity\EntityListBuilder;
  *
  * @see \Drupal\block_content\Entity\BlockContent
  */
-class BlockContentListBuilder extends EntityListBuilder {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['label'] = $this->t('Block description');
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
-    return $row + parent::buildRow($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityIds() {
-    $query = $this->getStorage()->getQuery()
-      ->accessCheck(TRUE)
-      ->sort($this->entityType->getKey('id'));
-    $query->condition('reusable', TRUE);
-
-    // Only add the pager if a limit is specified.
-    if ($this->limit) {
-      $query->pager($this->limit);
+class BlockContentListBuilder extends EntityListBuilder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildHeader()
+    {
+        $header['label'] = $this->t('Block description');
+        return $header + parent::buildHeader();
     }
-    return $query->execute();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
-    $args = func_get_args();
-    $cacheability = $args[1] ?? new CacheableMetadata();
-    $operations = parent::getOperations($entity, $cacheability);
-    // The 'View' operation doesn't make sense for content blocks.
-    unset($operations['view']);
-    return $operations;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRow(EntityInterface $entity)
+    {
+        $row['label'] = $entity->label();
+        return $row + parent::buildRow($entity);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityIds()
+    {
+        $query = $this->getStorage()->getQuery()
+          ->accessCheck(true)
+          ->sort($this->entityType->getKey('id'));
+        $query->condition('reusable', true);
+
+        // Only add the pager if a limit is specified.
+        if ($this->limit) {
+            $query->pager($this->limit);
+        }
+        return $query->execute();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */)
+    {
+        $args = func_get_args();
+        $cacheability = $args[1] ?? new CacheableMetadata();
+        $operations = parent::getOperations($entity, $cacheability);
+        // The 'View' operation doesn't make sense for content blocks.
+        unset($operations['view']);
+        return $operations;
+    }
 
 }

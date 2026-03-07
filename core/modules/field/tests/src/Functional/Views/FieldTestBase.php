@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Tests\field\Functional\Views;
 
 use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\Tests\views\Functional\ViewTestBase;
-use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Provides some helper methods for testing fieldapi integration into views.
@@ -19,69 +19,72 @@ use Drupal\field\Entity\FieldStorageConfig;
  *   - Use relationships between different entity types, for example node and
  *     the node author(user).
  */
-abstract class FieldTestBase extends ViewTestBase {
+abstract class FieldTestBase extends ViewTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'field_test_views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'field_test_views'];
+    /**
+     * Stores the field definitions used by the test.
+     *
+     * @var array
+     */
+    public $fieldStorages;
 
-  /**
-   * Stores the field definitions used by the test.
-   *
-   * @var array
-   */
-  public $fieldStorages;
+    /**
+     * Stores the fields of the field storage.
+     *
+     * @var array
+     */
+    public $fields;
 
-  /**
-   * Stores the fields of the field storage.
-   *
-   * @var array
-   */
-  public $fields;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['field_test_views']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['field_test_views']): void {
-    parent::setUp($import_test_views, $modules);
-
-    // Ensure the page node type exists.
-    NodeType::create([
-      'type' => 'page',
-      'name' => 'page',
-    ])->save();
-  }
-
-  /**
-   * Sets up field storages for testing.
-   */
-  public function setUpFieldStorages($amount = 3, $type = 'string') {
-    // Create three fields.
-    $field_names = [];
-    for ($i = 0; $i < $amount; $i++) {
-      $field_names[$i] = 'field_name_' . $i;
-      $this->fieldStorages[$i] = FieldStorageConfig::create([
-        'field_name' => $field_names[$i],
-        'entity_type' => 'node',
-        'type' => $type,
-      ]);
-      $this->fieldStorages[$i]->save();
+        // Ensure the page node type exists.
+        NodeType::create([
+          'type' => 'page',
+          'name' => 'page',
+        ])->save();
     }
-    return $field_names;
-  }
 
-  /**
-   * Sets up fields for a given bundle.
-   */
-  public function setUpFields($bundle = 'page') {
-    foreach ($this->fieldStorages as $key => $field_storage) {
-      $this->fields[$key] = FieldConfig::create([
-        'field_storage' => $field_storage,
-        'bundle' => $bundle,
-      ]);
-      $this->fields[$key]->save();
+    /**
+     * Sets up field storages for testing.
+     */
+    public function setUpFieldStorages($amount = 3, $type = 'string')
+    {
+        // Create three fields.
+        $field_names = [];
+        for ($i = 0; $i < $amount; $i++) {
+            $field_names[$i] = 'field_name_' . $i;
+            $this->fieldStorages[$i] = FieldStorageConfig::create([
+              'field_name' => $field_names[$i],
+              'entity_type' => 'node',
+              'type' => $type,
+            ]);
+            $this->fieldStorages[$i]->save();
+        }
+        return $field_names;
     }
-  }
+
+    /**
+     * Sets up fields for a given bundle.
+     */
+    public function setUpFields($bundle = 'page')
+    {
+        foreach ($this->fieldStorages as $key => $field_storage) {
+            $this->fields[$key] = FieldConfig::create([
+              'field_storage' => $field_storage,
+              'bundle' => $bundle,
+            ]);
+            $this->fields[$key]->save();
+        }
+    }
 
 }

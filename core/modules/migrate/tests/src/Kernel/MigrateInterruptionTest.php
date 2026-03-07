@@ -17,67 +17,72 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('migrate')]
 #[RunTestsInSeparateProcesses]
-class MigrateInterruptionTest extends KernelTestBase {
+class MigrateInterruptionTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['migrate', 'migrate_events_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['migrate', 'migrate_events_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Drupal::service('event_dispatcher')->addListener(
+            MigrateEvents::POST_ROW_SAVE,
+            [$this, 'postRowSaveEventRecorder']
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    \Drupal::service('event_dispatcher')->addListener(MigrateEvents::POST_ROW_SAVE,
-      [$this, 'postRowSaveEventRecorder']);
-  }
+    /**
+     * Tests migration interruptions.
+     */
+    public function testMigrateEvents(): void
+    {
+        // Run a simple little migration, which should trigger one of each event
+        // other than map_delete.
+        $definition = [
+          'migration_tags' => ['Interruption test'],
+          'source' => [
+            'plugin' => 'embedded_data',
+            'data_rows' => [
+              ['data' => 'dummy value'],
+              ['data' => 'dummy value2'],
+            ],
+            'ids' => [
+              'data' => ['type' => 'string'],
+            ],
+          ],
+          'process' => ['value' => 'data'],
+          'destination' => ['plugin' => 'dummy'],
+        ];
 
-  /**
-   * Tests migration interruptions.
-   */
-  public function testMigrateEvents(): void {
-    // Run a simple little migration, which should trigger one of each event
-    // other than map_delete.
-    $definition = [
-      'migration_tags' => ['Interruption test'],
-      'source' => [
-        'plugin' => 'embedded_data',
-        'data_rows' => [
-          ['data' => 'dummy value'],
-          ['data' => 'dummy value2'],
-        ],
-        'ids' => [
-          'data' => ['type' => 'string'],
-        ],
-      ],
-      'process' => ['value' => 'data'],
-      'destination' => ['plugin' => 'dummy'],
-    ];
+        $migration = \Drupal::service('plugin.manager.migration')->createStubMigration($definition);
 
-    $migration = \Drupal::service('plugin.manager.migration')->createStubMigration($definition);
+        $executable = new MigrateExecutable($migration);
+        // When the import runs, the first row imported will trigger an
+        // interruption.
+        $result = $executable->import();
 
-    $executable = new MigrateExecutable($migration);
-    // When the import runs, the first row imported will trigger an
-    // interruption.
-    $result = $executable->import();
+        $this->assertEquals(MigrationInterface::RESULT_INCOMPLETE, $result);
 
-    $this->assertEquals(MigrationInterface::RESULT_INCOMPLETE, $result);
+        // The status should have been reset to IDLE.
+        $this->assertEquals(MigrationInterface::STATUS_IDLE, $migration->getStatus());
+    }
 
-    // The status should have been reset to IDLE.
-    $this->assertEquals(MigrationInterface::STATUS_IDLE, $migration->getStatus());
-  }
-
-  /**
-   * Reacts to post-row-save event.
-   *
-   * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
-   *   The migration event.
-   * @param string $name
-   *   The event name.
-   */
-  public function postRowSaveEventRecorder(MigratePostRowSaveEvent $event, $name): void {
-    $event->getMigration()->interruptMigration(MigrationInterface::RESULT_INCOMPLETE);
-  }
+    /**
+     * Reacts to post-row-save event.
+     *
+     * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
+     *   The migration event.
+     * @param string $name
+     *   The event name.
+     */
+    public function postRowSaveEventRecorder(MigratePostRowSaveEvent $event, $name): void
+    {
+        $event->getMigration()->interruptMigration(MigrationInterface::RESULT_INCOMPLETE);
+    }
 
 }

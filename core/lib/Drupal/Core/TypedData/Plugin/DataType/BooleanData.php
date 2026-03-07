@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\Serialization\Attribute\JsonSchema;
@@ -15,17 +17,18 @@ use Drupal\Core\TypedData\Type\BooleanInterface;
  * any PHP variable that casts to a boolean may be passed.
  */
 #[DataType(
-  id: "boolean",
-  label: new TranslatableMarkup("Boolean")
+    id: 'boolean',
+    label: new TranslatableMarkup('Boolean')
 )]
-class BooleanData extends PrimitiveBase implements BooleanInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'boolean'])]
-  public function getCastedValue(): bool {
-    return (bool) $this->value;
-  }
+class BooleanData extends PrimitiveBase implements BooleanInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'boolean'])]
+    public function getCastedValue(): bool
+    {
+        return (bool) $this->value;
+    }
 
 }

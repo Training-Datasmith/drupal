@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\field;
 
 use Drupal\Core\Url;
@@ -11,29 +13,31 @@ use Drupal\views\ResultRow;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("node_revision_link_delete")]
-class RevisionLinkDelete extends RevisionLink {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->getEntity($row);
-    if (!$node) {
-      return NULL;
+#[ViewsField('node_revision_link_delete')]
+class RevisionLinkDelete extends RevisionLink
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url
+    {
+        /** @var \Drupal\node\NodeInterface $node */
+        $node = $this->getEntity($row);
+        if (!$node) {
+            return null;
+        }
+        return Url::fromRoute('node.revision_delete_confirm', [
+          'node' => $node->id(),
+          'node_revision' => $node->getRevisionId(),
+        ]);
     }
-    return Url::fromRoute('node.revision_delete_confirm', [
-      'node' => $node->id(),
-      'node_revision' => $node->getRevisionId(),
-    ]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Delete');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Delete');
+    }
 
 }

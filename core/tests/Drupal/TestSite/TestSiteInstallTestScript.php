@@ -9,13 +9,14 @@ namespace Drupal\TestSite;
  *
  * @see \Drupal\KernelTests\Scripts\TestSiteApplicationTest
  */
-class TestSiteInstallTestScript implements TestSetupInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setup(): void {
-    \Drupal::service('module_installer')->install(['test_page_test']);
-  }
+class TestSiteInstallTestScript implements TestSetupInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function setup(): void
+    {
+        \Drupal::service('module_installer')->install(['test_page_test']);
+    }
 
 }

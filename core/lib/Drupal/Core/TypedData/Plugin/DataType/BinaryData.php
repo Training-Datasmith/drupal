@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -15,79 +17,81 @@ use Drupal\Core\TypedData\Type\BinaryInterface;
  * a PHP file resource or an (absolute) stream resource URI may be passed.
  */
 #[DataType(
-  id: "binary",
-  label: new TranslatableMarkup("Binary")
+    id: 'binary',
+    label: new TranslatableMarkup('Binary')
 )]
-class BinaryData extends PrimitiveBase implements BinaryInterface {
+class BinaryData extends PrimitiveBase implements BinaryInterface
+{
+    /**
+     * The file resource URI.
+     *
+     * @var string
+     */
+    protected $uri;
 
-  /**
-   * The file resource URI.
-   *
-   * @var string
-   */
-  protected $uri;
+    /**
+     * A generic file resource handle.
+     *
+     * @var resource
+     */
+    public $handle;
 
-  /**
-   * A generic file resource handle.
-   *
-   * @var resource
-   */
-  public $handle;
+    /**
+     * {@inheritdoc}
+     */
+    public function getValue()
+    {
+        // If the value has been set by (absolute) stream resource URI, access the
+        // resource now.
+        if (!isset($this->handle) && isset($this->uri)) {
+            $this->handle = is_readable($this->uri) ? fopen($this->uri, 'rb') : false;
+        }
+        return $this->handle;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getValue() {
-    // If the value has been set by (absolute) stream resource URI, access the
-    // resource now.
-    if (!isset($this->handle) && isset($this->uri)) {
-      $this->handle = is_readable($this->uri) ? fopen($this->uri, 'rb') : FALSE;
+    /**
+     * Overrides TypedData::setValue().
+     *
+     * Supports a PHP file resource or an (absolute) stream resource URI as value.
+     */
+    public function setValue($value, $notify = true): void
+    {
+        if (!isset($value)) {
+            $this->handle = null;
+            $this->uri = null;
+        } elseif (is_string($value)) {
+            // Note: For performance reasons we store the given URI and access the
+            // resource upon request. See BinaryData::getValue()
+            $this->uri = $value;
+            $this->handle = null;
+        } else {
+            $this->handle = $value;
+        }
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-    return $this->handle;
-  }
 
-  /**
-   * Overrides TypedData::setValue().
-   *
-   * Supports a PHP file resource or an (absolute) stream resource URI as value.
-   */
-  public function setValue($value, $notify = TRUE): void {
-    if (!isset($value)) {
-      $this->handle = NULL;
-      $this->uri = NULL;
+    /**
+     * {@inheritdoc}
+     */
+    public function getString(): string
+    {
+        // Return the file content.
+        $contents = '';
+        while (!feof($this->getValue())) {
+            $contents .= fread($this->handle, 8192);
+        }
+        return $contents;
     }
-    elseif (is_string($value)) {
-      // Note: For performance reasons we store the given URI and access the
-      // resource upon request. See BinaryData::getValue()
-      $this->uri = $value;
-      $this->handle = NULL;
-    }
-    else {
-      $this->handle = $value;
-    }
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
-    }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getString(): string {
-    // Return the file content.
-    $contents = '';
-    while (!feof($this->getValue())) {
-      $contents .= fread($this->handle, 8192);
+    /**
+     * {@inheritdoc}
+     */
+    public function getCastedValue()
+    {
+        return $this->getValue();
     }
-    return $contents;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCastedValue() {
-    return $this->getValue();
-  }
 
 }

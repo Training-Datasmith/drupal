@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_translation\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -10,21 +12,23 @@ use Drupal\views\Plugin\views\field\EntityLink;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("content_translation_link")]
-class TranslationLink extends EntityLink {
+#[ViewsField('content_translation_link')]
+class TranslationLink extends EntityLink
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityLinkTemplate(): string
+    {
+        return 'drupal:content-translation-overview';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityLinkTemplate(): string {
-    return 'drupal:content-translation-overview';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Translate');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Translate');
+    }
 
 }

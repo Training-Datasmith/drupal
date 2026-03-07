@@ -18,52 +18,53 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserDataTest extends ViewsKernelTestBase {
+class UserDataTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_user_data'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_user_data'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user_test_views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user_test_views'];
+    /**
+     * Tests field handler.
+     */
+    public function testDataField(): void
+    {
+        ViewTestData::createTestViews(static::class, ['user_test_views']);
 
-  /**
-   * Tests field handler.
-   */
-  public function testDataField(): void {
-    ViewTestData::createTestViews(static::class, ['user_test_views']);
+        $this->installEntitySchema('user');
+        $this->installSchema('user', ['users_data']);
 
-    $this->installEntitySchema('user');
-    $this->installSchema('user', ['users_data']);
+        $user = User::create([
+          // Set 'uid' because the 'test_user_data' view filters the user with an ID
+          // equal to 2.
+          'uid' => 2,
+          'name' => $this->randomMachineName(),
+        ]);
+        $user->save();
 
-    $user = User::create([
-      // Set 'uid' because the 'test_user_data' view filters the user with an ID
-      // equal to 2.
-      'uid' => 2,
-      'name' => $this->randomMachineName(),
-    ]);
-    $user->save();
+        // Add some random value as user data.
+        $user_data = $this->container->get('user.data');
+        $random_value = $this->randomMachineName();
+        $user_data->set('views_test_config', $user->id(), 'test_value_name', $random_value);
 
-    // Add some random value as user data.
-    $user_data = $this->container->get('user.data');
-    $random_value = $this->randomMachineName();
-    $user_data->set('views_test_config', $user->id(), 'test_value_name', $random_value);
+        $view = Views::getView('test_user_data');
+        $this->executeView($view);
 
-    $view = Views::getView('test_user_data');
-    $this->executeView($view);
+        $output = $view->field['data']->render($view->result[0]);
+        // Assert that using a valid user data key renders the value.
+        $this->assertEquals($random_value, $output);
 
-    $output = $view->field['data']->render($view->result[0]);
-    // Assert that using a valid user data key renders the value.
-    $this->assertEquals($random_value, $output);
+        $view->field['data']->options['data_name'] = $this->randomMachineName();
 
-    $view->field['data']->options['data_name'] = $this->randomMachineName();
-
-    $output = $view->field['data']->render($view->result[0]);
-    // An invalid configuration does not return anything.
-    $this->assertNull($output);
-  }
+        $output = $view->field['data']->render($view->result[0]);
+        // An invalid configuration does not return anything.
+        $this->assertNull($output);
+    }
 
 }

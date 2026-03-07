@@ -25,7 +25,8 @@ namespace Drupal\Core\Utility;
  * @see \Drupal\Core\Entity\EntityStorageBase::loadMultiple()
  * @see \Drupal\path_alias\AliasManager::getAliasByPath()
  */
-enum FiberResumeType {
-  case Immediate;
-  case Delayed;
+enum FiberResumeType
+{
+    case Immediate;
+    case Delayed;
 }

@@ -12,33 +12,34 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * File extension constraint.
  */
 #[Constraint(
-  id: 'FileExtension',
-  label: new TranslatableMarkup('File Extension', [], ['context' => 'Validation']),
-  type: 'file'
+    id: 'FileExtension',
+    label: new TranslatableMarkup('File Extension', [], ['context' => 'Validation']),
+    type: 'file'
 )]
-class FileExtensionConstraint extends SymfonyConstraint {
+class FileExtensionConstraint extends SymfonyConstraint
+{
+    /**
+     * The allowed file extensions.
+     */
+    public string $extensions;
 
-  /**
-   * The allowed file extensions.
-   */
-  public string $extensions;
+    public function __construct(
+        mixed $options = null,
+        ?string $extensions = null,
+        public string $message = 'Only files with the following extensions are allowed: %files-allowed.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+        $this->extensions = $extensions ?? $this->extensions;
+    }
 
-  public function __construct(
-    mixed $options = NULL,
-    ?string $extensions = NULL,
-    public string $message = 'Only files with the following extensions are allowed: %files-allowed.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-    $this->extensions = $extensions ?? $this->extensions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultOption(): ?string {
-    return 'extensions';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultOption(): ?string
+    {
+        return 'extensions';
+    }
 
 }

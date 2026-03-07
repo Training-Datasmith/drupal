@@ -16,25 +16,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('config')]
 #[Group('Validation')]
 #[RunTestsInSeparateProcesses]
-class CommentTypeValidationTest extends ConfigEntityValidationTestBase {
+class CommentTypeValidationTest extends ConfigEntityValidationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['comment', 'node', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['comment', 'node', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entity = CommentType::create([
-      'id' => 'test',
-      'label' => 'Test',
-      'target_entity_type_id' => 'node',
-    ]);
-    $this->entity->save();
-  }
+        $this->entity = CommentType::create([
+          'id' => 'test',
+          'label' => 'Test',
+          'target_entity_type_id' => 'node',
+        ]);
+        $this->entity->save();
+    }
 
 }

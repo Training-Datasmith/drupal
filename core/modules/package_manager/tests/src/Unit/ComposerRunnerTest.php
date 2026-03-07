@@ -22,42 +22,43 @@ use Prophecy\Argument;
  */
 #[CoversClass(ComposerRunner::class)]
 #[Group('package_manager')]
-class ComposerRunnerTest extends UnitTestCase {
+class ComposerRunnerTest extends UnitTestCase
+{
+    /**
+     * Tests that the Composer runner runs Composer through the PHP interpreter.
+     */
+    public function testRunner(): void
+    {
+        $executable_finder = $this->prophesize(ExecutableFinderInterface::class);
+        $executable_finder->find('composer')
+          ->willReturn('/mock/composer')
+          ->shouldBeCalled();
 
-  /**
-   * Tests that the Composer runner runs Composer through the PHP interpreter.
-   */
-  public function testRunner(): void {
-    $executable_finder = $this->prophesize(ExecutableFinderInterface::class);
-    $executable_finder->find('composer')
-      ->willReturn('/mock/composer')
-      ->shouldBeCalled();
+        $process_factory = $this->prophesize(ProcessFactoryInterface::class);
+        $process_factory->create(
+            // Internally, ComposerRunner uses Symfony's PhpExecutableFinder to locate
+            // the PHP interpreter, which should resolve to PHP_BINARY a command-line
+            // test environment.
+            [PHP_BINARY, '/mock/composer', '--version'],
+            null,
+            Argument::withKey('COMPOSER_HOME'),
+        )->shouldBeCalled();
 
-    $process_factory = $this->prophesize(ProcessFactoryInterface::class);
-    $process_factory->create(
-      // Internally, ComposerRunner uses Symfony's PhpExecutableFinder to locate
-      // the PHP interpreter, which should resolve to PHP_BINARY a command-line
-      // test environment.
-      [PHP_BINARY, '/mock/composer', '--version'],
-      NULL,
-      Argument::withKey('COMPOSER_HOME'),
-    )->shouldBeCalled();
+        $file_system = $this->prophesize(FileSystemInterface::class);
+        $file_system->getTempDirectory()->shouldBeCalled();
+        $file_system->prepareDirectory(Argument::cetera())->shouldBeCalled();
 
-    $file_system = $this->prophesize(FileSystemInterface::class);
-    $file_system->getTempDirectory()->shouldBeCalled();
-    $file_system->prepareDirectory(Argument::cetera())->shouldBeCalled();
-
-    $runner = new ComposerRunner(
-      $executable_finder->reveal(),
-      $process_factory->reveal(),
-      $file_system->reveal(),
-      $this->getConfigFactoryStub([
-        'system.site' => [
-          'uuid' => 'testing',
-        ],
+        $runner = new ComposerRunner(
+            $executable_finder->reveal(),
+            $process_factory->reveal(),
+            $file_system->reveal(),
+            $this->getConfigFactoryStub([
+            'system.site' => [
+              'uuid' => 'testing',
+            ],
       ]),
-    );
-    $runner->run(['--version']);
-  }
+        );
+        $runner->run(['--version']);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing\Enhancer;
 
 use Drupal\Core\Routing\EnhancerInterface;
@@ -10,32 +12,34 @@ use Symfony\Component\Routing\Route;
 /**
  * Enhancer to add a wrapping controller for _form routes.
  */
-class FormRouteEnhancer implements EnhancerInterface {
-
-  /**
-   * Returns whether the enhancer runs on the current route.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The current route.
-   *
-   * @return bool
-   *   TRUE when the enhancer runs on the current route, FALSE otherwise.
-   */
-  protected function applies(Route $route): bool {
-    return $route->hasDefault('_form') && !$route->hasDefault(RouteObjectInterface::CONTROLLER_NAME);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function enhance(array $defaults, Request $request): array {
-    $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
-    if (!$this->applies($route)) {
-      return $defaults;
+class FormRouteEnhancer implements EnhancerInterface
+{
+    /**
+     * Returns whether the enhancer runs on the current route.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The current route.
+     *
+     * @return bool
+     *   TRUE when the enhancer runs on the current route, FALSE otherwise.
+     */
+    protected function applies(Route $route): bool
+    {
+        return $route->hasDefault('_form') && !$route->hasDefault(RouteObjectInterface::CONTROLLER_NAME);
     }
 
-    $defaults[RouteObjectInterface::CONTROLLER_NAME] = 'controller.form:getContentResult';
-    return $defaults;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function enhance(array $defaults, Request $request): array
+    {
+        $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
+        if (!$this->applies($route)) {
+            return $defaults;
+        }
+
+        $defaults[RouteObjectInterface::CONTROLLER_NAME] = 'controller.form:getContentResult';
+        return $defaults;
+    }
 
 }

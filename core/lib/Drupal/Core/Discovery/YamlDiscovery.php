@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Discovery;
 
 use Drupal\Component\Discovery\YamlDiscovery as ComponentYamlDiscovery;
@@ -11,18 +13,18 @@ use Drupal\Core\Serialization\Yaml;
  *
  * This overrides the Component file decoding with the Core YAML implementation.
  */
-class YamlDiscovery extends ComponentYamlDiscovery {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function decode($file) {
-    try {
-      return Yaml::decode(file_get_contents($file)) ?: [];
+class YamlDiscovery extends ComponentYamlDiscovery
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function decode($file)
+    {
+        try {
+            return Yaml::decode(file_get_contents($file)) ?: [];
+        } catch (InvalidDataTypeException $e) {
+            throw new InvalidDataTypeException($file . ': ' . $e->getMessage(), $e->getCode(), $e);
+        }
     }
-    catch (InvalidDataTypeException $e) {
-      throw new InvalidDataTypeException($file . ': ' . $e->getMessage(), $e->getCode(), $e);
-    }
-  }
 
 }

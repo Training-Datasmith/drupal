@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Command;
 
-use Drupal\Component\ProxyBuilder\ProxyBuilder;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,46 +14,50 @@ use Symfony\Component\Console\Input\InputInterface;
  * @see lazy_services
  * @see core/scripts/generate-proxy-class.php
  */
-class GenerateProxyClassApplication extends Application {
+class GenerateProxyClassApplication extends Application
+{
+    /**
+     * Constructs a new GenerateProxyClassApplication instance.
+     *
+     * @param \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder
+     *   The proxy builder.
+     */
+    public function __construct(protected \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder)
+    {
+        parent::__construct();
+    }
 
-  /**
-   * Constructs a new GenerateProxyClassApplication instance.
-   *
-   * @param \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder
-   *   The proxy builder.
-   */
-  public function __construct(protected \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder) {
-    parent::__construct();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getCommandName(InputInterface $input): ?string
+    {
+        return 'generate-proxy-class';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getCommandName(InputInterface $input): ?string {
-    return 'generate-proxy-class';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultCommands(): array
+    {
+        // Even though this is a single command, keep the HelpCommand (--help).
+        $default_commands = parent::getDefaultCommands();
+        $default_commands[] = new GenerateProxyClassCommand($this->proxyBuilder);
+        return $default_commands;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultCommands(): array {
-    // Even though this is a single command, keep the HelpCommand (--help).
-    $default_commands = parent::getDefaultCommands();
-    $default_commands[] = new GenerateProxyClassCommand($this->proxyBuilder);
-    return $default_commands;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Overridden so the application doesn't expect the command name as the first
-   * argument.
-   */
-  public function getDefinition(): InputDefinition {
-    $definition = parent::getDefinition();
-    // Clears the normal first argument (the command name).
-    $definition->setArguments();
-    return $definition;
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * Overridden so the application doesn't expect the command name as the first
+     * argument.
+     */
+    public function getDefinition(): InputDefinition
+    {
+        $definition = parent::getDefinition();
+        // Clears the normal first argument (the command name).
+        $definition->setArguments();
+        return $definition;
+    }
 
 }

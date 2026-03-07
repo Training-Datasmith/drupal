@@ -1,161 +1,160 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block\Controller;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
-use Drupal\Core\Menu\LocalActionManagerInterface;
-use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides a list of block plugins to be added to the layout.
  */
-class BlockLibraryController extends ControllerBase {
-
-  /**
-   * Constructs a BlockLibraryController object.
-   *
-   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
-   *   The block manager.
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
-   *   The context repository.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   The current route match.
-   * @param \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager
-   *   The local action manager.
-   */
-  public function __construct(
-      protected \Drupal\Core\Block\BlockManagerInterface $blockManager,
-      /**
-       * The context repository.
-       */
-      protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository,
-      protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
-      protected \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager
-  )
-  {
-  }
-
-  /**
-   * Shows a list of blocks that can be added to a theme's layout.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The current request.
-   * @param string $theme
-   *   Theme key of the block list.
-   *
-   * @return array
-   *   A render array as expected by the renderer.
-   */
-  public function listBlocks(Request $request, $theme) {
-    // Since modals do not render any other part of the page, we need to render
-    // them manually as part of this listing.
-    if ($request->query->get(MainContentViewSubscriber::WRAPPER_FORMAT) === 'drupal_modal') {
-      $build['local_actions'] = $this->buildLocalActions();
+class BlockLibraryController extends ControllerBase
+{
+    /**
+     * Constructs a BlockLibraryController object.
+     *
+     * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
+     *   The block manager.
+     * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
+     *   The context repository.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+     *   The current route match.
+     * @param \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager
+     *   The local action manager.
+     */
+    public function __construct(
+        protected \Drupal\Core\Block\BlockManagerInterface $blockManager,
+        /**
+         * The context repository.
+         */
+        protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository,
+        protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
+        protected \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager
+    ) {
     }
 
-    $headers = [
-      ['data' => $this->t('Block')],
-      ['data' => $this->t('Category')],
-      ['data' => $this->t('Operations')],
-    ];
+    /**
+     * Shows a list of blocks that can be added to a theme's layout.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The current request.
+     * @param string $theme
+     *   Theme key of the block list.
+     *
+     * @return array
+     *   A render array as expected by the renderer.
+     */
+    public function listBlocks(Request $request, $theme)
+    {
+        // Since modals do not render any other part of the page, we need to render
+        // them manually as part of this listing.
+        if ($request->query->get(MainContentViewSubscriber::WRAPPER_FORMAT) === 'drupal_modal') {
+            $build['local_actions'] = $this->buildLocalActions();
+        }
 
-    $region = $request->query->get('region');
-    $weight = $request->query->get('weight');
+        $headers = [
+          ['data' => $this->t('Block')],
+          ['data' => $this->t('Category')],
+          ['data' => $this->t('Operations')],
+        ];
 
-    // Only add blocks which work without any available context.
-    $definitions = $this->blockManager->getFilteredDefinitions('block_ui', $this->contextRepository->getAvailableContexts(), [
-      'theme' => $theme,
-      'region' => $region,
-    ]);
-    // Order by category, and then by admin label.
-    $definitions = $this->blockManager->getSortedDefinitions($definitions);
-    // Filter out definitions that are not intended to be placed by the UI.
-    $definitions = array_filter($definitions, fn(array $definition) => empty($definition['_block_ui_hidden']));
+        $region = $request->query->get('region');
+        $weight = $request->query->get('weight');
 
-    $rows = [];
-    foreach ($definitions as $plugin_id => $plugin_definition) {
-      $row = [];
-      $row['title']['data'] = [
-        '#type' => 'inline_template',
-        '#template' => '<div class="block-filter-text-source">{{ label }}</div>',
-        '#context' => [
-          'label' => $plugin_definition['admin_label'],
-        ],
-      ];
-      $row['category']['data'] = $plugin_definition['category'];
-      $links['add'] = [
-        'title' => $this->t('Place block'),
-        'url' => Url::fromRoute('block.admin_add', ['plugin_id' => $plugin_id, 'theme' => $theme]),
-        'attributes' => [
-          'class' => ['use-ajax'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => Json::encode([
-            'width' => 970,
-          ]),
-        ],
-      ];
-      if ($region) {
-        $links['add']['query']['region'] = $region;
-      }
-      if (isset($weight)) {
-        $links['add']['query']['weight'] = $weight;
-      }
-      $row['operations']['data'] = [
-        '#type' => 'operations',
-        '#links' => $links,
-      ];
-      $rows[] = $row;
+        // Only add blocks which work without any available context.
+        $definitions = $this->blockManager->getFilteredDefinitions('block_ui', $this->contextRepository->getAvailableContexts(), [
+          'theme' => $theme,
+          'region' => $region,
+        ]);
+        // Order by category, and then by admin label.
+        $definitions = $this->blockManager->getSortedDefinitions($definitions);
+        // Filter out definitions that are not intended to be placed by the UI.
+        $definitions = array_filter($definitions, fn (array $definition) => empty($definition['_block_ui_hidden']));
+
+        $rows = [];
+        foreach ($definitions as $plugin_id => $plugin_definition) {
+            $row = [];
+            $row['title']['data'] = [
+              '#type' => 'inline_template',
+              '#template' => '<div class="block-filter-text-source">{{ label }}</div>',
+              '#context' => [
+                'label' => $plugin_definition['admin_label'],
+              ],
+            ];
+            $row['category']['data'] = $plugin_definition['category'];
+            $links['add'] = [
+              'title' => $this->t('Place block'),
+              'url' => Url::fromRoute('block.admin_add', ['plugin_id' => $plugin_id, 'theme' => $theme]),
+              'attributes' => [
+                'class' => ['use-ajax'],
+                'data-dialog-type' => 'modal',
+                'data-dialog-options' => Json::encode([
+                  'width' => 970,
+                ]),
+              ],
+            ];
+            if ($region) {
+                $links['add']['query']['region'] = $region;
+            }
+            if (isset($weight)) {
+                $links['add']['query']['weight'] = $weight;
+            }
+            $row['operations']['data'] = [
+              '#type' => 'operations',
+              '#links' => $links,
+            ];
+            $rows[] = $row;
+        }
+
+        $build['#attached']['library'][] = 'block/drupal.block.admin';
+
+        $build['filter'] = [
+          '#type' => 'search',
+          '#title' => $this->t('Filter'),
+          '#title_display' => 'invisible',
+          '#size' => 30,
+          '#placeholder' => $this->t('Filter by block name'),
+          '#attributes' => [
+            'class' => ['block-filter-text'],
+            'data-element' => '.block-add-table',
+            'title' => $this->t('Enter a part of the block name to filter by.'),
+          ],
+        ];
+
+        $build['blocks'] = [
+          '#type' => 'table',
+          '#header' => $headers,
+          '#rows' => $rows,
+          '#empty' => $this->t('No blocks available.'),
+          '#attributes' => [
+            'class' => ['block-add-table'],
+          ],
+        ];
+
+        return $build;
     }
 
-    $build['#attached']['library'][] = 'block/drupal.block.admin';
-
-    $build['filter'] = [
-      '#type' => 'search',
-      '#title' => $this->t('Filter'),
-      '#title_display' => 'invisible',
-      '#size' => 30,
-      '#placeholder' => $this->t('Filter by block name'),
-      '#attributes' => [
-        'class' => ['block-filter-text'],
-        'data-element' => '.block-add-table',
-        'title' => $this->t('Enter a part of the block name to filter by.'),
-      ],
-    ];
-
-    $build['blocks'] = [
-      '#type' => 'table',
-      '#header' => $headers,
-      '#rows' => $rows,
-      '#empty' => $this->t('No blocks available.'),
-      '#attributes' => [
-        'class' => ['block-add-table'],
-      ],
-    ];
-
-    return $build;
-  }
-
-  /**
-   * Builds the local actions for this listing.
-   *
-   * @return array
-   *   An array of local actions for this listing.
-   */
-  protected function buildLocalActions() {
-    $build = $this->localActionManager->getActionsForRoute($this->routeMatch->getRouteName());
-    // Without this workaround, the action links will be rendered as <li> with
-    // no wrapping <ul> element.
-    if (!empty($build)) {
-      $build['#prefix'] = '<ul class="action-links">';
-      $build['#suffix'] = '</ul>';
+    /**
+     * Builds the local actions for this listing.
+     *
+     * @return array
+     *   An array of local actions for this listing.
+     */
+    protected function buildLocalActions()
+    {
+        $build = $this->localActionManager->getActionsForRoute($this->routeMatch->getRouteName());
+        // Without this workaround, the action links will be rendered as <li> with
+        // no wrapping <ul> element.
+        if (!empty($build)) {
+            $build['#prefix'] = '<ul class="action-links">';
+            $build['#suffix'] = '</ul>';
+        }
+        return $build;
     }
-    return $build;
-  }
 
 }

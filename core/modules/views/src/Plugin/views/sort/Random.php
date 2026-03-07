@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\sort;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -10,31 +12,34 @@ use Drupal\views\Attribute\ViewsSort;
 /**
  * Handle a random sort.
  */
-#[ViewsSort("random")]
-class Random extends SortPluginBase implements CacheableDependencyInterface {
+#[ViewsSort('random')]
+class Random extends SortPluginBase implements CacheableDependencyInterface
+{
+    use UncacheableDependencyTrait;
 
-  use UncacheableDependencyTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function usesGroupBy(): bool
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function usesGroupBy(): bool {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        $this->query->addOrderBy('rand');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    $this->query->addOrderBy('rand');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-    $form['order']['#access'] = FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+        $form['order']['#access'] = false;
+    }
 
 }

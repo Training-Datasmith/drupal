@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\migrate\Attribute\MigrateDestination;
@@ -9,29 +11,32 @@ use Drupal\migrate\Row;
  * Provides null destination plugin.
  */
 #[MigrateDestination(
-  id: 'null',
-  requirements_met: FALSE
+    id: 'null',
+    requirements_met: false
 )]
-class NullDestination extends DestinationBase {
+class NullDestination extends DestinationBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds(): array {
-    return [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): array
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function import(Row $row, array $old_destination_id_values = []) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function import(Row $row, array $old_destination_id_values = [])
+    {
+    }
 
 }

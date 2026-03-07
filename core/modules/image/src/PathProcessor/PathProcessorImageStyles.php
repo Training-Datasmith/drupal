@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\PathProcessor;
 
 use Drupal\Core\PathProcessor\InboundPathProcessorInterface;
-use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -21,49 +22,49 @@ use Symfony\Component\HttpFoundation\Request;
  *   derivatives are already using system/files/styles. Similar to public image
  *   styles, it also converts the file path to a query parameter.
  */
-class PathProcessorImageStyles implements InboundPathProcessorInterface {
-
-  /**
-   * Constructs a new PathProcessorImageStyles object.
-   *
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
-   *   The stream wrapper manager service.
-   */
-  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request) {
-    $directory_path = $this->streamWrapperManager->getViaScheme('public')->getDirectoryPath();
-    if (str_starts_with($path, '/' . $directory_path . '/styles/')) {
-      $path_prefix = '/' . $directory_path . '/styles/';
-    }
-    // Check if the string '/system/files/styles/' exists inside the path,
-    // that means we have a case of private file's image style.
-    elseif (str_contains($path, '/system/files/styles/')) {
-      $path_prefix = '/system/files/styles/';
-      $path = substr($path, strpos($path, $path_prefix), strlen($path));
-    }
-    else {
-      return $path;
+class PathProcessorImageStyles implements InboundPathProcessorInterface
+{
+    /**
+     * Constructs a new PathProcessorImageStyles object.
+     *
+     * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
+     *   The stream wrapper manager service.
+     */
+    public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
+    {
     }
 
-    // Strip out path prefix.
-    $rest = preg_replace('|^' . preg_quote($path_prefix, '|') . '|', '', $path);
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request)
+    {
+        $directory_path = $this->streamWrapperManager->getViaScheme('public')->getDirectoryPath();
+        if (str_starts_with($path, '/' . $directory_path . '/styles/')) {
+            $path_prefix = '/' . $directory_path . '/styles/';
+        }
+        // Check if the string '/system/files/styles/' exists inside the path,
+        // that means we have a case of private file's image style.
+        elseif (str_contains($path, '/system/files/styles/')) {
+            $path_prefix = '/system/files/styles/';
+            $path = substr($path, strpos($path, $path_prefix), strlen($path));
+        } else {
+            return $path;
+        }
 
-    // Get the image style, scheme and path.
-    if (substr_count((string) $rest, '/') >= 2) {
-      [$image_style, $scheme, $file] = explode('/', (string) $rest, 3);
+        // Strip out path prefix.
+        $rest = preg_replace('|^' . preg_quote($path_prefix, '|') . '|', '', $path);
 
-      // Set the file as query parameter.
-      $request->query->set('file', $file);
+        // Get the image style, scheme and path.
+        if (substr_count((string) $rest, '/') >= 2) {
+            [$image_style, $scheme, $file] = explode('/', (string) $rest, 3);
 
-      return $path_prefix . $image_style . '/' . $scheme;
+            // Set the file as query parameter.
+            $request->query->set('file', $file);
+
+            return $path_prefix . $image_style . '/' . $scheme;
+        }
+        return $path;
     }
-    return $path;
-  }
 
 }

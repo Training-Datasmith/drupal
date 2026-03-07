@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Installer\Form;
 
 use Drupal\Component\Utility\UserAgent;
@@ -16,86 +18,88 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class SelectLanguageForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId(): string {
-    return 'install_select_language_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $install_state = NULL): array {
-    if (count($install_state['translations']) > 1) {
-      $files = $install_state['translations'];
+class SelectLanguageForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId(): string
+    {
+        return 'install_select_language_form';
     }
-    else {
-      $files = [];
-    }
-    $standard_languages = LanguageManager::getStandardLanguageList();
-    $select_options = [];
-    $browser_options = [];
 
-    $form['#title'] = 'Choose language';
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $install_state = null): array
+    {
+        if (count($install_state['translations']) > 1) {
+            $files = $install_state['translations'];
+        } else {
+            $files = [];
+        }
+        $standard_languages = LanguageManager::getStandardLanguageList();
+        $select_options = [];
+        $browser_options = [];
 
-    // Build a select list with language names in native language for the user
-    // to choose from. And build a list of available languages for the browser
-    // to select the language default from.
-    // Select lists based on all standard languages.
-    foreach ($standard_languages as $langcode => $language_names) {
-      $select_options[$langcode] = $language_names[1];
-      $browser_options[$langcode] = $langcode;
-    }
-    // Add languages based on language files in the translations directory.
-    if (count($files)) {
-      foreach ($files as $langcode => $uri) {
-        $select_options[$langcode] = isset($standard_languages[$langcode]) ? $standard_languages[$langcode][1] : $langcode;
-        $browser_options[$langcode] = $langcode;
-      }
-    }
-    asort($select_options);
-    $request = Request::createFromGlobals();
-    $browser_langcode = UserAgent::getBestMatchingLangcode($request->server->get('HTTP_ACCEPT_LANGUAGE', ''), $browser_options);
-    $form['langcode'] = [
-      '#type' => 'select',
-      '#title' => 'Choose language',
-      '#title_display' => 'invisible',
-      '#options' => $select_options,
-      // Use the browser detected language as default or English if nothing
-      // found.
-      '#default_value' => !empty($browser_langcode) ? $browser_langcode : 'en',
-    ];
-    $link_to_english = install_full_redirect_url(['parameters' => ['langcode' => 'en']]);
-    $form['help'] = [
-      '#type' => 'item',
-      // #markup is XSS admin filtered which ensures unsafe protocols will be
-      // removed from the URL.
-      '#markup' => '<p>Translations will be downloaded from the <a href="https://localize.drupal.org/download">Drupal Translation website</a>. If you do not want this, select <a href="' . $link_to_english . '">English</a>.</p>',
-      '#states' => [
-        'invisible' => [
-          'select[name="langcode"]' => ['value' => 'en'],
-        ],
-      ],
-    ];
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Save and continue',
-      '#button_type' => 'primary',
-    ];
-    return $form;
-  }
+        $form['#title'] = 'Choose language';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $build_info = $form_state->getBuildInfo();
-    $build_info['args'][0]['parameters']['langcode'] = $form_state->getValue('langcode');
-    $form_state->setBuildInfo($build_info);
-  }
+        // Build a select list with language names in native language for the user
+        // to choose from. And build a list of available languages for the browser
+        // to select the language default from.
+        // Select lists based on all standard languages.
+        foreach ($standard_languages as $langcode => $language_names) {
+            $select_options[$langcode] = $language_names[1];
+            $browser_options[$langcode] = $langcode;
+        }
+        // Add languages based on language files in the translations directory.
+        if (count($files)) {
+            foreach ($files as $langcode => $uri) {
+                $select_options[$langcode] = isset($standard_languages[$langcode]) ? $standard_languages[$langcode][1] : $langcode;
+                $browser_options[$langcode] = $langcode;
+            }
+        }
+        asort($select_options);
+        $request = Request::createFromGlobals();
+        $browser_langcode = UserAgent::getBestMatchingLangcode($request->server->get('HTTP_ACCEPT_LANGUAGE', ''), $browser_options);
+        $form['langcode'] = [
+          '#type' => 'select',
+          '#title' => 'Choose language',
+          '#title_display' => 'invisible',
+          '#options' => $select_options,
+          // Use the browser detected language as default or English if nothing
+          // found.
+          '#default_value' => !empty($browser_langcode) ? $browser_langcode : 'en',
+        ];
+        $link_to_english = install_full_redirect_url(['parameters' => ['langcode' => 'en']]);
+        $form['help'] = [
+          '#type' => 'item',
+          // #markup is XSS admin filtered which ensures unsafe protocols will be
+          // removed from the URL.
+          '#markup' => '<p>Translations will be downloaded from the <a href="https://localize.drupal.org/download">Drupal Translation website</a>. If you do not want this, select <a href="' . $link_to_english . '">English</a>.</p>',
+          '#states' => [
+            'invisible' => [
+              'select[name="langcode"]' => ['value' => 'en'],
+            ],
+          ],
+        ];
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Save and continue',
+          '#button_type' => 'primary',
+        ];
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state): void
+    {
+        $build_info = $form_state->getBuildInfo();
+        $build_info['args'][0]['parameters']['langcode'] = $form_state->getValue('langcode');
+        $form_state->setBuildInfo($build_info);
+    }
 
 }

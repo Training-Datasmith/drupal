@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Password;
 
 /**
@@ -7,57 +9,60 @@ namespace Drupal\Core\Password;
  *
  * @see https://www.php.net/manual/en/book.password.php
  */
-class PhpPassword implements PasswordInterface {
-
-  /**
-   * Constructs a new password hashing instance.
-   *
-   * @param string $algorithm
-   *   The hashing algorithm to use. Defaults to PHP default.
-   * @param array $options
-   *   List of options. Refer to password_hash() for available options.
-   *
-   * @see https://www.php.net/password_hash
-   */
-  public function __construct(
-    protected string $algorithm = PASSWORD_DEFAULT,
-    protected array $options = [],
-  ) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function hash(#[\SensitiveParameter] $password): false|string {
-    // Prevent DoS attacks by refusing to hash large passwords.
-    if (strlen($password) > static::PASSWORD_MAX_LENGTH) {
-      return FALSE;
+class PhpPassword implements PasswordInterface
+{
+    /**
+     * Constructs a new password hashing instance.
+     *
+     * @param string $algorithm
+     *   The hashing algorithm to use. Defaults to PHP default.
+     * @param array $options
+     *   List of options. Refer to password_hash() for available options.
+     *
+     * @see https://www.php.net/password_hash
+     */
+    public function __construct(
+        protected string $algorithm = PASSWORD_DEFAULT,
+        protected array $options = [],
+    ) {
     }
 
-    return password_hash($password, $this->algorithm, $this->options);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function hash(#[\SensitiveParameter] $password): false|string
+    {
+        // Prevent DoS attacks by refusing to hash large passwords.
+        if (strlen($password) > static::PASSWORD_MAX_LENGTH) {
+            return false;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function check(#[\SensitiveParameter] $password, #[\SensitiveParameter] $hash) {
-    // Prevent DoS attacks by refusing to check large passwords.
-    if (strlen($password) > static::PASSWORD_MAX_LENGTH) {
-      return FALSE;
-    }
-    // Newly created accounts may have empty passwords.
-    if ($hash === NULL || $hash === '') {
-      return FALSE;
+        return password_hash($password, $this->algorithm, $this->options);
     }
 
-    return password_verify($password, $hash);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function check(#[\SensitiveParameter] $password, #[\SensitiveParameter] $hash)
+    {
+        // Prevent DoS attacks by refusing to check large passwords.
+        if (strlen($password) > static::PASSWORD_MAX_LENGTH) {
+            return false;
+        }
+        // Newly created accounts may have empty passwords.
+        if ($hash === null || $hash === '') {
+            return false;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function needsRehash(#[\SensitiveParameter] $hash): bool {
-    return password_needs_rehash($hash, $this->algorithm, $this->options);
-  }
+        return password_verify($password, $hash);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function needsRehash(#[\SensitiveParameter] $hash): bool
+    {
+        return password_needs_rehash($hash, $this->algorithm, $this->options);
+    }
 
 }

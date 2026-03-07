@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database;
 
 /**
@@ -8,4 +10,6 @@ namespace Drupal\Core\Database;
  * This exception is thrown e.g. when trying to have an IN condition with an
  * empty array.
  */
-class InvalidQueryException extends \InvalidArgumentException implements DatabaseException {}
+class InvalidQueryException extends \InvalidArgumentException implements DatabaseException
+{
+}

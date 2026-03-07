@@ -9,10 +9,10 @@ namespace Drupal\Core\Plugin;
  *
  * @see \Drupal\Core\Plugin\RemovableDependentPluginInterface::onCollectionDependencyRemoval()
  */
-enum RemovableDependentPluginReturn {
-
-  case Changed;
-  case Remove;
-  case Unchanged;
+enum RemovableDependentPluginReturn
+{
+    case Changed;
+    case Remove;
+    case Unchanged;
 
 }

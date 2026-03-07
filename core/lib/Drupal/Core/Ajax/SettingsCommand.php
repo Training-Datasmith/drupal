@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 use Drupal\Component\Utility\UrlHelper;
@@ -16,42 +18,42 @@ use Drupal\Component\Utility\UrlHelper;
  *
  * @ingroup ajax
  */
-class SettingsCommand implements CommandInterface {
-
-  /**
-   * Constructs a SettingsCommand object.
-   *
-   * @param array $settings
-   *   An array of key/value pairs of JavaScript settings.
-   * @param bool $merge
-   *   Whether the settings should be merged into the global drupalSettings.
-   */
-  public function __construct(
-      protected array $settings,
-      /**
-       * Whether the settings should be merged into the global drupalSettings.
-       *
-       * By default (FALSE), the settings that are passed to Drupal.attachBehaviors
-       * will not include the global drupalSettings.
-       */
-      protected $merge = FALSE
-  )
-  {
-  }
-
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-    if (isset($this->settings['ajax_page_state']['libraries'])) {
-      $this->settings['ajax_page_state']['libraries'] = UrlHelper::compressQueryParameter($this->settings['ajax_page_state']['libraries']);
+class SettingsCommand implements CommandInterface
+{
+    /**
+     * Constructs a SettingsCommand object.
+     *
+     * @param array $settings
+     *   An array of key/value pairs of JavaScript settings.
+     * @param bool $merge
+     *   Whether the settings should be merged into the global drupalSettings.
+     */
+    public function __construct(
+        protected array $settings,
+        /**
+         * Whether the settings should be merged into the global drupalSettings.
+         *
+         * By default (FALSE), the settings that are passed to Drupal.attachBehaviors
+         * will not include the global drupalSettings.
+         */
+        protected $merge = false
+    ) {
     }
 
-    return [
-      'command' => 'settings',
-      'settings' => $this->settings,
-      'merge' => $this->merge,
-    ];
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
+        if (isset($this->settings['ajax_page_state']['libraries'])) {
+            $this->settings['ajax_page_state']['libraries'] = UrlHelper::compressQueryParameter($this->settings['ajax_page_state']['libraries']);
+        }
+
+        return [
+          'command' => 'settings',
+          'settings' => $this->settings,
+          'merge' => $this->merge,
+        ];
+    }
 
 }

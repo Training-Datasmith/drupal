@@ -12,34 +12,37 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestPlaceholderForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_placeholder_test';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    foreach (['textfield', 'textarea', 'url', 'password', 'search', 'tel', 'email', 'number'] as $type) {
-      $form[$type] = [
-        '#type' => $type,
-        '#title' => $type,
-        '#placeholder' => 'placeholder-text',
-      ];
+class FormTestPlaceholderForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_placeholder_test';
     }
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        foreach (['textfield', 'textarea', 'url', 'password', 'search', 'tel', 'email', 'number'] as $type) {
+            $form[$type] = [
+              '#type' => $type,
+              '#title' => $type,
+              '#placeholder' => 'placeholder-text',
+            ];
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

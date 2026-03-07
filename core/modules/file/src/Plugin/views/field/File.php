@@ -1,98 +1,105 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\views\field;
 
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsField;
-use Drupal\views\ResultRow;
-use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
+use Drupal\views\ResultRow;
+use Drupal\views\ViewExecutable;
 
 /**
  * Field handler to provide simple renderer that allows linking to a file.
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("file")]
-class File extends FieldPluginBase {
-
-  /**
-   * Constructs a File object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    if (!empty($options['link_to_file'])) {
-      $this->additional_fields['uri'] = 'uri';
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['link_to_file'] = ['default' => FALSE];
-    return $options;
-  }
-
-  /**
-   * Provide link to file option.
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    $form['link_to_file'] = [
-      '#title' => $this->t('Link this field to download the file'),
-      '#description' => $this->t("Enable to override this field's links."),
-      '#type' => 'checkbox',
-      '#default_value' => !empty($this->options['link_to_file']),
-    ];
-    parent::buildOptionsForm($form, $form_state);
-  }
-
-  /**
-   * Prepares link to the file.
-   *
-   * @param string $data
-   *   The XSS safe string for the link text.
-   * @param \Drupal\views\ResultRow $values
-   *   The values retrieved from a single row of a view's query result.
-   *
-   * @return string
-   *   Returns a string for the link text.
-   */
-  protected function renderLink($data, ResultRow $values) {
-    if (!empty($this->options['link_to_file']) && $data !== NULL && $data !== '') {
-      $this->options['alter']['make_link'] = TRUE;
-      $this->options['alter']['url'] = $this->fileUrlGenerator->generate($this->getValue($values, 'uri'));
+#[ViewsField('file')]
+class File extends FieldPluginBase
+{
+    /**
+     * Constructs a File object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
+     *   The file URL generator.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    return $data;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $value = $this->getValue($values);
-    return $this->renderLink($this->sanitizeValue($value), $values);
-  }
+        if (!empty($options['link_to_file'])) {
+            $this->additional_fields['uri'] = 'uri';
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['link_to_file'] = ['default' => false];
+        return $options;
+    }
+
+    /**
+     * Provide link to file option.
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        $form['link_to_file'] = [
+          '#title' => $this->t('Link this field to download the file'),
+          '#description' => $this->t("Enable to override this field's links."),
+          '#type' => 'checkbox',
+          '#default_value' => !empty($this->options['link_to_file']),
+        ];
+        parent::buildOptionsForm($form, $form_state);
+    }
+
+    /**
+     * Prepares link to the file.
+     *
+     * @param string $data
+     *   The XSS safe string for the link text.
+     * @param \Drupal\views\ResultRow $values
+     *   The values retrieved from a single row of a view's query result.
+     *
+     * @return string
+     *   Returns a string for the link text.
+     */
+    protected function renderLink($data, ResultRow $values)
+    {
+        if (!empty($this->options['link_to_file']) && $data !== null && $data !== '') {
+            $this->options['alter']['make_link'] = true;
+            $this->options['alter']['url'] = $this->fileUrlGenerator->generate($this->getValue($values, 'uri'));
+        }
+
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $value = $this->getValue($values);
+        return $this->renderLink($this->sanitizeValue($value), $values);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Form;
 
 use Drupal\Core\Entity\Form\DeleteMultipleForm as EntityDeleteMultipleForm;
@@ -10,27 +12,30 @@ use Drupal\Core\Url;
  *
  * @internal
  */
-class DeleteMultiple extends EntityDeleteMultipleForm {
+class DeleteMultiple extends EntityDeleteMultipleForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getCancelUrl(): \Drupal\Core\Url
+    {
+        return new Url('system.admin_content');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl(): \Drupal\Core\Url {
-    return new Url('system.admin_content');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDeletedMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup
+    {
+        return $this->formatPlural($count, 'Deleted @count content item.', 'Deleted @count content items.');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDeletedMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
-    return $this->formatPlural($count, 'Deleted @count content item.', 'Deleted @count content items.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getInaccessibleMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
-    return $this->formatPlural($count, "@count content item has not been deleted because you do not have the necessary permissions.", "@count content items have not been deleted because you do not have the necessary permissions.");
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getInaccessibleMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup
+    {
+        return $this->formatPlural($count, '@count content item has not been deleted because you do not have the necessary permissions.', '@count content items have not been deleted because you do not have the necessary permissions.');
+    }
 
 }

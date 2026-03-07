@@ -12,21 +12,26 @@ use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
-abstract class AbstractTest extends BrowserTestBase {
+abstract class AbstractTest extends BrowserTestBase
+{
 }
 
-class MissingAttributes extends WebDriverTestBase {
-}
-
-#[RunTestsInSeparateProcesses]
-class MissingGroup extends BrowserTestBase {
-}
-
-#[Group('Test')]
-class MissingRunTestsInSeparateProcesses extends KernelTestBase {
+class MissingAttributes extends WebDriverTestBase
+{
 }
 
 #[RunTestsInSeparateProcesses]
+class MissingGroup extends BrowserTestBase
+{
+}
+
 #[Group('Test')]
-class Good extends BrowserTestBase {
+class MissingRunTestsInSeparateProcesses extends KernelTestBase
+{
+}
+
+#[RunTestsInSeparateProcesses]
+#[Group('Test')]
+class Good extends BrowserTestBase
+{
 }

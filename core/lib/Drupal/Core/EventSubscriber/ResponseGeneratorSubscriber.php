@@ -1,40 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Response subscriber to add X-Generator header tag.
  */
-class ResponseGeneratorSubscriber implements EventSubscriberInterface {
+class ResponseGeneratorSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Sets extra X-Generator header on successful responses.
+     *
+     * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
+     *   The event to process.
+     */
+    public function onRespond(ResponseEvent $event): void
+    {
+        if (!$event->isMainRequest()) {
+            return;
+        }
 
-  /**
-   * Sets extra X-Generator header on successful responses.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
-   *   The event to process.
-   */
-  public function onRespond(ResponseEvent $event): void {
-    if (!$event->isMainRequest()) {
-      return;
+        $response = $event->getResponse();
+
+        // Set the generator in the HTTP header.
+        [$version] = explode('.', \Drupal::VERSION, 2);
+        $response->headers->set('X-Generator', 'Drupal ' . $version . ' (https://www.drupal.org)');
     }
 
-    $response = $event->getResponse();
-
-    // Set the generator in the HTTP header.
-    [$version] = explode('.', \Drupal::VERSION, 2);
-    $response->headers->set('X-Generator', 'Drupal ' . $version . ' (https://www.drupal.org)');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    $events[KernelEvents::RESPONSE][] = ['onRespond'];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        $events[KernelEvents::RESPONSE][] = ['onRespond'];
+        return $events;
+    }
 
 }

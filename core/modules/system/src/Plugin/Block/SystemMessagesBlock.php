@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\Plugin\Block;
 
 use Drupal\Core\Block\Attribute\Block;
@@ -14,38 +16,41 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see @see \Drupal\Core\Messenger\MessengerInterface
  */
 #[Block(
-  id: "system_messages_block",
-  admin_label: new TranslatableMarkup("Messages")
+    id: 'system_messages_block',
+    admin_label: new TranslatableMarkup('Messages')
 )]
-class SystemMessagesBlock extends BlockBase implements MessagesBlockPluginInterface {
+class SystemMessagesBlock extends BlockBase implements MessagesBlockPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'label_display' => '0',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'label_display' => '0',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        return [
+          '#type' => 'status_messages',
+          '#include_fallback' => true,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    return [
-      '#type' => 'status_messages',
-      '#include_fallback' => TRUE,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge(): int {
-    // The messages are session-specific and hence aren't cacheable, but the
-    // block itself *is* cacheable because it uses a #lazy_builder callback and
-    // hence the block has a globally cacheable render array.
-    return Cache::PERMANENT;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge(): int
+    {
+        // The messages are session-specific and hence aren't cacheable, but the
+        // block itself *is* cacheable because it uses a #lazy_builder callback and
+        // hence the block has a globally cacheable render array.
+        return Cache::PERMANENT;
+    }
 
 }

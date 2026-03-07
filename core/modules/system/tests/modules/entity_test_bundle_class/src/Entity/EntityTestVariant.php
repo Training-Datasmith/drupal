@@ -11,4 +11,6 @@ use Drupal\entity_test\Entity\EntityTest;
  *
  * @see entity_test_bundle_class_entity_type_alter()
  */
-class EntityTestVariant extends EntityTest {}
+class EntityTestVariant extends EntityTest
+{
+}

@@ -12,24 +12,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('file')]
 #[RunTestsInSeparateProcesses]
-class RemoteFileSaveUploadTest extends SaveUploadTest {
+class RemoteFileSaveUploadTest extends SaveUploadTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['file_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['file_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->config('system.file')->set('default_scheme', 'dummy-remote')->save();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->config('system.file')->set('default_scheme', 'dummy-remote')->save();
+    }
 
 }

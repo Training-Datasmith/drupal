@@ -10,9 +10,9 @@ namespace Drupal\Core\DefaultContent;
  * @internal
  *   This API is experimental.
  */
-enum Existing {
-
-  case Error;
-  case Skip;
+enum Existing
+{
+    case Error;
+    case Skip;
 
 }

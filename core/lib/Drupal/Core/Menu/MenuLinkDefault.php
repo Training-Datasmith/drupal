@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Menu;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -8,78 +10,84 @@ use Drupal\Core\Url;
 /**
  * Provides a default implementation for menu link plugins.
  */
-class MenuLinkDefault extends MenuLinkBase implements ContainerFactoryPluginInterface {
+class MenuLinkDefault extends MenuLinkBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $overrideAllowed = [
+      'menu_name' => 1,
+      'parent' => 1,
+      'weight' => 1,
+      'expanded' => 1,
+      'enabled' => 1,
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $overrideAllowed = [
-    'menu_name' => 1,
-    'parent' => 1,
-    'weight' => 1,
-    'expanded' => 1,
-    'enabled' => 1,
-  ];
-
-  /**
-   * Constructs a new MenuLinkDefault.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $staticOverride
-   *   The static override storage.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $staticOverride) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(): string {
-    return (string) $this->pluginDefinition['title'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): string {
-    return (string) $this->pluginDefinition['description'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isResettable(): bool {
-    // The link can be reset if it has an override.
-    return (bool) $this->staticOverride->loadOverride($this->getPluginId());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getResetRoute(): Url {
-    return Url::fromRoute('menu_ui.link_reset', ['menu_link_plugin' => $this->getPluginId()]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateLink(array $new_definition_values, $persist) {
-    // Filter the list of updates to only those that are allowed.
-    $overrides = array_intersect_key($new_definition_values, $this->overrideAllowed);
-    // Update the definition.
-    $this->pluginDefinition = $overrides + $this->getPluginDefinition();
-    if ($persist) {
-      // Always save the menu name as an override to avoid defaulting to tools.
-      $overrides['menu_name'] = $this->pluginDefinition['menu_name'];
-      $this->staticOverride->saveOverride($this->getPluginId(), $this->pluginDefinition);
+    /**
+     * Constructs a new MenuLinkDefault.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $staticOverride
+     *   The static override storage.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $staticOverride)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $this->pluginDefinition;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(): string
+    {
+        return (string) $this->pluginDefinition['title'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): string
+    {
+        return (string) $this->pluginDefinition['description'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isResettable(): bool
+    {
+        // The link can be reset if it has an override.
+        return (bool) $this->staticOverride->loadOverride($this->getPluginId());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResetRoute(): Url
+    {
+        return Url::fromRoute('menu_ui.link_reset', ['menu_link_plugin' => $this->getPluginId()]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateLink(array $new_definition_values, $persist)
+    {
+        // Filter the list of updates to only those that are allowed.
+        $overrides = array_intersect_key($new_definition_values, $this->overrideAllowed);
+        // Update the definition.
+        $this->pluginDefinition = $overrides + $this->getPluginDefinition();
+        if ($persist) {
+            // Always save the menu name as an override to avoid defaulting to tools.
+            $overrides['menu_name'] = $this->pluginDefinition['menu_name'];
+            $this->staticOverride->saveOverride($this->getPluginId(), $this->pluginDefinition);
+        }
+        return $this->pluginDefinition;
+    }
 
 }

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\Validation\Constraint;
 
-use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
 
 /**
  * Checks if the user's email address is provided if required.
@@ -12,34 +14,35 @@ use Symfony\Component\Validator\Constraint;
  * and the user performing the edit has 'administer users' permission.
  * This allows users without email address to be edited and deleted.
  */
-class UserMailRequiredValidator extends ConstraintValidator {
+class UserMailRequiredValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($items, Constraint $constraint): void
+    {
+        /** @var \Drupal\Core\Field\FieldItemListInterface $items */
+        /** @var \Drupal\user\UserInterface $account */
+        $account = $items->getEntity();
+        if (!isset($account)) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($items, Constraint $constraint): void {
-    /** @var \Drupal\Core\Field\FieldItemListInterface $items */
-    /** @var \Drupal\user\UserInterface $account */
-    $account = $items->getEntity();
-    if (!isset($account)) {
-      return;
+        $existing_value = null;
+
+        // Only validate for existing user.
+        if (!$account->isNew()) {
+            $account_unchanged = \Drupal::entityTypeManager()
+              ->getStorage('user')
+              ->loadUnchanged($account->id());
+            $existing_value = $account_unchanged->getEmail();
+        }
+
+        $required = !(!$existing_value && \Drupal::currentUser()->hasPermission('administer users'));
+
+        if ($required && (!isset($items) || $items->isEmpty())) {
+            $this->context->addViolation($constraint->message, ['@name' => $account->getFieldDefinition('mail')->getLabel()]);
+        }
     }
-
-    $existing_value = NULL;
-
-    // Only validate for existing user.
-    if (!$account->isNew()) {
-      $account_unchanged = \Drupal::entityTypeManager()
-        ->getStorage('user')
-        ->loadUnchanged($account->id());
-      $existing_value = $account_unchanged->getEmail();
-    }
-
-    $required = !(!$existing_value && \Drupal::currentUser()->hasPermission('administer users'));
-
-    if ($required && (!isset($items) || $items->isEmpty())) {
-      $this->context->addViolation($constraint->message, ['@name' => $account->getFieldDefinition('mail')->getLabel()]);
-    }
-  }
 
 }

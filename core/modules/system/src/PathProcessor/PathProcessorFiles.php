@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system\PathProcessor;
 
 use Drupal\Core\PathProcessor\InboundPathProcessorInterface;
@@ -11,18 +13,19 @@ use Symfony\Component\HttpFoundation\Request;
  * As the route system does not allow arbitrary amount of parameters convert
  * the file path to a query parameter on the request.
  */
-class PathProcessorFiles implements InboundPathProcessorInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processInbound($path, Request $request) {
-    if (str_starts_with($path, '/system/files/') && !$request->query->has('file')) {
-      $file_path = preg_replace('|^\/system\/files\/|', '', $path);
-      $request->query->set('file', $file_path);
-      return '/system/files';
+class PathProcessorFiles implements InboundPathProcessorInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function processInbound($path, Request $request)
+    {
+        if (str_starts_with($path, '/system/files/') && !$request->query->has('file')) {
+            $file_path = preg_replace('|^\/system\/files\/|', '', $path);
+            $request->query->set('file', $file_path);
+            return '/system/files';
+        }
+        return $path;
     }
-    return $path;
-  }
 
 }

@@ -11,15 +11,16 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines the 'test_field_with_multiple_descriptions' entity field item.
  */
 #[FieldType(
-  id: "test_field_with_multiple_descriptions",
-  label: new TranslatableMarkup("Test field (multiple descriptions"),
-  description: [
-    new TranslatableMarkup("This multiple line description needs to use an array"),
-    new TranslatableMarkup("This second line contains important information"),
+    id: 'test_field_with_multiple_descriptions',
+    label: new TranslatableMarkup('Test field (multiple descriptions'),
+    description: [
+    new TranslatableMarkup('This multiple line description needs to use an array'),
+    new TranslatableMarkup('This second line contains important information'),
   ],
-  category: "field_test_descriptions",
-  default_widget: "test_field_widget",
-  default_formatter: "field_test_default"
+    category: 'field_test_descriptions',
+    default_widget: 'test_field_widget',
+    default_formatter: 'field_test_default'
 )]
-class TestItemWithMultipleDescriptions extends TestItem {
+class TestItemWithMultipleDescriptions extends TestItem
+{
 }

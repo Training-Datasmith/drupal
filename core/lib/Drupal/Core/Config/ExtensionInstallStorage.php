@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Extension\ExtensionDiscovery;
@@ -10,119 +12,122 @@ use Drupal\Core\Extension\ExtensionDiscovery;
  * @see \Drupal\Core\Config\ConfigInstaller
  * @see \Drupal\Core\Config\TypedConfigManager
  */
-class ExtensionInstallStorage extends InstallStorage {
-
-  /**
-   * Overrides \Drupal\Core\Config\InstallStorage::__construct().
-   *
-   * @param \Drupal\Core\Config\StorageInterface $configStorage
-   *   The active configuration store where the list of enabled modules and
-   *   themes is stored.
-   * @param string $directory
-   *   The directory to scan in each extension to scan for files.
-   * @param string $collection
-   *   The collection to store configuration in.
-   * @param bool $includeProfile
-   *   Whether to include the install profile in extensions to
-   *   search and to get overrides from.
-   * @param string $installProfile
-   *   The current installation profile.
-   */
-  public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, $directory, $collection, /**
+class ExtensionInstallStorage extends InstallStorage
+{
+    /**
+     * Overrides \Drupal\Core\Config\InstallStorage::__construct().
+     *
+     * @param \Drupal\Core\Config\StorageInterface $configStorage
+     *   The active configuration store where the list of enabled modules and
+     *   themes is stored.
+     * @param string $directory
+     *   The directory to scan in each extension to scan for files.
+     * @param string $collection
+     *   The collection to store configuration in.
+     * @param bool $includeProfile
+     *   Whether to include the install profile in extensions to
+     *   search and to get overrides from.
+     * @param string $installProfile
+     *   The current installation profile.
+     */
+    public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, $directory, $collection, /**
    * Flag to include the profile in the list of enabled modules.
    */
-  protected $includeProfile, /**
+        protected $includeProfile, /**
    * The name of the currently active installation profile.
    *
    * In the early installer this value can be NULL.
    */
-  protected $installProfile) {
-    parent::__construct($directory, $collection);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createCollection($collection): static {
-    return new static(
-      $this->configStorage,
-      $this->directory,
-      $collection,
-      $this->includeProfile,
-      $this->installProfile
-    );
-  }
-
-  /**
-   * Returns a map of all config object names and their folders.
-   *
-   * The list is based on enabled modules and themes. The active configuration
-   * storage is used rather than \Drupal\Core\Extension\ModuleHandler and
-   *  \Drupal\Core\Extension\ThemeHandler in order to resolve circular
-   * dependencies between these services and \Drupal\Core\Config\ConfigInstaller
-   * and \Drupal\Core\Config\TypedConfigManager.
-   *
-   * @return array
-   *   An array mapping config object names with directories.
-   */
-  protected function getAllFolders() {
-    if (!isset($this->folders)) {
-      $this->folders = [];
-      $this->folders += $this->getCoreNames();
-
-      $extensions = $this->configStorage->read('core.extension');
-      // @todo Remove this scan as part of https://www.drupal.org/node/2186491
-      $listing = new ExtensionDiscovery(\Drupal::root());
-      if (!empty($extensions['module'])) {
-        $modules = $extensions['module'];
-        // Remove the install profile as this is handled later.
-        unset($modules[$this->installProfile]);
-        $profile_list = $listing->scan('profile');
-        if ($this->installProfile && isset($profile_list[$this->installProfile])) {
-          // Prime the \Drupal\Core\Extension\ExtensionList::getPathname()
-          // static cache with the profile info file location so we can use
-          // ExtensionList::getPath() on the active profile during the module
-          // scan.
-          // @todo Remove as part of https://www.drupal.org/node/2186491
-          /** @var \Drupal\Core\Extension\ProfileExtensionList $profile_extension_list */
-          $profile_extension_list = \Drupal::service('extension.list.profile');
-          $profile_extension_list->setPathname($this->installProfile, $profile_list[$this->installProfile]->getPathname());
-        }
-        $module_list_scan = $listing->scan('module');
-        $module_list = [];
-        foreach (array_keys($modules) as $module) {
-          if (isset($module_list_scan[$module])) {
-            $module_list[$module] = $module_list_scan[$module];
-          }
-        }
-        $this->folders += $this->getComponentNames($module_list);
-      }
-      if (!empty($extensions['theme'])) {
-        $theme_list_scan = $listing->scan('theme');
-        foreach (array_keys($extensions['theme']) as $theme) {
-          if (isset($theme_list_scan[$theme])) {
-            $theme_list[$theme] = $theme_list_scan[$theme];
-          }
-        }
-        $this->folders += $this->getComponentNames($theme_list);
-      }
-
-      if ($this->includeProfile) {
-        // The install profile can override module default configuration. We do
-        // this by replacing the config file path from the module/theme with the
-        // install profile version if there are any duplicates.
-        if ($this->installProfile) {
-          if (!isset($profile_list)) {
-            $profile_list = $listing->scan('profile');
-          }
-          if (isset($profile_list[$this->installProfile])) {
-            $profile_folders = $this->getComponentNames([$profile_list[$this->installProfile]]);
-            $this->folders = $profile_folders + $this->folders;
-          }
-        }
-      }
+        protected $installProfile)
+    {
+        parent::__construct($directory, $collection);
     }
-    return $this->folders;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createCollection($collection): static
+    {
+        return new static(
+            $this->configStorage,
+            $this->directory,
+            $collection,
+            $this->includeProfile,
+            $this->installProfile
+        );
+    }
+
+    /**
+     * Returns a map of all config object names and their folders.
+     *
+     * The list is based on enabled modules and themes. The active configuration
+     * storage is used rather than \Drupal\Core\Extension\ModuleHandler and
+     *  \Drupal\Core\Extension\ThemeHandler in order to resolve circular
+     * dependencies between these services and \Drupal\Core\Config\ConfigInstaller
+     * and \Drupal\Core\Config\TypedConfigManager.
+     *
+     * @return array
+     *   An array mapping config object names with directories.
+     */
+    protected function getAllFolders()
+    {
+        if (!isset($this->folders)) {
+            $this->folders = [];
+            $this->folders += $this->getCoreNames();
+
+            $extensions = $this->configStorage->read('core.extension');
+            // @todo Remove this scan as part of https://www.drupal.org/node/2186491
+            $listing = new ExtensionDiscovery(\Drupal::root());
+            if (!empty($extensions['module'])) {
+                $modules = $extensions['module'];
+                // Remove the install profile as this is handled later.
+                unset($modules[$this->installProfile]);
+                $profile_list = $listing->scan('profile');
+                if ($this->installProfile && isset($profile_list[$this->installProfile])) {
+                    // Prime the \Drupal\Core\Extension\ExtensionList::getPathname()
+                    // static cache with the profile info file location so we can use
+                    // ExtensionList::getPath() on the active profile during the module
+                    // scan.
+                    // @todo Remove as part of https://www.drupal.org/node/2186491
+                    /** @var \Drupal\Core\Extension\ProfileExtensionList $profile_extension_list */
+                    $profile_extension_list = \Drupal::service('extension.list.profile');
+                    $profile_extension_list->setPathname($this->installProfile, $profile_list[$this->installProfile]->getPathname());
+                }
+                $module_list_scan = $listing->scan('module');
+                $module_list = [];
+                foreach (array_keys($modules) as $module) {
+                    if (isset($module_list_scan[$module])) {
+                        $module_list[$module] = $module_list_scan[$module];
+                    }
+                }
+                $this->folders += $this->getComponentNames($module_list);
+            }
+            if (!empty($extensions['theme'])) {
+                $theme_list_scan = $listing->scan('theme');
+                foreach (array_keys($extensions['theme']) as $theme) {
+                    if (isset($theme_list_scan[$theme])) {
+                        $theme_list[$theme] = $theme_list_scan[$theme];
+                    }
+                }
+                $this->folders += $this->getComponentNames($theme_list);
+            }
+
+            if ($this->includeProfile) {
+                // The install profile can override module default configuration. We do
+                // this by replacing the config file path from the module/theme with the
+                // install profile version if there are any duplicates.
+                if ($this->installProfile) {
+                    if (!isset($profile_list)) {
+                        $profile_list = $listing->scan('profile');
+                    }
+                    if (isset($profile_list[$this->installProfile])) {
+                        $profile_folders = $this->getComponentNames([$profile_list[$this->installProfile]]);
+                        $this->folders = $profile_folders + $this->folders;
+                    }
+                }
+            }
+        }
+        return $this->folders;
+    }
 
 }

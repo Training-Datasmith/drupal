@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Entity;
 
 use Drupal\Core\Entity\DraggableListBuilderTrait;
@@ -14,43 +16,46 @@ use Drupal\Core\Form\FormInterface;
  * To enable this feature, the entity type must define a "weight" key in its
  * entity keys annotation.
  */
-abstract class DraggableListBuilder extends ConfigEntityListBuilder implements FormInterface {
+abstract class DraggableListBuilder extends ConfigEntityListBuilder implements FormInterface
+{
+    use DraggableListBuilderTrait;
 
-  use DraggableListBuilderTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage)
+    {
+        parent::__construct($entity_type, $storage);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage) {
-    parent::__construct($entity_type, $storage);
+        // Do not inject the form builder for backwards-compatibility.
+        $this->formBuilder = \Drupal::formBuilder();
 
-    // Do not inject the form builder for backwards-compatibility.
-    $this->formBuilder = \Drupal::formBuilder();
+        // Check if the entity type supports weighting and store the key.
+        if ($this->entityType->hasKey('weight')) {
+            $this->weightKey = $this->entityType->getKey('weight');
+        }
 
-    // Check if the entity type supports weighting and store the key.
-    if ($this->entityType->hasKey('weight')) {
-      $this->weightKey = $this->entityType->getKey('weight');
+        // Disable limit to load all entities for full drag-and-drop support.
+        $this->limit = false;
     }
 
-    // Disable limit to load all entities for full drag-and-drop support.
-    $this->limit = FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWeight(EntityInterface $entity): int|float
+    {
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
+        return $entity->get($this->weightKey) ?: 0;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getWeight(EntityInterface $entity): int|float {
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
-    return $entity->get($this->weightKey) ?: 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setWeight(EntityInterface $entity, int|float $weight): EntityInterface {
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
-    $entity->set($this->weightKey, $weight);
-    return $entity;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function setWeight(EntityInterface $entity, int|float $weight): EntityInterface
+    {
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
+        $entity->set($this->weightKey, $weight);
+        return $entity;
+    }
 
 }

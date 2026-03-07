@@ -13,34 +13,36 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a 'TestAttributes' block.
  */
 #[Block(
-  id: "layout_builder_test_test_attributes",
-  admin_label: new TranslatableMarkup("Test Attributes"),
-  category: new TranslatableMarkup("Test")
+    id: 'layout_builder_test_test_attributes',
+    admin_label: new TranslatableMarkup('Test Attributes'),
+    category: new TranslatableMarkup('Test')
 )]
-class TestAttributesBlock extends BlockBase {
+class TestAttributesBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function blockForm($form, FormStateInterface $form_state)
+    {
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function blockForm($form, FormStateInterface $form_state) {
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    $build = [
-      '#attributes' => [
-        'class' => ['attribute-test-class'],
-        'custom-attribute' => 'test',
-      ],
-      '#markup' => $this->t('Example block providing its own attributes.'),
-      '#contextual_links' => [
-        'layout_builder_test' => ['route_parameters' => []],
-      ],
-    ];
-    return $build;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        $build = [
+          '#attributes' => [
+            'class' => ['attribute-test-class'],
+            'custom-attribute' => 'test',
+          ],
+          '#markup' => $this->t('Example block providing its own attributes.'),
+          '#contextual_links' => [
+            'layout_builder_test' => ['route_parameters' => []],
+          ],
+        ];
+        return $build;
+    }
 
 }

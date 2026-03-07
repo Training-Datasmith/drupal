@@ -9,20 +9,21 @@ use Drupal\Core\Ajax\AppendCommand;
 /**
  * Test Ajax command.
  */
-class AjaxTestCommandReturnPromise extends AppendCommand {
+class AjaxTestCommandReturnPromise extends AppendCommand
+{
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render()
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render() {
-
-    return [
-      'command' => 'ajaxCommandReturnPromise',
-      'method' => 'append',
-      'selector' => $this->selector,
-      'data' => $this->getRenderedContent(),
-      'settings' => $this->settings,
-    ];
-  }
+        return [
+          'command' => 'ajaxCommandReturnPromise',
+          'method' => 'append',
+          'selector' => $this->selector,
+          'data' => $this->getRenderedContent(),
+          'settings' => $this->settings,
+        ];
+    }
 
 }

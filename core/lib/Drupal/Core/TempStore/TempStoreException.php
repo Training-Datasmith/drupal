@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TempStore;
 
 /**
@@ -8,4 +10,6 @@ namespace Drupal\Core\TempStore;
  * @see \Drupal\Core\TempStore\SharedTempStore
  * @see \Drupal\Core\TempStore\PrivateTempStore
  */
-class TempStoreException extends \Exception {}
+class TempStoreException extends \Exception
+{
+}

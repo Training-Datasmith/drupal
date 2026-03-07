@@ -9,11 +9,12 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Contains hooks for testing hook collection.
  */
-class TestHookCollectionHooks {
-
-  #[Hook('test_hook_alter')]
-  public function testHookAlter(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
+class TestHookCollectionHooks
+{
+    #[Hook('test_hook_alter')]
+    public function testHookAlter(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
 }

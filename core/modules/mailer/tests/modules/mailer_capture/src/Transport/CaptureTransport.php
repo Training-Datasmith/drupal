@@ -15,36 +15,39 @@ use Symfony\Contracts\Service\Attribute\Required;
  *
  * This class is for running tests or for development.
  */
-class CaptureTransport extends AbstractTransport implements TransportInterface {
+class CaptureTransport extends AbstractTransport implements TransportInterface
+{
+    /**
+     * Key value factory.
+     */
+    protected KeyValueFactoryInterface $keyValueFactory;
 
-  /**
-   * Key value factory.
-   */
-  protected KeyValueFactoryInterface $keyValueFactory;
+    /**
+     * Set key value factory.
+     */
+    #[Required]
+    public function setKeyValueFactory(KeyValueFactoryInterface $keyValueFactory): void
+    {
+        $this->keyValueFactory = $keyValueFactory;
+    }
 
-  /**
-   * Set key value factory.
-   */
-  #[Required]
-  public function setKeyValueFactory(KeyValueFactoryInterface $keyValueFactory): void {
-    $this->keyValueFactory = $keyValueFactory;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function doSend(SentMessage $message): void
+    {
+        $keyValueStore = $this->keyValueFactory->get('mailer_capture');
+        $capturedMails = $keyValueStore->get('messages', []);
+        $capturedMails[] = $message;
+        $keyValueStore->set('messages', $capturedMails);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function doSend(SentMessage $message): void {
-    $keyValueStore = $this->keyValueFactory->get('mailer_capture');
-    $capturedMails = $keyValueStore->get('messages', []);
-    $capturedMails[] = $message;
-    $keyValueStore->set('messages', $capturedMails);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return 'drupal.test-capture';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return 'drupal.test-capture';
+    }
 
 }

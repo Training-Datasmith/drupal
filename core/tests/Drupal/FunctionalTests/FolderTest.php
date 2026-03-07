@@ -15,21 +15,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('browsertestbase')]
 #[RunTestsInSeparateProcesses]
-class FolderTest extends BrowserTestBase {
+class FolderTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['image'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['image'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  public function testFolderSetup(): void {
-    $directory = 'public://styles';
-    $this->assertTrue(\Drupal::service('file_system')->prepareDirectory($directory, FALSE), 'Directory created.');
-  }
+    public function testFolderSetup(): void
+    {
+        $directory = 'public://styles';
+        $this->assertTrue(\Drupal::service('file_system')->prepareDirectory($directory, false), 'Directory created.');
+    }
 
 }

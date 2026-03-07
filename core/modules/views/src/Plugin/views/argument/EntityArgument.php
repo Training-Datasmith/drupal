@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -19,32 +21,33 @@ use Drupal\views\Attribute\ViewsArgument;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'entity_id',
+    id: 'entity_id',
 )]
-class EntityArgument extends NumericArgument implements ContainerFactoryPluginInterface {
-
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    protected EntityRepositoryInterface $entityRepository,
-    protected EntityTypeManagerInterface $entityTypeManager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function titleQuery(): array {
-    $titles = [];
-
-    $entities = $this->entityTypeManager->getStorage($this->definition['entity_type'])->loadMultiple($this->value);
-    foreach ($entities as $entity) {
-      $titles[$entity->id()] = $this->entityRepository->getTranslationFromContext($entity)->label();
+class EntityArgument extends NumericArgument implements ContainerFactoryPluginInterface
+{
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        protected EntityRepositoryInterface $entityRepository,
+        protected EntityTypeManagerInterface $entityTypeManager,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    return $titles;
-  }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function titleQuery(): array
+    {
+        $titles = [];
+
+        $entities = $this->entityTypeManager->getStorage($this->definition['entity_type'])->loadMultiple($this->value);
+        foreach ($entities as $entity) {
+            $titles[$entity->id()] = $this->entityRepository->getTranslationFromContext($entity)->label();
+        }
+        return $titles;
+    }
 
 }

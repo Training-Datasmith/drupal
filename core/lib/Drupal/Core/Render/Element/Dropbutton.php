@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -45,43 +47,45 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * @see \Drupal\Core\Render\Element\Operations
  */
 #[RenderElement('dropbutton')]
-class Dropbutton extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#pre_render' => [
-        [static::class, 'preRenderDropbutton'],
-      ],
-      '#theme' => 'links__dropbutton',
-    ];
-  }
-
-  /**
-   * Pre-render callback: Attaches the dropbutton library and required markup.
-   */
-  public static function preRenderDropbutton(array $element): array {
-    $element['#attached']['library'][] = 'core/drupal.dropbutton';
-    $element['#attributes']['class'][] = 'dropbutton';
-
-    if (!empty($element['#dropbutton_type'])) {
-      $element['#attributes']['class'][] = 'dropbutton--' . $element['#dropbutton_type'];
+class Dropbutton extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#pre_render' => [
+            [static::class, 'preRenderDropbutton'],
+          ],
+          '#theme' => 'links__dropbutton',
+        ];
     }
 
-    if (!isset($element['#theme_wrappers'])) {
-      $element['#theme_wrappers'] = [];
-    }
-    array_unshift($element['#theme_wrappers'], 'dropbutton_wrapper');
+    /**
+     * Pre-render callback: Attaches the dropbutton library and required markup.
+     */
+    public static function preRenderDropbutton(array $element): array
+    {
+        $element['#attached']['library'][] = 'core/drupal.dropbutton';
+        $element['#attributes']['class'][] = 'dropbutton';
 
-    // Enable targeted theming of specific dropbuttons (e.g., 'operations' or
-    // 'operations__node').
-    if (isset($element['#subtype'])) {
-      $element['#theme'] .= '__' . $element['#subtype'];
-    }
+        if (!empty($element['#dropbutton_type'])) {
+            $element['#attributes']['class'][] = 'dropbutton--' . $element['#dropbutton_type'];
+        }
 
-    return $element;
-  }
+        if (!isset($element['#theme_wrappers'])) {
+            $element['#theme_wrappers'] = [];
+        }
+        array_unshift($element['#theme_wrappers'], 'dropbutton_wrapper');
+
+        // Enable targeted theming of specific dropbuttons (e.g., 'operations' or
+        // 'operations__node').
+        if (isset($element['#subtype'])) {
+            $element['#theme'] .= '__' . $element['#subtype'];
+        }
+
+        return $element;
+    }
 
 }

@@ -19,13 +19,14 @@ use Drupal\migrate_multiple_provider_test\Plugin\migrate\source\EmptySource;
  *   source_module = "migrate"
  * )
  */
-class MigrateSourceWithAnnotationsMultipleProviders extends EmptySource {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString() {
-    return 'Annotated multiple providers';
-  }
+class MigrateSourceWithAnnotationsMultipleProviders extends EmptySource
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
+    {
+        return 'Annotated multiple providers';
+    }
 
 }

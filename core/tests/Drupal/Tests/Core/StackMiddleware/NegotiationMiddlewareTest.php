@@ -18,146 +18,154 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  */
 #[CoversClass(NegotiationMiddleware::class)]
 #[Group('NegotiationMiddleware')]
-class NegotiationMiddlewareTest extends UnitTestCase {
+class NegotiationMiddlewareTest extends UnitTestCase
+{
+    /**
+     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    protected $httpKernel;
 
-  /**
-   * @var \Symfony\Component\HttpKernel\HttpKernelInterface
-   */
-  protected $httpKernel;
+    /**
+     * @var \Drupal\Tests\Core\StackMiddleware\StubNegotiationMiddleware
+     */
+    protected $contentNegotiation;
 
-  /**
-   * @var \Drupal\Tests\Core\StackMiddleware\StubNegotiationMiddleware
-   */
-  protected $contentNegotiation;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
+        $this->contentNegotiation = new StubNegotiationMiddleware($this->httpKernel->reveal());
+    }
 
-    $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
-    $this->contentNegotiation = new StubNegotiationMiddleware($this->httpKernel->reveal());
-  }
+    /**
+     * Tests the getContentType() method with AJAX iframe upload.
+     *
+     * @legacy-covers ::getContentType
+     */
+    public function testAjaxIframeUpload(): void
+    {
+        $request = new Request();
+        $request->request->set('ajax_iframe_upload', '1');
 
-  /**
-   * Tests the getContentType() method with AJAX iframe upload.
-   *
-   * @legacy-covers ::getContentType
-   */
-  public function testAjaxIframeUpload(): void {
-    $request = new Request();
-    $request->request->set('ajax_iframe_upload', '1');
+        $this->assertSame('iframeupload', $this->contentNegotiation->getContentType($request));
+    }
 
-    $this->assertSame('iframeupload', $this->contentNegotiation->getContentType($request));
-  }
+    /**
+     * Tests the specifying a format via query parameters gets used.
+     *
+     * @legacy-covers ::getContentType
+     */
+    public function testFormatViaQueryParameter(): void
+    {
+        $request = new Request();
+        $request->query->set('_format', 'bob');
 
-  /**
-   * Tests the specifying a format via query parameters gets used.
-   *
-   * @legacy-covers ::getContentType
-   */
-  public function testFormatViaQueryParameter(): void {
-    $request = new Request();
-    $request->query->set('_format', 'bob');
+        $this->assertSame('bob', $this->contentNegotiation->getContentType($request));
+    }
 
-    $this->assertSame('bob', $this->contentNegotiation->getContentType($request));
-  }
+    /**
+     * Tests the getContentType() method when no priority format is found.
+     *
+     * @legacy-covers ::getContentType
+     */
+    public function testUnknownContentTypeReturnsNull(): void
+    {
+        $request = new Request();
 
-  /**
-   * Tests the getContentType() method when no priority format is found.
-   *
-   * @legacy-covers ::getContentType
-   */
-  public function testUnknownContentTypeReturnsNull(): void {
-    $request = new Request();
+        $this->assertNull($this->contentNegotiation->getContentType($request));
+    }
 
-    $this->assertNull($this->contentNegotiation->getContentType($request));
-  }
+    /**
+     * Tests the getContentType() method when no priority format is found but it's an AJAX request.
+     *
+     * @legacy-covers ::getContentType
+     */
+    public function testUnknownContentTypeButAjaxRequest(): void
+    {
+        $request = new Request();
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
 
-  /**
-   * Tests the getContentType() method when no priority format is found but it's an AJAX request.
-   *
-   * @legacy-covers ::getContentType
-   */
-  public function testUnknownContentTypeButAjaxRequest(): void {
-    $request = new Request();
-    $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+        $this->assertNull($this->contentNegotiation->getContentType($request));
+    }
 
-    $this->assertNull($this->contentNegotiation->getContentType($request));
-  }
+    /**
+     * Tests that handle() correctly hands off to sub application.
+     */
+    public function testHandle(): void
+    {
+        $request = $this->prophesize(Request::class);
 
-  /**
-   * Tests that handle() correctly hands off to sub application.
-   */
-  public function testHandle(): void {
-    $request = $this->prophesize(Request::class);
+        // Default empty format list should not set any formats.
+        $request->setFormat()->shouldNotBeCalled();
 
-    // Default empty format list should not set any formats.
-    $request->setFormat()->shouldNotBeCalled();
+        // Request format will be set with default format.
+        $request->setRequestFormat()->shouldNotBeCalled();
 
-    // Request format will be set with default format.
-    $request->setRequestFormat()->shouldNotBeCalled();
+        // Some getContentType calls we don't really care about but have to mock.
+        $request_mock = $request->reveal();
+        $request_mock->query = new InputBag();
+        $request_mock->request = new InputBag();
 
-    // Some getContentType calls we don't really care about but have to mock.
-    $request_mock = $request->reveal();
-    $request_mock->query = new InputBag();
-    $request_mock->request = new InputBag();
+        // Calling kernel app with default arguments.
+        $this->httpKernel->handle($request_mock, HttpKernelInterface::MAIN_REQUEST, true)
+          ->shouldBeCalled()
+          ->willReturn(
+              $this->createMock(Response::class)
+          );
+        $this->contentNegotiation->handle($request_mock);
+        // Calling kernel app with specified arguments.
+        $this->httpKernel->handle($request_mock, HttpKernelInterface::SUB_REQUEST, false)
+          ->shouldBeCalled()
+          ->willReturn(
+              $this->createMock(Response::class)
+          );
+        $this->contentNegotiation->handle($request_mock, HttpKernelInterface::SUB_REQUEST, false);
+    }
 
-    // Calling kernel app with default arguments.
-    $this->httpKernel->handle($request_mock, HttpKernelInterface::MAIN_REQUEST, TRUE)
-      ->shouldBeCalled()
-      ->willReturn(
-        $this->createMock(Response::class)
-      );
-    $this->contentNegotiation->handle($request_mock);
-    // Calling kernel app with specified arguments.
-    $this->httpKernel->handle($request_mock, HttpKernelInterface::SUB_REQUEST, FALSE)
-      ->shouldBeCalled()
-      ->willReturn(
-        $this->createMock(Response::class)
-      );
-    $this->contentNegotiation->handle($request_mock, HttpKernelInterface::SUB_REQUEST, FALSE);
-  }
+    /**
+     * Tests set format.
+     *
+     * @legacy-covers ::registerFormat
+     */
+    public function testSetFormat(): void
+    {
+        $httpKernel = $this->createMock(HttpKernelInterface::class);
+        $httpKernel->expects($this->once())
+          ->method('handle')
+          ->willReturn($this->createMock(Response::class));
 
-  /**
-   * Tests set format.
-   *
-   * @legacy-covers ::registerFormat
-   */
-  public function testSetFormat(): void {
-    $httpKernel = $this->createMock(HttpKernelInterface::class);
-    $httpKernel->expects($this->once())
-      ->method('handle')
-      ->willReturn($this->createMock(Response::class));
+        $content_negotiation = new StubNegotiationMiddleware($httpKernel);
 
-    $content_negotiation = new StubNegotiationMiddleware($httpKernel);
+        $request = $this->prophesize(Request::class);
 
-    $request = $this->prophesize(Request::class);
+        // Default empty format list should not set any formats.
+        $request->setFormat('david', 'geeky/david')->shouldBeCalled();
 
-    // Default empty format list should not set any formats.
-    $request->setFormat('david', 'geeky/david')->shouldBeCalled();
+        // Some calls we don't care about.
+        $request->setRequestFormat()->shouldNotBeCalled();
+        $request_mock = $request->reveal();
+        $request_mock->query = new InputBag();
+        $request_mock->request = new InputBag();
 
-    // Some calls we don't care about.
-    $request->setRequestFormat()->shouldNotBeCalled();
-    $request_mock = $request->reveal();
-    $request_mock->query = new InputBag();
-    $request_mock->request = new InputBag();
-
-    // Trigger handle.
-    $content_negotiation->registerFormat('david', 'geeky/david');
-    $content_negotiation->handle($request_mock);
-  }
+        // Trigger handle.
+        $content_negotiation->registerFormat('david', 'geeky/david');
+        $content_negotiation->handle($request_mock);
+    }
 
 }
 
 /**
  * Stub class for testing NegotiationMiddleware.
  */
-class StubNegotiationMiddleware extends NegotiationMiddleware {
-
-  public function getContentType(Request $request) {
-    return parent::getContentType($request);
-  }
+class StubNegotiationMiddleware extends NegotiationMiddleware
+{
+    public function getContentType(Request $request)
+    {
+        return parent::getContentType($request);
+    }
 
 }

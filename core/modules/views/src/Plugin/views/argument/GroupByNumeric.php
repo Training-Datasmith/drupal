@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\argument;
 
 use Drupal\views\Attribute\ViewsArgument;
@@ -10,33 +12,36 @@ use Drupal\views\Attribute\ViewsArgument;
  * @ingroup views_argument_handlers
  */
 #[ViewsArgument(
-  id: 'groupby_numeric',
+    id: 'groupby_numeric',
 )]
-class GroupByNumeric extends ArgumentPluginBase {
+class GroupByNumeric extends ArgumentPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query($group_by = false): void
+    {
+        $this->ensureMyTable();
+        $field = $this->getField();
+        $placeholder = $this->placeholder();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function query($group_by = FALSE): void {
-    $this->ensureMyTable();
-    $field = $this->getField();
-    $placeholder = $this->placeholder();
+        $this->query->addHavingExpression(0, "$field = $placeholder", [$placeholder => $this->argument]);
+    }
 
-    $this->query->addHavingExpression(0, "$field = $placeholder", [$placeholder => $this->argument]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function adminLabel($short = false)
+    {
+        return $this->getField(parent::adminLabel($short));
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function adminLabel($short = FALSE) {
-    return $this->getField(parent::adminLabel($short));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('Numerical', [], ['context' => 'Sort order']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('Numerical', [], ['context' => 'Sort order']);
+    }
 
 }

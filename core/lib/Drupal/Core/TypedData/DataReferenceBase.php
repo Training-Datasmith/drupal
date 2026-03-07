@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
@@ -14,50 +16,54 @@ namespace Drupal\Core\TypedData;
  *
  * @see \Drupal\Core\TypedData\DataReferenceDefinition
  */
-abstract class DataReferenceBase extends TypedData implements DataReferenceInterface {
+abstract class DataReferenceBase extends TypedData implements DataReferenceInterface
+{
+    /**
+     * The referenced data.
+     *
+     * @var \Drupal\Core\TypedData\TypedDataInterface
+     */
+    protected $target;
 
-  /**
-   * The referenced data.
-   *
-   * @var \Drupal\Core\TypedData\TypedDataInterface
-   */
-  protected $target;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTarget() {
-    return $this->target;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getValue() {
-    if ($target = $this->getTarget()) {
-      return $target->getValue();
+    /**
+     * {@inheritdoc}
+     */
+    public function getTarget()
+    {
+        return $this->target;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setValue($value, $notify = TRUE): void {
-    $this->target = $this->getTypedDataManager()->create($this->definition->getTargetDefinition(), $value);
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
+    /**
+     * {@inheritdoc}
+     */
+    public function getValue()
+    {
+        if ($target = $this->getTarget()) {
+            return $target->getValue();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getString() {
-    if (!method_exists($this, 'getType')) {
-      throw new \BadMethodCallException(static::class . '::getType() not implemented');
+    /**
+     * {@inheritdoc}
+     */
+    public function setValue($value, $notify = true): void
+    {
+        $this->target = $this->getTypedDataManager()->create($this->definition->getTargetDefinition(), $value);
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-    return $this->getType() . ':' . $this->getTargetIdentifier();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getString()
+    {
+        if (!method_exists($this, 'getType')) {
+            throw new \BadMethodCallException(static::class . '::getType() not implemented');
+        }
+        return $this->getType() . ':' . $this->getTargetIdentifier();
+    }
 
 }

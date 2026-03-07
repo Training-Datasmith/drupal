@@ -10,17 +10,18 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the alt text contains llamas.
  */
-final class AltTextContainsLlamasConstraintValidator extends ConstraintValidator {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate(mixed $value, Constraint $constraint): void {
-    if (is_string($value) && !str_contains(strtolower($value), 'llamas')) {
-      $this->context->buildViolation($constraint->message)
-        ->setInvalidValue($value)
-        ->addViolation();
+final class AltTextContainsLlamasConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate(mixed $value, Constraint $constraint): void
+    {
+        if (is_string($value) && !str_contains(strtolower($value), 'llamas')) {
+            $this->context->buildViolation($constraint->message)
+              ->setInvalidValue($value)
+              ->addViolation();
+        }
     }
-  }
 
 }

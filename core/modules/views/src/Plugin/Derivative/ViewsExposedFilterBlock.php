@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\Derivative;
 
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -12,96 +13,98 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\views\Plugin\Block\ViewsExposedFilterBlock
  */
-class ViewsExposedFilterBlock implements ContainerDeriverInterface {
+class ViewsExposedFilterBlock implements ContainerDeriverInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * List of derivative definitions.
+     *
+     * @var array
+     */
+    protected $derivatives = [];
 
-  /**
-   * List of derivative definitions.
-   *
-   * @var array
-   */
-  protected $derivatives = [];
-
-  /**
-   * Constructs a ViewsExposedFilterBlock object.
-   *
-   * @param string $basePluginId
-   *   The base plugin ID.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
-   *   The entity storage to load views.
-   */
-  public function __construct(
-      /**
-       * The base plugin ID that the derivative is for.
-       */
-      protected $basePluginId,
-      protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, $base_plugin_id): static {
-    return new static(
-      $base_plugin_id,
-      $container->get('entity_type.manager')->getStorage('view')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinition($derivative_id, $base_plugin_definition) {
-    if (!empty($this->derivatives) && !empty($this->derivatives[$derivative_id])) {
-      return $this->derivatives[$derivative_id];
+    /**
+     * Constructs a ViewsExposedFilterBlock object.
+     *
+     * @param string $basePluginId
+     *   The base plugin ID.
+     * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
+     *   The entity storage to load views.
+     */
+    public function __construct(
+        /**
+         * The base plugin ID that the derivative is for.
+         */
+        protected $basePluginId,
+        protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage
+    ) {
     }
-    $this->getDerivativeDefinitions($base_plugin_definition);
-    return $this->derivatives[$derivative_id];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDerivativeDefinitions($base_plugin_definition) {
-    // Check all Views for displays with an exposed filter block.
-    foreach ($this->viewStorage->loadMultiple() as $view) {
-      // Do not return results for disabled views.
-      if (!$view->status()) {
-        continue;
-      }
-      $executable = $view->getExecutable();
-      $executable->initDisplay();
-      foreach ($executable->displayHandlers as $display) {
-          if (!isset($display)) {
-              continue;
-          }
-          if (!$display->getOption('exposed_block')) {
-              continue;
-          }
-          // Add a block definition for the block.
-          if (!$display->usesExposedFormInBlock()) {
-              continue;
-          }
-          $delta = $view->id() . '-' . $display->display['id'];
-          $desc = $this->t('Exposed form: @view-@display_id', [
-            '@view' => $view->id(),
-            '@display_id' => $display->display['id'],
-          ]);
-          $this->derivatives[$delta] = [
-            'admin_label' => $desc,
-            'config_dependencies' => [
-              'config' => [
-                $view->getConfigDependencyName(),
-              ],
-            ],
-          ];
-          $this->derivatives[$delta] += $base_plugin_definition;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, $base_plugin_id): static
+    {
+        return new static(
+            $base_plugin_id,
+            $container->get('entity_type.manager')->getStorage('view')
+        );
     }
-    return $this->derivatives;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinition($derivative_id, $base_plugin_definition)
+    {
+        if (!empty($this->derivatives) && !empty($this->derivatives[$derivative_id])) {
+            return $this->derivatives[$derivative_id];
+        }
+        $this->getDerivativeDefinitions($base_plugin_definition);
+        return $this->derivatives[$derivative_id];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDerivativeDefinitions($base_plugin_definition)
+    {
+        // Check all Views for displays with an exposed filter block.
+        foreach ($this->viewStorage->loadMultiple() as $view) {
+            // Do not return results for disabled views.
+            if (!$view->status()) {
+                continue;
+            }
+            $executable = $view->getExecutable();
+            $executable->initDisplay();
+            foreach ($executable->displayHandlers as $display) {
+                if (!isset($display)) {
+                    continue;
+                }
+                if (!$display->getOption('exposed_block')) {
+                    continue;
+                }
+                // Add a block definition for the block.
+                if (!$display->usesExposedFormInBlock()) {
+                    continue;
+                }
+                $delta = $view->id() . '-' . $display->display['id'];
+                $desc = $this->t('Exposed form: @view-@display_id', [
+                  '@view' => $view->id(),
+                  '@display_id' => $display->display['id'],
+                ]);
+                $this->derivatives[$delta] = [
+                  'admin_label' => $desc,
+                  'config_dependencies' => [
+                    'config' => [
+                      $view->getConfigDependencyName(),
+                    ],
+                  ],
+                ];
+                $this->derivatives[$delta] += $base_plugin_definition;
+            }
+        }
+        return $this->derivatives;
+    }
 
 }

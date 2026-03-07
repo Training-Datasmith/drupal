@@ -14,38 +14,40 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(PluginID::class)]
 #[Group('Annotation')]
-class PluginIdTest extends TestCase {
+class PluginIdTest extends TestCase
+{
+    /**
+     * Tests get.
+     */
+    public function testGet(): void
+    {
+        // Assert plugin starts empty.
+        $plugin = new PluginID();
+        $this->assertEquals([
+          'id' => null,
+          'class' => null,
+          'provider' => null,
+        ], $plugin->get());
 
-  /**
-   * Tests get.
-   */
-  public function testGet(): void {
-    // Assert plugin starts empty.
-    $plugin = new PluginID();
-    $this->assertEquals([
-      'id' => NULL,
-      'class' => NULL,
-      'provider' => NULL,
-    ], $plugin->get());
+        // Set values and ensure we can retrieve them.
+        $plugin->value = 'foo';
+        $plugin->setClass('bar');
+        $plugin->setProvider('baz');
+        $this->assertEquals([
+          'id' => 'foo',
+          'class' => 'bar',
+          'provider' => 'baz',
+        ], $plugin->get());
+    }
 
-    // Set values and ensure we can retrieve them.
-    $plugin->value = 'foo';
-    $plugin->setClass('bar');
-    $plugin->setProvider('baz');
-    $this->assertEquals([
-      'id' => 'foo',
-      'class' => 'bar',
-      'provider' => 'baz',
-    ], $plugin->get());
-  }
-
-  /**
-   * Tests get id.
-   */
-  public function testGetId(): void {
-    $plugin = new PluginID();
-    $plugin->value = 'example';
-    $this->assertEquals('example', $plugin->getId());
-  }
+    /**
+     * Tests get id.
+     */
+    public function testGetId(): void
+    {
+        $plugin = new PluginID();
+        $plugin->value = 'example';
+        $this->assertEquals('example', $plugin->getId());
+    }
 
 }

@@ -9,6 +9,6 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 /**
  * Provides an interface defining a config_test entity.
  */
-interface ConfigTestInterface extends ConfigEntityInterface {
-
+interface ConfigTestInterface extends ConfigEntityInterface
+{
 }

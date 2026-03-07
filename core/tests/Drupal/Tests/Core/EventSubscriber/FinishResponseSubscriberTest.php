@@ -25,125 +25,128 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  */
 #[CoversClass(FinishResponseSubscriber::class)]
 #[Group('EventSubscriber')]
-class FinishResponseSubscriberTest extends UnitTestCase {
+class FinishResponseSubscriberTest extends UnitTestCase
+{
+    /**
+     * The mock Kernel.
+     *
+     * @var \Symfony\Component\HttpKernel\HttpKernelInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $kernel;
 
-  /**
-   * The mock Kernel.
-   *
-   * @var \Symfony\Component\HttpKernel\HttpKernelInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $kernel;
+    /**
+     * The mock language manager.
+     *
+     * @var \Drupal\Core\Language\LanguageManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $languageManager;
 
-  /**
-   * The mock language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $languageManager;
+    /**
+     * The mock request policy.
+     *
+     * @var \Drupal\Core\PageCache\RequestPolicyInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $requestPolicy;
 
-  /**
-   * The mock request policy.
-   *
-   * @var \Drupal\Core\PageCache\RequestPolicyInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $requestPolicy;
+    /**
+     * The mock response policy.
+     *
+     * @var \Drupal\Core\PageCache\ResponsePolicyInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $responsePolicy;
 
-  /**
-   * The mock response policy.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicyInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $responsePolicy;
+    /**
+     * The mock cache contexts manager.
+     *
+     * @var \Drupal\Core\Cache\Context\CacheContextsManager|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $cacheContextsManager;
 
-  /**
-   * The mock cache contexts manager.
-   *
-   * @var \Drupal\Core\Cache\Context\CacheContextsManager|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $cacheContextsManager;
+    /**
+     * The mock time service.
+     *
+     * @var \Drupal\Component\Datetime\TimeInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $time;
 
-  /**
-   * The mock time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $time;
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  protected function setUp(): void {
-    parent::setUp();
+        $this->kernel = $this->createMock(HttpKernelInterface::class);
+        $this->languageManager = $this->createMock(LanguageManagerInterface::class);
+        $this->requestPolicy = $this->createMock(RequestPolicyInterface::class);
+        $this->responsePolicy = $this->createMock(ResponsePolicyInterface::class);
+        $this->cacheContextsManager = $this->createMock(CacheContextsManager::class);
+        $this->time = $this->createMock(TimeInterface::class);
+    }
 
-    $this->kernel = $this->createMock(HttpKernelInterface::class);
-    $this->languageManager = $this->createMock(LanguageManagerInterface::class);
-    $this->requestPolicy = $this->createMock(RequestPolicyInterface::class);
-    $this->responsePolicy = $this->createMock(ResponsePolicyInterface::class);
-    $this->cacheContextsManager = $this->createMock(CacheContextsManager::class);
-    $this->time = $this->createMock(TimeInterface::class);
-  }
+    /**
+     * Finish subscriber should set some default header values.
+     *
+     * @legacy-covers ::onRespond
+     */
+    public function testDefaultHeaders(): void
+    {
+        $finishSubscriber = new FinishResponseSubscriber(
+            $this->languageManager,
+            $this->getConfigFactoryStub(),
+            $this->requestPolicy,
+            $this->responsePolicy,
+            $this->cacheContextsManager,
+            $this->time,
+            false
+        );
 
-  /**
-   * Finish subscriber should set some default header values.
-   *
-   * @legacy-covers ::onRespond
-   */
-  public function testDefaultHeaders(): void {
-    $finishSubscriber = new FinishResponseSubscriber(
-      $this->languageManager,
-      $this->getConfigFactoryStub(),
-      $this->requestPolicy,
-      $this->responsePolicy,
-      $this->cacheContextsManager,
-      $this->time,
-      FALSE
-    );
+        $this->languageManager->method('getCurrentLanguage')
+          ->willReturn(new Language(['id' => 'en']));
 
-    $this->languageManager->method('getCurrentLanguage')
-      ->willReturn(new Language(['id' => 'en']));
+        $request = $this->createMock(Request::class);
+        $response = $this->createMock(Response::class);
+        $response->headers = new ResponseHeaderBag();
+        $event = new ResponseEvent($this->kernel, $request, HttpKernelInterface::MAIN_REQUEST, $response);
 
-    $request = $this->createMock(Request::class);
-    $response = $this->createMock(Response::class);
-    $response->headers = new ResponseHeaderBag();
-    $event = new ResponseEvent($this->kernel, $request, HttpKernelInterface::MAIN_REQUEST, $response);
+        $finishSubscriber->onRespond($event);
 
-    $finishSubscriber->onRespond($event);
+        $this->assertEquals(['en'], $response->headers->all('Content-language'));
+        $this->assertEquals(['nosniff'], $response->headers->all('X-Content-Type-Options'));
+        $this->assertEquals(['SAMEORIGIN'], $response->headers->all('X-Frame-Options'));
+    }
 
-    $this->assertEquals(['en'], $response->headers->all('Content-language'));
-    $this->assertEquals(['nosniff'], $response->headers->all('X-Content-Type-Options'));
-    $this->assertEquals(['SAMEORIGIN'], $response->headers->all('X-Frame-Options'));
-  }
+    /**
+     * Finish subscriber should not overwrite existing header values.
+     *
+     * @legacy-covers ::onRespond
+     */
+    public function testExistingHeaders(): void
+    {
+        $finishSubscriber = new FinishResponseSubscriber(
+            $this->languageManager,
+            $this->getConfigFactoryStub(),
+            $this->requestPolicy,
+            $this->responsePolicy,
+            $this->cacheContextsManager,
+            $this->time,
+            false
+        );
 
-  /**
-   * Finish subscriber should not overwrite existing header values.
-   *
-   * @legacy-covers ::onRespond
-   */
-  public function testExistingHeaders(): void {
-    $finishSubscriber = new FinishResponseSubscriber(
-      $this->languageManager,
-      $this->getConfigFactoryStub(),
-      $this->requestPolicy,
-      $this->responsePolicy,
-      $this->cacheContextsManager,
-      $this->time,
-      FALSE
-    );
+        $this->languageManager->method('getCurrentLanguage')
+          ->willReturn(new Language(['id' => 'en']));
 
-    $this->languageManager->method('getCurrentLanguage')
-      ->willReturn(new Language(['id' => 'en']));
+        $request = $this->createMock(Request::class);
+        $response = $this->createMock(Response::class);
+        $response->headers = new ResponseHeaderBag();
+        $event = new ResponseEvent($this->kernel, $request, HttpKernelInterface::MAIN_REQUEST, $response);
 
-    $request = $this->createMock(Request::class);
-    $response = $this->createMock(Response::class);
-    $response->headers = new ResponseHeaderBag();
-    $event = new ResponseEvent($this->kernel, $request, HttpKernelInterface::MAIN_REQUEST, $response);
+        $response->headers->set('X-Content-Type-Options', 'foo');
+        $response->headers->set('X-Frame-Options', 'DENY');
 
-    $response->headers->set('X-Content-Type-Options', 'foo');
-    $response->headers->set('X-Frame-Options', 'DENY');
+        $finishSubscriber->onRespond($event);
 
-    $finishSubscriber->onRespond($event);
-
-    $this->assertEquals(['en'], $response->headers->all('Content-language'));
-    // 'X-Content-Type-Options' will be unconditionally set by core.
-    $this->assertEquals(['nosniff'], $response->headers->all('X-Content-Type-Options'));
-    $this->assertEquals(['DENY'], $response->headers->all('X-Frame-Options'));
-  }
+        $this->assertEquals(['en'], $response->headers->all('Content-language'));
+        // 'X-Content-Type-Options' will be unconditionally set by core.
+        $this->assertEquals(['nosniff'], $response->headers->all('X-Content-Type-Options'));
+        $this->assertEquals(['DENY'], $response->headers->all('X-Frame-Options'));
+    }
 
 }

@@ -11,15 +11,16 @@ use Behat\Mink\Selector\PartialNamedSelector;
  *
  * @see \Behat\Mink\Selector\PartialNamedSelector
  */
-class HiddenFieldSelector extends PartialNamedSelector {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-    $xpath = ".//input[%lowercaseType% = 'hidden' and (%idOrNameMatch% or %valueMatch%)]";
-    $this->registerNamedXpath('hidden_field', $xpath);
-    parent::__construct();
-  }
+class HiddenFieldSelector extends PartialNamedSelector
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct()
+    {
+        $xpath = ".//input[%lowercaseType% = 'hidden' and (%idOrNameMatch% or %valueMatch%)]";
+        $this->registerNamedXpath('hidden_field', $xpath);
+        parent::__construct();
+    }
 
 }

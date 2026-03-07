@@ -1,68 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Plugin\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Action\Plugin\Action\UnpublishAction;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\content_moderation\ModerationInformationInterface;
 
 /**
  * Alternate action plugin that can opt-out of modifying moderated entities.
  *
  * @see \Drupal\Core\Action\Plugin\Action\UnpublishAction
  */
-class ModerationOptOutUnpublish extends UnpublishAction {
+class ModerationOptOutUnpublish extends UnpublishAction
+{
+    /**
+     * Messenger service.
+     *
+     * @var \Drupal\Core\Messenger\MessengerInterface
+     */
+    protected $messenger;
 
-  /**
-   * Messenger service.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * ModerationOptOutUnpublish constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
-   *   The moderation information service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
-   *   Bundle info service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   Messenger service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, MessengerInterface $messenger) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager);
-    $this->messenger = $messenger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($entity, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    if ($entity && $this->moderationInfo->isModeratedEntity($entity)) {
-      $bundle_info = $this->bundleInfo->getBundleInfo($entity->getEntityTypeId());
-      $bundle_label = $bundle_info[$entity->bundle()]['label'];
-      $this->messenger->addWarning($this->t("@bundle @label were skipped as they are under moderation and may not be directly unpublished.", [
-        '@bundle' => $bundle_label,
-        '@label' => $entity->getEntityType()->getPluralLabel(),
-      ]));
-      $result = AccessResult::forbidden('Cannot directly unpublish moderated entities.');
-      return $return_as_object ? $result : $result->isAllowed();
+    /**
+     * ModerationOptOutUnpublish constructor.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
+     *   The moderation information service.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
+     *   Bundle info service.
+     * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+     *   Messenger service.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, MessengerInterface $messenger)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager);
+        $this->messenger = $messenger;
     }
-    return parent::access($entity, $account, $return_as_object);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($entity, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+        if ($entity && $this->moderationInfo->isModeratedEntity($entity)) {
+            $bundle_info = $this->bundleInfo->getBundleInfo($entity->getEntityTypeId());
+            $bundle_label = $bundle_info[$entity->bundle()]['label'];
+            $this->messenger->addWarning($this->t('@bundle @label were skipped as they are under moderation and may not be directly unpublished.', [
+              '@bundle' => $bundle_label,
+              '@label' => $entity->getEntityType()->getPluralLabel(),
+            ]));
+            $result = AccessResult::forbidden('Cannot directly unpublish moderated entities.');
+            return $return_as_object ? $result : $result->isAllowed();
+        }
+        return parent::access($entity, $account, $return_as_object);
+    }
 
 }

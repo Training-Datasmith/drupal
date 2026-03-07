@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\shortcut;
 
 use Drupal\Core\Access\AccessResult;
@@ -15,54 +17,58 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\shortcut\Entity\Shortcut
  */
-class ShortcutAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
-
-  /**
-   * Constructs a ShortcutAccessControlHandler object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage
-   *   The shortcut_set storage.
-   */
-  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage) {
-    parent::__construct($entity_type);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage('shortcut_set')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    if ($shortcut_set = $this->shortcutSetStorage->load($entity->bundle())) {
-      return shortcut_set_edit_access($shortcut_set);
+class ShortcutAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface
+{
+    /**
+     * Constructs a ShortcutAccessControlHandler object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type definition.
+     * @param \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage
+     *   The shortcut_set storage.
+     */
+    public function __construct(EntityTypeInterface $entity_type, protected \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage)
+    {
+        parent::__construct($entity_type);
     }
-    // @todo Fix this bizarre code: how can a shortcut exist without a shortcut
-    //   set? The above if-test is unnecessary. See
-    //   https://www.drupal.org/node/2339903.
-    return AccessResult::neutral()->addCacheableDependency($entity);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    if ($shortcut_set = $this->shortcutSetStorage->load($entity_bundle)) {
-      return shortcut_set_edit_access($shortcut_set);
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $entity_type,
+            $container->get('entity_type.manager')->getStorage('shortcut_set')
+        );
     }
-    // @todo Fix this bizarre code: how can a shortcut exist without a shortcut
-    //   set? The above if-test is unnecessary. See
-    //   https://www.drupal.org/node/2339903.
-    return AccessResult::neutral();
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        if ($shortcut_set = $this->shortcutSetStorage->load($entity->bundle())) {
+            return shortcut_set_edit_access($shortcut_set);
+        }
+        // @todo Fix this bizarre code: how can a shortcut exist without a shortcut
+        //   set? The above if-test is unnecessary. See
+        //   https://www.drupal.org/node/2339903.
+        return AccessResult::neutral()->addCacheableDependency($entity);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = null)
+    {
+        if ($shortcut_set = $this->shortcutSetStorage->load($entity_bundle)) {
+            return shortcut_set_edit_access($shortcut_set);
+        }
+        // @todo Fix this bizarre code: how can a shortcut exist without a shortcut
+        //   set? The above if-test is unnecessary. See
+        //   https://www.drupal.org/node/2339903.
+        return AccessResult::neutral();
+    }
 
 }

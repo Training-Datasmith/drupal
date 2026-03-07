@@ -11,15 +11,16 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Defines a local action plugin with a dynamic title.
  */
-class TestLocalAction4 extends LocalActionDefault {
+class TestLocalAction4 extends LocalActionDefault
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(?Request $request = NULL) {
-    return $this->t('My @arg action', ['@arg' => 'dynamic-title']);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(?Request $request = null)
+    {
+        return $this->t('My @arg action', ['@arg' => 'dynamic-title']);
+    }
 
 }

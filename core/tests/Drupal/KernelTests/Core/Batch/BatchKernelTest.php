@@ -13,32 +13,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Batch')]
 #[RunTestsInSeparateProcesses]
-class BatchKernelTest extends KernelTestBase {
+class BatchKernelTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        require_once $this->root . '/core/includes/batch.inc';
+    }
 
-    require_once $this->root . '/core/includes/batch.inc';
-  }
+    /**
+     * Tests _batch_needs_update().
+     */
+    public function testNeedsUpdate(): void
+    {
+        // Before ever being called, the return value should be FALSE.
+        $this->assertEquals(false, _batch_needs_update());
 
-  /**
-   * Tests _batch_needs_update().
-   */
-  public function testNeedsUpdate(): void {
-    // Before ever being called, the return value should be FALSE.
-    $this->assertEquals(FALSE, _batch_needs_update());
+        // Set the value to TRUE.
+        $this->assertEquals(true, _batch_needs_update(true));
+        // Check that without a parameter TRUE is returned.
+        $this->assertEquals(true, _batch_needs_update());
 
-    // Set the value to TRUE.
-    $this->assertEquals(TRUE, _batch_needs_update(TRUE));
-    // Check that without a parameter TRUE is returned.
-    $this->assertEquals(TRUE, _batch_needs_update());
-
-    // Set the value to FALSE.
-    $this->assertEquals(FALSE, _batch_needs_update(FALSE));
-    $this->assertEquals(FALSE, _batch_needs_update());
-  }
+        // Set the value to FALSE.
+        $this->assertEquals(false, _batch_needs_update(false));
+        $this->assertEquals(false, _batch_needs_update());
+    }
 
 }

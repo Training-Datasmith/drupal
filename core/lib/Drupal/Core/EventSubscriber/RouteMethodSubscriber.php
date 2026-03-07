@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
 use Drupal\Core\Routing\RouteBuildEvent;
@@ -15,31 +17,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * for example to DELETE requests on the same path. A typical use case are REST
  * web service routes that use the full spectrum of HTTP methods.
  */
-class RouteMethodSubscriber implements EventSubscriberInterface {
-
-  /**
-   * Sets a default value of GET|POST for the _method route property.
-   *
-   * @param \Drupal\Core\Routing\RouteBuildEvent $event
-   *   The event containing the build routes.
-   */
-  public function onRouteBuilding(RouteBuildEvent $event): void {
-    foreach ($event->getRouteCollection() as $route) {
-      $methods = $route->getMethods();
-      if (empty($methods)) {
-        $route->setMethods(['GET', 'POST']);
-      }
+class RouteMethodSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Sets a default value of GET|POST for the _method route property.
+     *
+     * @param \Drupal\Core\Routing\RouteBuildEvent $event
+     *   The event containing the build routes.
+     */
+    public function onRouteBuilding(RouteBuildEvent $event): void
+    {
+        foreach ($event->getRouteCollection() as $route) {
+            $methods = $route->getMethods();
+            if (empty($methods)) {
+                $route->setMethods(['GET', 'POST']);
+            }
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Set a higher priority to ensure that routes get the default HTTP methods
-    // as early as possible.
-    $events[RoutingEvents::ALTER][] = ['onRouteBuilding', 5000];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Set a higher priority to ensure that routes get the default HTTP methods
+        // as early as possible.
+        $events[RoutingEvents::ALTER][] = ['onRouteBuilding', 5000];
+        return $events;
+    }
 
 }

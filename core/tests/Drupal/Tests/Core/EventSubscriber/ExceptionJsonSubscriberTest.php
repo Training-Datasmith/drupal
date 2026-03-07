@@ -24,41 +24,43 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  */
 #[CoversClass(ExceptionJsonSubscriber::class)]
 #[Group('EventSubscriber')]
-class ExceptionJsonSubscriberTest extends UnitTestCase {
+class ExceptionJsonSubscriberTest extends UnitTestCase
+{
+    /**
+     * Tests on 4xx.
+     */
+    #[DataProvider('providerTestOn4xx')]
+    public function testOn4xx(HttpExceptionInterface $exception, $expected_response_class): void
+    {
+        $kernel = $this->prophesize(HttpKernelInterface::class);
+        $request = Request::create('/test');
+        $event = new ExceptionEvent($kernel->reveal(), $request, HttpKernelInterface::MAIN_REQUEST, $exception);
+        $subscriber = new ExceptionJsonSubscriber();
+        $subscriber->on4xx($event);
+        $response = $event->getResponse();
 
-  /**
-   * Tests on 4xx.
-   */
-  #[DataProvider('providerTestOn4xx')]
-  public function testOn4xx(HttpExceptionInterface $exception, $expected_response_class): void {
-    $kernel = $this->prophesize(HttpKernelInterface::class);
-    $request = Request::create('/test');
-    $event = new ExceptionEvent($kernel->reveal(), $request, HttpKernelInterface::MAIN_REQUEST, $exception);
-    $subscriber = new ExceptionJsonSubscriber();
-    $subscriber->on4xx($event);
-    $response = $event->getResponse();
+        $this->assertInstanceOf($expected_response_class, $response);
+        $this->assertEquals('{"message":"test message"}', $response->getContent());
+        $this->assertEquals(405, $response->getStatusCode());
+        $this->assertEquals('POST, PUT', $response->headers->get('Allow'));
+        $this->assertEquals('application/json', $response->headers->get('Content-Type'));
+    }
 
-    $this->assertInstanceOf($expected_response_class, $response);
-    $this->assertEquals('{"message":"test message"}', $response->getContent());
-    $this->assertEquals(405, $response->getStatusCode());
-    $this->assertEquals('POST, PUT', $response->headers->get('Allow'));
-    $this->assertEquals('application/json', $response->headers->get('Content-Type'));
-  }
-
-  public static function providerTestOn4xx(): array {
-    return [
-      'uncacheable exception' => [
-        new MethodNotAllowedHttpException(['POST', 'PUT'], 'test message'),
-        JsonResponse::class,
-      ],
-      'cacheable exception' => [
-        new CacheableMethodNotAllowedHttpException((new CacheableMetadata())->setCacheContexts(['route']), [
-          'POST',
-          'PUT',
-        ], 'test message'),
-        CacheableJsonResponse::class,
-      ],
-    ];
-  }
+    public static function providerTestOn4xx(): array
+    {
+        return [
+          'uncacheable exception' => [
+            new MethodNotAllowedHttpException(['POST', 'PUT'], 'test message'),
+            JsonResponse::class,
+          ],
+          'cacheable exception' => [
+            new CacheableMethodNotAllowedHttpException((new CacheableMetadata())->setCacheContexts(['route']), [
+              'POST',
+              'PUT',
+            ], 'test message'),
+            CacheableJsonResponse::class,
+          ],
+        ];
+    }
 
 }

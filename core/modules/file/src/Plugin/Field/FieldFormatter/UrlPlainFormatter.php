@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
@@ -11,32 +13,33 @@ use Drupal\file\FileInterface;
  * Plugin implementation of the 'file_url_plain' formatter.
  */
 #[FieldFormatter(
-  id: 'file_url_plain',
-  label: new TranslatableMarkup('URL to file'),
-  field_types: [
+    id: 'file_url_plain',
+    label: new TranslatableMarkup('URL to file'),
+    field_types: [
     'file',
   ],
 )]
-class UrlPlainFormatter extends FileFormatterBase {
+class UrlPlainFormatter extends FileFormatterBase
+{
+    /**
+     * {@inheritdoc}
+     * @return array{'#markup': mixed, '#cache': array{tags: mixed}}[]
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode): array
+    {
+        $elements = [];
 
-  /**
-   * {@inheritdoc}
-   * @return array{'#markup': mixed, '#cache': array{tags: mixed}}[]
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode): array {
-    $elements = [];
+        foreach ($this->getEntitiesToView($items, $langcode) as $delta => $file) {
+            assert($file instanceof FileInterface);
+            $elements[$delta] = [
+              '#markup' => $file->createFileUrl(),
+              '#cache' => [
+                'tags' => $file->getCacheTags(),
+              ],
+            ];
+        }
 
-    foreach ($this->getEntitiesToView($items, $langcode) as $delta => $file) {
-      assert($file instanceof FileInterface);
-      $elements[$delta] = [
-        '#markup' => $file->createFileUrl(),
-        '#cache' => [
-          'tags' => $file->getCacheTags(),
-        ],
-      ];
+        return $elements;
     }
-
-    return $elements;
-  }
 
 }

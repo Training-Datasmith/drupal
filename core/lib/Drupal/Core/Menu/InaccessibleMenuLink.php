@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Menu;
 
 use Drupal\Component\Plugin\Exception\PluginException;
@@ -9,63 +11,70 @@ use Drupal\Component\Plugin\Exception\PluginException;
  *
  * @see \Drupal\Core\Menu\DefaultMenuLinkTreeManipulators::checkAccess()
  */
-class InaccessibleMenuLink extends MenuLinkBase {
+class InaccessibleMenuLink extends MenuLinkBase
+{
+    /**
+     * Constructs a new InaccessibleMenuLink.
+     *
+     * @param \Drupal\Core\Menu\MenuLinkInterface $wrappedLink
+     *   The menu link to wrap.
+     */
+    public function __construct(protected \Drupal\Core\Menu\MenuLinkInterface $wrappedLink)
+    {
+        $plugin_definition = [
+          'route_name' => '<front>',
+          'route_parameters' => [],
+          'url' => null,
+        ] + $this->wrappedLink->getPluginDefinition();
+        parent::__construct([], $this->wrappedLink->getPluginId(), $plugin_definition);
+    }
 
-  /**
-   * Constructs a new InaccessibleMenuLink.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkInterface $wrappedLink
-   *   The menu link to wrap.
-   */
-  public function __construct(protected \Drupal\Core\Menu\MenuLinkInterface $wrappedLink) {
-    $plugin_definition = [
-      'route_name' => '<front>',
-      'route_parameters' => [],
-      'url' => NULL,
-    ] + $this->wrappedLink->getPluginDefinition();
-    parent::__construct([], $this->wrappedLink->getPluginId(), $plugin_definition);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle()
+    {
+        return $this->t('Inaccessible');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle() {
-    return $this->t('Inaccessible');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): string
+    {
+        return '';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): string {
-    return '';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts()
+    {
+        return $this->wrappedLink->getCacheContexts();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    return $this->wrappedLink->getCacheContexts();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags()
+    {
+        return $this->wrappedLink->getCacheTags();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return $this->wrappedLink->getCacheTags();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheMaxAge()
+    {
+        return $this->wrappedLink->getCacheMaxAge();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge() {
-    return $this->wrappedLink->getCacheMaxAge();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateLink(array $new_definition_values, $persist): never {
-    throw new PluginException('Inaccessible menu link plugins do not support updating');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function updateLink(array $new_definition_values, $persist): never
+    {
+        throw new PluginException('Inaccessible menu link plugins do not support updating');
+    }
 
 }

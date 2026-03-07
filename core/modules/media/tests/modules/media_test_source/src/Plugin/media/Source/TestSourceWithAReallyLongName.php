@@ -16,6 +16,6 @@ use Drupal\media\Attribute\MediaSource;
     description: new TranslatableMarkup('Test source with a really long name.'),
     allowed_field_types: ['string'],
 )]
-class TestSourceWithAReallyLongName extends Test {
-
+class TestSourceWithAReallyLongName extends Test
+{
 }

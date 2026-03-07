@@ -14,15 +14,16 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Container::class)]
 #[Group('DependencyInjection')]
-class ContainerTest extends UnitTestCase {
-
-  /**
-   * Tests serialization.
-   */
-  public function testSerialize(): void {
-    $container = new Container();
-    $this->expectException(\AssertionError::class);
-    serialize($container);
-  }
+class ContainerTest extends UnitTestCase
+{
+    /**
+     * Tests serialization.
+     */
+    public function testSerialize(): void
+    {
+        $container = new Container();
+        $this->expectException(\AssertionError::class);
+        serialize($container);
+    }
 
 }

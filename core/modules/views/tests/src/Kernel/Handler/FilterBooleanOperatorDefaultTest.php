@@ -16,46 +16,48 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FilterBooleanOperatorDefaultTest extends ViewsKernelTestBase {
+class FilterBooleanOperatorDefaultTest extends ViewsKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['system', 'views_test_data'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['system', 'views_test_data'];
+    /**
+     * {@inheritdoc}
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * {@inheritdoc}
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function viewsData()
+    {
+        $views_data = parent::viewsData();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function viewsData() {
-    $views_data = parent::viewsData();
+        $views_data['views_test_data']['status']['filter']['id'] = 'boolean_default';
 
-    $views_data['views_test_data']['status']['filter']['id'] = 'boolean_default';
+        return $views_data;
+    }
 
-    return $views_data;
-  }
+    /**
+     * Tests the queryOpBoolean() with default operator.
+     */
+    public function testFilterBooleanOperatorDefault(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests the queryOpBoolean() with default operator.
-   */
-  public function testFilterBooleanOperatorDefault(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
-
-    $view->displayHandlers->get('default')->overrideOption('filters', [
-      'status' => [
-        'id' => 'status',
-        'field' => 'status',
-        'table' => 'views_test_data',
-        'value' => 0,
-      ],
-    ]);
-    $this->executeView($view);
-    $this->assertCount(2, $view->result);
-  }
+        $view->displayHandlers->get('default')->overrideOption('filters', [
+          'status' => [
+            'id' => 'status',
+            'field' => 'status',
+            'table' => 'views_test_data',
+            'value' => 0,
+          ],
+        ]);
+        $this->executeView($view);
+        $this->assertCount(2, $view->result);
+    }
 
 }

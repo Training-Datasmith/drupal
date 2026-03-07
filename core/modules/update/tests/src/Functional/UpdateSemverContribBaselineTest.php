@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('update')]
 #[RunTestsInSeparateProcesses]
-class UpdateSemverContribBaselineTest extends UpdateSemverContribTestBase {
-
-  use UpdateSemverTestBaselineTrait;
+class UpdateSemverContribBaselineTest extends UpdateSemverContribTestBase
+{
+    use UpdateSemverTestBaselineTrait;
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\destination;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -109,115 +111,120 @@ use Drupal\migrate\Row;
  * @endcode
  */
 #[MigrateDestination(
-  id: 'entity_revision',
-  deriver: MigrateEntityRevision::class
+    id: 'entity_revision',
+    deriver: MigrateEntityRevision::class
 )]
-class EntityRevision extends EntityContentBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, AccountSwitcherInterface $account_switcher, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
-    $plugin_definition += [
-      'label' => new TranslatableMarkup('@entity_type revisions', ['@entity_type' => $storage->getEntityType()->getSingularLabel()]),
-    ];
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $entity_field_manager, $field_type_manager, $account_switcher, $entity_type_bundle_info);
-  }
-
-  /**
-   * Gets the entity.
-   *
-   * @param \Drupal\migrate\Row $row
-   *   The row object.
-   * @param array $old_destination_id_values
-   *   The old destination IDs.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface|false
-   *   The entity or false if it can not be created.
-   */
-  protected function getEntity(Row $row, array $old_destination_id_values) {
-    $revision_id = $old_destination_id_values ?
-      reset($old_destination_id_values) :
-      $row->getDestinationProperty($this->getKey('revision'));
-    $entity = NULL;
-    if (!empty($revision_id)) {
-      /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-      $storage = $this->storage;
-      if ($entity = $storage->loadRevision($revision_id)) {
-        $entity->setNewRevision(FALSE);
-      }
-    }
-    if ($entity === NULL) {
-      // If the entity could not be loaded by revision then the given
-      // revision does not yet exist. Load the current default revision and
-      // prepare to save it as a new non-default revision. setNewRevision()
-      // will unset the current revision ID and the entity is then updated
-      // with the source revision ID and saved as that.
-      $entity_id = $row->getDestinationProperty($this->getKey('id'));
-      $entity = $this->storage->load($entity_id);
-
-      // If we fail to load the original entity something is wrong and we need
-      // to return immediately.
-      if (!$entity) {
-        return FALSE;
-      }
-
-      $entity->enforceIsNew(FALSE);
-      $entity->setNewRevision(TRUE);
-      $entity->isDefaultRevision(FALSE);
-    }
-    // We need to update the entity, so that the destination row IDs are
-    // correct.
-    $entity = $this->updateEntity($entity, $row);
-    return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []): array {
-    $entity->setSyncing(TRUE);
-    $entity->save();
-    return [$entity->getRevisionId()];
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function getIds(): array {
-    $ids = [];
-
-    $revision_key = $this->getKey('revision');
-    if (!$revision_key) {
-      throw new MigrateException(sprintf('The "%s" entity type does not support revisions.', $this->storage->getEntityTypeId()));
-    }
-    $ids[$revision_key] = $this->getDefinitionFromEntity($revision_key);
-
-    if ($this->isTranslationDestination()) {
-      $langcode_key = $this->getKey('langcode');
-      if (!$langcode_key) {
-        throw new MigrateException(sprintf('The "%s" entity type does not support translations.', $this->storage->getEntityTypeId()));
-      }
-      $ids[$langcode_key] = $this->getDefinitionFromEntity($langcode_key);
+class EntityRevision extends EntityContentBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, AccountSwitcherInterface $account_switcher, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = null)
+    {
+        $plugin_definition += [
+          'label' => new TranslatableMarkup('@entity_type revisions', ['@entity_type' => $storage->getEntityType()->getSingularLabel()]),
+        ];
+        parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $entity_field_manager, $field_type_manager, $account_switcher, $entity_type_bundle_info);
     }
 
-    return $ids;
-  }
+    /**
+     * Gets the entity.
+     *
+     * @param \Drupal\migrate\Row $row
+     *   The row object.
+     * @param array $old_destination_id_values
+     *   The old destination IDs.
+     *
+     * @return \Drupal\Core\Entity\EntityInterface|false
+     *   The entity or false if it can not be created.
+     */
+    protected function getEntity(Row $row, array $old_destination_id_values)
+    {
+        $revision_id = $old_destination_id_values ?
+          reset($old_destination_id_values) :
+          $row->getDestinationProperty($this->getKey('revision'));
+        $entity = null;
+        if (!empty($revision_id)) {
+            /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+            $storage = $this->storage;
+            if ($entity = $storage->loadRevision($revision_id)) {
+                $entity->setNewRevision(false);
+            }
+        }
+        if ($entity === null) {
+            // If the entity could not be loaded by revision then the given
+            // revision does not yet exist. Load the current default revision and
+            // prepare to save it as a new non-default revision. setNewRevision()
+            // will unset the current revision ID and the entity is then updated
+            // with the source revision ID and saved as that.
+            $entity_id = $row->getDestinationProperty($this->getKey('id'));
+            $entity = $this->storage->load($entity_id);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getHighestId(): int {
-    $values = $this->storage->getQuery()
-      ->accessCheck(FALSE)
-      ->allRevisions()
-      ->sort($this->getKey('revision'), 'DESC')
-      ->range(0, 1)
-      ->execute();
-    // The array keys are the revision IDs.
-    // The array contains only one entry, so we can use key().
-    return (int) key($values);
-  }
+            // If we fail to load the original entity something is wrong and we need
+            // to return immediately.
+            if (!$entity) {
+                return false;
+            }
+
+            $entity->enforceIsNew(false);
+            $entity->setNewRevision(true);
+            $entity->isDefaultRevision(false);
+        }
+        // We need to update the entity, so that the destination row IDs are
+        // correct.
+        $entity = $this->updateEntity($entity, $row);
+        return $entity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []): array
+    {
+        $entity->setSyncing(true);
+        $entity->save();
+        return [$entity->getRevisionId()];
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function getIds(): array
+    {
+        $ids = [];
+
+        $revision_key = $this->getKey('revision');
+        if (!$revision_key) {
+            throw new MigrateException(sprintf('The "%s" entity type does not support revisions.', $this->storage->getEntityTypeId()));
+        }
+        $ids[$revision_key] = $this->getDefinitionFromEntity($revision_key);
+
+        if ($this->isTranslationDestination()) {
+            $langcode_key = $this->getKey('langcode');
+            if (!$langcode_key) {
+                throw new MigrateException(sprintf('The "%s" entity type does not support translations.', $this->storage->getEntityTypeId()));
+            }
+            $ids[$langcode_key] = $this->getDefinitionFromEntity($langcode_key);
+        }
+
+        return $ids;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHighestId(): int
+    {
+        $values = $this->storage->getQuery()
+          ->accessCheck(false)
+          ->allRevisions()
+          ->sort($this->getKey('revision'), 'DESC')
+          ->range(0, 1)
+          ->execute();
+        // The array keys are the revision IDs.
+        // The array contains only one entry, so we can use key().
+        return (int) key($values);
+    }
 
 }

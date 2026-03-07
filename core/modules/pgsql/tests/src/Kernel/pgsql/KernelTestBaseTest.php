@@ -17,15 +17,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('KernelTests')]
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class KernelTestBaseTest extends DriverSpecificKernelTestBase {
-
-  /**
-   * Tests set up.
-   */
-  public function testSetUp(): void {
-    // Ensure that the database tasks have been run during set up.
-    $this->assertSame('on', $this->connection->query("SHOW standard_conforming_strings")->fetchField());
-    $this->assertSame('escape', $this->connection->query("SHOW bytea_output")->fetchField());
-  }
+class KernelTestBaseTest extends DriverSpecificKernelTestBase
+{
+    /**
+     * Tests set up.
+     */
+    public function testSetUp(): void
+    {
+        // Ensure that the database tasks have been run during set up.
+        $this->assertSame('on', $this->connection->query('SHOW standard_conforming_strings')->fetchField());
+        $this->assertSame('escape', $this->connection->query('SHOW bytea_output')->fetchField());
+    }
 
 }

@@ -16,150 +16,155 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('workspaces')]
 #[RunTestsInSeparateProcesses]
-class WorkspaceSwitcherTest extends BrowserTestBase {
+class WorkspaceSwitcherTest extends BrowserTestBase
+{
+    use AssertPageCacheContextsAndTagsTrait;
+    use WorkspaceTestUtilities;
 
-  use AssertPageCacheContextsAndTagsTrait;
-  use WorkspaceTestUtilities;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'block',
-    'dynamic_page_cache',
-    'node',
-    'toolbar',
-    'workspaces',
-    'workspaces_ui',
-    'workspaces_test',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $permissions = [
-      'create workspace',
-      'edit own workspace',
-      'view own workspace',
-      'bypass entity access own workspace',
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'block',
+      'dynamic_page_cache',
+      'node',
+      'toolbar',
+      'workspaces',
+      'workspaces_ui',
+      'workspaces_test',
     ];
 
-    $this->setupWorkspaceSwitcherBlock();
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-    $mayer = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($mayer);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    $this->createWorkspaceThroughUi('Vultures', 'vultures');
-    $this->createWorkspaceThroughUi('Gravity', 'gravity');
-  }
+        $permissions = [
+          'create workspace',
+          'edit own workspace',
+          'view own workspace',
+          'bypass entity access own workspace',
+        ];
 
-  /**
-   * Tests switching workspace via the switcher block and admin page.
-   */
-  public function testSwitchingWorkspaces(): void {
-    /** @var \Drupal\Core\Cache\CacheBackendInterface $entity_cache */
-    $entity_cache = \Drupal::service('cache.entity');
+        $this->setupWorkspaceSwitcherBlock();
 
-    $node_type = $this->drupalCreateContentType();
-    $node = $this->drupalCreateNode(['type' => $node_type->id()]);
-    $this->assertFalse($entity_cache->get("values:node:{$node->id()}"));
+        $mayer = $this->drupalCreateUser($permissions);
+        $this->drupalLogin($mayer);
 
-    // Access the node page to prime its persistent cache.
-    $this->drupalGet($node->toUrl());
-    $this->assertNotFalse($entity_cache->get("values:node:{$node->id()}"));
+        $this->createWorkspaceThroughUi('Vultures', 'vultures');
+        $this->createWorkspaceThroughUi('Gravity', 'gravity');
+    }
 
-    $vultures = Workspace::load('vultures');
-    $gravity = Workspace::load('gravity');
-    $this->switchToWorkspace($vultures);
+    /**
+     * Tests switching workspace via the switcher block and admin page.
+     */
+    public function testSwitchingWorkspaces(): void
+    {
+        /** @var \Drupal\Core\Cache\CacheBackendInterface $entity_cache */
+        $entity_cache = \Drupal::service('cache.entity');
 
-    // Check that switching into a workspace doesn't invalidate the persistent
-    // cache.
-    $this->assertNotFalse($entity_cache->get("values:node:{$node->id()}"));
+        $node_type = $this->drupalCreateContentType();
+        $node = $this->drupalCreateNode(['type' => $node_type->id()]);
+        $this->assertFalse($entity_cache->get("values:node:{$node->id()}"));
 
-    // Confirm the block shows on the front page.
-    $this->drupalGet('<front>');
-    $page = $this->getSession()->getPage();
-    $this->assertTrue($page->hasContent('Workspace switcher'));
+        // Access the node page to prime its persistent cache.
+        $this->drupalGet($node->toUrl());
+        $this->assertNotFalse($entity_cache->get("values:node:{$node->id()}"));
 
-    $this->drupalGet('/admin/config/workflow/workspaces/manage/' . $gravity->id() . '/activate');
+        $vultures = Workspace::load('vultures');
+        $gravity = Workspace::load('gravity');
+        $this->switchToWorkspace($vultures);
 
-    $this->assertSession()->statusCodeEquals(200);
-    $page = $this->getSession()->getPage();
-    $page->findButton('Confirm')->click();
+        // Check that switching into a workspace doesn't invalidate the persistent
+        // cache.
+        $this->assertNotFalse($entity_cache->get("values:node:{$node->id()}"));
 
-    // Check that WorkspaceCacheContext provides the cache context used to
-    // support its functionality.
-    $this->assertCacheContext('session');
+        // Confirm the block shows on the front page.
+        $this->drupalGet('<front>');
+        $page = $this->getSession()->getPage();
+        $this->assertTrue($page->hasContent('Workspace switcher'));
 
-    $page->findLink($gravity->label());
-  }
+        $this->drupalGet('/admin/config/workflow/workspaces/manage/' . $gravity->id() . '/activate');
 
-  /**
-   * Tests switching workspace via a query parameter.
-   */
-  public function testQueryParameterNegotiator(): void {
-    $web_assert = $this->assertSession();
-    // Initially the default workspace should be active.
-    $web_assert->elementContains('css', '#block-workspace-switcher', 'None');
+        $this->assertSession()->statusCodeEquals(200);
+        $page = $this->getSession()->getPage();
+        $page->findButton('Confirm')->click();
 
-    // When adding a query parameter the workspace will be switched.
-    $current_user_url = \Drupal::currentUser()->getAccount()->toUrl();
-    $this->drupalGet($current_user_url, ['query' => ['workspace' => 'vultures']]);
-    $web_assert->elementContains('css', '#block-workspace-switcher', 'Vultures');
+        // Check that WorkspaceCacheContext provides the cache context used to
+        // support its functionality.
+        $this->assertCacheContext('session');
 
-    // The workspace switching via query parameter should persist.
-    $this->drupalGet($current_user_url);
-    $web_assert->elementContains('css', '#block-workspace-switcher', 'Vultures');
+        $page->findLink($gravity->label());
+    }
 
-    // Check that WorkspaceCacheContext provides the cache context used to
-    // support its functionality.
-    $this->assertCacheContext('session');
-  }
+    /**
+     * Tests switching workspace via a query parameter.
+     */
+    public function testQueryParameterNegotiator(): void
+    {
+        $web_assert = $this->assertSession();
+        // Initially the default workspace should be active.
+        $web_assert->elementContains('css', '#block-workspace-switcher', 'None');
 
-  /**
-   * Tests that the toolbar workspace switcher doesn't disable the page cache.
-   */
-  public function testToolbarSwitcherDynamicPageCache(): void {
-    $node_type = $this->drupalCreateContentType();
-    $node = $this->drupalCreateNode(['type' => $node_type->id()]);
-    $this->drupalLogin($this->drupalCreateUser([
-      'access toolbar',
-      'view any workspace',
-    ]));
-    $this->drupalGet($node->toUrl());
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
-    // Reload the page, it should be cached now.
-    $this->drupalGet($node->toUrl());
-    $this->assertSession()->elementExists('css', '.workspaces-toolbar-tab');
-    $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
-  }
+        // When adding a query parameter the workspace will be switched.
+        $current_user_url = \Drupal::currentUser()->getAccount()->toUrl();
+        $this->drupalGet($current_user_url, ['query' => ['workspace' => 'vultures']]);
+        $web_assert->elementContains('css', '#block-workspace-switcher', 'Vultures');
 
-  /**
-   * Tests workspaces with non-default providers in the switcher form.
-   */
-  public function testSwitcherFormFiltersByProvider(): void {
-    // Create a workspace that uses the test provider.
-    Workspace::create([
-      'id' => 'test_provider_workspace',
-      'label' => 'Test Provider Workspace',
-      'provider' => 'test',
-    ])->save();
+        // The workspace switching via query parameter should persist.
+        $this->drupalGet($current_user_url);
+        $web_assert->elementContains('css', '#block-workspace-switcher', 'Vultures');
 
-    $this->drupalGet('<front>');
-    $assert_session = $this->assertSession();
+        // Check that WorkspaceCacheContext provides the cache context used to
+        // support its functionality.
+        $this->assertCacheContext('session');
+    }
 
-    // Check that only relevant workspaces are shown.
-    $assert_session->pageTextContains('Vultures');
-    $assert_session->pageTextContains('Gravity');
-    $assert_session->pageTextNotContains('Test Provider Workspace');
-  }
+    /**
+     * Tests that the toolbar workspace switcher doesn't disable the page cache.
+     */
+    public function testToolbarSwitcherDynamicPageCache(): void
+    {
+        $node_type = $this->drupalCreateContentType();
+        $node = $this->drupalCreateNode(['type' => $node_type->id()]);
+        $this->drupalLogin($this->drupalCreateUser([
+          'access toolbar',
+          'view any workspace',
+        ]));
+        $this->drupalGet($node->toUrl());
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'MISS');
+        // Reload the page, it should be cached now.
+        $this->drupalGet($node->toUrl());
+        $this->assertSession()->elementExists('css', '.workspaces-toolbar-tab');
+        $this->assertSession()->responseHeaderEquals(DynamicPageCacheSubscriber::HEADER, 'HIT');
+    }
+
+    /**
+     * Tests workspaces with non-default providers in the switcher form.
+     */
+    public function testSwitcherFormFiltersByProvider(): void
+    {
+        // Create a workspace that uses the test provider.
+        Workspace::create([
+          'id' => 'test_provider_workspace',
+          'label' => 'Test Provider Workspace',
+          'provider' => 'test',
+        ])->save();
+
+        $this->drupalGet('<front>');
+        $assert_session = $this->assertSession();
+
+        // Check that only relevant workspaces are shown.
+        $assert_session->pageTextContains('Vultures');
+        $assert_session->pageTextContains('Gravity');
+        $assert_session->pageTextNotContains('Test Provider Workspace');
+    }
 
 }

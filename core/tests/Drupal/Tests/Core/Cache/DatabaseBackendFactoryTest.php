@@ -21,104 +21,106 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(DatabaseBackendFactory::class)]
 #[Group('Cache')]
-class DatabaseBackendFactoryTest extends UnitTestCase {
+class DatabaseBackendFactoryTest extends UnitTestCase
+{
+    /**
+     * Tests get.
+     *
+     * @legacy-covers ::__construct
+     * @legacy-covers ::get
+     */
+    #[DataProvider('getProvider')]
+    public function testGet(array $settings, $expected_max_rows_foo, $expected_max_rows_bar): void
+    {
+        $database_backend_factory = new DatabaseBackendFactory(
+            $this->prophesize(Connection::class)->reveal(),
+            $this->prophesize(CacheTagsChecksumInterface::class)->reveal(),
+            new Settings($settings),
+            new PhpSerialize(),
+            $this->prophesize(TimeInterface::class)->reveal(),
+        );
 
-  /**
-   * Tests get.
-   *
-   * @legacy-covers ::__construct
-   * @legacy-covers ::get
-   */
-  #[DataProvider('getProvider')]
-  public function testGet(array $settings, $expected_max_rows_foo, $expected_max_rows_bar): void {
-    $database_backend_factory = new DatabaseBackendFactory(
-      $this->prophesize(Connection::class)->reveal(),
-      $this->prophesize(CacheTagsChecksumInterface::class)->reveal(),
-      new Settings($settings),
-      new PhpSerialize(),
-      $this->prophesize(TimeInterface::class)->reveal(),
-    );
+        $this->assertSame($expected_max_rows_foo, $database_backend_factory->get('foo')->getMaxRows());
+        $this->assertSame($expected_max_rows_bar, $database_backend_factory->get('bar')->getMaxRows());
+    }
 
-    $this->assertSame($expected_max_rows_foo, $database_backend_factory->get('foo')->getMaxRows());
-    $this->assertSame($expected_max_rows_bar, $database_backend_factory->get('bar')->getMaxRows());
-  }
-
-  public static function getProvider(): array {
-    return [
-      'default' => [
-        [],
-        DatabaseBackend::DEFAULT_MAX_ROWS,
-        DatabaseBackend::DEFAULT_MAX_ROWS,
-      ],
-      'default overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'default' => 99,
+    public static function getProvider(): array
+    {
+        return [
+          'default' => [
+            [],
+            DatabaseBackend::DEFAULT_MAX_ROWS,
+            DatabaseBackend::DEFAULT_MAX_ROWS,
           ],
-        ],
-        99,
-        99,
-      ],
-      'default + foo bin overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'bins' => [
-              'foo' => 13,
+          'default overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'default' => 99,
+              ],
             ],
+            99,
+            99,
           ],
-        ],
-        13,
-        DatabaseBackend::DEFAULT_MAX_ROWS,
-      ],
-      'default + bar bin overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'bins' => [
-              'bar' => 13,
+          'default + foo bin overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'bins' => [
+                  'foo' => 13,
+                ],
+              ],
             ],
+            13,
+            DatabaseBackend::DEFAULT_MAX_ROWS,
           ],
-        ],
-        DatabaseBackend::DEFAULT_MAX_ROWS,
-        13,
-      ],
-      'default overridden + bar bin overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'default' => 99,
-            'bins' => [
-              'bar' => 13,
+          'default + bar bin overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'bins' => [
+                  'bar' => 13,
+                ],
+              ],
             ],
+            DatabaseBackend::DEFAULT_MAX_ROWS,
+            13,
           ],
-        ],
-        99,
-        13,
-      ],
-      'default + both bins overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'bins' => [
-              'foo' => 13,
-              'bar' => 31,
+          'default overridden + bar bin overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'default' => 99,
+                'bins' => [
+                  'bar' => 13,
+                ],
+              ],
             ],
+            99,
+            13,
           ],
-        ],
-        13,
-        31,
-      ],
-      'default overridden + both bins overridden' => [
-        [
-          'database_cache_max_rows' => [
-            'default' => 99,
-            'bins' => [
-              'foo' => 13,
-              'bar' => 31,
+          'default + both bins overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'bins' => [
+                  'foo' => 13,
+                  'bar' => 31,
+                ],
+              ],
             ],
+            13,
+            31,
           ],
-        ],
-        13,
-        31,
-      ],
-    ];
-  }
+          'default overridden + both bins overridden' => [
+            [
+              'database_cache_max_rows' => [
+                'default' => 99,
+                'bins' => [
+                  'foo' => 13,
+                  'bar' => 31,
+                ],
+              ],
+            ],
+            13,
+            31,
+          ],
+        ];
+    }
 
 }

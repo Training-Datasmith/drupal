@@ -11,9 +11,10 @@ use Drupal\Tests\ApiRequestTrait;
  *
  * @internal
  */
-trait JsonApiRequestTestTrait {
-  use ApiRequestTrait {
-    makeApiRequest as request;
-  }
+trait JsonApiRequestTestTrait
+{
+    use ApiRequestTrait {
+        makeApiRequest as request;
+    }
 
 }

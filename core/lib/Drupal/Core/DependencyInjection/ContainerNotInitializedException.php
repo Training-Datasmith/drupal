@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\DependencyInjection;
 
 /**
@@ -7,6 +9,6 @@ namespace Drupal\Core\DependencyInjection;
  *
  * @see \Drupal
  */
-class ContainerNotInitializedException extends \RuntimeException {
-
+class ContainerNotInitializedException extends \RuntimeException
+{
 }

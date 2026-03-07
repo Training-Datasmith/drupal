@@ -16,49 +16,51 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('migrate')]
 #[RunTestsInSeparateProcesses]
-class EntityExistsTest extends KernelTestBase {
+class EntityExistsTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['migrate', 'system', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['migrate', 'system', 'user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
-  }
+    /**
+     * Tests the EntityExists plugin.
+     */
+    public function testEntityExists(): void
+    {
+        $user = User::create([
+          'name' => $this->randomString(),
+        ]);
+        $user->save();
+        $uid = $user->id();
 
-  /**
-   * Tests the EntityExists plugin.
-   */
-  public function testEntityExists(): void {
-    $user = User::create([
-      'name' => $this->randomString(),
-    ]);
-    $user->save();
-    $uid = $user->id();
+        $plugin = \Drupal::service('plugin.manager.migrate.process')
+          ->createInstance('entity_exists', [
+            'entity_type' => 'user',
+          ]);
+        $executable = $this->prophesize(MigrateExecutableInterface::class)->reveal();
+        $row = new Row();
 
-    $plugin = \Drupal::service('plugin.manager.migrate.process')
-      ->createInstance('entity_exists', [
-        'entity_type' => 'user',
-      ]);
-    $executable = $this->prophesize(MigrateExecutableInterface::class)->reveal();
-    $row = new Row();
+        // Ensure that the entity ID is returned if it really exists.
+        $value = $plugin->transform($uid, $executable, $row, 'buffalo');
+        $this->assertSame($uid, $value);
 
-    // Ensure that the entity ID is returned if it really exists.
-    $value = $plugin->transform($uid, $executable, $row, 'buffalo');
-    $this->assertSame($uid, $value);
+        // Ensure that the plugin returns FALSE if the entity doesn't exist.
+        $value = $plugin->transform(420, $executable, $row, 'buffalo');
+        $this->assertFalse($value);
 
-    // Ensure that the plugin returns FALSE if the entity doesn't exist.
-    $value = $plugin->transform(420, $executable, $row, 'buffalo');
-    $this->assertFalse($value);
-
-    // Make sure the plugin can gracefully handle an array as input.
-    $value = $plugin->transform([$uid, 420], $executable, $row, 'buffalo');
-    $this->assertSame($uid, $value);
-  }
+        // Make sure the plugin can gracefully handle an array as input.
+        $value = $plugin->transform([$uid, 420], $executable, $row, 'buffalo');
+        $this->assertSame($uid, $value);
+    }
 
 }

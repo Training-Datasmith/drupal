@@ -17,62 +17,64 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class AreaOrderTest extends ViewsKernelTestBase {
+class AreaOrderTest extends ViewsKernelTestBase
+{
+    use BlockCreationTrait;
 
-  use BlockCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user', 'block'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user', 'block'];
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_area_order'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_area_order'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpFixtures(): void
+    {
+        // Install the themes used for this test.
+        $this->container->get('theme_installer')->install(['olivero']);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpFixtures(): void {
-    // Install the themes used for this test.
-    $this->container->get('theme_installer')->install(['olivero']);
+        $this->placeBlock('system_branding_block', [
+          'id' => 'id_olivero_branding',
+          'theme' => 'olivero',
+          'plugin' => 'system_branding_block',
+          'weight' => 1,
+        ]);
 
-    $this->placeBlock('system_branding_block', [
-      'id' => 'id_olivero_branding',
-      'theme' => 'olivero',
-      'plugin' => 'system_branding_block',
-      'weight' => 1,
-    ]);
+        $this->placeBlock('system_powered_by_block', [
+          'id' => 'id_olivero_powered',
+          'theme' => 'olivero',
+          'weight' => 2,
+        ]);
 
-    $this->placeBlock('system_powered_by_block', [
-      'id' => 'id_olivero_powered',
-      'theme' => 'olivero',
-      'weight' => 2,
-    ]);
+        parent::setUpFixtures();
+    }
 
-    parent::setUpFixtures();
-  }
+    /**
+     * Tests the order of the handlers.
+     */
+    public function testAreaOrder(): void
+    {
+        $view = Views::getView('test_area_order');
+        $renderable = $view->buildRenderable();
+        $output = $this->render($renderable);
 
-  /**
-   * Tests the order of the handlers.
-   */
-  public function testAreaOrder(): void {
-    $view = Views::getView('test_area_order');
-    $renderable = $view->buildRenderable();
-    $output = $this->render($renderable);
+        $position_powered = strpos($output, 'block-id-olivero-powered');
+        $position_branding = strpos($output, 'block-id-olivero-branding');
 
-    $position_powered = strpos($output, 'block-id-olivero-powered');
-    $position_branding = strpos($output, 'block-id-olivero-branding');
+        $this->assertNotEquals(0, $position_powered, 'ID olivero-powered found.');
+        $this->assertNotEquals(0, $position_branding, 'ID olivero-branding found');
 
-    $this->assertNotEquals(0, $position_powered, 'ID olivero-powered found.');
-    $this->assertNotEquals(0, $position_branding, 'ID olivero-branding found');
-
-    // Make sure "powered" is before "branding", so it reflects the position
-    // in the configuration, and not the weight of the blocks.
-    $this->assertLessThan($position_branding, $position_powered);
-  }
+        // Make sure "powered" is before "branding", so it reflects the position
+        // in the configuration, and not the weight of the blocks.
+        $this->assertLessThan($position_branding, $position_powered);
+    }
 
 }

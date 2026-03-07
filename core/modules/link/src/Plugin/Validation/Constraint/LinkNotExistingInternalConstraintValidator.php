@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\link\Plugin\Validation\Constraint;
 
 use Drupal\link\LinkItemInterface;
@@ -13,42 +15,42 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 /**
  * Validates the LinkNotExistingInternal constraint.
  */
-class LinkNotExistingInternalConstraintValidator extends ConstraintValidator {
+class LinkNotExistingInternalConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        if (!$value instanceof LinkItemInterface) {
+            throw new UnexpectedValueException($value, LinkItemInterface::class);
+        }
+        if ($value->isEmpty()) {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    if (!$value instanceof LinkItemInterface) {
-      throw new UnexpectedValueException($value, LinkItemInterface::class);
-    }
-    if ($value->isEmpty()) {
-      return;
-    }
+        try {
+            /** @var \Drupal\Core\Url $url */
+            $url = $value->getUrl();
+        }
+        // If the URL is malformed this constraint cannot check further.
+        catch (\InvalidArgumentException) {
+            return;
+        }
 
-    try {
-      /** @var \Drupal\Core\Url $url */
-      $url = $value->getUrl();
+        if ($url->isRouted()) {
+            $allowed = true;
+            try {
+                $url->toString(true);
+            } catch (RouteNotFoundException|InvalidParameterException|MissingMandatoryParametersException) {
+                $allowed = false;
+            }
+            if (!$allowed) {
+                $this->context->buildViolation($constraint->message, ['@uri' => $value->uri])
+                  ->atPath('uri')
+                  ->addViolation();
+            }
+        }
     }
-    // If the URL is malformed this constraint cannot check further.
-    catch (\InvalidArgumentException) {
-      return;
-    }
-
-    if ($url->isRouted()) {
-      $allowed = TRUE;
-      try {
-        $url->toString(TRUE);
-      }
-      catch (RouteNotFoundException|InvalidParameterException|MissingMandatoryParametersException) {
-        $allowed = FALSE;
-      }
-      if (!$allowed) {
-        $this->context->buildViolation($constraint->message, ['@uri' => $value->uri])
-          ->atPath('uri')
-          ->addViolation();
-      }
-    }
-  }
 
 }

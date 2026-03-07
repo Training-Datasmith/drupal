@@ -17,46 +17,48 @@ use Symfony\Component\Routing\Route;
  */
 #[CoversClass(DefaultAccessCheck::class)]
 #[Group('Access')]
-class DefaultAccessCheckTest extends UnitTestCase {
+class DefaultAccessCheckTest extends UnitTestCase
+{
+    /**
+     * The access checker to test.
+     *
+     * @var \Drupal\Core\Access\DefaultAccessCheck
+     */
+    protected $accessChecker;
 
-  /**
-   * The access checker to test.
-   *
-   * @var \Drupal\Core\Access\DefaultAccessCheck
-   */
-  protected $accessChecker;
+    /**
+     * The mocked account.
+     *
+     * @var \Drupal\Core\Session\AccountInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $account;
 
-  /**
-   * The mocked account.
-   *
-   * @var \Drupal\Core\Session\AccountInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $account;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->account = $this->createMock('Drupal\Core\Session\AccountInterface');
+        $this->accessChecker = new DefaultAccessCheck();
+    }
 
-    $this->account = $this->createMock('Drupal\Core\Session\AccountInterface');
-    $this->accessChecker = new DefaultAccessCheck();
-  }
+    /**
+     * Tests the access method.
+     */
+    public function testAccess(): void
+    {
+        $request = new Request([]);
 
-  /**
-   * Tests the access method.
-   */
-  public function testAccess(): void {
-    $request = new Request([]);
+        $route = new Route('/test-route', [], ['_access' => 'NULL']);
+        $this->assertEquals(AccessResult::neutral(), $this->accessChecker->access($route, $request, $this->account));
 
-    $route = new Route('/test-route', [], ['_access' => 'NULL']);
-    $this->assertEquals(AccessResult::neutral(), $this->accessChecker->access($route, $request, $this->account));
+        $route = new Route('/test-route', [], ['_access' => 'FALSE']);
+        $this->assertEquals(AccessResult::forbidden(), $this->accessChecker->access($route, $request, $this->account));
 
-    $route = new Route('/test-route', [], ['_access' => 'FALSE']);
-    $this->assertEquals(AccessResult::forbidden(), $this->accessChecker->access($route, $request, $this->account));
-
-    $route = new Route('/test-route', [], ['_access' => 'TRUE']);
-    $this->assertEquals(AccessResult::allowed(), $this->accessChecker->access($route, $request, $this->account));
-  }
+        $route = new Route('/test-route', [], ['_access' => 'TRUE']);
+        $this->assertEquals(AccessResult::allowed(), $this->accessChecker->access($route, $request, $this->account));
+    }
 
 }

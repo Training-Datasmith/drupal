@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\argument;
 
 use Drupal\node\Plugin\views\UidRevisionTrait;
@@ -12,17 +14,18 @@ use Drupal\views\Attribute\ViewsArgument;
  * Checks for nodes that a user posted or created a revision on.
  */
 #[ViewsArgument(
-  id: 'node_uid_revision',
+    id: 'node_uid_revision',
 )]
-class UidRevision extends Uid {
+class UidRevision extends Uid
+{
+    use UidRevisionTrait;
 
-  use UidRevisionTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query($group_by = FALSE): void {
-    $this->uidRevisionQuery([$this->argument]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query($group_by = false): void
+    {
+        $this->uidRevisionQuery([$this->argument]);
+    }
 
 }

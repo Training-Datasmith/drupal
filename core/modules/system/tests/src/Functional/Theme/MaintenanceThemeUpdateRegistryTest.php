@@ -15,65 +15,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Theme')]
 #[RunTestsInSeparateProcesses]
-class MaintenanceThemeUpdateRegistryTest extends BrowserTestBase {
-  use RequirementsPageTrait;
+class MaintenanceThemeUpdateRegistryTest extends BrowserTestBase
+{
+    use RequirementsPageTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'theme_test_profile';
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'theme_test_profile';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareSettings(): void {
-    parent::prepareSettings();
-    $this->writeSettings([
-      'settings' => [
-        'maintenance_theme' => (object) [
-          'value' => 'test_theme_updates',
-          'required' => TRUE,
-        ],
-      ],
-    ]);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareSettings(): void
+    {
+        parent::prepareSettings();
+        $this->writeSettings([
+          'settings' => [
+            'maintenance_theme' => (object) [
+              'value' => 'test_theme_updates',
+              'required' => true,
+            ],
+          ],
+        ]);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareEnvironment(): void {
-    parent::prepareEnvironment();
-    $info = [
-      'type' => 'profile',
-      'core_version_requirement' => '*',
-      'name' => 'Theme test profile',
-      'themes' => [
-        'test_theme_updates',
-      ],
-    ];
-    // Create an install profile that uses the test theme.
-    $path = $this->siteDirectory . '/profiles/theme_test_profile';
-    mkdir($path, 0777, TRUE);
-    file_put_contents("$path/theme_test_profile.info.yml", Yaml::encode($info));
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareEnvironment(): void
+    {
+        parent::prepareEnvironment();
+        $info = [
+          'type' => 'profile',
+          'core_version_requirement' => '*',
+          'name' => 'Theme test profile',
+          'themes' => [
+            'test_theme_updates',
+          ],
+        ];
+        // Create an install profile that uses the test theme.
+        $path = $this->siteDirectory . '/profiles/theme_test_profile';
+        mkdir($path, 0777, true);
+        file_put_contents("$path/theme_test_profile.info.yml", Yaml::encode($info));
 
-    // Create a system.theme.yml file for the profile so the test theme is used.
-    $path = $this->siteDirectory . '/profiles/theme_test_profile/config/install';
-    mkdir($path, 0777, TRUE);
-    $theme_config = Yaml::decode(file_get_contents($this->root . '/core/modules/system/config/install/system.theme.yml'));
-    $theme_config['default'] = 'test_theme_updates';
-    file_put_contents("$path/system.theme.yml", Yaml::encode($theme_config));
-  }
+        // Create a system.theme.yml file for the profile so the test theme is used.
+        $path = $this->siteDirectory . '/profiles/theme_test_profile/config/install';
+        mkdir($path, 0777, true);
+        $theme_config = Yaml::decode(file_get_contents($this->root . '/core/modules/system/config/install/system.theme.yml'));
+        $theme_config['default'] = 'test_theme_updates';
+        file_put_contents("$path/system.theme.yml", Yaml::encode($theme_config));
+    }
 
-  /**
-   * Tests that after installing the profile there are no outstanding updates.
-   */
-  public function testMaintenanceThemeUpdateRegistration(): void {
-    $this->drupalLogin($this->drupalCreateUser(['administer software updates']));
+    /**
+     * Tests that after installing the profile there are no outstanding updates.
+     */
+    public function testMaintenanceThemeUpdateRegistration(): void
+    {
+        $this->drupalLogin($this->drupalCreateUser(['administer software updates']));
 
-    $this->drupalGet('update.php/selection');
-    $this->updateRequirementsProblem();
-    $this->drupalGet('update.php/selection');
-    $this->assertSession()->pageTextContains('No pending updates.');
-  }
+        $this->drupalGet('update.php/selection');
+        $this->updateRequirementsProblem();
+        $this->drupalGet('update.php/selection');
+        $this->assertSession()->pageTextContains('No pending updates.');
+    }
 
 }

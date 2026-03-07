@@ -16,30 +16,32 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Token::class)]
 #[Group('Render')]
-class TokenTest extends UnitTestCase {
+class TokenTest extends UnitTestCase
+{
+    /**
+     * Tests value callback.
+     */
+    #[DataProvider('providerTestValueCallback')]
+    public function testValueCallback($expected, $input): void
+    {
+        $element = [];
+        $form_state = $this->prophesize(FormStateInterface::class)->reveal();
+        $this->assertSame($expected, Token::valueCallback($element, $input, $form_state));
+    }
 
-  /**
-   * Tests value callback.
-   */
-  #[DataProvider('providerTestValueCallback')]
-  public function testValueCallback($expected, $input): void {
-    $element = [];
-    $form_state = $this->prophesize(FormStateInterface::class)->reveal();
-    $this->assertSame($expected, Token::valueCallback($element, $input, $form_state));
-  }
+    /**
+     * Data provider for testValueCallback().
+     */
+    public static function providerTestValueCallback(): array
+    {
+        $data = [];
+        $data[] = [null, false];
+        $data[] = [null, null];
+        $data[] = ['', ['test']];
+        $data[] = ['test', 'test'];
+        $data[] = ['123', 123];
 
-  /**
-   * Data provider for testValueCallback().
-   */
-  public static function providerTestValueCallback(): array {
-    $data = [];
-    $data[] = [NULL, FALSE];
-    $data[] = [NULL, NULL];
-    $data[] = ['', ['test']];
-    $data[] = ['test', 'test'];
-    $data[] = ['123', 123];
-
-    return $data;
-  }
+        return $data;
+    }
 
 }

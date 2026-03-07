@@ -9,13 +9,14 @@ use Drupal\mysql\Driver\Database\mysql\Install\Tasks as CoreTasks;
 /**
  * Specifies installation tasks for MySQL test databases.
  */
-class Tasks extends CoreTasks {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function name() {
-    return $this->t('MySQL deprecated version by the driver_test module');
-  }
+class Tasks extends CoreTasks
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function name()
+    {
+        return $this->t('MySQL deprecated version by the driver_test module');
+    }
 
 }

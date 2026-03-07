@@ -14,23 +14,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('Entity')]
 #[CoversClass(EntityKernelTestBase::class)]
 #[RunTestsInSeparateProcesses]
-class EntityKernelTestBaseTest extends EntityKernelTestBase {
+class EntityKernelTestBaseTest extends EntityKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createUser();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->createUser();
-  }
-
-  /**
-   * Tests that the current user is set up correctly.
-   */
-  public function testSetUpCurrentUser(): void {
-    $account = $this->setUpCurrentUser();
-    $current_user = \Drupal::currentUser();
-    $this->assertSame($account->id(), $current_user->id());
-  }
+    /**
+     * Tests that the current user is set up correctly.
+     */
+    public function testSetUpCurrentUser(): void
+    {
+        $account = $this->setUpCurrentUser();
+        $current_user = \Drupal::currentUser();
+        $this->assertSame($account->id(), $current_user->id());
+    }
 
 }

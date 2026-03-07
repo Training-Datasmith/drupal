@@ -11,59 +11,63 @@ use Drupal\views\ResultRow;
 /**
  * A test field handler.
  */
-#[ViewsField("test_field")]
-class FieldTest extends FieldPluginBase {
+#[ViewsField('test_field')]
+class FieldTest extends FieldPluginBase
+{
+    /**
+     * A temporary stored test value for the test.
+     *
+     * @var string
+     */
+    protected $testValue;
 
+    /**
+     * Sets the testValue property.
+     *
+     * @param string $value
+     *   The test value to set.
+     */
+    public function setTestValue($value)
+    {
+        $this->testValue = $value;
+    }
 
-  /**
-   * A temporary stored test value for the test.
-   *
-   * @var string
-   */
-  protected $testValue;
+    /**
+     * Returns the testValue property.
+     *
+     * @return string
+     *   The value of the test.
+     */
+    public function getTestValue()
+    {
+        return $this->testValue;
+    }
 
-  /**
-   * Sets the testValue property.
-   *
-   * @param string $value
-   *   The test value to set.
-   */
-  public function setTestValue($value) {
-    $this->testValue = $value;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function addSelfTokens(&$tokens, $item)
+    {
+        $tokens['{{ test_token }}'] = $this->getTestValue();
+    }
 
-  /**
-   * Returns the testValue property.
-   *
-   * @return string
-   *   The value of the test.
-   */
-  public function getTestValue() {
-    return $this->testValue;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        return $this->sanitizeValue($this->getTestValue());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function addSelfTokens(&$tokens, $item) {
-    $tokens['{{ test_token }}'] = $this->getTestValue();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    return $this->sanitizeValue($this->getTestValue());
-  }
-
-  /**
-   * A mock function which allows to call placeholder from public.
-   *
-   * @return string
-   *   The result of the placeholder method.
-   */
-  public function getPlaceholder() {
-    return $this->placeholder();
-  }
+    /**
+     * A mock function which allows to call placeholder from public.
+     *
+     * @return string
+     *   The result of the placeholder method.
+     */
+    public function getPlaceholder()
+    {
+        return $this->placeholder();
+    }
 
 }

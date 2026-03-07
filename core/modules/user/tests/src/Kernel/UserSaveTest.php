@@ -14,28 +14,29 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserSaveTest extends KernelTestBase {
+class UserSaveTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'user',
-  ];
+    /**
+     * Ensures that an existing password is unset after the user was saved.
+     */
+    public function testExistingPasswordRemoval(): void
+    {
+        $this->installEntitySchema('user');
 
-  /**
-   * Ensures that an existing password is unset after the user was saved.
-   */
-  public function testExistingPasswordRemoval(): void {
-    $this->installEntitySchema('user');
-
-    /** @var \Drupal\user\Entity\User $user */
-    $user = User::create(['name' => $this->randomMachineName()]);
-    $user->save();
-    $user->setExistingPassword('existing password');
-    $this->assertNotNull($user->pass->existing);
-    $user->save();
-    $this->assertNull($user->pass->existing);
-  }
+        /** @var \Drupal\user\Entity\User $user */
+        $user = User::create(['name' => $this->randomMachineName()]);
+        $user->save();
+        $user->setExistingPassword('existing password');
+        $this->assertNotNull($user->pass->existing);
+        $user->save();
+        $this->assertNull($user->pass->existing);
+    }
 
 }

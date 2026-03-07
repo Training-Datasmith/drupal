@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -8,14 +10,15 @@ use Drupal\views\Plugin\views\field\BulkForm;
 /**
  * Defines a node operations bulk form element.
  */
-#[ViewsField("node_bulk_form")]
-class NodeBulkForm extends BulkForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('No content selected.');
-  }
+#[ViewsField('node_bulk_form')]
+class NodeBulkForm extends BulkForm
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('No content selected.');
+    }
 
 }

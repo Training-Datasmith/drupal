@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\image\Plugin\ImageEffect;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -12,90 +14,96 @@ use Drupal\image\ConfigurableImageEffectBase;
  * Resizes an image resource.
  */
 #[ImageEffect(
-  id: "image_resize",
-  label: new TranslatableMarkup("Resize"),
-  description: new TranslatableMarkup("Resizing will make images an exact set of dimensions. This may cause images to be stretched or shrunk disproportionately."),
+    id: 'image_resize',
+    label: new TranslatableMarkup('Resize'),
+    description: new TranslatableMarkup('Resizing will make images an exact set of dimensions. This may cause images to be stretched or shrunk disproportionately.'),
 )]
-class ResizeImageEffect extends ConfigurableImageEffectBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyEffect(ImageInterface $image): bool {
-    if (!$image->resize($this->configuration['width'], $this->configuration['height'])) {
-      $this->logger->error('Image resize failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
-        '%toolkit' => $image->getToolkitId(),
-        '%path' => $image->getSource(),
-        '%mimetype' => $image->getMimeType(),
-        '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
-      ]);
-      return FALSE;
+class ResizeImageEffect extends ConfigurableImageEffectBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function applyEffect(ImageInterface $image): bool
+    {
+        if (!$image->resize($this->configuration['width'], $this->configuration['height'])) {
+            $this->logger->error('Image resize failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
+              '%toolkit' => $image->getToolkitId(),
+              '%path' => $image->getSource(),
+              '%mimetype' => $image->getMimeType(),
+              '%dimensions' => $image->getWidth() . 'x' . $image->getHeight(),
+            ]);
+            return false;
+        }
+        return true;
     }
-    return TRUE;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transformDimensions(array &$dimensions, $uri): void {
-    // The new image will have the exact dimensions defined for the effect.
-    $dimensions['width'] = $this->configuration['width'];
-    $dimensions['height'] = $this->configuration['height'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function transformDimensions(array &$dimensions, $uri): void
+    {
+        // The new image will have the exact dimensions defined for the effect.
+        $dimensions['width'] = $this->configuration['width'];
+        $dimensions['height'] = $this->configuration['height'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSummary() {
-    $summary = [
-      '#theme' => 'image_resize_summary',
-      '#data' => $this->configuration,
-    ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getSummary()
+    {
+        $summary = [
+          '#theme' => 'image_resize_summary',
+          '#data' => $this->configuration,
+        ];
 
-    return $summary + parent::getSummary();
-  }
+        return $summary + parent::getSummary();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'width' => NULL,
-      'height' => NULL,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'width' => null,
+          'height' => null,
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $form['width'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Width'),
-      '#default_value' => $this->configuration['width'],
-      '#field_suffix' => ' ' . $this->t('pixels'),
-      '#required' => TRUE,
-      '#min' => 1,
-    ];
-    $form['height'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Height'),
-      '#default_value' => $this->configuration['height'],
-      '#field_suffix' => ' ' . $this->t('pixels'),
-      '#required' => TRUE,
-      '#min' => 1,
-    ];
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    {
+        $form['width'] = [
+          '#type' => 'number',
+          '#title' => $this->t('Width'),
+          '#default_value' => $this->configuration['width'],
+          '#field_suffix' => ' ' . $this->t('pixels'),
+          '#required' => true,
+          '#min' => 1,
+        ];
+        $form['height'] = [
+          '#type' => 'number',
+          '#title' => $this->t('Height'),
+          '#default_value' => $this->configuration['height'],
+          '#field_suffix' => ' ' . $this->t('pixels'),
+          '#required' => true,
+          '#min' => 1,
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    parent::submitConfigurationForm($form, $form_state);
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        parent::submitConfigurationForm($form, $form_state);
 
-    $this->configuration['height'] = $form_state->getValue('height');
-    $this->configuration['width'] = $form_state->getValue('width');
-  }
+        $this->configuration['height'] = $form_state->getValue('height');
+        $this->configuration['width'] = $form_state->getValue('width');
+    }
 
 }

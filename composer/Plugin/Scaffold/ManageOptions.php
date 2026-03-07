@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Plugin\Scaffold;
 
 use Composer\Composer;
@@ -15,74 +17,77 @@ use Composer\Util\Filesystem;
  *
  * @internal
  */
-class ManageOptions {
+class ManageOptions
+{
+    /**
+     * ManageOptions constructor.
+     *
+     * @param \Composer\Composer $composer
+     *   The Composer service.
+     */
+    public function __construct(
+        /**
+         * The Composer service.
+         */
+        protected \Composer\Composer $composer
+    ) {
+    }
 
-  /**
-   * ManageOptions constructor.
-   *
-   * @param \Composer\Composer $composer
-   *   The Composer service.
-   */
-  public function __construct(
-      /**
-       * The Composer service.
-       */
-      protected \Composer\Composer $composer
-  )
-  {
-  }
+    /**
+     * Gets the root-level scaffold options for this project.
+     *
+     * @return \Drupal\Composer\Plugin\Scaffold\ScaffoldOptions
+     *   The scaffold options object.
+     */
+    public function getOptions()
+    {
+        return $this->packageOptions($this->composer->getPackage());
+    }
 
-  /**
-   * Gets the root-level scaffold options for this project.
-   *
-   * @return \Drupal\Composer\Plugin\Scaffold\ScaffoldOptions
-   *   The scaffold options object.
-   */
-  public function getOptions() {
-    return $this->packageOptions($this->composer->getPackage());
-  }
+    /**
+     * Gets the scaffold options for the stipulated project.
+     *
+     * @param \Composer\Package\PackageInterface $package
+     *   The package to fetch the scaffold options from.
+     *
+     * @return \Drupal\Composer\Plugin\Scaffold\ScaffoldOptions
+     *   The scaffold options object.
+     */
+    public function packageOptions(PackageInterface $package)
+    {
+        return ScaffoldOptions::create($package->getExtra());
+    }
 
-  /**
-   * Gets the scaffold options for the stipulated project.
-   *
-   * @param \Composer\Package\PackageInterface $package
-   *   The package to fetch the scaffold options from.
-   *
-   * @return \Drupal\Composer\Plugin\Scaffold\ScaffoldOptions
-   *   The scaffold options object.
-   */
-  public function packageOptions(PackageInterface $package) {
-    return ScaffoldOptions::create($package->getExtra());
-  }
+    /**
+     * Creates an interpolator for the 'locations' element.
+     *
+     * The interpolator returned will replace a path string with the tokens
+     * defined in the 'locations' element.
+     *
+     * Note that only the root package may define locations.
+     *
+     * @return \Drupal\Composer\Plugin\Scaffold\Interpolator
+     *   Interpolator that will do replacements in a string using tokens in
+     *   'locations' element.
+     */
+    public function getLocationReplacements()
+    {
+        return (new Interpolator())->setData($this->ensureLocations());
+    }
 
-  /**
-   * Creates an interpolator for the 'locations' element.
-   *
-   * The interpolator returned will replace a path string with the tokens
-   * defined in the 'locations' element.
-   *
-   * Note that only the root package may define locations.
-   *
-   * @return \Drupal\Composer\Plugin\Scaffold\Interpolator
-   *   Interpolator that will do replacements in a string using tokens in
-   *   'locations' element.
-   */
-  public function getLocationReplacements() {
-    return (new Interpolator())->setData($this->ensureLocations());
-  }
-
-  /**
-   * Ensures that all of the locations defined in the scaffold files exist.
-   *
-   * Create them on the filesystem if they do not.
-   */
-  protected function ensureLocations(): array {
-    $fs = new Filesystem();
-    $locations = $this->getOptions()->locations() + ['web_root' => './'];
-    return array_map(function ($location) use ($fs) {
-      $fs->ensureDirectoryExists($location);
-      return realpath($location);
-    }, $locations);
-  }
+    /**
+     * Ensures that all of the locations defined in the scaffold files exist.
+     *
+     * Create them on the filesystem if they do not.
+     */
+    protected function ensureLocations(): array
+    {
+        $fs = new Filesystem();
+        $locations = $this->getOptions()->locations() + ['web_root' => './'];
+        return array_map(function ($location) use ($fs) {
+            $fs->ensureDirectoryExists($location);
+            return realpath($location);
+        }, $locations);
+    }
 
 }

@@ -17,74 +17,76 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeAccessPagerTest extends BrowserTestBase {
+class NodeAccessPagerTest extends BrowserTestBase
+{
+    use CommentTestTrait;
 
-  use CommentTestTrait;
+    /**
+     * An user.
+     *
+     * @var \Drupal\user\Entity\User
+     */
+    protected User $webUser;
 
-  /**
-   * An user.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected User $webUser;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'node_access_test', 'comment'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'node_access_test', 'comment'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    node_access_rebuild();
-    $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
-    $this->addDefaultCommentField('node', 'page');
-    $this->webUser = $this->drupalCreateUser([
-      'access content',
-      'access comments',
-      'node test view',
-    ]);
-  }
-
-  /**
-   * Tests the comment pager for nodes with multiple grants per realm.
-   */
-  public function testCommentPager(): void {
-    // Create a node.
-    $node = $this->drupalCreateNode();
-
-    // Create 60 comments.
-    for ($i = 0; $i < 60; $i++) {
-      $comment = Comment::create([
-        'entity_id' => $node->id(),
-        'entity_type' => 'node',
-        'field_name' => 'comment',
-        'subject' => $this->randomMachineName(),
-        'comment_body' => [
-          ['value' => $this->randomMachineName()],
-        ],
-        'status' => CommentInterface::PUBLISHED,
-      ]);
-      $comment->save();
+        node_access_rebuild();
+        $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
+        $this->addDefaultCommentField('node', 'page');
+        $this->webUser = $this->drupalCreateUser([
+          'access content',
+          'access comments',
+          'node test view',
+        ]);
     }
 
-    $this->drupalLogin($this->webUser);
+    /**
+     * Tests the comment pager for nodes with multiple grants per realm.
+     */
+    public function testCommentPager(): void
+    {
+        // Create a node.
+        $node = $this->drupalCreateNode();
 
-    // View the node page. With the default 50 comments per page there should
-    // be two pages (0, 1) but no third (2) page.
-    $this->drupalGet('node/' . $node->id());
-    $this->assertSession()->pageTextContains($node->label());
-    $this->assertSession()->pageTextContains('Comments');
-    $this->assertSession()->responseContains('page=1');
-    $this->assertSession()->responseNotContains('page=2');
-  }
+        // Create 60 comments.
+        for ($i = 0; $i < 60; $i++) {
+            $comment = Comment::create([
+              'entity_id' => $node->id(),
+              'entity_type' => 'node',
+              'field_name' => 'comment',
+              'subject' => $this->randomMachineName(),
+              'comment_body' => [
+                ['value' => $this->randomMachineName()],
+              ],
+              'status' => CommentInterface::PUBLISHED,
+            ]);
+            $comment->save();
+        }
+
+        $this->drupalLogin($this->webUser);
+
+        // View the node page. With the default 50 comments per page there should
+        // be two pages (0, 1) but no third (2) page.
+        $this->drupalGet('node/' . $node->id());
+        $this->assertSession()->pageTextContains($node->label());
+        $this->assertSession()->pageTextContains('Comments');
+        $this->assertSession()->responseContains('page=1');
+        $this->assertSession()->responseNotContains('page=2');
+    }
 
 }

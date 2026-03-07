@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Template;
 
 use Drupal\Component\Utility\Html;
@@ -9,60 +11,61 @@ use Drupal\Component\Utility\Html;
  *
  * @see \Drupal\Core\Template\Attribute
  */
-abstract class AttributeValueBase implements \Stringable {
+abstract class AttributeValueBase implements \Stringable
+{
+    /**
+     * Renders '$name=""' if $value is an empty string.
+     *
+     * @see \Drupal\Core\Template\AttributeValueBase::render()
+     */
+    public const RENDER_EMPTY_ATTRIBUTE = true;
 
-  /**
-   * Renders '$name=""' if $value is an empty string.
-   *
-   * @see \Drupal\Core\Template\AttributeValueBase::render()
-   */
-  const RENDER_EMPTY_ATTRIBUTE = TRUE;
-
-  /**
-   * Constructs a \Drupal\Core\Template\AttributeValueBase object.
-   * @param mixed $value
-   * @param mixed $name
-   */
-  public function __construct(
-      /**
-       * The name of the value.
-       */
-      protected $name,
-      /**
-       * The value itself.
-       */
-      protected $value
-  )
-  {
-  }
-
-  /**
-   * Returns a string representation of the attribute.
-   *
-   * While __toString only returns the value in a string form, render()
-   * contains the name of the attribute as well.
-   *
-   * @return string|null
-   *   The string representation of the attribute.
-   */
-  public function render() {
-    $value = (string) $this;
-    if (isset($this->value) && static::RENDER_EMPTY_ATTRIBUTE || !empty($value)) {
-      return Html::escape($this->name) . '="' . $value . '"';
+    /**
+     * Constructs a \Drupal\Core\Template\AttributeValueBase object.
+     * @param mixed $value
+     * @param mixed $name
+     */
+    public function __construct(
+        /**
+         * The name of the value.
+         */
+        protected $name,
+        /**
+         * The value itself.
+         */
+        protected $value
+    ) {
     }
-    return NULL;
-  }
 
-  /**
-   * Returns the raw value.
-   */
-  public function value() {
-    return $this->value;
-  }
+    /**
+     * Returns a string representation of the attribute.
+     *
+     * While __toString only returns the value in a string form, render()
+     * contains the name of the attribute as well.
+     *
+     * @return string|null
+     *   The string representation of the attribute.
+     */
+    public function render()
+    {
+        $value = (string) $this;
+        if (isset($this->value) && static::RENDER_EMPTY_ATTRIBUTE || !empty($value)) {
+            return Html::escape($this->name) . '="' . $value . '"';
+        }
+        return null;
+    }
 
-  /**
-   * Implements the magic __toString() method.
-   */
-  abstract public function __toString(): string;
+    /**
+     * Returns the raw value.
+     */
+    public function value()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Implements the magic __toString() method.
+     */
+    abstract public function __toString(): string;
 
 }

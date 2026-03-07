@@ -12,32 +12,35 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestGetForm extends FormBase {
+class FormTestGetForm extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_get_form';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_get_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['#method'] = 'get';
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Save',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['#method'] = 'get';
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Save',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->messenger()->addStatus('The form_test_get_form form has been submitted successfully.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $this->messenger()->addStatus('The form_test_get_form form has been submitted successfully.');
+    }
 
 }

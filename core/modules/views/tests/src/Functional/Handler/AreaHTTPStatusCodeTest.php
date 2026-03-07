@@ -16,41 +16,42 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class AreaHTTPStatusCodeTest extends ViewTestBase {
+class AreaHTTPStatusCodeTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_http_status_code'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_http_status_code'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests the area handler.
+     */
+    public function testHTTPStatusCodeHandler(): void
+    {
+        $this->drupalGet('test-http-status-code');
+        $this->assertSession()->statusCodeEquals(200);
 
-  /**
-   * Tests the area handler.
-   */
-  public function testHTTPStatusCodeHandler(): void {
-    $this->drupalGet('test-http-status-code');
-    $this->assertSession()->statusCodeEquals(200);
+        // Change the HTTP status code to 418.
+        $view = Views::getView('test_http_status_code');
+        $display = &$view->storage->getDisplay('default');
+        $display['display_options']['empty']['http_status_code']['status_code'] = 418;
+        $view->save();
 
-    // Change the HTTP status code to 418.
-    $view = Views::getView('test_http_status_code');
-    $display = &$view->storage->getDisplay('default');
-    $display['display_options']['empty']['http_status_code']['status_code'] = 418;
-    $view->save();
-
-    // Test that the HTTP response is "I'm a teapot".
-    $this->drupalGet('test-http-status-code');
-    $this->assertSession()->statusCodeEquals(418);
-  }
+        // Test that the HTTP response is "I'm a teapot".
+        $this->drupalGet('test-http-status-code');
+        $this->assertSession()->statusCodeEquals(418);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,22 +14,24 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\workspaces\Entity\Workspace
  */
-class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
+class WorkspaceAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): \Drupal\Core\Access\AccessResultInterface
+    {
+        assert($entity instanceof WorkspaceInterface);
+        // Delegate access checking to the workspace provider.
+        return $entity->getProvider()->checkAccess($entity, $operation, $account);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): \Drupal\Core\Access\AccessResultInterface {
-    assert($entity instanceof WorkspaceInterface);
-    // Delegate access checking to the workspace provider.
-    return $entity->getProvider()->checkAccess($entity, $operation, $account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    return AccessResult::allowedIfHasPermissions($account, ['administer workspaces', 'create workspace'], 'OR');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = null)
+    {
+        return AccessResult::allowedIfHasPermissions($account, ['administer workspaces', 'create workspace'], 'OR');
+    }
 
 }

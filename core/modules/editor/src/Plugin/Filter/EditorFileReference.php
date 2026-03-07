@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\editor\Plugin\Filter;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Image\ImageFactory;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\FileInterface;
@@ -19,80 +19,82 @@ use Drupal\filter\Plugin\FilterInterface;
  * Generates file URLs and associates the cache tags of referenced files.
  */
 #[Filter(
-  id: "editor_file_reference",
-  title: new TranslatableMarkup("Track images uploaded via a Text Editor"),
-  description: new TranslatableMarkup("Ensures that the latest versions of images uploaded via a Text Editor are displayed, along with their dimensions."),
-  type: FilterInterface::TYPE_TRANSFORM_REVERSIBLE
+    id: 'editor_file_reference',
+    title: new TranslatableMarkup('Track images uploaded via a Text Editor'),
+    description: new TranslatableMarkup('Ensures that the latest versions of images uploaded via a Text Editor are displayed, along with their dimensions.'),
+    type: FilterInterface::TYPE_TRANSFORM_REVERSIBLE
 )]
-class EditorFileReference extends FilterBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Constructs a \Drupal\editor\Plugin\Filter\EditorFileReference object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   * @param \Drupal\Core\Image\ImageFactory $imageFactory
-   *   The image factory.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Image\ImageFactory $imageFactory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
-    $result = new FilterProcessResult($text);
-
-    if (stristr($text, 'data-entity-type="file"') !== FALSE) {
-      $dom = Html::load($text);
-      $xpath = new \DOMXPath($dom);
-      $processed_uuids = [];
-      foreach ($xpath->query('//*[@data-entity-type="file" and @data-entity-uuid]') as $node) {
-        $uuid = $node->getAttribute('data-entity-uuid');
-
-        // If there is a 'src' attribute, set it to the file entity's current
-        // URL. This ensures the URL works even after the file location changes.
-        if ($node->hasAttribute('src')) {
-          $file = $this->entityRepository->loadEntityByUuid('file', $uuid);
-          if ($file instanceof FileInterface) {
-            $node->setAttribute('src', $file->createFileUrl());
-            if ($node->nodeName == 'img') {
-              $image = $this->imageFactory->get($file->getFileUri());
-              $width = $image->getWidth();
-              $height = $image->getHeight();
-              // Set dimensions to avoid content layout shift (CLS).
-              // @see https://web.dev/cls/
-              if ($width !== NULL && !$node->hasAttribute('width')) {
-                $node->setAttribute('width', (string) $width);
-              }
-              if ($height !== NULL && !$node->hasAttribute('height')) {
-                $node->setAttribute('height', (string) $height);
-              }
-            }
-          }
-        }
-
-        // Only process the first occurrence of each file UUID.
-        if (!isset($processed_uuids[$uuid])) {
-          $processed_uuids[$uuid] = TRUE;
-
-          $file = $this->entityRepository->loadEntityByUuid('file', $uuid);
-          if ($file instanceof FileInterface) {
-            $result->addCacheTags($file->getCacheTags());
-          }
-        }
-      }
-      $result->setProcessedText(Html::serialize($dom));
+class EditorFileReference extends FilterBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * Constructs a \Drupal\editor\Plugin\Filter\EditorFileReference object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     * @param \Drupal\Core\Image\ImageFactory $imageFactory
+     *   The image factory.
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Image\ImageFactory $imageFactory)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    return $result;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function process($text, $langcode): \Drupal\filter\FilterProcessResult
+    {
+        $result = new FilterProcessResult($text);
+
+        if (stristr($text, 'data-entity-type="file"') !== false) {
+            $dom = Html::load($text);
+            $xpath = new \DOMXPath($dom);
+            $processed_uuids = [];
+            foreach ($xpath->query('//*[@data-entity-type="file" and @data-entity-uuid]') as $node) {
+                $uuid = $node->getAttribute('data-entity-uuid');
+
+                // If there is a 'src' attribute, set it to the file entity's current
+                // URL. This ensures the URL works even after the file location changes.
+                if ($node->hasAttribute('src')) {
+                    $file = $this->entityRepository->loadEntityByUuid('file', $uuid);
+                    if ($file instanceof FileInterface) {
+                        $node->setAttribute('src', $file->createFileUrl());
+                        if ($node->nodeName == 'img') {
+                            $image = $this->imageFactory->get($file->getFileUri());
+                            $width = $image->getWidth();
+                            $height = $image->getHeight();
+                            // Set dimensions to avoid content layout shift (CLS).
+                            // @see https://web.dev/cls/
+                            if ($width !== null && !$node->hasAttribute('width')) {
+                                $node->setAttribute('width', (string) $width);
+                            }
+                            if ($height !== null && !$node->hasAttribute('height')) {
+                                $node->setAttribute('height', (string) $height);
+                            }
+                        }
+                    }
+                }
+
+                // Only process the first occurrence of each file UUID.
+                if (!isset($processed_uuids[$uuid])) {
+                    $processed_uuids[$uuid] = true;
+
+                    $file = $this->entityRepository->loadEntityByUuid('file', $uuid);
+                    if ($file instanceof FileInterface) {
+                        $result->addCacheTags($file->getCacheTags());
+                    }
+                }
+            }
+            $result->setProcessedText(Html::serialize($dom));
+        }
+
+        return $result;
+    }
 
 }

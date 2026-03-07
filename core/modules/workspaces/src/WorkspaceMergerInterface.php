@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 /**
@@ -7,11 +9,11 @@ namespace Drupal\workspaces;
  *
  * @internal
  */
-interface WorkspaceMergerInterface extends WorkspaceOperationInterface {
-
-  /**
-   * Merges the contents of the source workspace into the target workspace.
-   */
-  public function merge();
+interface WorkspaceMergerInterface extends WorkspaceOperationInterface
+{
+    /**
+     * Merges the contents of the source workspace into the target workspace.
+     */
+    public function merge();
 
 }

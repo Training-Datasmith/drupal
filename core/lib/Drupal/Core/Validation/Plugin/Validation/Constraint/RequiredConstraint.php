@@ -13,16 +13,17 @@ use Symfony\Component\Validator\Constraints\Required;
  * Marks a field as required in a Collection constraint.
  */
 #[Constraint(
-  id: 'Required',
-  label: new TranslatableMarkup('Mark a field as required in a Collection constraint', [], ['context' => 'Validation'])
+    id: 'Required',
+    label: new TranslatableMarkup('Mark a field as required in a Collection constraint', [], ['context' => 'Validation'])
 )]
-class RequiredConstraint extends Required implements CompositeConstraintInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCompositeOptionStatic(): array|string {
-    return 'constraints';
-  }
+class RequiredConstraint extends Required implements CompositeConstraintInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getCompositeOptionStatic(): array|string
+    {
+        return 'constraints';
+    }
 
 }

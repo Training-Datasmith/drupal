@@ -17,52 +17,54 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ModuleAdminLinksHelper::class)]
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class ModuleAdminLinksHelperTest extends KernelTestBase {
+class ModuleAdminLinksHelperTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'link',
+      'menu_link_content',
+      'menu_test',
+      'router_test',
+      'system',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'link',
-    'menu_link_content',
-    'menu_test',
-    'router_test',
-    'system',
-    'user',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpCurrentUser([], [
+          'access administration pages',
+        ]);
+        $this->installEntitySchema('menu_link_content');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setUp(): void {
-    parent::setUp();
-    $this->setUpCurrentUser([], [
-      'access administration pages',
-    ]);
-    $this->installEntitySchema('menu_link_content');
-  }
+    /**
+     * Tests get module admin links.
+     */
+    public function testGetModuleAdminLinks(): void
+    {
+        // Rebuild the menu links.
+        $this->container->get('plugin.manager.menu.link')->rebuild();
 
-  /**
-   * Tests get module admin links.
-   */
-  public function testGetModuleAdminLinks(): void {
-    // Rebuild the menu links.
-    $this->container->get('plugin.manager.menu.link')->rebuild();
+        $adminLinksHelper = $this->container->get('system.module_admin_links_helper');
 
-    $adminLinksHelper = $this->container->get('system.module_admin_links_helper');
+        // Test a module that has admin links.
+        $links = $adminLinksHelper->getModuleAdminLinks('menu_test');
 
-    // Test a module that has admin links.
-    $links = $adminLinksHelper->getModuleAdminLinks('menu_test');
+        $this->assertCount(1, $links);
+        $this->assertEquals('menu_test.menu_name_test', $links[0]['url']->getRouteName());
 
-    $this->assertCount(1, $links);
-    $this->assertEquals('menu_test.menu_name_test', $links[0]['url']->getRouteName());
+        // Test a module that has no admin links.
+        $links = $adminLinksHelper->getModuleAdminLinks('link');
 
-    // Test a module that has no admin links.
-    $links = $adminLinksHelper->getModuleAdminLinks('link');
-
-    $this->assertCount(0, $links);
-  }
+        $this->assertCount(0, $links);
+    }
 
 }

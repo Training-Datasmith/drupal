@@ -11,4 +11,6 @@ namespace Drupal\plugin_test\Plugin\plugin_test\fruit;
  *   color = "red"
  * )
  */
-class Cherry implements FruitInterface {}
+class Cherry implements FruitInterface
+{
+}

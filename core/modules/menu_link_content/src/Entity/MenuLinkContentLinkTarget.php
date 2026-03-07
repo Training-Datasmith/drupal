@@ -18,14 +18,15 @@ use Drupal\menu_link_content\MenuLinkContentInterface;
  *
  * @see \Drupal\menu_link_content\MenuLinkContentInterface::getUrlObject()
  */
-class MenuLinkContentLinkTarget implements EntityLinkTargetInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLinkTarget(EntityInterface $entity): GeneratedUrl {
-    assert($entity instanceof MenuLinkContentInterface);
-    return $entity->getUrlObject()->toString(TRUE);
-  }
+class MenuLinkContentLinkTarget implements EntityLinkTargetInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLinkTarget(EntityInterface $entity): GeneratedUrl
+    {
+        assert($entity instanceof MenuLinkContentInterface);
+        return $entity->getUrlObject()->toString(true);
+    }
 
 }

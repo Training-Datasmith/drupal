@@ -14,59 +14,61 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\user\Plugin\Menu\LoginLogoutMenuLink
  */
-class DynamicMenuLinkMock extends MenuLinkMock {
+class DynamicMenuLinkMock extends MenuLinkMock
+{
+    /**
+     * The current user.
+     *
+     * @var \Drupal\Core\Session\AccountInterface
+     */
+    protected $currentUser;
 
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * Sets the current user.
-   *
-   * Allows the menu link to return the right title and route.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   *
-   * @return $this
-   */
-  public function setCurrentUser(AccountInterface $current_user): static {
-    $this->currentUser = $current_user;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle(): string {
-    if ($this->currentUser->isAuthenticated()) {
-      return 'Log out';
+    /**
+     * Sets the current user.
+     *
+     * Allows the menu link to return the right title and route.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $current_user
+     *   The current user.
+     *
+     * @return $this
+     */
+    public function setCurrentUser(AccountInterface $current_user): static
+    {
+        $this->currentUser = $current_user;
+        return $this;
     }
-    else {
-      return 'Log in';
-    }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRouteName(): string {
-    if ($this->currentUser->isAuthenticated()) {
-      return 'user.logout';
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle(): string
+    {
+        if ($this->currentUser->isAuthenticated()) {
+            return 'Log out';
+        } else {
+            return 'Log in';
+        }
     }
-    else {
-      return 'user.login';
-    }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts(): array {
-    return ['user.roles:authenticated'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteName(): string
+    {
+        if ($this->currentUser->isAuthenticated()) {
+            return 'user.logout';
+        } else {
+            return 'user.login';
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts(): array
+    {
+        return ['user.roles:authenticated'];
+    }
 
 }

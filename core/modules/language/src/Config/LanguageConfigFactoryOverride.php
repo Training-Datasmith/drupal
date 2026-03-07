@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\language\Config;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -12,197 +14,211 @@ use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Language\LanguageDefault;
 use Drupal\Core\Language\LanguageInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides language overrides for the configuration factory.
  */
-class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements LanguageConfigFactoryOverrideInterface, EventSubscriberInterface {
+class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements LanguageConfigFactoryOverrideInterface, EventSubscriberInterface
+{
+    use LanguageConfigCollectionNameTrait;
 
-  use LanguageConfigCollectionNameTrait;
+    /**
+     * An array of configuration storages keyed by langcode.
+     *
+     * @var \Drupal\Core\Config\StorageInterface[]
+     */
+    protected $storages;
 
-  /**
-   * An array of configuration storages keyed by langcode.
-   *
-   * @var \Drupal\Core\Config\StorageInterface[]
-   */
-  protected $storages;
+    /**
+     * The language object used to override configuration data.
+     *
+     * @var \Drupal\Core\Language\LanguageInterface
+     */
+    protected $language;
 
-  /**
-   * The language object used to override configuration data.
-   *
-   * @var \Drupal\Core\Language\LanguageInterface
-   */
-  protected $language;
-
-  public function __construct(protected StorageInterface $baseStorage, protected EventDispatcherInterface $eventDispatcher, protected TypedConfigManagerInterface $typedConfigManager, LanguageDefault $default_language, protected array $defaultLanguageValues, protected bool $translateEnglish) {
-    // Prior to negotiation the override language should be the default
-    // language.
-    $this->language = $default_language->get();
-  }
-
-  /**
-   * Checks whether overrides should be loaded.
-   */
-  protected function shouldSkipOverrides(): bool {
-    return $this->language
-      && $this->language->getId() === 'en'
-      && $this->defaultLanguageValues['id'] === 'en'
-      && !$this->translateEnglish;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadOverrides($names) {
-    if ($this->language) {
-      $storage = $this->getStorage($this->language->getId());
-      return $storage->readMultiple($names);
+    public function __construct(protected StorageInterface $baseStorage, protected EventDispatcherInterface $eventDispatcher, protected TypedConfigManagerInterface $typedConfigManager, LanguageDefault $default_language, protected array $defaultLanguageValues, protected bool $translateEnglish)
+    {
+        // Prior to negotiation the override language should be the default
+        // language.
+        $this->language = $default_language->get();
     }
-    return [];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOverride($langcode, $name): \Drupal\language\Config\LanguageConfigOverride {
-    $storage = $this->getStorage($langcode);
-    $data = $storage->read($name);
-
-    $override = new LanguageConfigOverride(
-      $name,
-      $storage,
-      $this->typedConfigManager,
-      $this->eventDispatcher
-    );
-
-    if (!empty($data)) {
-      $override->initWithData($data);
+    /**
+     * Checks whether overrides should be loaded.
+     */
+    protected function shouldSkipOverrides(): bool
+    {
+        return $this->language
+          && $this->language->getId() === 'en'
+          && $this->defaultLanguageValues['id'] === 'en'
+          && !$this->translateEnglish;
     }
-    return $override;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorage($langcode) {
-    // Skip loading overrides when English is the default language and the
-    // passed in langcode is English.
-    if (!isset($this->storages[$langcode])) {
-      if ($langcode === 'en' && $this->shouldSkipOverrides()) {
-        $this->storages[$langcode] = new NullStorage($this->createConfigCollectionName($langcode));
-      }
-      else {
-        $this->storages[$langcode] = $this->baseStorage->createCollection($this->createConfigCollectionName($langcode));
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function loadOverrides($names)
+    {
+        if ($this->language) {
+            $storage = $this->getStorage($this->language->getId());
+            return $storage->readMultiple($names);
+        }
+        return [];
     }
-    return $this->storages[$langcode];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheSuffix() {
-    return $this->language ? $this->language->getId() : NULL;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getOverride($langcode, $name): \Drupal\language\Config\LanguageConfigOverride
+    {
+        $storage = $this->getStorage($langcode);
+        $data = $storage->read($name);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getLanguage() {
-    return $this->language;
-  }
+        $override = new LanguageConfigOverride(
+            $name,
+            $storage,
+            $this->typedConfigManager,
+            $this->eventDispatcher
+        );
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setLanguage(?LanguageInterface $language = NULL): static {
-    $this->language = $language;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function installLanguageOverrides($langcode): void {
-    /** @var \Drupal\Core\Config\ConfigInstallerInterface $config_installer */
-    $config_installer = \Drupal::service('config.installer');
-    $config_installer->installCollectionDefaultConfig($this->createConfigCollectionName($langcode));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION) {
-    $langcode = $this->getLangcodeFromCollectionName($collection);
-    return $this->getOverride($langcode, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addCollections(ConfigCollectionInfo $collection_info): void {
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $collection_info->addCollection($this->createConfigCollectionName($language->getId()), $this);
+        if (!empty($data)) {
+            $override->initWithData($data);
+        }
+        return $override;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onConfigSave(ConfigCrudEvent $event): void {
-    $config = $event->getConfig();
-    $name = $config->getName();
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $config_translation = $this->getOverride($language->getId(), $name);
-      if (!$config_translation->isNew()) {
-        $this->filterOverride($config, $config_translation);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorage($langcode)
+    {
+        // Skip loading overrides when English is the default language and the
+        // passed in langcode is English.
+        if (!isset($this->storages[$langcode])) {
+            if ($langcode === 'en' && $this->shouldSkipOverrides()) {
+                $this->storages[$langcode] = new NullStorage($this->createConfigCollectionName($langcode));
+            } else {
+                $this->storages[$langcode] = $this->baseStorage->createCollection($this->createConfigCollectionName($langcode));
+            }
+        }
+        return $this->storages[$langcode];
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onConfigRename(ConfigRenameEvent $event): void {
-    $config = $event->getConfig();
-    $name = $config->getName();
-    $old_name = $event->getOldName();
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $config_translation = $this->getOverride($language->getId(), $old_name);
-      if (!$config_translation->isNew()) {
-        $saved_config = $config_translation->get();
-        $storage = $this->getStorage($language->getId());
-        $storage->write($name, $saved_config);
-        $config_translation->delete();
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheSuffix()
+    {
+        return $this->language ? $this->language->getId() : null;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function onConfigDelete(ConfigCrudEvent $event): void {
-    $config = $event->getConfig();
-    $name = $config->getName();
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $config_translation = $this->getOverride($language->getId(), $name);
-      if (!$config_translation->isNew()) {
-        $config_translation->delete();
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getLanguage()
+    {
+        return $this->language;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($name): \Drupal\Core\Cache\CacheableMetadata {
-    $metadata = new CacheableMetadata();
-    if ($this->language) {
-      $metadata->setCacheContexts(['languages:language_interface']);
+    /**
+     * {@inheritdoc}
+     */
+    public function setLanguage(?LanguageInterface $language = null): static
+    {
+        $this->language = $language;
+        return $this;
     }
-    return $metadata;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function installLanguageOverrides($langcode): void
+    {
+        /** @var \Drupal\Core\Config\ConfigInstallerInterface $config_installer */
+        $config_installer = \Drupal::service('config.installer');
+        $config_installer->installCollectionDefaultConfig($this->createConfigCollectionName($langcode));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION)
+    {
+        $langcode = $this->getLangcodeFromCollectionName($collection);
+        return $this->getOverride($langcode, $name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addCollections(ConfigCollectionInfo $collection_info): void
+    {
+        foreach (\Drupal::languageManager()->getLanguages() as $language) {
+            $collection_info->addCollection($this->createConfigCollectionName($language->getId()), $this);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onConfigSave(ConfigCrudEvent $event): void
+    {
+        $config = $event->getConfig();
+        $name = $config->getName();
+        foreach (\Drupal::languageManager()->getLanguages() as $language) {
+            $config_translation = $this->getOverride($language->getId(), $name);
+            if (!$config_translation->isNew()) {
+                $this->filterOverride($config, $config_translation);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onConfigRename(ConfigRenameEvent $event): void
+    {
+        $config = $event->getConfig();
+        $name = $config->getName();
+        $old_name = $event->getOldName();
+        foreach (\Drupal::languageManager()->getLanguages() as $language) {
+            $config_translation = $this->getOverride($language->getId(), $old_name);
+            if (!$config_translation->isNew()) {
+                $saved_config = $config_translation->get();
+                $storage = $this->getStorage($language->getId());
+                $storage->write($name, $saved_config);
+                $config_translation->delete();
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function onConfigDelete(ConfigCrudEvent $event): void
+    {
+        $config = $event->getConfig();
+        $name = $config->getName();
+        foreach (\Drupal::languageManager()->getLanguages() as $language) {
+            $config_translation = $this->getOverride($language->getId(), $name);
+            if (!$config_translation->isNew()) {
+                $config_translation->delete();
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($name): \Drupal\Core\Cache\CacheableMetadata
+    {
+        $metadata = new CacheableMetadata();
+        if ($this->language) {
+            $metadata->setCacheContexts(['languages:language_interface']);
+        }
+        return $metadata;
+    }
 
 }

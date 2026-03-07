@@ -12,39 +12,42 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests locale local tasks.
  */
 #[Group('locale')]
-class LocaleLocalTasksTest extends LocalTaskIntegrationTestBase {
+class LocaleLocalTasksTest extends LocalTaskIntegrationTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->directoryList = [
+          'locale' => 'core/modules/locale',
+        ];
+        parent::setUp();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $this->directoryList = [
-      'locale' => 'core/modules/locale',
-    ];
-    parent::setUp();
-  }
+    /**
+     * Checks locale listing local tasks.
+     */
+    #[DataProvider('getLocalePageRoutes')]
+    public function testLocalePageLocalTasks($route): void
+    {
+        $tasks = [
+          0 => ['locale.translate_page', 'locale.translate_import', 'locale.translate_export', 'locale.settings'],
+        ];
+        $this->assertLocalTasks($route, $tasks);
+    }
 
-  /**
-   * Checks locale listing local tasks.
-   */
-  #[DataProvider('getLocalePageRoutes')]
-  public function testLocalePageLocalTasks($route): void {
-    $tasks = [
-      0 => ['locale.translate_page', 'locale.translate_import', 'locale.translate_export', 'locale.settings'],
-    ];
-    $this->assertLocalTasks($route, $tasks);
-  }
-
-  /**
-   * Provides a list of routes to test.
-   */
-  public static function getLocalePageRoutes() {
-    return [
-      ['locale.translate_page'],
-      ['locale.translate_import'],
-      ['locale.translate_export'],
-      ['locale.settings'],
-    ];
-  }
+    /**
+     * Provides a list of routes to test.
+     */
+    public static function getLocalePageRoutes()
+    {
+        return [
+          ['locale.translate_page'],
+          ['locale.translate_import'],
+          ['locale.translate_export'],
+          ['locale.settings'],
+        ];
+    }
 
 }

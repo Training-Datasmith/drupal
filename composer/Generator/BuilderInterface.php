@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Generator;
 
 use Drupal\Composer\Generator\Util\DrupalCoreComposer;
@@ -15,30 +17,30 @@ use Drupal\Composer\Generator\Util\DrupalCoreComposer;
  * a metapackage is, and an explanation of the metapackages produced by the
  * generator.
  */
-interface BuilderInterface {
+interface BuilderInterface
+{
+    /**
+     * BuilderInterface constructor.
+     *
+     * @param \Drupal\Composer\Generator\Util\DrupalCoreComposer $drupalCoreInfo
+     *   Information about the composer.json, composer.lock, and repository path.
+     */
+    public function __construct(DrupalCoreComposer $drupalCoreInfo);
 
-  /**
-   * BuilderInterface constructor.
-   *
-   * @param \Drupal\Composer\Generator\Util\DrupalCoreComposer $drupalCoreInfo
-   *   Information about the composer.json, composer.lock, and repository path.
-   */
-  public function __construct(DrupalCoreComposer $drupalCoreInfo);
+    /**
+     * Return the path to where the metapackage should be written.
+     *
+     * @return string
+     *   Path to the metapackage.
+     */
+    public function getPath();
 
-  /**
-   * Return the path to where the metapackage should be written.
-   *
-   * @return string
-   *   Path to the metapackage.
-   */
-  public function getPath();
-
-  /**
-   * Generate the Composer.json data for the current tag or branch.
-   *
-   * @return array
-   *   Composer json data.
-   */
-  public function getPackage();
+    /**
+     * Generate the Composer.json data for the current tag or branch.
+     *
+     * @return array
+     *   Composer json data.
+     */
+    public function getPackage();
 
 }

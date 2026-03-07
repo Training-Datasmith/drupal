@@ -17,65 +17,67 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(RequirementSeverity::class)]
 #[Group('Extension')]
-class RequirementSeverityTest extends UnitTestCase {
+class RequirementSeverityTest extends UnitTestCase
+{
+    /**
+     * Tests get max severity.
+     *
+     * @legacy-covers ::maxSeverityFromRequirements
+     */
+    #[DataProvider('requirementProvider')]
+    public function testGetMaxSeverity(array $requirements, RequirementSeverity $expectedSeverity): void
+    {
+        $severity = RequirementSeverity::maxSeverityFromRequirements($requirements);
+        $this->assertEquals($expectedSeverity, $severity);
+    }
 
-  /**
-   * Tests get max severity.
-   *
-   * @legacy-covers ::maxSeverityFromRequirements
-   */
-  #[DataProvider('requirementProvider')]
-  public function testGetMaxSeverity(array $requirements, RequirementSeverity $expectedSeverity): void {
-    $severity = RequirementSeverity::maxSeverityFromRequirements($requirements);
-    $this->assertEquals($expectedSeverity, $severity);
-  }
+    /**
+     * Data provider for requirement helper test.
+     */
+    public static function requirementProvider(): array
+    {
+        $info = [
+          'title' => 'Foo',
+          'severity' => RequirementSeverity::Info,
+        ];
+        $warning = [
+          'title' => 'Baz',
+          'severity' => RequirementSeverity::Warning,
+        ];
+        $error = [
+          'title' => 'Wiz',
+          'severity' => RequirementSeverity::Error,
+        ];
+        $ok = [
+          'title' => 'Bar',
+          'severity' => RequirementSeverity::OK,
+        ];
 
-  /**
-   * Data provider for requirement helper test.
-   */
-  public static function requirementProvider(): array {
-    $info = [
-      'title' => 'Foo',
-      'severity' => RequirementSeverity::Info,
-    ];
-    $warning = [
-      'title' => 'Baz',
-      'severity' => RequirementSeverity::Warning,
-    ];
-    $error = [
-      'title' => 'Wiz',
-      'severity' => RequirementSeverity::Error,
-    ];
-    $ok = [
-      'title' => 'Bar',
-      'severity' => RequirementSeverity::OK,
-    ];
-
-    return [
-      'error is most severe' => [
-        [
-          $info,
-          $error,
-          $ok,
-        ],
-        RequirementSeverity::Error,
-      ],
-      'ok is most severe' => [
-        [
-          $info,
-          $ok,
-        ],
-        RequirementSeverity::OK,
-      ],
-      'warning is most severe' => [
-        [
-          $warning,
-          $info,
-          $ok,
-        ],
-        RequirementSeverity::Warning,
-      ],
-    ];
-  }
+        return [
+          'error is most severe' => [
+            [
+              $info,
+              $error,
+              $ok,
+            ],
+            RequirementSeverity::Error,
+          ],
+          'ok is most severe' => [
+            [
+              $info,
+              $ok,
+            ],
+            RequirementSeverity::OK,
+          ],
+          'warning is most severe' => [
+            [
+              $warning,
+              $info,
+              $ok,
+            ],
+            RequirementSeverity::Warning,
+          ],
+        ];
+    }
 
 }

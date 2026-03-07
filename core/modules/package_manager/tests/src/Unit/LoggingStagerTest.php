@@ -19,39 +19,40 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('package_manager')]
 #[CoversClass(LoggingStager::class)]
-class LoggingStagerTest extends UnitTestCase {
+class LoggingStagerTest extends UnitTestCase
+{
+    /**
+     * Tests LoggingStager().
+     */
+    public function testDecoratedStagerIsCalled(): void
+    {
+        $decorated = $this->createMock(StagerInterface::class);
 
-  /**
-   * Tests LoggingStager().
-   */
-  public function testDecoratedStagerIsCalled(): void {
-    $decorated = $this->createMock(StagerInterface::class);
+        $activeDir = $this->createStub(PathInterface::class);
+        $stagingDir = $this->createStub(PathInterface::class);
+        $stagingDir
+          ->method('absolute')
+          ->willReturn('staging-dir');
 
-    $activeDir = $this->createStub(PathInterface::class);
-    $stagingDir = $this->createStub(PathInterface::class);
-    $stagingDir
-      ->method('absolute')
-      ->willReturn('staging-dir');
+        $original_callback = $this->createMock(OutputCallbackInterface::class);
+        $original_callback->expects($this->once())
+          ->method('__invoke')
+          ->with(OutputTypeEnum::OUT, "### Staging '--version' in staging-dir\n");
 
-    $original_callback = $this->createMock(OutputCallbackInterface::class);
-    $original_callback->expects($this->once())
-      ->method('__invoke')
-      ->with(OutputTypeEnum::OUT, "### Staging '--version' in staging-dir\n");
+        $decorated->expects($this->once())
+          ->method('stage')
+          ->with(
+              ['--version'],
+              $activeDir,
+              $stagingDir,
+              $this->isInstanceOf(FileProcessOutputCallback::class),
+          );
 
-    $decorated->expects($this->once())
-      ->method('stage')
-      ->with(
-        ['--version'],
-        $activeDir,
-        $stagingDir,
-        $this->isInstanceOf(FileProcessOutputCallback::class),
-      );
-
-    $config_factory = $this->getConfigFactoryStub([
-      'package_manager.settings' => ['log' => 'php://memory'],
-    ]);
-    $decorator = new LoggingStager($decorated, $config_factory);
-    $decorator->stage(['--version'], $activeDir, $stagingDir, callback: $original_callback);
-  }
+        $config_factory = $this->getConfigFactoryStub([
+          'package_manager.settings' => ['log' => 'php://memory'],
+        ]);
+        $decorator = new LoggingStager($decorated, $config_factory);
+        $decorator->stage(['--version'], $activeDir, $stagingDir, callback: $original_callback);
+    }
 
 }

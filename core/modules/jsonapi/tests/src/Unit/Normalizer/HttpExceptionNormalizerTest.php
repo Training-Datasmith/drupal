@@ -27,54 +27,55 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(HttpExceptionNormalizer::class)]
 #[Group('jsonapi')]
-class HttpExceptionNormalizerTest extends UnitTestCase {
+class HttpExceptionNormalizerTest extends UnitTestCase
+{
+    /**
+     * Tests normalize.
+     */
+    public function testNormalize(): void
+    {
+        $request_stack = $this->prophesize(RequestStack::class);
+        $request_stack->getCurrentRequest()->willReturn(Request::create('http://localhost/'));
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('request_stack')->willReturn($request_stack->reveal());
+        $config = $this->prophesize(ImmutableConfig::class);
+        $config->get('error_level')->willReturn(ERROR_REPORTING_DISPLAY_VERBOSE);
+        $config_factory = $this->prophesize(ConfigFactory::class);
+        $config_factory->get('system.logging')->willReturn($config->reveal());
+        $container->get('config.factory')->willReturn($config_factory->reveal());
+        $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
+        $cache_contexts_manager->assertValidTokens(['user.permissions'])->willReturn(true);
+        $container->get('cache_contexts_manager')->willReturn($cache_contexts_manager->reveal());
+        \Drupal::setContainer($container->reveal());
+        $cacheability = new TestCacheableDependency([], [], Cache::PERMANENT);
+        $exception = new CacheableAccessDeniedHttpException($cacheability, 'lorem', null, 13);
+        $current_user = $this->prophesize(AccountInterface::class);
+        $current_user->hasPermission('access site reports')->willReturn(true);
+        $normalizer = new HttpExceptionNormalizer($current_user->reveal());
+        $normalized = $normalizer->normalize($exception, 'api_json');
+        $this->assertInstanceOf(HttpExceptionNormalizerValue::class, $normalized);
+        $this->assertEquals(0, $normalized->getCacheMaxAge());
+        $normalized = $normalized->getNormalization();
+        $error = $normalized[0];
+        $this->assertNotEmpty($error['meta']);
+        $this->assertNotEmpty($error['source']);
+        $this->assertSame('13', $error['code']);
+        $this->assertSame('403', $error['status']);
+        $this->assertEquals('Forbidden', $error['title']);
+        $this->assertEquals('lorem', $error['detail']);
+        $this->assertArrayHasKey('trace', $error['meta']);
+        $this->assertNotEmpty($error['meta']['trace']);
 
-  /**
-   * Tests normalize.
-   */
-  public function testNormalize(): void {
-    $request_stack = $this->prophesize(RequestStack::class);
-    $request_stack->getCurrentRequest()->willReturn(Request::create('http://localhost/'));
-    $container = $this->prophesize(ContainerInterface::class);
-    $container->get('request_stack')->willReturn($request_stack->reveal());
-    $config = $this->prophesize(ImmutableConfig::class);
-    $config->get('error_level')->willReturn(ERROR_REPORTING_DISPLAY_VERBOSE);
-    $config_factory = $this->prophesize(ConfigFactory::class);
-    $config_factory->get('system.logging')->willReturn($config->reveal());
-    $container->get('config.factory')->willReturn($config_factory->reveal());
-    $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
-    $cache_contexts_manager->assertValidTokens(['user.permissions'])->willReturn(TRUE);
-    $container->get('cache_contexts_manager')->willReturn($cache_contexts_manager->reveal());
-    \Drupal::setContainer($container->reveal());
-    $cacheability = new TestCacheableDependency([], [], Cache::PERMANENT);
-    $exception = new CacheableAccessDeniedHttpException($cacheability, 'lorem', NULL, 13);
-    $current_user = $this->prophesize(AccountInterface::class);
-    $current_user->hasPermission('access site reports')->willReturn(TRUE);
-    $normalizer = new HttpExceptionNormalizer($current_user->reveal());
-    $normalized = $normalizer->normalize($exception, 'api_json');
-    $this->assertInstanceOf(HttpExceptionNormalizerValue::class, $normalized);
-    $this->assertEquals(0, $normalized->getCacheMaxAge());
-    $normalized = $normalized->getNormalization();
-    $error = $normalized[0];
-    $this->assertNotEmpty($error['meta']);
-    $this->assertNotEmpty($error['source']);
-    $this->assertSame('13', $error['code']);
-    $this->assertSame('403', $error['status']);
-    $this->assertEquals('Forbidden', $error['title']);
-    $this->assertEquals('lorem', $error['detail']);
-    $this->assertArrayHasKey('trace', $error['meta']);
-    $this->assertNotEmpty($error['meta']['trace']);
-
-    $current_user = $this->prophesize(AccountInterface::class);
-    $current_user->hasPermission('access site reports')->willReturn(FALSE);
-    $normalizer = new HttpExceptionNormalizer($current_user->reveal());
-    $normalized = $normalizer->normalize($exception, 'api_json');
-    $this->assertInstanceOf(HttpExceptionNormalizerValue::class, $normalized);
-    $this->assertEquals(Cache::PERMANENT, $normalized->getCacheMaxAge());
-    $normalized = $normalized->getNormalization();
-    $error = $normalized[0];
-    $this->assertArrayNotHasKey('meta', $error);
-    $this->assertArrayNotHasKey('source', $error);
-  }
+        $current_user = $this->prophesize(AccountInterface::class);
+        $current_user->hasPermission('access site reports')->willReturn(false);
+        $normalizer = new HttpExceptionNormalizer($current_user->reveal());
+        $normalized = $normalizer->normalize($exception, 'api_json');
+        $this->assertInstanceOf(HttpExceptionNormalizerValue::class, $normalized);
+        $this->assertEquals(Cache::PERMANENT, $normalized->getCacheMaxAge());
+        $normalized = $normalized->getNormalization();
+        $error = $normalized[0];
+        $this->assertArrayNotHasKey('meta', $error);
+        $this->assertArrayNotHasKey('source', $error);
+    }
 
 }

@@ -17,73 +17,77 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
  */
 #[CoversClass(ProxyServicesPass::class)]
 #[Group('DependencyInjection')]
-class ProxyServicesPassTest extends UnitTestCase {
+class ProxyServicesPassTest extends UnitTestCase
+{
+    /**
+     * The tested proxy services pass.
+     *
+     * @var \Drupal\Core\DependencyInjection\Compiler\ProxyServicesPass
+     */
+    protected $proxyServicesPass;
 
-  /**
-   * The tested proxy services pass.
-   *
-   * @var \Drupal\Core\DependencyInjection\Compiler\ProxyServicesPass
-   */
-  protected $proxyServicesPass;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->proxyServicesPass = new ProxyServicesPass();
+    }
 
-    $this->proxyServicesPass = new ProxyServicesPass();
-  }
+    /**
+     * Tests container without lazy services.
+     *
+     * @legacy-covers ::process
+     */
+    public function testContainerWithoutLazyServices(): void
+    {
+        $container = new ContainerBuilder();
+        $container->register('lock', 'Drupal\Core\Lock\DatabaseLockBackend');
 
-  /**
-   * Tests container without lazy services.
-   *
-   * @legacy-covers ::process
-   */
-  public function testContainerWithoutLazyServices(): void {
-    $container = new ContainerBuilder();
-    $container->register('lock', 'Drupal\Core\Lock\DatabaseLockBackend');
+        $this->proxyServicesPass->process($container);
 
-    $this->proxyServicesPass->process($container);
+        $this->assertCount(2, $container->getDefinitions());
+        $this->assertEquals('Drupal\Core\Lock\DatabaseLockBackend', $container->getDefinition('lock')->getClass());
+    }
 
-    $this->assertCount(2, $container->getDefinitions());
-    $this->assertEquals('Drupal\Core\Lock\DatabaseLockBackend', $container->getDefinition('lock')->getClass());
-  }
+    /**
+     * Tests container with lazy services.
+     *
+     * @legacy-covers ::process
+     */
+    public function testContainerWithLazyServices(): void
+    {
+        $container = new ContainerBuilder();
+        $container->register('lock', 'Drupal\Core\Lock\DatabaseLockBackend')
+          ->setLazy(true);
 
-  /**
-   * Tests container with lazy services.
-   *
-   * @legacy-covers ::process
-   */
-  public function testContainerWithLazyServices(): void {
-    $container = new ContainerBuilder();
-    $container->register('lock', 'Drupal\Core\Lock\DatabaseLockBackend')
-      ->setLazy(TRUE);
+        $this->proxyServicesPass->process($container);
 
-    $this->proxyServicesPass->process($container);
+        $this->assertCount(3, $container->getDefinitions());
 
-    $this->assertCount(3, $container->getDefinitions());
+        $non_proxy_definition = $container->getDefinition('drupal.proxy_original_service.lock');
+        $this->assertEquals('Drupal\Core\Lock\DatabaseLockBackend', $non_proxy_definition->getClass());
+        $this->assertFalse($non_proxy_definition->isLazy());
+        $this->assertTrue($non_proxy_definition->isPublic());
 
-    $non_proxy_definition = $container->getDefinition('drupal.proxy_original_service.lock');
-    $this->assertEquals('Drupal\Core\Lock\DatabaseLockBackend', $non_proxy_definition->getClass());
-    $this->assertFalse($non_proxy_definition->isLazy());
-    $this->assertTrue($non_proxy_definition->isPublic());
+        $this->assertEquals('Drupal\Core\ProxyClass\Lock\DatabaseLockBackend', $container->getDefinition('lock')->getClass());
+    }
 
-    $this->assertEquals('Drupal\Core\ProxyClass\Lock\DatabaseLockBackend', $container->getDefinition('lock')->getClass());
-  }
+    /**
+     * Tests container with lazy services without proxy class.
+     *
+     * @legacy-covers ::process
+     */
+    public function testContainerWithLazyServicesWithoutProxyClass(): void
+    {
+        $container = new ContainerBuilder();
+        $container->register('path.current', CurrentPathStack::class)
+          ->setLazy(true);
 
-  /**
-   * Tests container with lazy services without proxy class.
-   *
-   * @legacy-covers ::process
-   */
-  public function testContainerWithLazyServicesWithoutProxyClass(): void {
-    $container = new ContainerBuilder();
-    $container->register('path.current', CurrentPathStack::class)
-      ->setLazy(TRUE);
-
-    $this->expectException(InvalidArgumentException::class);
-    $this->proxyServicesPass->process($container);
-  }
+        $this->expectException(InvalidArgumentException::class);
+        $this->proxyServicesPass->process($container);
+    }
 
 }

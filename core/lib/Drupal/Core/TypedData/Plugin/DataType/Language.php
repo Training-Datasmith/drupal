@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Plugin\DataType;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,79 +16,81 @@ use Drupal\Core\TypedData\TypedData;
  * the language code as string may be passed.
  */
 #[DataType(
-  id: "language",
-  label: new TranslatableMarkup("Language"),
-  description: new TranslatableMarkup("A language object.")
+    id: 'language',
+    label: new TranslatableMarkup('Language'),
+    description: new TranslatableMarkup('A language object.')
 )]
-class Language extends TypedData {
+class Language extends TypedData
+{
+    /**
+     * The id of the language.
+     *
+     * @var string
+     */
+    protected $id;
 
-  /**
-   * The id of the language.
-   *
-   * @var string
-   */
-  protected $id;
+    /**
+     * @var \Drupal\Core\Language\Language
+     */
+    protected $language;
 
-  /**
-   * @var \Drupal\Core\Language\Language
-   */
-  protected $language;
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Drupal\Core\Language\LanguageInterface|null
+     *   The language object, or NULL if the language is not set.
+     */
+    public function getValue()
+    {
+        if (!isset($this->language) && $this->id) {
+            $this->language = \Drupal::languageManager()->getLanguage($this->id);
+        }
+        return $this->language;
+    }
 
-  /**
-   * {@inheritdoc}
-   *
-   * @return \Drupal\Core\Language\LanguageInterface|null
-   *   The language object, or NULL if the language is not set.
-   */
-  public function getValue() {
-    if (!isset($this->language) && $this->id) {
-      $this->language = \Drupal::languageManager()->getLanguage($this->id);
+    /**
+     * Overrides TypedData::setValue().
+     *
+     * Both the langcode and the language object may be passed as value.
+     */
+    public function setValue($value, $notify = true): void
+    {
+        // Support passing language objects.
+        if (is_object($value)) {
+            $this->id = $value->getId();
+            $this->language = $value;
+        } elseif (isset($value) && !is_scalar($value)) {
+            throw new \InvalidArgumentException('Value is no valid langcode or language object.');
+        } else {
+            $this->id = $value;
+            $this->language = null;
+        }
+        // Notify the parent of any changes.
+        if ($notify && isset($this->parent)) {
+            $this->parent->onChange($this->name);
+        }
     }
-    return $this->language;
-  }
 
-  /**
-   * Overrides TypedData::setValue().
-   *
-   * Both the langcode and the language object may be passed as value.
-   */
-  public function setValue($value, $notify = TRUE): void {
-    // Support passing language objects.
-    if (is_object($value)) {
-      $this->id = $value->getId();
-      $this->language = $value;
+    /**
+     * {@inheritdoc}
+     */
+    public function getString()
+    {
+        $language = $this->getValue();
+        return $language ? $language->getName() : '';
     }
-    elseif (isset($value) && !is_scalar($value)) {
-      throw new \InvalidArgumentException('Value is no valid langcode or language object.');
-    }
-    else {
-      $this->id = $value;
-      $this->language = NULL;
-    }
-    // Notify the parent of any changes.
-    if ($notify && isset($this->parent)) {
-      $this->parent->onChange($this->name);
-    }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getString() {
-    $language = $this->getValue();
-    return $language ? $language->getName() : '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function id() {
-    if (isset($this->id)) {
-        return $this->id;
+    /**
+     * {@inheritdoc}
+     */
+    public function id()
+    {
+        if (isset($this->id)) {
+            return $this->id;
+        }
+        if (isset($this->language)) {
+            return $this->language->getId();
+        }
     }
-    if (isset($this->language)) {
-        return $this->language->getId();
-    }
-  }
 
 }

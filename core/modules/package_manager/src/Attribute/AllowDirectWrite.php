@@ -17,5 +17,6 @@ namespace Drupal\package_manager\Attribute;
  * @see \Drupal\package_manager\SandboxManagerBase::isDirectWrite()
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class AllowDirectWrite {
+final class AllowDirectWrite
+{
 }

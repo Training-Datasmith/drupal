@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
 use Drupal\Component\Plugin\Context\ContextInterface as ComponentContextInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -19,7 +19,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Attribute\SectionStorage;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
-use Drupal\layout_builder\Entity\SampleEntityGeneratorInterface;
 use Drupal\layout_builder\LayoutBuilderEnabledInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -35,362 +34,387 @@ use Symfony\Component\Routing\RouteCollection;
  * @internal
  *   Plugin classes are internal.
  */
-#[SectionStorage(id: "defaults", weight: 20, context_definitions: [
-  "display" => new EntityContextDefinition(
-    data_type: "entity_view_display",
-    label: new TranslatableMarkup("Entity view display"),
+#[SectionStorage(id: 'defaults', weight: 20, context_definitions: [
+  'display' => new EntityContextDefinition(
+      data_type: 'entity_view_display',
+      label: new TranslatableMarkup('Entity view display'),
   ),
   'view_mode' => new ContextDefinition(
-    data_type: 'string',
-    label: new TranslatableMarkup("View mode"),
-    default_value: "default",
+      data_type: 'string',
+      label: new TranslatableMarkup('View mode'),
+      default_value: 'default',
   ),
 ])]
-class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
    * The entity type manager.
    */
-  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+        protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
    * The entity type bundle info.
    */
-  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, /**
+        protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, /**
    * The sample entity generator.
    */
-  protected \Drupal\layout_builder\Entity\SampleEntityGeneratorInterface $sampleEntityGenerator) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSectionList() {
-    return $this->getContextValue('display');
-  }
-
-  /**
-   * Gets the entity storing the defaults.
-   *
-   * @return \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface
-   *   The entity storing the defaults.
-   */
-  protected function getDisplay() {
-    return $this->getSectionList();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageId() {
-    return $this->getDisplay()->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRedirectUrl(): \Drupal\Core\Url {
-    return Url::fromRoute("entity.entity_view_display.{$this->getDisplay()->getTargetEntityTypeId()}.view_mode", $this->getRouteParameters());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url {
-    return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getDisplay()->getTargetEntityTypeId()}.$rel", $this->getRouteParameters());
-  }
-
-  /**
-   * Provides the route parameters needed to generate a URL for this object.
-   *
-   * @return mixed[]
-   *   An associative array of parameter names and values.
-   */
-  protected function getRouteParameters(): array {
-    $display = $this->getDisplay();
-    $entity_type = $this->entityTypeManager->getDefinition($display->getTargetEntityTypeId());
-    $bundle_parameter_key = $entity_type->getBundleEntityType() ?: 'bundle';
-    return [
-      $bundle_parameter_key => $display->getTargetBundle(),
-      'view_mode_name' => $display->getMode(),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildRoutes(RouteCollection $collection): void {
-    if (!\Drupal::moduleHandler()->moduleExists('field_ui')) {
-      return;
+        protected \Drupal\layout_builder\Entity\SampleEntityGeneratorInterface $sampleEntityGenerator)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
-      // Try to get the route from the current collection.
-      if (!$entity_route = $collection->get($entity_type->get('field_ui_base_route'))) {
-        continue;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getSectionList()
+    {
+        return $this->getContextValue('display');
+    }
 
-      $path = $entity_route->getPath() . '/display/{view_mode_name}/layout';
+    /**
+     * Gets the entity storing the defaults.
+     *
+     * @return \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface
+     *   The entity storing the defaults.
+     */
+    protected function getDisplay()
+    {
+        return $this->getSectionList();
+    }
 
-      $defaults = [];
-      $defaults['entity_type_id'] = $entity_type_id;
-      // If the entity type has no bundles and it doesn't use {bundle} in its
-      // admin path, use the entity type.
-      if (!str_contains($path, '{bundle}')) {
-        if (!$entity_type->hasKey('bundle')) {
-          $defaults['bundle'] = $entity_type_id;
-        }
-        else {
-          $defaults['bundle_key'] = $entity_type->getBundleEntityType();
-        }
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function getStorageId()
+    {
+        return $this->getDisplay()->id();
+    }
 
-      $requirements = [];
-      $requirements['_field_ui_view_mode_access'] = 'administer ' . $entity_type_id . ' display';
+    /**
+     * {@inheritdoc}
+     */
+    public function getRedirectUrl(): \Drupal\Core\Url
+    {
+        return Url::fromRoute("entity.entity_view_display.{$this->getDisplay()->getTargetEntityTypeId()}.view_mode", $this->getRouteParameters());
+    }
 
-      $options = $entity_route->getOptions();
-      $options['_admin_route'] = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url
+    {
+        return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getDisplay()->getTargetEntityTypeId()}.$rel", $this->getRouteParameters());
+    }
 
-      $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $path, $defaults, $requirements, $options, $entity_type_id, 'entity_view_display');
+    /**
+     * Provides the route parameters needed to generate a URL for this object.
+     *
+     * @return mixed[]
+     *   An associative array of parameter names and values.
+     */
+    protected function getRouteParameters(): array
+    {
+        $display = $this->getDisplay();
+        $entity_type = $this->entityTypeManager->getDefinition($display->getTargetEntityTypeId());
+        $bundle_parameter_key = $entity_type->getBundleEntityType() ?: 'bundle';
+        return [
+          $bundle_parameter_key => $display->getTargetBundle(),
+          'view_mode_name' => $display->getMode(),
+        ];
+    }
 
-      // Set field_ui.route_enhancer to run on the manage layout form.
-      if (isset($defaults['bundle_key'])) {
-        $collection->get("layout_builder.defaults.$entity_type_id.view")
-          ->setOption('_field_ui', TRUE)
-          ->setDefault('bundle', '');
-      }
-
-      $route_names = [
-        "entity.entity_view_display.{$entity_type_id}.default",
-        "entity.entity_view_display.{$entity_type_id}.view_mode",
-      ];
-      foreach ($route_names as $route_name) {
-        if (!$route = $collection->get($route_name)) {
-          continue;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildRoutes(RouteCollection $collection): void
+    {
+        if (!\Drupal::moduleHandler()->moduleExists('field_ui')) {
+            return;
         }
 
-        $route->addDefaults([
-          'section_storage_type' => $this->getStorageType(),
-          'section_storage' => '',
-        ] + $defaults);
-        $parameters['section_storage']['layout_builder_tempstore'] = TRUE;
-        $parameters = NestedArray::mergeDeep($parameters, $route->getOption('parameters') ?: []);
-        $route->setOption('parameters', $parameters);
-      }
-    }
-  }
+        foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
+            // Try to get the route from the current collection.
+            if (!$entity_route = $collection->get($entity_type->get('field_ui_base_route'))) {
+                continue;
+            }
 
-  /**
-   * Returns an array of relevant entity types.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface[]
-   *   An array of entity types.
-   */
-  protected function getEntityTypes(): array {
-    return array_filter($this->entityTypeManager->getDefinitions(), fn(EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->get('field_ui_base_route'));
-  }
+            $path = $entity_route->getPath() . '/display/{view_mode_name}/layout';
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContextsDuringPreview() {
-    $contexts = parent::getContextsDuringPreview();
+            $defaults = [];
+            $defaults['entity_type_id'] = $entity_type_id;
+            // If the entity type has no bundles and it doesn't use {bundle} in its
+            // admin path, use the entity type.
+            if (!str_contains($path, '{bundle}')) {
+                if (!$entity_type->hasKey('bundle')) {
+                    $defaults['bundle'] = $entity_type_id;
+                } else {
+                    $defaults['bundle_key'] = $entity_type->getBundleEntityType();
+                }
+            }
 
-    // During preview add a sample entity for the target entity type and bundle.
-    $display = $this->getDisplay();
-    $entity = $this->sampleEntityGenerator->get($display->getTargetEntityTypeId(), $display->getTargetBundle());
+            $requirements = [];
+            $requirements['_field_ui_view_mode_access'] = 'administer ' . $entity_type_id . ' display';
 
-    $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity);
-    return $contexts;
-  }
+            $options = $entity_route->getOptions();
+            $options['_admin_route'] = false;
 
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array {
-    $contexts = [];
+            $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $path, $defaults, $requirements, $options, $entity_type_id, 'entity_view_display');
 
-    if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
-      $contexts['display'] = EntityContext::fromEntity($entity);
-    }
-    return $contexts;
-  }
+            // Set field_ui.route_enhancer to run on the manage layout form.
+            if (isset($defaults['bundle_key'])) {
+                $collection->get("layout_builder.defaults.$entity_type_id.view")
+                  ->setOption('_field_ui', true)
+                  ->setDefault('bundle', '');
+            }
 
-  /**
-   * Extracts an entity from the route values.
-   *
-   * @param mixed $value
-   *   The raw value from the route.
-   * @param array $defaults
-   *   The route defaults array.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface|null
-   *   The entity for the route, or NULL if none exist.
-   *
-   * @see \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute()
-   * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
-   */
-  private function extractEntityFromRoute($value, array $defaults) {
-    // If a bundle is not provided but a value corresponding to the bundle key
-    // is, use that for the bundle value.
-    if (empty($defaults['bundle']) && isset($defaults['bundle_key']) && !empty($defaults[$defaults['bundle_key']])) {
-      $defaults['bundle'] = $defaults[$defaults['bundle_key']];
+            $route_names = [
+              "entity.entity_view_display.{$entity_type_id}.default",
+              "entity.entity_view_display.{$entity_type_id}.view_mode",
+            ];
+            foreach ($route_names as $route_name) {
+                if (!$route = $collection->get($route_name)) {
+                    continue;
+                }
+
+                $route->addDefaults([
+                  'section_storage_type' => $this->getStorageType(),
+                  'section_storage' => '',
+                ] + $defaults);
+                $parameters['section_storage']['layout_builder_tempstore'] = true;
+                $parameters = NestedArray::mergeDeep($parameters, $route->getOption('parameters') ?: []);
+                $route->setOption('parameters', $parameters);
+            }
+        }
     }
 
-    if (is_string($value) && str_contains($value, '.')) {
-      [$entity_type_id, $bundle, $view_mode] = explode('.', $value, 3);
-    }
-    elseif (!empty($defaults['entity_type_id']) && !empty($defaults['bundle']) && !empty($defaults['view_mode_name'])) {
-      $entity_type_id = $defaults['entity_type_id'];
-      $bundle = $defaults['bundle'];
-      $view_mode = $defaults['view_mode_name'];
-      $value = "$entity_type_id.$bundle.$view_mode";
-    }
-    else {
-      return NULL;
+    /**
+     * Returns an array of relevant entity types.
+     *
+     * @return \Drupal\Core\Entity\EntityTypeInterface[]
+     *   An array of entity types.
+     */
+    protected function getEntityTypes(): array
+    {
+        return array_filter($this->entityTypeManager->getDefinitions(), fn (EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->get('field_ui_base_route'));
     }
 
-    $storage = $this->entityTypeManager->getStorage('entity_view_display');
-    // If the display does not exist, create a new one.
-    if (!$display = $storage->load($value)) {
-      return $storage->create([
-        'targetEntityType' => $entity_type_id,
-        'bundle' => $bundle,
-        'mode' => $view_mode,
-        'status' => TRUE,
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public function getContextsDuringPreview()
+    {
+        $contexts = parent::getContextsDuringPreview();
+
+        // During preview add a sample entity for the target entity type and bundle.
+        $display = $this->getDisplay();
+        $entity = $this->sampleEntityGenerator->get($display->getTargetEntityTypeId(), $display->getTargetBundle());
+
+        $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity);
+        return $contexts;
     }
-    return $display;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return $this->getDisplay()->label();
-  }
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array
+    {
+        $contexts = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    return $this->getDisplay()->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isOverridable() {
-    return $this->getDisplay()->isOverridable();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOverridable($overridable = TRUE): static {
-    $this->getDisplay()->setOverridable($overridable);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setThirdPartySetting($module, $key, $value): static {
-    $this->getDisplay()->setThirdPartySetting($module, $key, $value);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isLayoutBuilderEnabled() {
-    return $this->getDisplay()->isLayoutBuilderEnabled();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function enableLayoutBuilder(): static {
-    $this->getDisplay()->enableLayoutBuilder();
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function disableLayoutBuilder(): static {
-    $this->getDisplay()->disableLayoutBuilder();
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getThirdPartySetting($module, $key, $default = NULL) {
-    return $this->getDisplay()->getThirdPartySetting($module, $key, $default);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getThirdPartySettings($module) {
-    return $this->getDisplay()->getThirdPartySettings($module);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function unsetThirdPartySetting($module, $key): static {
-    $this->getDisplay()->unsetThirdPartySetting($module, $key);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getThirdPartyProviders() {
-    return $this->getDisplay()->getThirdPartyProviders();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowedIf($this->isLayoutBuilderEnabled())->addCacheableDependency($this);
-    return $return_as_object ? $result : $result->isAllowed();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
-    $cacheability->addCacheableDependency($this);
-    return $this->isLayoutBuilderEnabled();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setContext($name, ComponentContextInterface $context): void {
-    // Set the view mode context based on the display context.
-    if ($name === 'display') {
-      $this->setContextValue('view_mode', $context->getContextValue()->getMode());
+        if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
+            $contexts['display'] = EntityContext::fromEntity($entity);
+        }
+        return $contexts;
     }
-    parent::setContext($name, $context);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool {
-    $id = "$entity_type_id.$bundle.$view_mode";
+    /**
+     * Extracts an entity from the route values.
+     *
+     * @param mixed $value
+     *   The raw value from the route.
+     * @param array $defaults
+     *   The route defaults array.
+     *
+     * @return \Drupal\Core\Entity\EntityInterface|null
+     *   The entity for the route, or NULL if none exist.
+     *
+     * @see \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute()
+     * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
+     */
+    private function extractEntityFromRoute($value, array $defaults)
+    {
+        // If a bundle is not provided but a value corresponding to the bundle key
+        // is, use that for the bundle value.
+        if (empty($defaults['bundle']) && isset($defaults['bundle_key']) && !empty($defaults[$defaults['bundle_key']])) {
+            $defaults['bundle'] = $defaults[$defaults['bundle_key']];
+        }
 
-    $storage = $this->entityTypeManager->getStorage('entity_view_display');
-    $display = $storage->load($id) ?? $storage->load("$entity_type_id.$bundle.default");
-    return $display instanceof LayoutBuilderEnabledInterface && $display->isLayoutBuilderEnabled();
-  }
+        if (is_string($value) && str_contains($value, '.')) {
+            [$entity_type_id, $bundle, $view_mode] = explode('.', $value, 3);
+        } elseif (!empty($defaults['entity_type_id']) && !empty($defaults['bundle']) && !empty($defaults['view_mode_name'])) {
+            $entity_type_id = $defaults['entity_type_id'];
+            $bundle = $defaults['bundle'];
+            $view_mode = $defaults['view_mode_name'];
+            $value = "$entity_type_id.$bundle.$view_mode";
+        } else {
+            return null;
+        }
+
+        $storage = $this->entityTypeManager->getStorage('entity_view_display');
+        // If the display does not exist, create a new one.
+        if (!$display = $storage->load($value)) {
+            return $storage->create([
+              'targetEntityType' => $entity_type_id,
+              'bundle' => $bundle,
+              'mode' => $view_mode,
+              'status' => true,
+            ]);
+        }
+        return $display;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function label()
+    {
+        return $this->getDisplay()->label();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save()
+    {
+        return $this->getDisplay()->save();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isOverridable()
+    {
+        return $this->getDisplay()->isOverridable();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setOverridable($overridable = true): static
+    {
+        $this->getDisplay()->setOverridable($overridable);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setThirdPartySetting($module, $key, $value): static
+    {
+        $this->getDisplay()->setThirdPartySetting($module, $key, $value);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isLayoutBuilderEnabled()
+    {
+        return $this->getDisplay()->isLayoutBuilderEnabled();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function enableLayoutBuilder(): static
+    {
+        $this->getDisplay()->enableLayoutBuilder();
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function disableLayoutBuilder(): static
+    {
+        $this->getDisplay()->disableLayoutBuilder();
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getThirdPartySetting($module, $key, $default = null)
+    {
+        return $this->getDisplay()->getThirdPartySetting($module, $key, $default);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getThirdPartySettings($module)
+    {
+        return $this->getDisplay()->getThirdPartySettings($module);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unsetThirdPartySetting($module, $key): static
+    {
+        $this->getDisplay()->unsetThirdPartySetting($module, $key);
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getThirdPartyProviders()
+    {
+        return $this->getDisplay()->getThirdPartyProviders();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function access($operation, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        $result = AccessResult::allowedIf($this->isLayoutBuilderEnabled())->addCacheableDependency($this);
+        return $return_as_object ? $result : $result->isAllowed();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isApplicable(RefinableCacheableDependencyInterface $cacheability)
+    {
+        $cacheability->addCacheableDependency($this);
+        return $this->isLayoutBuilderEnabled();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setContext($name, ComponentContextInterface $context): void
+    {
+        // Set the view mode context based on the display context.
+        if ($name === 'display') {
+            $this->setContextValue('view_mode', $context->getContextValue()->getMode());
+        }
+        parent::setContext($name, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isSupported(string $entity_type_id, string $bundle, string $view_mode): bool
+    {
+        $id = "$entity_type_id.$bundle.$view_mode";
+
+        $storage = $this->entityTypeManager->getStorage('entity_view_display');
+        $display = $storage->load($id) ?? $storage->load("$entity_type_id.$bundle.default");
+        return $display instanceof LayoutBuilderEnabledInterface && $display->isLayoutBuilderEnabled();
+    }
 
 }

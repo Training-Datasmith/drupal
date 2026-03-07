@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Composer\Plugin\Scaffold;
 
 use Composer\Package\PackageInterface;
@@ -10,31 +12,32 @@ use Composer\Repository\InstalledRepositoryInterface;
  *
  * @internal
  */
-class DrupalInstalledTemplate {
+class DrupalInstalledTemplate
+{
+    /**
+     * Gets the code for the DrupalInstalled class.
+     *
+     * @param \Composer\Package\PackageInterface $root_package
+     *   The root package.
+     * @param \Composer\Repository\InstalledRepositoryInterface $repository
+     *   The local installed repository.
+     *
+     * @return string
+     *   The PHP code to write to the DrupalInstalled class.
+     */
+    public static function getCode(PackageInterface $root_package, InstalledRepositoryInterface $repository): string
+    {
+        // Ensure the packages are sorted consistently.
+        $packages = $repository->getPackages();
+        usort($packages, static fn (PackageInterface $a, PackageInterface $b) => $a->getUniqueName() <=> $b->getUniqueName());
 
-  /**
-   * Gets the code for the DrupalInstalled class.
-   *
-   * @param \Composer\Package\PackageInterface $root_package
-   *   The root package.
-   * @param \Composer\Repository\InstalledRepositoryInterface $repository
-   *   The local installed repository.
-   *
-   * @return string
-   *   The PHP code to write to the DrupalInstalled class.
-   */
-  public static function getCode(PackageInterface $root_package, InstalledRepositoryInterface $repository): string {
-    // Ensure the packages are sorted consistently.
-    $packages = $repository->getPackages();
-    usort($packages, static fn(PackageInterface $a, PackageInterface $b) => $a->getUniqueName() <=> $b->getUniqueName());
-
-    // Write out a hash of the version information to a file so we can use it.
-    $versions = array_reduce($packages, fn (string $carry, PackageInterface $package): string => $carry . $package->getUniqueName() . '-' . $package->getSourceReference() . '|', '');
-    // Add the root_package package version info so custom code changes and
-    // root_package package version changes result in the hash changing.
-    $versions .= $root_package->getUniqueName() . '-' . $root_package->getSourceReference();
-    $version_hash = hash('xxh3', $versions);
-    return <<<EOF
+        // Write out a hash of the version information to a file so we can use it.
+        $versions = array_reduce($packages, fn (string $carry, PackageInterface $package): string => $carry . $package->getUniqueName() . '-' . $package->getSourceReference() . '|', '');
+        // Add the root_package package version info so custom code changes and
+        // root_package package version changes result in the hash changing.
+        $versions .= $root_package->getUniqueName() . '-' . $root_package->getSourceReference();
+        $version_hash = hash('xxh3', $versions);
+        return <<<EOF
       <?php
 
       namespace Drupal;
@@ -58,6 +61,6 @@ class DrupalInstalledTemplate {
       }
 
       EOF;
-  }
+    }
 
 }

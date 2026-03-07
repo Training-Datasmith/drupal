@@ -15,16 +15,17 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(MetadataBag::class)]
 #[Group('Session')]
-class MetadataBagTest extends UnitTestCase {
-
-  /**
-   * Tests stamp new.
-   */
-  public function testStampNew(): void {
-    $metadata = new MetadataBag(new Settings([]));
-    $metadata->setCsrfTokenSeed('a_cryptographically_secure_long_random_string_should_used_here');
-    $metadata->stampNew();
-    $this->assertNotEquals('a_cryptographically_secure_long_random_string_should_used_here', $metadata->getCsrfTokenSeed());
-  }
+class MetadataBagTest extends UnitTestCase
+{
+    /**
+     * Tests stamp new.
+     */
+    public function testStampNew(): void
+    {
+        $metadata = new MetadataBag(new Settings([]));
+        $metadata->setCsrfTokenSeed('a_cryptographically_secure_long_random_string_should_used_here');
+        $metadata->stampNew();
+        $this->assertNotEquals('a_cryptographically_secure_long_random_string_should_used_here', $metadata->getCsrfTokenSeed());
+    }
 
 }

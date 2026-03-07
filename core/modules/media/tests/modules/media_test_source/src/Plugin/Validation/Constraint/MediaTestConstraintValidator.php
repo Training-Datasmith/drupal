@@ -12,25 +12,24 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the MediaTestConstraint.
  */
-class MediaTestConstraintValidator extends ConstraintValidator {
+class MediaTestConstraintValidator extends ConstraintValidator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($value, Constraint $constraint): void
+    {
+        if ($value instanceof EntityInterface) {
+            $string_to_test = $value->label();
+        } elseif ($value instanceof FieldItemListInterface) {
+            $string_to_test = $value->value;
+        } else {
+            return;
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validate($value, Constraint $constraint): void {
-    if ($value instanceof EntityInterface) {
-      $string_to_test = $value->label();
+        if (!str_contains($string_to_test, 'love Drupal')) {
+            $this->context->addViolation($constraint->message);
+        }
     }
-    elseif ($value instanceof FieldItemListInterface) {
-      $string_to_test = $value->value;
-    }
-    else {
-      return;
-    }
-
-    if (!str_contains($string_to_test, 'love Drupal')) {
-      $this->context->addViolation($constraint->message);
-    }
-  }
 
 }

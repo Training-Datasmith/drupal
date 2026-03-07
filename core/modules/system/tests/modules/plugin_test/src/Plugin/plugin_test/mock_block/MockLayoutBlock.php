@@ -15,5 +15,6 @@ use Drupal\Component\Plugin\PluginBase;
  * @see \Drupal\plugin_test\Plugin\plugin_test\mock_block\MockUserLoginBlock
  * @see \Drupal\plugin_test\Plugin\plugin_test\mock_block\MockMenuBlock
  */
-class MockLayoutBlock extends PluginBase {
+class MockLayoutBlock extends PluginBase
+{
 }

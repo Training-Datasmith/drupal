@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -10,8 +12,9 @@ use Drupal\views\Plugin\views\BrokenHandlerTrait;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("broken")]
-class Broken extends FieldPluginBase {
-  use BrokenHandlerTrait;
+#[ViewsField('broken')]
+class Broken extends FieldPluginBase
+{
+    use BrokenHandlerTrait;
 
 }

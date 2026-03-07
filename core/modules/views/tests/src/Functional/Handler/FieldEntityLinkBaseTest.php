@@ -15,90 +15,91 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class FieldEntityLinkBaseTest extends ViewTestBase {
+class FieldEntityLinkBaseTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_link_base_links'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_link_base_links'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+        $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        // Add languages and refresh the container so the entity type manager will
+        // have fresh data.
+        ConfigurableLanguage::createFromLangcode('hu')->save();
+        ConfigurableLanguage::createFromLangcode('es')->save();
+        $this->rebuildContainer();
 
-    $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
+        // Create an English and Hungarian nodes and add a Spanish translation.
+        foreach (['en', 'hu'] as $langcode) {
+            $entity = Node::create([
+              'title' => $this->randomMachineName(),
+              'type' => 'article',
+              'langcode' => $langcode,
+            ]);
+            $entity->save();
+            $translation = $entity->addTranslation('es');
+            $translation->set('title', $entity->getTitle() . ' in Spanish');
+            $translation->save();
+        }
 
-    // Add languages and refresh the container so the entity type manager will
-    // have fresh data.
-    ConfigurableLanguage::createFromLangcode('hu')->save();
-    ConfigurableLanguage::createFromLangcode('es')->save();
-    $this->rebuildContainer();
+        $this->drupalLogin($this->createUser([
+          'delete any article content',
+          'edit any article content',
+        ]));
 
-    // Create an English and Hungarian nodes and add a Spanish translation.
-    foreach (['en', 'hu'] as $langcode) {
-      $entity = Node::create([
-        'title' => $this->randomMachineName(),
-        'type' => 'article',
-        'langcode' => $langcode,
-      ]);
-      $entity->save();
-      $translation = $entity->addTranslation('es');
-      $translation->set('title', $entity->getTitle() . ' in Spanish');
-      $translation->save();
     }
 
-    $this->drupalLogin($this->createUser([
-      'delete any article content',
-      'edit any article content',
-    ]));
+    /**
+     * Tests entity link fields.
+     */
+    public function testEntityLink(): void
+    {
+        $this->drupalGet('test-link-base-links');
+        $session = $this->assertSession();
 
-  }
+        // Tests 'Link to Content'.
+        $session->linkByHrefExists('/node/1');
+        $session->linkByHrefExists('/es/node/1');
+        $session->linkByHrefExists('/hu/node/2');
+        $session->linkByHrefExists('/es/node/2');
 
-  /**
-   * Tests entity link fields.
-   */
-  public function testEntityLink(): void {
-    $this->drupalGet('test-link-base-links');
-    $session = $this->assertSession();
+        // Tests 'Link to delete Content'.
+        $session->linkByHrefExists('/node/1/delete');
+        $session->linkByHrefExists('/es/node/1/delete');
+        $session->linkByHrefExists('/hu/node/2/delete');
+        $session->linkByHrefExists('/es/node/2/delete');
 
-    // Tests 'Link to Content'.
-    $session->linkByHrefExists('/node/1');
-    $session->linkByHrefExists('/es/node/1');
-    $session->linkByHrefExists('/hu/node/2');
-    $session->linkByHrefExists('/es/node/2');
+        // Tests 'Link to edit Content'.
+        $session->linkByHrefExists('/node/1/edit');
+        $session->linkByHrefExists('/es/node/1/edit');
+        $session->linkByHrefExists('/hu/node/2/edit');
+        $session->linkByHrefExists('/es/node/2/edit');
 
-    // Tests 'Link to delete Content'.
-    $session->linkByHrefExists('/node/1/delete');
-    $session->linkByHrefExists('/es/node/1/delete');
-    $session->linkByHrefExists('/hu/node/2/delete');
-    $session->linkByHrefExists('/es/node/2/delete');
-
-    // Tests 'Link to edit Content'.
-    $session->linkByHrefExists('/node/1/edit');
-    $session->linkByHrefExists('/es/node/1/edit');
-    $session->linkByHrefExists('/hu/node/2/edit');
-    $session->linkByHrefExists('/es/node/2/edit');
-
-    // Tests the second 'Link to Content' rendered as text.
-    $session->pageTextContains('/node/1');
-    $session->pageTextContains('/es/node/1');
-    $session->pageTextContains('/hu/node/2');
-    $session->pageTextContains('/es/node/2');
-  }
+        // Tests the second 'Link to Content' rendered as text.
+        $session->pageTextContains('/node/1');
+        $session->pageTextContains('/es/node/1');
+        $session->pageTextContains('/hu/node/2');
+        $session->pageTextContains('/es/node/2');
+    }
 
 }

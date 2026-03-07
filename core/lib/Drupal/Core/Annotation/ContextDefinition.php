@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -68,97 +70,99 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @ingroup plugin_context
  */
-class ContextDefinition extends Plugin {
+class ContextDefinition extends Plugin
+{
+    /**
+     * The ContextDefinitionInterface object.
+     *
+     * @var \Drupal\Core\Plugin\Context\ContextDefinitionInterface
+     */
+    protected $definition;
 
-  /**
-   * The ContextDefinitionInterface object.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextDefinitionInterface
-   */
-  protected $definition;
+    /**
+     * Constructs a new context definition object.
+     *
+     * @param array $values
+     *   An associative array with the following keys:
+     *   - value: The required data type.
+     *   - label: (optional) The UI label of this context definition.
+     *   - required: (optional) Whether the context definition is required.
+     *   - multiple: (optional) Whether the context definition is multivalue.
+     *   - description: (optional) The UI description of this context definition.
+     *   - default_value: (optional) The default value in case the underlying
+     *     value is not set.
+     *   - class: (optional) A custom ContextDefinitionInterface class.
+     *
+     * @throws \Exception
+     *   Thrown when the class key is specified with a non
+     *   ContextDefinitionInterface implementing class.
+     */
+    public function __construct(array $values)
+    {
+        $values += [
+          'required' => true,
+          'multiple' => false,
+          'default_value' => null,
+        ];
+        // Annotation classes extract data from passed annotation classes directly
+        // used in the classes they pass to.
+        foreach (['label', 'description'] as $key) {
+            // @todo Remove this workaround in https://www.drupal.org/node/2362727.
+            if (isset($values[$key]) && $values[$key] instanceof Translation) {
+                $values[$key] = (string) $values[$key]->get();
+            } else {
+                $values[$key] = null;
+            }
+        }
+        if (isset($values['class']) && !in_array(\Drupal\Core\Plugin\Context\ContextDefinitionInterface::class, class_implements($values['class']))) {
+            throw new \Exception('ContextDefinition class must implement \Drupal\Core\Plugin\Context\ContextDefinitionInterface.');
+        }
 
-  /**
-   * Constructs a new context definition object.
-   *
-   * @param array $values
-   *   An associative array with the following keys:
-   *   - value: The required data type.
-   *   - label: (optional) The UI label of this context definition.
-   *   - required: (optional) Whether the context definition is required.
-   *   - multiple: (optional) Whether the context definition is multivalue.
-   *   - description: (optional) The UI description of this context definition.
-   *   - default_value: (optional) The default value in case the underlying
-   *     value is not set.
-   *   - class: (optional) A custom ContextDefinitionInterface class.
-   *
-   * @throws \Exception
-   *   Thrown when the class key is specified with a non
-   *   ContextDefinitionInterface implementing class.
-   */
-  public function __construct(array $values) {
-    $values += [
-      'required' => TRUE,
-      'multiple' => FALSE,
-      'default_value' => NULL,
-    ];
-    // Annotation classes extract data from passed annotation classes directly
-    // used in the classes they pass to.
-    foreach (['label', 'description'] as $key) {
-      // @todo Remove this workaround in https://www.drupal.org/node/2362727.
-      if (isset($values[$key]) && $values[$key] instanceof Translation) {
-        $values[$key] = (string) $values[$key]->get();
-      }
-      else {
-        $values[$key] = NULL;
-      }
+        $class = $this->getDefinitionClass($values);
+        $this->definition = new $class($values['value'], $values['label'], $values['required'], $values['multiple'], $values['description'], $values['default_value']);
+
+        if (isset($values['constraints'])) {
+            foreach ($values['constraints'] as $constraint_name => $options) {
+                $this->definition->addConstraint($constraint_name, $options);
+            }
+        }
     }
-    if (isset($values['class']) && !in_array(\Drupal\Core\Plugin\Context\ContextDefinitionInterface::class, class_implements($values['class']))) {
-      throw new \Exception('ContextDefinition class must implement \Drupal\Core\Plugin\Context\ContextDefinitionInterface.');
+
+    /**
+     * Determines the context definition class to use.
+     *
+     * If the annotation specifies a specific context definition class, we use
+     * that. Otherwise, we use \Drupal\Core\Plugin\Context\EntityContextDefinition
+     * if the data type starts with 'entity:', since it contains specialized logic
+     * specific to entities. Otherwise, we fall back to the generic
+     * \Drupal\Core\Plugin\Context\ContextDefinition class.
+     *
+     * @param array $values
+     *   The annotation values.
+     *
+     * @return string
+     *   The fully-qualified name of the context definition class.
+     */
+    protected function getDefinitionClass(array $values)
+    {
+        if (isset($values['class'])) {
+            return $values['class'];
+        }
+        if (str_starts_with((string) $values['value'], 'entity:')) {
+            return \Drupal\Core\Plugin\Context\EntityContextDefinition::class;
+        }
+        return \Drupal\Core\Plugin\Context\ContextDefinition::class;
     }
 
-    $class = $this->getDefinitionClass($values);
-    $this->definition = new $class($values['value'], $values['label'], $values['required'], $values['multiple'], $values['description'], $values['default_value']);
-
-    if (isset($values['constraints'])) {
-      foreach ($values['constraints'] as $constraint_name => $options) {
-        $this->definition->addConstraint($constraint_name, $options);
-      }
+    /**
+     * Returns the value of an annotation.
+     *
+     * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface
+     *   The context definition object.
+     */
+    public function get()
+    {
+        return $this->definition;
     }
-  }
-
-  /**
-   * Determines the context definition class to use.
-   *
-   * If the annotation specifies a specific context definition class, we use
-   * that. Otherwise, we use \Drupal\Core\Plugin\Context\EntityContextDefinition
-   * if the data type starts with 'entity:', since it contains specialized logic
-   * specific to entities. Otherwise, we fall back to the generic
-   * \Drupal\Core\Plugin\Context\ContextDefinition class.
-   *
-   * @param array $values
-   *   The annotation values.
-   *
-   * @return string
-   *   The fully-qualified name of the context definition class.
-   */
-  protected function getDefinitionClass(array $values) {
-    if (isset($values['class'])) {
-      return $values['class'];
-    }
-    if (str_starts_with((string) $values['value'], 'entity:')) {
-      return \Drupal\Core\Plugin\Context\EntityContextDefinition::class;
-    }
-    return \Drupal\Core\Plugin\Context\ContextDefinition::class;
-  }
-
-  /**
-   * Returns the value of an annotation.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextDefinitionInterface
-   *   The context definition object.
-   */
-  public function get() {
-    return $this->definition;
-  }
 
 }

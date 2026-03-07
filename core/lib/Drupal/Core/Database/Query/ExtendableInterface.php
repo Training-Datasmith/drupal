@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Database\Query;
 
 /**
@@ -12,21 +14,21 @@ namespace Drupal\Core\Database\Query;
  * methods or override existing methods as appropriate. Extenders may also wrap
  * other extender objects, allowing for arbitrarily complex "enhanced" queries.
  */
-interface ExtendableInterface {
-
-  /**
-   * Enhance this object by wrapping it in an extender object.
-   *
-   * @param class-string $extender_name
-   *   The fully-qualified name of the extender class, without the leading '\'
-   *   (for example, Drupal\my_module\myExtenderClass). The extender name will
-   *   be checked against the current database connection to allow
-   *   driver-specific subclasses as well, using the same logic as the query
-   *   objects themselves.
-   *
-   * @return \Drupal\Core\Database\Query\ExtendableInterface
-   *   The extender object, which now contains a reference to this object.
-   */
-  public function extend($extender_name);
+interface ExtendableInterface
+{
+    /**
+     * Enhance this object by wrapping it in an extender object.
+     *
+     * @param class-string $extender_name
+     *   The fully-qualified name of the extender class, without the leading '\'
+     *   (for example, Drupal\my_module\myExtenderClass). The extender name will
+     *   be checked against the current database connection to allow
+     *   driver-specific subclasses as well, using the same logic as the query
+     *   objects themselves.
+     *
+     * @return \Drupal\Core\Database\Query\ExtendableInterface
+     *   The extender object, which now contains a reference to this object.
+     */
+    public function extend($extender_name);
 
 }

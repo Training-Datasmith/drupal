@@ -19,111 +19,114 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('field')]
 #[RunTestsInSeparateProcesses]
-class RawStringFormatterTest extends KernelTestBase {
+class RawStringFormatterTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'field', 'text',
+      'entity_test',
+      'system',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'field', 'text',
-    'entity_test',
-    'system',
-    'user',
-  ];
+    /**
+     * @var string
+     */
+    protected $entityType;
 
-  /**
-   * @var string
-   */
-  protected $entityType;
+    /**
+     * @var string
+     */
+    protected $bundle;
 
-  /**
-   * @var string
-   */
-  protected $bundle;
+    /**
+     * @var string
+     */
+    protected $fieldName;
 
-  /**
-   * @var string
-   */
-  protected $fieldName;
+    /**
+     * @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface
+     */
+    protected $display;
 
-  /**
-   * @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface
-   */
-  protected $display;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Configure the theme system.
+        $this->installConfig(['system', 'field']);
+        $this->installEntitySchema('entity_test');
 
-    // Configure the theme system.
-    $this->installConfig(['system', 'field']);
-    $this->installEntitySchema('entity_test');
+        $this->entityType = 'entity_test';
+        $this->bundle = $this->entityType;
+        $this->fieldName = $this->randomMachineName();
 
-    $this->entityType = 'entity_test';
-    $this->bundle = $this->entityType;
-    $this->fieldName = $this->randomMachineName();
+        $field_storage = FieldStorageConfig::create([
+          'field_name' => $this->fieldName,
+          'entity_type' => $this->entityType,
+          'type' => 'string_long',
+        ]);
+        $field_storage->save();
 
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => $this->fieldName,
-      'entity_type' => $this->entityType,
-      'type' => 'string_long',
-    ]);
-    $field_storage->save();
+        $instance = FieldConfig::create([
+          'field_storage' => $field_storage,
+          'bundle' => $this->bundle,
+          'label' => $this->randomMachineName(),
+        ]);
+        $instance->save();
 
-    $instance = FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => $this->bundle,
-      'label' => $this->randomMachineName(),
-    ]);
-    $instance->save();
+        $this->display = \Drupal::service('entity_display.repository')
+          ->getViewDisplay($this->entityType, $this->bundle)
+          ->setComponent($this->fieldName, [
+            'type' => 'string',
+            'settings' => [],
+          ]);
+        $this->display->save();
+    }
 
-    $this->display = \Drupal::service('entity_display.repository')
-      ->getViewDisplay($this->entityType, $this->bundle)
-      ->setComponent($this->fieldName, [
-        'type' => 'string',
-        'settings' => [],
-      ]);
-    $this->display->save();
-  }
+    /**
+     * Renders fields of a given entity with a given display.
+     *
+     * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+     *   The entity object with attached fields to render.
+     * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+     *   The display to render the fields in.
+     *
+     * @return string
+     *   The rendered entity fields.
+     */
+    protected function renderEntityFields(FieldableEntityInterface $entity, EntityViewDisplayInterface $display)
+    {
+        $content = $display->build($entity);
+        $content = $this->render($content);
+        return $content;
+    }
 
-  /**
-   * Renders fields of a given entity with a given display.
-   *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
-   *   The entity object with attached fields to render.
-   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
-   *   The display to render the fields in.
-   *
-   * @return string
-   *   The rendered entity fields.
-   */
-  protected function renderEntityFields(FieldableEntityInterface $entity, EntityViewDisplayInterface $display) {
-    $content = $display->build($entity);
-    $content = $this->render($content);
-    return $content;
-  }
+    /**
+     * Tests string formatter output.
+     */
+    public function testStringFormatter(): void
+    {
+        $value = $this->randomString();
+        $value .= "\n\n<strong>" . $this->randomString() . '</strong>';
+        $value .= "\n\n" . $this->randomString();
 
-  /**
-   * Tests string formatter output.
-   */
-  public function testStringFormatter(): void {
-    $value = $this->randomString();
-    $value .= "\n\n<strong>" . $this->randomString() . '</strong>';
-    $value .= "\n\n" . $this->randomString();
+        $entity = EntityTest::create([]);
+        $entity->{$this->fieldName}->value = $value;
 
-    $entity = EntityTest::create([]);
-    $entity->{$this->fieldName}->value = $value;
+        // Verify that all HTML is escaped and newlines are retained.
+        $this->renderEntityFields($entity, $this->display);
+        $this->assertNoRaw($value);
+        $this->assertRaw(nl2br(Html::escape($value)));
 
-    // Verify that all HTML is escaped and newlines are retained.
-    $this->renderEntityFields($entity, $this->display);
-    $this->assertNoRaw($value);
-    $this->assertRaw(nl2br(Html::escape($value)));
-
-    // Verify the cache tags.
-    $build = $entity->{$this->fieldName}->view();
-    $this->assertTrue(!isset($build[0]['#cache']), 'The string formatter has no cache tags.');
-  }
+        // Verify the cache tags.
+        $build = $entity->{$this->fieldName}->view();
+        $this->assertTrue(!isset($build[0]['#cache']), 'The string formatter has no cache tags.');
+    }
 
 }

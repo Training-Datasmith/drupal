@@ -13,44 +13,44 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('rest')]
 #[RunTestsInSeparateProcesses]
-class CommentJsonAnonTest extends CommentResourceTestBase {
+class CommentJsonAnonTest extends CommentResourceTestBase
+{
+    use AnonResourceTestTrait;
 
-  use AnonResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/json';
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * {@inheritdoc}
-   *
-   * Anonymous users cannot edit their own comments.
-   *
-   * @see \Drupal\comment\CommentAccessControlHandler::checkAccess
-   *
-   * Therefore we grant them the 'administer comments' permission for the
-   * purpose of this test.
-   *
-   * @see ::setUpAuthorization
-   */
-  protected static $patchProtectedFieldNames = [
-    'pid' => NULL,
-    'entity_id' => NULL,
-    'changed' => NULL,
-    'thread' => NULL,
-    'entity_type' => NULL,
-    'field_name' => NULL,
-  ];
+    /**
+     * {@inheritdoc}
+     *
+     * Anonymous users cannot edit their own comments.
+     *
+     * @see \Drupal\comment\CommentAccessControlHandler::checkAccess
+     *
+     * Therefore we grant them the 'administer comments' permission for the
+     * purpose of this test.
+     *
+     * @see ::setUpAuthorization
+     */
+    protected static $patchProtectedFieldNames = [
+      'pid' => null,
+      'entity_id' => null,
+      'changed' => null,
+      'thread' => null,
+      'entity_type' => null,
+      'field_name' => null,
+    ];
 
 }

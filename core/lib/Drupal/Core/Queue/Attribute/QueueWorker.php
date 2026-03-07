@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Queue\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
@@ -35,26 +37,27 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @ingroup queue
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class QueueWorker extends Plugin {
-
-  /**
-   * @param string $id
-   *   The plugin ID.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $title
-   *   The human-readable title of the plugin.
-   * @param array|null $cron
-   *   (optional) An associative array of settings for cron. The array has one
-   *   key, time, which is set to the time Drupal cron should spend on calling
-   *   this worker in seconds. The default is set in
-   *   \Drupal\Core\Queue\QueueWorkerManager::processDefinition().
-   * @param class-string|null $deriver
-   *   (optional) The deriver class.
-   */
-  public function __construct(
-    public readonly string $id,
-    public readonly ?TranslatableMarkup $title = NULL,
-    public readonly ?array $cron = NULL,
-    public readonly ?string $deriver = NULL,
-  ) {}
+class QueueWorker extends Plugin
+{
+    /**
+     * @param string $id
+     *   The plugin ID.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $title
+     *   The human-readable title of the plugin.
+     * @param array|null $cron
+     *   (optional) An associative array of settings for cron. The array has one
+     *   key, time, which is set to the time Drupal cron should spend on calling
+     *   this worker in seconds. The default is set in
+     *   \Drupal\Core\Queue\QueueWorkerManager::processDefinition().
+     * @param class-string|null $deriver
+     *   (optional) The deriver class.
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly ?TranslatableMarkup $title = null,
+        public readonly ?array $cron = null,
+        public readonly ?string $deriver = null,
+    ) {
+    }
 
 }

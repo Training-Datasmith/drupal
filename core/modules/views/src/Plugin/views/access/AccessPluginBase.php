@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\access;
 
 use Drupal\Core\Session\AccountInterface;
@@ -46,36 +48,37 @@ use Symfony\Component\Routing\Route;
  *
  * @see \Drupal\views\Plugin\ViewsPluginManager
  */
-abstract class AccessPluginBase extends PluginBase {
+abstract class AccessPluginBase extends PluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryTitle()
+    {
+        return $this->t('Unknown');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryTitle() {
-    return $this->t('Unknown');
-  }
+    /**
+     * Determine if the current user has access or not.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The user who wants to access this view.
+     *
+     * @return bool
+     *   Returns whether the user has access to the view.
+     */
+    abstract public function access(AccountInterface $account);
 
-  /**
-   * Determine if the current user has access or not.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user who wants to access this view.
-   *
-   * @return bool
-   *   Returns whether the user has access to the view.
-   */
-  abstract public function access(AccountInterface $account);
-
-  /**
-   * Allows access plugins to alter the route definition of a view.
-   *
-   * Likely the access plugin will add new requirements, so its custom access
-   * checker can be applied.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route to change.
-   */
-  abstract public function alterRouteDefinition(Route $route);
+    /**
+     * Allows access plugins to alter the route definition of a view.
+     *
+     * Likely the access plugin will add new requirements, so its custom access
+     * checker can be applied.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route to change.
+     */
+    abstract public function alterRouteDefinition(Route $route);
 
 }
 

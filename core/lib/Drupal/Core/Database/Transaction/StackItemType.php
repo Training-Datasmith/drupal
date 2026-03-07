@@ -7,9 +7,9 @@ namespace Drupal\Core\Database\Transaction;
 /**
  * Enumeration of the types of items in the Drupal transaction stack.
  */
-enum StackItemType {
-
-  case Root;
-  case Savepoint;
+enum StackItemType
+{
+    case Root;
+    case Savepoint;
 
 }

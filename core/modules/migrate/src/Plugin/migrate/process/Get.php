@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
@@ -89,46 +91,47 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "get",
-  handle_multiples: TRUE,
+    id: 'get',
+    handle_multiples: true,
 )]
-class Get extends ProcessPluginBase {
+class Get extends ProcessPluginBase
+{
+    /**
+     * Flag indicating whether there are multiple values.
+     *
+     * @var bool
+     */
+    protected $multiple;
 
-  /**
-   * Flag indicating whether there are multiple values.
-   *
-   * @var bool
-   */
-  protected $multiple;
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        $source = $this->configuration['source'];
+        $properties = is_string($source) ? [$source] : $source;
+        $return = [];
+        foreach ($properties as $property) {
+            if ($property || (string) $property === '0') {
+                $return[] = $row->get($property);
+            } else {
+                $return[] = $value;
+            }
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $source = $this->configuration['source'];
-    $properties = is_string($source) ? [$source] : $source;
-    $return = [];
-    foreach ($properties as $property) {
-      if ($property || (string) $property === '0') {
-        $return[] = $row->get($property);
-      }
-      else {
-        $return[] = $value;
-      }
+        if (is_string($source)) {
+            $this->multiple = is_array($return[0]);
+            return $return[0];
+        }
+        return $return;
     }
 
-    if (is_string($source)) {
-      $this->multiple = is_array($return[0]);
-      return $return[0];
+    /**
+     * {@inheritdoc}
+     */
+    public function multiple()
+    {
+        return $this->multiple;
     }
-    return $return;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function multiple() {
-    return $this->multiple;
-  }
 
 }

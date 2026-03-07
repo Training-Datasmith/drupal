@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\media\OEmbed;
 
 /**
@@ -9,22 +11,23 @@ namespace Drupal\media\OEmbed;
  *   This is an internal part of the oEmbed system and should only be used by
  *   oEmbed-related code in Drupal core.
  */
-class ProviderException extends \Exception {
-
-  /**
-   * ProviderException constructor.
-   *
-   * @param string $message
-   *   The exception message. '@name' will be replaced with the provider name
-   *   if available, or '<unknown>' if not.
-   * @param \Drupal\media\OEmbed\Provider $provider
-   *   (optional) The provider information.
-   * @param \Throwable $previous
-   *   (optional) The previous exception, if any.
-   */
-  public function __construct($message, protected ?\Drupal\media\OEmbed\Provider $provider = NULL, ?\Throwable $previous = NULL) {
-    $message = str_replace('@name', $this->provider ? $this->provider->getName() : '<unknown>', $message);
-    parent::__construct($message, 0, $previous);
-  }
+class ProviderException extends \Exception
+{
+    /**
+     * ProviderException constructor.
+     *
+     * @param string $message
+     *   The exception message. '@name' will be replaced with the provider name
+     *   if available, or '<unknown>' if not.
+     * @param \Drupal\media\OEmbed\Provider $provider
+     *   (optional) The provider information.
+     * @param \Throwable $previous
+     *   (optional) The previous exception, if any.
+     */
+    public function __construct($message, protected ?\Drupal\media\OEmbed\Provider $provider = null, ?\Throwable $previous = null)
+    {
+        $message = str_replace('@name', $this->provider ? $this->provider->getName() : '<unknown>', $message);
+        parent::__construct($message, 0, $previous);
+    }
 
 }

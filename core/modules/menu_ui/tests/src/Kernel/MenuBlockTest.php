@@ -18,73 +18,75 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('menu_ui')]
 #[RunTestsInSeparateProcesses]
-class MenuBlockTest extends KernelTestBase {
+class MenuBlockTest extends KernelTestBase
+{
+    use UserCreationTrait;
 
-  use UserCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'block',
+      'menu_ui',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'block',
-    'menu_ui',
-    'user',
-  ];
+    /**
+     * The menu for testing.
+     *
+     * @var \Drupal\system\MenuInterface
+     */
+    protected MenuInterface $menu;
 
-  /**
-   * The menu for testing.
-   *
-   * @var \Drupal\system\MenuInterface
-   */
-  protected MenuInterface $menu;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->installEntitySchema('user');
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->installEntitySchema('user');
+        $this->setUpCurrentUser([], ['administer menu']);
 
-    $this->setUpCurrentUser([], ['administer menu']);
+        // Add a new custom menu.
+        $menu_name = 'mock';
+        $label = $this->randomMachineName(16);
 
-    // Add a new custom menu.
-    $menu_name = 'mock';
-    $label = $this->randomMachineName(16);
+        $this->menu = Menu::create([
+          'id' => $menu_name,
+          'label' => $label,
+          'description' => 'Description text',
+        ]);
+        $this->menu->save();
 
-    $this->menu = Menu::create([
-      'id' => $menu_name,
-      'label' => $label,
-      'description' => 'Description text',
-    ]);
-    $this->menu->save();
+    }
 
-  }
+    /**
+     * Tests the editing links for SystemMenuBlock.
+     */
+    public function testOperationLinks(): void
+    {
+        $block = Block::create([
+          'plugin' => 'system_menu_block:' . $this->menu->id(),
+          'region' => 'footer',
+          'id' => 'machine_name',
+          'theme' => 'stark',
+        ]);
 
-  /**
-   * Tests the editing links for SystemMenuBlock.
-   */
-  public function testOperationLinks(): void {
-    $block = Block::create([
-      'plugin' => 'system_menu_block:' . $this->menu->id(),
-      'region' => 'footer',
-      'id' => 'machine_name',
-      'theme' => 'stark',
-    ]);
+        // Test when user does have "administer menu" permission.
+        $menuUiEntityOperation = new MenuUiHooks(\Drupal::entityTypeManager());
+        $this->assertEquals([
+          'menu-edit' => [
+            'title' => 'Edit menu',
+            'url' => $this->menu->toUrl('edit-form'),
+            'weight' => 50,
+          ],
+        ], $menuUiEntityOperation->entityOperation($block));
 
-    // Test when user does have "administer menu" permission.
-    $menuUiEntityOperation = new MenuUiHooks(\Drupal::entityTypeManager());
-    $this->assertEquals([
-      'menu-edit' => [
-        'title' => 'Edit menu',
-        'url' => $this->menu->toUrl('edit-form'),
-        'weight' => 50,
-      ],
-    ], $menuUiEntityOperation->entityOperation($block));
-
-    $this->setUpCurrentUser();
-    // Test when user doesn't have "administer menu" permission.
-    $this->assertEmpty($menuUiEntityOperation->entityOperation($block));
-  }
+        $this->setUpCurrentUser();
+        // Test when user doesn't have "administer menu" permission.
+        $this->assertEmpty($menuUiEntityOperation->entityOperation($block));
+    }
 
 }

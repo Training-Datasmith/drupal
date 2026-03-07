@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\ImageToolkit\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,24 +25,24 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class ImageToolkit extends Plugin {
+class ImageToolkit extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The title of the image toolkit.
-   *
-   * The string should be wrapped in @Translation().
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $title;
+    /**
+     * The title of the image toolkit.
+     *
+     * The string should be wrapped in @Translation().
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $title;
 
 }

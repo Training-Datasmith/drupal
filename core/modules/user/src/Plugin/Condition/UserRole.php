@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\Condition;
 
 use Drupal\Component\Utility\Html;
@@ -15,89 +17,94 @@ use Drupal\user\RoleInterface;
  * Provides a 'User Role' condition.
  */
 #[Condition(
-  id: "user_role",
-  label: new TranslatableMarkup("User Role"),
-  context_definitions: [
-    "user" => new EntityContextDefinition(
-      data_type: "entity:user",
-      label: new TranslatableMarkup("User"),
+    id: 'user_role',
+    label: new TranslatableMarkup('User Role'),
+    context_definitions: [
+    'user' => new EntityContextDefinition(
+        data_type: 'entity:user',
+        label: new TranslatableMarkup('User'),
     ),
   ],
 )]
-class UserRole extends ConditionPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['roles'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('When the user has the following roles'),
-      '#default_value' => $this->configuration['roles'],
-      '#options' => array_map(fn(RoleInterface $role): string => Html::escape($role->label()), Role::loadMultiple()),
-      '#description' => $this->t('If you select no roles, the condition will evaluate to TRUE for all users.'),
-    ];
-    return parent::buildConfigurationForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration() {
-    return [
-      'roles' => [],
-    ] + parent::defaultConfiguration();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $this->configuration['roles'] = array_filter($form_state->getValue('roles'));
-    parent::submitConfigurationForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function summary(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    // Use the role labels. They will be sanitized below.
-    $roles = array_map(fn(RoleInterface $role) => $role->label(), Role::loadMultiple());
-    $roles = array_intersect_key($roles, $this->configuration['roles']);
-    if (count($roles) > 1) {
-      $roles = implode(', ', $roles);
+class UserRole extends ConditionPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    {
+        $form['roles'] = [
+          '#type' => 'checkboxes',
+          '#title' => $this->t('When the user has the following roles'),
+          '#default_value' => $this->configuration['roles'],
+          '#options' => array_map(fn (RoleInterface $role): string => Html::escape($role->label()), Role::loadMultiple()),
+          '#description' => $this->t('If you select no roles, the condition will evaluate to TRUE for all users.'),
+        ];
+        return parent::buildConfigurationForm($form, $form_state);
     }
-    else {
-      $roles = reset($roles);
-    }
-    if (!empty($this->configuration['negate'])) {
-      return $this->t('The user is not a member of @roles', ['@roles' => $roles]);
-    }
-    return $this->t('The user is a member of @roles', ['@roles' => $roles]);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function evaluate() {
-    if (empty($this->configuration['roles']) && !$this->isNegated()) {
-      return TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration()
+    {
+        return [
+          'roles' => [],
+        ] + parent::defaultConfiguration();
     }
-    $user = $this->getContextValue('user');
-    return (bool) array_intersect($this->configuration['roles'], $user->getRoles());
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts(): array {
-    // Optimize cache context, if a user cache context is provided, only use
-    // user.roles, since that's the only part this condition cares about.
-    $contexts = [];
-    foreach (parent::getCacheContexts() as $context) {
-      $contexts[] = $context == 'user' ? 'user.roles' : $context;
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $this->configuration['roles'] = array_filter($form_state->getValue('roles'));
+        parent::submitConfigurationForm($form, $form_state);
     }
-    return $contexts;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function summary(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        // Use the role labels. They will be sanitized below.
+        $roles = array_map(fn (RoleInterface $role) => $role->label(), Role::loadMultiple());
+        $roles = array_intersect_key($roles, $this->configuration['roles']);
+        if (count($roles) > 1) {
+            $roles = implode(', ', $roles);
+        } else {
+            $roles = reset($roles);
+        }
+        if (!empty($this->configuration['negate'])) {
+            return $this->t('The user is not a member of @roles', ['@roles' => $roles]);
+        }
+        return $this->t('The user is a member of @roles', ['@roles' => $roles]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function evaluate()
+    {
+        if (empty($this->configuration['roles']) && !$this->isNegated()) {
+            return true;
+        }
+        $user = $this->getContextValue('user');
+        return (bool) array_intersect($this->configuration['roles'], $user->getRoles());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheContexts(): array
+    {
+        // Optimize cache context, if a user cache context is provided, only use
+        // user.roles, since that's the only part this condition cares about.
+        $contexts = [];
+        foreach (parent::getCacheContexts() as $context) {
+            $contexts[] = $context == 'user' ? 'user.roles' : $context;
+        }
+        return $contexts;
+    }
 
 }

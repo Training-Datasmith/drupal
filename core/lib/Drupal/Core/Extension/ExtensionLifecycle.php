@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 /**
@@ -12,55 +14,56 @@ namespace Drupal\Core\Extension;
  * 3. Eventually (maybe), becomes "deprecated" when being phased out.
  * 4. Finally (maybe), becomes "obsolete" and can't be enabled anymore.
  */
-final class ExtensionLifecycle {
+final class ExtensionLifecycle
+{
+    /**
+     * The string used to identify the lifecycle in an .info.yml file.
+     */
+    public const LIFECYCLE_IDENTIFIER = 'lifecycle';
 
-  /**
-   * The string used to identify the lifecycle in an .info.yml file.
-   */
-  const LIFECYCLE_IDENTIFIER = 'lifecycle';
+    /**
+     * The string used to identify the lifecycle link in an .info.yml file.
+     */
+    public const LIFECYCLE_LINK_IDENTIFIER = 'lifecycle_link';
 
-  /**
-   * The string used to identify the lifecycle link in an .info.yml file.
-   */
-  const LIFECYCLE_LINK_IDENTIFIER = 'lifecycle_link';
+    /**
+     * Extension is experimental. Warnings will be shown if installed.
+     */
+    public const EXPERIMENTAL = 'experimental';
 
-  /**
-   * Extension is experimental. Warnings will be shown if installed.
-   */
-  const EXPERIMENTAL = 'experimental';
+    /**
+     * Extension is stable. This is the default value of any extension.
+     */
+    public const STABLE = 'stable';
 
-  /**
-   * Extension is stable. This is the default value of any extension.
-   */
-  const STABLE = 'stable';
+    /**
+     * Extension is deprecated. Warnings will be shown if still installed.
+     */
+    public const DEPRECATED = 'deprecated';
 
-  /**
-   * Extension is deprecated. Warnings will be shown if still installed.
-   */
-  const DEPRECATED = 'deprecated';
+    /**
+     * Extension is obsolete and installation will be prevented.
+     */
+    public const OBSOLETE = 'obsolete';
 
-  /**
-   * Extension is obsolete and installation will be prevented.
-   */
-  const OBSOLETE = 'obsolete';
-
-  /**
-   * Determines if a given extension lifecycle string is valid.
-   *
-   * @param string $lifecycle
-   *   The lifecycle to validate.
-   *
-   * @return bool
-   *   TRUE if the lifecycle is valid, otherwise FALSE.
-   */
-  public static function isValid(string $lifecycle) : bool {
-    $valid_values = [
-      self::EXPERIMENTAL,
-      self::STABLE,
-      self::DEPRECATED,
-      self::OBSOLETE,
-    ];
-    return in_array($lifecycle, $valid_values, TRUE);
-  }
+    /**
+     * Determines if a given extension lifecycle string is valid.
+     *
+     * @param string $lifecycle
+     *   The lifecycle to validate.
+     *
+     * @return bool
+     *   TRUE if the lifecycle is valid, otherwise FALSE.
+     */
+    public static function isValid(string $lifecycle): bool
+    {
+        $valid_values = [
+          self::EXPERIMENTAL,
+          self::STABLE,
+          self::DEPRECATED,
+          self::OBSOLETE,
+        ];
+        return in_array($lifecycle, $valid_values, true);
+    }
 
 }

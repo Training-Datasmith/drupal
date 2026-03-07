@@ -14,15 +14,16 @@ use Symfony\Contracts\EventDispatcher\Event;
  * so config and content are probably about to change again. This event is best
  * used for tasks like notifications, logging or updating a value in state.
  */
-final class RecipeAppliedEvent extends Event {
-
-  /**
-   * Constructs a RecipeAppliedEvent object.
-   *
-   * @param \Drupal\Core\Recipe\Recipe $recipe
-   *   The recipe that was applied.
-   */
-  public function __construct(public readonly Recipe $recipe) {
-  }
+final class RecipeAppliedEvent extends Event
+{
+    /**
+     * Constructs a RecipeAppliedEvent object.
+     *
+     * @param \Drupal\Core\Recipe\Recipe $recipe
+     *   The recipe that was applied.
+     */
+    public function __construct(public readonly Recipe $recipe)
+    {
+    }
 
 }

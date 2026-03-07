@@ -15,74 +15,82 @@ use Drupal\Core\Database\Transaction\TransactionManagerBase;
  * whether a client connection is still active and we can prevent triggering
  * exceptions.
  */
-class TransactionManager extends TransactionManagerBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function beginClientTransaction(): bool {
-    return $this->connection->getClientConnection()->beginTransaction();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function processRootCommit(): void {
-    if (!$this->connection->getClientConnection()->inTransaction()) {
-      $this->voidClientTransaction();
-      return;
+class TransactionManager extends TransactionManagerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function beginClientTransaction(): bool
+    {
+        return $this->connection->getClientConnection()->beginTransaction();
     }
-    parent::processRootCommit();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function rollbackClientSavepoint(string $name): bool {
-    if (!$this->connection->getClientConnection()->inTransaction()) {
-      $this->voidClientTransaction();
-      return TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function processRootCommit(): void
+    {
+        if (!$this->connection->getClientConnection()->inTransaction()) {
+            $this->voidClientTransaction();
+            return;
+        }
+        parent::processRootCommit();
     }
-    return parent::rollbackClientSavepoint($name);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function releaseClientSavepoint(string $name): bool {
-    if (!$this->connection->getClientConnection()->inTransaction()) {
-      $this->voidClientTransaction();
-      return TRUE;
+    /**
+     * {@inheritdoc}
+     */
+    protected function rollbackClientSavepoint(string $name): bool
+    {
+        if (!$this->connection->getClientConnection()->inTransaction()) {
+            $this->voidClientTransaction();
+            return true;
+        }
+        return parent::rollbackClientSavepoint($name);
     }
-    return parent::releaseClientSavepoint($name);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function commitClientTransaction(): bool {
-    $clientCommit = $this->connection->getClientConnection()->commit();
-    $this->setConnectionTransactionState($clientCommit ?
+    /**
+     * {@inheritdoc}
+     */
+    protected function releaseClientSavepoint(string $name): bool
+    {
+        if (!$this->connection->getClientConnection()->inTransaction()) {
+            $this->voidClientTransaction();
+            return true;
+        }
+        return parent::releaseClientSavepoint($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function commitClientTransaction(): bool
+    {
+        $clientCommit = $this->connection->getClientConnection()->commit();
+        $this->setConnectionTransactionState(
+            $clientCommit ?
       ClientConnectionTransactionState::Committed :
       ClientConnectionTransactionState::CommitFailed
-    );
-    return $clientCommit;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function rollbackClientTransaction(): bool {
-    if (!$this->connection->getClientConnection()->inTransaction()) {
-      $this->voidClientTransaction();
-      return FALSE;
+        );
+        return $clientCommit;
     }
-    $clientRollback = $this->connection->getClientConnection()->rollBack();
-    $this->setConnectionTransactionState($clientRollback ?
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function rollbackClientTransaction(): bool
+    {
+        if (!$this->connection->getClientConnection()->inTransaction()) {
+            $this->voidClientTransaction();
+            return false;
+        }
+        $clientRollback = $this->connection->getClientConnection()->rollBack();
+        $this->setConnectionTransactionState(
+            $clientRollback ?
       ClientConnectionTransactionState::RolledBack :
       ClientConnectionTransactionState::RollbackFailed
-    );
-    return $clientRollback;
-  }
+        );
+        return $clientRollback;
+    }
 
 }

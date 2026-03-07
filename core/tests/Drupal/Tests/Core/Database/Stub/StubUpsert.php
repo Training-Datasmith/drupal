@@ -9,13 +9,14 @@ use Drupal\Core\Database\Query\Upsert;
 /**
  * A stub of core Upsert for testing purposes.
  */
-class StubUpsert extends Upsert {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString() {
-    throw new \BadMethodCallException('Upsert not implemented');
-  }
+class StubUpsert extends Upsert
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
+    {
+        throw new \BadMethodCallException('Upsert not implemented');
+    }
 
 }

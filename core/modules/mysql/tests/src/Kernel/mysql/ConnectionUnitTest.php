@@ -14,17 +14,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class ConnectionUnitTest extends DriverSpecificConnectionUnitTestBase {
-
-  /**
-   * Returns a set of queries specific for MySQL.
-   */
-  protected function getQuery(): array {
-    return [
-      'connection_id' => 'SELECT CONNECTION_ID()',
-      'processlist' => 'SHOW PROCESSLIST',
-      'show_tables' => 'SHOW TABLES',
-    ];
-  }
+class ConnectionUnitTest extends DriverSpecificConnectionUnitTestBase
+{
+    /**
+     * Returns a set of queries specific for MySQL.
+     */
+    protected function getQuery(): array
+    {
+        return [
+          'connection_id' => 'SELECT CONNECTION_ID()',
+          'processlist' => 'SHOW PROCESSLIST',
+          'show_tables' => 'SHOW TABLES',
+        ];
+    }
 
 }

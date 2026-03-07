@@ -10,14 +10,15 @@ use Drupal\views\Plugin\views\filter\FilterPluginBase;
 /**
  * Breaks the query with adding an invalid where expression.
  */
-#[ViewsFilter("test_exception_filter")]
-class FilterExceptionTest extends FilterPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query() {
-    $this->query->addWhereExpression(NULL, "syntax error");
-  }
+#[ViewsFilter('test_exception_filter')]
+class FilterExceptionTest extends FilterPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query()
+    {
+        $this->query->addWhereExpression(null, 'syntax error');
+    }
 
 }

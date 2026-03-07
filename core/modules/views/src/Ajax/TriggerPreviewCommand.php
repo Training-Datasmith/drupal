@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
@@ -10,15 +12,16 @@ use Drupal\Core\Ajax\CommandInterface;
  * This command is implemented in
  * Drupal.AjaxCommands.prototype.viewsTriggerPreview.
  */
-class TriggerPreviewCommand implements CommandInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(): array {
-    return [
-      'command' => 'viewsTriggerPreview',
-    ];
-  }
+class TriggerPreviewCommand implements CommandInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function render(): array
+    {
+        return [
+          'command' => 'viewsTriggerPreview',
+        ];
+    }
 
 }

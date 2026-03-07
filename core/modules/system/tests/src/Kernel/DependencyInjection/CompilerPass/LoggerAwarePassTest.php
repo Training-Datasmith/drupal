@@ -19,39 +19,41 @@ use Psr\Log\LoggerInterface;
 #[CoversClass(LoggerAwarePass::class)]
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class LoggerAwarePassTest extends KernelTestBase {
+class LoggerAwarePassTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'logger_aware_test',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'logger_aware_test',
-  ];
+    /**
+     * Tests that the logger aware compiler pass works.
+     *
+     * @legacy-covers ::process
+     */
+    public function testLoggerAwarePass(): void
+    {
+        $container = $this->container;
+        $logger = $container->get('logger.channel.logger_aware_test');
+        $this->assertInstanceOf(LoggerInterface::class, $logger);
+        $logger_aware_stub = $container->get('logger_aware_test.logger_aware_stub');
+        $this->assertInstanceOf(LoggerAwareStub::class, $logger_aware_stub);
+        $this->assertSame($logger, $logger_aware_stub->getLogger());
+    }
 
-  /**
-   * Tests that the logger aware compiler pass works.
-   *
-   * @legacy-covers ::process
-   */
-  public function testLoggerAwarePass(): void {
-    $container = $this->container;
-    $logger = $container->get('logger.channel.logger_aware_test');
-    $this->assertInstanceOf(LoggerInterface::class, $logger);
-    $logger_aware_stub = $container->get('logger_aware_test.logger_aware_stub');
-    $this->assertInstanceOf(LoggerAwareStub::class, $logger_aware_stub);
-    $this->assertSame($logger, $logger_aware_stub->getLogger());
-  }
-
-  /**
-   * Tests that existing loggers are not overwritten.
-   *
-   * @legacy-covers ::process
-   */
-  public function testExistingLogger(): void {
-    $container = $this->container;
-    $logger_aware_stub = $container->get('logger_aware_test.logger_aware_existing');
-    $logger = $logger_aware_stub->getLogger();
-    $this->assertInstanceOf(LoggerStub::class, $logger);
-  }
+    /**
+     * Tests that existing loggers are not overwritten.
+     *
+     * @legacy-covers ::process
+     */
+    public function testExistingLogger(): void
+    {
+        $container = $this->container;
+        $logger_aware_stub = $container->get('logger_aware_test.logger_aware_existing');
+        $logger = $logger_aware_stub->getLogger();
+        $this->assertInstanceOf(LoggerStub::class, $logger);
+    }
 
 }

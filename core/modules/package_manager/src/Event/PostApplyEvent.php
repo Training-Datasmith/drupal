@@ -7,5 +7,6 @@ namespace Drupal\package_manager\Event;
 /**
  * Event fired after staged changes are synced to the active directory.
  */
-final class PostApplyEvent extends SandboxEvent {
+final class PostApplyEvent extends SandboxEvent
+{
 }

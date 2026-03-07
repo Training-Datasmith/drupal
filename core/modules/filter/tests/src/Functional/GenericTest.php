@@ -13,15 +13,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('filter')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function preUninstallSteps(): void {
-    $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
-    $text_formats = $storage->loadMultiple();
-    $storage->delete($text_formats);
-  }
+class GenericTest extends GenericModuleTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function preUninstallSteps(): void
+    {
+        $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
+        $text_formats = $storage->loadMultiple();
+        $storage->delete($text_formats);
+    }
 
 }

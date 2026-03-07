@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the Comment module.
@@ -30,17 +32,18 @@ use Drupal\Core\Url;
  * @see \Drupal\comment\CommentViewBuilder::renderLinks()
  * @see \Drupal\comment\CommentViewBuilder::buildLinks()
  */
-function hook_comment_links_alter(array &$links, CommentInterface $entity, array &$context): void {
-  $links['my_module'] = [
-    '#theme' => 'links__comment__my_module',
-    '#attributes' => ['class' => ['links', 'inline']],
-    '#links' => [
-      'comment-report' => [
-        'title' => t('Report'),
-        'url' => Url::fromRoute('comment_test.report', ['comment' => $entity->id()], ['query' => ['token' => \Drupal::getContainer()->get('csrf_token')->get("comment/{$entity->id()}/report")]]),
+function hook_comment_links_alter(array &$links, CommentInterface $entity, array &$context): void
+{
+    $links['my_module'] = [
+      '#theme' => 'links__comment__my_module',
+      '#attributes' => ['class' => ['links', 'inline']],
+      '#links' => [
+        'comment-report' => [
+          'title' => t('Report'),
+          'url' => Url::fromRoute('comment_test.report', ['comment' => $entity->id()], ['query' => ['token' => \Drupal::getContainer()->get('csrf_token')->get("comment/{$entity->id()}/report")]]),
+        ],
       ],
-    ],
-  ];
+    ];
 }
 
 /**

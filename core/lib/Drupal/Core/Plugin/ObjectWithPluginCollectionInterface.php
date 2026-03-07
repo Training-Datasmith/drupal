@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 /**
@@ -12,15 +14,15 @@ namespace Drupal\Core\Plugin;
  * Entities that need this interface should implement
  * \Drupal\Core\Entity\EntityWithPluginCollectionInterface, which extends this.
  */
-interface ObjectWithPluginCollectionInterface {
-
-  /**
-   * Gets the plugin collections used by this object.
-   *
-   * @return \Drupal\Component\Plugin\LazyPluginCollection[]
-   *   An array of plugin collections, keyed by the property name they use to
-   *   store their configuration.
-   */
-  public function getPluginCollections();
+interface ObjectWithPluginCollectionInterface
+{
+    /**
+     * Gets the plugin collections used by this object.
+     *
+     * @return \Drupal\Component\Plugin\LazyPluginCollection[]
+     *   An array of plugin collections, keyed by the property name they use to
+     *   store their configuration.
+     */
+    public function getPluginCollections();
 
 }

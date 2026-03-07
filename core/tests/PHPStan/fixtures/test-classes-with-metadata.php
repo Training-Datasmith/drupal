@@ -15,10 +15,12 @@ use PHPUnit\Framework\TestCase;
  * @coversNothing
  */
 #[RunTestsInSeparateProcesses]
-abstract class BarTest extends TestCase {
+abstract class BarTest extends TestCase
+{
 }
 
-abstract class QuxTest extends TestCase {
+abstract class QuxTest extends TestCase
+{
 }
 
 /**
@@ -26,18 +28,22 @@ abstract class QuxTest extends TestCase {
  *
  * @internal
  */
-abstract class SeeTest extends TestCase {
+abstract class SeeTest extends TestCase
+{
 }
 
 /**
  * @group metadata
  */
-class ConcreteWithAnnotationTest extends TestCase {
+class ConcreteWithAnnotationTest extends TestCase
+{
 }
 
 #[Group('Test')]
-class ConcreteWithAttributeTest extends TestCase {
+class ConcreteWithAttributeTest extends TestCase
+{
 }
 
-class NotATestClass {
+class NotATestClass
+{
 }

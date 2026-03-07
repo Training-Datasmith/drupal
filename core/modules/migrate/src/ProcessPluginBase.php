@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate;
 
 use Drupal\Core\Plugin\PluginBase;
@@ -28,53 +30,58 @@ use Drupal\migrate\Plugin\MigrateProcessInterface;
  *
  * @ingroup migration
  */
-abstract class ProcessPluginBase extends PluginBase implements MigrateProcessInterface {
+abstract class ProcessPluginBase extends PluginBase implements MigrateProcessInterface
+{
+    /**
+     * Determines if processing of the pipeline is stopped.
+     */
+    protected bool $stopPipeline = false;
 
-  /**
-   * Determines if processing of the pipeline is stopped.
-   */
-  protected bool $stopPipeline = FALSE;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    // Do not call this method from children.
-    if (isset($this->configuration['method'])) {
-      if (method_exists($this, $this->configuration['method'])) {
-        return $this->{$this->configuration['method']}($value, $migrate_executable, $row, $destination_property);
-      }
-      throw new \BadMethodCallException(sprintf('The %s method does not exist in the %s plugin.', $this->configuration['method'], $this->pluginId));
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        // Do not call this method from children.
+        if (isset($this->configuration['method'])) {
+            if (method_exists($this, $this->configuration['method'])) {
+                return $this->{$this->configuration['method']}($value, $migrate_executable, $row, $destination_property);
+            }
+            throw new \BadMethodCallException(sprintf('The %s method does not exist in the %s plugin.', $this->configuration['method'], $this->pluginId));
+        }
+        throw new \BadMethodCallException(sprintf('The "method" key in the plugin configuration must to be set for the %s plugin.', $this->pluginId));
     }
-    throw new \BadMethodCallException(sprintf('The "method" key in the plugin configuration must to be set for the %s plugin.', $this->pluginId));
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function multiple() {
-    return FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function multiple()
+    {
+        return false;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function isPipelineStopped(): bool {
-    return $this->stopPipeline;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function isPipelineStopped(): bool
+    {
+        return $this->stopPipeline;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function reset(): void {
-    $this->stopPipeline = FALSE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function reset(): void
+    {
+        $this->stopPipeline = false;
+    }
 
-  /**
-   * Stops pipeline processing after this plugin finishes.
-   */
-  protected function stopPipeline(): void {
-    $this->stopPipeline = TRUE;
-  }
+    /**
+     * Stops pipeline processing after this plugin finishes.
+     */
+    protected function stopPipeline(): void
+    {
+        $this->stopPipeline = true;
+    }
 
 }

@@ -13,36 +13,38 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserAnonymousActivateTest extends KernelTestBase {
+class UserAnonymousActivateTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->container->get('module_handler')->loadInclude('user', 'install');
+        $this->installEntitySchema('user');
+        user_install();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->container->get('module_handler')->loadInclude('user', 'install');
-    $this->installEntitySchema('user');
-    user_install();
-  }
+    /**
+     * Tests that the anonymous user cannot be activated.
+     */
+    public function testAnonymousActivate(): void
+    {
+        $accountAnon = \Drupal::entityTypeManager()->getStorage('user')->load(0);
 
-  /**
-   * Tests that the anonymous user cannot be activated.
-   */
-  public function testAnonymousActivate(): void {
-    $accountAnon = \Drupal::entityTypeManager()->getStorage('user')->load(0);
+        // Test that the anonymous user is blocked.
+        $this->assertTrue($accountAnon->isBlocked());
 
-    // Test that the anonymous user is blocked.
-    $this->assertTrue($accountAnon->isBlocked());
-
-    // Test that the anonymous user cannot be activated.
-    $this->expectException(\LogicException::class);
-    $this->expectExceptionMessage('The anonymous user account should remain blocked at all times.');
-    $accountAnon->activate();
-  }
+        // Test that the anonymous user cannot be activated.
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The anonymous user account should remain blocked at all times.');
+        $accountAnon->activate();
+    }
 
 }

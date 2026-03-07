@@ -13,5 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Database')]
 #[RunTestsInSeparateProcesses]
-class ConnectionTest extends BaseMySqlTest {
+class ConnectionTest extends BaseMySqlTest
+{
 }

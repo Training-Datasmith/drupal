@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\layout_builder\Cache;
 
 use Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface;
@@ -12,26 +14,28 @@ use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
  * @internal
  *   Tagged services are internal.
  */
-class ExtraFieldBlockCacheTagInvalidator implements CacheTagsInvalidatorInterface {
-
-  /**
-   * Constructs a new ExtraFieldBlockCacheTagInvalidator.
-   *
-   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
-   *   The block manager.
-   */
-  public function __construct(protected BlockManagerInterface $blockManager) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function invalidateTags(array $tags): void {
-    if (in_array('entity_field_info', $tags, TRUE)) {
-      if ($this->blockManager instanceof CachedDiscoveryInterface) {
-        $this->blockManager->clearCachedDefinitions();
-      }
+class ExtraFieldBlockCacheTagInvalidator implements CacheTagsInvalidatorInterface
+{
+    /**
+     * Constructs a new ExtraFieldBlockCacheTagInvalidator.
+     *
+     * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
+     *   The block manager.
+     */
+    public function __construct(protected BlockManagerInterface $blockManager)
+    {
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags): void
+    {
+        if (in_array('entity_field_info', $tags, true)) {
+            if ($this->blockManager instanceof CachedDiscoveryInterface) {
+                $this->blockManager->clearCachedDefinitions();
+            }
+        }
+    }
 
 }

@@ -19,209 +19,216 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class EditorTest extends ConfigEntityResourceTestBase {
+class EditorTest extends ConfigEntityResourceTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['filter', 'editor', 'ckeditor5'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['filter', 'editor', 'ckeditor5'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $entityTypeId = 'editor';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $entityTypeId = 'editor';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceTypeName = 'editor--editor';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceTypeName = 'editor--editor';
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Drupal\editor\EditorInterface
+     */
+    protected $entity;
 
-  /**
-   * {@inheritdoc}
-   *
-   * @var \Drupal\editor\EditorInterface
-   */
-  protected $entity;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        $this->grantPermissionsToTestedRole(['administer filters']);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    $this->grantPermissionsToTestedRole(['administer filters']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Llama" filter format.
-    $llama_format = FilterFormat::create([
-      'name' => 'Llama',
-      'format' => 'llama',
-      'langcode' => 'es',
-      'filters' => [
-        'filter_html' => [
-          'status' => TRUE,
-          'settings' => [
-            'allowed_html' => '<p> <a> <b> <lo>',
-          ],
-        ],
-      ],
-    ]);
-
-    $llama_format->save();
-
-    // Create a "Camelids" editor.
-    $camelids = Editor::create([
-      'format' => 'llama',
-      'editor' => 'ckeditor5',
-      'image_upload' => [
-        'status' => FALSE,
-      ],
-    ]);
-    $camelids
-      ->setImageUploadSettings([
-        'status' => TRUE,
-        'scheme' => 'public',
-        'directory' => 'inline-images',
-        'max_size' => NULL,
-        'max_dimensions' => [
-          'width' => NULL,
-          'height' => NULL,
-        ],
-      ])
-      ->save();
-
-    return $camelids;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedDocument(): array {
-    $self_url = Url::fromUri('base:/jsonapi/editor/editor/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
-    return [
-      'jsonapi' => [
-        'meta' => [
-          'links' => [
-            'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
-          ],
-        ],
-        'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
-      ],
-      'links' => [
-        'self' => ['href' => $self_url],
-      ],
-      'data' => [
-        'id' => $this->entity->uuid(),
-        'type' => 'editor--editor',
-        'links' => [
-          'self' => ['href' => $self_url],
-        ],
-        'attributes' => [
-          'dependencies' => [
-            'config' => [
-              'filter.format.llama',
-            ],
-            'module' => [
-              'ckeditor5',
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Llama" filter format.
+        $llama_format = FilterFormat::create([
+          'name' => 'Llama',
+          'format' => 'llama',
+          'langcode' => 'es',
+          'filters' => [
+            'filter_html' => [
+              'status' => true,
+              'settings' => [
+                'allowed_html' => '<p> <a> <b> <lo>',
+              ],
             ],
           ],
+        ]);
+
+        $llama_format->save();
+
+        // Create a "Camelids" editor.
+        $camelids = Editor::create([
+          'format' => 'llama',
           'editor' => 'ckeditor5',
           'image_upload' => [
-            'status' => TRUE,
+            'status' => false,
+          ],
+        ]);
+        $camelids
+          ->setImageUploadSettings([
+            'status' => true,
             'scheme' => 'public',
             'directory' => 'inline-images',
-            'max_size' => NULL,
+            'max_size' => null,
             'max_dimensions' => [
-              'width' => NULL,
-              'height' => NULL,
+              'width' => null,
+              'height' => null,
+            ],
+          ])
+          ->save();
+
+        return $camelids;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedDocument(): array
+    {
+        $self_url = Url::fromUri('base:/jsonapi/editor/editor/' . $this->entity->uuid())->setAbsolute()->toString(true)->getGeneratedUrl();
+        return [
+          'jsonapi' => [
+            'meta' => [
+              'links' => [
+                'self' => ['href' => JsonApiSpec::SUPPORTED_SPECIFICATION_PERMALINK],
+              ],
+            ],
+            'version' => JsonApiSpec::SUPPORTED_SPECIFICATION_VERSION,
+          ],
+          'links' => [
+            'self' => ['href' => $self_url],
+          ],
+          'data' => [
+            'id' => $this->entity->uuid(),
+            'type' => 'editor--editor',
+            'links' => [
+              'self' => ['href' => $self_url],
+            ],
+            'attributes' => [
+              'dependencies' => [
+                'config' => [
+                  'filter.format.llama',
+                ],
+                'module' => [
+                  'ckeditor5',
+                ],
+              ],
+              'editor' => 'ckeditor5',
+              'image_upload' => [
+                'status' => true,
+                'scheme' => 'public',
+                'directory' => 'inline-images',
+                'max_size' => null,
+                'max_dimensions' => [
+                  'width' => null,
+                  'height' => null,
+                ],
+              ],
+              'langcode' => 'en',
+              'settings' => [
+                'toolbar' => [
+                  'items' => ['heading', 'bold', 'italic'],
+                ],
+                'plugins' => [
+                  'ckeditor5_heading' => Heading::DEFAULT_CONFIGURATION,
+                ],
+              ],
+              'status' => true,
+              'drupal_internal__format' => 'llama',
             ],
           ],
-          'langcode' => 'en',
-          'settings' => [
-            'toolbar' => [
-              'items' => ['heading', 'bold', 'italic'],
-            ],
-            'plugins' => [
-              'ckeditor5_heading' => Heading::DEFAULT_CONFIGURATION,
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPostDocument(): array
+    {
+        // @todo Update in https://www.drupal.org/node/2300677.
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method): string
+    {
+        return "The 'administer filters' permission is required.";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createAnotherEntity($key)
+    {
+        FilterFormat::create([
+          'name' => 'Pachyderm',
+          'format' => 'pachyderm',
+          'langcode' => 'fr',
+          'filters' => [
+            'filter_html' => [
+              'status' => true,
+              'settings' => [
+                'allowed_html' => '<p> <a> <b> <lo>',
+              ],
             ],
           ],
-          'status' => TRUE,
-          'drupal_internal__format' => 'llama',
-        ],
-      ],
-    ];
-  }
+        ])->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPostDocument(): array {
-    // @todo Update in https://www.drupal.org/node/2300677.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method): string {
-    return "The 'administer filters' permission is required.";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function createAnotherEntity($key) {
-    FilterFormat::create([
-      'name' => 'Pachyderm',
-      'format' => 'pachyderm',
-      'langcode' => 'fr',
-      'filters' => [
-        'filter_html' => [
-          'status' => TRUE,
-          'settings' => [
-            'allowed_html' => '<p> <a> <b> <lo>',
+        $entity = Editor::create([
+          'format' => 'pachyderm',
+          'editor' => 'ckeditor5',
+          'image_upload' => [
+            'status' => false,
           ],
-        ],
-      ],
-    ])->save();
+        ]);
 
-    $entity = Editor::create([
-      'format' => 'pachyderm',
-      'editor' => 'ckeditor5',
-      'image_upload' => [
-        'status' => FALSE,
-      ],
-    ]);
+        $entity->setImageUploadSettings([
+          'status' => true,
+          'scheme' => 'public',
+          'directory' => 'inline-images',
+          'max_size' => null,
+          'max_dimensions' => [
+            'width' => null,
+            'height' => null,
+          ],
+        ])->save();
 
-    $entity->setImageUploadSettings([
-      'status' => TRUE,
-      'scheme' => 'public',
-      'directory' => 'inline-images',
-      'max_size' => NULL,
-      'max_dimensions' => [
-        'width' => NULL,
-        'height' => NULL,
-      ],
-    ])->save();
+        return $entity;
+    }
 
-    return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    // Also reset the 'filter_format' entity access control handler because
-    // editor access also depends on access to the configured filter format.
-    \Drupal::entityTypeManager()->getAccessControlHandler('filter_format')->resetCache();
-    return parent::entityAccess($entity, $operation, $account);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected static function entityAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        // Also reset the 'filter_format' entity access control handler because
+        // editor access also depends on access to the configured filter format.
+        \Drupal::entityTypeManager()->getAccessControlHandler('filter_format')->resetCache();
+        return parent::entityAccess($entity, $operation, $account);
+    }
 
 }

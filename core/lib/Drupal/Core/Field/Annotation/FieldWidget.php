@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -19,66 +21,66 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @ingroup field_widget
  */
-class FieldWidget extends Plugin {
+class FieldWidget extends Plugin
+{
+    /**
+     * The plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the widget type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the widget type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * A short description of the widget type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description;
 
-  /**
-   * A short description of the widget type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description;
+    /**
+     * The name of the widget class.
+     *
+     * This is not provided manually, it will be added by the discovery mechanism.
+     *
+     * @var string
+     */
+    public $class;
 
-  /**
-   * The name of the widget class.
-   *
-   * This is not provided manually, it will be added by the discovery mechanism.
-   *
-   * @var string
-   */
-  public $class;
+    /**
+     * An array of field types the widget supports.
+     *
+     * @var array
+     */
+    public $field_types = [];
 
-  /**
-   * An array of field types the widget supports.
-   *
-   * @var array
-   */
-  public $field_types = [];
+    /**
+     * Does the field widget handles multiple values at once.
+     *
+     * @var bool
+     */
+    public $multiple_values = false;
 
-  /**
-   * Does the field widget handles multiple values at once.
-   *
-   * @var bool
-   */
-  public $multiple_values = FALSE;
-
-  /**
-   * An integer to determine weight of this widget relative to other widgets.
-   *
-   * Other widgets are in the Field UI when selecting a widget for a given
-   * field.
-   *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var int
-   */
-  public $weight;
+    /**
+     * An integer to determine weight of this widget relative to other widgets.
+     *
+     * Other widgets are in the Field UI when selecting a widget for a given
+     * field.
+     *
+     * This property is optional and it does not need to be declared.
+     *
+     * @var int
+     */
+    public $weight;
 
 }

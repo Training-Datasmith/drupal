@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Action\Plugin\Action\Derivative;
 
 use Drupal\Core\Entity\EntityChangedInterface;
@@ -10,13 +12,14 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *
  * @see \Drupal\Core\Action\Plugin\Action\SaveAction
  */
-class EntityChangedActionDeriver extends EntityActionDeriverBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function isApplicable(EntityTypeInterface $entity_type) {
-    return $entity_type->entityClassImplements(EntityChangedInterface::class);
-  }
+class EntityChangedActionDeriver extends EntityActionDeriverBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function isApplicable(EntityTypeInterface $entity_type)
+    {
+        return $entity_type->entityClassImplements(EntityChangedInterface::class);
+    }
 
 }

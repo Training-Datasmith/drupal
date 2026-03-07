@@ -16,155 +16,166 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Tasks::class)]
 #[Group('Database')]
-class InstallTasksTest extends UnitTestCase {
+class InstallTasksTest extends UnitTestCase
+{
+    /**
+     * A connection object prophecy.
+     *
+     * @var \Drupal\mysql\Driver\Database\mysql\Connection|\Prophecy\Prophecy\ObjectProphecy
+     */
+    private $connection;
 
-  /**
-   * A connection object prophecy.
-   *
-   * @var \Drupal\mysql\Driver\Database\mysql\Connection|\Prophecy\Prophecy\ObjectProphecy
-   */
-  private $connection;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->connection = $this->prophesize(Connection::class);
+    }
 
-    $this->connection = $this->prophesize(Connection::class);
-  }
+    /**
+     * Creates a Tasks object for testing.
+     *
+     * @return \Drupal\mysql\Driver\Database\mysql\Install\Tasks
+     *   A Tasks object.
+     */
+    private function createTasks(): Tasks
+    {
+        /** @var \Drupal\mysql\Driver\Database\mysql\Connection $connection */
+        $connection = $this->connection->reveal();
 
-  /**
-   * Creates a Tasks object for testing.
-   *
-   * @return \Drupal\mysql\Driver\Database\mysql\Install\Tasks
-   *   A Tasks object.
-   */
-  private function createTasks(): Tasks {
-    /** @var \Drupal\mysql\Driver\Database\mysql\Connection $connection */
-    $connection = $this->connection->reveal();
+        return new class ($connection) extends Tasks {
+            /**
+             * The database connection.
+             *
+             * @var \Drupal\Core\Database\Connection
+             */
+            private $connection;
 
-    return new class($connection) extends Tasks {
+            public function __construct(Connection $connection)
+            {
+                $this->connection = $connection;
+            }
 
-      /**
-       * The database connection.
-       *
-       * @var \Drupal\Core\Database\Connection
-       */
-      private $connection;
+            /**
+             * {@inheritdoc}
+             */
+            protected function isConnectionActive()
+            {
+                return true;
+            }
 
-      public function __construct(Connection $connection) {
-        $this->connection = $connection;
-      }
+            /**
+             * {@inheritdoc}
+             */
+            protected function getConnection()
+            {
+                return $this->connection;
+            }
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function isConnectionActive() {
-        return TRUE;
-      }
+            /**
+             * {@inheritdoc}
+             */
+            protected function t($string, array $args = [], array $options = [])
+            {
+                return $string;
+            }
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function getConnection() {
-        return $this->connection;
-      }
+        };
+    }
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function t($string, array $args = [], array $options = []) {
-        return $string;
-      }
+    /**
+     * Creates a Tasks object for testing, without connection.
+     *
+     * @return \Drupal\mysql\Driver\Database\mysql\Install\Tasks
+     *   A Tasks object.
+     */
+    private function createTasksNoConnection(): Tasks
+    {
+        return new class () extends Tasks {
+            /**
+             * {@inheritdoc}
+             */
+            protected function isConnectionActive()
+            {
+                return false;
+            }
 
-    };
-  }
+            /**
+             * {@inheritdoc}
+             */
+            protected function getConnection()
+            {
+                return null;
+            }
 
-  /**
-   * Creates a Tasks object for testing, without connection.
-   *
-   * @return \Drupal\mysql\Driver\Database\mysql\Install\Tasks
-   *   A Tasks object.
-   */
-  private function createTasksNoConnection(): Tasks {
-    return new class() extends Tasks {
+            /**
+             * {@inheritdoc}
+             */
+            protected function t($string, array $args = [], array $options = [])
+            {
+                return $string;
+            }
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function isConnectionActive() {
-        return FALSE;
-      }
+        };
+    }
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function getConnection() {
-        return NULL;
-      }
+    /**
+     * Tests name and minimum version.
+     *
+     * @legacy-covers ::minimumVersion
+     * @legacy-covers ::name
+     */
+    #[DataProvider('providerNameAndMinimumVersion')]
+    public function testNameAndMinimumVersion(bool $is_mariadb, string $expected_name, string $expected_minimum_version): void
+    {
+        $this->connection
+          ->isMariaDb()
+          ->shouldBeCalledTimes(2)
+          ->willReturn($is_mariadb);
+        $tasks = $this->createTasks();
 
-      /**
-       * {@inheritdoc}
-       */
-      protected function t($string, array $args = [], array $options = []) {
-        return $string;
-      }
+        $minimum_version = $tasks->minimumVersion();
+        $name = $tasks->name();
 
-    };
-  }
+        $this->assertSame($expected_minimum_version, $minimum_version);
+        $this->assertSame($expected_name, $name);
 
-  /**
-   * Tests name and minimum version.
-   *
-   * @legacy-covers ::minimumVersion
-   * @legacy-covers ::name
-   */
-  #[DataProvider('providerNameAndMinimumVersion')]
-  public function testNameAndMinimumVersion(bool $is_mariadb, string $expected_name, string $expected_minimum_version): void {
-    $this->connection
-      ->isMariaDb()
-      ->shouldBeCalledTimes(2)
-      ->willReturn($is_mariadb);
-    $tasks = $this->createTasks();
+    }
 
-    $minimum_version = $tasks->minimumVersion();
-    $name = $tasks->name();
+    /**
+     * Provides test data.
+     *
+     * @return array
+     *   An array of test data.
+     */
+    public static function providerNameAndMinimumVersion(): array
+    {
+        return [
+          [
+            true,
+            'MariaDB',
+            Tasks::MARIADB_MINIMUM_VERSION,
+          ],
+          [
+            false,
+            'MySQL or equivalent',
+            Tasks::MYSQL_MINIMUM_VERSION,
+          ],
+        ];
+    }
 
-    $this->assertSame($expected_minimum_version, $minimum_version);
-    $this->assertSame($expected_name, $name);
-
-  }
-
-  /**
-   * Provides test data.
-   *
-   * @return array
-   *   An array of test data.
-   */
-  public static function providerNameAndMinimumVersion(): array {
-    return [
-      [
-        TRUE,
-        'MariaDB',
-        Tasks::MARIADB_MINIMUM_VERSION,
-      ],
-      [
-        FALSE,
-        'MySQL or equivalent',
-        Tasks::MYSQL_MINIMUM_VERSION,
-      ],
-    ];
-  }
-
-  /**
-   * Tests name with no connection.
-   *
-   * @legacy-covers ::name
-   */
-  public function testNameWithNoConnection(): void {
-    $tasks = $this->createTasksNoConnection();
-    $this->assertSame('MySQL, MariaDB, or equivalent', $tasks->name());
-  }
+    /**
+     * Tests name with no connection.
+     *
+     * @legacy-covers ::name
+     */
+    public function testNameWithNoConnection(): void
+    {
+        $tasks = $this->createTasksNoConnection();
+        $this->assertSame('MySQL, MariaDB, or equivalent', $tasks->name());
+    }
 
 }

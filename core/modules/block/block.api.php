@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Hooks provided by the Block module.
  */
 
-use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\block\Entity\Block;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * @defgroup block_api Block API
@@ -119,11 +121,12 @@ use Drupal\Core\Access\AccessResult;
  *
  * @ingroup block_api
  */
-function hook_block_view_alter(array &$build, BlockPluginInterface $block): void {
-  // Remove the contextual links on all blocks that provide them.
-  if (isset($build['#contextual_links'])) {
-    unset($build['#contextual_links']);
-  }
+function hook_block_view_alter(array &$build, BlockPluginInterface $block): void
+{
+    // Remove the contextual links on all blocks that provide them.
+    if (isset($build['#contextual_links'])) {
+        unset($build['#contextual_links']);
+    }
 }
 
 /**
@@ -149,9 +152,10 @@ function hook_block_view_alter(array &$build, BlockPluginInterface $block): void
  *
  * @ingroup block_api
  */
-function hook_block_view_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterface $block): void {
-  // Change the title of the specific block.
-  $build['#title'] = t('New title of the block');
+function hook_block_view_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterface $block): void
+{
+    // Change the title of the specific block.
+    $build['#title'] = t('New title of the block');
 }
 
 /**
@@ -176,11 +180,12 @@ function hook_block_view_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterface
  *
  * @ingroup block_api
  */
-function hook_block_build_alter(array &$build, BlockPluginInterface $block): void {
-  // Add the 'user' cache context to some blocks.
-  if ($block->label() === 'some condition') {
-    $build['#cache']['contexts'][] = 'user';
-  }
+function hook_block_build_alter(array &$build, BlockPluginInterface $block): void
+{
+    // Add the 'user' cache context to some blocks.
+    if ($block->label() === 'some condition') {
+        $build['#cache']['contexts'][] = 'user';
+    }
 }
 
 /**
@@ -204,9 +209,10 @@ function hook_block_build_alter(array &$build, BlockPluginInterface $block): voi
  *
  * @ingroup block_api
  */
-function hook_block_build_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterface $block): void {
-  // Explicitly enable placeholdering of the specific block.
-  $build['#create_placeholder'] = TRUE;
+function hook_block_build_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterface $block): void
+{
+    // Explicitly enable placeholdering of the specific block.
+    $build['#create_placeholder'] = true;
 }
 
 /**
@@ -233,15 +239,16 @@ function hook_block_build_BASE_BLOCK_ID_alter(array &$build, BlockPluginInterfac
  * @see \Drupal\block\BlockAccessControlHandler::checkAccess()
  * @ingroup block_api
  */
-function hook_block_access(Block $block, $operation, AccountInterface $account) {
-  // Example code that would prevent displaying the 'Powered by Drupal' block in
-  // a region different than the footer.
-  if ($operation == 'view' && $block->getPluginId() == 'system_powered_by_block') {
-    return AccessResult::forbiddenIf($block->getRegion() != 'footer')->addCacheableDependency($block);
-  }
+function hook_block_access(Block $block, $operation, AccountInterface $account)
+{
+    // Example code that would prevent displaying the 'Powered by Drupal' block in
+    // a region different than the footer.
+    if ($operation == 'view' && $block->getPluginId() == 'system_powered_by_block') {
+        return AccessResult::forbiddenIf($block->getRegion() != 'footer')->addCacheableDependency($block);
+    }
 
-  // No opinion.
-  return AccessResult::neutral();
+    // No opinion.
+    return AccessResult::neutral();
 }
 
 /**
@@ -252,13 +259,14 @@ function hook_block_access(Block $block, $operation, AccountInterface $account) 
  *
  * @ingroup block_api
  */
-function hook_block_alter(&$definitions): void {
-  foreach ($definitions as $id => $definition) {
-    if (str_starts_with((string) $id, 'system_menu_block:')) {
-      // Replace $definition properties: id, deriver, class, provider to ones
-      // provided by this custom module.
+function hook_block_alter(&$definitions): void
+{
+    foreach ($definitions as $id => $definition) {
+        if (str_starts_with((string) $id, 'system_menu_block:')) {
+            // Replace $definition properties: id, deriver, class, provider to ones
+            // provided by this custom module.
+        }
     }
-  }
 }
 
 /**

@@ -22,161 +22,164 @@ use Prophecy\Argument;
  */
 #[CoversClass(FieldTypePluginManager::class)]
 #[Group('Field')]
-class FieldTypePluginManagerTest extends UnitTestCase {
+class FieldTypePluginManagerTest extends UnitTestCase
+{
+    /**
+     * The field type plugin manager.
+     *
+     * @var \Drupal\Core\Field\FieldTypePluginManager
+     */
+    protected FieldTypePluginManager $fieldTypeManager;
 
-  /**
-   * The field type plugin manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManager
-   */
-  protected FieldTypePluginManager $fieldTypeManager;
+    /**
+     * A mocked module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ObjectProphecy
+     */
+    protected $moduleHandler;
 
-  /**
-   * A mocked module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $moduleHandler;
+    /**
+     * A mocked module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ObjectProphecy
+     */
+    protected $fieldTypeCategoryManager;
 
-  /**
-   * A mocked module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface|\Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $fieldTypeCategoryManager;
+    /**
+     * A mocked plugin discovery.
+     *
+     * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface|\Prophecy\Prophecy\ObjectProphecy
+     */
+    protected $discovery;
 
-  /**
-   * A mocked plugin discovery.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface|\Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $discovery;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $container = new ContainerBuilder();
+        $current_user = $this->prophesize(AccountInterface::class);
+        $container->set('current_user', $current_user->reveal());
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
 
-    $container = new ContainerBuilder();
-    $current_user = $this->prophesize(AccountInterface::class);
-    $container->set('current_user', $current_user->reveal());
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
+        $cache_backend = $this->prophesize(CacheBackendInterface::class);
+        $this->moduleHandler = $this->prophesize(ModuleHandlerInterface::class);
+        $this->moduleHandler->alter('field_info', Argument::any())->willReturn(null);
+        $typed_data_manager = $this->prophesize(TypedDataManager::class);
+        $this->fieldTypeCategoryManager = $this->prophesize(FieldTypeCategoryManagerInterface::class);
 
-    $cache_backend = $this->prophesize(CacheBackendInterface::class);
-    $this->moduleHandler = $this->prophesize(ModuleHandlerInterface::class);
-    $this->moduleHandler->alter('field_info', Argument::any())->willReturn(NULL);
-    $typed_data_manager = $this->prophesize(TypedDataManager::class);
-    $this->fieldTypeCategoryManager = $this->prophesize(FieldTypeCategoryManagerInterface::class);
+        $this->fieldTypeManager = new FieldTypePluginManager(new \ArrayObject(), $cache_backend->reveal(), $this->moduleHandler->reveal(), $typed_data_manager->reveal(), $this->fieldTypeCategoryManager->reveal());
+        $this->fieldTypeManager->setStringTranslation($this->getStringTranslationStub());
 
-    $this->fieldTypeManager = new FieldTypePluginManager(new \ArrayObject(), $cache_backend->reveal(), $this->moduleHandler->reveal(), $typed_data_manager->reveal(), $this->fieldTypeCategoryManager->reveal());
-    $this->fieldTypeManager->setStringTranslation($this->getStringTranslationStub());
-
-    $this->discovery = $this->prophesize(DiscoveryInterface::class);
-    $property = new \ReflectionProperty(FieldTypePluginManager::class, 'discovery');
-    $property->setValue($this->fieldTypeManager, $this->discovery->reveal());
-  }
-
-  /**
-   * Tests get grouped definitions.
-   */
-  public function testGetGroupedDefinitions(): void {
-    $this->discovery->getDefinitions()->willReturn([
-      'telephone' => [
-        'category' => 'general',
-        'label' => 'Telephone',
-        'id' => 'telephone',
-      ],
-      'string' => [
-        'category' => 'text',
-        'label' => 'Text (plain)',
-        'id' => 'string',
-      ],
-      'integer' => [
-        'category' => 'number',
-        'label' => 'Number (integer)',
-        'id' => 'integer',
-      ],
-      'float' => [
-        'id' => 'float',
-        'label' => 'Number (float)',
-        'category' => 'number',
-      ],
-    ]);
-
-    $this->fieldTypeCategoryManager->getDefinitions()->willReturn([
-      'general' => [
-        'label' => 'General',
-        'id' => 'general',
-      ],
-      'number' => [
-        'label' => 'Number 🦥',
-        'id' => 'number',
-      ],
-      'text' => [
-        'label' => 'Text 🐈',
-        'id' => 'text',
-      ],
-      'empty_group' => [
-        'label' => 'Empty 🦗',
-        'id' => 'empty_group',
-      ],
-    ]);
-
-    $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions();
-    $this->assertEquals(['General', 'Number 🦥', 'Text 🐈'], array_keys($grouped_definitions));
-
-    $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions(NULL, 'label', 'id');
-    $this->assertEquals(['general', 'number', 'text'], array_keys($grouped_definitions));
-  }
-
-  /**
-   * Tests get grouped definitions invalid.
-   */
-  public function testGetGroupedDefinitionsInvalid(): void {
-    $this->discovery->getDefinitions()->willReturn([
-      'string' => [
-        'category' => 'text',
-        'label' => 'Text (plain)',
-        'id' => 'string',
-      ],
-    ]);
-
-    $this->fieldTypeCategoryManager->getDefinitions()->willReturn([
-      'general' => [
-        'label' => 'General',
-        'id' => 'general',
-      ],
-    ]);
-
-    $zend_assertions_default = ini_get('zend.assertions');
-
-    // Test behavior when assertions are not enabled.
-    ini_set('zend.assertions', 0);
-    $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions();
-    $this->assertEquals(['General'], array_keys($grouped_definitions));
-
-    // Test behavior when assertions are enabled.
-    ini_set('zend.assertions', 1);
-    $this->expectException(\AssertionError::class);
-    try {
-      $this->fieldTypeManager->getGroupedDefinitions();
+        $this->discovery = $this->prophesize(DiscoveryInterface::class);
+        $property = new \ReflectionProperty(FieldTypePluginManager::class, 'discovery');
+        $property->setValue($this->fieldTypeManager, $this->discovery->reveal());
     }
-    catch (\Exception $e) {
-      // Reset the original assert values.
-      ini_set('zend.assertions', $zend_assertions_default);
 
-      throw $e;
+    /**
+     * Tests get grouped definitions.
+     */
+    public function testGetGroupedDefinitions(): void
+    {
+        $this->discovery->getDefinitions()->willReturn([
+          'telephone' => [
+            'category' => 'general',
+            'label' => 'Telephone',
+            'id' => 'telephone',
+          ],
+          'string' => [
+            'category' => 'text',
+            'label' => 'Text (plain)',
+            'id' => 'string',
+          ],
+          'integer' => [
+            'category' => 'number',
+            'label' => 'Number (integer)',
+            'id' => 'integer',
+          ],
+          'float' => [
+            'id' => 'float',
+            'label' => 'Number (float)',
+            'category' => 'number',
+          ],
+        ]);
+
+        $this->fieldTypeCategoryManager->getDefinitions()->willReturn([
+          'general' => [
+            'label' => 'General',
+            'id' => 'general',
+          ],
+          'number' => [
+            'label' => 'Number 🦥',
+            'id' => 'number',
+          ],
+          'text' => [
+            'label' => 'Text 🐈',
+            'id' => 'text',
+          ],
+          'empty_group' => [
+            'label' => 'Empty 🦗',
+            'id' => 'empty_group',
+          ],
+        ]);
+
+        $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions();
+        $this->assertEquals(['General', 'Number 🦥', 'Text 🐈'], array_keys($grouped_definitions));
+
+        $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions(null, 'label', 'id');
+        $this->assertEquals(['general', 'number', 'text'], array_keys($grouped_definitions));
     }
-  }
 
-  /**
-   * Tests get grouped definitions empty.
-   */
-  public function testGetGroupedDefinitionsEmpty(): void {
-    $this->fieldTypeCategoryManager->getDefinitions()->willReturn([]);
-    $this->assertEquals([], $this->fieldTypeManager->getGroupedDefinitions([]));
-  }
+    /**
+     * Tests get grouped definitions invalid.
+     */
+    public function testGetGroupedDefinitionsInvalid(): void
+    {
+        $this->discovery->getDefinitions()->willReturn([
+          'string' => [
+            'category' => 'text',
+            'label' => 'Text (plain)',
+            'id' => 'string',
+          ],
+        ]);
+
+        $this->fieldTypeCategoryManager->getDefinitions()->willReturn([
+          'general' => [
+            'label' => 'General',
+            'id' => 'general',
+          ],
+        ]);
+
+        $zend_assertions_default = ini_get('zend.assertions');
+
+        // Test behavior when assertions are not enabled.
+        ini_set('zend.assertions', 0);
+        $grouped_definitions = $this->fieldTypeManager->getGroupedDefinitions();
+        $this->assertEquals(['General'], array_keys($grouped_definitions));
+
+        // Test behavior when assertions are enabled.
+        ini_set('zend.assertions', 1);
+        $this->expectException(\AssertionError::class);
+        try {
+            $this->fieldTypeManager->getGroupedDefinitions();
+        } catch (\Exception $e) {
+            // Reset the original assert values.
+            ini_set('zend.assertions', $zend_assertions_default);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Tests get grouped definitions empty.
+     */
+    public function testGetGroupedDefinitionsEmpty(): void
+    {
+        $this->fieldTypeCategoryManager->getDefinitions()->willReturn([]);
+        $this->assertEquals([], $this->fieldTypeManager->getGroupedDefinitions([]));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workflows\Plugin;
 
 use Drupal\Component\Plugin\PluginAwareInterface;
@@ -11,39 +13,42 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * A base class for workflow type transition forms.
  */
-abstract class WorkflowTypeTransitionFormBase implements PluginFormInterface, PluginAwareInterface {
+abstract class WorkflowTypeTransitionFormBase implements PluginFormInterface, PluginAwareInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * The workflow type.
+     *
+     * @var \Drupal\workflows\WorkflowTypeInterface
+     */
+    protected $workflowType;
 
-  /**
-   * The workflow type.
-   *
-   * @var \Drupal\workflows\WorkflowTypeInterface
-   */
-  protected $workflowType;
+    /**
+     * {@inheritdoc}
+     */
+    public function setPlugin(PluginInspectionInterface $plugin): void
+    {
+        $this->workflowType = $plugin;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPlugin(PluginInspectionInterface $plugin): void {
-    $this->workflowType = $plugin;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $values = $form_state->getValues();
-    $transition = $form_state->get('transition');
-    $configuration = $this->workflowType->getConfiguration();
-    $configuration['transitions'][$transition->id()] = $values + $configuration['transitions'][$transition->id()];
-    $this->workflowType->setConfiguration($configuration);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    {
+        $values = $form_state->getValues();
+        $transition = $form_state->get('transition');
+        $configuration = $this->workflowType->getConfiguration();
+        $configuration['transitions'][$transition->id()] = $values + $configuration['transitions'][$transition->id()];
+        $this->workflowType->setConfiguration($configuration);
+    }
 
 }

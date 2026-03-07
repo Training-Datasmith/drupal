@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -12,15 +14,16 @@ use Drupal\Core\Render\Attribute\RenderElement;
  * to render labels for form elements.
  */
 #[RenderElement('label')]
-class Label extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#theme' => 'form_element_label',
-    ];
-  }
+class Label extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#theme' => 'form_element_label',
+        ];
+    }
 
 }

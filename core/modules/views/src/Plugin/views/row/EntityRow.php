@@ -1,12 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\row;
 
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\views\Attribute\ViewsRow;
 use Drupal\views\Entity\Render\EntityTranslationRenderTrait;
 use Drupal\views\Plugin\Derivative\ViewsEntityRow;
@@ -17,177 +15,192 @@ use Drupal\views\ViewExecutable;
  * Generic entity row plugin to provide a common base for all entity types.
  */
 #[ViewsRow(
-  id: "entity",
-  deriver: ViewsEntityRow::class
+    id: 'entity',
+    deriver: ViewsEntityRow::class
 )]
-class EntityRow extends RowPluginBase {
-  use EntityTranslationRenderTrait;
+class EntityRow extends RowPluginBase
+{
+    use EntityTranslationRenderTrait;
 
-  /**
-   * The table the entity is using for storage.
-   *
-   * @var string
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $base_table;
+    /**
+     * The table the entity is using for storage.
+     *
+     * @var string
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    public $base_table;
 
-  /**
-   * Stores the entity type ID of the result entities.
-   *
-   * @var string
-   */
-  protected $entityTypeId;
+    /**
+     * Stores the entity type ID of the result entities.
+     *
+     * @var string
+     */
+    protected $entityTypeId;
 
-  /**
-   * Contains the entity type of this row plugin instance.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  protected $entityType;
+    /**
+     * Contains the entity type of this row plugin instance.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeInterface
+     */
+    protected $entityType;
 
-  /**
-   * Constructs a new EntityRow object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
-   *   The entity display repository.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected ?\Drupal\Core\Entity\EntityRepositoryInterface $entityRepository = NULL, protected ?\Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository = NULL) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    $this->entityTypeId = $this->definition['entity_type'];
-    $this->entityType = $this->entityTypeManager->getDefinition($this->entityTypeId);
-    $this->base_table = $this->entityType->getDataTable() ?: $this->entityType->getBaseTable();
-    $this->base_field = $this->entityType->getKey('id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityTypeId() {
-    return $this->entityType->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityTypeManager() {
-    return $this->entityTypeManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityRepository() {
-    return $this->entityRepository;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getLanguageManager() {
-    return $this->languageManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getView() {
-    return $this->view;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['view_mode'] = ['default' => 'default'];
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::buildOptionsForm($form, $form_state);
-
-    $form['view_mode'] = [
-      '#type' => 'select',
-      '#options' => $this->entityDisplayRepository->getViewModeOptions($this->entityTypeId),
-      '#title' => $this->t('View mode'),
-      '#default_value' => $this->options['view_mode'],
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function summaryTitle() {
-    $options = $this->entityDisplayRepository->getViewModeOptions($this->entityTypeId);
-    return $options[$this->options['view_mode']] ?? $this->t('No view mode selected');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    parent::query();
-    $relationship_table = NULL;
-    if (isset($this->options['relationship'], $this->view->relationship[$this->options['relationship']])) {
-      $relationship_table = $this->view->relationship[$this->options['relationship']]->alias;
-    }
-    $this->getEntityTranslationRenderer()->query($this->view->getQuery(), $relationship_table);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preRender($result): void {
-    parent::preRender($result);
-    if ($result) {
-      $this->getEntityTranslationRenderer()->preRenderByRelationship($result, $this->options['relationship'] ?? 'none');
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render($row) {
-    return $this->getEntityTranslationRenderer()->renderByRelationship($row, $this->options['relationship'] ?? 'none');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $dependencies = parent::calculateDependencies();
-
-    $view_mode = $this->entityTypeManager
-      ->getStorage('entity_view_mode')
-      ->load($this->entityTypeId . '.' . $this->options['view_mode']);
-    if ($view_mode) {
-      $dependencies[$view_mode->getConfigDependencyKey()][] = $view_mode->getConfigDependencyName();
+    /**
+     * Constructs a new EntityRow object.
+     *
+     * @param array $configuration
+     *   A configuration array containing information about the plugin instance.
+     * @param string $plugin_id
+     *   The plugin ID for the plugin instance.
+     * @param array $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+     *   The language manager.
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+     *   The entity repository.
+     * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
+     *   The entity display repository.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected ?\Drupal\Core\Entity\EntityRepositoryInterface $entityRepository = null, protected ?\Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository = null)
+    {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
 
-    return $dependencies;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
+
+        $this->entityTypeId = $this->definition['entity_type'];
+        $this->entityType = $this->entityTypeManager->getDefinition($this->entityTypeId);
+        $this->base_table = $this->entityType->getDataTable() ?: $this->entityType->getBaseTable();
+        $this->base_field = $this->entityType->getKey('id');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEntityTypeId()
+    {
+        return $this->entityType->id();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityTypeManager()
+    {
+        return $this->entityTypeManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityRepository()
+    {
+        return $this->entityRepository;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLanguageManager()
+    {
+        return $this->languageManager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getView()
+    {
+        return $this->view;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
+        $options['view_mode'] = ['default' => 'default'];
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::buildOptionsForm($form, $form_state);
+
+        $form['view_mode'] = [
+          '#type' => 'select',
+          '#options' => $this->entityDisplayRepository->getViewModeOptions($this->entityTypeId),
+          '#title' => $this->t('View mode'),
+          '#default_value' => $this->options['view_mode'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function summaryTitle()
+    {
+        $options = $this->entityDisplayRepository->getViewModeOptions($this->entityTypeId);
+        return $options[$this->options['view_mode']] ?? $this->t('No view mode selected');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        parent::query();
+        $relationship_table = null;
+        if (isset($this->options['relationship'], $this->view->relationship[$this->options['relationship']])) {
+            $relationship_table = $this->view->relationship[$this->options['relationship']]->alias;
+        }
+        $this->getEntityTranslationRenderer()->query($this->view->getQuery(), $relationship_table);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preRender($result): void
+    {
+        parent::preRender($result);
+        if ($result) {
+            $this->getEntityTranslationRenderer()->preRenderByRelationship($result, $this->options['relationship'] ?? 'none');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render($row)
+    {
+        return $this->getEntityTranslationRenderer()->renderByRelationship($row, $this->options['relationship'] ?? 'none');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function calculateDependencies()
+    {
+        $dependencies = parent::calculateDependencies();
+
+        $view_mode = $this->entityTypeManager
+          ->getStorage('entity_view_mode')
+          ->load($this->entityTypeId . '.' . $this->options['view_mode']);
+        if ($view_mode) {
+            $dependencies[$view_mode->getConfigDependencyKey()][] = $view_mode->getConfigDependencyName();
+        }
+
+        return $dependencies;
+    }
 
 }

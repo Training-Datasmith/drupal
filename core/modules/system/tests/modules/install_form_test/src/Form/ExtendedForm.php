@@ -9,5 +9,6 @@ use Drupal\Core\Installer\Form\SiteSettingsForm;
 /**
  * Extends the site setting form.
  */
-class ExtendedForm extends SiteSettingsForm {
+class ExtendedForm extends SiteSettingsForm
+{
 }

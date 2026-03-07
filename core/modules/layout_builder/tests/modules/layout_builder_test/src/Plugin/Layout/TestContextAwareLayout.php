@@ -13,26 +13,27 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * The TestContextAwareLayout Class.
  */
 #[Layout(
-  id: 'layout_builder_test_context_aware',
-  label: new TranslatableMarkup('Layout Builder Test: Context Aware'),
-  regions: [
-    "main" => [
-      "label" => new TranslatableMarkup("Main Region"),
+    id: 'layout_builder_test_context_aware',
+    label: new TranslatableMarkup('Layout Builder Test: Context Aware'),
+    regions: [
+    'main' => [
+      'label' => new TranslatableMarkup('Main Region'),
     ],
   ],
-  context_definitions: [
-    "user" => new EntityContextDefinition("entity:user"),
+    context_definitions: [
+    'user' => new EntityContextDefinition('entity:user'),
   ],
 )]
-class TestContextAwareLayout extends LayoutDefault {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(array $regions) {
-    $build = parent::build($regions);
-    $build['main']['#attributes']['class'][] = 'user--' . $this->getContextValue('user')->getAccountName();
-    return $build;
-  }
+class TestContextAwareLayout extends LayoutDefault
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build(array $regions)
+    {
+        $build = parent::build($regions);
+        $build['main']['#attributes']['class'][] = 'user--' . $this->getContextValue('user')->getAccountName();
+        return $build;
+    }
 
 }

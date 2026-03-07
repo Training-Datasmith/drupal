@@ -10,6 +10,7 @@ namespace Drupal\Tests\Core\Database\Stub\Driver;
  * @see ConnectionTest::testGetDriverClass()
  * @see ConnectionTest::testSchema()
  */
-class Schema {
-  // No-op.
+class Schema
+{
+    // No-op.
 }

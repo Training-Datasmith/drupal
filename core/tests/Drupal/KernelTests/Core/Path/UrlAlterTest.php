@@ -16,19 +16,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Path')]
 #[RunTestsInSeparateProcesses]
-class UrlAlterTest extends KernelTestBase {
+class UrlAlterTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['path', 'url_alter_test', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['path', 'url_alter_test', 'user'];
-
-  /**
-   * Tests altering outbound query string.
-   */
-  public function testUrlWithQueryString(): void {
-    $url = Url::fromRoute('user.login');
-    $this->assertEquals(\Drupal::request()->getBaseUrl() . '/user/login?foo=bar', $url->toString());
-  }
+    /**
+     * Tests altering outbound query string.
+     */
+    public function testUrlWithQueryString(): void
+    {
+        $url = Url::fromRoute('user.login');
+        $this->assertEquals(\Drupal::request()->getBaseUrl() . '/user/login?foo=bar', $url->toString());
+    }
 
 }

@@ -13,25 +13,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class SiteSettingsFormTest extends BrowserTestBase {
+class SiteSettingsFormTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['install_form_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['install_form_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Confirms that the form is extensible.
-   */
-  public function testSiteSettingsForm(): void {
-    // Test that the form page can be loaded without errors.
-    $this->drupalGet('test-form');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Confirms that the form is extensible.
+     */
+    public function testSiteSettingsForm(): void
+    {
+        // Test that the form page can be loaded without errors.
+        $this->drupalGet('test-form');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

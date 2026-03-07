@@ -20,12 +20,13 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  */
 #[CoversClass(RssResponseRelativeUrlFilter::class)]
 #[Group('event_subscriber')]
-class RssResponseRelativeUrlFilterTest extends UnitTestCase {
+class RssResponseRelativeUrlFilterTest extends UnitTestCase
+{
+    public static function providerTestOnResponse(): array
+    {
+        $data = [];
 
-  public static function providerTestOnResponse(): array {
-    $data = [];
-
-    $valid_feed = <<<RSS
+        $valid_feed = <<<RSS
 <?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://www.drupal.org">
 <channel>
@@ -44,7 +45,7 @@ Drupal is an open source content management platform powering millions of websit
 </rss>
 RSS;
 
-    $valid_expected_feed = <<<RSS
+        $valid_expected_feed = <<<RSS
 <?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://www.drupal.org">
 <channel>
@@ -64,9 +65,9 @@ Drupal is an open source content management platform powering millions of websit
 
 RSS;
 
-    $data['valid-feed'] = [$valid_feed, $valid_expected_feed];
+        $data['valid-feed'] = [$valid_feed, $valid_expected_feed];
 
-    $invalid_feed = <<<RSS
+        $invalid_feed = <<<RSS
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xml:base="https://www.drupal.org"  xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
@@ -107,33 +108,34 @@ Drupal is an open source content management platform powering millions of websit
 </rss>
 RSS;
 
-    $data['invalid-feed'] = [$invalid_feed, $invalid_feed];
-    return $data;
-  }
+        $data['invalid-feed'] = [$invalid_feed, $invalid_feed];
+        return $data;
+    }
 
-  /**
-   * Tests on response.
-   *
-   * @param string $content
-   *   The content for the request.
-   * @param string $expected_content
-   *   The expected content from the response.
-   */
-  #[DataProvider('providerTestOnResponse')]
-  public function testOnResponse($content, $expected_content): void {
-    $event = new ResponseEvent(
-      $this->prophesize(HttpKernelInterface::class)->reveal(),
-      Request::create('/'),
-      HttpKernelInterface::MAIN_REQUEST,
-      new Response($content, 200, [
-        'Content-Type' => 'application/rss+xml',
+    /**
+     * Tests on response.
+     *
+     * @param string $content
+     *   The content for the request.
+     * @param string $expected_content
+     *   The expected content from the response.
+     */
+    #[DataProvider('providerTestOnResponse')]
+    public function testOnResponse($content, $expected_content): void
+    {
+        $event = new ResponseEvent(
+            $this->prophesize(HttpKernelInterface::class)->reveal(),
+            Request::create('/'),
+            HttpKernelInterface::MAIN_REQUEST,
+            new Response($content, 200, [
+            'Content-Type' => 'application/rss+xml',
       ])
-    );
+        );
 
-    $url_filter = new RssResponseRelativeUrlFilter();
-    $url_filter->onResponse($event);
+        $url_filter = new RssResponseRelativeUrlFilter();
+        $url_filter->onResponse($event);
 
-    $this->assertEquals($expected_content, $event->getResponse()->getContent());
-  }
+        $this->assertEquals($expected_content, $event->getResponse()->getContent());
+    }
 
 }

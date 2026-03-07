@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\help\Plugin\HelpSection;
 
 use Drupal\Core\Cache\UnchangingCacheableDependencyTrait;
@@ -13,22 +15,24 @@ use Drupal\help\HelpSectionPluginInterface;
  * @see \Drupal\help\Annotation\HelpSection
  * @see \Drupal\help\HelpSectionManager
  */
-abstract class HelpSectionPluginBase extends PluginBase implements HelpSectionPluginInterface {
+abstract class HelpSectionPluginBase extends PluginBase implements HelpSectionPluginInterface
+{
+    use UnchangingCacheableDependencyTrait;
 
-  use UnchangingCacheableDependencyTrait;
+    /**
+     * {@inheritdoc}
+     */
+    public function getTitle()
+    {
+        return $this->getPluginDefinition()['title'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle() {
-    return $this->getPluginDefinition()['title'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return $this->getPluginDefinition()['description'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription()
+    {
+        return $this->getPluginDefinition()['description'];
+    }
 
 }

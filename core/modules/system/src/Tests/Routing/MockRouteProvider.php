@@ -12,92 +12,101 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Easily configurable mock route provider.
  */
-class MockRouteProvider implements RouteProviderInterface {
+class MockRouteProvider implements RouteProviderInterface
+{
+    /**
+     * A collection of routes for this route provider.
+     *
+     * @var \Symfony\Component\Routing\RouteCollection
+     */
+    protected $routes;
 
-  /**
-   * A collection of routes for this route provider.
-   *
-   * @var \Symfony\Component\Routing\RouteCollection
-   */
-  protected $routes;
-
-  /**
-   * Constructs a new MockRouteProvider.
-   *
-   * @param \Symfony\Component\Routing\RouteCollection $routes
-   *   The route collection to use for this provider.
-   */
-  public function __construct(RouteCollection $routes) {
-    $this->routes = $routes;
-  }
-
-  /**
-   * Implements \Drupal\Core\Routing\RouteProviderInterface::getRouteCollectionForRequest().
-   *
-   * Simply return all routes to prevent
-   * \Symfony\Component\Routing\Exception\ResourceNotFoundException.
-   */
-  public function getRouteCollectionForRequest(Request $request) {
-    return $this->routes;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRouteByName($name) {
-    $routes = $this->getRoutesByNames([$name]);
-    if (empty($routes)) {
-      throw new RouteNotFoundException(sprintf('Route "%s" does not exist.', $name));
+    /**
+     * Constructs a new MockRouteProvider.
+     *
+     * @param \Symfony\Component\Routing\RouteCollection $routes
+     *   The route collection to use for this provider.
+     */
+    public function __construct(RouteCollection $routes)
+    {
+        $this->routes = $routes;
     }
 
-    return reset($routes);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preLoadRoutes($names) {
-    // Nothing to do.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutesByNames($names) {
-    $routes = [];
-    foreach ($names as $name) {
-      $routes[] = $this->routes->get($name);
+    /**
+     * Implements \Drupal\Core\Routing\RouteProviderInterface::getRouteCollectionForRequest().
+     *
+     * Simply return all routes to prevent
+     * \Symfony\Component\Routing\Exception\ResourceNotFoundException.
+     */
+    public function getRouteCollectionForRequest(Request $request)
+    {
+        return $this->routes;
     }
 
-    return $routes;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteByName($name)
+    {
+        $routes = $this->getRoutesByNames([$name]);
+        if (empty($routes)) {
+            throw new RouteNotFoundException(sprintf('Route "%s" does not exist.', $name));
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutesByPattern($pattern) {
-    return new RouteCollection();
-  }
+        return reset($routes);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAllRoutes() {
-    return $this->routes->all();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function preLoadRoutes($names)
+    {
+        // Nothing to do.
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function reset() {
-    $this->routes = [];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutesByNames($names)
+    {
+        $routes = [];
+        foreach ($names as $name) {
+            $routes[] = $this->routes->get($name);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getRouteAliases(string $route_name): iterable {
-    return new RouteCollection();
-  }
+        return $routes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutesByPattern($pattern)
+    {
+        return new RouteCollection();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllRoutes()
+    {
+        return $this->routes->all();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reset()
+    {
+        $this->routes = [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteAliases(string $route_name): iterable
+    {
+        return new RouteCollection();
+    }
 
 }

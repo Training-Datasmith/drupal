@@ -26,55 +26,57 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(EntityLink::class)]
 #[Group('Views')]
-class LinkBaseTest extends UnitTestCase {
+class LinkBaseTest extends UnitTestCase
+{
+    use ViewsLoggerTestTrait;
 
-  use ViewsLoggerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMockLoggerWithMissingEntity();
+        $container = \Drupal::getContainer();
+        $container->set('string_translation', $this->createMock(TranslationInterface::class));
+        $container->set('renderer', $this->createMock(RendererInterface::class));
+        \Drupal::setContainer($container);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->setUpMockLoggerWithMissingEntity();
-    $container = \Drupal::getContainer();
-    $container->set('string_translation', $this->createMock(TranslationInterface::class));
-    $container->set('renderer', $this->createMock(RendererInterface::class));
-    \Drupal::setContainer($container);
-  }
+    /**
+     * Tests the render method when getEntity returns NULL.
+     */
+    public function testRenderNullEntity(): void
+    {
+        $row = new ResultRow();
 
-  /**
-   * Tests the render method when getEntity returns NULL.
-   */
-  public function testRenderNullEntity(): void {
-    $row = new ResultRow();
+        $access = new AccessResultAllowed();
+        $languageManager = $this->createMock(LanguageManagerInterface::class);
+        $languageManager->expects($this->any())
+          ->method('isMultilingual')
+          ->willReturn(true);
+        $field = $this->getMockBuilder(LinkBase::class)
+          ->setConstructorArgs([
+            ['entity_type' => 'foo', 'entity field' => 'bar'],
+            'foo',
+            [],
+            $this->createMock(AccessManagerInterface::class),
+            $this->createMock(EntityTypeManagerInterface::class),
+            $this->createMock(EntityRepositoryInterface::class),
+            $languageManager,
+          ])
+          ->onlyMethods(['checkUrlAccess', 'getUrlInfo'])
+          ->getMock();
+        $field->expects($this->any())
+          ->method('checkUrlAccess')
+          ->willReturn($access);
 
-    $access = new AccessResultAllowed();
-    $languageManager = $this->createMock(LanguageManagerInterface::class);
-    $languageManager->expects($this->any())
-      ->method('isMultilingual')
-      ->willReturn(TRUE);
-    $field = $this->getMockBuilder(LinkBase::class)
-      ->setConstructorArgs([
-        ['entity_type' => 'foo', 'entity field' => 'bar'],
-        'foo',
-        [],
-        $this->createMock(AccessManagerInterface::class),
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(EntityRepositoryInterface::class),
-        $languageManager,
-      ])
-      ->onlyMethods(['checkUrlAccess', 'getUrlInfo'])
-      ->getMock();
-    $field->expects($this->any())
-      ->method('checkUrlAccess')
-      ->willReturn($access);
+        $view = $this->createMock(ViewExecutable::class);
+        $display = $this->createMock(DisplayPluginBase::class);
 
-    $view = $this->createMock(ViewExecutable::class);
-    $display = $this->createMock(DisplayPluginBase::class);
-
-    $field->init($view, $display);
-    $field_built = $field->render($row);
-    $this->assertEquals('', \Drupal::service('renderer')->render($field_built));
-  }
+        $field->init($view, $display);
+        $field_built = $field->render($row);
+        $this->assertEquals('', \Drupal::service('renderer')->render($field_built));
+    }
 
 }

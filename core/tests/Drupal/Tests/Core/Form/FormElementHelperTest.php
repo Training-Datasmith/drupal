@@ -16,156 +16,160 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversClass(FormElementHelper::class)]
 #[Group('Drupal')]
 #[Group('Form')]
-class FormElementHelperTest extends UnitTestCase {
+class FormElementHelperTest extends UnitTestCase
+{
+    /**
+     * Tests the getElementByName() method.
+     */
+    #[DataProvider('getElementByNameProvider')]
+    public function testGetElementByName($name, $form, $expected): void
+    {
+        $this->assertSame($expected, FormElementHelper::getElementByName($name, $form));
+    }
 
-  /**
-   * Tests the getElementByName() method.
-   */
-  #[DataProvider('getElementByNameProvider')]
-  public function testGetElementByName($name, $form, $expected): void {
-    $this->assertSame($expected, FormElementHelper::getElementByName($name, $form));
-  }
-
-  /**
-   * Provides test data.
-   */
-  public static function getElementByNameProvider(): array {
-    $data = [];
-    $data[] = ['id', [], []];
-    $data[] = [
-      'id',
-      [
-        'id' => [
-          '#title' => 'ID',
-          '#parents' => ['id'],
-        ],
-      ],
-      [
-        '#title' => 'ID',
-        '#parents' => ['id'],
-      ],
-    ];
-    $data[] = [
-      'id',
-      [
-        'fieldset' => [
-          'id' => [
+    /**
+     * Provides test data.
+     */
+    public static function getElementByNameProvider(): array
+    {
+        $data = [];
+        $data[] = ['id', [], []];
+        $data[] = [
+          'id',
+          [
+            'id' => [
+              '#title' => 'ID',
+              '#parents' => ['id'],
+            ],
+          ],
+          [
             '#title' => 'ID',
             '#parents' => ['id'],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      [
-        '#title' => 'ID',
-        '#parents' => ['id'],
-      ],
-    ];
-    $data[] = [
-      'fieldset',
-      [
-        'fieldset' => [
-          'id' => [
+        ];
+        $data[] = [
+          'id',
+          [
+            'fieldset' => [
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
+          ],
+          [
             '#title' => 'ID',
             '#parents' => ['id'],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      [
-        'id' => [
-          '#title' => 'ID',
-          '#parents' => ['id'],
-        ],
-        '#parents' => ['fieldset'],
-      ],
-    ];
-    $data[] = [
-      'fieldset][id',
-      [
-        'fieldset' => [
-          '#tree' => TRUE,
-          'id' => [
+        ];
+        $data[] = [
+          'fieldset',
+          [
+            'fieldset' => [
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
+          ],
+          [
+            'id' => [
+              '#title' => 'ID',
+              '#parents' => ['id'],
+            ],
+            '#parents' => ['fieldset'],
+          ],
+        ];
+        $data[] = [
+          'fieldset][id',
+          [
+            'fieldset' => [
+              '#tree' => true,
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['fieldset', 'id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
+          ],
+          [
             '#title' => 'ID',
             '#parents' => ['fieldset', 'id'],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      [
-        '#title' => 'ID',
-        '#parents' => ['fieldset', 'id'],
-      ],
-    ];
-    return $data;
-  }
+        ];
+        return $data;
+    }
 
-  /**
-   * Tests the getElementTitle() method.
-   */
-  #[DataProvider('getElementTitleProvider')]
-  public function testGetElementTitle($name, $form, $expected): void {
-    $element = FormElementHelper::getElementByName($name, $form);
-    $this->assertSame($expected, FormElementHelper::getElementTitle($element));
-  }
+    /**
+     * Tests the getElementTitle() method.
+     */
+    #[DataProvider('getElementTitleProvider')]
+    public function testGetElementTitle($name, $form, $expected): void
+    {
+        $element = FormElementHelper::getElementByName($name, $form);
+        $this->assertSame($expected, FormElementHelper::getElementTitle($element));
+    }
 
-  /**
-   * Provides test data.
-   */
-  public static function getElementTitleProvider(): array {
-    $data = [];
-    $data[] = ['id', [], ''];
-    $data[] = [
-      'id',
-      [
-        'id' => [
-          '#title' => 'ID',
-          '#parents' => ['id'],
-        ],
-      ],
-      'ID',
-    ];
-    $data[] = [
-      'id',
-      [
-        'fieldset' => [
-          'id' => [
-            '#title' => 'ID',
-            '#parents' => ['id'],
+    /**
+     * Provides test data.
+     */
+    public static function getElementTitleProvider(): array
+    {
+        $data = [];
+        $data[] = ['id', [], ''];
+        $data[] = [
+          'id',
+          [
+            'id' => [
+              '#title' => 'ID',
+              '#parents' => ['id'],
+            ],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      'ID',
-    ];
-    $data[] = [
-      'fieldset',
-      [
-        'fieldset' => [
-          'id' => [
-            '#title' => 'ID',
-            '#parents' => ['id'],
+          'ID',
+        ];
+        $data[] = [
+          'id',
+          [
+            'fieldset' => [
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      'ID',
-    ];
-    $data[] = [
-      'fieldset][id',
-      [
-        'fieldset' => [
-          '#tree' => TRUE,
-          'id' => [
-            '#title' => 'ID',
-            '#parents' => ['fieldset', 'id'],
+          'ID',
+        ];
+        $data[] = [
+          'fieldset',
+          [
+            'fieldset' => [
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
           ],
-          '#parents' => ['fieldset'],
-        ],
-      ],
-      'ID',
-    ];
-    return $data;
-  }
+          'ID',
+        ];
+        $data[] = [
+          'fieldset][id',
+          [
+            'fieldset' => [
+              '#tree' => true,
+              'id' => [
+                '#title' => 'ID',
+                '#parents' => ['fieldset', 'id'],
+              ],
+              '#parents' => ['fieldset'],
+            ],
+          ],
+          'ID',
+        ];
+        return $data;
+    }
 
 }

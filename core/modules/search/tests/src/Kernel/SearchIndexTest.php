@@ -13,19 +13,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('search')]
 #[RunTestsInSeparateProcesses]
-class SearchIndexTest extends KernelTestBase {
+class SearchIndexTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['search'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['search'];
-
-  /**
-   * Test that the service "search.index" is backend overridable.
-   */
-  public function testSearchIndexServiceIsBackendOverridable(): void {
-    $definition = $this->container->getDefinition('search.index');
-    $this->assertTrue($definition->hasTag('backend_overridable'));
-  }
+    /**
+     * Test that the service "search.index" is backend overridable.
+     */
+    public function testSearchIndexServiceIsBackendOverridable(): void
+    {
+        $definition = $this->container->getDefinition('search.index');
+        $this->assertTrue($definition->hasTag('backend_overridable'));
+    }
 
 }

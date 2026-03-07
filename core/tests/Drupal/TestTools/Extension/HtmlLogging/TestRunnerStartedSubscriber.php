@@ -12,10 +12,11 @@ use PHPUnit\Event\TestRunner\StartedSubscriber;
  *
  * @internal
  */
-final class TestRunnerStartedSubscriber extends SubscriberBase implements StartedSubscriber {
-
-  public function notify(Started $event): void {
-    $this->logger()->testRunnerStarted($event);
-  }
+final class TestRunnerStartedSubscriber extends SubscriberBase implements StartedSubscriber
+{
+    public function notify(Started $event): void
+    {
+        $this->logger()->testRunnerStarted($event);
+    }
 
 }

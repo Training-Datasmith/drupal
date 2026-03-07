@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\core_fake\Driver\Database\CoreFakeWithAllCustomClasses;
 
 use Drupal\Core\Database\Query\Upsert as QueryUpsert;
@@ -7,18 +9,21 @@ use Drupal\Core\Database\Query\Upsert as QueryUpsert;
 /**
  * CoreFakeWithAllCustomClasses implementation of \Drupal\Core\Database\Upsert.
  */
-class Upsert extends QueryUpsert {
+class Upsert extends QueryUpsert
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function execute()
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function execute() {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString() {
-    throw new \BadMethodCallException('Upsert not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
+    {
+        throw new \BadMethodCallException('Upsert not implemented');
+    }
 
 }

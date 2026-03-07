@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
@@ -10,22 +12,23 @@ use Drupal\views\Plugin\views\field\Date;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("comment_ces_last_updated")]
-class StatisticsLastUpdated extends Date {
+#[ViewsField('comment_ces_last_updated')]
+class StatisticsLastUpdated extends Date
+{
+    /**
+     * The node table.
+     */
+    // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
+    protected ?string $node_table = null;
 
-  /**
-   * The node table.
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected ?string $node_table = null;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query(): void {
-    $this->ensureMyTable();
-    $this->node_table = $this->query->ensureTable('node_field_data', $this->relationship);
-    $this->field_alias = $this->query->addField(NULL, "GREATEST(" . $this->node_table . ".changed, " . $this->tableAlias . ".last_comment_timestamp)", $this->tableAlias . '_' . $this->field);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): void
+    {
+        $this->ensureMyTable();
+        $this->node_table = $this->query->ensureTable('node_field_data', $this->relationship);
+        $this->field_alias = $this->query->addField(null, 'GREATEST(' . $this->node_table . '.changed, ' . $this->tableAlias . '.last_comment_timestamp)', $this->tableAlias . '_' . $this->field);
+    }
 
 }

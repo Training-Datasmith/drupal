@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\TypedData\ListInterface;
@@ -13,26 +15,28 @@ use Drupal\Core\TypedData\ListInterface;
  * class ensures that TypedData classes that also implement ListInterface are
  * traversed instead of simply returning getValue().
  */
-class ListNormalizer extends NormalizerBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    $attributes = [];
-    foreach ($object as $fieldItem) {
-      $attributes[] = $this->serializer->normalize($fieldItem, $format, $context);
+class ListNormalizer extends NormalizerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function normalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        $attributes = [];
+        foreach ($object as $fieldItem) {
+            $attributes[] = $this->serializer->normalize($fieldItem, $format, $context);
+        }
+        return $attributes;
     }
-    return $attributes;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      ListInterface::class => TRUE,
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          ListInterface::class => true,
+        ];
+    }
 
 }

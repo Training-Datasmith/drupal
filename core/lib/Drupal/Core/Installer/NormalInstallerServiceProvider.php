@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Installer;
 
 use Drupal\Component\Datetime\Time;
@@ -29,81 +31,86 @@ use Symfony\Component\DependencyInjection\Reference;
  * @see install_begin_request()
  * @see \Drupal\Core\Installer\InstallerServiceProvider
  */
-class NormalInstallerServiceProvider implements ServiceProviderInterface {
+class NormalInstallerServiceProvider implements ServiceProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        global $install_state;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    global $install_state;
+        // During the installer user 1 is a superuser.
+        $container->setDefinition(InstallerAccessPolicy::class, (new Definition())->addTag('access_policy')->setPublic(false));
 
-    // During the installer user 1 is a superuser.
-    $container->setDefinition(InstallerAccessPolicy::class, (new Definition())->addTag('access_policy')->setPublic(FALSE));
+        // Replace cache services with in-memory implementations. The results in
+        // less queries to set caches which will only be cleared on the next module
+        // install.
+        $definition = $container->getDefinition('cache_factory');
+        $definition->setClass(MemoryBackendFactory::class);
+        $definition->setArguments([new Time()]);
+        $definition->setMethodCalls([]);
 
-    // Replace cache services with in-memory implementations. The results in
-    // less queries to set caches which will only be cleared on the next module
-    // install.
-    $definition = $container->getDefinition('cache_factory');
-    $definition->setClass(MemoryBackendFactory::class);
-    $definition->setArguments([new Time()]);
-    $definition->setMethodCalls([]);
+        // When installing from existing config, disabling the config cache entirely
+        // yields much faster install times.
+        // Without this, MemoryBackend::invalidateTags must iterate over a very
+        // large set of cached entries on every entity save — especially when
+        // the site to install contains lots of languages.
+        /* @see \Drupal\Core\Entity\EntityBase::postSave */
+        /* @see \Drupal\Core\Cache\MemoryBackend::invalidateTags */
+        if (!empty($install_state['config_install_path'])) {
+            $cache_config_definition = $container->getDefinition('cache.config');
+            $cache_config_definition->setFactory([new Reference('cache.backend.null'), 'get']);
+            if (!$container->hasDefinition('cache.backend.null')) {
+                $container->register('cache.backend.null', NullBackendFactory::class);
+            }
+        }
 
-    // When installing from existing config, disabling the config cache entirely
-    // yields much faster install times.
-    // Without this, MemoryBackend::invalidateTags must iterate over a very
-    // large set of cached entries on every entity save — especially when
-    // the site to install contains lots of languages.
-    /* @see \Drupal\Core\Entity\EntityBase::postSave */
-    /* @see \Drupal\Core\Cache\MemoryBackend::invalidateTags */
-    if (!empty($install_state['config_install_path'])) {
-      $cache_config_definition = $container->getDefinition('cache.config');
-      $cache_config_definition->setFactory([new Reference('cache.backend.null'), 'get']);
-      if (!$container->hasDefinition('cache.backend.null')) {
-        $container->register('cache.backend.null', NullBackendFactory::class);
-      }
+        // Replace lock service with no-op implementation as Drupal installation can
+        // only occur in a single thread and the site should not be publicly
+        // available.
+        $container
+          ->register('lock', NullLockBackend::class);
+
+        // Remove the cache tags invalidator tag from the cache tags storage, so
+        // that we don't call it when cache tags are invalidated in the installer.
+        $container->getDefinition('cache_tags.invalidator.checksum')
+          ->clearTag('cache_tags_invalidator');
+
+        // Use performance-optimized extension lists.
+        $container->getDefinition('extension.list.module')->setClass(InstallerModuleExtensionList::class);
+        $container->getDefinition('extension.list.theme')->setClass(InstallerThemeExtensionList::class);
+
+        // Don't register the lazy route provider in the super early installer.
+        if (static::class === NormalInstallerServiceProvider::class) {
+            $lazy_route_provider = $container->register('router.route_provider.installer');
+            $lazy_route_provider
+              ->setClass(InstallerRouteProviderLazyBuilder::class)
+              ->setDecoratedService('router.route_provider')
+              ->addArgument(new Reference('router.route_provider.installer.inner'))
+              ->addArgument(new Reference('router.builder'))
+              ->addTag('event_subscriber');
+        }
+
+        $pass_config = $container->getCompilerPassConfig();
+        $pass_config->setRemovingPasses(array_filter(
+            $pass_config->getRemovingPasses(),
+            // Remove InlineServiceDefinitionsPass, RemoveUnusedDefinitionsPass,
+            // AnalyzeServiceReferencesPass and ReplaceAliasByActualDefinitionPass as
+            // these are not necessary during installation.
+            // @see \Symfony\Component\DependencyInjection\Compiler\PassConfig
+            fn ($pass) => !($pass instanceof InlineServiceDefinitionsPass ||
+                 $pass instanceof RemoveUnusedDefinitionsPass ||
+                 $pass instanceof AnalyzeServiceReferencesPass ||
+                 $pass instanceof ReplaceAliasByActualDefinitionPass)
+        ));
+        $pass_config->setAfterRemovingPasses(array_filter(
+            $pass_config->getAfterRemovingPasses(),
+            // Remove ResolveHotPathPass as Drupal's container dumper does not support
+            // it.
+            // @see \Symfony\Component\DependencyInjection\Compiler\PassConfig
+            fn ($pass) => !($pass instanceof ResolveHotPathPass)
+        ));
     }
-
-    // Replace lock service with no-op implementation as Drupal installation can
-    // only occur in a single thread and the site should not be publicly
-    // available.
-    $container
-      ->register('lock', NullLockBackend::class);
-
-    // Remove the cache tags invalidator tag from the cache tags storage, so
-    // that we don't call it when cache tags are invalidated in the installer.
-    $container->getDefinition('cache_tags.invalidator.checksum')
-      ->clearTag('cache_tags_invalidator');
-
-    // Use performance-optimized extension lists.
-    $container->getDefinition('extension.list.module')->setClass(InstallerModuleExtensionList::class);
-    $container->getDefinition('extension.list.theme')->setClass(InstallerThemeExtensionList::class);
-
-    // Don't register the lazy route provider in the super early installer.
-    if (static::class === NormalInstallerServiceProvider::class) {
-      $lazy_route_provider = $container->register('router.route_provider.installer');
-      $lazy_route_provider
-        ->setClass(InstallerRouteProviderLazyBuilder::class)
-        ->setDecoratedService('router.route_provider')
-        ->addArgument(new Reference('router.route_provider.installer.inner'))
-        ->addArgument(new Reference('router.builder'))
-        ->addTag('event_subscriber');
-    }
-
-    $pass_config = $container->getCompilerPassConfig();
-    $pass_config->setRemovingPasses(array_filter($pass_config->getRemovingPasses(), 
-        // Remove InlineServiceDefinitionsPass, RemoveUnusedDefinitionsPass,
-        // AnalyzeServiceReferencesPass and ReplaceAliasByActualDefinitionPass as
-        // these are not necessary during installation.
-        // @see \Symfony\Component\DependencyInjection\Compiler\PassConfig
-        fn($pass) => !($pass instanceof InlineServiceDefinitionsPass ||
-             $pass instanceof RemoveUnusedDefinitionsPass ||
-             $pass instanceof AnalyzeServiceReferencesPass ||
-             $pass instanceof ReplaceAliasByActualDefinitionPass)));
-    $pass_config->setAfterRemovingPasses(array_filter($pass_config->getAfterRemovingPasses(), 
-        // Remove ResolveHotPathPass as Drupal's container dumper does not support
-        // it.
-        // @see \Symfony\Component\DependencyInjection\Compiler\PassConfig
-        fn($pass) => !($pass instanceof ResolveHotPathPass)));
-  }
 
 }

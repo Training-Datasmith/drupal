@@ -20,45 +20,47 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 #[CoversClass(ReverseContainer::class)]
 #[Group('DependencyInjection')]
 #[RunTestsInSeparateProcesses]
-class ReverseContainerTest extends TestCase {
+class ReverseContainerTest extends TestCase
+{
+    /**
+     * Tests get id.
+     */
+    public function testGetId(): void
+    {
+        $container = new ContainerBuilder();
+        $service = new \stdClass();
+        $container->set('bar', $service);
 
-  /**
-   * Tests get id.
-   */
-  public function testGetId(): void {
-    $container = new ContainerBuilder();
-    $service = new \stdClass();
-    $container->set('bar', $service);
+        $reverse_container = new ReverseContainer($container);
 
-    $reverse_container = new ReverseContainer($container);
+        $this->assertSame('bar', $reverse_container->getId($service));
+        $non_service = new \stdClass();
+        $this->assertNull($reverse_container->getId($non_service));
+        $this->assertSame('service_container', $reverse_container->getId($container));
+    }
 
-    $this->assertSame('bar', $reverse_container->getId($service));
-    $non_service = new \stdClass();
-    $this->assertNull($reverse_container->getId($non_service));
-    $this->assertSame('service_container', $reverse_container->getId($container));
-  }
+    /**
+     * Tests record container.
+     */
+    public function testRecordContainer(): void
+    {
+        $container = new ContainerBuilder();
+        $service = new \stdClass();
+        $container->set('bar', $service);
 
-  /**
-   * Tests record container.
-   */
-  public function testRecordContainer(): void {
-    $container = new ContainerBuilder();
-    $service = new \stdClass();
-    $container->set('bar', $service);
+        $reverse_container = new ReverseContainer($container);
+        $reverse_container->recordContainer();
 
-    $reverse_container = new ReverseContainer($container);
-    $reverse_container->recordContainer();
+        $container = new ContainerBuilder();
+        $reverse_container = new ReverseContainer($container);
 
-    $container = new ContainerBuilder();
-    $reverse_container = new ReverseContainer($container);
+        // New container does not have a bar service.
+        $this->assertNull($reverse_container->getId($service));
 
-    // New container does not have a bar service.
-    $this->assertNull($reverse_container->getId($service));
-
-    // Add the bar service to make the lookup based on the old object work as
-    // expected.
-    $container->set('bar', new \stdClass());
-    $this->assertSame('bar', $reverse_container->getId($service));
-  }
+        // Add the bar service to make the lookup based on the old object work as
+        // expected.
+        $container->set('bar', new \stdClass());
+        $this->assertSame('bar', $reverse_container->getId($service));
+    }
 
 }

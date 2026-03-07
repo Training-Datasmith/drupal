@@ -13,6 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeTitleTest extends NodeTitleTestBase {
-
+class NodeTitleTest extends NodeTitleTestBase
+{
 }

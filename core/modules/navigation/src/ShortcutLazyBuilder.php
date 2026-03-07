@@ -13,54 +13,56 @@ use Drupal\shortcut\ShortcutLazyBuilders;
  * @internal
  * @see \Drupal\shortcut\ShortcutLazyBuilders
  */
-final readonly class ShortcutLazyBuilder {
-
-  /**
-   * Constructs a ShortcutLazyBuilders object.
-   *
-   * @param \Drupal\shortcut\ShortcutLazyBuilders $shortcutLazyBuilder
-   *   The original shortcuts lazy builder service.
-   */
-  public function __construct(
-    protected ShortcutLazyBuilders $shortcutLazyBuilder,
-  ) {}
-
-  /**
-   * The #lazy_builder callback; builds shortcut navigation links.
-   *
-   * @param string $label
-   *   (Optional) The links label. Defaults to "Shortcuts".
-   *
-   * @return array
-   *   A renderable array of shortcut links.
-   */
-  #[TrustedCallback]
-  public function lazyLinks(string $label = 'Shortcuts'): array {
-    $shortcut_links = $this->shortcutLazyBuilder->lazyLinks();
-
-    if (empty($shortcut_links['shortcuts']['#links'])) {
-      return [
-        '#cache' => $shortcut_links['#cache'],
-      ];
+final readonly class ShortcutLazyBuilder
+{
+    /**
+     * Constructs a ShortcutLazyBuilders object.
+     *
+     * @param \Drupal\shortcut\ShortcutLazyBuilders $shortcutLazyBuilder
+     *   The original shortcuts lazy builder service.
+     */
+    public function __construct(
+        protected ShortcutLazyBuilders $shortcutLazyBuilder,
+    ) {
     }
-    $shortcuts_items = [
-      [
-        'title' => $label,
-        'class' => 'shortcuts',
-        'icon' => [
-          'icon_id' => 'shortcuts',
-        ],
-        'below' => $shortcut_links['shortcuts']['#links'],
-      ],
-    ];
 
-    return [
-      '#theme' => 'navigation_menu',
-      '#menu_name' => 'shortcuts',
-      '#title' => $label,
-      '#items' => $shortcuts_items,
-      '#cache' => $shortcut_links['#cache'],
-    ];
-  }
+    /**
+     * The #lazy_builder callback; builds shortcut navigation links.
+     *
+     * @param string $label
+     *   (Optional) The links label. Defaults to "Shortcuts".
+     *
+     * @return array
+     *   A renderable array of shortcut links.
+     */
+    #[TrustedCallback]
+    public function lazyLinks(string $label = 'Shortcuts'): array
+    {
+        $shortcut_links = $this->shortcutLazyBuilder->lazyLinks();
+
+        if (empty($shortcut_links['shortcuts']['#links'])) {
+            return [
+              '#cache' => $shortcut_links['#cache'],
+            ];
+        }
+        $shortcuts_items = [
+          [
+            'title' => $label,
+            'class' => 'shortcuts',
+            'icon' => [
+              'icon_id' => 'shortcuts',
+            ],
+            'below' => $shortcut_links['shortcuts']['#links'],
+          ],
+        ];
+
+        return [
+          '#theme' => 'navigation_menu',
+          '#menu_name' => 'shortcuts',
+          '#title' => $label,
+          '#items' => $shortcuts_items,
+          '#cache' => $shortcut_links['#cache'],
+        ];
+    }
 
 }

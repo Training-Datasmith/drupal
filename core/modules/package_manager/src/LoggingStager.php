@@ -19,23 +19,25 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final readonly class LoggingStager implements StagerInterface {
-
-  public function __construct(
-    private StagerInterface $decorated,
-    private ConfigFactoryInterface $configFactory,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function stage(array $composerCommand, PathInterface $activeDir, PathInterface $stagingDir, ?OutputCallbackInterface $callback = NULL, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void {
-    $path = $this->configFactory->get('package_manager.settings')->get('log');
-    if ($path) {
-      $callback = new FileProcessOutputCallback($path, $callback);
-      $callback(OutputTypeEnum::OUT, sprintf("### Staging '%s' in %s\n", implode(' ', $composerCommand), $stagingDir->absolute()));
+final readonly class LoggingStager implements StagerInterface
+{
+    public function __construct(
+        private StagerInterface $decorated,
+        private ConfigFactoryInterface $configFactory,
+    ) {
     }
-    $this->decorated->stage($composerCommand, $activeDir, $stagingDir, $callback, $timeout);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function stage(array $composerCommand, PathInterface $activeDir, PathInterface $stagingDir, ?OutputCallbackInterface $callback = null, int $timeout = ProcessInterface::DEFAULT_TIMEOUT): void
+    {
+        $path = $this->configFactory->get('package_manager.settings')->get('log');
+        if ($path) {
+            $callback = new FileProcessOutputCallback($path, $callback);
+            $callback(OutputTypeEnum::OUT, sprintf("### Staging '%s' in %s\n", implode(' ', $composerCommand), $stagingDir->absolute()));
+        }
+        $this->decorated->stage($composerCommand, $activeDir, $stagingDir, $callback, $timeout);
+    }
 
 }

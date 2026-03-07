@@ -14,23 +14,24 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Form')]
 #[RunTestsInSeparateProcesses]
-class FileElementTest extends KernelTestBase {
+class FileElementTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['form_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['form_test'];
+    /**
+     * Tests that file elements are built and processed correctly.
+     */
+    public function testFileElement(): void
+    {
+        $form = $this->container->get('form_builder')
+          ->getForm(FormTestFileForm::class);
 
-  /**
-   * Tests that file elements are built and processed correctly.
-   */
-  public function testFileElement(): void {
-    $form = $this->container->get('form_builder')
-      ->getForm(FormTestFileForm::class);
-
-    $this->assertSame('file', $form['file']['#type']);
-    $this->assertTrue($form['file']['#multiple']);
-    $this->assertContains('some-class', $form['file']['#attributes']['class']);
-  }
+        $this->assertSame('file', $form['file']['#type']);
+        $this->assertTrue($form['file']['#multiple']);
+        $this->assertContains('some-class', $form['file']['#attributes']['class']);
+    }
 
 }

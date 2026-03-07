@@ -14,29 +14,29 @@ use Drupal\entity_test\EntityTestForm;
  * Defines the test entity class.
  */
 #[ContentEntityType(
-  id: 'entity_test_translatable_no_skip',
-  label: new TranslatableMarkup('Test entity - Translatable check UI'),
-  entity_keys: [
+    id: 'entity_test_translatable_no_skip',
+    label: new TranslatableMarkup('Test entity - Translatable check UI'),
+    entity_keys: [
     'id' => 'id',
     'uuid' => 'uuid',
     'bundle' => 'type',
     'label' => 'name',
     'langcode' => 'langcode',
   ],
-  handlers: [
+    handlers: [
     'form' => ['default' => EntityTestForm::class],
     'route_provider' => [
       'html' => DefaultHtmlRouteProvider::class,
     ],
   ],
-  links: [
+    links: [
     'edit-form' => '/entity_test_translatable_no_skip/{entity_test_translatable_no_skip}/edit',
   ],
-  admin_permission: 'administer entity_test content',
-  base_table: 'entity_test_mul',
-  data_table: 'entity_test_mul_property_data',
-  translatable: TRUE,
+    admin_permission: 'administer entity_test content',
+    base_table: 'entity_test_mul',
+    data_table: 'entity_test_mul_property_data',
+    translatable: true,
 )]
-class EntityTestTranslatableNoUISkip extends EntityTest {
-
+class EntityTestTranslatableNoUISkip extends EntityTest
+{
 }

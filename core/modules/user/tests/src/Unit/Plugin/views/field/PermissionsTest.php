@@ -22,33 +22,35 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(Permissions::class)]
 #[Group('user')]
-class PermissionsTest extends UnitTestCase {
+class PermissionsTest extends UnitTestCase
+{
+    use ViewsLoggerTestTrait;
 
-  use ViewsLoggerTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMockLoggerWithMissingEntity();
+        $container = \Drupal::getContainer();
+        $container->set('string_translation', $this->createStub(TranslationInterface::class));
+        $container->set('user.permissions', $this->createStub(PermissionHandlerInterface::class));
+        \Drupal::setContainer($container);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->setUpMockLoggerWithMissingEntity();
-    $container = \Drupal::getContainer();
-    $container->set('string_translation', $this->createStub(TranslationInterface::class));
-    $container->set('user.permissions', $this->createStub(PermissionHandlerInterface::class));
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests the preRender method when getEntity returns NULL.
-   */
-  public function testPreRenderNullEntity(): void {
-    $values = [new ResultRow()];
-    $field = new Permissions(['entity_type' => 'foo', 'entity field' => 'bar'], '', [], $this->createStub(ModuleHandlerInterface::class), $this->createStub(EntityTypeManagerInterface::class));
-    $view = $this->createStub(ViewExecutable::class);
-    $display = $this->createStub(DisplayPluginBase::class);
-    $field->init($view, $display);
-    $field->preRender($values);
-    $this->assertEmpty($field->items);
-  }
+    /**
+     * Tests the preRender method when getEntity returns NULL.
+     */
+    public function testPreRenderNullEntity(): void
+    {
+        $values = [new ResultRow()];
+        $field = new Permissions(['entity_type' => 'foo', 'entity field' => 'bar'], '', [], $this->createStub(ModuleHandlerInterface::class), $this->createStub(EntityTypeManagerInterface::class));
+        $view = $this->createStub(ViewExecutable::class);
+        $display = $this->createStub(DisplayPluginBase::class);
+        $field->init($view, $display);
+        $field->preRender($values);
+        $this->assertEmpty($field->items);
+    }
 
 }

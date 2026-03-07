@@ -11,52 +11,56 @@ use Drupal\Core\Config\StorageInterface;
 /**
  * Test implementation of a config override that provides cacheability metadata.
  */
-class CacheabilityMetadataConfigOverride implements ConfigFactoryOverrideInterface {
+class CacheabilityMetadataConfigOverride implements ConfigFactoryOverrideInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function loadOverrides($names)
+    {
+        $overrides = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function loadOverrides($names) {
-    $overrides = [];
+        // Override the test block depending on the state set in the test.
+        $state = \Drupal::state()->get('config_override_integration_test.enabled', false);
+        if (in_array('block.block.config_override_test', $names) && $state !== false) {
+            $overrides = $overrides + [
+              'block.block.config_override_test' => [
+                'settings' => ['label' => 'Overridden block label'],
+              ],
+            ];
+        }
 
-    // Override the test block depending on the state set in the test.
-    $state = \Drupal::state()->get('config_override_integration_test.enabled', FALSE);
-    if (in_array('block.block.config_override_test', $names) && $state !== FALSE) {
-      $overrides = $overrides + [
-        'block.block.config_override_test' => [
-          'settings' => ['label' => 'Overridden block label'],
-        ],
-      ];
+        return $overrides;
     }
 
-    return $overrides;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheSuffix() {
-    return 'config_override_integration_test';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION) {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($name) {
-    $metadata = new CacheableMetadata();
-    if ($name === 'block.block.config_override_test') {
-      $metadata
-        ->setCacheContexts(['config_override_integration_test'])
-        ->setCacheTags(['config_override_integration_test_tag']);
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheSuffix()
+    {
+        return 'config_override_integration_test';
     }
-    return $metadata;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION)
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($name)
+    {
+        $metadata = new CacheableMetadata();
+        if ($name === 'block.block.config_override_test') {
+            $metadata
+              ->setCacheContexts(['config_override_integration_test'])
+              ->setCacheTags(['config_override_integration_test_tag']);
+        }
+        return $metadata;
+    }
 
 }

@@ -13,14 +13,15 @@ use Drupal\Core\Hook\Attribute\Hook;
  * to the alphabetical module names. Some of the implementations are reordered
  * using order attributes.
  */
-class TestHookOrderExtraTypes {
-
-  /**
-   * This pair tests OrderAfter with ExtraTypes.
-   */
-  #[Hook('custom_hook_extra_types2_alter')]
-  public function customHookExtraTypes(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
+class TestHookOrderExtraTypes
+{
+    /**
+     * This pair tests OrderAfter with ExtraTypes.
+     */
+    #[Hook('custom_hook_extra_types2_alter')]
+    public function customHookExtraTypes(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
 }

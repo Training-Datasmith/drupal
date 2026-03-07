@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Access;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
@@ -12,35 +13,36 @@ use Drupal\node\NodeInterface;
  *
  * @ingroup node_access
  */
-class NodePreviewAccessCheck implements AccessInterface {
-
-  /**
-   * Constructs an EntityCreateAccessCheck object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager service.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * Checks access to the node preview page.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The currently logged in account.
-   * @param \Drupal\node\NodeInterface $node_preview
-   *   The node that is being previewed.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function access(AccountInterface $account, NodeInterface $node_preview) {
-    if ($node_preview->isNew()) {
-      $access_controller = $this->entityTypeManager->getAccessControlHandler('node');
-      return $access_controller->createAccess($node_preview->bundle(), $account, [], TRUE);
+class NodePreviewAccessCheck implements AccessInterface
+{
+    /**
+     * Constructs an EntityCreateAccessCheck object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager service.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
-    return $node_preview->access('update', $account, TRUE);
-  }
+
+    /**
+     * Checks access to the node preview page.
+     *
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The currently logged in account.
+     * @param \Drupal\node\NodeInterface $node_preview
+     *   The node that is being previewed.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function access(AccountInterface $account, NodeInterface $node_preview)
+    {
+        if ($node_preview->isNew()) {
+            $access_controller = $this->entityTypeManager->getAccessControlHandler('node');
+            return $access_controller->createAccess($node_preview->bundle(), $account, [], true);
+        }
+        return $node_preview->access('update', $account, true);
+    }
 
 }

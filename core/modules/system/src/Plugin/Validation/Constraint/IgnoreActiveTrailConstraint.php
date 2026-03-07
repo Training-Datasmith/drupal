@@ -12,14 +12,14 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Constraint on the ignore_active_trail configuration in system menu blocks.
  */
 #[Constraint(
-  id: 'IgnoreActiveTrail',
-  label: new TranslatableMarkup('Whether the ignore_active_trail setting is valid', [], ['context' => 'Validation'])
+    id: 'IgnoreActiveTrail',
+    label: new TranslatableMarkup('Whether the ignore_active_trail setting is valid', [], ['context' => 'Validation'])
 )]
-class IgnoreActiveTrailConstraint extends SymfonyConstraint {
-
-  /**
-   * The default violation message.
-   */
-  public string $message = 'The "ignore_active_trail" setting on a system menu block cannot be enabled if "level" is greater than 1 or "expand_all_items" is not enabled and "depth" is greater than 1.';
+class IgnoreActiveTrailConstraint extends SymfonyConstraint
+{
+    /**
+     * The default violation message.
+     */
+    public string $message = 'The "ignore_active_trail" setting on a system menu block cannot be enabled if "level" is greater than 1 or "expand_all_items" is not enabled and "depth" is greater than 1.';
 
 }

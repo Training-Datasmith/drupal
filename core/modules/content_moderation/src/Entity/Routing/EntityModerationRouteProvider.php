@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Entity\Routing;
 
-use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\EntityRouteProviderInterface;
@@ -19,78 +20,81 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @internal
  */
-class EntityModerationRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface {
-
-  /**
-   * Constructs a new DefaultHtmlRouteProvider.
-   *
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
-   *   The entity field manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static(
-      $container->get('entity_field.manager')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
-    $collection = new RouteCollection();
-
-    if ($moderation_route = $this->getLatestVersionRoute($entity_type)) {
-      $entity_type_id = $entity_type->id();
-      $collection->add("entity.{$entity_type_id}.latest_version", $moderation_route);
+class EntityModerationRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface
+{
+    /**
+     * Constructs a new DefaultHtmlRouteProvider.
+     *
+     * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
+     *   The entity field manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
+    {
     }
 
-    return $collection;
-  }
-
-  /**
-   * Gets the moderation-form route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
-   */
-  protected function getLatestVersionRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('latest-version') && $entity_type->hasViewBuilderClass()) {
-      $entity_type_id = $entity_type->id();
-      $route = new Route($entity_type->getLinkTemplate('latest-version'));
-      $route
-        ->addDefaults([
-          '_entity_view' => "{$entity_type_id}.full",
-          '_title_callback' => '\Drupal\Core\Entity\Controller\EntityController::title',
-        ])
-        // If the entity type is a node, unpublished content will be visible
-        // if the user has the "view any unpublished content" permission.
-        ->setRequirement('_entity_access', "{$entity_type_id}.view")
-        ->setRequirement('_content_moderation_latest_version', 'TRUE')
-        ->setOption('_content_moderation_entity_type', $entity_type_id)
-        ->setOption('parameters', [
-          $entity_type_id => [
-            'type' => 'entity:' . $entity_type_id,
-            'load_latest_revision' => TRUE,
-          ],
-        ]);
-
-      // Entity types with serial IDs can specify this in their route
-      // requirements, improving the matching process.
-      if ($entity_type->hasIntegerId()) {
-        $route->setRequirement($entity_type_id, '\d+');
-      }
-      return $route;
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static(
+            $container->get('entity_field.manager')
+        );
     }
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection
+    {
+        $collection = new RouteCollection();
+
+        if ($moderation_route = $this->getLatestVersionRoute($entity_type)) {
+            $entity_type_id = $entity_type->id();
+            $collection->add("entity.{$entity_type_id}.latest_version", $moderation_route);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Gets the moderation-form route.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+     *   The entity type.
+     *
+     * @return \Symfony\Component\Routing\Route|null
+     *   The generated route, if available.
+     */
+    protected function getLatestVersionRoute(EntityTypeInterface $entity_type)
+    {
+        if ($entity_type->hasLinkTemplate('latest-version') && $entity_type->hasViewBuilderClass()) {
+            $entity_type_id = $entity_type->id();
+            $route = new Route($entity_type->getLinkTemplate('latest-version'));
+            $route
+              ->addDefaults([
+                '_entity_view' => "{$entity_type_id}.full",
+                '_title_callback' => '\Drupal\Core\Entity\Controller\EntityController::title',
+              ])
+              // If the entity type is a node, unpublished content will be visible
+              // if the user has the "view any unpublished content" permission.
+              ->setRequirement('_entity_access', "{$entity_type_id}.view")
+              ->setRequirement('_content_moderation_latest_version', 'TRUE')
+              ->setOption('_content_moderation_entity_type', $entity_type_id)
+              ->setOption('parameters', [
+                $entity_type_id => [
+                  'type' => 'entity:' . $entity_type_id,
+                  'load_latest_revision' => true,
+                ],
+              ]);
+
+            // Entity types with serial IDs can specify this in their route
+            // requirements, improving the matching process.
+            if ($entity_type->hasIntegerId()) {
+                $route->setRequirement($entity_type_id, '\d+');
+            }
+            return $route;
+        }
+    }
 
 }

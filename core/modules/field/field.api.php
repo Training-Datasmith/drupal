@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  */
 
-use Drupal\field\FieldStorageConfigInterface;
 use Drupal\Core\Entity\Exception\FieldStorageDefinitionUpdateForbiddenException;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldStorageConfigInterface;
 
 /**
  * @file
@@ -60,11 +62,12 @@ use Drupal\field\Entity\FieldConfig;
  *   Array of information on field types as collected by the "field type" plugin
  *   manager.
  */
-function hook_field_info_alter(array &$info): void {
-  // Change the default widget for fields of type 'foo'.
-  if (isset($info['foo'])) {
-    $info['foo']['default_widget'] = 'my_module_widget';
-  }
+function hook_field_info_alter(array &$info): void
+{
+    // Change the default widget for fields of type 'foo'.
+    if (isset($info['foo'])) {
+        $info['foo']['default_widget'] = 'my_module_widget';
+    }
 }
 
 /**
@@ -81,10 +84,11 @@ function hook_field_info_alter(array &$info): void {
  *
  * @see \Drupal\Core\Field\FieldTypePluginManagerInterface::getEntityTypeUiDefinitions
  */
-function hook_field_info_entity_type_ui_definitions_alter(array &$ui_definitions, string $entity_type_id): void {
-  if ($entity_type_id === 'node') {
-    unset($ui_definitions['field_type_not_compatible_with_node']);
-  }
+function hook_field_info_entity_type_ui_definitions_alter(array &$ui_definitions, string $entity_type_id): void
+{
+    if ($entity_type_id === 'node') {
+        unset($ui_definitions['field_type_not_compatible_with_node']);
+    }
 }
 
 /**
@@ -98,20 +102,21 @@ function hook_field_info_entity_type_ui_definitions_alter(array &$ui_definitions
  *
  * @see \Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface::getPreconfiguredOptions()
  */
-function hook_field_ui_preconfigured_options_alter(array &$options, $field_type): void {
-  // If the field is not an "entity_reference"-based field, bail out.
-  /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager */
-  $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-  $class = $field_type_manager->getPluginClass($field_type);
-  if (!is_a($class, 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem', TRUE)) {
-    return;
-  }
+function hook_field_ui_preconfigured_options_alter(array &$options, $field_type): void
+{
+    // If the field is not an "entity_reference"-based field, bail out.
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager */
+    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    $class = $field_type_manager->getPluginClass($field_type);
+    if (!is_a($class, 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem', true)) {
+        return;
+    }
 
-  // Set the default formatter for media in entity reference fields to be the
-  // "Rendered entity" formatter.
-  if (!empty($options['media'])) {
-    $options['media']['entity_view_display']['type'] = 'entity_reference_entity_view';
-  }
+    // Set the default formatter for media in entity reference fields to be the
+    // "Rendered entity" formatter.
+    if (!empty($options['media'])) {
+        $options['media']['entity_view_display']['type'] = 'entity_reference_entity_view';
+    }
 }
 
 /**
@@ -134,16 +139,17 @@ function hook_field_ui_preconfigured_options_alter(array &$options, $field_type)
  *
  * @see entity_crud
  */
-function hook_field_storage_config_update_forbid(FieldStorageConfigInterface $field_storage, FieldStorageConfigInterface $prior_field_storage): void {
-  if ($field_storage->getTypeProvider() == 'options' && $field_storage->hasData()) {
-    // Forbid any update that removes allowed values with actual data.
-    $allowed_values = $field_storage->getSetting('allowed_values');
-    $prior_allowed_values = $prior_field_storage->getSetting('allowed_values');
-    $lost_keys = array_keys(array_diff_key($prior_allowed_values, $allowed_values));
-    if (_options_values_in_use($field_storage->getTargetEntityTypeId(), $field_storage->getName(), $lost_keys)) {
-      throw new FieldStorageDefinitionUpdateForbiddenException("A list field '{$field_storage->getName()}' with existing data cannot have its keys changed.");
+function hook_field_storage_config_update_forbid(FieldStorageConfigInterface $field_storage, FieldStorageConfigInterface $prior_field_storage): void
+{
+    if ($field_storage->getTypeProvider() == 'options' && $field_storage->hasData()) {
+        // Forbid any update that removes allowed values with actual data.
+        $allowed_values = $field_storage->getSetting('allowed_values');
+        $prior_allowed_values = $prior_field_storage->getSetting('allowed_values');
+        $lost_keys = array_keys(array_diff_key($prior_allowed_values, $allowed_values));
+        if (_options_values_in_use($field_storage->getTargetEntityTypeId(), $field_storage->getName(), $lost_keys)) {
+            throw new FieldStorageDefinitionUpdateForbiddenException("A list field '{$field_storage->getName()}' with existing data cannot have its keys changed.");
+        }
     }
-  }
 }
 
 /**
@@ -185,9 +191,10 @@ function hook_field_storage_config_update_forbid(FieldStorageConfigInterface $fi
  *   An array of information on existing widget types, as collected by the
  *   plugin discovery mechanism.
  */
-function hook_field_widget_info_alter(array &$info): void {
-  // Let a new field type re-use an existing widget.
-  $info['options_select']['field_types'][] = 'my_field_type';
+function hook_field_widget_info_alter(array &$info): void
+{
+    // Let a new field type re-use an existing widget.
+    $info['options_select']['field_types'][] = 'my_field_type';
 }
 
 /**
@@ -220,13 +227,14 @@ function hook_field_widget_info_alter(array &$info): void {
  * @see hook_field_widget_complete_form_alter()
  * @see https://www.drupal.org/node/3180429
  */
-function hook_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context): void {
-  // Add a css class to widget form elements for all fields of type my_type.
-  $field_definition = $context['items']->getFieldDefinition();
-  if ($field_definition->getType() == 'my_type') {
-    // Be sure not to overwrite existing attributes.
-    $element['#attributes']['class'][] = 'my-class';
-  }
+function hook_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context): void
+{
+    // Add a css class to widget form elements for all fields of type my_type.
+    $field_definition = $context['items']->getFieldDefinition();
+    if ($field_definition->getType() == 'my_type') {
+        // Be sure not to overwrite existing attributes.
+        $element['#attributes']['class'][] = 'my-class';
+    }
 }
 
 /**
@@ -257,11 +265,12 @@ function hook_field_widget_single_element_form_alter(array &$element, FormStateI
  * @see hook_field_widget_single_element_form_alter()
  * @see hook_field_widget_complete_WIDGET_TYPE_form_alter()
  */
-function hook_field_widget_single_element_WIDGET_TYPE_form_alter(array &$element, FormStateInterface $form_state, array $context): void {
-  // Code here will only act on widgets of type WIDGET_TYPE.  For example,
-  // hook_field_widget_single_element_my_module_autocomplete_form_alter() will
-  // only act on widgets of type 'my_module_autocomplete'.
-  $element['#autocomplete_route_name'] = 'my_module.autocomplete_route';
+function hook_field_widget_single_element_WIDGET_TYPE_form_alter(array &$element, FormStateInterface $form_state, array $context): void
+{
+    // Code here will only act on widgets of type WIDGET_TYPE.  For example,
+    // hook_field_widget_single_element_my_module_autocomplete_form_alter() will
+    // only act on widgets of type 'my_module_autocomplete'.
+    $element['#autocomplete_route_name'] = 'my_module.autocomplete_route';
 }
 
 /**
@@ -288,8 +297,9 @@ function hook_field_widget_single_element_WIDGET_TYPE_form_alter(array &$element
  * @see hook_field_widget_complete_WIDGET_TYPE_form_alter()
  * @see https://www.drupal.org/node/3180429
  */
-function hook_field_widget_complete_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, $context): void {
-  $field_widget_complete_form['#attributes']['class'][] = 'my-class';
+function hook_field_widget_complete_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, $context): void
+{
+    $field_widget_complete_form['#attributes']['class'][] = 'my-class';
 }
 
 /**
@@ -320,14 +330,14 @@ function hook_field_widget_complete_form_alter(array &$field_widget_complete_for
  * @see hook_field_widget_complete_form_alter()
  * @see https://www.drupal.org/node/3180429
  */
-function hook_field_widget_complete_WIDGET_TYPE_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, $context): void {
-  $field_widget_complete_form['#attributes']['class'][] = 'my-class';
+function hook_field_widget_complete_WIDGET_TYPE_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, $context): void
+{
+    $field_widget_complete_form['#attributes']['class'][] = 'my-class';
 }
 
 /**
  * @} End of "defgroup field_widget".
  */
-
 
 /**
  * @defgroup field_formatter Field Formatter API
@@ -360,9 +370,10 @@ function hook_field_widget_complete_WIDGET_TYPE_form_alter(array &$field_widget_
  *   An array of information on existing formatter types, as collected by the
  *   plugin discovery mechanism.
  */
-function hook_field_formatter_info_alter(array &$info): void {
-  // Let a new field type re-use an existing formatter.
-  $info['text_default']['field_types'][] = 'my_field_type';
+function hook_field_formatter_info_alter(array &$info): void
+{
+    // Let a new field type re-use an existing formatter.
+    $info['text_default']['field_types'][] = 'my_field_type';
 }
 
 /**
@@ -391,14 +402,15 @@ function hook_field_formatter_info_alter(array &$info): void {
  *
  * @ingroup field_info
  */
-function hook_field_info_max_weight($entity_type, $bundle, $context, $context_mode) {
-  $weights = [];
+function hook_field_info_max_weight($entity_type, $bundle, $context, $context_mode)
+{
+    $weights = [];
 
-  foreach (my_module_entity_additions($entity_type, $bundle, $context, $context_mode) as $addition) {
-    $weights[] = $addition['weight'];
-  }
+    foreach (my_module_entity_additions($entity_type, $bundle, $context, $context_mode) as $addition) {
+        $weights[] = $addition['weight'];
+    }
 
-  return $weights ? max($weights) : NULL;
+    return $weights ? max($weights) : null;
 }
 
 /**
@@ -417,10 +429,11 @@ function hook_field_info_max_weight($entity_type, $bundle, $context, $context_mo
  * @param \Drupal\field\Entity\FieldStorageConfig $field_storage
  *   The field storage being purged.
  */
-function hook_field_purge_field_storage(FieldStorageConfig $field_storage): void {
-  \Drupal::database()->delete('my_module_field_storage_info')
-    ->condition('uuid', $field_storage->uuid())
-    ->execute();
+function hook_field_purge_field_storage(FieldStorageConfig $field_storage): void
+{
+    \Drupal::database()->delete('my_module_field_storage_info')
+      ->condition('uuid', $field_storage->uuid())
+      ->execute();
 }
 
 /**
@@ -434,10 +447,11 @@ function hook_field_purge_field_storage(FieldStorageConfig $field_storage): void
  * @param \Drupal\field\Entity\FieldConfig $field
  *   The field being purged.
  */
-function hook_field_purge_field(FieldConfig $field): void {
-  \Drupal::database()->delete('my_module_field_info')
-    ->condition('id', $field->id())
-    ->execute();
+function hook_field_purge_field(FieldConfig $field): void
+{
+    \Drupal::database()->delete('my_module_field_info')
+      ->condition('id', $field->id())
+      ->execute();
 }
 
 /**
@@ -459,14 +473,15 @@ function hook_field_purge_field(FieldConfig $field): void {
  *
  * @see \Drupal\Core\Field\FieldTypeCategoryManager
  */
-function hook_field_type_category_info_alter(array &$categories): void {
-  // Modify or add field type categories.
-  $categories['my_custom_category'] = [
-    'label' => 'My Custom Category',
-    'description' => 'This is a custom category for my field types.',
-  ];
-  // Modify the properties of an existing category.
-  $categories['text']['description'] = 'Modified Text';
+function hook_field_type_category_info_alter(array &$categories): void
+{
+    // Modify or add field type categories.
+    $categories['my_custom_category'] = [
+      'label' => 'My Custom Category',
+      'description' => 'This is a custom category for my field types.',
+    ];
+    // Modify the properties of an existing category.
+    $categories['text']['description'] = 'Modified Text';
 }
 
 /**

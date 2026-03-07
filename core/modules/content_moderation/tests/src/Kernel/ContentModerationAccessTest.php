@@ -20,82 +20,84 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class ContentModerationAccessTest extends KernelTestBase {
+class ContentModerationAccessTest extends KernelTestBase
+{
+    use NodeCreationTrait;
+    use UserCreationTrait;
+    use ContentModerationTestTrait;
 
-  use NodeCreationTrait;
-  use UserCreationTrait;
-  use ContentModerationTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'content_moderation',
+      'filter',
+      'node',
+      'system',
+      'user',
+      'workflows',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'content_moderation',
-    'filter',
-    'node',
-    'system',
-    'user',
-    'workflows',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->installEntitySchema('content_moderation_state');
+        $this->installEntitySchema('node');
+        $this->installEntitySchema('user');
+        $this->installConfig(['content_moderation', 'filter']);
+        $this->installSchema('node', ['node_access']);
 
-    $this->installEntitySchema('content_moderation_state');
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('user');
-    $this->installConfig(['content_moderation', 'filter']);
-    $this->installSchema('node', ['node_access']);
+        // Add a moderated node type.
+        $node_type = NodeType::create([
+          'type' => 'page',
+          'name' => 'Page',
+        ]);
+        $node_type->save();
+        $workflow = $this->createEditorialWorkflow();
+        $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
+        $workflow->save();
+    }
 
-    // Add a moderated node type.
-    $node_type = NodeType::create([
-      'type' => 'page',
-      'name' => 'Page',
-    ]);
-    $node_type->save();
-    $workflow = $this->createEditorialWorkflow();
-    $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
-    $workflow->save();
-  }
+    /**
+     * Tests access cacheability.
+     */
+    public function testAccessCacheability(): void
+    {
+        $node = $this->createNode(['type' => 'page']);
 
-  /**
-   * Tests access cacheability.
-   */
-  public function testAccessCacheability(): void {
-    $node = $this->createNode(['type' => 'page']);
+        /** @var \Drupal\user\RoleInterface $authenticated */
+        $authenticated = Role::create([
+          'id' => 'authenticated',
+          'label' => 'Authenticated',
+        ]);
+        $authenticated->grantPermission('access content');
+        $authenticated->grantPermission('edit any page content');
+        $authenticated->save();
 
-    /** @var \Drupal\user\RoleInterface $authenticated */
-    $authenticated = Role::create([
-      'id' => 'authenticated',
-      'label' => 'Authenticated',
-    ]);
-    $authenticated->grantPermission('access content');
-    $authenticated->grantPermission('edit any page content');
-    $authenticated->save();
+        $account = new UserSession([
+          'uid' => 2,
+          'roles' => ['authenticated'],
+        ]);
 
-    $account = new UserSession([
-      'uid' => 2,
-      'roles' => ['authenticated'],
-    ]);
+        $result = $node->access('update', $account, true);
+        $this->assertFalse($result->isAllowed());
+        $this->assertEqualsCanonicalizing(['user.permissions'], $result->getCacheContexts());
+        $this->assertEqualsCanonicalizing(['config:workflows.workflow.editorial', 'node:' . $node->id()], $result->getCacheTags());
+        $this->assertEquals(CacheBackendInterface::CACHE_PERMANENT, $result->getCacheMaxAge());
 
-    $result = $node->access('update', $account, TRUE);
-    $this->assertFalse($result->isAllowed());
-    $this->assertEqualsCanonicalizing(['user.permissions'], $result->getCacheContexts());
-    $this->assertEqualsCanonicalizing(['config:workflows.workflow.editorial', 'node:' . $node->id()], $result->getCacheTags());
-    $this->assertEquals(CacheBackendInterface::CACHE_PERMANENT, $result->getCacheMaxAge());
+        $authenticated->grantPermission('use editorial transition create_new_draft');
+        $authenticated->save();
 
-    $authenticated->grantPermission('use editorial transition create_new_draft');
-    $authenticated->save();
-
-    \Drupal::entityTypeManager()->getAccessControlHandler('node')->resetCache();
-    $result = $node->access('update', $account, TRUE);
-    $this->assertTrue($result->isAllowed());
-    $this->assertEqualsCanonicalizing(['user.permissions'], $result->getCacheContexts());
-    $this->assertEqualsCanonicalizing(['config:workflows.workflow.editorial', 'node:' . $node->id()], $result->getCacheTags());
-    $this->assertEquals(CacheBackendInterface::CACHE_PERMANENT, $result->getCacheMaxAge());
-  }
+        \Drupal::entityTypeManager()->getAccessControlHandler('node')->resetCache();
+        $result = $node->access('update', $account, true);
+        $this->assertTrue($result->isAllowed());
+        $this->assertEqualsCanonicalizing(['user.permissions'], $result->getCacheContexts());
+        $this->assertEqualsCanonicalizing(['config:workflows.workflow.editorial', 'node:' . $node->id()], $result->getCacheTags());
+        $this->assertEquals(CacheBackendInterface::CACHE_PERMANENT, $result->getCacheMaxAge());
+    }
 
 }

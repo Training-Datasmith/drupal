@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\Variable;
 use Drupal\migrate\Attribute\MigrateProcess;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\Row;
 use Drupal\migrate\MigrateSkipRowException;
+use Drupal\migrate\ProcessPluginBase;
+use Drupal\migrate\Row;
 
 /**
  * Changes the source value based on a static lookup map.
@@ -137,54 +139,54 @@ use Drupal\migrate\MigrateSkipRowException;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess('static_map')]
-class StaticMap extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    if ($value === NULL) {
-      if (array_key_exists('', $this->configuration['map'])) {
-        if (array_key_exists('default_value', $this->configuration) && $this->configuration['default_value'] === $this->configuration['map']['']) {
-          return $this->configuration['default_value'];
+class StaticMap extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        if ($value === null) {
+            if (array_key_exists('', $this->configuration['map'])) {
+                if (array_key_exists('default_value', $this->configuration) && $this->configuration['default_value'] === $this->configuration['map']['']) {
+                    return $this->configuration['default_value'];
+                }
+                @trigger_error('Relying on mapping NULL values via an empty string map key in ' . self::class . '::transform() is deprecated in drupal:11.3.0 and will trigger a Drupal\migrate\MigrateSkipRowException from drupal:12.0.0. Set the empty string map value as the "default_value" in the plugin configuration. See https://www.drupal.org/node/3557003', E_USER_DEPRECATED);
+                // Preserve the current behavior of returning the value mapped to an
+                // empty string for NULL.
+                return $this->configuration['map'][''];
+            }
+            if (array_key_exists('default_value', $this->configuration)) {
+                return $this->configuration['default_value'];
+            }
+            if (!empty($this->configuration['bypass'])) {
+                return null;
+            }
+            throw new MigrateSkipRowException(sprintf("No static mapping possible for NULL and no default value provided for destination '%s'.", $destination_property));
         }
-        @trigger_error('Relying on mapping NULL values via an empty string map key in ' . self::class . '::transform() is deprecated in drupal:11.3.0 and will trigger a Drupal\migrate\MigrateSkipRowException from drupal:12.0.0. Set the empty string map value as the "default_value" in the plugin configuration. See https://www.drupal.org/node/3557003', E_USER_DEPRECATED);
-        // Preserve the current behavior of returning the value mapped to an
-        // empty string for NULL.
-        return $this->configuration['map'][''];
-      }
-      if (array_key_exists('default_value', $this->configuration)) {
-        return $this->configuration['default_value'];
-      }
-      if (!empty($this->configuration['bypass'])) {
-        return NULL;
-      }
-      throw new MigrateSkipRowException(sprintf("No static mapping possible for NULL and no default value provided for destination '%s'.", $destination_property));
-    }
 
-    $new_value = $value;
-    if (is_array($value)) {
-      if (!$value) {
-        throw new MigrateException('Can not lookup without a value.');
-      }
-    }
-    else {
-      $new_value = [$value];
-    }
-    $new_value = NestedArray::getValue($this->configuration['map'], $new_value, $key_exists);
-    if (!$key_exists) {
-      if (array_key_exists('default_value', $this->configuration)) {
-        if (!empty($this->configuration['bypass'])) {
-          throw new MigrateException('Setting both default_value and bypass is invalid.');
+        $new_value = $value;
+        if (is_array($value)) {
+            if (!$value) {
+                throw new MigrateException('Can not lookup without a value.');
+            }
+        } else {
+            $new_value = [$value];
         }
-        return $this->configuration['default_value'];
-      }
-      if (empty($this->configuration['bypass'])) {
-        throw new MigrateSkipRowException(sprintf("No static mapping found for '%s' and no default value provided for destination '%s'.", Variable::export($value), $destination_property));
-      }
-      return $value;
+        $new_value = NestedArray::getValue($this->configuration['map'], $new_value, $key_exists);
+        if (!$key_exists) {
+            if (array_key_exists('default_value', $this->configuration)) {
+                if (!empty($this->configuration['bypass'])) {
+                    throw new MigrateException('Setting both default_value and bypass is invalid.');
+                }
+                return $this->configuration['default_value'];
+            }
+            if (empty($this->configuration['bypass'])) {
+                throw new MigrateSkipRowException(sprintf("No static mapping found for '%s' and no default value provided for destination '%s'.", Variable::export($value), $destination_property));
+            }
+            return $value;
+        }
+        return $new_value;
     }
-    return $new_value;
-  }
 
 }

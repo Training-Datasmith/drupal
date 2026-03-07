@@ -16,58 +16,62 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeCacheTagsTest extends EntityWithUriCacheTagsTestBase {
+class NodeCacheTagsTest extends EntityWithUriCacheTagsTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function createEntity()
+    {
+        // Create a "Camelids" node type.
+        NodeType::create([
+          'name' => 'Camelids',
+          'type' => 'camelids',
+        ])->save();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createEntity() {
-    // Create a "Camelids" node type.
-    NodeType::create([
-      'name' => 'Camelids',
-      'type' => 'camelids',
-    ])->save();
+        // Create a "Llama" node.
+        $node = Node::create(['type' => 'camelids']);
+        $node->setTitle('Llama')
+          ->setPublished()
+          ->save();
 
-    // Create a "Llama" node.
-    $node = Node::create(['type' => 'camelids']);
-    $node->setTitle('Llama')
-      ->setPublished()
-      ->save();
+        return $node;
+    }
 
-    return $node;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAdditionalCacheContextsForEntity(EntityInterface $entity): array
+    {
+        return ['timezone'];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAdditionalCacheContextsForEntity(EntityInterface $entity): array {
-    return ['timezone'];
-  }
+    /**
+     * {@inheritdoc}
+     *
+     * Each node must have an author.
+     */
+    protected function getAdditionalCacheTagsForEntity(EntityInterface $node): array
+    {
+        return ['user:' . $node->getOwnerId(), 'user_view'];
+    }
 
-  /**
-   * {@inheritdoc}
-   *
-   * Each node must have an author.
-   */
-  protected function getAdditionalCacheTagsForEntity(EntityInterface $node): array {
-    return ['user:' . $node->getOwnerId(), 'user_view'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAdditionalCacheContextsForEntityListing(): array {
-    return ['user.node_grants:view'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getAdditionalCacheContextsForEntityListing(): array
+    {
+        return ['user.node_grants:view'];
+    }
 
 }

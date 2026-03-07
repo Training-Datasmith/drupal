@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Core\Plugin\Discovery;
+declare(strict_types=1);
 
-use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
+namespace Drupal\Core\Plugin\Discovery;
 
 /**
  * Enables YAML discovery for plugin definitions.
@@ -10,35 +10,38 @@ use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
  * You should normally extend this class to add validation for the values in the
  * YAML data or to restrict use of the class or derivatives keys.
  */
-class YamlDiscoveryDecorator extends YamlDiscovery {
+class YamlDiscoveryDecorator extends YamlDiscovery
+{
+    /**
+     * Constructs a YamlDiscoveryDecorator object.
+     *
+     * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
+     *   The discovery object that is being decorated.
+     * @param string $name
+     *   The file name suffix to use for discovery; for instance, 'test' will
+     *   become 'MODULE.test.yml'.
+     * @param array $directories
+     *   An array of directories to scan.
+     */
+    public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, $name, array $directories)
+    {
+        parent::__construct($name, $directories);
+    }
 
-  /**
-   * Constructs a YamlDiscoveryDecorator object.
-   *
-   * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
-   *   The discovery object that is being decorated.
-   * @param string $name
-   *   The file name suffix to use for discovery; for instance, 'test' will
-   *   become 'MODULE.test.yml'.
-   * @param array $directories
-   *   An array of directories to scan.
-   */
-  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, $name, array $directories) {
-    parent::__construct($name, $directories);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinitions(): float|int|array
+    {
+        return parent::getDefinitions() + $this->decorated->getDefinitions();
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefinitions(): float|int|array {
-    return parent::getDefinitions() + $this->decorated->getDefinitions();
-  }
-
-  /**
-   * Passes through all unknown calls onto the decorated object.
-   */
-  public function __call(string $method, array $args) {
-    return call_user_func_array([$this->decorated, $method], $args);
-  }
+    /**
+     * Passes through all unknown calls onto the decorated object.
+     */
+    public function __call(string $method, array $args)
+    {
+        return call_user_func_array([$this->decorated, $method], $args);
+    }
 
 }

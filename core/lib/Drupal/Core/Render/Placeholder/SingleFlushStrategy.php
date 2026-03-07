@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Placeholder;
 
 /**
@@ -9,14 +11,15 @@ namespace Drupal\Core\Render\Placeholder;
  * priority. All placeholders that are not yet replaced at this point will be
  * rendered as is and delivered directly.
  */
-class SingleFlushStrategy implements PlaceholderStrategyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processPlaceholders(array $placeholders): array {
-    // Return all placeholders as is; they should be rendered directly.
-    return $placeholders;
-  }
+class SingleFlushStrategy implements PlaceholderStrategyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function processPlaceholders(array $placeholders): array
+    {
+        // Return all placeholders as is; they should be rendered directly.
+        return $placeholders;
+    }
 
 }

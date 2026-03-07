@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,21 +14,23 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\user\Entity\Role
  */
-class RoleAccessControlHandler extends EntityAccessControlHandler {
+class RoleAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        switch ($operation) {
+            case 'delete':
+                if ($entity->id() == RoleInterface::ANONYMOUS_ID || $entity->id() == RoleInterface::AUTHENTICATED_ID) {
+                    return AccessResult::forbidden();
+                }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    switch ($operation) {
-      case 'delete':
-        if ($entity->id() == RoleInterface::ANONYMOUS_ID || $entity->id() == RoleInterface::AUTHENTICATED_ID) {
-          return AccessResult::forbidden();
+                // no break
+            default:
+                return parent::checkAccess($entity, $operation, $account);
         }
-
-      default:
-        return parent::checkAccess($entity, $operation, $account);
     }
-  }
 
 }

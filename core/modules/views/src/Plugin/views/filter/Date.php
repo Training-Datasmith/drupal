@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -10,214 +12,220 @@ use Drupal\views\Attribute\ViewsFilter;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("date")]
-class Date extends NumericFilter {
+#[ViewsFilter('date')]
+class Date extends NumericFilter
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function defineOptions()
+    {
+        $options = parent::defineOptions();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
+        // Value is already set up properly, we're just adding our new field to it.
+        $options['value']['contains']['type']['default'] = 'date';
 
-    // Value is already set up properly, we're just adding our new field to it.
-    $options['value']['contains']['type']['default'] = 'date';
-
-    return $options;
-  }
-
-  /**
-   * Add a type selector to the value form.
-   */
-  protected function valueForm(&$form, FormStateInterface $form_state) {
-    if (!$form_state->get('exposed')) {
-      $form['value']['type'] = [
-        '#type' => 'radios',
-        '#title' => $this->t('Value type'),
-        '#options' => [
-          'date' => $this->t('A date in any machine readable format. CCYY-MM-DD HH:MM:SS is preferred.'),
-          'offset' => $this->t('An offset from the current time such as "@example1" or "@example2"', [
-            '@example1' => '+1 day',
-            '@example2' => '-2 hours -30 minutes',
-          ]),
-        ],
-        '#default_value' => !empty($this->value['type']) ? $this->value['type'] : 'date',
-      ];
-    }
-    parent::valueForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
-    parent::validateOptionsForm($form, $form_state);
-
-    if (!empty($this->options['exposed']) && $form_state->isValueEmpty(['options', 'expose', 'required'])) {
-      // Who cares what the value is if it's exposed and non-required.
-      return;
+        return $options;
     }
 
-    $this->validateValidTime($form['value'],
-      $form_state,
-      $form_state->getValue([
-        'options',
-        'operator',
+    /**
+     * Add a type selector to the value form.
+     */
+    protected function valueForm(&$form, FormStateInterface $form_state)
+    {
+        if (!$form_state->get('exposed')) {
+            $form['value']['type'] = [
+              '#type' => 'radios',
+              '#title' => $this->t('Value type'),
+              '#options' => [
+                'date' => $this->t('A date in any machine readable format. CCYY-MM-DD HH:MM:SS is preferred.'),
+                'offset' => $this->t('An offset from the current time such as "@example1" or "@example2"', [
+                  '@example1' => '+1 day',
+                  '@example2' => '-2 hours -30 minutes',
+                ]),
+              ],
+              '#default_value' => !empty($this->value['type']) ? $this->value['type'] : 'date',
+            ];
+        }
+        parent::valueForm($form, $form_state);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateOptionsForm(&$form, FormStateInterface $form_state): void
+    {
+        parent::validateOptionsForm($form, $form_state);
+
+        if (!empty($this->options['exposed']) && $form_state->isValueEmpty(['options', 'expose', 'required'])) {
+            // Who cares what the value is if it's exposed and non-required.
+            return;
+        }
+
+        $this->validateValidTime(
+            $form['value'],
+            $form_state,
+            $form_state->getValue([
+            'options',
+            'operator',
       ]),
-      $form_state->getValue(['options', 'value']));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateExposed(&$form, FormStateInterface $form_state): void {
-    if (empty($this->options['exposed'])) {
-      return;
+            $form_state->getValue(['options', 'value'])
+        );
     }
 
-    if (empty($this->options['expose']['required'])) {
-      // Who cares what the value is if it's exposed and non-required.
-      return;
+    /**
+     * {@inheritdoc}
+     */
+    public function validateExposed(&$form, FormStateInterface $form_state): void
+    {
+        if (empty($this->options['exposed'])) {
+            return;
+        }
+
+        if (empty($this->options['expose']['required'])) {
+            // Who cares what the value is if it's exposed and non-required.
+            return;
+        }
+
+        $value = &$form_state->getValue($this->options['expose']['identifier']);
+        if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator_id'])) {
+            $operator = &$form_state->getValue($this->options['expose']['operator_id']);
+        } else {
+            $operator = $this->operator;
+        }
+
+        $this->validateValidTime($this->options['expose']['identifier'], $form_state, $operator, $value);
+
     }
 
-    $value = &$form_state->getValue($this->options['expose']['identifier']);
-    if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator_id'])) {
-      $operator = &$form_state->getValue($this->options['expose']['operator_id']);
-    }
-    else {
-      $operator = $this->operator;
-    }
+    /**
+     * Validate that the time values convert to something usable.
+     */
+    public function validateValidTime(array &$form, FormStateInterface $form_state, $operator, array $value): void
+    {
+        $operators = $this->operators();
 
-    $this->validateValidTime($this->options['expose']['identifier'], $form_state, $operator, $value);
-
-  }
-
-  /**
-   * Validate that the time values convert to something usable.
-   */
-  public function validateValidTime(array &$form, FormStateInterface $form_state, $operator, array $value): void {
-    $operators = $this->operators();
-
-    if ($operators[$operator]['values'] == 1) {
-      $convert = strtotime((string) $value['value']);
-      if (!empty($form['value']) && ($convert == -1 || $convert === FALSE)) {
-        $form_state->setError($form['value'], $this->t('Invalid date format.'));
-      }
-    }
-    elseif ($operators[$operator]['values'] == 2) {
-      $min = strtotime((string) $value['min']);
-      if ($min == -1 || $min === FALSE) {
-        $form_state->setError($form['min'], $this->t('Invalid date format.'));
-      }
-      $max = strtotime((string) $value['max']);
-      if ($max == -1 || $max === FALSE) {
-        $form_state->setError($form['max'], $this->t('Invalid date format.'));
-      }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function hasValidGroupedValue(array $group) {
-    if (!is_array($group['value']) || empty($group['value'])) {
-      return FALSE;
+        if ($operators[$operator]['values'] == 1) {
+            $convert = strtotime((string) $value['value']);
+            if (!empty($form['value']) && ($convert == -1 || $convert === false)) {
+                $form_state->setError($form['value'], $this->t('Invalid date format.'));
+            }
+        } elseif ($operators[$operator]['values'] == 2) {
+            $min = strtotime((string) $value['min']);
+            if ($min == -1 || $min === false) {
+                $form_state->setError($form['min'], $this->t('Invalid date format.'));
+            }
+            $max = strtotime((string) $value['max']);
+            if ($max == -1 || $max === false) {
+                $form_state->setError($form['max'], $this->t('Invalid date format.'));
+            }
+        }
     }
 
-    // Special case when validating grouped date filters because the
-    // $group['value'] array contains the type of filter (date or offset) and
-    // therefore the number of items the comparison has to be done against is
-    // one greater.
-    $operators = $this->operators();
-    $expected = $operators[$group['operator']]['values'] + 1;
-    $actual = count(array_filter($group['value'], [static::class, 'arrayFilterZero']));
+    /**
+     * {@inheritdoc}
+     */
+    protected function hasValidGroupedValue(array $group)
+    {
+        if (!is_array($group['value']) || empty($group['value'])) {
+            return false;
+        }
 
-    return $actual == $expected;
-  }
+        // Special case when validating grouped date filters because the
+        // $group['value'] array contains the type of filter (date or offset) and
+        // therefore the number of items the comparison has to be done against is
+        // one greater.
+        $operators = $this->operators();
+        $expected = $operators[$group['operator']]['values'] + 1;
+        $actual = count(array_filter($group['value'], [static::class, 'arrayFilterZero']));
 
-  /**
-   * {@inheritdoc}
-   */
-  public function acceptExposedInput($input) {
-    if (empty($this->options['exposed'])) {
-      return TRUE;
+        return $actual == $expected;
     }
 
-    // Store this because it will get overwritten.
-    $type = NULL;
-    if ($this->isAGroup()) {
-      if (is_array($this->group_info)) {
-        $type = $this->group_info['type'];
-      }
-    }
-    else {
-      $type = $this->value['type'];
-    }
-    $rc = parent::acceptExposedInput($input);
+    /**
+     * {@inheritdoc}
+     */
+    public function acceptExposedInput($input)
+    {
+        if (empty($this->options['exposed'])) {
+            return true;
+        }
 
-    // Restore what got overwritten by the parent.
-    if (!is_null($type)) {
-      $this->value['type'] = $type;
+        // Store this because it will get overwritten.
+        $type = null;
+        if ($this->isAGroup()) {
+            if (is_array($this->group_info)) {
+                $type = $this->group_info['type'];
+            }
+        } else {
+            $type = $this->value['type'];
+        }
+        $rc = parent::acceptExposedInput($input);
+
+        // Restore what got overwritten by the parent.
+        if (!is_null($type)) {
+            $this->value['type'] = $type;
+        }
+
+        // Don't filter if value(s) are empty.
+        $operators = $this->operators();
+        if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator_id'])) {
+            $operator = $input[$this->options['expose']['operator_id']];
+        } else {
+            $operator = $this->operator;
+        }
+
+        if ($operators[$operator]['values'] == 1) {
+            // When the operator is either <, <=, =, !=, >=, > or regular_expression
+            // the input contains only one value.
+            if ($this->value['value'] == '') {
+                return false;
+            }
+        } elseif ($operators[$operator]['values'] == 2) {
+            // When the operator is either between or not between the input contains
+            // two values.
+            if ($this->value['min'] == '' || $this->value['max'] == '') {
+                return false;
+            }
+        }
+
+        return $rc;
     }
 
-    // Don't filter if value(s) are empty.
-    $operators = $this->operators();
-    if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator_id'])) {
-      $operator = $input[$this->options['expose']['operator_id']];
-    }
-    else {
-      $operator = $this->operator;
+    /**
+     * {@inheritdoc}
+     */
+    protected function opBetween($field)
+    {
+        $a = intval(strtotime((string) $this->value['min'], 0));
+        $b = intval(strtotime((string) $this->value['max'], 0));
+
+        if ($this->value['type'] == 'offset') {
+            // Keep sign.
+            $a = '***CURRENT_TIME***' . sprintf('%+d', $a);
+            // Keep sign.
+            $b = '***CURRENT_TIME***' . sprintf('%+d', $b);
+        }
+        // This is safe because we are manually scrubbing the values. It is
+        // necessary to do it this way because $a and $b are formulas when using an
+        // offset.
+        $operator = strtoupper($this->operator);
+        $this->query->addWhereExpression($this->options['group'], "$field $operator $a AND $b");
     }
 
-    if ($operators[$operator]['values'] == 1) {
-      // When the operator is either <, <=, =, !=, >=, > or regular_expression
-      // the input contains only one value.
-      if ($this->value['value'] == '') {
-        return FALSE;
-      }
+    /**
+     * {@inheritdoc}
+     */
+    protected function opSimple($field)
+    {
+        $value = intval(strtotime((string) $this->value['value'], 0));
+        if (!empty($this->value['type']) && $this->value['type'] == 'offset') {
+            // Keep sign.
+            $value = '***CURRENT_TIME***' . sprintf('%+d', $value);
+        }
+        // This is safe because we are manually scrubbing the value. It is necessary
+        // to do it this way because $value is a formula when using an offset.
+        $this->query->addWhereExpression($this->options['group'], "$field $this->operator $value");
     }
-    elseif ($operators[$operator]['values'] == 2) {
-      // When the operator is either between or not between the input contains
-      // two values.
-      if ($this->value['min'] == '' || $this->value['max'] == '') {
-        return FALSE;
-      }
-    }
-
-    return $rc;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function opBetween($field) {
-    $a = intval(strtotime((string) $this->value['min'], 0));
-    $b = intval(strtotime((string) $this->value['max'], 0));
-
-    if ($this->value['type'] == 'offset') {
-      // Keep sign.
-      $a = '***CURRENT_TIME***' . sprintf('%+d', $a);
-      // Keep sign.
-      $b = '***CURRENT_TIME***' . sprintf('%+d', $b);
-    }
-    // This is safe because we are manually scrubbing the values. It is
-    // necessary to do it this way because $a and $b are formulas when using an
-    // offset.
-    $operator = strtoupper($this->operator);
-    $this->query->addWhereExpression($this->options['group'], "$field $operator $a AND $b");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function opSimple($field) {
-    $value = intval(strtotime((string) $this->value['value'], 0));
-    if (!empty($this->value['type']) && $this->value['type'] == 'offset') {
-      // Keep sign.
-      $value = '***CURRENT_TIME***' . sprintf('%+d', $value);
-    }
-    // This is safe because we are manually scrubbing the value. It is necessary
-    // to do it this way because $value is a formula when using an offset.
-    $this->query->addWhereExpression($this->options['group'], "$field $this->operator $value");
-  }
 
 }

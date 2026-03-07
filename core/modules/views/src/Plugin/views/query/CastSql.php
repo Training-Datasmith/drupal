@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\query;
 
 /**
  * Cast handling in SQL.
  */
-class CastSql implements CastSqlInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldAsInt(string $field): string {
-    return "CAST($field AS INTEGER)";
-  }
+class CastSql implements CastSqlInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldAsInt(string $field): string
+    {
+        return "CAST($field AS INTEGER)";
+    }
 
 }

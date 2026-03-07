@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Entity;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -19,18 +21,19 @@ use Symfony\Component\Routing\Route;
  * EntityPermissionsRouteProvider instead.
  * @see https://www.drupal.org/node/3384745
  */
-class EntityPermissionsRouteProviderWithCheck extends EntityPermissionsRouteProvider {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityPermissionsRoute(EntityTypeInterface $entity_type): ?Route {
-    @trigger_error(self::class . ' is deprecated in drupal:11.1.0 and is removed from drupal:12.0.0. Use EntityPermissionsRouteProvider instead. See https://www.drupal.org/node/3384745', E_USER_DEPRECATED);
-    $route = parent::getEntityPermissionsRoute($entity_type);
-    if ($route) {
-      $route->setRequirement('_custom_access', '\Drupal\user\Form\EntityPermissionsForm::access');
+class EntityPermissionsRouteProviderWithCheck extends EntityPermissionsRouteProvider
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEntityPermissionsRoute(EntityTypeInterface $entity_type): ?Route
+    {
+        @trigger_error(self::class . ' is deprecated in drupal:11.1.0 and is removed from drupal:12.0.0. Use EntityPermissionsRouteProvider instead. See https://www.drupal.org/node/3384745', E_USER_DEPRECATED);
+        $route = parent::getEntityPermissionsRoute($entity_type);
+        if ($route) {
+            $route->setRequirement('_custom_access', '\Drupal\user\Form\EntityPermissionsForm::access');
+        }
+        return $route;
     }
-    return $route;
-  }
 
 }

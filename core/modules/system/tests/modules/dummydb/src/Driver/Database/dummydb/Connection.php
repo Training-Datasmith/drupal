@@ -11,20 +11,22 @@ use Drupal\mysql\Driver\Database\mysql\Connection as CoreConnection;
 /**
  * DummyDB test implementation of \Drupal\Core\Database\Connection.
  */
-class Connection extends CoreConnection {
+class Connection extends CoreConnection
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function driver()
+    {
+        return 'dummydb';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function driver() {
-    return 'dummydb';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function databaseType() {
-    return 'dummydb';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function databaseType()
+    {
+        return 'dummydb';
+    }
 
 }

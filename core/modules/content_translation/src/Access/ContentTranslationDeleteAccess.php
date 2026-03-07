@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_translation\Access;
 
 use Drupal\content_translation\ContentTranslationManager;
-use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -21,82 +21,84 @@ use Drupal\language\Entity\ContentLanguageSettings;
  *
  * @todo Remove this in https://www.drupal.org/node/2945956.
  */
-class ContentTranslationDeleteAccess implements AccessInterface {
-
-  /**
-   * Constructs a ContentTranslationDeleteAccess object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
-   *   The content translation manager.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager)
-  {
-  }
-
-  /**
-   * Checks access to translation deletion for the specified route match.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The parameterized route.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The currently logged in account.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function access(RouteMatchInterface $route_match, AccountInterface $account) {
-    $requirement = $route_match->getRouteObject()->getRequirement('_access_content_translation_delete');
-    $entity_type_id = current(explode('.', (string) $requirement));
-    $entity = $route_match->getParameter($entity_type_id);
-    return $this->checkAccess($entity);
-  }
-
-  /**
-   * Checks access to translation deletion for the specified entity.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   The entity translation to be deleted.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function checkAccess(ContentEntityInterface $entity) {
-    $result = AccessResult::allowed();
-
-    $entity_type_id = $entity->getEntityTypeId();
-    $result->addCacheableDependency($entity);
-    // The information about workflows is stored in entity bundle info, depend
-    // on that cache tag.
-    $result->addCacheTags(['entity_bundles']);
-    if (!ContentTranslationManager::isPendingRevisionSupportEnabled($entity_type_id, $entity->bundle())) {
-      return $result;
+class ContentTranslationDeleteAccess implements AccessInterface
+{
+    /**
+     * Constructs a ContentTranslationDeleteAccess object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager.
+     * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
+     *   The content translation manager.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager)
+    {
     }
 
-    if ($entity->isDefaultTranslation()) {
-      return $result;
+    /**
+     * Checks access to translation deletion for the specified route match.
+     *
+     * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+     *   The parameterized route.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The currently logged in account.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function access(RouteMatchInterface $route_match, AccountInterface $account)
+    {
+        $requirement = $route_match->getRouteObject()->getRequirement('_access_content_translation_delete');
+        $entity_type_id = current(explode('.', (string) $requirement));
+        $entity = $route_match->getParameter($entity_type_id);
+        return $this->checkAccess($entity);
     }
 
-    $config = ContentLanguageSettings::load($entity_type_id . '.' . $entity->bundle());
-    $result->addCacheableDependency($config);
-    if (!$this->contentTranslationManager->isEnabled($entity_type_id, $entity->bundle())) {
-      return $result;
-    }
+    /**
+     * Checks access to translation deletion for the specified entity.
+     *
+     * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+     *   The entity translation to be deleted.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function checkAccess(ContentEntityInterface $entity)
+    {
+        $result = AccessResult::allowed();
 
-    /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $entity->language()->getId());
-    if (!$revision_id) {
-      return $result;
-    }
+        $entity_type_id = $entity->getEntityTypeId();
+        $result->addCacheableDependency($entity);
+        // The information about workflows is stored in entity bundle info, depend
+        // on that cache tag.
+        $result->addCacheTags(['entity_bundles']);
+        if (!ContentTranslationManager::isPendingRevisionSupportEnabled($entity_type_id, $entity->bundle())) {
+            return $result;
+        }
 
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $revision */
-    $revision = $storage->loadRevision($revision_id);
-    if ($revision->wasDefaultRevision()) {
-      return $result;
+        if ($entity->isDefaultTranslation()) {
+            return $result;
+        }
+
+        $config = ContentLanguageSettings::load($entity_type_id . '.' . $entity->bundle());
+        $result->addCacheableDependency($config);
+        if (!$this->contentTranslationManager->isEnabled($entity_type_id, $entity->bundle())) {
+            return $result;
+        }
+
+        /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
+        $storage = $this->entityTypeManager->getStorage($entity_type_id);
+        $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $entity->language()->getId());
+        if (!$revision_id) {
+            return $result;
+        }
+
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $revision */
+        $revision = $storage->loadRevision($revision_id);
+        if ($revision->wasDefaultRevision()) {
+            return $result;
+        }
+        return $result->andIf(AccessResult::forbidden());
     }
-    return $result->andIf(AccessResult::forbidden());
-  }
 
 }

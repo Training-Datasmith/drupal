@@ -27,76 +27,79 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 #[CoversClass(BaseRequirementsFulfilledValidator::class)]
 #[CoversTrait(BaseRequirementValidatorTrait::class)]
 #[RunTestsInSeparateProcesses]
-class BaseRequirementsFulfilledValidatorTest extends PackageManagerKernelTestBase implements EventSubscriberInterface {
+class BaseRequirementsFulfilledValidatorTest extends PackageManagerKernelTestBase implements EventSubscriberInterface
+{
+    use BaseRequirementValidatorTrait;
+    use StringTranslationTrait;
 
-  use BaseRequirementValidatorTrait;
-  use StringTranslationTrait;
+    /**
+     * The event class to throw to an error for.
+     *
+     * @var string
+     */
+    private string $eventClass;
 
-  /**
-   * The event class to throw to an error for.
-   *
-   * @var string
-   */
-  private string $eventClass;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validate(SandboxValidationEvent $event): void {
-    if (get_class($event) === $this->eventClass) {
-      $event->addError([
-        $this->t('This will not stand!'),
-      ]);
+    /**
+     * {@inheritdoc}
+     */
+    public function validate(SandboxValidationEvent $event): void
+    {
+        if (get_class($event) === $this->eventClass) {
+            $event->addError([
+              $this->t('This will not stand!'),
+            ]);
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->container->get('event_dispatcher')->addSubscriber($this);
-  }
-
-  /**
-   * Data provider for ::testBaseRequirement().
-   *
-   * @return array[]
-   *   The test cases.
-   */
-  public static function providerBaseRequirement(): array {
-    return [
-      [PreCreateEvent::class],
-      [PreRequireEvent::class],
-      [PreApplyEvent::class],
-      [StatusCheckEvent::class],
-    ];
-  }
-
-  /**
-   * Tests that base requirement failures stop event propagation.
-   *
-   * @param string $event_class
-   *   The event which should raise a base requirement error, and thus stop
-   *   event propagation.
-   */
-  #[DataProvider('providerBaseRequirement')]
-  public function testBaseRequirement(string $event_class): void {
-    $this->eventClass = $event_class;
-
-    $validator = $this->container->get(BaseRequirementsFulfilledValidator::class);
-    $this->assertEventPropagationStopped($event_class, [$validator, 'validate']);
-
-    $result = ValidationResult::createError([
-      $this->t('This will not stand!'),
-    ]);
-
-    if ($event_class === StatusCheckEvent::class) {
-      $this->assertStatusCheckResults([$result]);
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->container->get('event_dispatcher')->addSubscriber($this);
     }
-    else {
-      $this->assertResults([$result], $event_class);
+
+    /**
+     * Data provider for ::testBaseRequirement().
+     *
+     * @return array[]
+     *   The test cases.
+     */
+    public static function providerBaseRequirement(): array
+    {
+        return [
+          [PreCreateEvent::class],
+          [PreRequireEvent::class],
+          [PreApplyEvent::class],
+          [StatusCheckEvent::class],
+        ];
     }
-  }
+
+    /**
+     * Tests that base requirement failures stop event propagation.
+     *
+     * @param string $event_class
+     *   The event which should raise a base requirement error, and thus stop
+     *   event propagation.
+     */
+    #[DataProvider('providerBaseRequirement')]
+    public function testBaseRequirement(string $event_class): void
+    {
+        $this->eventClass = $event_class;
+
+        $validator = $this->container->get(BaseRequirementsFulfilledValidator::class);
+        $this->assertEventPropagationStopped($event_class, [$validator, 'validate']);
+
+        $result = ValidationResult::createError([
+          $this->t('This will not stand!'),
+        ]);
+
+        if ($event_class === StatusCheckEvent::class) {
+            $this->assertStatusCheckResults([$result]);
+        } else {
+            $this->assertResults([$result], $event_class);
+        }
+    }
 
 }

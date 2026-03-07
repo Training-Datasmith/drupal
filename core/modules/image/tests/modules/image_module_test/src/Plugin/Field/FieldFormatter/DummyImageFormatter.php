@@ -13,21 +13,22 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Plugin implementation of the Dummy image formatter.
  */
 #[FieldFormatter(
-  id: 'dummy_image_formatter',
-  label: new TranslatableMarkup('Dummy image'),
-  field_types: [
+    id: 'dummy_image_formatter',
+    label: new TranslatableMarkup('Dummy image'),
+    field_types: [
     'image',
   ],
 )]
-class DummyImageFormatter extends FormatterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
-    return [
-      ['#markup' => 'Dummy'],
-    ];
-  }
+class DummyImageFormatter extends FormatterBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode)
+    {
+        return [
+          ['#markup' => 'Dummy'],
+        ];
+    }
 
 }

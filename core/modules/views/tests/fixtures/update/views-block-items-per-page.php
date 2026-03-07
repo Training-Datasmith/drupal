@@ -10,7 +10,8 @@ declare(strict_types=1);
 use Drupal\Core\Database\Database;
 use Drupal\Core\Serialization\Yaml;
 
-$block_data = Yaml::decode(<<<END
+$block_data = Yaml::decode(
+    <<<END
 uuid: ecdad54d-8165-4ed3-a678-8ad20b388282
 langcode: en
 status: true

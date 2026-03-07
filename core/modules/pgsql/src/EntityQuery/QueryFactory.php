@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\pgsql\EntityQuery;
 
 use Drupal\Core\Entity\Query\Sql\QueryFactory as BaseQueryFactory;
@@ -19,6 +21,6 @@ use Drupal\Core\Entity\Query\Sql\QueryFactory as BaseQueryFactory;
  * @see \Drupal\Core\Entity\Query\QueryBase::getNamespaces()
  * @see \Drupal\Core\Entity\Query\QueryBase::getClass()
  */
-class QueryFactory extends BaseQueryFactory {
-
+class QueryFactory extends BaseQueryFactory
+{
 }

@@ -20,115 +20,122 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('jsonapi')]
 #[RunTestsInSeparateProcesses]
-class RestJsonApiUnsupportedTest extends ResourceTestBase {
+class RestJsonApiUnsupportedTest extends ResourceTestBase
+{
+    use AnonResourceTestTrait;
 
-  use AnonResourceTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['jsonapi', 'node'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['jsonapi', 'node'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $format = 'api_json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $format = 'api_json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $mimeType = 'application/vnd.api+json';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $mimeType = 'application/vnd.api+json';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $resourceConfigId = 'entity.node';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $resourceConfigId = 'entity.node';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUpAuthorization($method): void
+    {
+        switch ($method) {
+            case 'GET':
+                $this->grantPermissionsToTestedRole(['access content']);
+                break;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUpAuthorization($method): void {
-    switch ($method) {
-      case 'GET':
-        $this->grantPermissionsToTestedRole(['access content']);
-        break;
-
-      default:
-        throw new \UnexpectedValueException();
+            default:
+                throw new \UnexpectedValueException();
+        }
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    $this->config('system.logging')->set('error_level', ERROR_REPORTING_HIDE)->save();
+        $this->config('system.logging')->set('error_level', ERROR_REPORTING_HIDE)->save();
 
-    // Create a "Camelids" node type.
-    NodeType::create([
-      'name' => 'Camelids',
-      'type' => 'camelids',
-    ])->save();
+        // Create a "Camelids" node type.
+        NodeType::create([
+          'name' => 'Camelids',
+          'type' => 'camelids',
+        ])->save();
 
-    // Create a "Llama" node.
-    $node = Node::create(['type' => 'camelids']);
-    $node->setTitle('Llama')
-      ->setOwnerId(0)
-      ->setPublished()
-      ->save();
-  }
+        // Create a "Llama" node.
+        $node = Node::create(['type' => 'camelids']);
+        $node->setTitle('Llama')
+          ->setOwnerId(0)
+          ->setPublished()
+          ->save();
+    }
 
-  /**
-   * Deploying a REST resource using api_json format results in 400 responses.
-   *
-   * @see \Drupal\jsonapi\EventSubscriber\JsonApiRequestValidator::validateQueryParams()
-   */
-  public function testApiJsonNotSupportedInRest(): void {
-    $this->assertSame(['json', 'xml'], $this->container->getParameter('serializer.formats'));
+    /**
+     * Deploying a REST resource using api_json format results in 400 responses.
+     *
+     * @see \Drupal\jsonapi\EventSubscriber\JsonApiRequestValidator::validateQueryParams()
+     */
+    public function testApiJsonNotSupportedInRest(): void
+    {
+        $this->assertSame(['json', 'xml'], $this->container->getParameter('serializer.formats'));
 
-    $this->provisionResource(['api_json'], []);
-    $this->setUpAuthorization('GET');
+        $this->provisionResource(['api_json'], []);
+        $this->setUpAuthorization('GET');
 
-    $url = Node::load(1)->toUrl()
-      ->setOption('query', ['_format' => 'api_json']);
-    $request_options = [];
+        $url = Node::load(1)->toUrl()
+          ->setOption('query', ['_format' => 'api_json']);
+        $request_options = [];
 
-    $response = $this->request('GET', $url, $request_options);
-    $this->assertResourceErrorResponse(
-      400,
-      FALSE,
-      $response,
-      ['4xx-response', 'config:system.logging', 'config:user.role.anonymous', 'http_response', 'node:1'],
-      ['url.query_args', 'url.site', 'user.permissions'],
-      'MISS',
-      'MISS'
-    );
-  }
+        $response = $this->request('GET', $url, $request_options);
+        $this->assertResourceErrorResponse(
+            400,
+            false,
+            $response,
+            ['4xx-response', 'config:system.logging', 'config:user.role.anonymous', 'http_response', 'node:1'],
+            ['url.query_args', 'url.site', 'user.permissions'],
+            'MISS',
+            'MISS'
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function assertNormalizationEdgeCases($method, Url $url, array $request_options): void {}
+    /**
+     * {@inheritdoc}
+     */
+    protected function assertNormalizationEdgeCases($method, Url $url, array $request_options): void
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessMessage($method): string {
-    return '';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessMessage($method): string
+    {
+        return '';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessCacheability() {
-    return (new CacheableMetadata());
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExpectedUnauthorizedAccessCacheability()
+    {
+        return (new CacheableMetadata());
+    }
 
 }

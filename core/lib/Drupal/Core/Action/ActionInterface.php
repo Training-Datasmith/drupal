@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Action;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -28,34 +30,34 @@ use Drupal\Core\Session\AccountInterface;
  * @see \Drupal\Core\Action\ActionBase
  * @see plugin_api
  */
-interface ActionInterface extends ExecutableInterface, PluginInspectionInterface {
+interface ActionInterface extends ExecutableInterface, PluginInspectionInterface
+{
+    /**
+     * Executes the plugin for an array of objects.
+     *
+     * @param array $objects
+     *   An array of entities.
+     */
+    public function executeMultiple(array $objects);
 
-  /**
-   * Executes the plugin for an array of objects.
-   *
-   * @param array $objects
-   *   An array of entities.
-   */
-  public function executeMultiple(array $objects);
-
-  /**
-   * Checks object access.
-   *
-   * @param mixed $object
-   *   The object to execute the action on.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) The user for which to check access, or NULL to check access
-   *   for the current user. Defaults to NULL.
-   * @param bool $return_as_object
-   *   (optional) Defaults to FALSE.
-   *
-   * @return ($return_as_object is true ? \Drupal\Core\Access\AccessResultInterface : bool)
-   *   The access result. Returns a boolean if $return_as_object is FALSE (this
-   *   is the default) and otherwise an AccessResultInterface object.
-   *   When a boolean is returned, the result of AccessInterface::isAllowed() is
-   *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
-   *   access is either explicitly forbidden or "no opinion".
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE);
+    /**
+     * Checks object access.
+     *
+     * @param mixed $object
+     *   The object to execute the action on.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   (optional) The user for which to check access, or NULL to check access
+     *   for the current user. Defaults to NULL.
+     * @param bool $return_as_object
+     *   (optional) Defaults to FALSE.
+     *
+     * @return ($return_as_object is true ? \Drupal\Core\Access\AccessResultInterface : bool)
+     *   The access result. Returns a boolean if $return_as_object is FALSE (this
+     *   is the default) and otherwise an AccessResultInterface object.
+     *   When a boolean is returned, the result of AccessInterface::isAllowed() is
+     *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
+     *   access is either explicitly forbidden or "no opinion".
+     */
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false);
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -31,76 +33,76 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class DataType extends Plugin {
+class DataType extends Plugin
+{
+    /**
+     * The data type plugin ID.
+     *
+     * @var string
+     */
+    public $id;
 
-  /**
-   * The data type plugin ID.
-   *
-   * @var string
-   */
-  public $id;
+    /**
+     * The human-readable name of the data type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $label;
 
-  /**
-   * The human-readable name of the data type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $label;
+    /**
+     * The description of the data type.
+     *
+     * @var \Drupal\Core\Annotation\Translation
+     *
+     * @ingroup plugin_translatable
+     */
+    public $description;
 
-  /**
-   * The description of the data type.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $description;
+    /**
+     * The definition class to use for defining data of this type.
+     *
+     * Must implement the \Drupal\Core\TypedData\DataDefinitionInterface.
+     *
+     * @var string
+     */
+    public $definition_class = \Drupal\Core\TypedData\DataDefinition::class;
 
-  /**
-   * The definition class to use for defining data of this type.
-   *
-   * Must implement the \Drupal\Core\TypedData\DataDefinitionInterface.
-   *
-   * @var string
-   */
-  public $definition_class = \Drupal\Core\TypedData\DataDefinition::class;
+    /**
+     * The typed data class used for wrapping multiple data items of the type.
+     *
+     * Must implement the \Drupal\Core\TypedData\ListInterface.
+     *
+     * @var string
+     */
+    public $list_class = \Drupal\Core\TypedData\Plugin\DataType\ItemList::class;
 
-  /**
-   * The typed data class used for wrapping multiple data items of the type.
-   *
-   * Must implement the \Drupal\Core\TypedData\ListInterface.
-   *
-   * @var string
-   */
-  public $list_class = \Drupal\Core\TypedData\Plugin\DataType\ItemList::class;
+    /**
+     * The definition class to use for defining a list of items of this type.
+     *
+     * Must implement the \Drupal\Core\TypedData\ListDataDefinitionInterface.
+     *
+     * @var string
+     */
+    public $list_definition_class = \Drupal\Core\TypedData\ListDataDefinition::class;
 
-  /**
-   * The definition class to use for defining a list of items of this type.
-   *
-   * Must implement the \Drupal\Core\TypedData\ListDataDefinitionInterface.
-   *
-   * @var string
-   */
-  public $list_definition_class = \Drupal\Core\TypedData\ListDataDefinition::class;
+    /**
+     * An array of validation constraints for this type.
+     *
+     * @var array
+     *
+     * @see \Drupal\Core\TypedData\TypedDataManager::getConstraints().
+     */
+    public $constraints;
 
-  /**
-   * An array of validation constraints for this type.
-   *
-   * @var array
-   *
-   * @see \Drupal\Core\TypedData\TypedDataManager::getConstraints().
-   */
-  public $constraints;
-
-  /**
-   * Whether the typed object wraps the canonical representation of the data.
-   *
-   * @var bool
-   *
-   * @see \Drupal\Core\TypedData\TypedDataManager::getCanonicalRepresentation()
-   */
-  public $unwrap_for_canonical_representation = TRUE;
+    /**
+     * Whether the typed object wraps the canonical representation of the data.
+     *
+     * @var bool
+     *
+     * @see \Drupal\Core\TypedData\TypedDataManager::getCanonicalRepresentation()
+     */
+    public $unwrap_for_canonical_representation = true;
 
 }

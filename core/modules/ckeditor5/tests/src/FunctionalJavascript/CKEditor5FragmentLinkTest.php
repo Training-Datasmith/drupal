@@ -24,116 +24,118 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('ckeditor5')]
 #[RunTestsInSeparateProcesses]
-class CKEditor5FragmentLinkTest extends WebDriverTestBase {
+class CKEditor5FragmentLinkTest extends WebDriverTestBase
+{
+    use TestFileCreationTrait;
 
-  use TestFileCreationTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'ckeditor5'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'ckeditor5'];
+    /**
+     * The admin user.
+     *
+     * @var \Drupal\user\Entity\User
+     */
+    protected User $account;
 
-  /**
-   * The admin user.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected User $account;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        // Create a text format and associate CKEditor 5.
+        FilterFormat::create([
+          'format' => 'ckeditor5',
+          'name' => 'CKEditor 5 with image upload',
+          'roles' => [RoleInterface::AUTHENTICATED_ID],
+        ])->save();
+        Editor::create([
+          'format' => 'ckeditor5',
+          'editor' => 'ckeditor5',
+          'image_upload' => [
+            'status' => false,
+          ],
+        ])->save();
 
-    // Create a text format and associate CKEditor 5.
-    FilterFormat::create([
-      'format' => 'ckeditor5',
-      'name' => 'CKEditor 5 with image upload',
-      'roles' => [RoleInterface::AUTHENTICATED_ID],
-    ])->save();
-    Editor::create([
-      'format' => 'ckeditor5',
-      'editor' => 'ckeditor5',
-      'image_upload' => [
-        'status' => FALSE,
-      ],
-    ])->save();
+        // Create a node type for testing.
+        NodeType::create(['type' => 'page', 'name' => 'page'])->save();
 
-    // Create a node type for testing.
-    NodeType::create(['type' => 'page', 'name' => 'page'])->save();
+        $field_storage = FieldStorageConfig::loadByName('node', 'body');
 
-    $field_storage = FieldStorageConfig::loadByName('node', 'body');
+        // Create a body field instance for the 'page' node type.
+        FieldConfig::create([
+          'field_storage' => $field_storage,
+          'bundle' => 'page',
+          'label' => 'Body',
+          'settings' => [],
+          'required' => true,
+        ])->save();
 
-    // Create a body field instance for the 'page' node type.
-    FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => 'page',
-      'label' => 'Body',
-      'settings' => [],
-      'required' => TRUE,
-    ])->save();
+        // Assign widget settings for the 'default' form mode.
+        EntityFormDisplay::create([
+          'targetEntityType' => 'node',
+          'bundle' => 'page',
+          'mode' => 'default',
+          'status' => true,
+        ])->setComponent('body', ['type' => 'text_textarea'])
+          ->save();
 
-    // Assign widget settings for the 'default' form mode.
-    EntityFormDisplay::create([
-      'targetEntityType' => 'node',
-      'bundle' => 'page',
-      'mode' => 'default',
-      'status' => TRUE,
-    ])->setComponent('body', ['type' => 'text_textarea'])
-      ->save();
+        $this->account = $this->drupalCreateUser([
+          'administer nodes',
+          'create page content',
+        ]);
+        $this->drupalLogin($this->account);
+    }
 
-    $this->account = $this->drupalCreateUser([
-      'administer nodes',
-      'create page content',
-    ]);
-    $this->drupalLogin($this->account);
-  }
+    /**
+     * Tests if the fragment link to a textarea works with CKEditor 5 enabled.
+     */
+    public function testFragmentLink(): void
+    {
+        $session = $this->getSession();
+        $web_assert = $this->assertSession();
+        $ckeditor_class = '.ck-editor';
+        $ckeditor_id = '#cke_edit-body-0-value';
 
-  /**
-   * Tests if the fragment link to a textarea works with CKEditor 5 enabled.
-   */
-  public function testFragmentLink(): void {
-    $session = $this->getSession();
-    $web_assert = $this->assertSession();
-    $ckeditor_class = '.ck-editor';
-    $ckeditor_id = '#cke_edit-body-0-value';
+        $this->drupalGet('node/add/page');
 
-    $this->drupalGet('node/add/page');
+        // Add a bottom margin to the title field to be sure the body field is not
+        // visible.
+        $session->executeScript("document.getElementById('edit-title-0-value').style.marginBottom = window.innerHeight*2 +'px';");
 
-    // Add a bottom margin to the title field to be sure the body field is not
-    // visible.
-    $session->executeScript("document.getElementById('edit-title-0-value').style.marginBottom = window.innerHeight*2 +'px';");
+        $this->assertSession()->waitForElementVisible('css', $ckeditor_id);
+        // Check that the CKEditor 5-enabled body field is currently not visible in
+        // the viewport.
+        $web_assert->assertNotVisibleInViewport('css', $ckeditor_class, 'topLeft', 'CKEditor 5-enabled body field is visible.');
 
-    $this->assertSession()->waitForElementVisible('css', $ckeditor_id);
-    // Check that the CKEditor 5-enabled body field is currently not visible in
-    // the viewport.
-    $web_assert->assertNotVisibleInViewport('css', $ckeditor_class, 'topLeft', 'CKEditor 5-enabled body field is visible.');
+        $before_url = $session->getCurrentUrl();
 
-    $before_url = $session->getCurrentUrl();
+        // Trigger a hash change with as target the hidden textarea.
+        $session->executeScript("location.hash = '#edit-body-0-value';");
 
-    // Trigger a hash change with as target the hidden textarea.
-    $session->executeScript("location.hash = '#edit-body-0-value';");
+        // Check that the CKEditor 5-enabled body field is visible in the viewport.
+        // The hash change adds an ID to the CKEditor 5 instance so check its
+        // visibility using the ID now.
+        $web_assert->assertVisibleInViewport('css', $ckeditor_id, 'topLeft', 'CKEditor 5-enabled body field is not visible.');
 
-    // Check that the CKEditor 5-enabled body field is visible in the viewport.
-    // The hash change adds an ID to the CKEditor 5 instance so check its
-    // visibility using the ID now.
-    $web_assert->assertVisibleInViewport('css', $ckeditor_id, 'topLeft', 'CKEditor 5-enabled body field is not visible.');
+        // Use JavaScript to go back in the history instead of
+        // \Behat\Mink\Session::back() because that function doesn't work after a
+        // hash change.
+        $session->executeScript('history.back();');
 
-    // Use JavaScript to go back in the history instead of
-    // \Behat\Mink\Session::back() because that function doesn't work after a
-    // hash change.
-    $session->executeScript("history.back();");
+        $after_url = $session->getCurrentUrl();
 
-    $after_url = $session->getCurrentUrl();
-
-    // Check that going back in the history worked.
-    self::assertEquals($before_url, $after_url, 'History back works.');
-  }
+        // Check that going back in the history worked.
+        self::assertEquals($before_url, $after_url, 'History back works.');
+    }
 
 }

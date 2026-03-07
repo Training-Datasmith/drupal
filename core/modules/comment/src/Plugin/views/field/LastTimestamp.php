@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\comment\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
-use Drupal\views\Plugin\views\field\Date;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\field\Date;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 
@@ -13,27 +15,29 @@ use Drupal\views\ViewExecutable;
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField("comment_last_timestamp")]
-class LastTimestamp extends Date {
+#[ViewsField('comment_last_timestamp')]
+class LastTimestamp extends Date
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = null): void
+    {
+        parent::init($view, $display, $options);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
-    parent::init($view, $display, $options);
-
-    $this->additional_fields['comment_count'] = 'comment_count';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render(ResultRow $values) {
-    $comment_count = $this->getValue($values, 'comment_count');
-    if (empty($this->options['empty_zero']) || $comment_count) {
-      return parent::render($values);
+        $this->additional_fields['comment_count'] = 'comment_count';
     }
-    return NULL;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render(ResultRow $values)
+    {
+        $comment_count = $this->getValue($values, 'comment_count');
+        if (empty($this->options['empty_zero']) || $comment_count) {
+            return parent::render($values);
+        }
+        return null;
+    }
 
 }

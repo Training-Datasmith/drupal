@@ -16,75 +16,77 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class AreaTitleWebTest extends ViewTestBase {
+class AreaTitleWebTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_area_title'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_area_title'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['views_test_config']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->enableViewsTestModule();
+    }
 
-    $this->enableViewsTestModule();
-  }
+    /**
+     * Tests the title area handler.
+     */
+    public function testTitleText(): void
+    {
+        // Confirm that the view has the normal title before making the view return
+        // no result.
+        $this->drupalGet('test-area-title');
+        $this->assertSession()->titleEquals('test_title_header | Drupal');
 
-  /**
-   * Tests the title area handler.
-   */
-  public function testTitleText(): void {
-    // Confirm that the view has the normal title before making the view return
-    // no result.
-    $this->drupalGet('test-area-title');
-    $this->assertSession()->titleEquals('test_title_header | Drupal');
+        // Change the view to return no result.
+        /** @var \Drupal\views\Entity\View $view */
+        $view = View::load('test_area_title');
+        $display = & $view->getDisplay('default');
+        $display['display_options']['filters']['name'] = [
+          'field' => 'name',
+          'id' => 'name',
+          'table' => 'views_test_data',
+          'relationship' => 'none',
+          'plugin_id' => 'string',
+          // Add a value which does not exist. The dataset is defined in
+          // \Drupal\views\Tests\ViewTestData::dataSet().
+          'value' => 'Euler',
+        ];
+        $view->save();
 
-    // Change the view to return no result.
-    /** @var \Drupal\views\Entity\View $view */
-    $view = View::load('test_area_title');
-    $display =& $view->getDisplay('default');
-    $display['display_options']['filters']['name'] = [
-      'field' => 'name',
-      'id' => 'name',
-      'table' => 'views_test_data',
-      'relationship' => 'none',
-      'plugin_id' => 'string',
-      // Add a value which does not exist. The dataset is defined in
-      // \Drupal\views\Tests\ViewTestData::dataSet().
-      'value' => 'Euler',
-    ];
-    $view->save();
+        $this->drupalGet('test-area-title');
+        $this->assertSession()->titleEquals('test_title_empty | Drupal');
 
-    $this->drupalGet('test-area-title');
-    $this->assertSession()->titleEquals('test_title_empty | Drupal');
+        // Change the view to return a result instead.
+        /** @var \Drupal\views\Entity\View $view */
+        $view = View::load('test_area_title');
+        $display = & $view->getDisplay('default');
+        $display['display_options']['filters']['name'] = [
+          'field' => 'name',
+          'id' => 'name',
+          'table' => 'views_test_data',
+          'relationship' => 'none',
+          'plugin_id' => 'string',
+          // Change to a value which does exist. The dataset is defined in
+          // \Drupal\views\Tests\ViewTestData::dataSet().
+          'value' => 'Ringo',
+        ];
+        $view->save();
 
-    // Change the view to return a result instead.
-    /** @var \Drupal\views\Entity\View $view */
-    $view = View::load('test_area_title');
-    $display =& $view->getDisplay('default');
-    $display['display_options']['filters']['name'] = [
-      'field' => 'name',
-      'id' => 'name',
-      'table' => 'views_test_data',
-      'relationship' => 'none',
-      'plugin_id' => 'string',
-      // Change to a value which does exist. The dataset is defined in
-      // \Drupal\views\Tests\ViewTestData::dataSet().
-      'value' => 'Ringo',
-    ];
-    $view->save();
-
-    $this->drupalGet('test-area-title');
-    $this->assertSession()->titleEquals('test_title_header | Drupal');
-  }
+        $this->drupalGet('test-area-title');
+        $this->assertSession()->titleEquals('test_title_header | Drupal');
+    }
 
 }

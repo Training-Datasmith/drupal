@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 use Drupal\Core\Action\ActionBase;
@@ -25,38 +27,40 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\Core\Action\Plugin\Action\PublishAction
  */
-abstract class FieldUpdateActionBase extends ActionBase {
+abstract class FieldUpdateActionBase extends ActionBase
+{
+    /**
+     * Gets an array of values to be set.
+     *
+     * @return array
+     *   Array of values with field names as keys.
+     */
+    abstract protected function getFieldsToUpdate();
 
-  /**
-   * Gets an array of values to be set.
-   *
-   * @return array
-   *   Array of values with field names as keys.
-   */
-  abstract protected function getFieldsToUpdate();
-
-  /**
-   * {@inheritdoc}
-   */
-  public function execute($entity = NULL): void {
-    foreach ($this->getFieldsToUpdate() as $field => $value) {
-      $entity->$field = $value;
-    }
-    $entity->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    /** @var \Drupal\Core\Access\AccessResultInterface $result */
-    $result = $object->access('update', $account, TRUE);
-
-    foreach ($this->getFieldsToUpdate() as $field => $value) {
-      $result = $result->andIf($object->{$field}->access('edit', $account, TRUE));
+    /**
+     * {@inheritdoc}
+     */
+    public function execute($entity = null): void
+    {
+        foreach ($this->getFieldsToUpdate() as $field => $value) {
+            $entity->$field = $value;
+        }
+        $entity->save();
     }
 
-    return $return_as_object ? $result : $result->isAllowed();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
+    {
+        /** @var \Drupal\Core\Access\AccessResultInterface $result */
+        $result = $object->access('update', $account, true);
+
+        foreach ($this->getFieldsToUpdate() as $field => $value) {
+            $result = $result->andIf($object->{$field}->access('edit', $account, true));
+        }
+
+        return $return_as_object ? $result : $result->isAllowed();
+    }
 
 }

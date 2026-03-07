@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\sort;
 
 use Drupal\views\Attribute\ViewsSort;
@@ -10,8 +12,9 @@ use Drupal\views\Plugin\views\BrokenHandlerTrait;
  *
  * @ingroup views_sort_handlers
  */
-#[ViewsSort("broken")]
-class Broken extends SortPluginBase {
-  use BrokenHandlerTrait;
+#[ViewsSort('broken')]
+class Broken extends SortPluginBase
+{
+    use BrokenHandlerTrait;
 
 }

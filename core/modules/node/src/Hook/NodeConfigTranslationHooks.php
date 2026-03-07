@@ -9,14 +9,15 @@ use Drupal\Core\Hook\Attribute\Hook;
 /**
  * Config translation hook implementations for node.
  */
-class NodeConfigTranslationHooks {
-
-  /**
-   * Implements hook_config_translation_info_alter().
-   */
-  #[Hook('config_translation_info_alter')]
-  public function configTranslationInfoAlter(array &$info): void {
-    $info['node_type']['class'] = \Drupal\node\ConfigTranslation\NodeTypeMapper::class;
-  }
+class NodeConfigTranslationHooks
+{
+    /**
+     * Implements hook_config_translation_info_alter().
+     */
+    #[Hook('config_translation_info_alter')]
+    public function configTranslationInfoAlter(array &$info): void
+    {
+        $info['node_type']['class'] = \Drupal\node\ConfigTranslation\NodeTypeMapper::class;
+    }
 
 }

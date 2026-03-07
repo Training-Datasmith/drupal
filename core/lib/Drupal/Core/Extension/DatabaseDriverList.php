@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -13,218 +15,239 @@ use Drupal\Core\Cache\CacheBackendInterface;
  *   properties / methods will not change over time. This will be reviewed after
  *   https://www.drupal.org/project/drupal/issues/2940481
  */
-class DatabaseDriverList extends ExtensionList {
+class DatabaseDriverList extends ExtensionList
+{
+    /**
+     * The namespace of core's MySql database driver.
+     */
+    protected const CORE_MYSQL_DRIVER_NAMESPACE = 'Drupal\\mysql\\Driver\\Database\\mysql';
 
-  /**
-   * The namespace of core's MySql database driver.
-   */
-  protected const CORE_MYSQL_DRIVER_NAMESPACE = 'Drupal\\mysql\\Driver\\Database\\mysql';
+    /**
+     * Determines whether test drivers shall be included in the discovery.
+     *
+     * If FALSE, all 'tests' directories are excluded from the search. If NULL,
+     * it will be determined by the 'extension_discovery_scan_tests' setting.
+     */
+    private ?bool $includeTestDrivers = null;
 
-  /**
-   * Determines whether test drivers shall be included in the discovery.
-   *
-   * If FALSE, all 'tests' directories are excluded from the search. If NULL,
-   * it will be determined by the 'extension_discovery_scan_tests' setting.
-   */
-  private ?bool $includeTestDrivers = NULL;
+    /**
+     * Constructs a new instance.
+     *
+     * @param string $root
+     *   The app root.
+     * @param string $type
+     *   The extension type.
+     * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+     *   The cache.
+     */
+    public function __construct($root, $type, CacheBackendInterface $cache)
+    {
+        $this->root = $root;
+        $this->type = $type;
+        $this->cache = $cache;
+    }
 
-  /**
-   * Constructs a new instance.
-   *
-   * @param string $root
-   *   The app root.
-   * @param string $type
-   *   The extension type.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache.
-   */
-  public function __construct($root, $type, CacheBackendInterface $cache) {
-    $this->root = $root;
-    $this->type = $type;
-    $this->cache = $cache;
-  }
+    /**
+     * Determines whether test drivers shall be included in the discovery.
+     *
+     * @param bool|null $includeTestDrivers
+     *   Whether to include test extensions. If FALSE, all 'tests' directories
+     *   are excluded in the search. If NULL, it will be determined by the
+     *   'extension_discovery_scan_tests' setting.
+     *
+     * @return $this
+     */
+    public function includeTestDrivers(?bool $includeTestDrivers): static
+    {
+        $this->includeTestDrivers = $includeTestDrivers;
+        return $this;
+    }
 
-  /**
-   * Determines whether test drivers shall be included in the discovery.
-   *
-   * @param bool|null $includeTestDrivers
-   *   Whether to include test extensions. If FALSE, all 'tests' directories
-   *   are excluded in the search. If NULL, it will be determined by the
-   *   'extension_discovery_scan_tests' setting.
-   *
-   * @return $this
-   */
-  public function includeTestDrivers(?bool $includeTestDrivers): static {
-    $this->includeTestDrivers = $includeTestDrivers;
-    return $this;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExtensionDiscovery(): \Drupal\Core\Extension\ExtensionDiscovery
+    {
+        return new ExtensionDiscovery($this->root, false);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExtensionDiscovery(): \Drupal\Core\Extension\ExtensionDiscovery {
-    return new ExtensionDiscovery($this->root, FALSE);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function doScanExtensions()
+    {
+        return $this->getExtensionDiscovery()->scan('module', $this->includeTestDrivers);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function doScanExtensions() {
-    return $this->getExtensionDiscovery()->scan('module', $this->includeTestDrivers);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function doList(): array {
-    // Determine the modules that contain at least one installable database
-    // driver.
-    $discoveredModules = $this->doScanExtensions();
-    $drivers = [];
-    foreach ($discoveredModules as $module) {
-      $moduleDriverDirectory = $this->root . DIRECTORY_SEPARATOR . $module->getPath() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Driver' . DIRECTORY_SEPARATOR . 'Database';
-      if (is_dir($moduleDriverDirectory)) {
-        // Use directory iterator to avoid services.
-        $directoryIterator = new \DirectoryIterator($moduleDriverDirectory);
-        foreach ($directoryIterator as $fileInfo) {
-          if ($fileInfo->isDir() && !$fileInfo->isDot() && file_exists($moduleDriverDirectory . DIRECTORY_SEPARATOR . $fileInfo->getFilename() . DIRECTORY_SEPARATOR . 'Install' . DIRECTORY_SEPARATOR . 'Tasks.php')) {
-            $databaseDriver = new DatabaseDriver($this->root, $module, $fileInfo->getFilename(), $discoveredModules);
-            $drivers[$databaseDriver->getName()] = $databaseDriver;
-          }
+    /**
+     * {@inheritdoc}
+     */
+    protected function doList(): array
+    {
+        // Determine the modules that contain at least one installable database
+        // driver.
+        $discoveredModules = $this->doScanExtensions();
+        $drivers = [];
+        foreach ($discoveredModules as $module) {
+            $moduleDriverDirectory = $this->root . DIRECTORY_SEPARATOR . $module->getPath() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Driver' . DIRECTORY_SEPARATOR . 'Database';
+            if (is_dir($moduleDriverDirectory)) {
+                // Use directory iterator to avoid services.
+                $directoryIterator = new \DirectoryIterator($moduleDriverDirectory);
+                foreach ($directoryIterator as $fileInfo) {
+                    if ($fileInfo->isDir() && !$fileInfo->isDot() && file_exists($moduleDriverDirectory . DIRECTORY_SEPARATOR . $fileInfo->getFilename() . DIRECTORY_SEPARATOR . 'Install' . DIRECTORY_SEPARATOR . 'Tasks.php')) {
+                        $databaseDriver = new DatabaseDriver($this->root, $module, $fileInfo->getFilename(), $discoveredModules);
+                        $drivers[$databaseDriver->getName()] = $databaseDriver;
+                    }
+                }
+            }
         }
-      }
+        return $drivers;
     }
-    return $drivers;
-  }
 
-  /**
-   * Returns the list of installable database drivers.
-   *
-   * @return \Drupal\Core\Extension\DatabaseDriver[]
-   *   An array of installable database driver extension objects.
-   */
-  public function getInstallableList(): array {
-    $installableDrivers = [];
-    foreach ($this->getList() as $name => $driver) {
-      if ($driver->getInstallTasks()->installable()) {
-        $installableDrivers[$name] = $driver;
-      }
+    /**
+     * Returns the list of installable database drivers.
+     *
+     * @return \Drupal\Core\Extension\DatabaseDriver[]
+     *   An array of installable database driver extension objects.
+     */
+    public function getInstallableList(): array
+    {
+        $installableDrivers = [];
+        foreach ($this->getList() as $name => $driver) {
+            if ($driver->getInstallTasks()->installable()) {
+                $installableDrivers[$name] = $driver;
+            }
+        }
+        // Usability: unconditionally put core MySQL driver on top.
+        if (isset($installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE])) {
+            $mysqlDriver = $installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE];
+            unset($installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE]);
+            $installableDrivers = [static::CORE_MYSQL_DRIVER_NAMESPACE => $mysqlDriver] + $installableDrivers;
+        }
+        return $installableDrivers;
     }
-    // Usability: unconditionally put core MySQL driver on top.
-    if (isset($installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE])) {
-      $mysqlDriver = $installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE];
-      unset($installableDrivers[static::CORE_MYSQL_DRIVER_NAMESPACE]);
-      $installableDrivers = [static::CORE_MYSQL_DRIVER_NAMESPACE => $mysqlDriver] + $installableDrivers;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName($extension_name): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
     }
-    return $installableDrivers;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName($extension_name): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function get($extension_name) {
-    if (!str_contains($extension_name, "\\")) {
-      throw new \RuntimeException("Passing a database driver name '{$extension_name}' to " . __METHOD__ . '() is not supported. Pass a database driver namespace instead. See https://www.drupal.org/node/3258175');
+    /**
+     * {@inheritdoc}
+     */
+    public function get($extension_name)
+    {
+        if (!str_contains($extension_name, '\\')) {
+            throw new \RuntimeException("Passing a database driver name '{$extension_name}' to " . __METHOD__ . '() is not supported. Pass a database driver namespace instead. See https://www.drupal.org/node/3258175');
+        }
+        return parent::get($extension_name);
     }
-    return parent::get($extension_name);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getExtensionInfo($extension_name): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getExtensionInfo($extension_name): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAllAvailableInfo(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllAvailableInfo(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getInstalledExtensionNames(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getInstalledExtensionNames(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getAllInstalledInfo(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllInstalledInfo(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function recalculateInfo(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function recalculateInfo(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPathNames(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPathNames(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function recalculatePathNames(): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function recalculatePathNames(): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function setPathname($extension_name, $pathname): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setPathname($extension_name, $pathname): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPathname($extension_name): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPathname($extension_name): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath($extension_name): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getPath($extension_name): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function createExtensionInfo(Extension $extension): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function createExtensionInfo(Extension $extension): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function checkIncompatibility($name): never {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function checkIncompatibility($name): never
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function sortByName(Extension $a, Extension $b): int {
-    throw new \LogicException(__METHOD__ . '() is not implemented');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function sortByName(Extension $a, Extension $b): int
+    {
+        throw new \LogicException(__METHOD__ . '() is not implemented');
+    }
 
 }

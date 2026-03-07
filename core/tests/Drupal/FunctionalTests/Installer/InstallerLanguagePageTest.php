@@ -14,41 +14,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerLanguagePageTest extends InstallerTestBase {
+class InstallerLanguagePageTest extends InstallerTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Installer step: Select language.
+     */
+    protected function setUpLanguage(): void
+    {
+        // Place a custom local translation in the translations directory.
+        mkdir($this->root . '/' . $this->siteDirectory . '/files/translations', 0777, true);
+        touch($this->root . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.xoxo.po');
 
-  /**
-   * Installer step: Select language.
-   */
-  protected function setUpLanguage(): void {
-    // Place a custom local translation in the translations directory.
-    mkdir($this->root . '/' . $this->siteDirectory . '/files/translations', 0777, TRUE);
-    touch($this->root . '/' . $this->siteDirectory . '/files/translations/drupal-8.0.0.xoxo.po');
+        // Check that all predefined languages show up with their native names.
+        $this->visitInstaller();
+        foreach (LanguageManager::getStandardLanguageList() as $langcode => $names) {
+            $this->assertSession()->optionExists('edit-langcode', $langcode);
+            $this->assertSession()->responseContains('>' . $names[1] . '<');
+        }
 
-    // Check that all predefined languages show up with their native names.
-    $this->visitInstaller();
-    foreach (LanguageManager::getStandardLanguageList() as $langcode => $names) {
-      $this->assertSession()->optionExists('edit-langcode', $langcode);
-      $this->assertSession()->responseContains('>' . $names[1] . '<');
+        // Check that our custom one shows up with the file name indicated language.
+        $this->assertSession()->optionExists('edit-langcode', 'xoxo');
+        $this->assertSession()->responseContains('>xoxo<');
+
+        parent::setUpLanguage();
     }
 
-    // Check that our custom one shows up with the file name indicated language.
-    $this->assertSession()->optionExists('edit-langcode', 'xoxo');
-    $this->assertSession()->responseContains('>xoxo<');
-
-    parent::setUpLanguage();
-  }
-
-  /**
-   * Confirms that the installation succeeded.
-   */
-  public function testInstalled(): void {
-    $this->assertSession()->addressEquals('user/1');
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Confirms that the installation succeeded.
+     */
+    public function testInstalled(): void
+    {
+        $this->assertSession()->addressEquals('user/1');
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

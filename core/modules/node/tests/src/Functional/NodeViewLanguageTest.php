@@ -13,36 +13,37 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class NodeViewLanguageTest extends NodeTestBase {
+class NodeViewLanguageTest extends NodeTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['node', 'datetime', 'language'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['node', 'datetime', 'language'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests the language extra field display.
+     */
+    public function testViewLanguage(): void
+    {
+        // Add Spanish language.
+        ConfigurableLanguage::createFromLangcode('es')->save();
 
-  /**
-   * Tests the language extra field display.
-   */
-  public function testViewLanguage(): void {
-    // Add Spanish language.
-    ConfigurableLanguage::createFromLangcode('es')->save();
+        // Set language field visible.
+        \Drupal::service('entity_display.repository')
+          ->getViewDisplay('node', 'page', 'full')
+          ->setComponent('langcode')
+          ->save();
 
-    // Set language field visible.
-    \Drupal::service('entity_display.repository')
-      ->getViewDisplay('node', 'page', 'full')
-      ->setComponent('langcode')
-      ->save();
+        // Create a node in Spanish.
+        $node = $this->drupalCreateNode(['langcode' => 'es']);
 
-    // Create a node in Spanish.
-    $node = $this->drupalCreateNode(['langcode' => 'es']);
-
-    $this->drupalGet($node->toUrl());
-    $this->assertSession()->pageTextContains('Spanish');
-  }
+        $this->drupalGet($node->toUrl());
+        $this->assertSession()->pageTextContains('Spanish');
+    }
 
 }

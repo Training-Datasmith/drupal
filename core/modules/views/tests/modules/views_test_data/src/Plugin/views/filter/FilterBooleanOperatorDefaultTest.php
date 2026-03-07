@@ -12,16 +12,17 @@ use Drupal\views\Plugin\views\filter\BooleanOperator;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("boolean_default")]
-class FilterBooleanOperatorDefaultTest extends BooleanOperator {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query() {
-    $this->ensureMyTable();
-    $field = "$this->tableAlias.$this->realField";
-    $this->queryOpBoolean($field);
-  }
+#[ViewsFilter('boolean_default')]
+class FilterBooleanOperatorDefaultTest extends BooleanOperator
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query()
+    {
+        $this->ensureMyTable();
+        $field = "$this->tableAlias.$this->realField";
+        $this->queryOpBoolean($field);
+    }
 
 }

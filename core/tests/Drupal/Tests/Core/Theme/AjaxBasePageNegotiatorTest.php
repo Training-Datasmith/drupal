@@ -21,129 +21,135 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 #[CoversClass(AjaxBasePageNegotiator::class)]
 #[Group('Theme')]
-class AjaxBasePageNegotiatorTest extends UnitTestCase {
+class AjaxBasePageNegotiatorTest extends UnitTestCase
+{
+    /**
+     * @var \Drupal\Core\Theme\AjaxBasePageNegotiator
+     *
+     * The AJAX base page negotiator.
+     */
+    protected $negotiator;
 
-  /**
-   * @var \Drupal\Core\Theme\AjaxBasePageNegotiator
-   *
-   * The AJAX base page negotiator.
-   */
-  protected $negotiator;
+    /**
+     * @var \Drupal\Core\Access\CsrfTokenGenerator|\Prophecy\Prophecy\ProphecyInterface
+     *
+     * The CSRF token generator.
+     */
+    protected $tokenGenerator;
 
-  /**
-   * @var \Drupal\Core\Access\CsrfTokenGenerator|\Prophecy\Prophecy\ProphecyInterface
-   *
-   * The CSRF token generator.
-   */
-  protected $tokenGenerator;
+    /**
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     *
+     * The request stack.
+     */
+    protected $requestStack;
 
-  /**
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   *
-   * The request stack.
-   */
-  protected $requestStack;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->tokenGenerator = $this->prophesize(CsrfTokenGenerator::class);
-    $config_factory = $this->getConfigFactoryStub(['system.theme' => ['default' => 'stark']]);
-    $this->requestStack = new RequestStack();
-    $this->negotiator = new AjaxBasePageNegotiator($this->tokenGenerator->reveal(), $config_factory, $this->requestStack);
-  }
-
-  /**
-   * Tests applies.
-   */
-  #[DataProvider('providerTestApplies')]
-  public function testApplies($request_data, $expected): void {
-    $request = new Request();
-    foreach ($request_data as $key => $data) {
-      $request->attributes->set($key, $data);
+        $this->tokenGenerator = $this->prophesize(CsrfTokenGenerator::class);
+        $config_factory = $this->getConfigFactoryStub(['system.theme' => ['default' => 'stark']]);
+        $this->requestStack = new RequestStack();
+        $this->negotiator = new AjaxBasePageNegotiator($this->tokenGenerator->reveal(), $config_factory, $this->requestStack);
     }
-    $route_match = RouteMatch::createFromRequest($request);
-    $this->requestStack->push($request);
 
-    $result = $this->negotiator->applies($route_match);
-    $this->assertSame($expected, $result);
-  }
+    /**
+     * Tests applies.
+     */
+    #[DataProvider('providerTestApplies')]
+    public function testApplies($request_data, $expected): void
+    {
+        $request = new Request();
+        foreach ($request_data as $key => $data) {
+            $request->attributes->set($key, $data);
+        }
+        $route_match = RouteMatch::createFromRequest($request);
+        $this->requestStack->push($request);
 
-  public static function providerTestApplies(): array {
-    $data = [];
-    $data['empty'] = [[], FALSE];
-    $data['no_theme'] = [['ajax_page_state' => ['theme' => '', 'theme_token' => '']], FALSE];
-    $data['valid_theme_empty_theme_token'] = [['ajax_page_state' => ['theme' => 'claro', 'theme_token' => '']], TRUE];
-    $data['valid_theme_valid_theme_token'] = [
-      [
-        'ajax_page_state' => [
-          'theme' => 'claro',
-          'theme_token' => 'valid_theme_token',
-        ],
-      ],
-      TRUE,
-    ];
-    return $data;
-  }
+        $result = $this->negotiator->applies($route_match);
+        $this->assertSame($expected, $result);
+    }
 
-  /**
-   * Tests determine active theme valid token.
-   */
-  public function testDetermineActiveThemeValidToken(): void {
-    $theme = 'claro';
-    $theme_token = 'valid_theme_token';
+    public static function providerTestApplies(): array
+    {
+        $data = [];
+        $data['empty'] = [[], false];
+        $data['no_theme'] = [['ajax_page_state' => ['theme' => '', 'theme_token' => '']], false];
+        $data['valid_theme_empty_theme_token'] = [['ajax_page_state' => ['theme' => 'claro', 'theme_token' => '']], true];
+        $data['valid_theme_valid_theme_token'] = [
+          [
+            'ajax_page_state' => [
+              'theme' => 'claro',
+              'theme_token' => 'valid_theme_token',
+            ],
+          ],
+          true,
+        ];
+        return $data;
+    }
 
-    $request = new Request();
-    $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
-    $this->requestStack->push($request);
-    $route_match = RouteMatch::createFromRequest($request);
+    /**
+     * Tests determine active theme valid token.
+     */
+    public function testDetermineActiveThemeValidToken(): void
+    {
+        $theme = 'claro';
+        $theme_token = 'valid_theme_token';
 
-    $this->tokenGenerator->validate($theme_token, $theme)->willReturn(TRUE);
+        $request = new Request();
+        $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
+        $this->requestStack->push($request);
+        $route_match = RouteMatch::createFromRequest($request);
 
-    $result = $this->negotiator->determineActiveTheme($route_match);
-    $this->assertSame($theme, $result);
-  }
+        $this->tokenGenerator->validate($theme_token, $theme)->willReturn(true);
 
-  /**
-   * Tests determine active theme invalid token.
-   */
-  public function testDetermineActiveThemeInvalidToken(): void {
-    $theme = 'claro';
-    $theme_token = 'invalid_theme_token';
-    $request = new Request();
-    $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
-    $request->request = new InputBag($request->request->all());
-    $this->requestStack->push($request);
-    $route_match = RouteMatch::createFromRequest($request);
+        $result = $this->negotiator->determineActiveTheme($route_match);
+        $this->assertSame($theme, $result);
+    }
 
-    $this->tokenGenerator->validate($theme_token, $theme)->willReturn(FALSE);
+    /**
+     * Tests determine active theme invalid token.
+     */
+    public function testDetermineActiveThemeInvalidToken(): void
+    {
+        $theme = 'claro';
+        $theme_token = 'invalid_theme_token';
+        $request = new Request();
+        $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
+        $request->request = new InputBag($request->request->all());
+        $this->requestStack->push($request);
+        $route_match = RouteMatch::createFromRequest($request);
 
-    $result = $this->negotiator->determineActiveTheme($route_match);
-    $this->assertNull($result);
-  }
+        $this->tokenGenerator->validate($theme_token, $theme)->willReturn(false);
 
-  /**
-   * Tests determine active theme default theme.
-   */
-  public function testDetermineActiveThemeDefaultTheme(): void {
-    $theme = 'stark';
-    // When the theme is the system default, an empty string is provided as the
-    // theme token. See system_js_settings_alter().
-    $theme_token = '';
+        $result = $this->negotiator->determineActiveTheme($route_match);
+        $this->assertNull($result);
+    }
 
-    $request = new Request([]);
-    $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
-    $request->request = new InputBag($request->request->all());
-    $this->requestStack->push($request);
-    $route_match = RouteMatch::createFromRequest($request);
+    /**
+     * Tests determine active theme default theme.
+     */
+    public function testDetermineActiveThemeDefaultTheme(): void
+    {
+        $theme = 'stark';
+        // When the theme is the system default, an empty string is provided as the
+        // theme token. See system_js_settings_alter().
+        $theme_token = '';
 
-    $this->tokenGenerator->validate(Argument::cetera())->shouldNotBeCalled();
+        $request = new Request([]);
+        $request->attributes->set('ajax_page_state', ['theme' => $theme, 'theme_token' => $theme_token]);
+        $request->request = new InputBag($request->request->all());
+        $this->requestStack->push($request);
+        $route_match = RouteMatch::createFromRequest($request);
 
-    $result = $this->negotiator->determineActiveTheme($route_match);
-    $this->assertSame($theme, $result);
-  }
+        $this->tokenGenerator->validate(Argument::cetera())->shouldNotBeCalled();
+
+        $result = $this->negotiator->determineActiveTheme($route_match);
+        $this->assertSame($theme, $result);
+    }
 
 }

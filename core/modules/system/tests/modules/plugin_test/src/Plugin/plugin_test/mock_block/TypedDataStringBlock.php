@@ -14,15 +14,16 @@ use Drupal\Core\Plugin\PluginBase;
  * @see \Drupal\plugin_test\Plugin\MockBlockManager
  * @see \Drupal\KernelTests\Core\Plugin\PluginTestBase
  */
-class TypedDataStringBlock extends PluginBase implements ContextAwarePluginInterface {
+class TypedDataStringBlock extends PluginBase implements ContextAwarePluginInterface
+{
+    use ContextAwarePluginTrait;
 
-  use ContextAwarePluginTrait;
-
-  /**
-   * Returns the title of the block.
-   */
-  public function getTitle() {
-    return $this->getContextValue('string');
-  }
+    /**
+     * Returns the title of the block.
+     */
+    public function getTitle()
+    {
+        return $this->getContextValue('string');
+    }
 
 }

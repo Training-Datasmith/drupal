@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 /**
@@ -13,44 +15,47 @@ namespace Drupal\jsonapi\JsonApiResource;
  *
  * @see \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface
  */
-trait ResourceIdentifierTrait {
+trait ResourceIdentifierTrait
+{
+    /**
+     * A ResourceIdentifier object.
+     *
+     * @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifier
+     */
+    protected $resourceIdentifier;
 
-  /**
-   * A ResourceIdentifier object.
-   *
-   * @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifier
-   */
-  protected $resourceIdentifier;
+    /**
+     * The JSON:API resource type of the identified resource object.
+     *
+     * @var \Drupal\jsonapi\ResourceType\ResourceType
+     */
+    protected $resourceType;
 
-  /**
-   * The JSON:API resource type of the identified resource object.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceType
-   */
-  protected $resourceType;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getId() {
-    return $this->resourceIdentifier->getId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTypeName() {
-    return $this->resourceIdentifier->getTypeName();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getResourceType() {
-    if (!isset($this->resourceType)) {
-      $this->resourceType = $this->resourceIdentifier->getResourceType();
+    /**
+     * {@inheritdoc}
+     */
+    public function getId()
+    {
+        return $this->resourceIdentifier->getId();
     }
-    return $this->resourceType;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTypeName()
+    {
+        return $this->resourceIdentifier->getTypeName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResourceType()
+    {
+        if (!isset($this->resourceType)) {
+            $this->resourceType = $this->resourceIdentifier->getResourceType();
+        }
+        return $this->resourceType;
+    }
 
 }

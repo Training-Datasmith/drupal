@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace cweagans\Fake;
 
 use Composer\Composer;
@@ -9,21 +11,27 @@ use Composer\Plugin\PluginInterface;
 /**
  * Dummy composer plugin implementation.
  */
-class ComposerPatches implements PluginInterface {
+class ComposerPatches implements PluginInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function activate(Composer $composer, IOInterface $io)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function activate(Composer $composer, IOInterface $io) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function deactivate(Composer $composer, IOInterface $io) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function uninstall(Composer $composer, IOInterface $io) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+    }
 
 }

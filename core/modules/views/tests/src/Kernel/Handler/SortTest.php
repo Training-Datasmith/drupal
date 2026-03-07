@@ -14,119 +14,121 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('views')]
 #[RunTestsInSeparateProcesses]
-class SortTest extends ViewsKernelTestBase {
+class SortTest extends ViewsKernelTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_view'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_view'];
+    /**
+     * Tests numeric ordering of the result set.
+     */
+    public function testNumericOrdering(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests numeric ordering of the result set.
-   */
-  public function testNumericOrdering(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        // Change the ordering.
+        $view->displayHandlers->get('default')->overrideOption('sorts', [
+          'age' => [
+            'order' => 'ASC',
+            'id' => 'age',
+            'table' => 'views_test_data',
+            'field' => 'age',
+            'relationship' => 'none',
+          ],
+        ]);
 
-    // Change the ordering.
-    $view->displayHandlers->get('default')->overrideOption('sorts', [
-      'age' => [
-        'order' => 'ASC',
-        'id' => 'age',
-        'table' => 'views_test_data',
-        'field' => 'age',
-        'relationship' => 'none',
-      ],
-    ]);
+        // Execute the view.
+        $this->executeView($view);
 
-    // Execute the view.
-    $this->executeView($view);
+        // Verify the result.
+        $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
+        $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'age'), [
+          'views_test_data_name' => 'name',
+          'views_test_data_age' => 'age',
+        ]);
 
-    // Verify the result.
-    $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
-    $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'age'), [
-      'views_test_data_name' => 'name',
-      'views_test_data_age' => 'age',
-    ]);
+        $view->destroy();
+        $view->setDisplay();
 
-    $view->destroy();
-    $view->setDisplay();
+        // Reverse the ordering.
+        $view->displayHandlers->get('default')->overrideOption('sorts', [
+          'age' => [
+            'order' => 'DESC',
+            'id' => 'age',
+            'table' => 'views_test_data',
+            'field' => 'age',
+            'relationship' => 'none',
+          ],
+        ]);
 
-    // Reverse the ordering.
-    $view->displayHandlers->get('default')->overrideOption('sorts', [
-      'age' => [
-        'order' => 'DESC',
-        'id' => 'age',
-        'table' => 'views_test_data',
-        'field' => 'age',
-        'relationship' => 'none',
-      ],
-    ]);
+        // Execute the view.
+        $this->executeView($view);
 
-    // Execute the view.
-    $this->executeView($view);
+        // Verify the result.
+        $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
+        $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'age', true), [
+          'views_test_data_name' => 'name',
+          'views_test_data_age' => 'age',
+        ]);
+    }
 
-    // Verify the result.
-    $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
-    $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'age', TRUE), [
-      'views_test_data_name' => 'name',
-      'views_test_data_age' => 'age',
-    ]);
-  }
+    /**
+     * Tests string ordering of the result set.
+     */
+    public function testStringOrdering(): void
+    {
+        $view = Views::getView('test_view');
+        $view->setDisplay();
 
-  /**
-   * Tests string ordering of the result set.
-   */
-  public function testStringOrdering(): void {
-    $view = Views::getView('test_view');
-    $view->setDisplay();
+        // Change the ordering.
+        $view->displayHandlers->get('default')->overrideOption('sorts', [
+          'name' => [
+            'order' => 'ASC',
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+          ],
+        ]);
 
-    // Change the ordering.
-    $view->displayHandlers->get('default')->overrideOption('sorts', [
-      'name' => [
-        'order' => 'ASC',
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-      ],
-    ]);
+        // Execute the view.
+        $this->executeView($view);
 
-    // Execute the view.
-    $this->executeView($view);
+        // Verify the result.
+        $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
+        $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'name'), [
+          'views_test_data_name' => 'name',
+          'views_test_data_age' => 'age',
+        ]);
 
-    // Verify the result.
-    $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
-    $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'name'), [
-      'views_test_data_name' => 'name',
-      'views_test_data_age' => 'age',
-    ]);
+        $view->destroy();
+        $view->setDisplay();
 
-    $view->destroy();
-    $view->setDisplay();
+        // Reverse the ordering.
+        $view->displayHandlers->get('default')->overrideOption('sorts', [
+          'name' => [
+            'order' => 'DESC',
+            'id' => 'name',
+            'table' => 'views_test_data',
+            'field' => 'name',
+            'relationship' => 'none',
+          ],
+        ]);
 
-    // Reverse the ordering.
-    $view->displayHandlers->get('default')->overrideOption('sorts', [
-      'name' => [
-        'order' => 'DESC',
-        'id' => 'name',
-        'table' => 'views_test_data',
-        'field' => 'name',
-        'relationship' => 'none',
-      ],
-    ]);
+        // Execute the view.
+        $this->executeView($view);
 
-    // Execute the view.
-    $this->executeView($view);
-
-    // Verify the result.
-    $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
-    $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'name', TRUE), [
-      'views_test_data_name' => 'name',
-      'views_test_data_age' => 'age',
-    ]);
-  }
+        // Verify the result.
+        $this->assertSameSize($this->dataSet(), $view->result, 'The number of returned rows match.');
+        $this->assertIdenticalResultset($view, $this->orderResultSet($this->dataSet(), 'name', true), [
+          'views_test_data_name' => 'name',
+          'views_test_data_age' => 'age',
+        ]);
+    }
 
 }

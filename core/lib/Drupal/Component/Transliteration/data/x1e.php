@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Generic transliteration data for the PhpTransliteration class.
@@ -15,7 +17,7 @@ $base = [
   0x60 => 'S', 's', 'S', 's', 'S', 's', 'S', 's', 'S', 's', 'T', 't', 'T', 't', 'T', 't',
   0x70 => 'T', 't', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'V', 'v', 'V', 'v',
   0x80 => 'W', 'w', 'W', 'w', 'W', 'w', 'W', 'w', 'W', 'w', 'X', 'x', 'X', 'x', 'Y', 'y',
-  0x90 => 'Z', 'z', 'Z', 'z', 'Z', 'z', 'h', 't', 'w', 'y', 'a', 's', 's', 's', 'SS', NULL,
+  0x90 => 'Z', 'z', 'Z', 'z', 'Z', 'z', 'h', 't', 'w', 'y', 'a', 's', 's', 's', 'SS', null,
   0xA0 => 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a',
   0xB0 => 'A', 'a', 'A', 'a', 'A', 'a', 'A', 'a', 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e',
   0xC0 => 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e', 'I', 'i', 'I', 'i', 'O', 'o', 'O', 'o',

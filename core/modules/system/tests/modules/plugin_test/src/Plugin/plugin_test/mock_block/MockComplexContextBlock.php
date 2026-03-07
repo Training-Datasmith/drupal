@@ -13,17 +13,18 @@ use Drupal\Core\Plugin\PluginBase;
  *
  * @see \Drupal\plugin_test\Plugin\MockBlockManager
  */
-class MockComplexContextBlock extends PluginBase implements ContextAwarePluginInterface {
+class MockComplexContextBlock extends PluginBase implements ContextAwarePluginInterface
+{
+    use ContextAwarePluginTrait;
 
-  use ContextAwarePluginTrait;
-
-  /**
-   * Returns the title of the block.
-   */
-  public function getTitle() {
-    $user = $this->getContextValue('user');
-    $node = $this->getContextValue('node');
-    return $user->label() . ' -- ' . $node->label();
-  }
+    /**
+     * Returns the title of the block.
+     */
+    public function getTitle()
+    {
+        $user = $this->getContextValue('user');
+        $node = $this->getContextValue('node');
+        return $user->label() . ' -- ' . $node->label();
+    }
 
 }

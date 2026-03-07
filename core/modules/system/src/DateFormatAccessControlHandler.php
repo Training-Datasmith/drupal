@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\system;
 
 use Drupal\Core\Access\AccessResult;
@@ -12,30 +14,31 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see \Drupal\system\Entity\DateFormat
  */
-class DateFormatAccessControlHandler extends EntityAccessControlHandler {
+class DateFormatAccessControlHandler extends EntityAccessControlHandler
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $viewLabelOperation = true;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $viewLabelOperation = TRUE;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    // There are no restrictions on viewing the label of a date format.
-    if ($operation === 'view label') {
-        return AccessResult::allowed();
-    }
-    // There are no restrictions on viewing the label of a date format.
-    if (in_array($operation, ['update', 'delete'])) {
-        if ($entity->isLocked()) {
-          return AccessResult::forbidden('The DateFormat config entity is locked.')->addCacheableDependency($entity);
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account)
+    {
+        // There are no restrictions on viewing the label of a date format.
+        if ($operation === 'view label') {
+            return AccessResult::allowed();
         }
-        return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-    }
+        // There are no restrictions on viewing the label of a date format.
+        if (in_array($operation, ['update', 'delete'])) {
+            if ($entity->isLocked()) {
+                return AccessResult::forbidden('The DateFormat config entity is locked.')->addCacheableDependency($entity);
+            }
+            return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
+        }
 
-    return parent::checkAccess($entity, $operation, $account);
-  }
+        return parent::checkAccess($entity, $operation, $account);
+    }
 
 }

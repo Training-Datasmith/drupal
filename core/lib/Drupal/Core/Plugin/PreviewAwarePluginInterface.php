@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Plugin;
 
 /**
@@ -11,14 +13,14 @@ namespace Drupal\Core\Plugin;
  * @see \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent
  * @see \Drupal\layout_builder\Section::toRenderArray()
  */
-interface PreviewAwarePluginInterface {
-
-  /**
-   * Set preview mode for the plugin.
-   *
-   * @param bool $in_preview
-   *   TRUE if the plugin should be set to preview mode, FALSE otherwise.
-   */
-  public function setInPreview(bool $in_preview): void;
+interface PreviewAwarePluginInterface
+{
+    /**
+     * Set preview mode for the plugin.
+     *
+     * @param bool $in_preview
+     *   TRUE if the plugin should be set to preview mode, FALSE otherwise.
+     */
+    public function setInPreview(bool $in_preview): void;
 
 }

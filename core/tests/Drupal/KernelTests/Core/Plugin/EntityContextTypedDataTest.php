@@ -15,27 +15,28 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Context')]
 #[RunTestsInSeparateProcesses]
-class EntityContextTypedDataTest extends KernelTestBase {
+class EntityContextTypedDataTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['entity_test', 'user'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['entity_test', 'user'];
+    /**
+     * Tests that entity contexts wrapping a config entity can be validated.
+     */
+    public function testValidateConfigEntityContext(): void
+    {
+        $display = EntityViewDisplay::create([
+          'targetEntityType' => 'entity_test',
+          'bundle' => 'entity_test',
+          'mode' => 'default',
+          'status' => true,
+        ]);
+        $display->save();
 
-  /**
-   * Tests that entity contexts wrapping a config entity can be validated.
-   */
-  public function testValidateConfigEntityContext(): void {
-    $display = EntityViewDisplay::create([
-      'targetEntityType' => 'entity_test',
-      'bundle' => 'entity_test',
-      'mode' => 'default',
-      'status' => TRUE,
-    ]);
-    $display->save();
-
-    $violations = EntityContext::fromEntity($display)->validate();
-    $this->assertCount(0, $violations);
-  }
+        $violations = EntityContext::fromEntity($display)->validate();
+        $this->assertCount(0, $violations);
+    }
 
 }

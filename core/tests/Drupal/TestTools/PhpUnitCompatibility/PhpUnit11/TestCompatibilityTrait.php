@@ -9,5 +9,6 @@ namespace Drupal\TestTools\PhpUnitCompatibility\PhpUnit11;
  *
  * @internal
  */
-trait TestCompatibilityTrait {
+trait TestCompatibilityTrait
+{
 }

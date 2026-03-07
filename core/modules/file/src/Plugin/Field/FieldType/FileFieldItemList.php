@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\file\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\EntityReferenceFieldItemList;
@@ -8,97 +10,101 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Represents a configurable entity file field.
  */
-class FileFieldItemList extends EntityReferenceFieldItemList {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultValuesForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave($update): bool {
-    $entity = $this->getEntity();
-
-    if (!$update) {
-      // Add a new usage for newly uploaded files.
-      foreach ($this->referencedEntities() as $file) {
-        \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
-      }
+class FileFieldItemList extends EntityReferenceFieldItemList
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultValuesForm(array &$form, FormStateInterface $form_state)
+    {
     }
-    else {
-      // Get current target file entities and file IDs.
-      $files = $this->referencedEntities();
-      $ids = [];
 
-      /** @var \Drupal\file\FileInterface $file */
-      foreach ($files as $file) {
-        $ids[] = $file->id();
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function postSave($update): bool
+    {
+        $entity = $this->getEntity();
 
-      // On new revisions, all files are considered to be a new usage and no
-      // deletion of previous file usages are necessary.
-      if ($entity->getRevisionId() != $entity->getOriginal()?->getRevisionId()) {
-        foreach ($files as $file) {
-          \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
+        if (!$update) {
+            // Add a new usage for newly uploaded files.
+            foreach ($this->referencedEntities() as $file) {
+                \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
+            }
+        } else {
+            // Get current target file entities and file IDs.
+            $files = $this->referencedEntities();
+            $ids = [];
+
+            /** @var \Drupal\file\FileInterface $file */
+            foreach ($files as $file) {
+                $ids[] = $file->id();
+            }
+
+            // On new revisions, all files are considered to be a new usage and no
+            // deletion of previous file usages are necessary.
+            if ($entity->getRevisionId() != $entity->getOriginal()?->getRevisionId()) {
+                foreach ($files as $file) {
+                    \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
+                }
+                return;
+            }
+
+            // Get the file IDs attached to the field before this update.
+            $field_name = $this->getFieldDefinition()->getName();
+            $original_ids = [];
+            $langcode = $this->getLangcode();
+            $original = $entity->getOriginal();
+            if ($original->hasTranslation($langcode)) {
+                foreach ($original->getTranslation($langcode)->{$field_name} as $item) {
+                    $original_ids[] = $item->target_id;
+                }
+            }
+
+            // Decrement file usage by 1 for files that were removed from the field.
+            $removed_ids = array_filter(array_diff($original_ids, $ids));
+            $removed_files = \Drupal::entityTypeManager()->getStorage('file')->loadMultiple($removed_ids);
+            foreach ($removed_files as $file) {
+                \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id());
+            }
+
+            // Add new usage entries for newly added files.
+            foreach ($files as $file) {
+                if (!in_array($file->id(), $original_ids)) {
+                    \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
+                }
+            }
         }
-        return;
-      }
+    }
 
-      // Get the file IDs attached to the field before this update.
-      $field_name = $this->getFieldDefinition()->getName();
-      $original_ids = [];
-      $langcode = $this->getLangcode();
-      $original = $entity->getOriginal();
-      if ($original->hasTranslation($langcode)) {
-        foreach ($original->getTranslation($langcode)->{$field_name} as $item) {
-          $original_ids[] = $item->target_id;
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(): void
+    {
+        parent::delete();
+        $entity = $this->getEntity();
+
+        // If a translation is deleted only decrement the file usage by one. If the
+        // default translation is deleted remove all file usages within this entity.
+        $count = $entity->isDefaultTranslation() ? 0 : 1;
+        foreach ($this->referencedEntities() as $file) {
+            \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id(), $count);
         }
-      }
+    }
 
-      // Decrement file usage by 1 for files that were removed from the field.
-      $removed_ids = array_filter(array_diff($original_ids, $ids));
-      $removed_files = \Drupal::entityTypeManager()->getStorage('file')->loadMultiple($removed_ids);
-      foreach ($removed_files as $file) {
-        \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id());
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteRevision(): void
+    {
+        parent::deleteRevision();
+        $entity = $this->getEntity();
 
-      // Add new usage entries for newly added files.
-      foreach ($files as $file) {
-        if (!in_array($file->id(), $original_ids)) {
-          \Drupal::service('file.usage')->add($file, 'file', $entity->getEntityTypeId(), $entity->id());
+        // Decrement the file usage by 1.
+        foreach ($this->referencedEntities() as $file) {
+            \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id());
         }
-      }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    parent::delete();
-    $entity = $this->getEntity();
-
-    // If a translation is deleted only decrement the file usage by one. If the
-    // default translation is deleted remove all file usages within this entity.
-    $count = $entity->isDefaultTranslation() ? 0 : 1;
-    foreach ($this->referencedEntities() as $file) {
-      \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id(), $count);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteRevision(): void {
-    parent::deleteRevision();
-    $entity = $this->getEntity();
-
-    // Decrement the file usage by 1.
-    foreach ($this->referencedEntities() as $file) {
-      \Drupal::service('file.usage')->delete($file, 'file', $entity->getEntityTypeId(), $entity->id());
-    }
-  }
 
 }

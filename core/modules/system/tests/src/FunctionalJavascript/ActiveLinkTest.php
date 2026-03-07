@@ -15,21 +15,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('system')]
 #[RunTestsInSeparateProcesses]
-class ActiveLinkTest extends WebDriverTestBase {
+class ActiveLinkTest extends WebDriverTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Ensures no JS error is thrown with query strings containing special chars.
-   */
-  public function testQueryStringQuotes(): void {
-    $user = $this->createUser();
-    $this->drupalLogin($user);
-    $this->drupalGet($this->getSession()->getCurrentUrl(), ['query' => ['foo' => "\"'[](){}*+~>|\\/:;,.!@#$%^&-_=?<>"]]);
-    $this->failOnJavaScriptErrors();
-  }
+    /**
+     * Ensures no JS error is thrown with query strings containing special chars.
+     */
+    public function testQueryStringQuotes(): void
+    {
+        $user = $this->createUser();
+        $this->drupalLogin($user);
+        $this->drupalGet($this->getSession()->getCurrentUrl(), ['query' => ['foo' => "\"'[](){}*+~>|\\/:;,.!@#$%^&-_=?<>"]]);
+        $this->failOnJavaScriptErrors();
+    }
 
 }

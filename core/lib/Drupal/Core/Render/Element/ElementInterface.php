@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -27,29 +29,29 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  *
  * @ingroup theme_render
  */
-interface ElementInterface extends PluginInspectionInterface, RenderCallbackInterface {
+interface ElementInterface extends PluginInspectionInterface, RenderCallbackInterface
+{
+    /**
+     * Returns the element properties for this element.
+     *
+     * @return array
+     *   An array of element properties. See
+     *   \Drupal\Core\Render\ElementInfoManagerInterface::getInfo() for
+     *   documentation of the standard properties of all elements, and the
+     *   return value format.
+     */
+    public function getInfo();
 
-  /**
-   * Returns the element properties for this element.
-   *
-   * @return array
-   *   An array of element properties. See
-   *   \Drupal\Core\Render\ElementInfoManagerInterface::getInfo() for
-   *   documentation of the standard properties of all elements, and the
-   *   return value format.
-   */
-  public function getInfo();
-
-  /**
-   * Sets a form element's class attribute.
-   *
-   * Adds 'required' and 'error' classes as needed.
-   *
-   * @param array $element
-   *   The form element.
-   * @param array $class
-   *   Array of new class names to be added.
-   */
-  public static function setAttributes(&$element, $class = []);
+    /**
+     * Sets a form element's class attribute.
+     *
+     * Adds 'required' and 'error' classes as needed.
+     *
+     * @param array $element
+     *   The form element.
+     * @param array $class
+     *   Array of new class names to be added.
+     */
+    public static function setAttributes(&$element, $class = []);
 
 }

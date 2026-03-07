@@ -12,53 +12,57 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class StubForm extends FormBase {
+class StubForm extends FormBase
+{
+    /**
+     * The form array.
+     *
+     * @var array
+     */
+    protected $form;
 
-  /**
-   * The form array.
-   *
-   * @var array
-   */
-  protected $form;
+    /**
+     * The form ID.
+     *
+     * @var string
+     */
+    protected $formId;
 
-  /**
-   * The form ID.
-   *
-   * @var string
-   */
-  protected $formId;
+    /**
+     * Constructs a StubForm.
+     *
+     * @param string $form_id
+     *   The form ID.
+     * @param array $form
+     *   The form array.
+     */
+    public function __construct($form_id, $form)
+    {
+        $this->formId = $form_id;
+        $this->form = $form;
+    }
 
-  /**
-   * Constructs a StubForm.
-   *
-   * @param string $form_id
-   *   The form ID.
-   * @param array $form
-   *   The form array.
-   */
-  public function __construct($form_id, $form) {
-    $this->formId = $form_id;
-    $this->form = $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return $this->formId;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return $this->formId;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        return $this->form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    return $this->form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+    }
 
 }

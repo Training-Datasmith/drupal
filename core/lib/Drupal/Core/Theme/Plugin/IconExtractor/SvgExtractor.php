@@ -24,117 +24,120 @@ use Drupal\Core\Theme\Icon\IconPackExtractorForm;
  *   This API is experimental.
  */
 #[IconExtractor(
-  id: 'svg',
-  label: new TranslatableMarkup('SVG'),
-  description: new TranslatableMarkup('Handles SVG files from one or many paths, remote is not allowed and will be ignored.'),
-  forms: [
+    id: 'svg',
+    label: new TranslatableMarkup('SVG'),
+    description: new TranslatableMarkup('Handles SVG files from one or many paths, remote is not allowed and will be ignored.'),
+    forms: [
     'settings' => IconPackExtractorForm::class,
   ]
 )]
-class SvgExtractor extends IconExtractorWithFinder {
+class SvgExtractor extends IconExtractorWithFinder
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function discoverIcons(): array
+    {
+        // Check is included in getFilesFromSources(), but we need to disallow
+        // remote sources before.
+        $this->checkRequiredConfigSources();
 
-  /**
-   * {@inheritdoc}
-   */
-  public function discoverIcons(): array {
-    // Check is included in getFilesFromSources(), but we need to disallow
-    // remote sources before.
-    $this->checkRequiredConfigSources();
+        $this->configuration['config']['sources'] = array_filter($this->configuration['config']['sources'], fn ($source) => empty(parse_url((string) $source, PHP_URL_SCHEME)));
 
-    $this->configuration['config']['sources'] = array_filter($this->configuration['config']['sources'], fn($source) => empty(parse_url((string) $source, PHP_URL_SCHEME)));
+        if (empty($this->configuration['config']['sources'])) {
+            return [];
+        }
 
-    if (empty($this->configuration['config']['sources'])) {
-      return [];
+        $files = $this->getFilesFromSources();
+
+        if (empty($files)) {
+            return [];
+        }
+
+        $icons = [];
+        foreach ($files as $file) {
+            if (!isset($file['absolute_path'])) {
+                continue;
+            }
+            if (empty($file['absolute_path'])) {
+                continue;
+            }
+            $id = IconDefinition::createIconId($this->configuration['id'], $file['icon_id']);
+            $icons[$id] = [
+              'absolute_path' => $file['absolute_path'],
+              'source' => $file['source'],
+              'group' => $file['group'] ?? null,
+            ];
+        }
+
+        return $icons;
     }
 
-    $files = $this->getFilesFromSources();
+    /**
+     * {@inheritdoc}
+     */
+    public function loadIcon(array $icon_data): ?IconDefinitionInterface
+    {
+        if (!isset($icon_data['icon_id']) || !isset($icon_data['source']) || !isset($icon_data['absolute_path'])) {
+            return null;
+        }
 
-    if (empty($files)) {
-      return [];
+        if (!$svg_data = $this->extractSvg($icon_data['absolute_path'])) {
+            return null;
+        }
+
+        return $this->createIcon(
+            $icon_data['icon_id'],
+            $icon_data['source'],
+            $icon_data['group'] ?? null,
+            $svg_data,
+        );
     }
 
-    $icons = [];
-    foreach ($files as $file) {
-      if (!isset($file['absolute_path'])) {
-          continue;
-      }
-      if (empty($file['absolute_path'])) {
-          continue;
-      }
-      $id = IconDefinition::createIconId($this->configuration['id'], $file['icon_id']);
-      $icons[$id] = [
-        'absolute_path' => $file['absolute_path'],
-        'source' => $file['source'],
-        'group' => $file['group'] ?? NULL,
-      ];
+    /**
+     * Extract svg values, simply exclude parent <svg>.
+     *
+     * @param string $source
+     *   Local path or url to the svg file.
+     *
+     * @return array|null
+     *   The SVG `content` as string and `viewbox` value if any.
+     */
+    private function extractSvg(string $source): ?array
+    {
+        if (!$content = $this->iconFinder->getFileContents($source)) {
+            return null;
+        }
+
+        libxml_use_internal_errors(true);
+
+        if (!$svg = simplexml_load_string((string) $content)) {
+            // @todo do we need to log a warning with the xml error?
+            return null;
+        }
+
+        $return = [
+          'content' => '',
+          'attributes' => new Attribute(),
+        ];
+        foreach ($svg as $child) {
+            $return['content'] .= $child->asXML();
+        }
+
+        if (empty($return['content'])) {
+            return null;
+        }
+
+        // Content contain xml data and will be printed, we need to not escape it
+        // for rendering.
+        $return['content'] = new FormattableMarkup($return['content'], []);
+
+        // Add svg attributes to be available in the template.
+        foreach ($svg->attributes() as $name => $value) {
+            $return['attributes']->setAttribute($name, (string) $value);
+        }
+
+        return $return;
     }
-
-    return $icons;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadIcon(array $icon_data): ?IconDefinitionInterface {
-    if (!isset($icon_data['icon_id']) || !isset($icon_data['source']) || !isset($icon_data['absolute_path'])) {
-      return NULL;
-    }
-
-    if (!$svg_data = $this->extractSvg($icon_data['absolute_path'])) {
-      return NULL;
-    }
-
-    return $this->createIcon(
-      $icon_data['icon_id'],
-      $icon_data['source'],
-      $icon_data['group'] ?? NULL,
-      $svg_data,
-    );
-  }
-
-  /**
-   * Extract svg values, simply exclude parent <svg>.
-   *
-   * @param string $source
-   *   Local path or url to the svg file.
-   *
-   * @return array|null
-   *   The SVG `content` as string and `viewbox` value if any.
-   */
-  private function extractSvg(string $source): ?array {
-    if (!$content = $this->iconFinder->getFileContents($source)) {
-      return NULL;
-    }
-
-    libxml_use_internal_errors(TRUE);
-
-    if (!$svg = simplexml_load_string((string) $content)) {
-      // @todo do we need to log a warning with the xml error?
-      return NULL;
-    }
-
-    $return = [
-      'content' => '',
-      'attributes' => new Attribute(),
-    ];
-    foreach ($svg as $child) {
-      $return['content'] .= $child->asXML();
-    }
-
-    if (empty($return['content'])) {
-      return NULL;
-    }
-
-    // Content contain xml data and will be printed, we need to not escape it
-    // for rendering.
-    $return['content'] = new FormattableMarkup($return['content'], []);
-
-    // Add svg attributes to be available in the template.
-    foreach ($svg->attributes() as $name => $value) {
-      $return['attributes']->setAttribute($name, (string) $value);
-    }
-
-    return $return;
-  }
 
 }

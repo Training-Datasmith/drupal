@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\jsonapi\JsonApiResource;
 
 /**
@@ -16,30 +18,30 @@ namespace Drupal\jsonapi\JsonApiResource;
  * @see https://www.drupal.org/project/drupal/issues/3032787
  * @see jsonapi.api.php
  */
-interface ResourceIdentifierInterface {
+interface ResourceIdentifierInterface
+{
+    /**
+     * Gets the resource identifier's ID.
+     *
+     * @return string
+     *   A resource ID.
+     */
+    public function getId();
 
-  /**
-   * Gets the resource identifier's ID.
-   *
-   * @return string
-   *   A resource ID.
-   */
-  public function getId();
+    /**
+     * Gets the resource identifier's JSON:API resource type name.
+     *
+     * @return string
+     *   The JSON:API resource type name.
+     */
+    public function getTypeName();
 
-  /**
-   * Gets the resource identifier's JSON:API resource type name.
-   *
-   * @return string
-   *   The JSON:API resource type name.
-   */
-  public function getTypeName();
-
-  /**
-   * Gets the resource identifier's JSON:API resource type.
-   *
-   * @return \Drupal\jsonapi\ResourceType\ResourceType
-   *   The JSON:API resource type.
-   */
-  public function getResourceType();
+    /**
+     * Gets the resource identifier's JSON:API resource type.
+     *
+     * @return \Drupal\jsonapi\ResourceType\ResourceType
+     *   The JSON:API resource type.
+     */
+    public function getResourceType();
 
 }

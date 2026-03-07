@@ -11,21 +11,23 @@ use Drupal\Core\Security\TrustedCallbackInterface;
  *
  * @internal
  */
-final class RenderCallbacks implements TrustedCallbackInterface {
+final class RenderCallbacks implements TrustedCallbackInterface
+{
+    /**
+     * Render callback.
+     */
+    public static function removeTabAttributes(array $element): array
+    {
+        unset($element['tab']['#attributes']);
+        return $element;
+    }
 
-  /**
-   * Render callback.
-   */
-  public static function removeTabAttributes(array $element): array {
-    unset($element['tab']['#attributes']);
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks(): array {
-    return ['removeTabAttributes'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function trustedCallbacks(): array
+    {
+        return ['removeTabAttributes'];
+    }
 
 }

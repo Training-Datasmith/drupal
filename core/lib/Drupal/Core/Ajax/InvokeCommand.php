@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,46 +17,46 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class InvokeCommand implements CommandInterface {
+class InvokeCommand implements CommandInterface
+{
+    /**
+     * Constructs an InvokeCommand object.
+     *
+     * @param string $selector
+     *   A jQuery selector.
+     * @param string $method
+     *   The name of a jQuery method to invoke.
+     * @param array $arguments
+     *   An optional array of arguments to pass to the method.
+     */
+    public function __construct(
+        /**
+         * A CSS selector string.
+         *
+         * If the command is a response to a request from an #ajax form element then
+         * this value can be NULL.
+         */
+        protected $selector,
+        /**
+         * A jQuery method to invoke.
+         */
+        protected $method,
+        protected array $arguments = []
+    ) {
+    }
 
-  /**
-   * Constructs an InvokeCommand object.
-   *
-   * @param string $selector
-   *   A jQuery selector.
-   * @param string $method
-   *   The name of a jQuery method to invoke.
-   * @param array $arguments
-   *   An optional array of arguments to pass to the method.
-   */
-  public function __construct(
-      /**
-       * A CSS selector string.
-       *
-       * If the command is a response to a request from an #ajax form element then
-       * this value can be NULL.
-       */
-      protected $selector,
-      /**
-       * A jQuery method to invoke.
-       */
-      protected $method,
-      protected array $arguments = []
-  )
-  {
-  }
+    /**
+     * Implements Drupal\Core\Ajax\CommandInterface:render().
+     */
+    public function render(): array
+    {
 
-  /**
-   * Implements Drupal\Core\Ajax\CommandInterface:render().
-   */
-  public function render(): array {
-
-    return [
-      'command' => 'invoke',
-      'selector' => $this->selector,
-      'method' => $this->method,
-      'args' => $this->arguments,
-    ];
-  }
+        return [
+          'command' => 'invoke',
+          'selector' => $this->selector,
+          'method' => $this->method,
+          'args' => $this->arguments,
+        ];
+    }
 
 }

@@ -12,19 +12,20 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Provides a block to test HTML.
  */
 #[Block(
-  id: "test_html",
-  admin_label: new TranslatableMarkup("Test HTML block"),
+    id: 'test_html',
+    admin_label: new TranslatableMarkup('Test HTML block'),
 )]
-class TestHtmlBlock extends BlockBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    return [
-      '#attributes' => \Drupal::keyvalue('block_test')->get('attributes'),
-      '#children' => \Drupal::keyValue('block_test')->get('content'),
-    ];
-  }
+class TestHtmlBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        return [
+          '#attributes' => \Drupal::keyvalue('block_test')->get('attributes'),
+          '#children' => \Drupal::keyValue('block_test')->get('content'),
+        ];
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 /**
@@ -11,25 +13,26 @@ namespace Drupal\Core\Extension;
  *   properties / methods will not change over time. This will be reviewed after
  *   https://www.drupal.org/project/drupal/issues/2940481
  */
-class ProfileExtensionList extends ExtensionList {
+class ProfileExtensionList extends ExtensionList
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaults = [
+      'dependencies' => [],
+      'install' => [],
+      'description' => '',
+      'package' => 'Other',
+      'version' => null,
+      'php' => \Drupal::MINIMUM_PHP,
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaults = [
-    'dependencies' => [],
-    'install' => [],
-    'description' => '',
-    'package' => 'Other',
-    'version' => NULL,
-    'php' => \Drupal::MINIMUM_PHP,
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getInstalledExtensionNames(): array {
-    return [$this->installProfile];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    protected function getInstalledExtensionNames(): array
+    {
+        return [$this->installProfile];
+    }
 
 }

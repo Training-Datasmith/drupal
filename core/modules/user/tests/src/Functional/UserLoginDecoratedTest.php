@@ -15,19 +15,20 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserLoginDecoratedTest extends UserLoginTest {
+class UserLoginDecoratedTest extends UserLoginTest
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user_auth_decorator_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user_auth_decorator_test'];
-
-  /**
-   * Test that the UserAuthDecorator is providing user.auth.
-   */
-  public function testServiceDecorated(): void {
-    $service = \Drupal::service('user.auth');
-    $this->assertInstanceOf(UserAuthDecorator::class, $service);
-  }
+    /**
+     * Test that the UserAuthDecorator is providing user.auth.
+     */
+    public function testServiceDecorated(): void
+    {
+        $service = \Drupal::service('user.auth');
+        $this->assertInstanceOf(UserAuthDecorator::class, $service);
+    }
 
 }

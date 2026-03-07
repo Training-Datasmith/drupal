@@ -11,4 +11,6 @@ namespace Drupal\Tests\Component\Plugin\Fixtures\vegetable;
  *   color = "yellow"
  * )
  */
-class Corn implements VegetableInterface {}
+class Corn implements VegetableInterface
+{
+}

@@ -11,4 +11,6 @@ use Drupal\Core\Plugin\Context\ContextDefinition;
  *
  * @see \Drupal\Tests\Core\Plugin\Context\ContextDefinitionIsSatisfiedTest
  */
-class InheritedContextDefinition extends ContextDefinition {}
+class InheritedContextDefinition extends ContextDefinition
+{
+}

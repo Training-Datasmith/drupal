@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -14,7 +16,6 @@ namespace Drupal\Core\ProxyClass\Lock {
      */
     class DatabaseLockBackend implements \Drupal\Core\Lock\LockBackendInterface
     {
-
         use \Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
         /**
@@ -42,7 +43,7 @@ namespace Drupal\Core\ProxyClass\Lock {
         public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, /**
          * The id of the original proxied service.
          */
-        protected $drupalProxyOriginalServiceId)
+            protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
         }
@@ -89,7 +90,7 @@ namespace Drupal\Core\ProxyClass\Lock {
         /**
          * {@inheritdoc}
          */
-        public function releaseAll($lock_id = NULL)
+        public function releaseAll($lock_id = null)
         {
             return $this->lazyLoadItself()->releaseAll($lock_id);
         }

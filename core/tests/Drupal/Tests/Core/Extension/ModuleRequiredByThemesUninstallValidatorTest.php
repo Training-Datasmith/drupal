@@ -16,144 +16,148 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(ModuleRequiredByThemesUninstallValidator::class)]
 #[Group('Extension')]
-class ModuleRequiredByThemesUninstallValidatorTest extends UnitTestCase {
+class ModuleRequiredByThemesUninstallValidatorTest extends UnitTestCase
+{
+    /**
+     * Instance of ModuleRequiredByThemesUninstallValidator.
+     *
+     * @var \Drupal\Core\Extension\ModuleRequiredByThemesUninstallValidator
+     */
+    protected $moduleRequiredByThemeUninstallValidator;
 
-  /**
-   * Instance of ModuleRequiredByThemesUninstallValidator.
-   *
-   * @var \Drupal\Core\Extension\ModuleRequiredByThemesUninstallValidator
-   */
-  protected $moduleRequiredByThemeUninstallValidator;
+    /**
+     * Mock of ModuleExtensionList.
+     *
+     * @var \Drupal\Core\Extension\ModuleExtensionList
+     */
+    protected $moduleExtensionList;
 
-  /**
-   * Mock of ModuleExtensionList.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
+    /**
+     * Mock of ThemeExtensionList.
+     *
+     * @var \Drupal\Core\Extension\ThemeExtensionList
+     */
+    protected $themeExtensionList;
 
-  /**
-   * Mock of ThemeExtensionList.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeExtensionList;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->moduleExtensionList = $this->prophesize(ModuleExtensionList::class);
+        $this->themeExtensionList = $this->prophesize(ThemeExtensionList::class);
+        $this->moduleRequiredByThemeUninstallValidator = new ModuleRequiredByThemesUninstallValidator($this->getStringTranslationStub(), $this->moduleExtensionList->reveal(), $this->themeExtensionList->reveal());
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->moduleExtensionList = $this->prophesize(ModuleExtensionList::class);
-    $this->themeExtensionList = $this->prophesize(ThemeExtensionList::class);
-    $this->moduleRequiredByThemeUninstallValidator = new ModuleRequiredByThemesUninstallValidator($this->getStringTranslationStub(), $this->moduleExtensionList->reveal(), $this->themeExtensionList->reveal());
-  }
+    /**
+     * Tests validate no theme dependency.
+     */
+    public function testValidateNoThemeDependency(): void
+    {
+        $this->themeExtensionList->getAllInstalledInfo()->willReturn([
+          'stable9' => [
+            'name' => 'Stable 9',
+            'dependencies' => [],
+          ],
+          'claro' => [
+            'name' => 'Claro',
+            'dependencies' => [],
+          ],
+        ]);
 
-  /**
-   * Tests validate no theme dependency.
-   */
-  public function testValidateNoThemeDependency(): void {
-    $this->themeExtensionList->getAllInstalledInfo()->willReturn([
-      'stable9' => [
-        'name' => 'Stable 9',
-        'dependencies' => [],
-      ],
-      'claro' => [
-        'name' => 'Claro',
-        'dependencies' => [],
-      ],
-    ]);
+        $module = $this->randomMachineName();
+        $expected = [];
+        $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
+        $this->assertSame($expected, $reasons);
+    }
 
-    $module = $this->randomMachineName();
-    $expected = [];
-    $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
-    $this->assertSame($expected, $reasons);
-  }
+    /**
+     * Tests validate one theme dependency.
+     */
+    public function testValidateOneThemeDependency(): void
+    {
+        $module = 'single_module';
+        $module_name = 'Single Module';
+        $theme = 'one_theme';
+        $theme_name = 'One Theme';
+        $this->themeExtensionList->getAllInstalledInfo()->willReturn([
+          'stable9' => [
+            'name' => 'Stable 9',
+            'dependencies' => [],
+          ],
+          'claro' => [
+            'name' => 'Claro',
+            'dependencies' => [],
+          ],
+          $theme => [
+            'name' => $theme_name,
+            'dependencies' => [
+              $module,
+            ],
+          ],
+        ]);
 
-  /**
-   * Tests validate one theme dependency.
-   */
-  public function testValidateOneThemeDependency(): void {
-    $module = 'single_module';
-    $module_name = 'Single Module';
-    $theme = 'one_theme';
-    $theme_name = 'One Theme';
-    $this->themeExtensionList->getAllInstalledInfo()->willReturn([
-      'stable9' => [
-        'name' => 'Stable 9',
-        'dependencies' => [],
-      ],
-      'claro' => [
-        'name' => 'Claro',
-        'dependencies' => [],
-      ],
-      $theme => [
-        'name' => $theme_name,
-        'dependencies' => [
-          $module,
-        ],
-      ],
-    ]);
+        $this->moduleExtensionList->get($module)->willReturn((object) [
+          'info' => [
+            'name' => $module_name,
+          ],
+        ]);
 
-    $this->moduleExtensionList->get($module)->willReturn((object) [
-      'info' => [
-        'name' => $module_name,
-      ],
-    ]);
+        $expected = [
+          "Required by the theme: $theme_name",
+        ];
 
-    $expected = [
-      "Required by the theme: $theme_name",
-    ];
+        $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
+        $this->assertEquals($expected, $reasons);
+    }
 
-    $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
-  }
+    /**
+     * Tests validate two theme dependencies.
+     */
+    public function testValidateTwoThemeDependencies(): void
+    {
+        $module = 'popular_module';
+        $module_name = 'Popular Module';
+        $theme1 = 'first_theme';
+        $theme2 = 'second_theme';
+        $theme_name_1 = 'First Theme';
+        $theme_name_2 = 'Second Theme';
+        $this->themeExtensionList->getAllInstalledInfo()->willReturn([
+          'stable9' => [
+            'name' => 'Stable 9',
+            'dependencies' => [],
+          ],
+          'claro' => [
+            'name' => 'Claro',
+            'dependencies' => [],
+          ],
+          $theme1 => [
+            'name' => $theme_name_1,
+            'dependencies' => [
+              $module,
+            ],
+          ],
+          $theme2 => [
+            'name' => $theme_name_2,
+            'dependencies' => [
+              $module,
+            ],
+          ],
+        ]);
 
-  /**
-   * Tests validate two theme dependencies.
-   */
-  public function testValidateTwoThemeDependencies(): void {
-    $module = 'popular_module';
-    $module_name = 'Popular Module';
-    $theme1 = 'first_theme';
-    $theme2 = 'second_theme';
-    $theme_name_1 = 'First Theme';
-    $theme_name_2 = 'Second Theme';
-    $this->themeExtensionList->getAllInstalledInfo()->willReturn([
-      'stable9' => [
-        'name' => 'Stable 9',
-        'dependencies' => [],
-      ],
-      'claro' => [
-        'name' => 'Claro',
-        'dependencies' => [],
-      ],
-      $theme1 => [
-        'name' => $theme_name_1,
-        'dependencies' => [
-          $module,
-        ],
-      ],
-      $theme2 => [
-        'name' => $theme_name_2,
-        'dependencies' => [
-          $module,
-        ],
-      ],
-    ]);
+        $this->moduleExtensionList->get($module)->willReturn((object) [
+          'info' => [
+            'name' => $module_name,
+          ],
+        ]);
 
-    $this->moduleExtensionList->get($module)->willReturn((object) [
-      'info' => [
-        'name' => $module_name,
-      ],
-    ]);
+        $expected = [
+          "Required by the themes: $theme_name_1, $theme_name_2",
+        ];
 
-    $expected = [
-      "Required by the themes: $theme_name_1, $theme_name_2",
-    ];
-
-    $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
-  }
+        $reasons = $this->moduleRequiredByThemeUninstallValidator->validate($module);
+        $this->assertEquals($expected, $reasons);
+    }
 
 }

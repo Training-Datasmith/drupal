@@ -13,45 +13,47 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class UserChangedTest extends ViewTestBase {
+class UserChangedTest extends ViewTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['views_ui', 'user_test_views'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['views_ui', 'user_test_views'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_user_changed'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_user_changed'];
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['user_test_views']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['user_test_views']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->enableViewsTestModule();
+    }
 
-    $this->enableViewsTestModule();
-  }
+    /**
+     * Tests changed field.
+     */
+    public function testChangedField(): void
+    {
+        $path = 'test_user_changed';
 
-  /**
-   * Tests changed field.
-   */
-  public function testChangedField(): void {
-    $path = 'test_user_changed';
+        $options = [];
 
-    $options = [];
+        $this->drupalGet($path, $options);
 
-    $this->drupalGet($path, $options);
-
-    $this->assertSession()->pageTextContains('Updated date: ' . date('Y-m-d', \Drupal::time()->getRequestTime()));
-  }
+        $this->assertSession()->pageTextContains('Updated date: ' . date('Y-m-d', \Drupal::time()->getRequestTime()));
+    }
 
 }

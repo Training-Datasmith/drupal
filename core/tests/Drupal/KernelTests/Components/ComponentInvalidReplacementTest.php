@@ -13,24 +13,25 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('sdc')]
 #[RunTestsInSeparateProcesses]
-class ComponentInvalidReplacementTest extends ComponentKernelTestBase {
+class ComponentInvalidReplacementTest extends ComponentKernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['sdc_test_replacements_invalid'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['sdc_test_replacements_invalid'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $themes = ['sdc_theme_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $themes = ['sdc_theme_test'];
-
-  /**
-   * Ensure that component replacement validates the schema compatibility.
-   */
-  public function testInvalidDefinitionTheme(): void {
-    $this->expectException(IncompatibleComponentSchema::class);
-    $this->manager->getDefinitions();
-  }
+    /**
+     * Ensure that component replacement validates the schema compatibility.
+     */
+    public function testInvalidDefinitionTheme(): void
+    {
+        $this->expectException(IncompatibleComponentSchema::class);
+        $this->manager->getDefinitions();
+    }
 
 }

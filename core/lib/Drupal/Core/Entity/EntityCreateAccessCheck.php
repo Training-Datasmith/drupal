@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Access\AccessResult;
@@ -11,54 +13,55 @@ use Symfony\Component\Routing\Route;
 /**
  * Defines an access checker for entity creation.
  */
-class EntityCreateAccessCheck implements AccessInterface {
+class EntityCreateAccessCheck implements AccessInterface
+{
+    /**
+     * The key used by the routing requirement.
+     *
+     * @var string
+     */
+    protected $requirementsKey = '_entity_create_access';
 
-  /**
-   * The key used by the routing requirement.
-   *
-   * @var string
-   */
-  protected $requirementsKey = '_entity_create_access';
-
-  /**
-   * Constructs an EntityCreateAccessCheck object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager service.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
-  {
-  }
-
-  /**
-   * Checks access to create the entity type and bundle for the given route.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route to check against.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The parametrized route.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The currently logged in account.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
-    [$entity_type, $bundle] = explode(':', $route->getRequirement($this->requirementsKey) . ':');
-
-    // The bundle argument can contain request argument placeholders like
-    // {name}, loop over the raw variables and attempt to replace them in the
-    // bundle name. If a placeholder does not exist, it won't get replaced.
-    if ($bundle && str_contains($bundle, '{')) {
-      foreach ($route_match->getRawParameters()->all() as $name => $value) {
-        $bundle = str_replace('{' . $name . '}', $value, $bundle);
-      }
-      // If we were unable to replace all placeholders, deny access.
-      if (str_contains($bundle, '{')) {
-        return AccessResult::neutral(sprintf("Could not find '%s' request argument, therefore cannot check create access.", $bundle));
-      }
+    /**
+     * Constructs an EntityCreateAccessCheck object.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager service.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+    {
     }
-    return $this->entityTypeManager->getAccessControlHandler($entity_type)->createAccess($bundle, $account, [], TRUE);
-  }
+
+    /**
+     * Checks access to create the entity type and bundle for the given route.
+     *
+     * @param \Symfony\Component\Routing\Route $route
+     *   The route to check against.
+     * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+     *   The parametrized route.
+     * @param \Drupal\Core\Session\AccountInterface $account
+     *   The currently logged in account.
+     *
+     * @return \Drupal\Core\Access\AccessResultInterface
+     *   The access result.
+     */
+    public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account)
+    {
+        [$entity_type, $bundle] = explode(':', $route->getRequirement($this->requirementsKey) . ':');
+
+        // The bundle argument can contain request argument placeholders like
+        // {name}, loop over the raw variables and attempt to replace them in the
+        // bundle name. If a placeholder does not exist, it won't get replaced.
+        if ($bundle && str_contains($bundle, '{')) {
+            foreach ($route_match->getRawParameters()->all() as $name => $value) {
+                $bundle = str_replace('{' . $name . '}', $value, $bundle);
+            }
+            // If we were unable to replace all placeholders, deny access.
+            if (str_contains($bundle, '{')) {
+                return AccessResult::neutral(sprintf("Could not find '%s' request argument, therefore cannot check create access.", $bundle));
+            }
+        }
+        return $this->entityTypeManager->getAccessControlHandler($entity_type)->createAccess($bundle, $account, [], true);
+    }
 
 }

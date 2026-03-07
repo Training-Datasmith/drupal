@@ -9,13 +9,14 @@ use Drupal\workspaces\Provider\WorkspaceProviderBase;
 /**
  * Defines a test workspace provider.
  */
-class TestWorkspaceProvider extends WorkspaceProviderBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getId(): string {
-    return 'test';
-  }
+class TestWorkspaceProvider extends WorkspaceProviderBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function getId(): string
+    {
+        return 'test';
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Entity;
 
 use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
@@ -10,38 +12,41 @@ use Drupal\Core\Url;
 /**
  * Validates module uninstall readiness based on existing content entities.
  */
-class ContentUninstallValidator implements ModuleUninstallValidatorInterface {
-  use StringTranslationTrait;
+class ContentUninstallValidator implements ModuleUninstallValidatorInterface
+{
+    use StringTranslationTrait;
 
-  /**
-   * Constructs a new ContentUninstallValidator.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager service.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
-   */
-  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation) {
-    $this->stringTranslation = $string_translation;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function validate($module): array {
-    $entity_types = $this->entityTypeManager->getDefinitions();
-    $reasons = [];
-    foreach ($entity_types as $entity_type) {
-      if ($module == $entity_type->getProvider() && $entity_type instanceof ContentEntityTypeInterface && $this->entityTypeManager->getStorage($entity_type->id())->hasData()) {
-        $reasons[] = $this->t('There is content for the entity type: @entity_type. <a href=":url">Remove @entity_type_plural</a>.', [
-          '@entity_type' => $entity_type->getLabel(),
-          '@entity_type_plural' => $entity_type->getPluralLabel(),
-          ':url' => Url::fromRoute('system.prepare_modules_entity_uninstall', ['entity_type_id' => $entity_type->id()])->toString(),
-        ]);
-      }
+    /**
+     * Constructs a new ContentUninstallValidator.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+     *   The entity type manager service.
+     * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+     *   The string translation service.
+     */
+    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation)
+    {
+        $this->stringTranslation = $string_translation;
     }
-    return $reasons;
-  }
+
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function validate($module): array
+    {
+        $entity_types = $this->entityTypeManager->getDefinitions();
+        $reasons = [];
+        foreach ($entity_types as $entity_type) {
+            if ($module == $entity_type->getProvider() && $entity_type instanceof ContentEntityTypeInterface && $this->entityTypeManager->getStorage($entity_type->id())->hasData()) {
+                $reasons[] = $this->t('There is content for the entity type: @entity_type. <a href=":url">Remove @entity_type_plural</a>.', [
+                  '@entity_type' => $entity_type->getLabel(),
+                  '@entity_type_plural' => $entity_type->getPluralLabel(),
+                  ':url' => Url::fromRoute('system.prepare_modules_entity_uninstall', ['entity_type_id' => $entity_type->id()])->toString(),
+                ]);
+            }
+        }
+        return $reasons;
+    }
 
 }

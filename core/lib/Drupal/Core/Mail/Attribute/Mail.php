@@ -19,25 +19,26 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class Mail extends Plugin {
-
-  /**
-   * Constructs a Mail attribute.
-   *
-   * @param string $id
-   *   The plugin ID.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $label
-   *   The label of the plugin.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $description
-   *   (optional) A description of the plugin.
-   * @param class-string|null $deriver
-   *   (optional) The deriver class.
-   */
-  public function __construct(
-    public readonly string $id,
-    public readonly TranslatableMarkup $label,
-    public readonly ?TranslatableMarkup $description = NULL,
-    public readonly ?string $deriver = NULL,
-  ) {}
+class Mail extends Plugin
+{
+    /**
+     * Constructs a Mail attribute.
+     *
+     * @param string $id
+     *   The plugin ID.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup $label
+     *   The label of the plugin.
+     * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $description
+     *   (optional) A description of the plugin.
+     * @param class-string|null $deriver
+     *   (optional) The deriver class.
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly TranslatableMarkup $label,
+        public readonly ?TranslatableMarkup $description = null,
+        public readonly ?string $deriver = null,
+    ) {
+    }
 
 }

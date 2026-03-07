@@ -15,40 +15,43 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * use it to test that new event subscribers are picked up after staged changes
  * have been applied.
  */
-class PostApplySubscriber implements EventSubscriberInterface {
+class PostApplySubscriber implements EventSubscriberInterface
+{
+    /**
+     * The path locator service.
+     *
+     * @var \Drupal\package_manager\PathLocator
+     */
+    private $pathLocator;
 
-  /**
-   * The path locator service.
-   *
-   * @var \Drupal\package_manager\PathLocator
-   */
-  private $pathLocator;
+    /**
+     * Constructs a PostApplySubscriber.
+     *
+     * @param \Drupal\package_manager\PathLocator $path_locator
+     *   The path locator service.
+     */
+    public function __construct(PathLocator $path_locator)
+    {
+        $this->pathLocator = $path_locator;
+    }
 
-  /**
-   * Constructs a PostApplySubscriber.
-   *
-   * @param \Drupal\package_manager\PathLocator $path_locator
-   *   The path locator service.
-   */
-  public function __construct(PathLocator $path_locator) {
-    $this->pathLocator = $path_locator;
-  }
+    /**
+     * Writes a file when staged changes are applied to the active directory.
+     */
+    public function postApply(): void
+    {
+        $dir = $this->pathLocator->getProjectRoot();
+        file_put_contents("$dir/bravo.txt", 'Bravo!');
+    }
 
-  /**
-   * Writes a file when staged changes are applied to the active directory.
-   */
-  public function postApply(): void {
-    $dir = $this->pathLocator->getProjectRoot();
-    file_put_contents("$dir/bravo.txt", 'Bravo!');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return [
-      PostApplyEvent::class => 'postApply',
-    ];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+          PostApplyEvent::class => 'postApply',
+        ];
+    }
 
 }

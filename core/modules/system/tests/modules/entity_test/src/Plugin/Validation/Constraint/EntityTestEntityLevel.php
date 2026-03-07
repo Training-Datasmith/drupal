@@ -12,19 +12,19 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Constraint on entity level.
  */
 #[Constraint(
-  id: 'EntityTestEntityLevel',
-  label: new TranslatableMarkup('Constraint on the entity level.'),
-  type: ['entity']
+    id: 'EntityTestEntityLevel',
+    label: new TranslatableMarkup('Constraint on the entity level.'),
+    type: ['entity']
 )]
-class EntityTestEntityLevel extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public string $message = 'Entity level validation',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class EntityTestEntityLevel extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public string $message = 'Entity level validation',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

@@ -10,14 +10,15 @@ use Drupal\Core\DependencyInjection\ServiceProviderInterface;
 /**
  * Service provider for media library services.
  */
-class MediaLibraryServiceProvider implements ServiceProviderInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    $container->registerForAutoconfiguration(MediaLibraryOpenerInterface::class)
-      ->addTag('media_library.opener');
-  }
+class MediaLibraryServiceProvider implements ServiceProviderInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        $container->registerForAutoconfiguration(MediaLibraryOpenerInterface::class)
+          ->addTag('media_library.opener');
+    }
 
 }

@@ -20,137 +20,144 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(EntityTypeInfo::class)]
 #[Group('content_moderation')]
 #[RunTestsInSeparateProcesses]
-class EntityTypeInfoTest extends KernelTestBase {
+class EntityTypeInfoTest extends KernelTestBase
+{
+    use ContentModerationTestTrait;
 
-  use ContentModerationTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'content_moderation',
+      'workflows',
+      'entity_test',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'content_moderation',
-    'workflows',
-    'entity_test',
-    'user',
-  ];
+    /**
+     * The entity type manager.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+     */
+    protected $entityTypeManager;
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+    /**
+     * The entity type info class.
+     *
+     * @var \Drupal\content_moderation\EntityTypeInfo
+     */
+    protected $entityTypeInfo;
 
-  /**
-   * The entity type info class.
-   *
-   * @var \Drupal\content_moderation\EntityTypeInfo
-   */
-  protected $entityTypeInfo;
+    /**
+     * The entity field manager.
+     *
+     * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+     */
+    protected $entityFieldManager;
 
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
+        $this->entityTypeInfo = $this->container->get('class_resolver')->getInstanceFromDefinition(EntityTypeInfo::class);
+        $this->entityTypeManager = $this->container->get('entity_type.manager');
+        $this->entityFieldManager = $this->container->get('entity_field.manager');
 
-    $this->entityTypeInfo = $this->container->get('class_resolver')->getInstanceFromDefinition(EntityTypeInfo::class);
-    $this->entityTypeManager = $this->container->get('entity_type.manager');
-    $this->entityFieldManager = $this->container->get('entity_field.manager');
+        $this->installConfig(['content_moderation']);
+    }
 
-    $this->installConfig(['content_moderation']);
-  }
+    /**
+     * Tests entity base field info.
+     */
+    public function testEntityBaseFieldInfo(): void
+    {
+        $definition = $this->entityTypeManager->getDefinition('entity_test');
+        $definition->setHandlerClass('moderation', ModerationHandler::class);
 
-  /**
-   * Tests entity base field info.
-   */
-  public function testEntityBaseFieldInfo(): void {
-    $definition = $this->entityTypeManager->getDefinition('entity_test');
-    $definition->setHandlerClass('moderation', ModerationHandler::class);
+        $this->enableModeration('entity_test', 'entity_test');
+        $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
 
-    $this->enableModeration('entity_test', 'entity_test');
-    $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
+        $this->assertFalse($base_fields['moderation_state']->isReadOnly());
+        $this->assertTrue($base_fields['moderation_state']->isComputed());
+        $this->assertTrue($base_fields['moderation_state']->isTranslatable());
+    }
 
-    $this->assertFalse($base_fields['moderation_state']->isReadOnly());
-    $this->assertTrue($base_fields['moderation_state']->isComputed());
-    $this->assertTrue($base_fields['moderation_state']->isTranslatable());
-  }
+    /**
+     * Tests the correct entity types have moderation added.
+     */
+    #[DataProvider('providerTestEntityTypeAlter')]
+    public function testEntityTypeAlter($entity_type_id, $moderatable): void
+    {
+        $entity_types = $this->entityTypeManager->getDefinitions();
+        $this->assertSame($moderatable, $entity_types[$entity_type_id]->hasHandlerClass('moderation'));
+    }
 
-  /**
-   * Tests the correct entity types have moderation added.
-   */
-  #[DataProvider('providerTestEntityTypeAlter')]
-  public function testEntityTypeAlter($entity_type_id, $moderatable): void {
-    $entity_types = $this->entityTypeManager->getDefinitions();
-    $this->assertSame($moderatable, $entity_types[$entity_type_id]->hasHandlerClass('moderation'));
-  }
+    /**
+     * Provides test data for testEntityTypeAlter().
+     *
+     * @return array
+     *   An array of test cases, where each test case is an array with the
+     *   following values:
+     *   - An entity type ID.
+     *   - Whether the entity type is moderatable or not.
+     */
+    public static function providerTestEntityTypeAlter()
+    {
+        $tests = [];
+        $tests['non_internal_non_revisionable'] = ['entity_test', false];
+        $tests['non_internal_revisionable'] = ['entity_test_rev', true];
+        $tests['internal_non_revisionable'] = ['entity_test_no_label', false];
+        $tests['internal_revisionable'] = ['content_moderation_state', false];
+        return $tests;
+    }
 
-  /**
-   * Provides test data for testEntityTypeAlter().
-   *
-   * @return array
-   *   An array of test cases, where each test case is an array with the
-   *   following values:
-   *   - An entity type ID.
-   *   - Whether the entity type is moderatable or not.
-   */
-  public static function providerTestEntityTypeAlter() {
-    $tests = [];
-    $tests['non_internal_non_revisionable'] = ['entity_test', FALSE];
-    $tests['non_internal_revisionable'] = ['entity_test_rev', TRUE];
-    $tests['internal_non_revisionable'] = ['entity_test_no_label', FALSE];
-    $tests['internal_revisionable'] = ['content_moderation_state', FALSE];
-    return $tests;
-  }
+    /**
+     * Tests base field only added to moderated entity types.
+     *
+     * @legacy-covers ::entityBaseFieldInfo
+     */
+    public function testBaseFieldOnlyAddedToModeratedEntityTypes(): void
+    {
+        $definition = $this->entityTypeManager->getDefinition('entity_test_with_bundle');
 
-  /**
-   * Tests base field only added to moderated entity types.
-   *
-   * @legacy-covers ::entityBaseFieldInfo
-   */
-  public function testBaseFieldOnlyAddedToModeratedEntityTypes(): void {
-    $definition = $this->entityTypeManager->getDefinition('entity_test_with_bundle');
+        EntityTestBundle::create([
+          'id' => 'moderated',
+        ])->save();
+        EntityTestBundle::create([
+          'id' => 'unmoderated',
+        ])->save();
 
-    EntityTestBundle::create([
-      'id' => 'moderated',
-    ])->save();
-    EntityTestBundle::create([
-      'id' => 'unmoderated',
-    ])->save();
+        $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
+        $this->assertFalse(isset($base_fields['moderation_state']));
 
-    $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
-    $this->assertFalse(isset($base_fields['moderation_state']));
+        $this->enableModeration('entity_test_with_bundle', 'moderated');
+        $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
+        $this->assertTrue(isset($base_fields['moderation_state']));
+    }
 
-    $this->enableModeration('entity_test_with_bundle', 'moderated');
-    $base_fields = $this->entityTypeInfo->entityBaseFieldInfo($definition);
-    $this->assertTrue(isset($base_fields['moderation_state']));
-  }
+    /**
+     * Tests entity base field provider.
+     */
+    public function testEntityBaseFieldProvider(): void
+    {
+        $this->enableModeration('entity_test_mulrev', 'entity_test_mulrev');
+        $this->container->get('state')->set('entity_test.field_test_item', true);
 
-  /**
-   * Tests entity base field provider.
-   */
-  public function testEntityBaseFieldProvider(): void {
-    $this->enableModeration('entity_test_mulrev', 'entity_test_mulrev');
-    $this->container->get('state')->set('entity_test.field_test_item', TRUE);
+        $field_definitions = $this->entityFieldManager->getFieldDefinitions('entity_test_mulrev', 'entity_test_mulrev');
+        $this->assertEquals('entity_test', $field_definitions['field_test_item']->getProvider());
+    }
 
-    $field_definitions = $this->entityFieldManager->getFieldDefinitions('entity_test_mulrev', 'entity_test_mulrev');
-    $this->assertEquals('entity_test', $field_definitions['field_test_item']->getProvider());
-  }
-
-  /**
-   * Add moderation to an entity type and bundle.
-   */
-  protected function enableModeration($entity_type_id, $bundle): void {
-    $workflow = $this->createEditorialWorkflow();
-    $workflow->getTypePlugin()->addEntityTypeAndBundle($entity_type_id, $bundle);
-    $workflow->save();
-  }
+    /**
+     * Add moderation to an entity type and bundle.
+     */
+    protected function enableModeration($entity_type_id, $bundle): void
+    {
+        $workflow = $this->createEditorialWorkflow();
+        $workflow->getTypePlugin()->addEntityTypeAndBundle($entity_type_id, $bundle);
+        $workflow->save();
+    }
 
 }

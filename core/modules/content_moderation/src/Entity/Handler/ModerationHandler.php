@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\content_moderation\Entity\Handler;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -17,55 +19,60 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class ModerationHandler implements ModerationHandlerInterface, EntityHandlerInterface {
+class ModerationHandler implements ModerationHandlerInterface, EntityHandlerInterface
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
-    return new static();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isModeratedEntity(ContentEntityInterface $entity): bool {
-    // Moderate all entities included in the moderation workflow by default.
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onPresave(ContentEntityInterface $entity, $default_revision, $published_state): void {
-    // When entities are syncing, content moderation should not force a new
-    // revision to be created and should not update the default status of a
-    // revision. This is useful if changes are being made to entities or
-    // revisions which are not part of editorial updates triggered by normal
-    // content changes.
-    if (!$entity->isSyncing()) {
-      $entity->setNewRevision(TRUE);
-      $entity->isDefaultRevision($default_revision);
+    /**
+     * {@inheritdoc}
+     */
+    public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static
+    {
+        return new static();
     }
 
-    // Update publishing status if it can be updated and if it needs updating.
-    if (($entity instanceof EntityPublishedInterface) && $entity->isPublished() !== $published_state) {
-      $published_state ? $entity->setPublished() : $entity->setUnpublished();
+    /**
+     * {@inheritdoc}
+     */
+    public function isModeratedEntity(ContentEntityInterface $entity): bool
+    {
+        // Moderate all entities included in the moderation workflow by default.
+        return true;
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function enforceRevisionsEntityFormAlter(array &$form, FormStateInterface $form_state, $form_id) {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function onPresave(ContentEntityInterface $entity, $default_revision, $published_state): void
+    {
+        // When entities are syncing, content moderation should not force a new
+        // revision to be created and should not update the default status of a
+        // revision. This is useful if changes are being made to entities or
+        // revisions which are not part of editorial updates triggered by normal
+        // content changes.
+        if (!$entity->isSyncing()) {
+            $entity->setNewRevision(true);
+            $entity->isDefaultRevision($default_revision);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function enforceRevisionsBundleFormAlter(array &$form, FormStateInterface $form_state, $form_id) {
-  }
+        // Update publishing status if it can be updated and if it needs updating.
+        if (($entity instanceof EntityPublishedInterface) && $entity->isPublished() !== $published_state) {
+            $published_state ? $entity->setPublished() : $entity->setUnpublished();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function enforceRevisionsEntityFormAlter(array &$form, FormStateInterface $form_state, $form_id)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function enforceRevisionsBundleFormAlter(array &$form, FormStateInterface $form_state, $form_id)
+    {
+    }
 
 }

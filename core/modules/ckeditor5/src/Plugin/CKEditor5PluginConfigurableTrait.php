@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\ckeditor5\Plugin;
 
 /**
@@ -7,20 +9,22 @@ namespace Drupal\ckeditor5\Plugin;
  *
  * @see \Drupal\ckeditor5\Plugin\CKEditor5PluginConfigurableInterface
  */
-trait CKEditor5PluginConfigurableTrait {
+trait CKEditor5PluginConfigurableTrait
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfiguration() {
-    return $this->configuration;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setConfiguration(array $configuration): void {
-    $this->configuration = $configuration + $this->defaultConfiguration();
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function setConfiguration(array $configuration): void
+    {
+        $this->configuration = $configuration + $this->defaultConfiguration();
+    }
 
 }

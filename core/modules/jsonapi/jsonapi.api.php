@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Documentation related to JSON:API.
  */
 
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\jsonapi\JsonApiFilter;
 
 /**
@@ -274,14 +276,15 @@ use Drupal\jsonapi\JsonApiFilter;
  *
  * @see hook_jsonapi_ENTITY_TYPE_filter_access()
  */
-function hook_jsonapi_entity_filter_access(EntityTypeInterface $entity_type, AccountInterface $account) {
-  // For every entity type that has an admin permission, allow access to filter
-  // by all entities of that type to users with that permission.
-  if ($admin_permission = $entity_type->getAdminPermission()) {
-    return ([
-      JsonApiFilter::AMONG_ALL => AccessResult::allowedIfHasPermission($account, $admin_permission),
-    ]);
-  }
+function hook_jsonapi_entity_filter_access(EntityTypeInterface $entity_type, AccountInterface $account)
+{
+    // For every entity type that has an admin permission, allow access to filter
+    // by all entities of that type to users with that permission.
+    if ($admin_permission = $entity_type->getAdminPermission()) {
+        return ([
+          JsonApiFilter::AMONG_ALL => AccessResult::allowedIfHasPermission($account, $admin_permission),
+        ]);
+    }
 }
 
 /**
@@ -304,12 +307,13 @@ function hook_jsonapi_entity_filter_access(EntityTypeInterface $entity_type, Acc
  *
  * @see hook_jsonapi_entity_filter_access()
  */
-function hook_jsonapi_ENTITY_TYPE_filter_access(EntityTypeInterface $entity_type, AccountInterface $account): array {
-  return ([
-    JsonApiFilter::AMONG_ALL => AccessResult::allowedIfHasPermission($account, 'administer llamas'),
-    JsonApiFilter::AMONG_PUBLISHED => AccessResult::allowedIfHasPermission($account, 'view all published llamas'),
-    JsonApiFilter::AMONG_OWN => AccessResult::allowedIfHasPermissions($account, ['view own published llamas', 'view own unpublished llamas'], 'AND'),
-  ]);
+function hook_jsonapi_ENTITY_TYPE_filter_access(EntityTypeInterface $entity_type, AccountInterface $account): array
+{
+    return ([
+      JsonApiFilter::AMONG_ALL => AccessResult::allowedIfHasPermission($account, 'administer llamas'),
+      JsonApiFilter::AMONG_PUBLISHED => AccessResult::allowedIfHasPermission($account, 'view all published llamas'),
+      JsonApiFilter::AMONG_OWN => AccessResult::allowedIfHasPermissions($account, ['view own published llamas', 'view own unpublished llamas'], 'AND'),
+    ]);
 }
 
 /**
@@ -342,15 +346,16 @@ function hook_jsonapi_ENTITY_TYPE_filter_access(EntityTypeInterface $entity_type
  * @return \Drupal\Core\Access\AccessResultInterface
  *   The access result.
  */
-function hook_jsonapi_entity_field_filter_access(FieldDefinitionInterface $field_definition, AccountInterface $account) {
-  if ($field_definition->getTargetEntityTypeId() === 'node' && $field_definition->getName() === 'field_sensitive_data') {
-    $has_sufficient_access = FALSE;
-    foreach (['administer nodes', 'view all sensitive field data'] as $permission) {
-      $has_sufficient_access = $has_sufficient_access ?: $account->hasPermission($permission);
+function hook_jsonapi_entity_field_filter_access(FieldDefinitionInterface $field_definition, AccountInterface $account)
+{
+    if ($field_definition->getTargetEntityTypeId() === 'node' && $field_definition->getName() === 'field_sensitive_data') {
+        $has_sufficient_access = false;
+        foreach (['administer nodes', 'view all sensitive field data'] as $permission) {
+            $has_sufficient_access = $has_sufficient_access ?: $account->hasPermission($permission);
+        }
+        return AccessResult::forbiddenIf(!$has_sufficient_access)->cachePerPermissions();
     }
-    return AccessResult::forbiddenIf(!$has_sufficient_access)->cachePerPermissions();
-  }
-  return AccessResult::neutral();
+    return AccessResult::neutral();
 }
 
 /**

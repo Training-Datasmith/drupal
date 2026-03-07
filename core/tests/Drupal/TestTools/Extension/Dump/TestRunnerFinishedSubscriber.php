@@ -12,15 +12,16 @@ use PHPUnit\Event\TestRunner\FinishedSubscriber;
  *
  * @internal
  */
-final class TestRunnerFinishedSubscriber implements FinishedSubscriber {
+final class TestRunnerFinishedSubscriber implements FinishedSubscriber
+{
+    public function __construct(
+        private readonly DebugDump $dump,
+    ) {
+    }
 
-  public function __construct(
-    private readonly DebugDump $dump,
-  ) {
-  }
-
-  public function notify(Finished $event): void {
-    $this->dump->testRunnerFinished($event);
-  }
+    public function notify(Finished $event): void
+    {
+        $this->dump->testRunnerFinished($event);
+    }
 
 }

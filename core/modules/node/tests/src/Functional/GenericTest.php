@@ -13,15 +13,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('node')]
 #[RunTestsInSeparateProcesses]
-class GenericTest extends GenericModuleTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    // Ensure the generic test base is working as expected.
-    $this->assertSame('node', $this->getModule());
-    parent::setUp();
-  }
+class GenericTest extends GenericModuleTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        // Ensure the generic test base is working as expected.
+        $this->assertSame('node', $this->getModule());
+        parent::setUp();
+    }
 
 }

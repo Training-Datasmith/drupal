@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Diff\Engine;
 
 /**
@@ -7,12 +9,14 @@ namespace Drupal\Component\Diff\Engine;
  * @private
  * @subpackage DifferenceEngine
  */
-class DiffOpAdd extends DiffOp {
-  public $type = 'add';
+class DiffOpAdd extends DiffOp
+{
+    public $type = 'add';
 
-  public function __construct($lines) {
-    $this->closing = $lines;
-    $this->orig = FALSE;
-  }
+    public function __construct($lines)
+    {
+        $this->closing = $lines;
+        $this->orig = false;
+    }
 
 }

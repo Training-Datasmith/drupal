@@ -27,607 +27,620 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 #[CoversClass(Sql::class)]
 #[Group('views')]
-class SqlTest extends UnitTestCase {
+class SqlTest extends UnitTestCase
+{
+    /**
+     * Tests get cache tags.
+     *
+     * @legacy-covers ::getCacheTags
+     * @legacy-covers ::getAllEntities
+     */
+    public function testGetCacheTags(): void
+    {
+        $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
+        $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-  /**
-   * Tests get cache tags.
-   *
-   * @legacy-covers ::getCacheTags
-   * @legacy-covers ::getAllEntities
-   */
-  public function testGetCacheTags(): void {
-    $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $result = [];
+        $view->result = $result;
 
-    $result = [];
-    $view->result = $result;
+        // Add a row with an entity.
+        $row = new ResultRow();
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheTags()->willReturn(['entity_test:123']);
+        $entity = $prophecy->reveal();
+        $row->_entity = $entity;
 
-    // Add a row with an entity.
-    $row = new ResultRow();
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheTags()->willReturn(['entity_test:123']);
-    $entity = $prophecy->reveal();
-    $row->_entity = $entity;
+        $result[] = $row;
+        $view->result = $result;
 
-    $result[] = $row;
-    $view->result = $result;
+        // Add a row with an entity and a relationship entity.
+        $row = new ResultRow();
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheTags()->willReturn(['entity_test:124']);
+        $entity = $prophecy->reveal();
+        $row->_entity = $entity;
 
-    // Add a row with an entity and a relationship entity.
-    $row = new ResultRow();
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheTags()->willReturn(['entity_test:124']);
-    $entity = $prophecy->reveal();
-    $row->_entity = $entity;
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheTags()->willReturn(['entity_test:125']);
+        $entity = $prophecy->reveal();
+        $row->_relationship_entities[] = $entity;
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheTags()->willReturn(['entity_test:126']);
+        $entity = $prophecy->reveal();
+        $row->_relationship_entities[] = $entity;
 
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheTags()->willReturn(['entity_test:125']);
-    $entity = $prophecy->reveal();
-    $row->_relationship_entities[] = $entity;
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheTags()->willReturn(['entity_test:126']);
-    $entity = $prophecy->reveal();
-    $row->_relationship_entities[] = $entity;
+        $result[] = $row;
+        $view->result = $result;
 
-    $result[] = $row;
-    $view->result = $result;
-
-    $this->assertEqualsCanonicalizing(['entity_test:123', 'entity_test:124', 'entity_test:125', 'entity_test:126'], $query->getCacheTags());
-  }
-
-  /**
-   * Tests get cache max age.
-   *
-   * @legacy-covers ::getCacheTags
-   * @legacy-covers ::getAllEntities
-   */
-  public function testGetCacheMaxAge(): void {
-    $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
-
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
-
-    $view->result = [];
-
-    // Add a row with an entity.
-    $row = new ResultRow();
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheMaxAge()->willReturn(10);
-    $entity = $prophecy->reveal();
-
-    $row->_entity = $entity;
-    $view->result[] = $row;
-
-    // Add a row with an entity and a relationship entity.
-    $row = new ResultRow();
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheMaxAge()->willReturn(20);
-    $entity = $prophecy->reveal();
-    $row->_entity = $entity;
-
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheMaxAge()->willReturn(30);
-    $entity = $prophecy->reveal();
-    $row->_relationship_entities[] = $entity;
-    $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
-    $prophecy->getCacheMaxAge()->willReturn(40);
-    $entity = $prophecy->reveal();
-    $row->_relationship_entities[] = $entity;
-
-    $this->assertEquals(10, $query->getCacheMaxAge());
-  }
-
-  /**
-   * Sets up the views data in the container.
-   *
-   * @param \Drupal\views\ViewsData $views_data
-   *   The views data.
-   */
-  protected function setupViewsData(ViewsData $views_data): void {
-    $container = \Drupal::hasContainer() ? \Drupal::getContainer() : new ContainerBuilder();
-    $container->set('views.views_data', $views_data);
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Sets up the entity type manager in the container.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  protected function setupEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): void {
-    $container = \Drupal::hasContainer() ? \Drupal::getContainer() : new ContainerBuilder();
-    $container->set('entity_type.manager', $entity_type_manager);
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Sets up some test entity types and corresponding views data.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface[][] $entities_by_type
-   *   Test entities keyed by entity type and entity ID.
-   * @param \Drupal\Core\Entity\EntityInterface[][] $entity_revisions_by_type
-   *   Test entities keyed by entity type and revision ID.
-   *
-   * @return \Prophecy\Prophecy\ObjectProphecy<\Drupal\Core\Entity\EntityTypeManagerInterface>
-   *   The mocked entity type manager.
-   */
-  protected function setupEntityTypes($entities_by_type = [], $entity_revisions_by_type = []): ObjectProphecy {
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $entity_type0 = new EntityType([
-      'label' => 'First',
-      'id' => 'first',
-      'base_table' => 'entity_first',
-      'revision_table' => 'entity_first__revision',
-      'entity_keys' => [
-        'id' => 'id',
-        'revision' => 'vid',
-      ],
-    ]);
-    $entity_type1 = new EntityType([
-      'label' => 'second',
-      'id' => 'second',
-      'base_table' => 'entity_second',
-      'revision_table' => 'entity_second__revision',
-      'entity_keys' => [
-        'id' => 'id',
-        'revision' => 'vid',
-      ],
-    ]);
-
-    $entity_type_manager->getDefinitions()->willReturn([
-      'first' => $entity_type0,
-      'second' => $entity_type1,
-      'base_table' => 'entity_second',
-    ]);
-
-    $entity_type_manager->getDefinition('first')->willReturn($entity_type0);
-    $entity_type_manager->getDefinition('second')->willReturn($entity_type1);
-
-    // Setup the views data corresponding to the entity types.
-    $views_data = $this->prophesize(ViewsData::class);
-    $views_data->get('entity_first')->willReturn([
-      'table' => [
-        'entity type' => 'first',
-        'entity revision' => FALSE,
-      ],
-    ]);
-    $views_data->get('entity_first__revision')->willReturn([
-      'table' => [
-        'entity type' => 'first',
-        'entity revision' => TRUE,
-      ],
-    ]);
-    $views_data->get('entity_second')->willReturn([
-      'table' => [
-        'entity type' => 'second',
-        'entity revision' => FALSE,
-      ],
-    ]);
-    $views_data->get('entity_second__revision')->willReturn([
-      'table' => [
-        'entity type' => 'second',
-        'entity revision' => TRUE,
-      ],
-    ]);
-    $views_data->get('entity_first_field_data')->willReturn([
-      'table' => [
-        'entity type' => 'first',
-        'entity revision' => FALSE,
-      ],
-    ]);
-    $this->setupViewsData($views_data->reveal());
-
-    // Setup the loading of entities and entity revisions.
-    $entity_storages = [
-      'first' => $this->prophesize(RevisionableStorageInterface::class),
-      'second' => $this->prophesize(RevisionableStorageInterface::class),
-    ];
-
-    foreach ($entities_by_type as $entity_type_id => $entities) {
-      foreach ($entities as $entity_id => $entity) {
-        $entity_storages[$entity_type_id]->load($entity_id)->willReturn($entity);
-      }
-      $entity_storages[$entity_type_id]->loadMultiple(array_keys($entities))->willReturn($entities);
+        $this->assertEqualsCanonicalizing(['entity_test:123', 'entity_test:124', 'entity_test:125', 'entity_test:126'], $query->getCacheTags());
     }
 
-    foreach ($entity_revisions_by_type as $entity_type_id => $entity_revisions) {
-      foreach ($entity_revisions as $revision_id => $revision) {
-        $entity_storages[$entity_type_id]->loadRevision($revision_id)->willReturn($revision);
-      }
+    /**
+     * Tests get cache max age.
+     *
+     * @legacy-covers ::getCacheTags
+     * @legacy-covers ::getAllEntities
+     */
+    public function testGetCacheMaxAge(): void
+    {
+        $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
+        $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
+
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
+
+        $view->result = [];
+
+        // Add a row with an entity.
+        $row = new ResultRow();
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheMaxAge()->willReturn(10);
+        $entity = $prophecy->reveal();
+
+        $row->_entity = $entity;
+        $view->result[] = $row;
+
+        // Add a row with an entity and a relationship entity.
+        $row = new ResultRow();
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheMaxAge()->willReturn(20);
+        $entity = $prophecy->reveal();
+        $row->_entity = $entity;
+
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheMaxAge()->willReturn(30);
+        $entity = $prophecy->reveal();
+        $row->_relationship_entities[] = $entity;
+        $prophecy = $this->prophesize('Drupal\Core\Entity\EntityInterface');
+        $prophecy->getCacheMaxAge()->willReturn(40);
+        $entity = $prophecy->reveal();
+        $row->_relationship_entities[] = $entity;
+
+        $this->assertEquals(10, $query->getCacheMaxAge());
     }
 
-    $entity_type_manager->getStorage('first')->willReturn($entity_storages['first']);
-    $entity_type_manager->getStorage('second')->willReturn($entity_storages['second']);
+    /**
+     * Sets up the views data in the container.
+     *
+     * @param \Drupal\views\ViewsData $views_data
+     *   The views data.
+     */
+    protected function setupViewsData(ViewsData $views_data): void
+    {
+        $container = \Drupal::hasContainer() ? \Drupal::getContainer() : new ContainerBuilder();
+        $container->set('views.views_data', $views_data);
+        \Drupal::setContainer($container);
+    }
 
-    $this->setupEntityTypeManager($entity_type_manager->reveal());
+    /**
+     * Sets up the entity type manager in the container.
+     *
+     * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+     *   The entity type manager.
+     */
+    protected function setupEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): void
+    {
+        $container = \Drupal::hasContainer() ? \Drupal::getContainer() : new ContainerBuilder();
+        $container->set('entity_type.manager', $entity_type_manager);
+        \Drupal::setContainer($container);
+    }
 
-    return $entity_type_manager;
-  }
+    /**
+     * Sets up some test entity types and corresponding views data.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface[][] $entities_by_type
+     *   Test entities keyed by entity type and entity ID.
+     * @param \Drupal\Core\Entity\EntityInterface[][] $entity_revisions_by_type
+     *   Test entities keyed by entity type and revision ID.
+     *
+     * @return \Prophecy\Prophecy\ObjectProphecy<\Drupal\Core\Entity\EntityTypeManagerInterface>
+     *   The mocked entity type manager.
+     */
+    protected function setupEntityTypes($entities_by_type = [], $entity_revisions_by_type = []): ObjectProphecy
+    {
+        $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
+        $entity_type0 = new EntityType([
+          'label' => 'First',
+          'id' => 'first',
+          'base_table' => 'entity_first',
+          'revision_table' => 'entity_first__revision',
+          'entity_keys' => [
+            'id' => 'id',
+            'revision' => 'vid',
+          ],
+        ]);
+        $entity_type1 = new EntityType([
+          'label' => 'second',
+          'id' => 'second',
+          'base_table' => 'entity_second',
+          'revision_table' => 'entity_second__revision',
+          'entity_keys' => [
+            'id' => 'id',
+            'revision' => 'vid',
+          ],
+        ]);
 
-  /**
-   * Tests load entities with empty result.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithEmptyResult(): void {
-    $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first');
-    $view_entity->get('base_field')->willReturn('id');
-    $view->storage = $view_entity->reveal();
+        $entity_type_manager->getDefinitions()->willReturn([
+          'first' => $entity_type0,
+          'second' => $entity_type1,
+          'base_table' => 'entity_second',
+        ]);
 
-    $entity_type_manager = $this->setupEntityTypes();
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        $entity_type_manager->getDefinition('first')->willReturn($entity_type0);
+        $entity_type_manager->getDefinition('second')->willReturn($entity_type1);
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        // Setup the views data corresponding to the entity types.
+        $views_data = $this->prophesize(ViewsData::class);
+        $views_data->get('entity_first')->willReturn([
+          'table' => [
+            'entity type' => 'first',
+            'entity revision' => false,
+          ],
+        ]);
+        $views_data->get('entity_first__revision')->willReturn([
+          'table' => [
+            'entity type' => 'first',
+            'entity revision' => true,
+          ],
+        ]);
+        $views_data->get('entity_second')->willReturn([
+          'table' => [
+            'entity type' => 'second',
+            'entity revision' => false,
+          ],
+        ]);
+        $views_data->get('entity_second__revision')->willReturn([
+          'table' => [
+            'entity type' => 'second',
+            'entity revision' => true,
+          ],
+        ]);
+        $views_data->get('entity_first_field_data')->willReturn([
+          'table' => [
+            'entity type' => 'first',
+            'entity revision' => false,
+          ],
+        ]);
+        $this->setupViewsData($views_data->reveal());
 
-    $result = [];
-    $query->addField('entity_first', 'id', 'id');
-    $query->loadEntities($result);
-    $this->assertEmpty($result);
-  }
+        // Setup the loading of entities and entity revisions.
+        $entity_storages = [
+          'first' => $this->prophesize(RevisionableStorageInterface::class),
+          'second' => $this->prophesize(RevisionableStorageInterface::class),
+        ];
 
-  /**
-   * Tests load entities with no relationship and no revision.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithNoRelationshipAndNoRevision(): void {
-    $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first');
-    $view_entity->get('base_field')->willReturn('id');
-    $view->storage = $view_entity->reveal();
+        foreach ($entities_by_type as $entity_type_id => $entities) {
+            foreach ($entities as $entity_id => $entity) {
+                $entity_storages[$entity_type_id]->load($entity_id)->willReturn($entity);
+            }
+            $entity_storages[$entity_type_id]->loadMultiple(array_keys($entities))->willReturn($entities);
+        }
 
-    $entities = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        2 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes($entities);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        foreach ($entity_revisions_by_type as $entity_type_id => $entity_revisions) {
+            foreach ($entity_revisions as $revision_id => $revision) {
+                $entity_storages[$entity_type_id]->loadRevision($revision_id)->willReturn($revision);
+            }
+        }
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $entity_type_manager->getStorage('first')->willReturn($entity_storages['first']);
+        $entity_type_manager->getStorage('second')->willReturn($entity_storages['second']);
 
-    $result = [];
-    $result[] = new ResultRow([
-      'id' => 1,
-    ]);
-    // Note: Let the same entity be returned multiple times, for example to
-    // support the translation use case.
-    $result[] = new ResultRow([
-      'id' => 2,
-    ]);
-    $result[] = new ResultRow([
-      'id' => 2,
-    ]);
+        $this->setupEntityTypeManager($entity_type_manager->reveal());
 
-    $query->addField('entity_first', 'id', 'id');
-    $query->loadEntities($result);
+        return $entity_type_manager;
+    }
 
-    $this->assertSame($entities['first'][1], $result[0]->_entity);
-    $this->assertSame($entities['first'][2], $result[1]->_entity);
-    $this->assertSame($entities['first'][2], $result[2]->_entity);
-  }
+    /**
+     * Tests load entities with empty result.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithEmptyResult(): void
+    {
+        $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first');
+        $view_entity->get('base_field')->willReturn('id');
+        $view->storage = $view_entity->reveal();
 
-  /**
-   * Create a view with a relationship.
-   */
-  protected function setupViewWithRelationships(ViewExecutable $view, $base = 'entity_second'): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $relationship = $this->getMockBuilder(RelationshipPluginBase::class)->disableOriginalConstructor()->getMock();
-    $relationship->definition['base'] = $base;
-    $relationship->tableAlias = $base;
-    $relationship->alias = $base;
+        $entity_type_manager = $this->setupEntityTypes();
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $view->relationship[$base] = $relationship;
-  }
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-  /**
-   * Tests load entities with relationship.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithRelationship(): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
-    $this->setupViewWithRelationships($view);
+        $result = [];
+        $query->addField('entity_first', 'id', 'id');
+        $query->loadEntities($result);
+        $this->assertEmpty($result);
+    }
 
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first');
-    $view_entity->get('base_field')->willReturn('id');
-    $view->storage = $view_entity->reveal();
+    /**
+     * Tests load entities with no relationship and no revision.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithNoRelationshipAndNoRevision(): void
+    {
+        $view = $this->prophesize('Drupal\views\ViewExecutable')->reveal();
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first');
+        $view_entity->get('base_field')->willReturn('id');
+        $view->storage = $view_entity->reveal();
 
-    $entities = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        2 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-      'second' => [
-        11 => $this->prophesize(EntityInterface::class)->reveal(),
-        12 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes($entities);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        $entities = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            2 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes($entities);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $result = [];
-    $result[] = new ResultRow([
-      'id' => 1,
-      'entity_second__id' => 11,
-    ]);
-    // Provide an explicit NULL value, to test the case of a non required
-    // relationship.
-    $result[] = new ResultRow([
-      'id' => 2,
-      'entity_second__id' => NULL,
-    ]);
-    $result[] = new ResultRow([
-      'id' => 2,
-      'entity_second__id' => 12,
-    ]);
+        $result = [];
+        $result[] = new ResultRow([
+          'id' => 1,
+        ]);
+        // Note: Let the same entity be returned multiple times, for example to
+        // support the translation use case.
+        $result[] = new ResultRow([
+          'id' => 2,
+        ]);
+        $result[] = new ResultRow([
+          'id' => 2,
+        ]);
 
-    $query->addField('entity_first', 'id', 'id');
-    $query->addField('entity_second', 'id', 'entity_second__id');
-    $query->loadEntities($result);
+        $query->addField('entity_first', 'id', 'id');
+        $query->loadEntities($result);
 
-    $this->assertSame($entities['first'][1], $result[0]->_entity);
-    $this->assertSame($entities['first'][2], $result[1]->_entity);
-    $this->assertSame($entities['first'][2], $result[2]->_entity);
+        $this->assertSame($entities['first'][1], $result[0]->_entity);
+        $this->assertSame($entities['first'][2], $result[1]->_entity);
+        $this->assertSame($entities['first'][2], $result[2]->_entity);
+    }
 
-    $this->assertSame($entities['second'][11], $result[0]->_relationship_entities['entity_second']);
-    $this->assertEquals([], $result[1]->_relationship_entities);
-    $this->assertSame($entities['second'][12], $result[2]->_relationship_entities['entity_second']);
-  }
+    /**
+     * Create a view with a relationship.
+     */
+    protected function setupViewWithRelationships(ViewExecutable $view, $base = 'entity_second'): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $relationship = $this->getMockBuilder(RelationshipPluginBase::class)->disableOriginalConstructor()->getMock();
+        $relationship->definition['base'] = $base;
+        $relationship->tableAlias = $base;
+        $relationship->alias = $base;
 
-  /**
-   * Tests load entities with non entity relationship.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithNonEntityRelationship(): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
-    $this->setupViewWithRelationships($view, 'entity_first_field_data');
+        $view->relationship[$base] = $relationship;
+    }
 
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first');
-    $view_entity->get('base_field')->willReturn('id');
-    $view->storage = $view_entity->reveal();
+    /**
+     * Tests load entities with relationship.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithRelationship(): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
+        $this->setupViewWithRelationships($view);
 
-    $entities = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        2 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes($entities);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first');
+        $view_entity->get('base_field')->willReturn('id');
+        $view->storage = $view_entity->reveal();
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $entities = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            2 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+          'second' => [
+            11 => $this->prophesize(EntityInterface::class)->reveal(),
+            12 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes($entities);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $result = [];
-    $result[] = new ResultRow([
-      'id' => 1,
-    ]);
-    $result[] = new ResultRow([
-      'id' => 2,
-    ]);
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $query->addField('entity_first', 'id', 'id');
-    $query->loadEntities($result);
-    $entity_information = $query->getEntityTableInfo();
+        $result = [];
+        $result[] = new ResultRow([
+          'id' => 1,
+          'entity_second__id' => 11,
+        ]);
+        // Provide an explicit NULL value, to test the case of a non required
+        // relationship.
+        $result[] = new ResultRow([
+          'id' => 2,
+          'entity_second__id' => null,
+        ]);
+        $result[] = new ResultRow([
+          'id' => 2,
+          'entity_second__id' => 12,
+        ]);
 
-    $this->assertSame($entities['first'][1], $result[0]->_entity);
-    $this->assertSame($entities['first'][2], $result[1]->_entity);
+        $query->addField('entity_first', 'id', 'id');
+        $query->addField('entity_second', 'id', 'entity_second__id');
+        $query->loadEntities($result);
 
-    $this->assertEquals([], $result[0]->_relationship_entities);
-    $this->assertEquals([], $result[1]->_relationship_entities);
+        $this->assertSame($entities['first'][1], $result[0]->_entity);
+        $this->assertSame($entities['first'][2], $result[1]->_entity);
+        $this->assertSame($entities['first'][2], $result[2]->_entity);
 
-    // This is an entity table and should be in $entity_information.
-    $this->assertContains('first', array_keys($entity_information));
-    // This is not an entity table and should not be in $entity_information.
-    $this->assertNotContains('entity_first_field_data__entity_first_field_data', array_keys($entity_information));
-  }
+        $this->assertSame($entities['second'][11], $result[0]->_relationship_entities['entity_second']);
+        $this->assertEquals([], $result[1]->_relationship_entities);
+        $this->assertSame($entities['second'][12], $result[2]->_relationship_entities['entity_second']);
+    }
 
-  /**
-   * Tests load entities with revision.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithRevision(): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $view = $this->getMockBuilder(ViewExecutable::class)
-      ->disableOriginalConstructor()
-      ->getMock();
+    /**
+     * Tests load entities with non entity relationship.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithNonEntityRelationship(): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
+        $this->setupViewWithRelationships($view, 'entity_first_field_data');
 
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first__revision');
-    $view_entity->get('base_field')->willReturn('vid');
-    $view->storage = $view_entity->reveal();
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first');
+        $view_entity->get('base_field')->willReturn('id');
+        $view->storage = $view_entity->reveal();
 
-    $entity_revisions = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        3 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes([], $entity_revisions);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+        $entities = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            2 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes($entities);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $result = [];
-    $result[] = new ResultRow([
-      'vid' => 1,
-    ]);
-    $result[] = new ResultRow([
-      'vid' => 1,
-    ]);
-    $result[] = new ResultRow([
-      'vid' => 3,
-    ]);
+        $result = [];
+        $result[] = new ResultRow([
+          'id' => 1,
+        ]);
+        $result[] = new ResultRow([
+          'id' => 2,
+        ]);
 
-    $query->addField('entity_first__revision', 'vid', 'vid');
-    $query->loadEntities($result);
+        $query->addField('entity_first', 'id', 'id');
+        $query->loadEntities($result);
+        $entity_information = $query->getEntityTableInfo();
 
-    $this->assertSame($entity_revisions['first'][1], $result[0]->_entity);
-    $this->assertSame($entity_revisions['first'][1], $result[1]->_entity);
-    $this->assertSame($entity_revisions['first'][3], $result[2]->_entity);
-  }
+        $this->assertSame($entities['first'][1], $result[0]->_entity);
+        $this->assertSame($entities['first'][2], $result[1]->_entity);
 
-  /**
-   * Tests load entities with revision of same entity type.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithRevisionOfSameEntityType(): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $view = $this->getMockBuilder(ViewExecutable::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-    $this->setupViewWithRelationships($view, 'entity_first__revision');
+        $this->assertEquals([], $result[0]->_relationship_entities);
+        $this->assertEquals([], $result[1]->_relationship_entities);
 
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first');
-    $view_entity->get('base_field')->willReturn('id');
-    $view->storage = $view_entity->reveal();
+        // This is an entity table and should be in $entity_information.
+        $this->assertContains('first', array_keys($entity_information));
+        // This is not an entity table and should not be in $entity_information.
+        $this->assertNotContains('entity_first_field_data__entity_first_field_data', array_keys($entity_information));
+    }
 
-    $entity = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        2 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_revisions = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        2 => $this->prophesize(EntityInterface::class)->reveal(),
-        3 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes($entity, $entity_revisions);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+    /**
+     * Tests load entities with revision.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithRevision(): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $view = $this->getMockBuilder(ViewExecutable::class)
+          ->disableOriginalConstructor()
+          ->getMock();
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first__revision');
+        $view_entity->get('base_field')->willReturn('vid');
+        $view->storage = $view_entity->reveal();
 
-    $result = [];
-    $result[] = new ResultRow([
-      'id' => 1,
-      'entity_first__revision__vid' => 1,
-    ]);
-    $result[] = new ResultRow([
-      'id' => 2,
-      'entity_first__revision__vid' => 2,
-    ]);
-    $result[] = new ResultRow([
-      'id' => 2,
-      'entity_first__revision__vid' => 3,
-    ]);
+        $entity_revisions = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            3 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes([], $entity_revisions);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $query->addField('entity_first', 'id', 'id');
-    $query->addField('entity_first__revision', 'vid', 'entity_first__revision__vid');
-    $query->loadEntities($result);
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $this->assertSame($entity['first'][1], $result[0]->_entity);
-    $this->assertSame($entity['first'][2], $result[1]->_entity);
-    $this->assertSame($entity['first'][2], $result[2]->_entity);
-    $this->assertSame($entity_revisions['first'][1], $result[0]->_relationship_entities['entity_first__revision']);
-    $this->assertSame($entity_revisions['first'][2], $result[1]->_relationship_entities['entity_first__revision']);
-    $this->assertSame($entity_revisions['first'][3], $result[2]->_relationship_entities['entity_first__revision']);
-  }
+        $result = [];
+        $result[] = new ResultRow([
+          'vid' => 1,
+        ]);
+        $result[] = new ResultRow([
+          'vid' => 1,
+        ]);
+        $result[] = new ResultRow([
+          'vid' => 3,
+        ]);
 
-  /**
-   * Tests load entities with relationship and revision.
-   *
-   * @legacy-covers ::loadEntities
-   * @legacy-covers ::assignEntitiesToResult
-   */
-  public function testLoadEntitiesWithRelationshipAndRevision(): void {
-    // We don't use prophecy, because prophecy enforces methods.
-    $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
-    $this->setupViewWithRelationships($view);
+        $query->addField('entity_first__revision', 'vid', 'vid');
+        $query->loadEntities($result);
 
-    $view_entity = $this->prophesize(ViewEntityInterface::class);
-    $view_entity->get('base_table')->willReturn('entity_first__revision');
-    $view_entity->get('base_field')->willReturn('vid');
-    $view->storage = $view_entity->reveal();
+        $this->assertSame($entity_revisions['first'][1], $result[0]->_entity);
+        $this->assertSame($entity_revisions['first'][1], $result[1]->_entity);
+        $this->assertSame($entity_revisions['first'][3], $result[2]->_entity);
+    }
 
-    $entities = [
-      'second' => [
-        11 => $this->prophesize(EntityInterface::class)->reveal(),
-        12 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_revisions = [
-      'first' => [
-        1 => $this->prophesize(EntityInterface::class)->reveal(),
-        3 => $this->prophesize(EntityInterface::class)->reveal(),
-      ],
-    ];
-    $entity_type_manager = $this->setupEntityTypes($entities, $entity_revisions);
-    $date_sql = $this->prophesize(DateSqlInterface::class);
-    $messenger = $this->prophesize(MessengerInterface::class);
+    /**
+     * Tests load entities with revision of same entity type.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithRevisionOfSameEntityType(): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $view = $this->getMockBuilder(ViewExecutable::class)
+          ->disableOriginalConstructor()
+          ->getMock();
+        $this->setupViewWithRelationships($view, 'entity_first__revision');
 
-    $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
-    $query->view = $view;
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first');
+        $view_entity->get('base_field')->willReturn('id');
+        $view->storage = $view_entity->reveal();
 
-    $result = [];
-    $result[] = new ResultRow([
-      'vid' => 1,
-      'entity_second__id' => 11,
-    ]);
-    // Provide an explicit NULL value, to test the case of a non required
-    // relationship.
-    $result[] = new ResultRow([
-      'vid' => 1,
-      'entity_second__id' => NULL,
-    ]);
-    $result[] = new ResultRow([
-      'vid' => 3,
-      'entity_second__id' => 12,
-    ]);
+        $entity = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            2 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_revisions = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            2 => $this->prophesize(EntityInterface::class)->reveal(),
+            3 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes($entity, $entity_revisions);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
 
-    $query->addField('entity_first__revision', 'vid', 'vid');
-    $query->addField('entity_second', 'id', 'entity_second__id');
-    $query->loadEntities($result);
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
 
-    $this->assertSame($entity_revisions['first'][1], $result[0]->_entity);
-    $this->assertSame($entity_revisions['first'][1], $result[1]->_entity);
-    $this->assertSame($entity_revisions['first'][3], $result[2]->_entity);
+        $result = [];
+        $result[] = new ResultRow([
+          'id' => 1,
+          'entity_first__revision__vid' => 1,
+        ]);
+        $result[] = new ResultRow([
+          'id' => 2,
+          'entity_first__revision__vid' => 2,
+        ]);
+        $result[] = new ResultRow([
+          'id' => 2,
+          'entity_first__revision__vid' => 3,
+        ]);
 
-    $this->assertSame($entities['second'][11], $result[0]->_relationship_entities['entity_second']);
-    $this->assertEquals([], $result[1]->_relationship_entities);
-    $this->assertSame($entities['second'][12], $result[2]->_relationship_entities['entity_second']);
-  }
+        $query->addField('entity_first', 'id', 'id');
+        $query->addField('entity_first__revision', 'vid', 'entity_first__revision__vid');
+        $query->loadEntities($result);
+
+        $this->assertSame($entity['first'][1], $result[0]->_entity);
+        $this->assertSame($entity['first'][2], $result[1]->_entity);
+        $this->assertSame($entity['first'][2], $result[2]->_entity);
+        $this->assertSame($entity_revisions['first'][1], $result[0]->_relationship_entities['entity_first__revision']);
+        $this->assertSame($entity_revisions['first'][2], $result[1]->_relationship_entities['entity_first__revision']);
+        $this->assertSame($entity_revisions['first'][3], $result[2]->_relationship_entities['entity_first__revision']);
+    }
+
+    /**
+     * Tests load entities with relationship and revision.
+     *
+     * @legacy-covers ::loadEntities
+     * @legacy-covers ::assignEntitiesToResult
+     */
+    public function testLoadEntitiesWithRelationshipAndRevision(): void
+    {
+        // We don't use prophecy, because prophecy enforces methods.
+        $view = $this->getMockBuilder(ViewExecutable::class)->disableOriginalConstructor()->getMock();
+        $this->setupViewWithRelationships($view);
+
+        $view_entity = $this->prophesize(ViewEntityInterface::class);
+        $view_entity->get('base_table')->willReturn('entity_first__revision');
+        $view_entity->get('base_field')->willReturn('vid');
+        $view->storage = $view_entity->reveal();
+
+        $entities = [
+          'second' => [
+            11 => $this->prophesize(EntityInterface::class)->reveal(),
+            12 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_revisions = [
+          'first' => [
+            1 => $this->prophesize(EntityInterface::class)->reveal(),
+            3 => $this->prophesize(EntityInterface::class)->reveal(),
+          ],
+        ];
+        $entity_type_manager = $this->setupEntityTypes($entities, $entity_revisions);
+        $date_sql = $this->prophesize(DateSqlInterface::class);
+        $messenger = $this->prophesize(MessengerInterface::class);
+
+        $query = new Sql([], 'sql', [], $entity_type_manager->reveal(), $date_sql->reveal(), $messenger->reveal());
+        $query->view = $view;
+
+        $result = [];
+        $result[] = new ResultRow([
+          'vid' => 1,
+          'entity_second__id' => 11,
+        ]);
+        // Provide an explicit NULL value, to test the case of a non required
+        // relationship.
+        $result[] = new ResultRow([
+          'vid' => 1,
+          'entity_second__id' => null,
+        ]);
+        $result[] = new ResultRow([
+          'vid' => 3,
+          'entity_second__id' => 12,
+        ]);
+
+        $query->addField('entity_first__revision', 'vid', 'vid');
+        $query->addField('entity_second', 'id', 'entity_second__id');
+        $query->loadEntities($result);
+
+        $this->assertSame($entity_revisions['first'][1], $result[0]->_entity);
+        $this->assertSame($entity_revisions['first'][1], $result[1]->_entity);
+        $this->assertSame($entity_revisions['first'][3], $result[2]->_entity);
+
+        $this->assertSame($entities['second'][11], $result[0]->_relationship_entities['entity_second']);
+        $this->assertEquals([], $result[1]->_relationship_entities);
+        $this->assertSame($entities['second'][12], $result[2]->_relationship_entities['entity_second']);
+    }
 
 }

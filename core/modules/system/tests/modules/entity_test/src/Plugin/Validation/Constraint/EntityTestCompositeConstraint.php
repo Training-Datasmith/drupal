@@ -12,26 +12,27 @@ use Drupal\Core\Validation\Attribute\Constraint;
  * Constraint with multiple fields.
  */
 #[Constraint(
-  id: 'EntityTestComposite',
-  label: new TranslatableMarkup('Constraint with multiple fields.'),
-  type: ['entity']
+    id: 'EntityTestComposite',
+    label: new TranslatableMarkup('Constraint with multiple fields.'),
+    type: ['entity']
 )]
-class EntityTestCompositeConstraint extends CompositeConstraintBase {
+class EntityTestCompositeConstraint extends CompositeConstraintBase
+{
+    public function __construct(
+        mixed $options = null,
+        public string $message = 'Multiple fields are validated',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
-  public function __construct(
-    mixed $options = NULL,
-    public string $message = 'Multiple fields are validated',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function coversFields() {
-    return ['name', 'type'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function coversFields()
+    {
+        return ['name', 'type'];
+    }
 
 }

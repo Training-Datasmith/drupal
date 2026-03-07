@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Annotation;
 
 use Drupal\Component\Annotation\AnnotationInterface;
@@ -12,31 +14,31 @@ use Drupal\Component\Annotation\AnnotationInterface;
  *   will be deprecated with plugin discovery by annotations in
  *   https://www.drupal.org/project/drupal/issues/3522409.
  */
-interface MultipleProviderAnnotationInterface extends AnnotationInterface {
+interface MultipleProviderAnnotationInterface extends AnnotationInterface
+{
+    /**
+     * Gets the name of the provider of the annotated class.
+     *
+     * @return string
+     *   The provider of the annotation. If there are multiple providers the first
+     *   is returned.
+     */
+    public function getProvider();
 
-  /**
-   * Gets the name of the provider of the annotated class.
-   *
-   * @return string
-   *   The provider of the annotation. If there are multiple providers the first
-   *   is returned.
-   */
-  public function getProvider();
+    /**
+     * Gets the provider names of the annotated class.
+     *
+     * @return string[]
+     *   The providers of the annotation.
+     */
+    public function getProviders();
 
-  /**
-   * Gets the provider names of the annotated class.
-   *
-   * @return string[]
-   *   The providers of the annotation.
-   */
-  public function getProviders();
-
-  /**
-   * Sets the provider names of the annotated class.
-   *
-   * @param string[] $providers
-   *   The providers of the annotation.
-   */
-  public function setProviders(array $providers);
+    /**
+     * Sets the provider names of the annotated class.
+     *
+     * @param string[] $providers
+     *   The providers of the annotation.
+     */
+    public function setProviders(array $providers);
 
 }

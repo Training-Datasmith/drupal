@@ -26,85 +26,87 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(UserBulkForm::class)]
 #[Group('user')]
-class UserBulkFormTest extends UnitTestCase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown(): void {
-    parent::tearDown();
-    $container = new ContainerBuilder();
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Tests the constructor assignment of actions.
-   */
-  public function testConstructor(): void {
-    $actions = [];
-
-    for ($i = 1; $i <= 2; $i++) {
-      $action = $this->createStub(ActionConfigEntityInterface::class);
-      $action
-        ->method('getType')
-        ->willReturn('user');
-      $actions[$i] = $action;
+class UserBulkFormTest extends UnitTestCase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $container = new ContainerBuilder();
+        \Drupal::setContainer($container);
     }
 
-    $action = $this->createStub(ActionConfigEntityInterface::class);
-    $action
-      ->method('getType')
-      ->willReturn('node');
-    $actions[] = $action;
+    /**
+     * Tests the constructor assignment of actions.
+     */
+    public function testConstructor(): void
+    {
+        $actions = [];
 
-    $entity_storage = $this->createStub(EntityStorageInterface::class);
-    $entity_storage
-      ->method('loadMultiple')
-      ->willReturn($actions);
+        for ($i = 1; $i <= 2; $i++) {
+            $action = $this->createStub(ActionConfigEntityInterface::class);
+            $action
+              ->method('getType')
+              ->willReturn('user');
+            $actions[$i] = $action;
+        }
 
-    $entity_type_manager = $this->createStub(EntityTypeManagerInterface::class);
-    $entity_type_manager
-      ->method('getStorage')
-      ->with('action')
-      ->willReturn($entity_storage);
+        $action = $this->createStub(ActionConfigEntityInterface::class);
+        $action
+          ->method('getType')
+          ->willReturn('node');
+        $actions[] = $action;
 
-    $entity_repository = $this->createStub(EntityRepositoryInterface::class);
+        $entity_storage = $this->createStub(EntityStorageInterface::class);
+        $entity_storage
+          ->method('loadMultiple')
+          ->willReturn($actions);
 
-    $language_manager = $this->createStub(LanguageManagerInterface::class);
+        $entity_type_manager = $this->createStub(EntityTypeManagerInterface::class);
+        $entity_type_manager
+          ->method('getStorage')
+          ->with('action')
+          ->willReturn($entity_storage);
 
-    $messenger = $this->createStub(MessengerInterface::class);
+        $entity_repository = $this->createStub(EntityRepositoryInterface::class);
 
-    $route_match = $this->createStub(ResettableStackedRouteMatchInterface::class);
+        $language_manager = $this->createStub(LanguageManagerInterface::class);
 
-    $views_data = $this->createStub(ViewsData::class);
-    $views_data
-      ->method('get')
-      ->with('users')
-      ->willReturn(['table' => ['entity type' => 'user']]);
-    $container = new ContainerBuilder();
-    $container->set('views.views_data', $views_data);
-    $container->set('string_translation', $this->getStringTranslationStub());
-    \Drupal::setContainer($container);
+        $messenger = $this->createStub(MessengerInterface::class);
 
-    $storage = $this->createStub(ViewEntityInterface::class);
-    $storage
-      ->method('get')
-      ->with('base_table')
-      ->willReturn('users');
+        $route_match = $this->createStub(ResettableStackedRouteMatchInterface::class);
 
-    $executable = $this->createStub(ViewExecutable::class);
-    $executable->storage = $storage;
+        $views_data = $this->createStub(ViewsData::class);
+        $views_data
+          ->method('get')
+          ->with('users')
+          ->willReturn(['table' => ['entity type' => 'user']]);
+        $container = new ContainerBuilder();
+        $container->set('views.views_data', $views_data);
+        $container->set('string_translation', $this->getStringTranslationStub());
+        \Drupal::setContainer($container);
 
-    $display = $this->createStub(DisplayPluginBase::class);
+        $storage = $this->createStub(ViewEntityInterface::class);
+        $storage
+          ->method('get')
+          ->with('base_table')
+          ->willReturn('users');
 
-    $definition['title'] = '';
-    $options = [];
+        $executable = $this->createStub(ViewExecutable::class);
+        $executable->storage = $storage;
 
-    $user_bulk_form = new UserBulkForm([], 'user_bulk_form', $definition, $entity_type_manager, $language_manager, $messenger, $entity_repository, $route_match);
-    $user_bulk_form->init($executable, $display, $options);
+        $display = $this->createStub(DisplayPluginBase::class);
 
-    $reflected_actions = (new \ReflectionObject($user_bulk_form))->getProperty('actions');
-    $this->assertEquals(array_slice($actions, 0, -1, TRUE), $reflected_actions->getValue($user_bulk_form));
-  }
+        $definition['title'] = '';
+        $options = [];
+
+        $user_bulk_form = new UserBulkForm([], 'user_bulk_form', $definition, $entity_type_manager, $language_manager, $messenger, $entity_repository, $route_match);
+        $user_bulk_form->init($executable, $display, $options);
+
+        $reflected_actions = (new \ReflectionObject($user_bulk_form))->getProperty('actions');
+        $this->assertEquals(array_slice($actions, 0, -1, true), $reflected_actions->getValue($user_bulk_form));
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Theme;
 
 use Drupal\Core\Config\ConfigBase;
@@ -13,38 +15,39 @@ use Drupal\Core\Config\ConfigBase;
  *
  * @see \Drupal\Core\Extension\ThemeSettingsProvider::getSetting()
  */
-class ThemeSettings extends ConfigBase {
+class ThemeSettings extends ConfigBase
+{
+    /**
+     * Constructs a theme settings object.
+     *
+     * @param string $theme
+     *   The name of the theme settings object being constructed.
+     */
+    public function __construct(
+        /**
+         * The theme of the theme settings object.
+         */
+        protected $theme
+    ) {
+    }
 
-  /**
-   * Constructs a theme settings object.
-   *
-   * @param string $theme
-   *   The name of the theme settings object being constructed.
-   */
-  public function __construct(
-      /**
-       * The theme of the theme settings object.
-       */
-      protected $theme
-  )
-  {
-  }
+    /**
+     * Returns the theme of this theme settings object.
+     *
+     * @return string
+     *   The theme of this theme settings object.
+     */
+    public function getTheme()
+    {
+        return $this->theme;
+    }
 
-  /**
-   * Returns the theme of this theme settings object.
-   *
-   * @return string
-   *   The theme of this theme settings object.
-   */
-  public function getTheme() {
-    return $this->theme;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags(): array {
-    return ['rendered'];
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags(): array
+    {
+        return ['rendered'];
+    }
 
 }

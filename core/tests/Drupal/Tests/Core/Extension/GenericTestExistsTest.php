@@ -13,31 +13,32 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests that the Generic module test exists for all modules.
  */
 #[Group('Extension')]
-class GenericTestExistsTest extends UnitTestCase {
+class GenericTestExistsTest extends UnitTestCase
+{
+    use FileSystemModuleDiscoveryDataProviderTrait;
 
-  use FileSystemModuleDiscoveryDataProviderTrait;
+    /**
+     * Lists module that do not require a Generic test.
+     *
+     * @var string[]
+     */
+    protected $modulesNoTest = [
+      'help_topics',
+      'sdc',
+      'migrate_drupal',
+      'migrate_drupal_ui',
+    ];
 
-  /**
-   * Lists module that do not require a Generic test.
-   *
-   * @var string[]
-   */
-  protected $modulesNoTest = [
-    'help_topics',
-    'sdc',
-    'migrate_drupal',
-    'migrate_drupal_ui',
-  ];
-
-  /**
-   * Tests that the Generic module test exists for all modules.
-   */
-  #[DataProvider('coreModuleListDataProvider')]
-  public function testGenericTestExists(string $module_name): void {
-    if (in_array($module_name, $this->modulesNoTest, TRUE)) {
-      $this->markTestSkipped();
+    /**
+     * Tests that the Generic module test exists for all modules.
+     */
+    #[DataProvider('coreModuleListDataProvider')]
+    public function testGenericTestExists(string $module_name): void
+    {
+        if (in_array($module_name, $this->modulesNoTest, true)) {
+            $this->markTestSkipped();
+        }
+        $this->assertFileExists("{$this->root}/core/modules/{$module_name}/tests/src/Functional/GenericTest.php");
     }
-    $this->assertFileExists("{$this->root}/core/modules/{$module_name}/tests/src/Functional/GenericTest.php");
-  }
 
 }

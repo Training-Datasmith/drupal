@@ -10,17 +10,18 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
 /**
  * A computed entity reference field item list.
  */
-class ComputedReferenceTestFieldItemList extends EntityReferenceFieldItemList {
+class ComputedReferenceTestFieldItemList extends EntityReferenceFieldItemList
+{
+    use ComputedItemListTrait;
 
-  use ComputedItemListTrait;
-
-  /**
-   * Compute the list property from state.
-   */
-  protected function computeValue() {
-    foreach (\Drupal::state()->get('entity_test_reference_computed_target_ids', []) as $delta => $id) {
-      $this->list[$delta] = $this->createItem($delta, $id);
+    /**
+     * Compute the list property from state.
+     */
+    protected function computeValue()
+    {
+        foreach (\Drupal::state()->get('entity_test_reference_computed_target_ids', []) as $delta => $id) {
+            $this->list[$delta] = $this->createItem($delta, $id);
+        }
     }
-  }
 
 }

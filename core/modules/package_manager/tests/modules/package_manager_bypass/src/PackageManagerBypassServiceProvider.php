@@ -17,34 +17,35 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @internal
  */
-final class PackageManagerBypassServiceProvider extends ServiceProviderBase {
+final class PackageManagerBypassServiceProvider extends ServiceProviderBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function alter(ContainerBuilder $container): void
+    {
+        parent::alter($container);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container): void {
-    parent::alter($container);
+        // By default, \Drupal\package_manager_bypass\NoOpStager is applied, except
+        // when a test opts out by setting this setting to FALSE.
+        // @see \Drupal\package_manager_bypass\NoOpStager::setLockFileShouldChange()
+        if (Settings::get('package_manager_bypass_composer_stager', true)) {
+            $container->register(NoOpStager::class)
+              ->setClass(NoOpStager::class)
+              ->setPublic(false)
+              ->setAutowired(true)
+              ->setDecoratedService(StagerInterface::class);
+        }
 
-    // By default, \Drupal\package_manager_bypass\NoOpStager is applied, except
-    // when a test opts out by setting this setting to FALSE.
-    // @see \Drupal\package_manager_bypass\NoOpStager::setLockFileShouldChange()
-    if (Settings::get('package_manager_bypass_composer_stager', TRUE)) {
-      $container->register(NoOpStager::class)
-        ->setClass(NoOpStager::class)
-        ->setPublic(FALSE)
-        ->setAutowired(TRUE)
-        ->setDecoratedService(StagerInterface::class);
+        $container->getDefinition(PathLocator::class)
+          ->setClass(MockPathLocator::class)
+          ->setAutowired(false)
+          ->setArguments([
+            new Reference('state'),
+            new Parameter('app.root'),
+            new Reference('config.factory'),
+            new Reference('file_system'),
+          ]);
     }
-
-    $container->getDefinition(PathLocator::class)
-      ->setClass(MockPathLocator::class)
-      ->setAutowired(FALSE)
-      ->setArguments([
-        new Reference('state'),
-        new Parameter('app.root'),
-        new Reference('config.factory'),
-        new Reference('file_system'),
-      ]);
-  }
 
 }

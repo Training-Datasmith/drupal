@@ -16,26 +16,27 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[Group('navigation')]
 #[RunTestsInSeparateProcesses]
-class NavigationEntityRouteHelperTest extends KernelTestBase {
+class NavigationEntityRouteHelperTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'system',
+      'navigation',
+      'layout_builder',
+      'user',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'system',
-    'navigation',
-    'layout_builder',
-    'user',
-  ];
-
-  /**
-   * Tests getContentEntityFromRoute() method when the route does not exist.
-   */
-  public function testGetContentEntityFromRouteWithNonExistentRoute(): void {
-    $request = Request::create('/does-not-exist');
-    $response = $this->container->get('http_kernel')->handle($request);
-    $this->assertEquals(404, $response->getStatusCode());
-    $this->assertNull($this->container->get('navigation.entity_route_helper')->getContentEntityFromRoute());
-  }
+    /**
+     * Tests getContentEntityFromRoute() method when the route does not exist.
+     */
+    public function testGetContentEntityFromRouteWithNonExistentRoute(): void
+    {
+        $request = Request::create('/does-not-exist');
+        $response = $this->container->get('http_kernel')->handle($request);
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertNull($this->container->get('navigation.entity_route_helper')->getContentEntityFromRoute());
+    }
 
 }

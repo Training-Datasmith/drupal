@@ -12,36 +12,37 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('block_content')]
 #[RunTestsInSeparateProcesses]
-class BlockContentContextualLinksTest extends BlockContentTestBase {
+class BlockContentContextualLinksTest extends BlockContentTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'contextual',
+    ];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'contextual',
-  ];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * Tests contextual links.
+     */
+    public function testBlockContentContextualLinks(): void
+    {
+        $block_content = $this->createBlockContent();
 
-  /**
-   * Tests contextual links.
-   */
-  public function testBlockContentContextualLinks(): void {
-    $block_content = $this->createBlockContent();
+        $block = $this->placeBlock('block_content:' . $block_content->uuid());
 
-    $block = $this->placeBlock('block_content:' . $block_content->uuid());
+        $user = $this->drupalCreateUser([
+          'administer blocks',
+          'access contextual links',
+        ]);
+        $this->drupalLogin($user);
 
-    $user = $this->drupalCreateUser([
-      'administer blocks',
-      'access contextual links',
-    ]);
-    $this->drupalLogin($user);
-
-    $this->drupalGet('<front>');
-    $this->assertSession()->elementAttributeContains('css', 'div[data-contextual-id]', 'data-contextual-id', 'block:block=' . $block->id() . ':langcode=en|block_content:block_content=' . $block_content->id() . ':');
-  }
+        $this->drupalGet('<front>');
+        $this->assertSession()->elementAttributeContains('css', 'div[data-contextual-id]', 'data-contextual-id', 'block:block=' . $block->id() . ':langcode=en|block_content:block_content=' . $block_content->id() . ':');
+    }
 
 }

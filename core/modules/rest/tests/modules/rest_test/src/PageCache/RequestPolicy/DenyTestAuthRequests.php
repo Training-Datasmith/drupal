@@ -19,15 +19,16 @@ use Symfony\Component\HttpFoundation\Request;
  * @see \Drupal\rest_test\Authentication\Provider\TestAuthGlobal
  * @see \Drupal\basic_auth\PageCache\DisallowBasicAuthRequests
  */
-class DenyTestAuthRequests implements RequestPolicyInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function check(Request $request) {
-    if ($request->headers->has('REST-test-auth') || $request->headers->has('REST-test-auth-global')) {
-      return self::DENY;
+class DenyTestAuthRequests implements RequestPolicyInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function check(Request $request)
+    {
+        if ($request->headers->has('REST-test-auth') || $request->headers->has('REST-test-auth-global')) {
+            return self::DENY;
+        }
     }
-  }
 
 }

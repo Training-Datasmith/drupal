@@ -15,67 +15,69 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('user')]
 #[RunTestsInSeparateProcesses]
-class FilterPermissionUiTest extends ViewTestBase {
+class FilterPermissionUiTest extends ViewTestBase
+{
+    /**
+     * Views used by this test.
+     *
+     * @var array
+     */
+    public static $testViews = ['test_filter_permission'];
 
-  /**
-   * Views used by this test.
-   *
-   * @var array
-   */
-  public static $testViews = ['test_filter_permission'];
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['user', 'user_test_views', 'views_ui'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['user', 'user_test_views', 'views_ui'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp($import_test_views = true, $modules = ['user_test_views']): void
+    {
+        parent::setUp($import_test_views, $modules);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp($import_test_views = TRUE, $modules = ['user_test_views']): void {
-    parent::setUp($import_test_views, $modules);
+        $this->enableViewsTestModule();
+    }
 
-    $this->enableViewsTestModule();
-  }
+    /**
+     * Tests basic filter handler settings in the UI.
+     */
+    public function testHandlerUI(): void
+    {
+        $this->drupalLogin($this->drupalCreateUser([
+          'administer views',
+          'administer users',
+        ]));
 
-  /**
-   * Tests basic filter handler settings in the UI.
-   */
-  public function testHandlerUI(): void {
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer views',
-      'administer users',
-    ]));
+        $this->drupalGet('admin/structure/views/view/test_filter_permission/edit/default');
+        // Verify that the handler summary is correctly displaying the selected
+        // permission.
+        $this->assertSession()->linkExists('User: Permission (= View user information)');
+        $this->submitForm([], 'Save');
+        // Verify that we can save the view.
+        $this->assertSession()->pageTextNotContains('No valid values found on filter: User: Permission.');
+        $this->assertSession()->pageTextContains('The view test_filter_permission has been saved.');
 
-    $this->drupalGet('admin/structure/views/view/test_filter_permission/edit/default');
-    // Verify that the handler summary is correctly displaying the selected
-    // permission.
-    $this->assertSession()->linkExists('User: Permission (= View user information)');
-    $this->submitForm([], 'Save');
-    // Verify that we can save the view.
-    $this->assertSession()->pageTextNotContains('No valid values found on filter: User: Permission.');
-    $this->assertSession()->pageTextContains('The view test_filter_permission has been saved.');
-
-    // Verify that the handler summary is also correct when multiple values are
-    // selected in the filter.
-    $edit = [
-      'options[value][]' => [
-        'access user profiles',
-        'administer views',
-      ],
-    ];
-    $this->drupalGet('admin/structure/views/nojs/handler/test_filter_permission/default/filter/permission');
-    $this->submitForm($edit, 'Apply');
-    $this->assertSession()->linkExists('User: Permission (or View us…)');
-    $this->submitForm([], 'Save');
-    // Verify that we can save the view.
-    $this->assertSession()->pageTextNotContains('No valid values found on filter: User: Permission.');
-    $this->assertSession()->pageTextContains('The view test_filter_permission has been saved.');
-  }
+        // Verify that the handler summary is also correct when multiple values are
+        // selected in the filter.
+        $edit = [
+          'options[value][]' => [
+            'access user profiles',
+            'administer views',
+          ],
+        ];
+        $this->drupalGet('admin/structure/views/nojs/handler/test_filter_permission/default/filter/permission');
+        $this->submitForm($edit, 'Apply');
+        $this->assertSession()->linkExists('User: Permission (or View us…)');
+        $this->submitForm([], 'Save');
+        // Verify that we can save the view.
+        $this->assertSession()->pageTextNotContains('No valid values found on filter: User: Permission.');
+        $this->assertSession()->pageTextContains('The view test_filter_permission has been saved.');
+    }
 
 }

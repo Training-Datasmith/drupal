@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\telephone\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
@@ -13,63 +15,66 @@ use Drupal\telephone\Plugin\Field\FieldType\TelephoneItem;
  * Plugin implementation of the 'telephone_default' widget.
  */
 #[FieldWidget(
-  id: 'telephone_default',
-  label: new TranslatableMarkup('Telephone number'),
-  field_types: ['telephone'],
+    id: 'telephone_default',
+    label: new TranslatableMarkup('Telephone number'),
+    field_types: ['telephone'],
 )]
-class TelephoneDefaultWidget extends WidgetBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'placeholder' => '',
-    ] + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $element['placeholder'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Placeholder'),
-      '#default_value' => $this->getSetting('placeholder'),
-      '#description' => $this->t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
-    ];
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
-   */
-  public function settingsSummary(): array {
-    $summary = [];
-
-    $placeholder = $this->getSetting('placeholder');
-    if (!empty($placeholder)) {
-      $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
-    }
-    else {
-      $summary[] = $this->t('No placeholder');
+class TelephoneDefaultWidget extends WidgetBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+          'placeholder' => '',
+        ] + parent::defaultSettings();
     }
 
-    return $summary;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $element['placeholder'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Placeholder'),
+          '#default_value' => $this->getSetting('placeholder'),
+          '#description' => $this->t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
+        ];
+        return $element;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
-    $element['value'] = $element + [
-      '#type' => 'tel',
-      '#default_value' => $items[$delta]->value ?? NULL,
-      '#placeholder' => $this->getSetting('placeholder'),
-      '#maxlength' => TelephoneItem::MAX_LENGTH,
-    ];
-    return $element;
-  }
+    /**
+     * {@inheritdoc}
+     * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
+     */
+    public function settingsSummary(): array
+    {
+        $summary = [];
+
+        $placeholder = $this->getSetting('placeholder');
+        if (!empty($placeholder)) {
+            $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
+        } else {
+            $summary[] = $this->t('No placeholder');
+        }
+
+        return $summary;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array
+    {
+        $element['value'] = $element + [
+          '#type' => 'tel',
+          '#default_value' => $items[$delta]->value ?? null,
+          '#placeholder' => $this->getSetting('placeholder'),
+          '#maxlength' => TelephoneItem::MAX_LENGTH,
+        ];
+        return $element;
+    }
 
 }

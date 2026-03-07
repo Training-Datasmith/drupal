@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\path\Plugin\Validation\Constraint;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -10,18 +12,18 @@ use Symfony\Component\Validator\Constraint as SymfonyConstraint;
  * Validation constraint for changing path aliases in pending revisions.
  */
 #[Constraint(
-  id: 'PathAlias',
-  label: new TranslatableMarkup('Path alias.', [], ['context' => 'Validation'])
+    id: 'PathAlias',
+    label: new TranslatableMarkup('Path alias.', [], ['context' => 'Validation'])
 )]
-class PathAliasConstraint extends SymfonyConstraint {
-
-  public function __construct(
-    mixed $options = NULL,
-    public $message = 'You can only change the URL alias for the <em>published</em> version of this content.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
-  }
+class PathAliasConstraint extends SymfonyConstraint
+{
+    public function __construct(
+        mixed $options = null,
+        public $message = 'You can only change the URL alias for the <em>published</em> version of this content.',
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct($options, $groups, $payload);
+    }
 
 }

@@ -17,14 +17,15 @@ use Drupal\Component\Plugin\PluginManagerBase;
  * We do this so we can have it just return the plugin ID passed to it, with
  * '_fallback' appended.
  */
-class StubFallbackPluginManager extends PluginManagerBase implements FallbackPluginManagerInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
-    // Minimally implement getFallbackPluginId so that we can test it.
-    return $plugin_id . '_fallback';
-  }
+class StubFallbackPluginManager extends PluginManagerBase implements FallbackPluginManagerInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFallbackPluginId($plugin_id, array $configuration = []): string
+    {
+        // Minimally implement getFallbackPluginId so that we can test it.
+        return $plugin_id . '_fallback';
+    }
 
 }

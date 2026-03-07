@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Routing;
 
 /**
@@ -19,27 +21,27 @@ namespace Drupal\Core\Routing;
  *
  * @ingroup routing
  */
-interface RouteBuilderInterface {
+interface RouteBuilderInterface
+{
+    /**
+     * Rebuilds the route information and dumps it.
+     *
+     * @return bool
+     *   Returns TRUE if the rebuild succeeds, FALSE otherwise.
+     */
+    public function rebuild();
 
-  /**
-   * Rebuilds the route information and dumps it.
-   *
-   * @return bool
-   *   Returns TRUE if the rebuild succeeds, FALSE otherwise.
-   */
-  public function rebuild();
+    /**
+     * Rebuilds the route information if necessary, and dumps it.
+     *
+     * @return bool
+     *   Returns TRUE if the rebuild occurs, FALSE otherwise.
+     */
+    public function rebuildIfNeeded();
 
-  /**
-   * Rebuilds the route information if necessary, and dumps it.
-   *
-   * @return bool
-   *   Returns TRUE if the rebuild occurs, FALSE otherwise.
-   */
-  public function rebuildIfNeeded();
-
-  /**
-   * Sets the router to be rebuilt next time rebuildIfNeeded() is called.
-   */
-  public function setRebuildNeeded();
+    /**
+     * Sets the router to be rebuilt next time rebuildIfNeeded() is called.
+     */
+    public function setRebuildNeeded();
 
 }

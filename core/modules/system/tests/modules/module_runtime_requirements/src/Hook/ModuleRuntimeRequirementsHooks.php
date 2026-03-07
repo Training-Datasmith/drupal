@@ -11,42 +11,44 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Hook implementations for module_runtime_requirements.
  */
-class ModuleRuntimeRequirementsHooks {
+class ModuleRuntimeRequirementsHooks
+{
+    use StringTranslationTrait;
 
-  use StringTranslationTrait;
+    /**
+     * Implements hook_runtime_requirements().
+     */
+    #[Hook('runtime_requirements')]
+    public function runtimeRequirements(): array
+    {
+        return [
+          'test.runtime.error' => [
+            'title' => $this->t('RuntimeError'),
+            'value' => $this->t('None'),
+            'description' => $this->t('Runtime Error.'),
+            'severity' => RequirementSeverity::Error,
+          ],
+          'test.runtime.error.alter' => [
+            'title' => $this->t('RuntimeError'),
+            'value' => $this->t('None'),
+            'description' => $this->t('Runtime Error.'),
+            'severity' => RequirementSeverity::Error,
+          ],
+        ];
+    }
 
-  /**
-   * Implements hook_runtime_requirements().
-   */
-  #[Hook('runtime_requirements')]
-  public function runtimeRequirements(): array {
-    return [
-      'test.runtime.error' => [
-        'title' => $this->t('RuntimeError'),
-        'value' => $this->t('None'),
-        'description' => $this->t('Runtime Error.'),
-        'severity' => RequirementSeverity::Error,
-      ],
-      'test.runtime.error.alter' => [
-        'title' => $this->t('RuntimeError'),
-        'value' => $this->t('None'),
-        'description' => $this->t('Runtime Error.'),
-        'severity' => RequirementSeverity::Error,
-      ],
-    ];
-  }
-
-  /**
-   * Implements hook_runtime_requirements_alter().
-   */
-  #[Hook('runtime_requirements_alter')]
-  public function runtimeRequirementsAlter(array &$requirements): void {
-    $requirements['test.runtime.error.alter'] = [
-      'title' => $this->t('RuntimeWarning'),
-      'value' => $this->t('None'),
-      'description' => $this->t('Runtime Warning.'),
-      'severity' => RequirementSeverity::Warning,
-    ];
-  }
+    /**
+     * Implements hook_runtime_requirements_alter().
+     */
+    #[Hook('runtime_requirements_alter')]
+    public function runtimeRequirementsAlter(array &$requirements): void
+    {
+        $requirements['test.runtime.error.alter'] = [
+          'title' => $this->t('RuntimeWarning'),
+          'value' => $this->t('None'),
+          'description' => $this->t('Runtime Warning.'),
+          'severity' => RequirementSeverity::Warning,
+        ];
+    }
 
 }

@@ -15,30 +15,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('update')]
 #[RunTestsInSeparateProcesses]
-class SystemRssDeleteTest extends UpdatePathTestBase {
+class SystemRssDeleteTest extends UpdatePathTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function setDatabaseDumpFiles(): void
+    {
+        $this->databaseDumpFiles = [
+          __DIR__ . '/../../../fixtures/update/drupal-10.3.0.bare.standard.php.gz',
+          __DIR__ . '/../../../fixtures/update/uninstall-history.php',
+          __DIR__ . '/../../../fixtures/update/uninstall-contact.php',
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setDatabaseDumpFiles(): void {
-    $this->databaseDumpFiles = [
-      __DIR__ . '/../../../fixtures/update/drupal-10.3.0.bare.standard.php.gz',
-      __DIR__ . '/../../../fixtures/update/uninstall-history.php',
-      __DIR__ . '/../../../fixtures/update/uninstall-contact.php',
-    ];
-  }
+    /**
+     * Ensures that system.rss is deleted after updating.
+     */
+    public function testUpdate(): void
+    {
+        $config = $this->config('system.rss');
+        $this->assertFalse($config->isNew());
 
-  /**
-   * Ensures that system.rss is deleted after updating.
-   */
-  public function testUpdate(): void {
-    $config = $this->config('system.rss');
-    $this->assertFalse($config->isNew());
+        $this->runUpdates();
 
-    $this->runUpdates();
-
-    $config = $this->config('system.rss');
-    $this->assertTrue($config->isNew());
-  }
+        $config = $this->config('system.rss');
+        $this->assertTrue($config->isNew());
+    }
 
 }

@@ -15,33 +15,34 @@ use Drupal\Core\Url;
  * @internal
  */
 #[Block(
-  id: 'navigation_test',
-  admin_label: new TranslatableMarkup('Navigation Test'),
+    id: 'navigation_test',
+    admin_label: new TranslatableMarkup('Navigation Test'),
 )]
-final class NavigationTestBlock extends BlockBase {
+final class NavigationTestBlock extends BlockBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build(): array
+    {
+        $config = $this->configuration;
+        $build = [];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build(): array {
-    $config = $this->configuration;
-    $build = [];
-
-    return $build + [
-      '#title' => $config['label'],
-      '#theme' => 'navigation_menu',
-      '#menu_name' => 'test',
-      '#items' => [
-        [
-          'title' => 'Test Navigation Block',
-          'class' => 'test-block',
-          'icon' => [
-            'icon_id' => 'test-block',
+        return $build + [
+          '#title' => $config['label'],
+          '#theme' => 'navigation_menu',
+          '#menu_name' => 'test',
+          '#items' => [
+            [
+              'title' => 'Test Navigation Block',
+              'class' => 'test-block',
+              'icon' => [
+                'icon_id' => 'test-block',
+              ],
+              'url' => Url::fromRoute('<front>'),
+            ],
           ],
-          'url' => Url::fromRoute('<front>'),
-        ],
-      ],
-    ];
-  }
+        ];
+    }
 
 }

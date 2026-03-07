@@ -11,25 +11,26 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 /**
  * Provides a base class for file constraint validators.
  */
-abstract class BaseFileConstraintValidator extends ConstraintValidator {
-
-  /**
-   * Checks the value is of type FileInterface.
-   *
-   * @param mixed $value
-   *   The value to check.
-   *
-   * @return \Drupal\file\FileInterface
-   *   The file.
-   *
-   * @throw Symfony\Component\Validator\Exception\UnexpectedTypeException
-   *   Thrown if the value is not a FileInterface.
-   */
-  protected function assertValueIsFile(mixed $value): FileInterface {
-    if (!$value instanceof FileInterface) {
-      throw new UnexpectedTypeException($value, FileInterface::class);
+abstract class BaseFileConstraintValidator extends ConstraintValidator
+{
+    /**
+     * Checks the value is of type FileInterface.
+     *
+     * @param mixed $value
+     *   The value to check.
+     *
+     * @return \Drupal\file\FileInterface
+     *   The file.
+     *
+     * @throw Symfony\Component\Validator\Exception\UnexpectedTypeException
+     *   Thrown if the value is not a FileInterface.
+     */
+    protected function assertValueIsFile(mixed $value): FileInterface
+    {
+        if (!$value instanceof FileInterface) {
+            throw new UnexpectedTypeException($value, FileInterface::class);
+        }
+        return $value;
     }
-    return $value;
-  }
 
 }

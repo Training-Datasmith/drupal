@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 /**
@@ -28,10 +30,11 @@ namespace Drupal\Component\Annotation\Doctrine;
 use function array_merge;
 use function count;
 use function explode;
-use function strtolower;
-use function token_get_all;
 
 use const PHP_VERSION_ID;
+
+use function strtolower;
+
 use const T_AS;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
@@ -42,6 +45,8 @@ use const T_NS_SEPARATOR;
 use const T_STRING;
 use const T_USE;
 use const T_WHITESPACE;
+
+use function token_get_all;
 
 /**
  * Parses a file for namespaces/use/class declarations.
@@ -203,7 +208,7 @@ class TokenParser
         $name = '';
         while (
             ($token = $this->next()) && ($token[0] === T_STRING || $token[0] === T_NS_SEPARATOR || (
-            PHP_VERSION_ID >= 80000 &&
+                PHP_VERSION_ID >= 80000 &&
             ($token[0] === T_NAME_QUALIFIED || $token[0] === T_NAME_FULLY_QUALIFIED)
             ))
         ) {

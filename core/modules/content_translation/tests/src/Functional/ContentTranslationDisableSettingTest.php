@@ -18,66 +18,67 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ContentLanguageSettingsForm::class)]
 #[CoversClass(ContentTranslationFormLanguageHooks::class)]
 #[RunTestsInSeparateProcesses]
-class ContentTranslationDisableSettingTest extends BrowserTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'content_translation',
-    'menu_link_content',
-    'language',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests that entity schemas are up-to-date after enabling translation.
-   */
-  public function testDisableSetting(): void {
-    // Define selectors.
-    $group_checkbox = 'entity_types[menu_link_content]';
-    $translatable_checkbox = 'settings[menu_link_content][menu_link_content][translatable]';
-    $language_alterable = 'settings[menu_link_content][menu_link_content][settings][language][language_alterable]';
-
-    $user = $this->drupalCreateUser([
-      'administer site configuration',
-      'administer content translation',
-      'create content translations',
-      'administer languages',
-    ]);
-    $this->drupalLogin($user);
-
-    $assert = $this->assertSession();
-
-    $this->drupalGet('admin/config/regional/content-language');
-
-    $assert->checkboxNotChecked('entity_types[menu_link_content]');
-
-    $edit = [
-      $group_checkbox => TRUE,
-      $translatable_checkbox => TRUE,
-      $language_alterable => TRUE,
+class ContentTranslationDisableSettingTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'content_translation',
+      'menu_link_content',
+      'language',
     ];
-    $this->submitForm($edit, 'Save configuration');
 
-    $assert->statusMessageContains('Settings successfully updated.', 'status');
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-    $assert->checkboxChecked($group_checkbox);
+    /**
+     * Tests that entity schemas are up-to-date after enabling translation.
+     */
+    public function testDisableSetting(): void
+    {
+        // Define selectors.
+        $group_checkbox = 'entity_types[menu_link_content]';
+        $translatable_checkbox = 'settings[menu_link_content][menu_link_content][translatable]';
+        $language_alterable = 'settings[menu_link_content][menu_link_content][settings][language][language_alterable]';
 
-    $edit = [
-      $group_checkbox => FALSE,
-      $translatable_checkbox => TRUE,
-      $language_alterable => TRUE,
-    ];
-    $this->submitForm($edit, 'Save configuration');
+        $user = $this->drupalCreateUser([
+          'administer site configuration',
+          'administer content translation',
+          'create content translations',
+          'administer languages',
+        ]);
+        $this->drupalLogin($user);
 
-    $assert->statusMessageContains('Settings successfully updated.', 'status');
+        $assert = $this->assertSession();
 
-    $assert->checkboxNotChecked($group_checkbox);
-  }
+        $this->drupalGet('admin/config/regional/content-language');
+
+        $assert->checkboxNotChecked('entity_types[menu_link_content]');
+
+        $edit = [
+          $group_checkbox => true,
+          $translatable_checkbox => true,
+          $language_alterable => true,
+        ];
+        $this->submitForm($edit, 'Save configuration');
+
+        $assert->statusMessageContains('Settings successfully updated.', 'status');
+
+        $assert->checkboxChecked($group_checkbox);
+
+        $edit = [
+          $group_checkbox => false,
+          $translatable_checkbox => true,
+          $language_alterable => true,
+        ];
+        $this->submitForm($edit, 'Save configuration');
+
+        $assert->statusMessageContains('Settings successfully updated.', 'status');
+
+        $assert->checkboxNotChecked($group_checkbox);
+    }
 
 }

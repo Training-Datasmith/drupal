@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\core_fake\Driver\Database\CoreFakeWithAllCustomClasses;
 
 use Drupal\Core\Database\Query\Insert as QueryInsert;
@@ -7,6 +9,6 @@ use Drupal\Core\Database\Query\Insert as QueryInsert;
 /**
  * CoreFakeWithAllCustomClasses implementation of \Drupal\Core\Database\Insert.
  */
-class Insert extends QueryInsert {
-
+class Insert extends QueryInsert
+{
 }

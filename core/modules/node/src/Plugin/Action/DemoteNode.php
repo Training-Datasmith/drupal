@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\node\Plugin\Action;
 
 use Drupal\Core\Action\Attribute\Action;
@@ -11,17 +13,18 @@ use Drupal\node\NodeInterface;
  * Demotes a node.
  */
 #[Action(
-  id: 'node_unpromote_action',
-  label: new TranslatableMarkup('Demote selected content from front page'),
-  type: 'node'
+    id: 'node_unpromote_action',
+    label: new TranslatableMarkup('Demote selected content from front page'),
+    type: 'node'
 )]
-class DemoteNode extends FieldUpdateActionBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getFieldsToUpdate(): array {
-    return ['promote' => NodeInterface::NOT_PROMOTED];
-  }
+class DemoteNode extends FieldUpdateActionBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected function getFieldsToUpdate(): array
+    {
+        return ['promote' => NodeInterface::NOT_PROMOTED];
+    }
 
 }

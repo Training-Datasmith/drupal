@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Config\Entity\Exception;
 
 use Drupal\Core\Config\ConfigException;
@@ -7,4 +9,6 @@ use Drupal\Core\Config\ConfigException;
 /**
  * Thrown when a storage class is not an instance of ConfigEntityStorage.
  */
-class ConfigEntityStorageClassException extends ConfigException {}
+class ConfigEntityStorageClassException extends ConfigException
+{
+}

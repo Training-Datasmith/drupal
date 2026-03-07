@@ -14,17 +14,18 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('KeyValueStore')]
 #[RunTestsInSeparateProcesses]
-class MemoryStorageTest extends StorageTestBase {
+class MemoryStorageTest extends StorageTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ContainerBuilder $container): void
+    {
+        parent::register($container);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container): void {
-    parent::register($container);
-
-    $container->register('keyvalue.memory', 'Drupal\Core\KeyValueStore\KeyValueMemoryFactory');
-    $parameter[KeyValueFactory::DEFAULT_SETTING] = 'keyvalue.memory';
-    $container->setParameter('factory.keyvalue', $parameter);
-  }
+        $container->register('keyvalue.memory', 'Drupal\Core\KeyValueStore\KeyValueMemoryFactory');
+        $parameter[KeyValueFactory::DEFAULT_SETTING] = 'keyvalue.memory';
+        $container->setParameter('factory.keyvalue', $parameter);
+    }
 
 }

@@ -15,33 +15,35 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Installer')]
 #[RunTestsInSeparateProcesses]
-class InstallerPerformanceTest extends BrowserTestBase {
+class InstallerPerformanceTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * {@inheritdoc}
+     */
+    protected $profile = 'testing';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $profile = 'testing';
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareSettings(): void
+    {
+        parent::prepareSettings();
+        PerformanceTestRecorder::registerService($this->siteDirectory . '/services.yml', false);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareSettings(): void {
-    parent::prepareSettings();
-    PerformanceTestRecorder::registerService($this->siteDirectory . '/services.yml', FALSE);
-  }
-
-  /**
-   * Ensures that the user page is available after installation.
-   */
-  public function testInstaller(): void {
-    // Ensures that router is not rebuilt unnecessarily during the install.
-    // Currently it is built once during the install in install_finished().
-    $this->assertSame(1, \Drupal::service('core.performance.test.recorder')->getCount('event', RoutingEvents::FINISHED));
-  }
+    /**
+     * Ensures that the user page is available after installation.
+     */
+    public function testInstaller(): void
+    {
+        // Ensures that router is not rebuilt unnecessarily during the install.
+        // Currently it is built once during the install in install_finished().
+        $this->assertSame(1, \Drupal::service('core.performance.test.recorder')->getCount('event', RoutingEvents::FINISHED));
+    }
 
 }

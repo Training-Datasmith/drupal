@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Field;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -15,157 +17,167 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ingroup field_formatter
  */
-abstract class FormatterBase extends PluginSettingsBase implements FormatterInterface, ContainerFactoryPluginInterface {
+abstract class FormatterBase extends PluginSettingsBase implements FormatterInterface, ContainerFactoryPluginInterface
+{
+    /**
+     * The formatter settings.
+     *
+     * @var array
+     */
+    protected $settings;
 
-  /**
-   * The formatter settings.
-   *
-   * @var array
-   */
-  protected $settings;
-
-  /**
-   * Constructs a FormatterBase object.
-   *
-   * @param string $plugin_id
-   *   The plugin ID for the formatter.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition
-   *   The definition of the field to which the formatter is associated.
-   * @param array $settings
-   *   The formatter settings.
-   * @param string $label
-   *   The formatter label display setting.
-   * @param string $viewMode
-   *   The view mode.
-   * @param array $third_party_settings
-   *   Any third party settings.
-   */
-  public function __construct($plugin_id, $plugin_definition, protected \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition, array $settings, /**
+    /**
+     * Constructs a FormatterBase object.
+     *
+     * @param string $plugin_id
+     *   The plugin ID for the formatter.
+     * @param mixed $plugin_definition
+     *   The plugin implementation definition.
+     * @param \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition
+     *   The definition of the field to which the formatter is associated.
+     * @param array $settings
+     *   The formatter settings.
+     * @param string $label
+     *   The formatter label display setting.
+     * @param string $viewMode
+     *   The view mode.
+     * @param array $third_party_settings
+     *   Any third party settings.
+     */
+    public function __construct($plugin_id, $plugin_definition, protected \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition, array $settings, /**
    * The label display setting.
    */
-  protected $label, /**
+        protected $label, /**
    * The view mode.
    */
-  protected $viewMode, array $third_party_settings) {
-    parent::__construct([], $plugin_id, $plugin_definition);
-    $this->settings = $settings;
-    $this->thirdPartySettings = $third_party_settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return static::createInstanceAutowired(
-      $container,
-      $plugin_id,
-      $plugin_definition,
-      $configuration['field_definition'],
-      $configuration['settings'],
-      $configuration['label'],
-      $configuration['view_mode'],
-      $configuration['third_party_settings'],
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function view(FieldItemListInterface $items, $langcode = NULL) {
-    // Default the language to the current content language.
-    if (empty($langcode)) {
-      $langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
-    }
-    $elements = $this->viewElements($items, $langcode);
-
-    // Field item lists, in particular for computed fields, may carry cacheable
-    // metadata which must be bubbled.
-    if ($items instanceof CacheableDependencyInterface) {
-      (new CacheableMetadata())
-        ->addCacheableDependency($items)
-        ->applyTo($elements);
+        protected $viewMode, array $third_party_settings)
+    {
+        parent::__construct([], $plugin_id, $plugin_definition);
+        $this->settings = $settings;
+        $this->thirdPartySettings = $third_party_settings;
     }
 
-    // If there are actual renderable children, use #theme => field, otherwise,
-    // let cacheability metadata pass through for correct bubbling.
-    if (Element::children($elements)) {
-      $entity = $items->getEntity();
-      $entity_type = $entity->getEntityTypeId();
-      $field_name = $this->fieldDefinition->getName();
-      $info = [
-        '#theme' => 'field',
-        '#title' => $this->fieldDefinition->getLabel(),
-        '#label_display' => $this->label,
-        '#view_mode' => $this->viewMode,
-        '#language' => $items->getLangcode(),
-        '#field_name' => $field_name,
-        '#field_type' => $this->fieldDefinition->getType(),
-        '#field_translatable' => $this->fieldDefinition->isTranslatable(),
-        '#entity_type' => $entity_type,
-        '#bundle' => $entity->bundle(),
-        '#object' => $entity,
-        '#items' => $items,
-        '#formatter' => $this->getPluginId(),
-        '#is_multiple' => $this->fieldDefinition->getFieldStorageDefinition()->isMultiple(),
-        '#third_party_settings' => $this->getThirdPartySettings(),
-      ];
-
-      $elements = array_merge($info, $elements);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition)
+    {
+        return static::createInstanceAutowired(
+            $container,
+            $plugin_id,
+            $plugin_definition,
+            $configuration['field_definition'],
+            $configuration['settings'],
+            $configuration['label'],
+            $configuration['view_mode'],
+            $configuration['third_party_settings'],
+        );
     }
 
-    return $elements;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function view(FieldItemListInterface $items, $langcode = null)
+    {
+        // Default the language to the current content language.
+        if (empty($langcode)) {
+            $langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+        }
+        $elements = $this->viewElements($items, $langcode);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    return [];
-  }
+        // Field item lists, in particular for computed fields, may carry cacheable
+        // metadata which must be bubbled.
+        if ($items instanceof CacheableDependencyInterface) {
+            (new CacheableMetadata())
+              ->addCacheableDependency($items)
+              ->applyTo($elements);
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    return [];
-  }
+        // If there are actual renderable children, use #theme => field, otherwise,
+        // let cacheability metadata pass through for correct bubbling.
+        if (Element::children($elements)) {
+            $entity = $items->getEntity();
+            $entity_type = $entity->getEntityTypeId();
+            $field_name = $this->fieldDefinition->getName();
+            $info = [
+              '#theme' => 'field',
+              '#title' => $this->fieldDefinition->getLabel(),
+              '#label_display' => $this->label,
+              '#view_mode' => $this->viewMode,
+              '#language' => $items->getLangcode(),
+              '#field_name' => $field_name,
+              '#field_type' => $this->fieldDefinition->getType(),
+              '#field_translatable' => $this->fieldDefinition->isTranslatable(),
+              '#entity_type' => $entity_type,
+              '#bundle' => $entity->bundle(),
+              '#object' => $entity,
+              '#items' => $items,
+              '#formatter' => $this->getPluginId(),
+              '#is_multiple' => $this->fieldDefinition->getFieldStorageDefinition()->isMultiple(),
+              '#third_party_settings' => $this->getThirdPartySettings(),
+            ];
 
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareView(array $entities_items) {}
+            $elements = array_merge($info, $elements);
+        }
 
-  /**
-   * Returns the array of field settings.
-   *
-   * @return array
-   *   The array of settings.
-   */
-  protected function getFieldSettings() {
-    return $this->fieldDefinition->getSettings();
-  }
+        return $elements;
+    }
 
-  /**
-   * Returns the value of a field setting.
-   *
-   * @param string $setting_name
-   *   The setting name.
-   *
-   * @return mixed
-   *   The setting value.
-   */
-  protected function getFieldSetting($setting_name) {
-    return $this->fieldDefinition->getSetting($setting_name);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        return [];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    // By default, formatters are available for all fields.
-    return TRUE;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsSummary()
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareView(array $entities_items)
+    {
+    }
+
+    /**
+     * Returns the array of field settings.
+     *
+     * @return array
+     *   The array of settings.
+     */
+    protected function getFieldSettings()
+    {
+        return $this->fieldDefinition->getSettings();
+    }
+
+    /**
+     * Returns the value of a field setting.
+     *
+     * @param string $setting_name
+     *   The setting name.
+     *
+     * @return mixed
+     *   The setting value.
+     */
+    protected function getFieldSetting($setting_name)
+    {
+        return $this->fieldDefinition->getSetting($setting_name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function isApplicable(FieldDefinitionInterface $field_definition)
+    {
+        // By default, formatters are available for all fields.
+        return true;
+    }
 
 }

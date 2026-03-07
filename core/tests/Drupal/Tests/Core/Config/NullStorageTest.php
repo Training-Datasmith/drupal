@@ -13,18 +13,19 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests the NullStorage.
  */
 #[Group('Config')]
-class NullStorageTest extends UnitTestCase {
-
-  /**
-   * Tests createCollection.
-   */
-  public function testCollection(): void {
-    $nullStorage = new NullStorage();
-    $collection = $nullStorage->createCollection('test');
-    $this->assertInstanceOf(StorageInterface::class, $collection);
-    $this->assertEquals(StorageInterface::DEFAULT_COLLECTION, $nullStorage->getCollectionName());
-    $this->assertEquals('test', $collection->getCollectionName());
-    $this->assertSame([], $collection->getAllCollectionNames());
-  }
+class NullStorageTest extends UnitTestCase
+{
+    /**
+     * Tests createCollection.
+     */
+    public function testCollection(): void
+    {
+        $nullStorage = new NullStorage();
+        $collection = $nullStorage->createCollection('test');
+        $this->assertInstanceOf(StorageInterface::class, $collection);
+        $this->assertEquals(StorageInterface::DEFAULT_COLLECTION, $nullStorage->getCollectionName());
+        $this->assertEquals('test', $collection->getCollectionName());
+        $this->assertSame([], $collection->getAllCollectionNames());
+    }
 
 }

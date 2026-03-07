@@ -13,28 +13,29 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Theme')]
 #[RunTestsInSeparateProcesses]
-class ThemeEarlyInitializationTest extends BrowserTestBase {
+class ThemeEarlyInitializationTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['theme_test'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['theme_test'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'starterkit_theme';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'starterkit_theme';
-
-  /**
-   * Tests that the theme system can generate output in a request listener.
-   */
-  public function testRequestListener(): void {
-    $this->drupalGet('theme-test/request-listener');
-    // Verify that themed output generated in the request listener appears.
-    $this->assertSession()->responseContains('Themed output generated in a KernelEvents::REQUEST listener');
-    // Verify that the default theme's CSS still appears even though the theme
-    // system was initialized early.
-    $this->assertSession()->responseContains('starterkit_theme/css/components/action-links.css');
-  }
+    /**
+     * Tests that the theme system can generate output in a request listener.
+     */
+    public function testRequestListener(): void
+    {
+        $this->drupalGet('theme-test/request-listener');
+        // Verify that themed output generated in the request listener appears.
+        $this->assertSession()->responseContains('Themed output generated in a KernelEvents::REQUEST listener');
+        // Verify that the default theme's CSS still appears even though the theme
+        // system was initialized early.
+        $this->assertSession()->responseContains('starterkit_theme/css/components/action-links.css');
+    }
 
 }

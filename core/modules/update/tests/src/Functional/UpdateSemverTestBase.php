@@ -12,57 +12,59 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
  * For classes that extend this class, the XML fixtures they use will start with
  * ::$projectTitle.
  */
-abstract class UpdateSemverTestBase extends UpdateTestBase {
+abstract class UpdateSemverTestBase extends UpdateTestBase
+{
+    use CronRunTrait;
+    use UpdateTestTrait;
 
-  use CronRunTrait;
-  use UpdateTestTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['language', 'block'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['language', 'block'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
+    /**
+     * The title of the project being tested.
+     *
+     * @var string
+     */
+    protected $projectTitle;
 
-  /**
-   * The title of the project being tested.
-   *
-   * @var string
-   */
-  protected $projectTitle;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $admin_user = $this->drupalCreateUser([
-      'administer site configuration',
-      'view update notifications',
-    ]);
-    $this->drupalLogin($admin_user);
-    $this->drupalPlaceBlock('local_actions_block');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function refreshUpdateStatus($xml_map, $url = 'update-test') {
-    if (!isset($xml_map['drupal'])) {
-      $xml_map['drupal'] = '8.0.0';
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $admin_user = $this->drupalCreateUser([
+          'administer site configuration',
+          'view update notifications',
+        ]);
+        $this->drupalLogin($admin_user);
+        $this->drupalPlaceBlock('local_actions_block');
     }
-    parent::refreshUpdateStatus($xml_map, $url);
-  }
 
-  /**
-   * Sets the project installed version.
-   *
-   * @param string $version
-   *   The version number.
-   */
-  abstract protected function setProjectInstalledVersion($version);
+    /**
+     * {@inheritdoc}
+     */
+    protected function refreshUpdateStatus($xml_map, $url = 'update-test')
+    {
+        if (!isset($xml_map['drupal'])) {
+            $xml_map['drupal'] = '8.0.0';
+        }
+        parent::refreshUpdateStatus($xml_map, $url);
+    }
+
+    /**
+     * Sets the project installed version.
+     *
+     * @param string $version
+     *   The version number.
+     */
+    abstract protected function setProjectInstalledVersion($version);
 
 }

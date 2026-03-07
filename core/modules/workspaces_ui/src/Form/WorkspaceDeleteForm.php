@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces_ui\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
@@ -7,8 +9,6 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workspaces\WorkspaceTrackerInterface;
-use Drupal\workspaces\WorkspaceRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,84 +16,88 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-class WorkspaceDeleteForm extends ContentEntityDeleteForm {
+class WorkspaceDeleteForm extends ContentEntityDeleteForm
+{
+    /**
+     * The workspace entity.
+     *
+     * @var \Drupal\workspaces\WorkspaceInterface
+     */
+    protected $entity;
 
-  /**
-   * The workspace entity.
-   *
-   * @var \Drupal\workspaces\WorkspaceInterface
-   */
-  protected $entity;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('workspaces.tracker'),
-      $container->get('workspaces.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time')
-    );
-  }
-
-  /**
-   * Constructs a WorkspaceDeleteForm object.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\workspaces\WorkspaceTrackerInterface $workspaceTracker
-   *   The workspace tracker service to check how many revisions will be
-   *   deleted.
-   * @param \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository
-   *   The workspace repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   */
-  public function __construct(EntityRepositoryInterface $entity_repository, protected \Drupal\workspaces\WorkspaceTrackerInterface $workspaceTracker, protected \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, ?TimeInterface $time = NULL) {
-    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
-
-    $workspace_tree = $this->workspaceRepository->loadTree();
-    if (!empty($workspace_tree[$this->entity->id()]['descendants'])) {
-      $form['description']['#markup'] = $this->t('The %label workspace can not be deleted because it has child workspaces.', [
-        '%label' => $this->entity->label(),
-      ]);
-      $form['actions']['submit']['#disabled'] = TRUE;
-
-      return $form;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container): static
+    {
+        return new static(
+            $container->get('entity.repository'),
+            $container->get('workspaces.tracker'),
+            $container->get('workspaces.repository'),
+            $container->get('entity_type.bundle.info'),
+            $container->get('datetime.time')
+        );
     }
 
-    $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->entity->id());
-    $items = [];
-    foreach ($tracked_entities as $entity_type_id => $entity_ids) {
-      $revision_ids = $this->workspaceTracker->getAllTrackedRevisions($this->entity->id(), $entity_type_id, $entity_ids);
-      $label = $this->entityTypeManager->getDefinition($entity_type_id)->getLabel();
-      $items[] = $this->formatPlural(count($revision_ids), '1 @label revision.', '@count @label revisions.', ['@label' => $label]);
+    /**
+     * Constructs a WorkspaceDeleteForm object.
+     *
+     * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+     *   The entity repository service.
+     * @param \Drupal\workspaces\WorkspaceTrackerInterface $workspaceTracker
+     *   The workspace tracker service to check how many revisions will be
+     *   deleted.
+     * @param \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository
+     *   The workspace repository service.
+     * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+     *   The entity type bundle service.
+     * @param \Drupal\Component\Datetime\TimeInterface $time
+     *   The time service.
+     */
+    public function __construct(EntityRepositoryInterface $entity_repository, protected \Drupal\workspaces\WorkspaceTrackerInterface $workspaceTracker, protected \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = null, ?TimeInterface $time = null)
+    {
+        parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     }
-    $form['revisions'] = [
-      '#theme' => 'item_list',
-      '#title' => $this->t('The following will also be deleted:'),
-      '#items' => $items,
-    ];
 
-    return $form;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form = parent::buildForm($form, $form_state);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
-    return $this->t('This action cannot be undone, and will also delete all content created in this workspace.');
-  }
+        $workspace_tree = $this->workspaceRepository->loadTree();
+        if (!empty($workspace_tree[$this->entity->id()]['descendants'])) {
+            $form['description']['#markup'] = $this->t('The %label workspace can not be deleted because it has child workspaces.', [
+              '%label' => $this->entity->label(),
+            ]);
+            $form['actions']['submit']['#disabled'] = true;
+
+            return $form;
+        }
+
+        $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->entity->id());
+        $items = [];
+        foreach ($tracked_entities as $entity_type_id => $entity_ids) {
+            $revision_ids = $this->workspaceTracker->getAllTrackedRevisions($this->entity->id(), $entity_type_id, $entity_ids);
+            $label = $this->entityTypeManager->getDefinition($entity_type_id)->getLabel();
+            $items[] = $this->formatPlural(count($revision_ids), '1 @label revision.', '@count @label revisions.', ['@label' => $label]);
+        }
+        $form['revisions'] = [
+          '#theme' => 'item_list',
+          '#title' => $this->t('The following will also be deleted:'),
+          '#items' => $items,
+        ];
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup
+    {
+        return $this->t('This action cannot be undone, and will also delete all content created in this workspace.');
+    }
 
 }

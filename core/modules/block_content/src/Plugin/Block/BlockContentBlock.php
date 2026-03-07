@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\block_content\Plugin\Block;
 
 use Drupal\block_content\BlockContentUuidLookup;
@@ -21,125 +23,132 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Defines a generic block type.
  */
 #[Block(
-  id: "block_content",
-  admin_label: new TranslatableMarkup("Content block"),
-  category: new TranslatableMarkup("Content block"),
-  deriver: BlockContent::class
+    id: 'block_content',
+    admin_label: new TranslatableMarkup('Content block'),
+    category: new TranslatableMarkup('Content block'),
+    deriver: BlockContent::class
 )]
-class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * The block content entity.
+     *
+     * @var \Drupal\block_content\BlockContentInterface
+     */
+    protected $blockContent;
 
-  /**
-   * The block content entity.
-   *
-   * @var \Drupal\block_content\BlockContentInterface
-   */
-  protected $blockContent;
-
-  /**
-   * Constructs a new BlockContentBlock.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    protected BlockManagerInterface $blockManager,
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected AccountInterface $account,
-    protected UrlGeneratorInterface $urlGenerator,
-    protected BlockContentUuidLookup $uuidLookup,
-    protected EntityDisplayRepositoryInterface $entityDisplayRepository,
-    protected EntityRepositoryInterface $entityRepository ,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function defaultConfiguration(): array {
-    return [
-      'view_mode' => 'full',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockForm($form, FormStateInterface $form_state): array {
-    $block = $this->getEntity();
-    if (!$block) {
-      return $form;
+    /**
+     * Constructs a new BlockContentBlock.
+     */
+    public function __construct(
+        array $configuration,
+        $plugin_id,
+        $plugin_definition,
+        protected BlockManagerInterface $blockManager,
+        protected EntityTypeManagerInterface $entityTypeManager,
+        protected AccountInterface $account,
+        protected UrlGeneratorInterface $urlGenerator,
+        protected BlockContentUuidLookup $uuidLookup,
+        protected EntityDisplayRepositoryInterface $entityDisplayRepository,
+        protected EntityRepositoryInterface $entityRepository,
+    ) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-    $options = $this->entityDisplayRepository->getViewModeOptionsByBundle('block_content', $block->bundle());
 
-    $form['view_mode'] = [
-      '#type' => 'select',
-      '#options' => $options,
-      '#title' => $this->t('View mode'),
-      '#description' => $this->t('Output the block in this view mode.'),
-      '#default_value' => $this->configuration['view_mode'],
-      '#access' => (count($options) > 1),
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function blockSubmit($form, FormStateInterface $form_state): void {
-    // Invalidate the block cache to update content block-based derivatives.
-    $this->configuration['view_mode'] = $form_state->getValue('view_mode');
-    $this->blockManager->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function blockAccess(AccountInterface $account) {
-    if ($this->getEntity()) {
-      return $this->getEntity()->access('view', $account, TRUE);
+    /**
+     * {@inheritdoc}
+     */
+    public function defaultConfiguration(): array
+    {
+        return [
+          'view_mode' => 'full',
+        ];
     }
-    return AccessResult::forbidden();
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function build() {
-    if ($block = $this->getEntity()) {
-      return $this->entityTypeManager->getViewBuilder($block->getEntityTypeId())->view($block, $this->configuration['view_mode']);
+    /**
+     * {@inheritdoc}
+     */
+    public function blockForm($form, FormStateInterface $form_state): array
+    {
+        $block = $this->getEntity();
+        if (!$block) {
+            return $form;
+        }
+        $options = $this->entityDisplayRepository->getViewModeOptionsByBundle('block_content', $block->bundle());
+
+        $form['view_mode'] = [
+          '#type' => 'select',
+          '#options' => $options,
+          '#title' => $this->t('View mode'),
+          '#description' => $this->t('Output the block in this view mode.'),
+          '#default_value' => $this->configuration['view_mode'],
+          '#access' => (count($options) > 1),
+        ];
+        return $form;
     }
-    return [
-      '#markup' => $this->t('Block with uuid %uuid does not exist. <a href=":url">Add content block</a>.', [
-        '%uuid' => $this->getDerivativeId(),
-        ':url' => $this->urlGenerator->generate('block_content.add_page'),
-      ]),
-      '#access' => $this->account->hasPermission('administer blocks'),
-    ];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function createPlaceholder(): bool {
-    return TRUE;
-  }
-
-  /**
-   * Loads the block content entity of the block.
-   *
-   * @return \Drupal\block_content\BlockContentInterface|null
-   *   The block content entity.
-   */
-  protected function getEntity() {
-    if (!isset($this->blockContent)) {
-      $uuid = $this->getDerivativeId();
-      if ($id = $this->uuidLookup->get($uuid)) {
-        $this->blockContent = $this->entityTypeManager->getStorage('block_content')->load($id);
-      }
+    /**
+     * {@inheritdoc}
+     */
+    public function blockSubmit($form, FormStateInterface $form_state): void
+    {
+        // Invalidate the block cache to update content block-based derivatives.
+        $this->configuration['view_mode'] = $form_state->getValue('view_mode');
+        $this->blockManager->clearCachedDefinitions();
     }
-    /** @var \Drupal\block_content\BlockContentInterface|null */
-    return $this->entityRepository->getTranslationFromContext($this->blockContent);
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
+        if ($this->getEntity()) {
+            return $this->getEntity()->access('view', $account, true);
+        }
+        return AccessResult::forbidden();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function build()
+    {
+        if ($block = $this->getEntity()) {
+            return $this->entityTypeManager->getViewBuilder($block->getEntityTypeId())->view($block, $this->configuration['view_mode']);
+        }
+        return [
+          '#markup' => $this->t('Block with uuid %uuid does not exist. <a href=":url">Add content block</a>.', [
+            '%uuid' => $this->getDerivativeId(),
+            ':url' => $this->urlGenerator->generate('block_content.add_page'),
+          ]),
+          '#access' => $this->account->hasPermission('administer blocks'),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createPlaceholder(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Loads the block content entity of the block.
+     *
+     * @return \Drupal\block_content\BlockContentInterface|null
+     *   The block content entity.
+     */
+    protected function getEntity()
+    {
+        if (!isset($this->blockContent)) {
+            $uuid = $this->getDerivativeId();
+            if ($id = $this->uuidLookup->get($uuid)) {
+                $this->blockContent = $this->entityTypeManager->getStorage('block_content')->load($id);
+            }
+        }
+        /** @var \Drupal\block_content\BlockContentInterface|null */
+        return $this->entityRepository->getTranslationFromContext($this->blockContent);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\workspaces;
 
 use Drupal\Core\Cache\CacheableMetadata;
@@ -10,41 +12,44 @@ use Drupal\Core\Cache\Context\CacheContextInterface;
  *
  * Cache context ID: 'workspace'.
  */
-class WorkspaceCacheContext implements CacheContextInterface {
+class WorkspaceCacheContext implements CacheContextInterface
+{
+    /**
+     * Constructs a new WorkspaceCacheContext service.
+     *
+     * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
+     *   The workspace manager.
+     */
+    public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager)
+    {
+    }
 
-  /**
-   * Constructs a new WorkspaceCacheContext service.
-   *
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
-   *   The workspace manager.
-   */
-  public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager)
-  {
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getLabel()
+    {
+        return t('Workspace');
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function getLabel() {
-    return t('Workspace');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext()
+    {
+        return $this->workspaceManager->hasActiveWorkspace() ? $this->workspaceManager->getActiveWorkspace()->id() : 'live';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContext() {
-    return $this->workspaceManager->hasActiveWorkspace() ? $this->workspaceManager->getActiveWorkspace()->id() : 'live';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheableMetadata($type = null): \Drupal\Core\Cache\CacheableMetadata
+    {
+        // The active workspace will always be stored in the user's session.
+        $cacheability = new CacheableMetadata();
+        $cacheability->addCacheContexts(['session']);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheableMetadata($type = NULL): \Drupal\Core\Cache\CacheableMetadata {
-    // The active workspace will always be stored in the user's session.
-    $cacheability = new CacheableMetadata();
-    $cacheability->addCacheContexts(['session']);
-
-    return $cacheability;
-  }
+        return $cacheability;
+    }
 
 }

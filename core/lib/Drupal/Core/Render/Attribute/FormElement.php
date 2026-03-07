@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Core\Render\Attribute;
 
@@ -23,5 +23,6 @@ namespace Drupal\Core\Render\Attribute;
  * @ingroup theme_render
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class FormElement extends RenderElement {
+class FormElement extends RenderElement
+{
 }

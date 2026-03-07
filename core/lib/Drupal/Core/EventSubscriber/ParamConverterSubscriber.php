@@ -1,45 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\EventSubscriber;
 
-use Drupal\Core\ParamConverter\ParamConverterManagerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Routing\RoutingEvents;
 use Drupal\Core\Routing\RouteBuildEvent;
+use Drupal\Core\Routing\RoutingEvents;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Event subscriber for registering parameter converters with routes.
  */
-class ParamConverterSubscriber implements EventSubscriberInterface {
+class ParamConverterSubscriber implements EventSubscriberInterface
+{
+    /**
+     * Constructs a new ParamConverterSubscriber.
+     *
+     * @param \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager
+     *   The parameter converter manager that will be responsible for upcasting
+     *   request attributes.
+     */
+    public function __construct(protected \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager)
+    {
+    }
 
-  /**
-   * Constructs a new ParamConverterSubscriber.
-   *
-   * @param \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager
-   *   The parameter converter manager that will be responsible for upcasting
-   *   request attributes.
-   */
-  public function __construct(protected \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager)
-  {
-  }
+    /**
+     * Applies parameter converters to route parameters.
+     *
+     * @param \Drupal\Core\Routing\RouteBuildEvent $event
+     *   The event to process.
+     */
+    public function onRoutingRouteAlterSetParameterConverters(RouteBuildEvent $event): void
+    {
+        $this->paramConverterManager->setRouteParameterConverters($event->getRouteCollection());
+    }
 
-  /**
-   * Applies parameter converters to route parameters.
-   *
-   * @param \Drupal\Core\Routing\RouteBuildEvent $event
-   *   The event to process.
-   */
-  public function onRoutingRouteAlterSetParameterConverters(RouteBuildEvent $event): void {
-    $this->paramConverterManager->setRouteParameterConverters($event->getRouteCollection());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    // Run after \Drupal\system\EventSubscriber\AdminRouteSubscriber.
-    $events[RoutingEvents::ALTER][] = ['onRoutingRouteAlterSetParameterConverters', -220];
-    return $events;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        // Run after \Drupal\system\EventSubscriber\AdminRouteSubscriber.
+        $events[RoutingEvents::ALTER][] = ['onRoutingRouteAlterSetParameterConverters', -220];
+        return $events;
+    }
 
 }

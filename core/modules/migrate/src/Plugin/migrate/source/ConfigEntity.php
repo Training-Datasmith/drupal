@@ -50,50 +50,54 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
  */
 #[MigrateSource('config_entity')]
-class ConfigEntity extends SqlBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function query() {
-    $query = $this->select('config', 'c')
-      ->fields('c', ['collection', 'name', 'data']);
-    if (!empty($this->configuration['collections'])) {
-      $query->condition('collection', (array) $this->configuration['collections'], 'IN');
+class ConfigEntity extends SqlBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function query()
+    {
+        $query = $this->select('config', 'c')
+          ->fields('c', ['collection', 'name', 'data']);
+        if (!empty($this->configuration['collections'])) {
+            $query->condition('collection', (array) $this->configuration['collections'], 'IN');
+        }
+        if (!empty($this->configuration['names'])) {
+            $query->condition('name', (array) $this->configuration['names'], 'IN');
+        }
+        return $query;
     }
-    if (!empty($this->configuration['names'])) {
-      $query->condition('name', (array) $this->configuration['names'], 'IN');
+
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareRow(Row $row)
+    {
+        // @see \Drupal\Core\Config\DatabaseStorage::decode()
+        $row->setSourceProperty('data', unserialize($row->getSourceProperty('data'), ['allowed_classes' => false]));
+        return parent::prepareRow($row);
     }
-    return $query;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareRow(Row $row) {
-    // @see \Drupal\Core\Config\DatabaseStorage::decode()
-    $row->setSourceProperty('data', unserialize($row->getSourceProperty('data'), ['allowed_classes' => FALSE]));
-    return parent::prepareRow($row);
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function fields(): array
+    {
+        return [
+          'collection' => $this->t('The config object collection.'),
+          'name' => $this->t('The config object name.'),
+          'data' => $this->t('Serialized configuration object data.'),
+        ];
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function fields(): array {
-    return [
-      'collection' => $this->t('The config object collection.'),
-      'name' => $this->t('The config object name.'),
-      'data' => $this->t('Serialized configuration object data.'),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getIds() {
-    $ids['collection']['type'] = 'string';
-    $ids['name']['type'] = 'string';
-    return $ids;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getIds()
+    {
+        $ids['collection']['type'] = 'string';
+        $ids['name']['type'] = 'string';
+        return $ids;
+    }
 
 }

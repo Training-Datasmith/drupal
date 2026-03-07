@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user;
 
-use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -11,207 +13,207 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @ingroup user_api
  */
-interface UserInterface extends ContentEntityInterface, EntityChangedInterface, AccountInterface {
+interface UserInterface extends ContentEntityInterface, EntityChangedInterface, AccountInterface
+{
+    /**
+     * Maximum length of username text field.
+     *
+     * Keep this under 191 characters so we can use a unique constraint in MySQL.
+     */
+    public const USERNAME_MAX_LENGTH = 60;
 
-  /**
-   * Maximum length of username text field.
-   *
-   * Keep this under 191 characters so we can use a unique constraint in MySQL.
-   */
-  const USERNAME_MAX_LENGTH = 60;
+    /**
+     * Only administrators can create user accounts.
+     */
+    public const REGISTER_ADMINISTRATORS_ONLY = 'admin_only';
 
-  /**
-   * Only administrators can create user accounts.
-   */
-  const REGISTER_ADMINISTRATORS_ONLY = 'admin_only';
+    /**
+     * Visitors can create their own accounts.
+     */
+    public const REGISTER_VISITORS = 'visitors';
 
-  /**
-   * Visitors can create their own accounts.
-   */
-  const REGISTER_VISITORS = 'visitors';
+    /**
+     * Visitors can create accounts that only become active with admin approval.
+     */
+    public const REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL = 'visitors_admin_approval';
 
-  /**
-   * Visitors can create accounts that only become active with admin approval.
-   */
-  const REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL = 'visitors_admin_approval';
+    /**
+     * New users will be set to the default time zone at registration.
+     */
+    public const TIMEZONE_DEFAULT = 0;
 
-  /**
-   * New users will be set to the default time zone at registration.
-   */
-  const TIMEZONE_DEFAULT = 0;
+    /**
+     * New users will get an empty time zone at registration.
+     */
+    public const TIMEZONE_EMPTY = 1;
 
-  /**
-   * New users will get an empty time zone at registration.
-   */
-  const TIMEZONE_EMPTY = 1;
+    /**
+     * New users will select their own timezone at registration.
+     */
+    public const TIMEZONE_SELECT = 2;
 
-  /**
-   * New users will select their own timezone at registration.
-   */
-  const TIMEZONE_SELECT = 2;
+    /**
+     * Add a role to a user.
+     *
+     * @param string $rid
+     *   The role ID to add.
+     *
+     * @return $this
+     */
+    public function addRole($rid);
 
-  /**
-   * Add a role to a user.
-   *
-   * @param string $rid
-   *   The role ID to add.
-   *
-   * @return $this
-   */
-  public function addRole($rid);
+    /**
+     * Remove a role from a user.
+     *
+     * @param string $rid
+     *   The role ID to remove.
+     *
+     * @return $this
+     */
+    public function removeRole($rid);
 
-  /**
-   * Remove a role from a user.
-   *
-   * @param string $rid
-   *   The role ID to remove.
-   *
-   * @return $this
-   */
-  public function removeRole($rid);
+    /**
+     * Sets the username of this account.
+     *
+     * @param string $username
+     *   The new user name.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function setUsername($username);
 
-  /**
-   * Sets the username of this account.
-   *
-   * @param string $username
-   *   The new user name.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function setUsername($username);
+    /**
+     * Returns the hashed password.
+     *
+     * @return string|null
+     *   The hashed password, or NULL if a password is not set.
+     */
+    public function getPassword();
 
-  /**
-   * Returns the hashed password.
-   *
-   * @return string|null
-   *   The hashed password, or NULL if a password is not set.
-   */
-  public function getPassword();
+    /**
+     * Sets the user password.
+     *
+     * @param string $password
+     *   The new un-hashed password.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function setPassword(#[\SensitiveParameter] $password);
 
-  /**
-   * Sets the user password.
-   *
-   * @param string $password
-   *   The new un-hashed password.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function setPassword(#[\SensitiveParameter] $password);
+    /**
+     * Sets the email address of the user.
+     *
+     * @param string $mail
+     *   The new email address of the user.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function setEmail($mail);
 
-  /**
-   * Sets the email address of the user.
-   *
-   * @param string $mail
-   *   The new email address of the user.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function setEmail($mail);
+    /**
+     * Returns the creation time of the user as a UNIX timestamp.
+     *
+     * @return int
+     *   Timestamp of the creation date.
+     */
+    public function getCreatedTime();
 
-  /**
-   * Returns the creation time of the user as a UNIX timestamp.
-   *
-   * @return int
-   *   Timestamp of the creation date.
-   */
-  public function getCreatedTime();
+    /**
+     * Sets the UNIX timestamp when the user last accessed the site.
+     *
+     * @param int $timestamp
+     *   Timestamp of the last access.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function setLastAccessTime($timestamp);
 
-  /**
-   * Sets the UNIX timestamp when the user last accessed the site.
-   *
-   * @param int $timestamp
-   *   Timestamp of the last access.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function setLastAccessTime($timestamp);
+    /**
+     * Returns the UNIX timestamp when the user last logged in.
+     *
+     * @return int
+     *   Timestamp of the last login time.
+     */
+    public function getLastLoginTime();
 
-  /**
-   * Returns the UNIX timestamp when the user last logged in.
-   *
-   * @return int
-   *   Timestamp of the last login time.
-   */
-  public function getLastLoginTime();
+    /**
+     * Sets the UNIX timestamp when the user last logged in.
+     *
+     * @param int $timestamp
+     *   Timestamp of the last login time.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function setLastLoginTime($timestamp);
 
-  /**
-   * Sets the UNIX timestamp when the user last logged in.
-   *
-   * @param int $timestamp
-   *   Timestamp of the last login time.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function setLastLoginTime($timestamp);
+    /**
+     * Returns TRUE if the user is active.
+     *
+     * @return bool
+     *   TRUE if the user is active, false otherwise.
+     */
+    public function isActive();
 
-  /**
-   * Returns TRUE if the user is active.
-   *
-   * @return bool
-   *   TRUE if the user is active, false otherwise.
-   */
-  public function isActive();
+    /**
+     * Returns TRUE if the user is blocked.
+     *
+     * @return bool
+     *   TRUE if the user is blocked, false otherwise.
+     */
+    public function isBlocked();
 
-  /**
-   * Returns TRUE if the user is blocked.
-   *
-   * @return bool
-   *   TRUE if the user is blocked, false otherwise.
-   */
-  public function isBlocked();
+    /**
+     * Activates the user.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function activate();
 
-  /**
-   * Activates the user.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function activate();
+    /**
+     * Blocks the user.
+     *
+     * @return $this
+     *   The called user entity.
+     */
+    public function block();
 
-  /**
-   * Blocks the user.
-   *
-   * @return $this
-   *   The called user entity.
-   */
-  public function block();
+    /**
+     * Returns the email that was used when the user was registered.
+     *
+     * @return string
+     *   Initial email address of the user.
+     */
+    public function getInitialEmail();
 
-  /**
-   * Returns the email that was used when the user was registered.
-   *
-   * @return string
-   *   Initial email address of the user.
-   */
-  public function getInitialEmail();
+    /**
+     * Sets the existing plain text password.
+     *
+     * Required for validation when changing the password, name or email fields.
+     *
+     * @param string $password
+     *   The existing plain text password of the user.
+     *
+     * @return $this
+     */
+    public function setExistingPassword(#[\SensitiveParameter] $password);
 
-  /**
-   * Sets the existing plain text password.
-   *
-   * Required for validation when changing the password, name or email fields.
-   *
-   * @param string $password
-   *   The existing plain text password of the user.
-   *
-   * @return $this
-   */
-  public function setExistingPassword(#[\SensitiveParameter] $password);
-
-  /**
-   * Checks the existing password if set.
-   *
-   * @param \Drupal\user\UserInterface $account_unchanged
-   *   The unchanged user entity to compare against.
-   *
-   * @return bool
-   *   TRUE if the correct existing password was provided.
-   *
-   * @see UserInterface::setExistingPassword()
-   */
-  public function checkExistingPassword(UserInterface $account_unchanged);
+    /**
+     * Checks the existing password if set.
+     *
+     * @param \Drupal\user\UserInterface $account_unchanged
+     *   The unchanged user entity to compare against.
+     *
+     * @return bool
+     *   TRUE if the correct existing password was provided.
+     *
+     * @see UserInterface::setExistingPassword()
+     */
+    public function checkExistingPassword(UserInterface $account_unchanged);
 
 }

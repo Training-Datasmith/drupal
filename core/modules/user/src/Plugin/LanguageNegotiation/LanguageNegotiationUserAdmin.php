@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\user\Plugin\LanguageNegotiation;
 
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\PathProcessor\PathProcessorManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\AdminContext;
-use Drupal\Core\Routing\StackedRouteMatchInterface;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\language\Attribute\LanguageNegotiation;
 use Drupal\language\LanguageNegotiationMethodBase;
-use Drupal\Core\Routing\RouteObjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -21,106 +20,109 @@ use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
  * Identifies admin language from the user preferences.
  */
 #[LanguageNegotiation(
-  id: LanguageNegotiationUserAdmin::METHOD_ID,
-  name: new TranslatableMarkup('Account administration pages'),
-  types: [LanguageInterface::TYPE_INTERFACE],
-  weight: -10,
-  description: new TranslatableMarkup('Account administration pages language setting.')
+    id: LanguageNegotiationUserAdmin::METHOD_ID,
+    name: new TranslatableMarkup('Account administration pages'),
+    types: [LanguageInterface::TYPE_INTERFACE],
+    weight: -10,
+    description: new TranslatableMarkup('Account administration pages language setting.')
 )]
-class LanguageNegotiationUserAdmin extends LanguageNegotiationMethodBase implements ContainerFactoryPluginInterface {
+class LanguageNegotiationUserAdmin extends LanguageNegotiationMethodBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * The language negotiation method id.
+     */
+    public const METHOD_ID = 'language-user-admin';
 
-  /**
-   * The language negotiation method id.
-   */
-  const METHOD_ID = 'language-user-admin';
+    /**
+     * The router.
+     *
+     * This is only used when called from an event subscriber, before the request
+     * has been populated with the route info.
+     *
+     * @var \Symfony\Component\Routing\Matcher\UrlMatcherInterface
+     */
+    protected $router;
 
-  /**
-   * The router.
-   *
-   * This is only used when called from an event subscriber, before the request
-   * has been populated with the route info.
-   *
-   * @var \Symfony\Component\Routing\Matcher\UrlMatcherInterface
-   */
-  protected $router;
-
-  /**
-   * Constructs a new LanguageNegotiationUserAdmin instance.
-   *
-   * @param \Drupal\Core\Routing\AdminContext $adminContext
-   *   The admin context.
-   * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $router
-   *   The router.
-   * @param \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager
-   *   The path processor manager.
-   * @param \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch
-   *   The stacked route match.
-   */
-  public function __construct(protected \Drupal\Core\Routing\AdminContext $adminContext, UrlMatcherInterface $router, protected \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager, protected \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch) {
-    $this->router = $router;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $container->get('router.admin_context'),
-      $container->get('router'),
-      $container->get('path_processor_manager'),
-      $container->get('current_route_match')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLangcode(?Request $request = NULL) {
-    // User preference (only for administrators).
-    if (($this->currentUser->hasPermission('access administration pages') || $this->currentUser->hasPermission('view the administration theme')) && ($preferred_admin_langcode = $this->currentUser->getPreferredAdminLangcode(FALSE)) && $this->isAdminPath($request)) {
-      return $preferred_admin_langcode;
+    /**
+     * Constructs a new LanguageNegotiationUserAdmin instance.
+     *
+     * @param \Drupal\Core\Routing\AdminContext $adminContext
+     *   The admin context.
+     * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $router
+     *   The router.
+     * @param \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager
+     *   The path processor manager.
+     * @param \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch
+     *   The stacked route match.
+     */
+    public function __construct(protected \Drupal\Core\Routing\AdminContext $adminContext, UrlMatcherInterface $router, protected \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager, protected \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch)
+    {
+        $this->router = $router;
     }
 
-    // Not an admin, no admin language preference or not on an admin path.
-    return NULL;
-  }
-
-  /**
-   * Checks whether the given path is an administrative one.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request object.
-   *
-   * @return bool
-   *   TRUE if the path is administrative, FALSE otherwise.
-   */
-  protected function isAdminPath(Request $request) {
-    $result = FALSE;
-    if ($request && $this->adminContext) {
-      // If called from an event subscriber, the request may not have the route
-      // object yet (it is still being built), so use the router to look up
-      // based on the path.
-      $route_match = $this->stackedRouteMatch->getRouteMatchFromRequest($request);
-      if ($route_match && !$route_object = $route_match->getRouteObject()) {
-        try {
-          // Some inbound path processors make changes to the request. Make a
-          // copy as we're not actually routing the request so we do not want to
-          // make changes.
-          $cloned_request = clone $request;
-          // Process the path as an inbound path. This will remove any language
-          // prefixes and other path components that inbound processing would
-          // clear out, so we can attempt to load the route clearly.
-          $path = $this->pathProcessorManager->processInbound(urldecode(rtrim($cloned_request->getPathInfo(), '/')), $cloned_request);
-          $attributes = $this->router->match($path);
-        }
-        catch (ExceptionInterface | HttpException) {
-          return FALSE;
-        }
-        $route_object = $attributes[RouteObjectInterface::ROUTE_OBJECT];
-      }
-      $result = $this->adminContext->isAdminRoute($route_object);
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static(
+            $container->get('router.admin_context'),
+            $container->get('router'),
+            $container->get('path_processor_manager'),
+            $container->get('current_route_match')
+        );
     }
-    return $result;
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLangcode(?Request $request = null)
+    {
+        // User preference (only for administrators).
+        if (($this->currentUser->hasPermission('access administration pages') || $this->currentUser->hasPermission('view the administration theme')) && ($preferred_admin_langcode = $this->currentUser->getPreferredAdminLangcode(false)) && $this->isAdminPath($request)) {
+            return $preferred_admin_langcode;
+        }
+
+        // Not an admin, no admin language preference or not on an admin path.
+        return null;
+    }
+
+    /**
+     * Checks whether the given path is an administrative one.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request object.
+     *
+     * @return bool
+     *   TRUE if the path is administrative, FALSE otherwise.
+     */
+    protected function isAdminPath(Request $request)
+    {
+        $result = false;
+        if ($request && $this->adminContext) {
+            // If called from an event subscriber, the request may not have the route
+            // object yet (it is still being built), so use the router to look up
+            // based on the path.
+            $route_match = $this->stackedRouteMatch->getRouteMatchFromRequest($request);
+            if ($route_match && !$route_object = $route_match->getRouteObject()) {
+                try {
+                    // Some inbound path processors make changes to the request. Make a
+                    // copy as we're not actually routing the request so we do not want to
+                    // make changes.
+                    $cloned_request = clone $request;
+                    // Process the path as an inbound path. This will remove any language
+                    // prefixes and other path components that inbound processing would
+                    // clear out, so we can attempt to load the route clearly.
+                    $path = $this->pathProcessorManager->processInbound(urldecode(rtrim($cloned_request->getPathInfo(), '/')), $cloned_request);
+                    $attributes = $this->router->match($path);
+                } catch (ExceptionInterface | HttpException) {
+                    return false;
+                }
+                $route_object = $attributes[RouteObjectInterface::ROUTE_OBJECT];
+            }
+            $result = $this->adminContext->isAdminRoute($route_object);
+        }
+        return $result;
+    }
 
 }

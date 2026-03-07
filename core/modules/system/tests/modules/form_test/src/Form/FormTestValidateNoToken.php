@@ -12,32 +12,35 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @internal
  */
-class FormTestValidateNoToken extends FormBase {
+class FormTestValidateNoToken extends FormBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'form_test_validate_no_token';
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'form_test_validate_no_token';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['#token'] = false;
+        $form['submit'] = [
+          '#type' => 'submit',
+          '#value' => 'Save',
+        ];
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['#token'] = FALSE;
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Save',
-    ];
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->messenger()->addStatus('The form_test_validate_no_token form has been submitted successfully.');
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $this->messenger()->addStatus('The form_test_validate_no_token form has been submitted successfully.');
+    }
 
 }

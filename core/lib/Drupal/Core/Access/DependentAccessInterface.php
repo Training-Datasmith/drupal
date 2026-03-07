@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Access;
 
 /**
@@ -22,14 +24,14 @@ namespace Drupal\Core\Access;
  *
  * @internal
  */
-interface DependentAccessInterface {
-
-  /**
-   * Gets the access dependency.
-   *
-   * @return \Drupal\Core\Access\AccessibleInterface|null
-   *   The access dependency or NULL if none has been set.
-   */
-  public function getAccessDependency();
+interface DependentAccessInterface
+{
+    /**
+     * Gets the access dependency.
+     *
+     * @return \Drupal\Core\Access\AccessibleInterface|null
+     *   The access dependency or NULL if none has been set.
+     */
+    public function getAccessDependency();
 
 }

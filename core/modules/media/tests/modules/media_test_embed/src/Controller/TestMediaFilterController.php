@@ -12,16 +12,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * Controller to allow testing of error handling of Media Embed in text editors.
  */
-class TestMediaFilterController extends MediaFilterController {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preview(Request $request, FilterFormatInterface $filter_format) {
-    if (\Drupal::state()->get('test_media_filter_controller_throw_error', FALSE)) {
-      throw new NotFoundHttpException();
+class TestMediaFilterController extends MediaFilterController
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function preview(Request $request, FilterFormatInterface $filter_format)
+    {
+        if (\Drupal::state()->get('test_media_filter_controller_throw_error', false)) {
+            throw new NotFoundHttpException();
+        }
+        return parent::preview($request, $filter_format);
     }
-    return parent::preview($request, $filter_format);
-  }
 
 }

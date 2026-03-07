@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -13,114 +15,119 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
  *
  * @internal
  */
-class DateTimeNormalizer extends NormalizerBase implements DenormalizerInterface {
+class DateTimeNormalizer extends NormalizerBase implements DenormalizerInterface
+{
+    use SchematicNormalizerTrait;
 
-  use SchematicNormalizerTrait;
-
-  /**
-   * Allowed datetime formats for the denormalizer.
-   *
-   * The list is chosen to be unambiguous and language neutral, but also common
-   * for data interchange.
-   *
-   * @var string[]
-   *
-   * @see http://php.net/manual/en/datetime.createfromformat.php
-   */
-  protected $allowedFormats = [
-    'RFC 3339' => \DateTime::RFC3339,
-    'ISO 8601' => \DateTime::ISO8601,
-  ];
-
-  /**
-   * The system's date configuration.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $systemDateConfig;
-
-  /**
-   * Constructs a new DateTimeNormalizer instance.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   A config factory for retrieving required config objects.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->systemDateConfig = $config_factory->get('system.date');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[JsonSchema(['type' => 'string', 'format' => 'date-time'])]
-  public function doNormalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
-    assert($object instanceof DateTimeInterface);
-    $drupal_date_time = $object->getDateTime();
-    if ($drupal_date_time === NULL) {
-      return $drupal_date_time;
-    }
-    return $drupal_date_time
-      // Set an explicit timezone. Otherwise, timestamps may end up being
-      // normalized using the user's preferred timezone. Which would result in
-      // many variations and complex caching.
-      ->setTimezone($this->getNormalizationTimezone())
-      ->format(\DateTime::RFC3339);
-  }
-
-  /**
-   * Gets the timezone to be used during normalization.
-   *
-   * @see ::normalize
-   * @see \Drupal\Core\Datetime\DrupalDateTime::prepareTimezone()
-   *
-   * @return \DateTimeZone
-   *   The timezone to use.
-   */
-  protected function getNormalizationTimezone(): \DateTimeZone {
-    $default_site_timezone = $this->systemDateConfig->get('timezone.default');
-    return new \DateTimeZone($default_site_timezone);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function denormalize($data, $class, $format = NULL, array $context = []): mixed {
-    // This only knows how to denormalize datetime strings and timestamps. If
-    // something else is received, let validation constraints handle this.
-    if (!is_string($data) && !is_numeric($data)) {
-      return $data;
-    }
-
-    // Loop through the allowed formats and create a \DateTime from the
-    // input data if it matches the defined pattern. Since the formats are
-    // unambiguous (i.e., they reference an absolute time with a defined time
-    // zone), only one will ever match.
-    $allowed_formats = $context['datetime_allowed_formats'] ?? $this->allowedFormats;
-    foreach ($allowed_formats as $format) {
-      $date = \DateTime::createFromFormat($format, $data);
-      $errors = \DateTime::getLastErrors();
-      if ($date !== FALSE && empty($errors['errors']) && empty($errors['warnings'])) {
-        return $date;
-      }
-    }
-
-    $format_strings = [];
-
-    foreach ($allowed_formats as $label => $format) {
-      $format_strings[] = "\"$format\" ($label)";
-    }
-
-    $formats = implode(', ', $format_strings);
-    throw new UnexpectedValueException(sprintf('The specified date "%s" is not in an accepted format: %s.', $data, $formats));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSupportedTypes(?string $format): array {
-    return [
-      DateTimeInterface::class => TRUE,
+    /**
+     * Allowed datetime formats for the denormalizer.
+     *
+     * The list is chosen to be unambiguous and language neutral, but also common
+     * for data interchange.
+     *
+     * @var string[]
+     *
+     * @see http://php.net/manual/en/datetime.createfromformat.php
+     */
+    protected $allowedFormats = [
+      'RFC 3339' => \DateTime::RFC3339,
+      'ISO 8601' => \DateTime::ISO8601,
     ];
-  }
+
+    /**
+     * The system's date configuration.
+     *
+     * @var \Drupal\Core\Config\ImmutableConfig
+     */
+    protected $systemDateConfig;
+
+    /**
+     * Constructs a new DateTimeNormalizer instance.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+     *   A config factory for retrieving required config objects.
+     */
+    public function __construct(ConfigFactoryInterface $config_factory)
+    {
+        $this->systemDateConfig = $config_factory->get('system.date');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[JsonSchema(['type' => 'string', 'format' => 'date-time'])]
+    public function doNormalize($object, $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        assert($object instanceof DateTimeInterface);
+        $drupal_date_time = $object->getDateTime();
+        if ($drupal_date_time === null) {
+            return $drupal_date_time;
+        }
+        return $drupal_date_time
+          // Set an explicit timezone. Otherwise, timestamps may end up being
+          // normalized using the user's preferred timezone. Which would result in
+          // many variations and complex caching.
+          ->setTimezone($this->getNormalizationTimezone())
+          ->format(\DateTime::RFC3339);
+    }
+
+    /**
+     * Gets the timezone to be used during normalization.
+     *
+     * @see ::normalize
+     * @see \Drupal\Core\Datetime\DrupalDateTime::prepareTimezone()
+     *
+     * @return \DateTimeZone
+     *   The timezone to use.
+     */
+    protected function getNormalizationTimezone(): \DateTimeZone
+    {
+        $default_site_timezone = $this->systemDateConfig->get('timezone.default');
+        return new \DateTimeZone($default_site_timezone);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function denormalize($data, $class, $format = null, array $context = []): mixed
+    {
+        // This only knows how to denormalize datetime strings and timestamps. If
+        // something else is received, let validation constraints handle this.
+        if (!is_string($data) && !is_numeric($data)) {
+            return $data;
+        }
+
+        // Loop through the allowed formats and create a \DateTime from the
+        // input data if it matches the defined pattern. Since the formats are
+        // unambiguous (i.e., they reference an absolute time with a defined time
+        // zone), only one will ever match.
+        $allowed_formats = $context['datetime_allowed_formats'] ?? $this->allowedFormats;
+        foreach ($allowed_formats as $format) {
+            $date = \DateTime::createFromFormat($format, $data);
+            $errors = \DateTime::getLastErrors();
+            if ($date !== false && empty($errors['errors']) && empty($errors['warnings'])) {
+                return $date;
+            }
+        }
+
+        $format_strings = [];
+
+        foreach ($allowed_formats as $label => $format) {
+            $format_strings[] = "\"$format\" ($label)";
+        }
+
+        $formats = implode(', ', $format_strings);
+        throw new UnexpectedValueException(sprintf('The specified date "%s" is not in an accepted format: %s.', $data, $formats));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+          DateTimeInterface::class => true,
+        ];
+    }
 
 }

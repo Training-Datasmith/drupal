@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Render\Attribute\RenderElement;
@@ -36,62 +38,64 @@ use Drupal\Core\Render\Element;
  * @see \Drupal]Core\Render\Element\VerticalTabs
  */
 #[RenderElement('details')]
-class Details extends RenderElementBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo(): array {
-    return [
-      '#open' => FALSE,
-      '#summary_attributes' => [],
-      '#value' => NULL,
-      '#process' => [
-        [static::class, 'processGroup'],
-        [static::class, 'processAjaxForm'],
-      ],
-      '#pre_render' => [
-        [static::class, 'preRenderDetails'],
-        [static::class, 'preRenderGroup'],
-      ],
-      '#theme_wrappers' => ['details'],
-    ];
-  }
-
-  /**
-   * Adds form element theming to details.
-   *
-   * @param array $element
-   *   An associative array containing the properties and children of the
-   *   details.
-   *
-   * @return array
-   *   The modified element.
-   */
-  public static function preRenderDetails(array $element): array {
-    Element::setAttributes($element, ['id']);
-
-    // The .js-form-wrapper class is required for #states to treat details like
-    // containers.
-    static::setAttributes($element, ['js-form-wrapper', 'form-wrapper']);
-
-    // Collapsible details.
-    $element['#attached']['library'][] = 'core/drupal.collapse';
-
-    // Open the detail if specified or if a child has an error.
-    if (!empty($element['#open']) || !empty($element['#children_errors'])) {
-      $element['#attributes']['open'] = 'open';
+class Details extends RenderElementBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(): array
+    {
+        return [
+          '#open' => false,
+          '#summary_attributes' => [],
+          '#value' => null,
+          '#process' => [
+            [static::class, 'processGroup'],
+            [static::class, 'processAjaxForm'],
+          ],
+          '#pre_render' => [
+            [static::class, 'preRenderDetails'],
+            [static::class, 'preRenderGroup'],
+          ],
+          '#theme_wrappers' => ['details'],
+        ];
     }
 
-    // Do not render optional details elements if there are no children.
-    if (isset($element['#parents'])) {
-      $group = implode('][', $element['#parents']);
-      if (!empty($element['#optional']) && !Element::getVisibleChildren($element['#groups'][$group])) {
-        $element['#printed'] = TRUE;
-      }
-    }
+    /**
+     * Adds form element theming to details.
+     *
+     * @param array $element
+     *   An associative array containing the properties and children of the
+     *   details.
+     *
+     * @return array
+     *   The modified element.
+     */
+    public static function preRenderDetails(array $element): array
+    {
+        Element::setAttributes($element, ['id']);
 
-    return $element;
-  }
+        // The .js-form-wrapper class is required for #states to treat details like
+        // containers.
+        static::setAttributes($element, ['js-form-wrapper', 'form-wrapper']);
+
+        // Collapsible details.
+        $element['#attached']['library'][] = 'core/drupal.collapse';
+
+        // Open the detail if specified or if a child has an error.
+        if (!empty($element['#open']) || !empty($element['#children_errors'])) {
+            $element['#attributes']['open'] = 'open';
+        }
+
+        // Do not render optional details elements if there are no children.
+        if (isset($element['#parents'])) {
+            $group = implode('][', $element['#parents']);
+            if (!empty($element['#optional']) && !Element::getVisibleChildren($element['#groups'][$group])) {
+                $element['#printed'] = true;
+            }
+        }
+
+        return $element;
+    }
 
 }

@@ -15,42 +15,43 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('locale')]
 #[RunTestsInSeparateProcesses]
-class LocaleDefaultConfigStorageTest extends KernelTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'language',
-    'locale_test',
-    'locale_test_translate',
-  ];
-
-  /**
-   * Tests retrieval of component names from locale default config storage.
-   */
-  public function testGetComponentNames(): void {
-    $storage = new LocaleDefaultConfigStorage(
-      new NullStorage(),
-      \Drupal::languageManager(),
-      'testing',
-    );
-
-    $expected = [
-      'locale_test.no_translation',
-      'locale_test.translation',
-      'locale_test.translation_multiple',
-      'locale_test_translate.settings',
-      'block.block.test_default_config',
+class LocaleDefaultConfigStorageTest extends KernelTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = [
+      'language',
+      'locale_test',
+      'locale_test_translate',
     ];
-    $actual = $storage->getComponentNames(
-      'module',
-      [
-        \Drupal::moduleHandler()->getModule('locale_test'),
-        \Drupal::moduleHandler()->getModule('locale_test_translate'),
+
+    /**
+     * Tests retrieval of component names from locale default config storage.
+     */
+    public function testGetComponentNames(): void
+    {
+        $storage = new LocaleDefaultConfigStorage(
+            new NullStorage(),
+            \Drupal::languageManager(),
+            'testing',
+        );
+
+        $expected = [
+          'locale_test.no_translation',
+          'locale_test.translation',
+          'locale_test.translation_multiple',
+          'locale_test_translate.settings',
+          'block.block.test_default_config',
+        ];
+        $actual = $storage->getComponentNames(
+            'module',
+            [
+            \Drupal::moduleHandler()->getModule('locale_test'),
+            \Drupal::moduleHandler()->getModule('locale_test_translate'),
       ],
-    );
-    $this->assertSame($expected, $actual);
-  }
+        );
+        $this->assertSame($expected, $actual);
+    }
 
 }

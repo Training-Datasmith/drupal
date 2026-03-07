@@ -18,14 +18,15 @@ use Drupal\shortcut\ShortcutInterface;
  *
  * @see \Drupal\shortcut\ShortcutInterface::getUrl()
  */
-class ShortcutLinkTarget implements EntityLinkTargetInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLinkTarget(EntityInterface $entity): GeneratedUrl {
-    assert($entity instanceof ShortcutInterface);
-    return $entity->getUrl()->toString(TRUE);
-  }
+class ShortcutLinkTarget implements EntityLinkTargetInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLinkTarget(EntityInterface $entity): GeneratedUrl
+    {
+        assert($entity instanceof ShortcutInterface);
+        return $entity->getUrl()->toString(true);
+    }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\Core\File\FileSystemInterface;
@@ -59,89 +61,90 @@ use GuzzleHttp\ClientInterface;
  * The destination URI is saved in a file entity.
  */
 #[MigrateProcess('download')]
-class Download extends FileProcessBase implements ContainerFactoryPluginInterface {
+class Download extends FileProcessBase implements ContainerFactoryPluginInterface
+{
+    /**
+     * The Guzzle HTTP Client service.
+     *
+     * @var \GuzzleHttp\Client
+     */
+    protected $httpClient;
 
-  /**
-   * The Guzzle HTTP Client service.
-   *
-   * @var \GuzzleHttp\Client
-   */
-  protected $httpClient;
-
-  /**
-   * Constructs a download process plugin.
-   *
-   * @param array $configuration
-   *   The plugin configuration.
-   * @param string $plugin_id
-   *   The plugin ID.
-   * @param array $plugin_definition
-   *   The plugin definition.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
-   *   The file system service.
-   * @param \GuzzleHttp\ClientInterface $http_client
-   *   The HTTP client.
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\File\FileSystemInterface $fileSystem, ClientInterface $http_client) {
-    $configuration += [
-      'guzzle_options' => [],
-    ];
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->httpClient = $http_client;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    // If we're stubbing a file entity, return a uri of NULL so it will get
-    // stubbed by the general process.
-    if ($row->isStub()) {
-      return NULL;
-    }
-    [$source, $destination] = $value;
-
-    // Modify the destination filename if necessary.
-    $final_destination = $this->fileSystem->getDestinationFilename($destination, $this->configuration['file_exists']);
-
-    // Reuse if file exists.
-    if (!$final_destination) {
-      return $destination;
+    /**
+     * Constructs a download process plugin.
+     *
+     * @param array $configuration
+     *   The plugin configuration.
+     * @param string $plugin_id
+     *   The plugin ID.
+     * @param array $plugin_definition
+     *   The plugin definition.
+     * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+     *   The file system service.
+     * @param \GuzzleHttp\ClientInterface $http_client
+     *   The HTTP client.
+     */
+    public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\File\FileSystemInterface $fileSystem, ClientInterface $http_client)
+    {
+        $configuration += [
+          'guzzle_options' => [],
+        ];
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->httpClient = $http_client;
     }
 
-    // Try opening the file first, to avoid calling prepareDirectory()
-    // unnecessarily. We're suppressing fopen() errors because we want to try
-    // to prepare the directory before we give up and fail.
-    $destination_stream = @fopen($final_destination, 'w');
-    if (!$destination_stream) {
-      // If fopen didn't work, make sure there's a writable directory in place.
-      $dir = $this->fileSystem->dirname($final_destination);
-      if (!$this->fileSystem->prepareDirectory($dir, FileSystemInterface:: CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
-        throw new MigrateException("Could not create or write to directory '$dir'");
-      }
-      // Let's try that fopen again.
-      $destination_stream = @fopen($final_destination, 'w');
-      if (!$destination_stream) {
-        throw new MigrateException("Could not write to file '$final_destination'");
-      }
-    }
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+    {
+        // If we're stubbing a file entity, return a uri of NULL so it will get
+        // stubbed by the general process.
+        if ($row->isStub()) {
+            return null;
+        }
+        [$source, $destination] = $value;
 
-    // Stream the request body directly to the final destination stream.
-    $this->configuration['guzzle_options']['sink'] = $destination_stream;
+        // Modify the destination filename if necessary.
+        $final_destination = $this->fileSystem->getDestinationFilename($destination, $this->configuration['file_exists']);
 
-    try {
-      // Make the request. Guzzle throws an exception for anything but 200.
-      $this->httpClient->get($source, $this->configuration['guzzle_options']);
-    }
-    catch (\Exception $e) {
-      throw new MigrateException("{$e->getMessage()} ($source)");
-    }
+        // Reuse if file exists.
+        if (!$final_destination) {
+            return $destination;
+        }
 
-    if (is_resource($destination_stream)) {
-      fclose($destination_stream);
-    }
+        // Try opening the file first, to avoid calling prepareDirectory()
+        // unnecessarily. We're suppressing fopen() errors because we want to try
+        // to prepare the directory before we give up and fail.
+        $destination_stream = @fopen($final_destination, 'w');
+        if (!$destination_stream) {
+            // If fopen didn't work, make sure there's a writable directory in place.
+            $dir = $this->fileSystem->dirname($final_destination);
+            if (!$this->fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
+                throw new MigrateException("Could not create or write to directory '$dir'");
+            }
+            // Let's try that fopen again.
+            $destination_stream = @fopen($final_destination, 'w');
+            if (!$destination_stream) {
+                throw new MigrateException("Could not write to file '$final_destination'");
+            }
+        }
 
-    return $final_destination;
-  }
+        // Stream the request body directly to the final destination stream.
+        $this->configuration['guzzle_options']['sink'] = $destination_stream;
+
+        try {
+            // Make the request. Guzzle throws an exception for anything but 200.
+            $this->httpClient->get($source, $this->configuration['guzzle_options']);
+        } catch (\Exception $e) {
+            throw new MigrateException("{$e->getMessage()} ($source)");
+        }
+
+        if (is_resource($destination_stream)) {
+            fclose($destination_stream);
+        }
+
+        return $final_destination;
+    }
 
 }

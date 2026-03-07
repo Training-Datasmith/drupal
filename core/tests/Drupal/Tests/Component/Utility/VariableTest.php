@@ -16,172 +16,177 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Variable::class)]
 #[Group('Variable')]
 #[Group('Utility')]
-class VariableTest extends TestCase {
+class VariableTest extends TestCase
+{
+    /**
+     * Data provider for testCallableToString().
+     *
+     * @return array[]
+     *   Sets of arguments to pass to the test method.
+     */
+    public static function providerCallableToString(): array
+    {
+        $mock = VariableTestMock::class;
+        return [
+          'string' => [
+            "$mock::fake",
+            "$mock::fake",
+          ],
+          'static method as array' => [
+            [$mock, 'fake'],
+            "$mock::fake",
+          ],
+          'closure' => [
+            function () {
+                return null;
+            },
+            '[closure]',
+          ],
+          'object method' => [
+            [new VariableTestMock(), 'fake'],
+            "$mock::fake",
+      ],
+          'service method' => [
+            'fake_service:method',
+            'fake_service:method',
+      ],
+          'single-item array' => [
+            ['some_function'],
+            'some_function',
+      ],
+          'empty array' => [
+            [],
+            '[unknown]',
+      ],
+          'object' => [
+            new \stdClass(),
+            '[unknown]',
+      ],
+          'definitely not callable' => [
+            true,
+            '[unknown]',
+      ],
+        ];
+    }
 
-  /**
-   * Data provider for testCallableToString().
-   *
-   * @return array[]
-   *   Sets of arguments to pass to the test method.
-   */
-  public static function providerCallableToString(): array {
-    $mock = VariableTestMock::class;
-    return [
-      'string' => [
-        "$mock::fake",
-        "$mock::fake",
-      ],
-      'static method as array' => [
-        [$mock, 'fake'],
-        "$mock::fake",
-      ],
-      'closure' => [
-        function () {
-          return NULL;
-        },
-        '[closure]',
-      ],
-      'object method' => [
-        [new VariableTestMock(), 'fake'],
-        "$mock::fake",
-      ],
-      'service method' => [
-        'fake_service:method',
-        'fake_service:method',
-      ],
-      'single-item array' => [
-        ['some_function'],
-        'some_function',
-      ],
-      'empty array' => [
-        [],
-        '[unknown]',
-      ],
-      'object' => [
-        new \stdClass(),
-        '[unknown]',
-      ],
-      'definitely not callable' => [
-        TRUE,
-        '[unknown]',
-      ],
-    ];
-  }
+    /**
+     * Tests generating a human-readable name for a callable.
+     *
+     * @param callable $callable
+     *   A callable.
+     * @param string $expected_name
+     *   The expected human-readable name of the callable.
+     */
+    #[DataProvider('providerCallableToString')]
+    public function testCallableToString($callable, string $expected_name): void
+    {
+        $this->assertSame($expected_name, Variable::callableToString($callable));
+    }
 
-  /**
-   * Tests generating a human-readable name for a callable.
-   *
-   * @param callable $callable
-   *   A callable.
-   * @param string $expected_name
-   *   The expected human-readable name of the callable.
-   */
-  #[DataProvider('providerCallableToString')]
-  public function testCallableToString($callable, string $expected_name): void {
-    $this->assertSame($expected_name, Variable::callableToString($callable));
-  }
+    /**
+     * Data provider for testExport().
+     *
+     * @return array
+     *   An array containing:
+     *     - The expected export string.
+     *     - The variable to export.
+     */
+    public static function providerTestExport(): array
+    {
+        return [
+          // Array.
+          [
+            '[]',
+            [],
+          ],
+          [
+            // non-associative.
+            "[\n  1,\n  2,\n  3,\n  4,\n]",
+            [1, 2, 3, 4],
+          ],
+          [
+            // associative.
+            "[\n  'a' => 1,\n]",
+            ['a' => 1],
+          ],
+          // Bool.
+          [
+            'TRUE',
+            true,
+          ],
+          [
+            'FALSE',
+            false,
+          ],
+          // Strings.
+          [
+            "'string'",
+            'string',
+          ],
+          [
+            '"\n\r\t"',
+            "\n\r\t",
+          ],
+          [
+            // 2 backslashes. \\
+            "'\\'",
+            '\\',
+          ],
+          [
+            // Double-quote ".
+            "'\"'",
+            '"',
+          ],
+          [
+            // Single-quote '.
+            '"\'"',
+            "'",
+          ],
+          [
+            // Quotes with $ symbols.
+            '"\$settings[\'foo\']"',
+            '$settings[\'foo\']',
+          ],
+          // Object.
+          [
+            // A stdClass object.
+            '(object) []',
+            new \stdClass(),
+          ],
+          [
+            "\Drupal\Tests\Component\Utility\StubVariableTestClass::__set_state(array(\n))",
+            new StubVariableTestClass(),
+          ],
+        ];
+    }
 
-  /**
-   * Data provider for testExport().
-   *
-   * @return array
-   *   An array containing:
-   *     - The expected export string.
-   *     - The variable to export.
-   */
-  public static function providerTestExport(): array {
-    return [
-      // Array.
-      [
-        '[]',
-        [],
-      ],
-      [
-        // non-associative.
-        "[\n  1,\n  2,\n  3,\n  4,\n]",
-        [1, 2, 3, 4],
-      ],
-      [
-        // associative.
-        "[\n  'a' => 1,\n]",
-        ['a' => 1],
-      ],
-      // Bool.
-      [
-        'TRUE',
-        TRUE,
-      ],
-      [
-        'FALSE',
-        FALSE,
-      ],
-      // Strings.
-      [
-        "'string'",
-        'string',
-      ],
-      [
-        '"\n\r\t"',
-        "\n\r\t",
-      ],
-      [
-        // 2 backslashes. \\
-        "'\\'",
-        '\\',
-      ],
-      [
-        // Double-quote ".
-        "'\"'",
-        "\"",
-      ],
-      [
-        // Single-quote '.
-        '"\'"',
-        "'",
-      ],
-      [
-        // Quotes with $ symbols.
-        '"\$settings[\'foo\']"',
-        '$settings[\'foo\']',
-      ],
-      // Object.
-      [
-        // A stdClass object.
-        '(object) []',
-        new \stdClass(),
-      ],
-      [
-        "\Drupal\Tests\Component\Utility\StubVariableTestClass::__set_state(array(\n))",
-        new StubVariableTestClass(),
-      ],
-    ];
-  }
-
-  /**
-   * Tests exporting variables.
-   *
-   * @param string $expected
-   *   The expected exported variable.
-   * @param mixed $variable
-   *   The variable to be exported.
-   */
-  #[DataProvider('providerTestExport')]
-  public function testExport($expected, $variable): void {
-    $this->assertEquals($expected, Variable::export($variable));
-  }
+    /**
+     * Tests exporting variables.
+     *
+     * @param string $expected
+     *   The expected exported variable.
+     * @param mixed $variable
+     *   The variable to be exported.
+     */
+    #[DataProvider('providerTestExport')]
+    public function testExport($expected, $variable): void
+    {
+        $this->assertEquals($expected, Variable::export($variable));
+    }
 
 }
 
 /**
  * A class for testing Variable::callableToString().
  */
-class VariableTestMock {
-
-  /**
-   * A bogus callable for testing ::callableToString().
-   */
-  public static function fake(): void {
-  }
+class VariableTestMock
+{
+    /**
+     * A bogus callable for testing ::callableToString().
+     */
+    public static function fake(): void
+    {
+    }
 
 }
 
@@ -191,6 +196,6 @@ class VariableTestMock {
  * @see \Drupal\Tests\Component\Utility\VariableTest::testExport()
  * @see \Drupal\Tests\Component\Utility\VariableTest::providerTestExport()
  */
-class StubVariableTestClass {
-
+class StubVariableTestClass
+{
 }

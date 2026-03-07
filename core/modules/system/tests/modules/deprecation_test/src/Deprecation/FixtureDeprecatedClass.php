@@ -13,16 +13,17 @@ namespace Drupal\deprecation_test\Deprecation;
  * This class is arbitrarily deprecated in order to test container service
  * deprecations.
  */
-class FixtureDeprecatedClass {
-
-  /**
-   * Returns a known value.
-   *
-   * @return string
-   *   A known return value.
-   */
-  public function testFunction() {
-    return 'test';
-  }
+class FixtureDeprecatedClass
+{
+    /**
+     * Returns a known value.
+     *
+     * @return string
+     *   A known return value.
+     */
+    public function testFunction()
+    {
+        return 'test';
+    }
 
 }

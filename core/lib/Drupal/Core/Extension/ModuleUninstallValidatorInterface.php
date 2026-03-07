@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\Extension;
 
 /**
@@ -18,21 +20,21 @@ namespace Drupal\Core\Extension;
  * @see \Drupal\Core\EventSubscriber\ConfigImportSubscriber::validateModules()
  * @see \Drupal\Core\Extension\ConfigImportModuleUninstallValidatorInterface
  */
-interface ModuleUninstallValidatorInterface {
-
-  /**
-   * Determines the reasons a module can not be uninstalled.
-   *
-   * @param string $module
-   *   A module name.
-   *
-   * @return string[]
-   *   An array of reasons the module can not be uninstalled, empty if it can.
-   *   Each reason should not end with any punctuation since multiple reasons
-   *   can be displayed together.
-   *
-   * @see \Drupal\system\Theme\SystemAdminThemePreprocess::preprocessSystemModulesUninstall()
-   */
-  public function validate($module);
+interface ModuleUninstallValidatorInterface
+{
+    /**
+     * Determines the reasons a module can not be uninstalled.
+     *
+     * @param string $module
+     *   A module name.
+     *
+     * @return string[]
+     *   An array of reasons the module can not be uninstalled, empty if it can.
+     *   Each reason should not end with any punctuation since multiple reasons
+     *   can be displayed together.
+     *
+     * @see \Drupal\system\Theme\SystemAdminThemePreprocess::preprocessSystemModulesUninstall()
+     */
+    public function validate($module);
 
 }

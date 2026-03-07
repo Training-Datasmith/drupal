@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Component\Discovery;
 
 use Drupal\Component\FileCache\FileCacheFactory;
@@ -9,90 +11,91 @@ use Drupal\Component\Serialization\Yaml;
 /**
  * Provides discovery for YAML files within a given set of directories.
  */
-class YamlDiscovery implements DiscoverableInterface {
-
-  /**
-   * Constructs a YamlDiscovery object.
-   *
-   * @param string $name
-   *   The base filename to look for in each directory. The format will be
-   *   $provider.$name.yml.
-   * @param array $directories
-   *   An array of directories to scan, keyed by the provider.
-   */
-  public function __construct(
-      /**
-       * The base filename to look for in each directory.
-       */
-      protected $name,
-      protected array $directories
-  )
-  {
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return mixed[]
-   */
-  public function findAll(): array {
-    $all = [];
-
-    $files = $this->findFiles();
-    $provider_by_files = array_flip($files);
-
-    $file_cache = FileCacheFactory::get('yaml_discovery:' . $this->name);
-
-    // Try to load from the file cache first.
-    foreach ($file_cache->getMultiple($files) as $file => $data) {
-      $all[$provider_by_files[$file]] = $data;
-      unset($provider_by_files[$file]);
+class YamlDiscovery implements DiscoverableInterface
+{
+    /**
+     * Constructs a YamlDiscovery object.
+     *
+     * @param string $name
+     *   The base filename to look for in each directory. The format will be
+     *   $provider.$name.yml.
+     * @param array $directories
+     *   An array of directories to scan, keyed by the provider.
+     */
+    public function __construct(
+        /**
+         * The base filename to look for in each directory.
+         */
+        protected $name,
+        protected array $directories
+    ) {
     }
 
-    // If there are files left that were not returned from the cache, load and
-    // parse them now. This list was flipped above and is keyed by filename.
-    foreach ($provider_by_files as $file => $provider) {
-      // If a file is empty or its contents are commented out, return an empty
-      // array instead of NULL for type consistency.
-      $all[$provider] = $this->decode($file);
-      $file_cache->set($file, $all[$provider]);
+    /**
+     * {@inheritdoc}
+     * @return mixed[]
+     */
+    public function findAll(): array
+    {
+        $all = [];
+
+        $files = $this->findFiles();
+        $provider_by_files = array_flip($files);
+
+        $file_cache = FileCacheFactory::get('yaml_discovery:' . $this->name);
+
+        // Try to load from the file cache first.
+        foreach ($file_cache->getMultiple($files) as $file => $data) {
+            $all[$provider_by_files[$file]] = $data;
+            unset($provider_by_files[$file]);
+        }
+
+        // If there are files left that were not returned from the cache, load and
+        // parse them now. This list was flipped above and is keyed by filename.
+        foreach ($provider_by_files as $file => $provider) {
+            // If a file is empty or its contents are commented out, return an empty
+            // array instead of NULL for type consistency.
+            $all[$provider] = $this->decode($file);
+            $file_cache->set($file, $all[$provider]);
+        }
+
+        return $all;
     }
 
-    return $all;
-  }
+    /**
+     * Decode a YAML file.
+     *
+     * @param string $file
+     *   Yaml file path.
+     *
+     * @return array
+     *   The decoded contents of the YAML file.
+     */
+    protected function decode(string $file)
+    {
+        try {
+            return Yaml::decode(file_get_contents($file)) ?: [];
+        } catch (InvalidDataTypeException $e) {
+            throw new InvalidDataTypeException($file . ': ' . $e->getMessage(), $e->getCode(), $e);
+        }
+    }
 
-  /**
-   * Decode a YAML file.
-   *
-   * @param string $file
-   *   Yaml file path.
-   *
-   * @return array
-   *   The decoded contents of the YAML file.
-   */
-  protected function decode(string $file) {
-    try {
-      return Yaml::decode(file_get_contents($file)) ?: [];
+    /**
+     * Returns an array of file paths, keyed by provider.
+     *
+     * @return array
+     *   An array of file paths.
+     */
+    protected function findFiles(): array
+    {
+        $files = [];
+        foreach ($this->directories as $provider => $directory) {
+            $file = $directory . '/' . $provider . '.' . $this->name . '.yml';
+            if (file_exists($file)) {
+                $files[$provider] = $file;
+            }
+        }
+        return $files;
     }
-    catch (InvalidDataTypeException $e) {
-      throw new InvalidDataTypeException($file . ': ' . $e->getMessage(), $e->getCode(), $e);
-    }
-  }
-
-  /**
-   * Returns an array of file paths, keyed by provider.
-   *
-   * @return array
-   *   An array of file paths.
-   */
-  protected function findFiles(): array {
-    $files = [];
-    foreach ($this->directories as $provider => $directory) {
-      $file = $directory . '/' . $provider . '.' . $this->name . '.yml';
-      if (file_exists($file)) {
-        $files[$provider] = $file;
-      }
-    }
-    return $files;
-  }
 
 }

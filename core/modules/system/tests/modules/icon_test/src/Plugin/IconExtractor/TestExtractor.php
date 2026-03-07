@@ -13,20 +13,21 @@ use Drupal\Core\Theme\Icon\IconPackExtractorForm;
  * Test plugin implementation of the icon_extractor.
  */
 #[IconExtractor(
-  id: 'test',
-  label: new TranslatableMarkup('Test'),
-  description: new TranslatableMarkup('Test extractor.'),
-  forms: [
+    id: 'test',
+    label: new TranslatableMarkup('Test'),
+    description: new TranslatableMarkup('Test extractor.'),
+    forms: [
     'settings' => IconPackExtractorForm::class,
   ]
 )]
-class TestExtractor extends IconExtractorBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function discoverIcons(): array {
-    return [];
-  }
+class TestExtractor extends IconExtractorBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function discoverIcons(): array
+    {
+        return [];
+    }
 
 }

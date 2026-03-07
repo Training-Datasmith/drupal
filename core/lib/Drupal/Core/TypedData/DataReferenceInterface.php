@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Core\TypedData;
 
 /**
@@ -7,22 +9,22 @@ namespace Drupal\Core\TypedData;
  *
  * @see \Drupal\Core\TypedData\DataReferenceDefinitionInterface
  */
-interface DataReferenceInterface {
+interface DataReferenceInterface
+{
+    /**
+     * Gets the referenced data.
+     *
+     * @return \Drupal\Core\TypedData\TypedDataInterface|null
+     *   The referenced typed data object, or NULL if the reference is unset.
+     */
+    public function getTarget();
 
-  /**
-   * Gets the referenced data.
-   *
-   * @return \Drupal\Core\TypedData\TypedDataInterface|null
-   *   The referenced typed data object, or NULL if the reference is unset.
-   */
-  public function getTarget();
-
-  /**
-   * Gets the identifier of the referenced data.
-   *
-   * @return int|string|null
-   *   The identifier of the referenced data, or NULL if the reference is unset.
-   */
-  public function getTargetIdentifier();
+    /**
+     * Gets the identifier of the referenced data.
+     *
+     * @return int|string|null
+     *   The identifier of the referenced data, or NULL if the reference is unset.
+     */
+    public function getTargetIdentifier();
 
 }

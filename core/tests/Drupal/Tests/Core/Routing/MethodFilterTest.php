@@ -18,114 +18,120 @@ use Symfony\Component\Routing\RouteCollection;
  */
 #[CoversClass(MethodFilter::class)]
 #[Group('Routing')]
-class MethodFilterTest extends UnitTestCase {
+class MethodFilterTest extends UnitTestCase
+{
+    /**
+     * Tests with allowed method.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testWithAllowedMethod(): void
+    {
+        $request = Request::create('/test', 'GET');
+        $collection = new RouteCollection();
+        $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection_before = clone $collection;
 
-  /**
-   * Tests with allowed method.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testWithAllowedMethod(): void {
-    $request = Request::create('/test', 'GET');
-    $collection = new RouteCollection();
-    $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection_before = clone $collection;
+        $method_filter = new MethodFilter();
+        $result_collection = $method_filter->filter($collection, $request);
 
-    $method_filter = new MethodFilter();
-    $result_collection = $method_filter->filter($collection, $request);
+        $this->assertEquals($collection_before, $result_collection);
+    }
 
-    $this->assertEquals($collection_before, $result_collection);
-  }
+    /**
+     * Tests with allowed method and multiple matching routes.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testWithAllowedMethodAndMultipleMatchingRoutes(): void
+    {
+        $request = Request::create('/test', 'GET');
+        $collection = new RouteCollection();
+        $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['GET']));
 
-  /**
-   * Tests with allowed method and multiple matching routes.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testWithAllowedMethodAndMultipleMatchingRoutes(): void {
-    $request = Request::create('/test', 'GET');
-    $collection = new RouteCollection();
-    $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection_before = clone $collection;
 
-    $collection_before = clone $collection;
+        $method_filter = new MethodFilter();
+        $result_collection = $method_filter->filter($collection, $request);
 
-    $method_filter = new MethodFilter();
-    $result_collection = $method_filter->filter($collection, $request);
+        $this->assertEquals($collection_before, $result_collection);
+    }
 
-    $this->assertEquals($collection_before, $result_collection);
-  }
+    /**
+     * Tests method not allowed exception.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testMethodNotAllowedException(): void
+    {
+        $request = Request::create('/test', 'PATCH');
+        $collection = new RouteCollection();
+        $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
 
-  /**
-   * Tests method not allowed exception.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testMethodNotAllowedException(): void {
-    $request = Request::create('/test', 'PATCH');
-    $collection = new RouteCollection();
-    $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $this->expectException(MethodNotAllowedException::class);
 
-    $this->expectException(MethodNotAllowedException::class);
+        $method_filter = new MethodFilter();
+        $method_filter->filter($collection, $request);
+    }
 
-    $method_filter = new MethodFilter();
-    $method_filter->filter($collection, $request);
-  }
+    /**
+     * Tests method not allowed exception with multiple routes.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testMethodNotAllowedExceptionWithMultipleRoutes(): void
+    {
+        $request = Request::create('/test', 'PATCH');
+        $collection = new RouteCollection();
+        $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['GET']));
 
-  /**
-   * Tests method not allowed exception with multiple routes.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testMethodNotAllowedExceptionWithMultipleRoutes(): void {
-    $request = Request::create('/test', 'PATCH');
-    $collection = new RouteCollection();
-    $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $this->expectException(MethodNotAllowedException::class);
 
-    $this->expectException(MethodNotAllowedException::class);
+        $method_filter = new MethodFilter();
+        $method_filter->filter($collection, $request);
+    }
 
-    $method_filter = new MethodFilter();
-    $method_filter->filter($collection, $request);
-  }
+    /**
+     * Tests filtered methods.
+     */
+    public function testFilteredMethods(): void
+    {
+        $request = Request::create('/test', 'PATCH');
+        $collection = new RouteCollection();
+        $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
+        $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['PATCH']));
+        $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['POST']));
 
-  /**
-   * Tests filtered methods.
-   */
-  public function testFilteredMethods(): void {
-    $request = Request::create('/test', 'PATCH');
-    $collection = new RouteCollection();
-    $collection->add('test_route.get', new Route('/test', [], [], [], '', [], ['GET']));
-    $collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['PATCH']));
-    $collection->add('test_route3.get', new Route('/test', [], [], [], '', [], ['POST']));
+        $expected_collection = new RouteCollection();
+        $expected_collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['PATCH']));
 
-    $expected_collection = new RouteCollection();
-    $expected_collection->add('test_route2.get', new Route('/test', [], [], [], '', [], ['PATCH']));
+        $method_filter = new MethodFilter();
+        $result_collection = $method_filter->filter($collection, $request);
 
-    $method_filter = new MethodFilter();
-    $result_collection = $method_filter->filter($collection, $request);
+        $this->assertEquals($expected_collection, $result_collection);
+    }
 
-    $this->assertEquals($expected_collection, $result_collection);
-  }
+    /**
+     * Ensures that the incoming and outgoing collections have the same order.
+     *
+     * @legacy-covers ::filter
+     */
+    public function testCollectionOrder(): void
+    {
+        $request = Request::create('/test', 'GET');
 
-  /**
-   * Ensures that the incoming and outgoing collections have the same order.
-   *
-   * @legacy-covers ::filter
-   */
-  public function testCollectionOrder(): void {
-    $request = Request::create('/test', 'GET');
+        $collection = new RouteCollection();
+        $collection->add('entity.taxonomy_term.canonical', new Route('/test'));
+        $collection->add('views.view.taxonomy_term_page', new Route('/test', [], [], [], '', [], ['GET', 'POST']));
 
-    $collection = new RouteCollection();
-    $collection->add('entity.taxonomy_term.canonical', new Route('/test'));
-    $collection->add('views.view.taxonomy_term_page', new Route('/test', [], [], [], '', [], ['GET', 'POST']));
+        $method_filter = new MethodFilter();
+        $result_collection = $method_filter->filter($collection, $request);
 
-    $method_filter = new MethodFilter();
-    $result_collection = $method_filter->filter($collection, $request);
-
-    $this->assertEquals(['entity.taxonomy_term.canonical', 'views.view.taxonomy_term_page'], array_keys($result_collection->all()));
-  }
+        $this->assertEquals(['entity.taxonomy_term.canonical', 'views.view.taxonomy_term_page'], array_keys($result_collection->all()));
+    }
 
 }

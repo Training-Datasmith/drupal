@@ -16,27 +16,29 @@ use Drupal\Core\Hook\Order\OrderAfter;
  *
  * @see \Drupal\KernelTests\Core\Hook\HookAlterOrderTest
  */
-class AAlterHooks {
+class AAlterHooks
+{
+    /**
+     * Implements hook_test_alter().
+     *
+     * This implementation changes its order to be after the hooks in module
+     * 'ccc_hook_order_test'.
+     */
+    #[Hook('test_alter', order: new OrderAfter(modules: ['ccc_hook_order_test']))]
+    public function testAlterAfterC(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
-  /**
-   * Implements hook_test_alter().
-   *
-   * This implementation changes its order to be after the hooks in module
-   * 'ccc_hook_order_test'.
-   */
-  #[Hook('test_alter', order: new OrderAfter(modules: ['ccc_hook_order_test']))]
-  public function testAlterAfterC(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
-
-  /**
-   * Implements hook_test_subtype_alter().
-   *
-   * This implementation has no ordering modifications.
-   */
-  #[Hook('test_subtype_alter')]
-  public function testSubtypeAlter(array &$calls): void {
-    $calls[] = __METHOD__;
-  }
+    /**
+     * Implements hook_test_subtype_alter().
+     *
+     * This implementation has no ordering modifications.
+     */
+    #[Hook('test_subtype_alter')]
+    public function testSubtypeAlter(array &$calls): void
+    {
+        $calls[] = __METHOD__;
+    }
 
 }

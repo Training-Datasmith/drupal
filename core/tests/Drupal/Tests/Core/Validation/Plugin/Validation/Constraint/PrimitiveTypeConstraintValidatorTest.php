@@ -25,64 +25,65 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 #[CoversClass(PrimitiveTypeConstraintValidator::class)]
 #[Group('validation')]
-class PrimitiveTypeConstraintValidatorTest extends UnitTestCase {
+class PrimitiveTypeConstraintValidatorTest extends UnitTestCase
+{
+    /**
+     * Tests validate.
+     */
+    #[DataProvider('provideTestValidate')]
+    public function testValidate(PrimitiveInterface $typed_data, string|TranslatableMarkup|int|float|array|null $value, bool $valid): void
+    {
+        $context = $this->createMock(ExecutionContextInterface::class);
+        $context->expects($this->any())
+          ->method('getObject')
+          ->willReturn($typed_data);
 
-  /**
-   * Tests validate.
-   */
-  #[DataProvider('provideTestValidate')]
-  public function testValidate(PrimitiveInterface $typed_data, string|TranslatableMarkup|int|float|array|null $value, bool $valid): void {
-    $context = $this->createMock(ExecutionContextInterface::class);
-    $context->expects($this->any())
-      ->method('getObject')
-      ->willReturn($typed_data);
+        if ($valid) {
+            $context->expects($this->never())
+              ->method('addViolation');
+        } else {
+            $context->expects($this->once())
+              ->method('addViolation');
+        }
 
-    if ($valid) {
-      $context->expects($this->never())
-        ->method('addViolation');
+        $constraint = new PrimitiveTypeConstraint();
+
+        $validate = new PrimitiveTypeConstraintValidator();
+        $validate->initialize($context);
+        $validate->validate($value, $constraint);
     }
-    else {
-      $context->expects($this->once())
-        ->method('addViolation');
+
+    public static function provideTestValidate(): array
+    {
+        $data = [];
+        $data[] = [new BooleanData(DataDefinition::create('boolean')), null, true];
+
+        $data[] = [new BooleanData(DataDefinition::create('boolean')), 1, true];
+        $data[] = [new BooleanData(DataDefinition::create('boolean')), 'test', false];
+        $data[] = [new FloatData(DataDefinition::create('float')), 1.5, true];
+        $data[] = [new FloatData(DataDefinition::create('float')), 'test', false];
+        $data[] = [new IntegerData(DataDefinition::create('integer')), 1, true];
+        $data[] = [new IntegerData(DataDefinition::create('integer')), 1.5, false];
+        $data[] = [new IntegerData(DataDefinition::create('integer')), 'test', false];
+        $data[] = [new StringData(DataDefinition::create('string')), 'test', true];
+        $data[] = [new StringData(DataDefinition::create('string')), new TranslatableMarkup('test'), true];
+        // It is odd that 1 is a valid string.
+        // $data[] = [$this->createMock('Drupal\Core\TypedData\Type\StringInterface'), 1, FALSE];
+        $data[] = [new StringData(DataDefinition::create('string')), [], false];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'http://www.example.com', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'https://www.example.com', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'Invalid', false];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'entity:node/1', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'base:', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'base:node', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'internal:', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'public://', false];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'public://foo.png', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'private://', false];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'private://foo.png', true];
+        $data[] = [new Uri(DataDefinition::create('uri')), 'example.com', false];
+
+        return $data;
     }
-
-    $constraint = new PrimitiveTypeConstraint();
-
-    $validate = new PrimitiveTypeConstraintValidator();
-    $validate->initialize($context);
-    $validate->validate($value, $constraint);
-  }
-
-  public static function provideTestValidate(): array {
-    $data = [];
-    $data[] = [new BooleanData(DataDefinition::create('boolean')), NULL, TRUE];
-
-    $data[] = [new BooleanData(DataDefinition::create('boolean')), 1, TRUE];
-    $data[] = [new BooleanData(DataDefinition::create('boolean')), 'test', FALSE];
-    $data[] = [new FloatData(DataDefinition::create('float')), 1.5, TRUE];
-    $data[] = [new FloatData(DataDefinition::create('float')), 'test', FALSE];
-    $data[] = [new IntegerData(DataDefinition::create('integer')), 1, TRUE];
-    $data[] = [new IntegerData(DataDefinition::create('integer')), 1.5, FALSE];
-    $data[] = [new IntegerData(DataDefinition::create('integer')), 'test', FALSE];
-    $data[] = [new StringData(DataDefinition::create('string')), 'test', TRUE];
-    $data[] = [new StringData(DataDefinition::create('string')), new TranslatableMarkup('test'), TRUE];
-    // It is odd that 1 is a valid string.
-    // $data[] = [$this->createMock('Drupal\Core\TypedData\Type\StringInterface'), 1, FALSE];
-    $data[] = [new StringData(DataDefinition::create('string')), [], FALSE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'http://www.example.com', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'https://www.example.com', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'Invalid', FALSE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'entity:node/1', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'base:', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'base:node', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'internal:', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'public://', FALSE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'public://foo.png', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'private://', FALSE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'private://foo.png', TRUE];
-    $data[] = [new Uri(DataDefinition::create('uri')), 'example.com', FALSE];
-
-    return $data;
-  }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\migrate\Plugin\migrate\process;
 
 use Drupal\migrate\Attribute\MigrateProcess;
@@ -53,20 +55,21 @@ use Drupal\migrate\Row;
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  */
 #[MigrateProcess(
-  id: "concat",
-  handle_multiples: TRUE,
+    id: 'concat',
+    handle_multiples: true,
 )]
-class Concat extends ProcessPluginBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string {
-    if (is_array($value)) {
-      $delimiter = $this->configuration['delimiter'] ?? '';
-      return implode($delimiter, $value);
+class Concat extends ProcessPluginBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string
+    {
+        if (is_array($value)) {
+            $delimiter = $this->configuration['delimiter'] ?? '';
+            return implode($delimiter, $value);
+        }
+        throw new MigrateException(sprintf('%s is not an array', var_export($value, true)));
     }
-    throw new MigrateException(sprintf('%s is not an array', var_export($value, TRUE)));
-  }
 
 }

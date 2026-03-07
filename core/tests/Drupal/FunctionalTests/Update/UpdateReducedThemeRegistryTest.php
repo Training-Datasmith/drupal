@@ -14,33 +14,34 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('Update')]
 #[RunTestsInSeparateProcesses]
-class UpdateReducedThemeRegistryTest extends BrowserTestBase {
+class UpdateReducedThemeRegistryTest extends BrowserTestBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    protected static $modules = ['update_test_broken_theme_hook'];
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['update_test_broken_theme_hook'];
+    /**
+     * {@inheritdoc}
+     */
+    protected $defaultTheme = 'stark';
 
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'stark';
-
-  /**
-   * Tests that the update page can be accessed.
-   */
-  public function testUpdatePageWithBrokenThemeHook(): void {
-    require_once $this->root . '/core/includes/update.inc';
-    $this->writeSettings([
-      'settings' => [
-        'update_free_access' => (object) [
-          'value' => TRUE,
-          'required' => TRUE,
-        ],
-      ],
-    ]);
-    $this->drupalGet(Url::fromRoute('system.db_update'));
-    $this->assertSession()->statusCodeEquals(200);
-  }
+    /**
+     * Tests that the update page can be accessed.
+     */
+    public function testUpdatePageWithBrokenThemeHook(): void
+    {
+        require_once $this->root . '/core/includes/update.inc';
+        $this->writeSettings([
+          'settings' => [
+            'update_free_access' => (object) [
+              'value' => true,
+              'required' => true,
+            ],
+          ],
+        ]);
+        $this->drupalGet(Url::fromRoute('system.db_update'));
+        $this->assertSession()->statusCodeEquals(200);
+    }
 
 }

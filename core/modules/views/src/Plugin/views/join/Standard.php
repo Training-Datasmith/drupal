@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\views\Plugin\views\join;
 
 use Drupal\views\Attribute\ViewsJoin;
@@ -9,7 +11,7 @@ use Drupal\views\Attribute\ViewsJoin;
  *
  * @ingroup views_join_handlers
  */
-#[ViewsJoin("standard")]
-class Standard extends JoinPluginBase {
-
+#[ViewsJoin('standard')]
+class Standard extends JoinPluginBase
+{
 }

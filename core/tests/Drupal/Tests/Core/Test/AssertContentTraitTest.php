@@ -14,16 +14,17 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(AssertContentTrait::class)]
 #[Group('Test')]
-class AssertContentTraitTest extends UnitTestCase {
+class AssertContentTraitTest extends UnitTestCase
+{
+    use AssertContentTrait;
 
-  use AssertContentTrait;
+    /**
+     * Tests get text content.
+     */
+    public function testGetTextContent(): void
+    {
 
-  /**
-   * Tests get text content.
-   */
-  public function testGetTextContent(): void {
-
-    $raw_content = <<<EOT
+        $raw_content = <<<EOT
 
 <Head>
 <style>
@@ -34,10 +35,10 @@ class AssertContentTraitTest extends UnitTestCase {
 bar
 </body>
 EOT;
-    $this->setRawContent($raw_content);
-    $this->assertStringNotContainsString('foo', $this->getTextContent());
-    $this->assertStringNotContainsString('<body>', $this->getTextContent());
-    $this->assertStringContainsString('bar', $this->getTextContent());
-  }
+        $this->setRawContent($raw_content);
+        $this->assertStringNotContainsString('foo', $this->getTextContent());
+        $this->assertStringNotContainsString('<body>', $this->getTextContent());
+        $this->assertStringContainsString('bar', $this->getTextContent());
+    }
 
 }

@@ -15,52 +15,54 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[CoversClass(OpenOffCanvasDialogCommand::class)]
 #[Group('Ajax')]
-class OpenOffCanvasDialogCommandTest extends UnitTestCase {
+class OpenOffCanvasDialogCommandTest extends UnitTestCase
+{
+    /**
+     * Tests render.
+     */
+    #[DataProvider('dialogPosition')]
+    public function testRender($position): void
+    {
+        $command = new OpenOffCanvasDialogCommand('Title', '<p>Text!</p>', ['url' => 'example'], null, $position);
 
-  /**
-   * Tests render.
-   */
-  #[DataProvider('dialogPosition')]
-  public function testRender($position): void {
-    $command = new OpenOffCanvasDialogCommand('Title', '<p>Text!</p>', ['url' => 'example'], NULL, $position);
+        $expected = [
+          'command' => 'openDialog',
+          'selector' => '#drupal-off-canvas',
+          'settings' => null,
+          'data' => '<p>Text!</p>',
+          'dialogOptions' => [
+            'url' => 'example',
+            'title' => 'Title',
+            'modal' => false,
+            'autoResize' => false,
+            'resizable' => 'w',
+            'draggable' => false,
+            'drupalAutoButtons' => false,
+            'classes' => [
+              'ui-dialog' => 'ui-dialog-off-canvas ui-dialog-position-' . $position,
+              'ui-dialog-content' => 'drupal-off-canvas-reset',
+            ],
+            'width' => 300,
+            'drupalOffCanvasPosition' => $position,
+          ],
+          'effect' => 'fade',
+          'speed' => 1000,
+        ];
+        $this->assertEquals($expected, $command->render());
+    }
 
-    $expected = [
-      'command' => 'openDialog',
-      'selector' => '#drupal-off-canvas',
-      'settings' => NULL,
-      'data' => '<p>Text!</p>',
-      'dialogOptions' => [
-        'url' => 'example',
-        'title' => 'Title',
-        'modal' => FALSE,
-        'autoResize' => FALSE,
-        'resizable' => 'w',
-        'draggable' => FALSE,
-        'drupalAutoButtons' => FALSE,
-        'classes' => [
-          'ui-dialog' => 'ui-dialog-off-canvas ui-dialog-position-' . $position,
-          'ui-dialog-content' => 'drupal-off-canvas-reset',
-        ],
-        'width' => 300,
-        'drupalOffCanvasPosition' => $position,
-      ],
-      'effect' => 'fade',
-      'speed' => 1000,
-    ];
-    $this->assertEquals($expected, $command->render());
-  }
-
-  /**
-   * The data provider for potential dialog positions.
-   *
-   * @return array
-   *   An array of dialog positions.
-   */
-  public static function dialogPosition(): array {
-    return [
-      ['side'],
-      ['top'],
-    ];
-  }
+    /**
+     * The data provider for potential dialog positions.
+     *
+     * @return array
+     *   An array of dialog positions.
+     */
+    public static function dialogPosition(): array
+    {
+        return [
+          ['side'],
+          ['top'],
+        ];
+    }
 
 }
