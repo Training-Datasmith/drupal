@@ -199,7 +199,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
     {
         if (!isset($this->blockContent)) {
             if (!empty($this->configuration['block_serialized'])) {
-                $this->blockContent = unserialize($this->configuration['block_serialized']);
+                $this->blockContent = unserialize($this->configuration['block_serialized'], ['allowed_classes' => false]);
             } elseif (!empty($this->configuration['block_revision_id'])) {
                 $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
                 $this->blockContent = $entity;
@@ -243,7 +243,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
         /** @var \Drupal\block_content\BlockContentInterface $block */
         $block = null;
         if (!empty($this->configuration['block_serialized'])) {
-            $block = unserialize($this->configuration['block_serialized']);
+            $block = unserialize($this->configuration['block_serialized'], ['allowed_classes' => false]);
         }
         if ($duplicate_block) {
             if (empty($block) && !empty($this->configuration['block_revision_id'])) {

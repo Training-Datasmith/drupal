@@ -626,7 +626,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface
     {
         foreach ($this->serializedFields() as $name) {
             if (isset($link[$name])) {
-                $link[$name] = unserialize($link[$name]);
+                $link[$name] = unserialize($link[$name], ['allowed_classes' => false]);
             }
         }
         if ($intersect) {
@@ -751,7 +751,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface
         foreach ($loaded as &$link) {
             foreach ($this->serializedFields() as $name) {
                 if (isset($link[$name])) {
-                    $link[$name] = unserialize($link[$name]);
+                    $link[$name] = unserialize($link[$name], ['allowed_classes' => false]);
                 }
             }
         }

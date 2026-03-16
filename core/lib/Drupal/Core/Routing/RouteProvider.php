@@ -212,7 +212,7 @@ class RouteProvider implements CacheableRouteProviderInterface, PreloadableRoute
         foreach ($names as $name) {
             // The specified route name might not exist or might be serialized.
             if (!isset($this->routes[$name]) && isset($this->serializedRoutes[$name])) {
-                $this->routes[$name] = unserialize($this->serializedRoutes[$name]);
+                $this->routes[$name] = unserialize($this->serializedRoutes[$name], ['allowed_classes' => [\Symfony\Component\Routing\Route::class]]);
                 unset($this->serializedRoutes[$name]);
             }
         }
@@ -339,7 +339,7 @@ class RouteProvider implements CacheableRouteProviderInterface, PreloadableRoute
         usort($routes, $this->routeProviderRouteCompare(...));
 
         foreach ($routes as $row) {
-            $collection->add($row['name'], unserialize($row['route']));
+            $collection->add($row['name'], unserialize($row['route'], ['allowed_classes' => [\Symfony\Component\Routing\Route::class]]));
         }
 
         return $collection;
@@ -370,7 +370,7 @@ class RouteProvider implements CacheableRouteProviderInterface, PreloadableRoute
 
         $result = [];
         foreach ($routes as $name => $route) {
-            $result[$name] = unserialize($route);
+            $result[$name] = unserialize($route, ['allowed_classes' => [\Symfony\Component\Routing\Route::class]]);
         }
 
         $array_object = new \ArrayObject($result);

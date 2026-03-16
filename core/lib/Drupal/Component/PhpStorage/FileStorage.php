@@ -149,6 +149,9 @@ class FileStorage implements PhpStorageInterface
      */
     public function getFullPath($name): string
     {
+        if (str_contains($name, '..')) {
+            throw new \InvalidArgumentException('The name must not contain "..".');
+        }
         return $this->directory . '/' . $name;
     }
 
