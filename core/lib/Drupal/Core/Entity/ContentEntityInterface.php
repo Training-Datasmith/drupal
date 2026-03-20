@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
@@ -23,7 +22,7 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_api
  */
-interface ContentEntityInterface extends \Traversable, FieldableEntityInterface, TranslatableRevisionableInterface, SynchronizableInterface
+interface Content_Entity_Interface extends \Traversable, Fieldable_Entity_Interface, Translatable_Revisionable_Interface, Synchronizable_Interface
 {
     /**
      * Gets the bundle entity of this entity.
@@ -32,6 +31,5 @@ interface ContentEntityInterface extends \Traversable, FieldableEntityInterface,
      *   The entity which is the bundle of this entity, or NULL if this entity's
      *   entity type does not represent bundles with an entity.
      */
-    public function getBundleEntity(): ?EntityInterface;
-
+    public function get_bundle_entity(): ?Entity_Interface;
 }

@@ -1,23 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Session\Account_Interface;
+use Symfony\Component\Http_Foundation\Request;
 use Symfony\Component\Routing\Route;
-
 /**
  * Access protection against CSRF attacks.
  */
-class CsrfRequestHeaderAccessCheck implements AccessCheckInterface
+class Csrf_Request_Header_Access_Check implements Access_Check_Interface
 {
     /**
      * A string key that will used to designate the token used by this class.
      */
     public const TOKEN_KEY = 'X-CSRF-Token request header';
-
     /**
      * Constructs a new rest CSRF access check.
      *
@@ -26,16 +23,15 @@ class CsrfRequestHeaderAccessCheck implements AccessCheckInterface
      * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfToken
      *   The token generator.
      */
-    public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, protected \Drupal\Core\Access\CsrfTokenGenerator $csrfToken)
+    public function __construct(protected \Drupal\Core\Session\Session_Configuration_Interface $session_configuration, protected \Drupal\Core\Access\Csrf_Token_Generator $csrf_token)
     {
     }
-
     /**
      * {@inheritdoc}
      */
     public function applies(Route $route)
     {
-        $requirements = $route->getRequirements();
+        $requirements = $route->get_requirements();
         if (array_key_exists('_csrf_request_header_token', $requirements)) {
             if (isset($requirements['_method'])) {
                 // There could be more than one method requirement separated with '|'.
@@ -52,7 +48,6 @@ class CsrfRequestHeaderAccessCheck implements AccessCheckInterface
             return true;
         }
     }
-
     /**
      * Checks access.
      *
@@ -64,34 +59,28 @@ class CsrfRequestHeaderAccessCheck implements AccessCheckInterface
      * @return \Drupal\Core\Access\AccessResultInterface
      *   The access result.
      */
-    public function access(Request $request, AccountInterface $account)
+    public function access(Request $request, Account_Interface $account)
     {
-        $method = $request->getMethod();
-
+        $method = $request->get_method();
         // Read-only operations are always allowed.
         if (in_array($method, ['GET', 'HEAD', 'OPTIONS', 'TRACE'], true)) {
-            return AccessResult::allowed();
+            return Access_Result::allowed();
         }
-
         // This check only applies if
         // 1. the user was successfully authenticated and
         // 2. the request comes with a session cookie.
-        if ($account->isAuthenticated()
-          && $this->sessionConfiguration->hasSession($request)
-        ) {
+        if ($account->is_authenticated() && $this->session_configuration->has_session($request)) {
             if (!$request->headers->has('X-CSRF-Token')) {
-                return AccessResult::forbidden()->setReason('X-CSRF-Token request header is missing')->setCacheMaxAge(0);
+                return Access_Result::forbidden()->set_reason('X-CSRF-Token request header is missing')->set_cache_max_age(0);
             }
             $csrf_token = $request->headers->get('X-CSRF-Token');
             // @todo Remove validate call using 'rest' in 8.3.
             //   Kept here for sessions active during update.
-            if (!$this->csrfToken->validate($csrf_token, self::TOKEN_KEY)
-              && !$this->csrfToken->validate($csrf_token, 'rest')) {
-                return AccessResult::forbidden()->setReason('X-CSRF-Token request header is invalid')->setCacheMaxAge(0);
+            if (!$this->csrf_token->validate($csrf_token, self::TOKEN_KEY) && !$this->csrf_token->validate($csrf_token, 'rest')) {
+                return Access_Result::forbidden()->set_reason('X-CSRF-Token request header is invalid')->set_cache_max_age(0);
             }
         }
         // Let other access checkers decide if the request is legit.
-        return AccessResult::allowed()->setCacheMaxAge(0);
+        return Access_Result::allowed()->set_cache_max_age(0);
     }
-
 }

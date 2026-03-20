@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
  * Exception thrown if a SELECT query trying to execute rowCount() on result.
  */
-class RowCountException extends \RuntimeException implements DatabaseException
+class Row_Count_Exception extends \RuntimeException implements Database_Exception
 {
     public function __construct($message = '', $code = 0, ?\Throwable $previous = null)
     {
@@ -16,5 +15,4 @@ class RowCountException extends \RuntimeException implements DatabaseException
         }
         parent::__construct($message, $code, $previous);
     }
-
 }

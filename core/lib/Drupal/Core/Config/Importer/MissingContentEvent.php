@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Importer;
 
-use Drupal\Component\EventDispatcher\Event;
-
+use Drupal\Component\Event_Dispatcher\Event;
 /**
  * Wraps a configuration event for event listeners.
  *
  * @see \Drupal\Core\Config\ConfigEvents::IMPORT_MISSING_CONTENT
  */
-class MissingContentEvent extends Event
+class Missing_Content_Event extends Event
 {
     /**
      * Constructs a configuration import missing content event object.
@@ -19,10 +17,9 @@ class MissingContentEvent extends Event
      * @param array $missingContent
      *   Missing content information.
      */
-    public function __construct(protected array $missingContent)
+    public function __construct(protected array $missing_content)
     {
     }
-
     /**
      * Gets missing content information.
      *
@@ -31,11 +28,10 @@ class MissingContentEvent extends Event
      *   value is an array with the following keys: 'entity_type', 'bundle' and
      *   'uuid'.
      */
-    public function getMissingContent()
+    public function get_missing_content()
     {
-        return $this->missingContent;
+        return $this->missing_content;
     }
-
     /**
      * Resolves the missing content by removing it from the list.
      *
@@ -45,12 +41,11 @@ class MissingContentEvent extends Event
      * @return $this
      *   The MissingContentEvent object.
      */
-    public function resolveMissingContent($uuid): static
+    public function resolve_missing_content($uuid): static
     {
-        if (isset($this->missingContent[$uuid])) {
-            unset($this->missingContent[$uuid]);
+        if (isset($this->missing_content[$uuid])) {
+            unset($this->missing_content[$uuid]);
         }
         return $this;
     }
-
 }

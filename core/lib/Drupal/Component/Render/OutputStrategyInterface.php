@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Render;
 
 /**
@@ -11,7 +10,7 @@ namespace Drupal\Component\Render;
  * appropriate for a given context (e.g. plain-text), through performing the
  * relevant formatting. No sanitization is applied.
  */
-interface OutputStrategyInterface
+interface Output_Strategy_Interface
 {
     /**
      * Transforms a given HTML string into to a context-appropriate output string.
@@ -28,6 +27,5 @@ interface OutputStrategyInterface
      * @return string
      *   A new string that is formatted according to the output strategy.
      */
-    public static function renderFromHtml($string);
-
+    public static function render_from_html($string);
 }

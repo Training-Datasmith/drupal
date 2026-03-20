@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Block;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Component\Plugin\DerivativeInspectionInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Component\Plugin\Configurable_Interface;
+use Drupal\Component\Plugin\Dependent_Plugin_Interface;
+use Drupal\Component\Plugin\Derivative_Inspection_Interface;
+use Drupal\Component\Plugin\Plugin_Inspection_Interface;
+use Drupal\Core\Cache\Cacheable_Dependency_Interface;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Plugin\Plugin_Form_Interface;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Defines the required interface for all block plugins.
  *
@@ -23,13 +21,12 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @ingroup block_api
  */
-interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInterface, PluginFormInterface, PluginInspectionInterface, CacheableDependencyInterface, DerivativeInspectionInterface
+interface Block_Plugin_Interface extends Configurable_Interface, Dependent_Plugin_Interface, Plugin_Form_Interface, Plugin_Inspection_Interface, Cacheable_Dependency_Interface, Derivative_Inspection_Interface
 {
     /**
      * Indicates the block label (title) should be displayed to end users.
      */
     public const BLOCK_LABEL_VISIBLE = 'visible';
-
     /**
      * Returns the user-facing block label.
      *
@@ -40,7 +37,6 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      *   The block label.
      */
     public function label();
-
     /**
      * Indicates whether the block should be shown.
      *
@@ -61,8 +57,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      *
      * @see \Drupal\block\BlockAccessControlHandler
      */
-    public function access(AccountInterface $account, $return_as_object = false);
-
+    public function access(Account_Interface $account, $return_as_object = false);
     /**
      * Builds and returns the renderable array for this block plugin.
      *
@@ -77,7 +72,6 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @see \Drupal\block\BlockViewBuilder
      */
     public function build();
-
     /**
      * Whether to render blocks in a placeholder.
      *
@@ -89,8 +83,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @return bool
      *   Whether to placeholder blocks of this plugin type.
      */
-    public function createPlaceholder(): bool;
-
+    public function create_placeholder(): bool;
     /**
      * Sets a particular value in the block settings.
      *
@@ -105,8 +98,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      *
      * @see \Drupal\Component\Plugin\PluginBase::$configuration
      */
-    public function setConfigurationValue($key, $value);
-
+    public function set_configuration_value($key, $value);
     /**
      * Returns the configuration form elements specific to this block plugin.
      *
@@ -121,8 +113,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @return array
      *   The renderable form array representing the entire configuration form.
      */
-    public function blockForm($form, FormStateInterface $form_state);
-
+    public function block_form($form, Form_State_Interface $form_state);
     /**
      * Adds block type-specific validation for the block form.
      *
@@ -138,8 +129,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @see \Drupal\Core\Block\BlockPluginInterface::blockForm()
      * @see \Drupal\Core\Block\BlockPluginInterface::blockSubmit()
      */
-    public function blockValidate($form, FormStateInterface $form_state);
-
+    public function block_validate($form, Form_State_Interface $form_state);
     /**
      * Adds block type-specific submission handling for the block form.
      *
@@ -155,8 +145,7 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @see \Drupal\Core\Block\BlockPluginInterface::blockForm()
      * @see \Drupal\Core\Block\BlockPluginInterface::blockValidate()
      */
-    public function blockSubmit($form, FormStateInterface $form_state);
-
+    public function block_submit($form, Form_State_Interface $form_state);
     /**
      * Suggests a machine name to identify an instance of this block.
      *
@@ -167,6 +156,5 @@ interface BlockPluginInterface extends ConfigurableInterface, DependentPluginInt
      * @return string
      *   The suggested machine name.
      */
-    public function getMachineNameSuggestion();
-
+    public function get_machine_name_suggestion();
 }

@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\IntegrityConstraintViolationException;
-
+use Drupal\Core\Database\Integrity_Constraint_Violation_Exception;
 /**
  * General class for an abstracted MERGE query operation.
  *
@@ -44,34 +42,29 @@ use Drupal\Core\Database\IntegrityConstraintViolationException;
  * fields override the earlier ones. The same is true for UPDATE and key(),
  * fields() and updateFields().
  */
-class Merge extends Query implements ConditionInterface
+class Merge extends Query implements Condition_Interface
 {
-    use QueryConditionTrait;
-
+    use Query_Condition_Trait;
     /**
      * Returned by execute() if an INSERT query has been executed.
      */
     public const STATUS_INSERT = 1;
-
     /**
      * Returned by execute() if an UPDATE query has been executed.
      */
     public const STATUS_UPDATE = 2;
-
     /**
      * The table or subquery to be used for the condition.
      *
      * @var string
      */
-    protected $conditionTable;
-
+    protected $condition_table;
     /**
      * An array of fields on which to insert.
      *
      * @var array
      */
-    protected $insertFields = [];
-
+    protected $insert_fields = [];
     /**
      * An array of fields which should be set to their database-defined defaults.
      *
@@ -79,22 +72,19 @@ class Merge extends Query implements ConditionInterface
      *
      * @var array
      */
-    protected $defaultFields = [];
-
+    protected $default_fields = [];
     /**
      * An array of values to be inserted.
      *
      * @var string
      */
-    protected $insertValues = [];
-
+    protected $insert_values = [];
     /**
      * An array of fields that will be updated.
      *
      * @var array
      */
-    protected $updateFields = [];
-
+    protected $update_fields = [];
     /**
      * Array of fields to update to an expression in case of a duplicate record.
      *
@@ -108,15 +98,13 @@ class Merge extends Query implements ConditionInterface
      * ];
      * @endcode
      */
-    protected $expressionFields = [];
-
+    protected $expression_fields = [];
     /**
      * Flag indicating whether an UPDATE is necessary.
      *
      * @var bool
      */
-    protected $needsUpdate = false;
-
+    protected $needs_update = false;
     /**
      * Constructs a Merge object.
      *
@@ -127,16 +115,19 @@ class Merge extends Query implements ConditionInterface
      * @param array $options
      *   Array of database options.
      */
-    public function __construct(Connection $connection, /**
-   * The table to be used for INSERT and UPDATE.
-   */
-        protected $table, array $options = [])
+    public function __construct(
+        Connection $connection,
+        /**
+         * The table to be used for INSERT and UPDATE.
+         */
+        protected $table,
+        array $options = []
+    )
     {
         parent::__construct($connection, $options);
-        $this->conditionTable = $this->table;
+        $this->condition_table = $this->table;
         $this->condition = $this->connection->condition('AND');
     }
-
     /**
      * Sets the table or subquery to be used for the condition.
      *
@@ -147,12 +138,11 @@ class Merge extends Query implements ConditionInterface
      * @return $this
      *   The called object.
      */
-    protected function conditionTable($table): static
+    protected function condition_table($table): static
     {
-        $this->conditionTable = $table;
+        $this->condition_table = $table;
         return $this;
     }
-
     /**
      * Adds a set of field->value pairs to be updated.
      *
@@ -163,13 +153,12 @@ class Merge extends Query implements ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function updateFields(array $fields): static
+    public function update_fields(array $fields): static
     {
-        $this->updateFields = $fields;
-        $this->needsUpdate = true;
+        $this->update_fields = $fields;
+        $this->needs_update = true;
         return $this;
     }
-
     /**
      * Specifies fields to be updated as an expression.
      *
@@ -191,14 +180,10 @@ class Merge extends Query implements ConditionInterface
      */
     public function expression($field, $expression, ?array $arguments = null): static
     {
-        $this->expressionFields[$field] = [
-          'expression' => $expression,
-          'arguments' => $arguments,
-        ];
-        $this->needsUpdate = true;
+        $this->expression_fields[$field] = ['expression' => $expression, 'arguments' => $arguments];
+        $this->needs_update = true;
         return $this;
     }
-
     /**
      * Adds a set of field->value pairs to be inserted.
      *
@@ -215,15 +200,14 @@ class Merge extends Query implements ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function insertFields(array $fields, array $values = []): static
+    public function insert_fields(array $fields, array $values = []): static
     {
         if ($values) {
             $fields = array_combine($fields, $values);
         }
-        $this->insertFields = $fields;
+        $this->insert_fields = $fields;
         return $this;
     }
-
     /**
      * Specifies fields for which the database-defaults should be used.
      *
@@ -243,12 +227,11 @@ class Merge extends Query implements ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function useDefaults(array $fields): static
+    public function use_defaults(array $fields): static
     {
-        $this->defaultFields = $fields;
+        $this->default_fields = $fields;
         return $this;
     }
-
     /**
      * Sets common field-value pairs in the INSERT and UPDATE query parts.
      *
@@ -276,13 +259,12 @@ class Merge extends Query implements ConditionInterface
             $fields = array_combine($fields, $values);
         }
         foreach ($fields as $key => $value) {
-            $this->insertFields[$key] = $value;
-            $this->updateFields[$key] = $value;
+            $this->insert_fields[$key] = $value;
+            $this->update_fields[$key] = $value;
         }
-        $this->needsUpdate = true;
+        $this->needs_update = true;
         return $this;
     }
-
     /**
      * Sets the key fields to be used as conditions for this query.
      *
@@ -310,12 +292,11 @@ class Merge extends Query implements ConditionInterface
             $fields = array_combine($fields, $values);
         }
         foreach ($fields as $key => $value) {
-            $this->insertFields[$key] = $value;
+            $this->insert_fields[$key] = $value;
             $this->condition($key, $value);
         }
         return $this;
     }
-
     /**
      * Sets a single key field to be used as condition for this query.
      *
@@ -337,7 +318,6 @@ class Merge extends Query implements ConditionInterface
         $this->keys([$field => $value]);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -347,7 +327,6 @@ class Merge extends Query implements ConditionInterface
         // is potentially two queries.
         throw new \BadMethodCallException('The merge query can not be converted to a string');
     }
-
     /**
      * Executes the merge database query.
      *
@@ -364,38 +343,32 @@ class Merge extends Query implements ConditionInterface
     public function execute(): ?int
     {
         if (!count($this->condition)) {
-            throw new InvalidMergeQueryException('Invalid merge query: no conditions');
+            throw new Invalid_Merge_Query_Exception('Invalid merge query: no conditions');
         }
-
-        $select = $this->connection->select($this->conditionTable)
-          ->condition($this->condition);
-        $select->addExpression('1');
-
-        if (!$select->execute()->fetchField()) {
+        $select = $this->connection->select($this->condition_table)->condition($this->condition);
+        $select->add_expression('1');
+        if (!$select->execute()->fetch_field()) {
             try {
-                $insert = $this->connection->insert($this->table)->fields($this->insertFields);
-                if ($this->defaultFields) {
-                    $insert->useDefaults($this->defaultFields);
+                $insert = $this->connection->insert($this->table)->fields($this->insert_fields);
+                if ($this->default_fields) {
+                    $insert->use_defaults($this->default_fields);
                 }
                 $insert->execute();
                 return self::STATUS_INSERT;
-            } catch (IntegrityConstraintViolationException $e) {
+            } catch (Integrity_Constraint_Violation_Exception $e) {
                 // The insert query failed, maybe it's because a racing insert query
                 // beat us in inserting the same row. Retry the select query, if it
                 // returns a row, ignore the error and continue with the update
                 // query below.
-                if (!$select->execute()->fetchField()) {
+                if (!$select->execute()->fetch_field()) {
                     throw $e;
                 }
             }
         }
-
-        if ($this->needsUpdate) {
-            $update = $this->connection->update($this->table)
-              ->fields($this->updateFields)
-              ->condition($this->condition);
-            if ($this->expressionFields) {
-                foreach ($this->expressionFields as $field => $data) {
+        if ($this->needs_update) {
+            $update = $this->connection->update($this->table)->fields($this->update_fields)->condition($this->condition);
+            if ($this->expression_fields) {
+                foreach ($this->expression_fields as $field => $data) {
                     $update->expression($field, $data['expression'], $data['arguments']);
                 }
             }
@@ -404,5 +377,4 @@ class Merge extends Query implements ConditionInterface
         }
         return null;
     }
-
 }

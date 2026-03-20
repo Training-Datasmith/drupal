@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Provides an interface for the entity autocomplete matcher.
  */
-interface EntityAutocompleteMatcherInterface
+interface Entity_Autocomplete_Matcher_Interface
 {
     /**
      * Gets matched labels based on a given search string.
@@ -30,6 +29,5 @@ interface EntityAutocompleteMatcherInterface
      *
      * @see \Drupal\system\Controller\EntityAutocompleteController
      */
-    public function getMatches($target_type, $selection_handler, $selection_settings, $string = '');
-
+    public function get_matches($target_type, $selection_handler, $selection_settings, $string = '');
 }

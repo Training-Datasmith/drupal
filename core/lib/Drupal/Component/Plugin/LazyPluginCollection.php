@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
 /**
@@ -9,38 +8,34 @@ namespace Drupal\Component\Plugin;
  *
  * @ingroup plugin_api
  */
-abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
+abstract class Lazy_Plugin_Collection implements \IteratorAggregate, \Countable
 {
     /**
      * Stores all instantiated plugins.
      *
      * @var array
      */
-    protected $pluginInstances = [];
-
+    protected $plugin_instances = [];
     /**
      * Stores the IDs of all potential plugin instances.
      *
      * @var array
      */
-    protected $instanceIds = [];
-
+    protected $instance_ids = [];
     /**
      * Initializes and stores a plugin.
      *
      * @param string $instance_id
      *   The ID of the plugin instance to initialize.
      */
-    abstract protected function initializePlugin($instance_id);
-
+    abstract protected function initialize_plugin($instance_id);
     /**
      * Gets the current configuration of all plugins in this collection.
      *
      * @return array
      *   An array of up-to-date plugin configuration.
      */
-    abstract public function getConfiguration();
-
+    abstract public function get_configuration();
     /**
      * Sets the configuration for all plugins in this collection.
      *
@@ -49,16 +44,14 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      *
      * @return $this
      */
-    abstract public function setConfiguration(array $configuration);
-
+    abstract public function set_configuration(array $configuration);
     /**
      * Clears all instantiated plugins.
      */
     public function clear(): void
     {
-        $this->pluginInstances = [];
+        $this->plugin_instances = [];
     }
-
     /**
      * Determines if a plugin instance exists.
      *
@@ -70,9 +63,8 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      */
     public function has($instance_id)
     {
-        return isset($this->pluginInstances[$instance_id]) || isset($this->instanceIds[$instance_id]);
+        return isset($this->plugin_instances[$instance_id]) || isset($this->instance_ids[$instance_id]);
     }
-
     /**
      * Gets a plugin instance, initializing it if necessary.
      *
@@ -81,12 +73,11 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      */
     public function &get($instance_id)
     {
-        if (!isset($this->pluginInstances[$instance_id])) {
-            $this->initializePlugin($instance_id);
+        if (!isset($this->plugin_instances[$instance_id])) {
+            $this->initialize_plugin($instance_id);
         }
-        return $this->pluginInstances[$instance_id];
+        return $this->plugin_instances[$instance_id];
     }
-
     /**
      * Stores an initialized plugin.
      *
@@ -97,10 +88,9 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      */
     public function set($instance_id, $value): void
     {
-        $this->pluginInstances[$instance_id] = $value;
-        $this->addInstanceId($instance_id);
+        $this->plugin_instances[$instance_id] = $value;
+        $this->add_instance_id($instance_id);
     }
-
     /**
      * Removes an initialized plugin.
      *
@@ -111,9 +101,8 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      */
     public function remove($instance_id): void
     {
-        unset($this->pluginInstances[$instance_id]);
+        unset($this->plugin_instances[$instance_id]);
     }
-
     /**
      * Adds an instance ID to the available instance IDs.
      *
@@ -122,36 +111,33 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
      * @param array|null $configuration
      *   (optional) The configuration used by this instance. Defaults to NULL.
      */
-    public function addInstanceId($id, $configuration = null): void
+    public function add_instance_id($id, $configuration = null): void
     {
-        if (!isset($this->instanceIds[$id])) {
-            $this->instanceIds[$id] = $id;
+        if (!isset($this->instance_ids[$id])) {
+            $this->instance_ids[$id] = $id;
         }
     }
-
     /**
      * Gets all instance IDs.
      *
      * @return array
      *   An array of all available instance IDs.
      */
-    public function getInstanceIds()
+    public function get_instance_ids()
     {
-        return $this->instanceIds;
+        return $this->instance_ids;
     }
-
     /**
      * Removes an instance ID.
      *
      * @param string $instance_id
      *   The ID of the plugin instance to remove.
      */
-    public function removeInstanceId($instance_id): void
+    public function remove_instance_id($instance_id): void
     {
-        unset($this->instanceIds[$instance_id]);
+        unset($this->instance_ids[$instance_id]);
         $this->remove($instance_id);
     }
-
     /**
      * @return \Traversable<string, mixed>
      *   A traversable generator.
@@ -159,18 +145,16 @@ abstract class LazyPluginCollection implements \IteratorAggregate, \Countable
     public function getIterator(): \Traversable
     {
         $instances = [];
-        foreach ($this->getInstanceIds() as $instance_id) {
+        foreach ($this->get_instance_ids() as $instance_id) {
             $instances[$instance_id] = $this->get($instance_id);
         }
         return new \ArrayIterator($instances);
     }
-
     /**
      * {@inheritdoc}
      */
     public function count(): int
     {
-        return count($this->instanceIds);
+        return count($this->instance_ids);
     }
-
 }

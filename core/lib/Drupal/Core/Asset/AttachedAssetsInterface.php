@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Asset;
  *
  * @see \Drupal\Core\Asset\AssetResolverInterface
  */
-interface AttachedAssetsInterface
+interface Attached_Assets_Interface
 {
     /**
      * Creates an AttachedAssetsInterface object from a render array.
@@ -27,8 +26,7 @@ interface AttachedAssetsInterface
      *
      * @throws \LogicException
      */
-    public static function createFromRenderArray(array $render_array);
-
+    public static function create_from_render_array(array $render_array);
     /**
      * Sets the asset libraries attached to the current response.
      *
@@ -37,16 +35,14 @@ interface AttachedAssetsInterface
      *
      * @return $this
      */
-    public function setLibraries(array $libraries);
-
+    public function set_libraries(array $libraries);
     /**
      * Returns the asset libraries attached to the current response.
      *
      * @return string[]
      *   A list of libraries attached to this response.
      */
-    public function getLibraries();
-
+    public function get_libraries();
     /**
      * Sets the JavaScript settings that are attached to the current response.
      *
@@ -55,16 +51,14 @@ interface AttachedAssetsInterface
      *
      * @return $this
      */
-    public function setSettings(array $settings);
-
+    public function set_settings(array $settings);
     /**
      * Returns the settings attached to the current response.
      *
      * @return array
      *   An array of the settings attached to the current response.
      */
-    public function getSettings();
-
+    public function get_settings();
     /**
      * Sets the asset libraries that the current request marked as already loaded.
      *
@@ -73,14 +67,12 @@ interface AttachedAssetsInterface
      *
      * @return $this
      */
-    public function setAlreadyLoadedLibraries(array $libraries);
-
+    public function set_already_loaded_libraries(array $libraries);
     /**
      * Returns the set of already loaded asset libraries.
      *
      * @return string[]
      *   A list of the loaded libraries.
      */
-    public function getAlreadyLoadedLibraries();
-
+    public function get_already_loaded_libraries();
 }

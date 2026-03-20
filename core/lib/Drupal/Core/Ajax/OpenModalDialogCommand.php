@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class OpenModalDialogCommand extends OpenDialogCommand
+class Open_Modal_Dialog_Command extends Open_Dialog_Command
 {
     /**
      * Constructs an OpenModalDialog object.
@@ -37,5 +36,4 @@ class OpenModalDialogCommand extends OpenDialogCommand
         $dialog_options['modal'] = true;
         parent::__construct('#drupal-modal', $title, $content, $dialog_options, $settings);
     }
-
 }

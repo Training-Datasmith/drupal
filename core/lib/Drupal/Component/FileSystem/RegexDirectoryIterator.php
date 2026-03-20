@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileSystem;
+declare (strict_types=1);
+namespace Drupal\Component\File_System;
 
 /**
  * Iterates over files whose names match a regular expression in a directory.
  */
-class RegexDirectoryIterator extends \RegexIterator
+class Regex_Directory_Iterator extends \Regex_Iterator
 {
     /**
      * RegexDirectoryIterator constructor.
@@ -20,17 +19,15 @@ class RegexDirectoryIterator extends \RegexIterator
      */
     public function __construct($path, $regex)
     {
-        parent::__construct(new \FilesystemIterator($path), $regex);
+        parent::__construct(new \Filesystem_Iterator($path), $regex);
     }
-
     /**
      * Implements \RegexIterator::accept().
      */
     public function accept(): bool
     {
         /** @var \SplFileInfo $file_info */
-        $file_info = $this->getInnerIterator()->current();
-        return $file_info->isFile() && preg_match($this->getRegex(), $file_info->getFilename());
+        $file_info = $this->get_inner_iterator()->current();
+        return $file_info->is_file() && preg_match($this->get_regex(), $file_info->get_filename());
     }
-
 }

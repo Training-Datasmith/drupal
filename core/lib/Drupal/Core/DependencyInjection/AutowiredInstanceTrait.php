@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
-namespace Drupal\Core\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\AutowiringFailedException;
+use Symfony\Component\Dependency_Injection\Attribute\Autowire;
+use Symfony\Component\Dependency_Injection\Container_Interface;
+use Symfony\Component\Dependency_Injection\Exception\Autowiring_Failed_Exception;
 use Symfony\Contracts\Service\Attribute\Required;
-
 /**
  * Defines a base trait for automatically wiring dependency arguments.
  */
-trait AutowiredInstanceTrait
+trait Autowired_Instance_Trait
 {
     /**
      * Instantiates a new instance of the implementing class using autowiring.
@@ -22,26 +20,21 @@ trait AutowiredInstanceTrait
      * @param mixed ...$args
      *   Any predefined arguments to pass to the constructor.
      */
-    public static function createInstanceAutowired(ContainerInterface $container, mixed ...$args): static
+    public static function create_instance_autowired(Container_Interface $container, mixed ...$args): static
     {
         $reflection = new \ReflectionClass(static::class);
-
         if (method_exists(static::class, '__construct')) {
-            $parameters = array_slice($reflection->getMethod('__construct')->getParameters(), count($args));
-            $args = array_merge($args, self::getAutowireArguments($container, $parameters, '__construct'));
+            $parameters = array_slice($reflection->get_method('__construct')->get_parameters(), count($args));
+            $args = array_merge($args, self::get_autowire_arguments($container, $parameters, '__construct'));
         }
-
         $instance = new static(...$args);
-
-        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-            if (!empty($method->getAttributes(Required::class))) {
-                $method->invoke($instance, ...self::getAutowireArguments($container, $method->getParameters(), $method->getName()));
+        foreach ($reflection->get_methods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if (!empty($method->get_attributes(Required::class))) {
+                $method->invoke($instance, ...self::get_autowire_arguments($container, $method->get_parameters(), $method->get_name()));
             }
         }
-
         return $instance;
     }
-
     /**
      * Resolves arguments for a method using autowiring.
      *
@@ -58,28 +51,24 @@ trait AutowiredInstanceTrait
      * @throws \Symfony\Component\DependencyInjection\Exception\AutowiringFailedException
      *   When a service cannot be resolved.
      */
-    private static function getAutowireArguments(ContainerInterface $container, array $parameters, string $method_name): array
+    private static function get_autowire_arguments(Container_Interface $container, array $parameters, string $method_name): array
     {
         $args = [];
         foreach ($parameters as $parameter) {
-            $service = ltrim((string) $parameter->getType(), '?');
-            foreach ($parameter->getAttributes(Autowire::class) as $attribute) {
-                $service = (string) $attribute->newInstance()->value;
+            $service = ltrim((string) $parameter->get_type(), '?');
+            foreach ($parameter->get_attributes(Autowire::class) as $attribute) {
+                $service = (string) $attribute->new_instance()->value;
             }
-
             if ($container->has($service)) {
                 $args[] = $container->get($service);
                 continue;
             }
-
-            if ($parameter->allowsNull()) {
+            if ($parameter->allows_null()) {
                 $args[] = null;
                 continue;
             }
-
-            throw new AutowiringFailedException($service, sprintf('Cannot autowire service "%s": argument "$%s" of method "%s::%s()". Check that either the argument type is correct or the Autowire attribute is passed a valid identifier. Otherwise configure its value explicitly if possible.', $service, $parameter->getName(), static::class, $method_name));
+            throw new Autowiring_Failed_Exception($service, sprintf('Cannot autowire service "%s": argument "$%s" of method "%s::%s()". Check that either the argument type is correct or the Autowire attribute is passed a valid identifier. Otherwise configure its value explicitly if possible.', $service, $parameter->get_name(), static::class, $method_name));
         }
         return $args;
     }
-
 }

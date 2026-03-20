@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -14,11 +13,10 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheTagsPurgeInterface
+interface Cache_Tags_Purge_Interface
 {
     /**
      * Purge cache tag invalidations.
      */
     public function purge(): void;
-
 }

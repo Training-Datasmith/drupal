@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines a cache context service for path parents.
  *
@@ -14,33 +12,30 @@ use Drupal\Core\Cache\CacheableMetadata;
  * This allows for caching based on the path, excluding everything after the
  * last forward slash.
  */
-class PathParentCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+class Path_Parent_Cache_Context extends Request_Stack_Cache_Context_Base implements Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Parent path');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext(): string
+    public function get_context(): string
     {
-        $request = $this->requestStack->getCurrentRequest();
-        $path_elements = explode('/', trim((string) $request->getPathInfo(), '/'));
+        $request = $this->request_stack->get_current_request();
+        $path_elements = explode('/', trim((string) $request->get_path_info(), '/'));
         array_pop($path_elements);
         return implode('/', $path_elements);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileCache;
+declare (strict_types=1);
+namespace Drupal\Component\File_Cache;
 
 /**
  * APCu backend for the file cache.
  */
-class ApcuFileCacheBackend implements FileCacheBackendInterface
+class Apcu_File_Cache_Backend implements File_Cache_Backend_Interface
 {
     /**
      * {@inheritdoc}
@@ -16,7 +15,6 @@ class ApcuFileCacheBackend implements FileCacheBackendInterface
     {
         return apcu_fetch($cids);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -24,7 +22,6 @@ class ApcuFileCacheBackend implements FileCacheBackendInterface
     {
         apcu_store($cid, $data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -32,5 +29,4 @@ class ApcuFileCacheBackend implements FileCacheBackendInterface
     {
         apcu_delete($cid);
     }
-
 }

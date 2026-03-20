@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Provides a method to simplify generating bundle level permissions.
  */
-trait BundlePermissionHandlerTrait
+trait Bundle_Permission_Handler_Trait
 {
     /**
      * Builds a permissions array for the supplied bundles.
@@ -25,21 +24,17 @@ trait BundlePermissionHandlerTrait
      *
      * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
      */
-    protected function generatePermissions(array $bundles, callable $permission_builder): array
+    protected function generate_permissions(array $bundles, callable $permission_builder): array
     {
         $permissions = [];
         foreach ($bundles as $bundle) {
-            $permissions += array_map(
-                function (array $perm) use ($bundle): array {
-                    // This permission is generated on behalf of a bundle, therefore
-                    // add the bundle as a config dependency.
-                    $perm['dependencies'][$bundle->getConfigDependencyKey()][] = $bundle->getConfigDependencyName();
-                    return $perm;
-                },
-                $permission_builder($bundle)
-            );
+            $permissions += array_map(function (array $perm) use ($bundle): array {
+                // This permission is generated on behalf of a bundle, therefore
+                // add the bundle as a config dependency.
+                $perm['dependencies'][$bundle->get_config_dependency_key()][] = $bundle->get_config_dependency_name();
+                return $perm;
+            }, $permission_builder($bundle));
         }
         return $permissions;
     }
-
 }

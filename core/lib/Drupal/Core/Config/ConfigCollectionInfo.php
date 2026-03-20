@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\EventDispatcher\Event;
-
+use Drupal\Component\Event_Dispatcher\Event;
 /**
  * Gets information on all the possible configuration collections.
  */
-class ConfigCollectionInfo extends Event
+class Config_Collection_Info extends Event
 {
     /**
      * Configuration collection information keyed by collection name.
@@ -20,7 +18,6 @@ class ConfigCollectionInfo extends Event
      * @var array
      */
     protected $collections = [];
-
     /**
      * Adds a collection to the list of possible collections.
      *
@@ -34,14 +31,13 @@ class ConfigCollectionInfo extends Event
      *   Exception thrown if $collection is equal to
      *   \Drupal\Core\Config\StorageInterface::DEFAULT_COLLECTION.
      */
-    public function addCollection($collection, ?ConfigFactoryOverrideInterface $override_service = null): void
+    public function add_collection($collection, ?Config_Factory_Override_Interface $override_service = null): void
     {
-        if ($collection == StorageInterface::DEFAULT_COLLECTION) {
+        if ($collection == Storage_Interface::DEFAULT_COLLECTION) {
             throw new \InvalidArgumentException('Can not add the default collection to the ConfigCollectionInfo object');
         }
         $this->collections[$collection] = $override_service;
     }
-
     /**
      * Gets the list of possible collection names.
      *
@@ -51,16 +47,15 @@ class ConfigCollectionInfo extends Event
      * @return array
      *   The list of possible collection names.
      */
-    public function getCollectionNames($include_default = true): array
+    public function get_collection_names($include_default = true): array
     {
         $collection_names = array_keys($this->collections);
         sort($collection_names);
         if ($include_default) {
-            array_unshift($collection_names, StorageInterface::DEFAULT_COLLECTION);
+            array_unshift($collection_names, Storage_Interface::DEFAULT_COLLECTION);
         }
         return $collection_names;
     }
-
     /**
      * Gets the config factory override service responsible for the collection.
      *
@@ -71,9 +66,8 @@ class ConfigCollectionInfo extends Event
      *   The override service responsible for the collection if one exists. NULL
      *   if not.
      */
-    public function getOverrideService($collection)
+    public function get_override_service($collection)
     {
         return $this->collections[$collection] ?? null;
     }
-
 }

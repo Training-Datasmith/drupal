@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -26,20 +25,18 @@ class Environment
      *   TRUE if there is sufficient memory to allow the operation, or FALSE
      *   otherwise.
      */
-    public static function checkMemoryLimit($required, $memory_limit = null): bool
+    public static function check_memory_limit($required, $memory_limit = null): bool
     {
         if (!isset($memory_limit)) {
             $memory_limit = ini_get('memory_limit');
         }
-
         // There is sufficient memory if:
         // - No memory limit is set.
         // - The memory limit is set to unlimited (-1).
         // - The memory limit is greater than or equal to the memory required for
         //   the operation.
-        return ((!$memory_limit) || ($memory_limit == -1) || (Bytes::toNumber($memory_limit) >= Bytes::toNumber($required)));
+        return !$memory_limit || $memory_limit == -1 || Bytes::to_number($memory_limit) >= Bytes::to_number($required);
     }
-
     /**
      * Attempts to set the PHP maximum execution time.
      *
@@ -65,7 +62,7 @@ class Environment
      * @return bool
      *   Whether set_time_limit() was successful or not.
      */
-    public static function setTimeLimit($time_limit)
+    public static function set_time_limit($time_limit)
     {
         if (function_exists('set_time_limit')) {
             $current = ini_get('max_execution_time');
@@ -76,7 +73,6 @@ class Environment
         }
         return false;
     }
-
     /**
      * Determines the maximum file upload size by querying the PHP settings.
      *
@@ -84,22 +80,19 @@ class Environment
      *   A file size limit in bytes based on the PHP upload_max_filesize and
      *   post_max_size settings.
      */
-    public static function getUploadMaxSize()
+    public static function get_upload_max_size()
     {
         static $max_size = -1;
-
         if ($max_size < 0) {
             // Start with post_max_size.
-            $max_size = Bytes::toNumber(ini_get('post_max_size'));
-
+            $max_size = Bytes::to_number(ini_get('post_max_size'));
             // If upload_max_size is less, then reduce. Except if upload_max_size is
             // zero, which indicates no limit.
-            $upload_max = Bytes::toNumber(ini_get('upload_max_filesize'));
+            $upload_max = Bytes::to_number(ini_get('upload_max_filesize'));
             if ($upload_max > 0 && $upload_max < $max_size) {
                 $max_size = $upload_max;
             }
         }
         return $max_size;
     }
-
 }

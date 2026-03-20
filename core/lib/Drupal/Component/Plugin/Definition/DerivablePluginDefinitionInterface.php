@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Definition;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Plugin\Definition;
  *
  * @see \Drupal\Component\Plugin\Derivative\DeriverInterface
  */
-interface DerivablePluginDefinitionInterface extends PluginDefinitionInterface
+interface Derivable_Plugin_Definition_Interface extends Plugin_Definition_Interface
 {
     /**
      * Gets the name of the deriver of this plugin definition, if it exists.
@@ -17,8 +16,7 @@ interface DerivablePluginDefinitionInterface extends PluginDefinitionInterface
      * @return class-string|null
      *   Either the deriver class name, or NULL if the plugin is not derived.
      */
-    public function getDeriver();
-
+    public function get_deriver();
     /**
      * Sets the deriver of this plugin definition.
      *
@@ -28,6 +26,5 @@ interface DerivablePluginDefinitionInterface extends PluginDefinitionInterface
      *
      * @return $this
      */
-    public function setDeriver($deriver);
-
+    public function set_deriver($deriver);
 }

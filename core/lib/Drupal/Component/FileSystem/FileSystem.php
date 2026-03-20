@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileSystem;
+declare (strict_types=1);
+namespace Drupal\Component\File_System;
 
 // cspell:ignore winnt
-
 /**
  * Provides file system functions.
  */
-class FileSystem
+class File_System
 {
     /**
      * Discovers a writable system-appropriate temporary directory.
@@ -18,25 +16,22 @@ class FileSystem
      *   A string containing the path to the temporary directory, or FALSE if no
      *   suitable temporary directory can be found.
      */
-    public static function getOsTemporaryDirectory(): string|false
+    public static function get_os_temporary_directory(): string|false
     {
         $directories = [];
-
         // Has PHP been set with an upload_tmp_dir?
         if (ini_get('upload_tmp_dir')) {
             $directories[] = ini_get('upload_tmp_dir');
         }
-
         // Operating system specific dirs.
         if (str_starts_with(PHP_OS, 'WIN')) {
-            $directories[] = 'c:\\windows\\temp';
-            $directories[] = 'c:\\winnt\\temp';
+            $directories[] = 'c:\windows\temp';
+            $directories[] = 'c:\winnt\temp';
         } else {
             $directories[] = '/tmp';
         }
         // PHP may be able to find an alternative tmp directory.
         $directories[] = sys_get_temp_dir();
-
         foreach ($directories as $directory) {
             if (is_dir($directory) && is_writable($directory)) {
                 // Both sys_get_temp_dir() and ini_get('upload_tmp_dir') can return
@@ -46,5 +41,4 @@ class FileSystem
         }
         return false;
     }
-
 }

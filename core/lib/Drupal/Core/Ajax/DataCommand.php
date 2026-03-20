@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class DataCommand implements CommandInterface
+class Data_Command implements Command_Interface
 {
     /**
      * Constructs a DataCommand object.
@@ -45,21 +44,14 @@ class DataCommand implements CommandInterface
          * The data is not limited to strings; it can be any format.
          */
         protected $value
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'data',
-          'selector' => $this->selector,
-          'name' => $this->name,
-          'value' => $this->value,
-        ];
+        return ['command' => 'data', 'selector' => $this->selector, 'name' => $this->name, 'value' => $this->value];
     }
-
 }

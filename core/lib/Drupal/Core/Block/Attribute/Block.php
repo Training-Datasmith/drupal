@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Block\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * The Block attribute.
  */
@@ -30,14 +28,7 @@ class Block extends Plugin
      * @param array<string, string|false> $forms
      *   (optional) An array of form class names or FALSE, keyed by a string.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly ?TranslatableMarkup $admin_label = null,
-        public readonly ?TranslatableMarkup $category = null,
-        public readonly array $context_definitions = [],
-        public readonly ?string $deriver = null,
-        public readonly array $forms = [],
-    ) {
+    public function __construct(public readonly string $id, public readonly ?Translatable_Markup $admin_label = null, public readonly ?Translatable_Markup $category = null, public readonly array $context_definitions = [], public readonly ?string $deriver = null, public readonly array $forms = [])
+    {
     }
-
 }

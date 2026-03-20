@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime;
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Helper class for dealing with timezones.
  */
-class TimeZoneFormHelper
+class Time_Zone_Form_Helper
 {
     /**
      * Generate an array of time zones names.
@@ -26,19 +24,18 @@ class TimeZoneFormHelper
      *   The keys are valid time zone identifiers provided by
      *   \DateTimeZone::listIdentifiers()
      */
-    public static function getOptionsList(bool $blank = false): array
+    public static function get_options_list(bool $blank = false): array
     {
-        $zone_list = \DateTimeZone::listIdentifiers();
-        $zones = $blank ? ['' => new TranslatableMarkup('- None selected -')] : [];
+        $zone_list = \DateTimeZone::list_identifiers();
+        $zones = $blank ? ['' => new Translatable_Markup('- None selected -')] : [];
         foreach ($zone_list as $zone) {
             // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-            $zones[$zone] = new TranslatableMarkup(str_replace('_', ' ', $zone));
+            $zones[$zone] = new Translatable_Markup(str_replace('_', ' ', $zone));
         }
         // Sort the translated time zones alphabetically.
         asort($zones);
         return $zones;
     }
-
     /**
      * Generate an array of time zones names grouped by region.
      *
@@ -54,9 +51,9 @@ class TimeZoneFormHelper
      *   are valid time zone identifiers provided by
      *   \DateTimeZone::listIdentifiers()
      */
-    public static function getOptionsListByRegion(bool $blank = false): array
+    public static function get_options_list_by_region(bool $blank = false): array
     {
-        $zones = static::getOptionsList($blank);
+        $zones = static::get_options_list($blank);
         $grouped_zones = [];
         foreach ($zones as $key => $value) {
             $split = explode('/', (string) $value);
@@ -75,5 +72,4 @@ class TimeZoneFormHelper
         }
         return $grouped_zones;
     }
-
 }

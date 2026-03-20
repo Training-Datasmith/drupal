@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Assertion;
 
 /**
@@ -39,7 +38,7 @@ class Inspector
      *
      * @see http://php.net/manual/language.types.callable.php
      */
-    public static function assertAll(callable $callable, $traversable): bool
+    public static function assert_all(callable $callable, $traversable): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
@@ -51,7 +50,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts that all members are strings.
      *
@@ -64,11 +62,10 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members are strings.
      */
-    public static function assertAllStrings($traversable)
+    public static function assert_all_strings($traversable)
     {
-        return static::assertAll('is_string', $traversable);
+        return static::assert_all('is_string', $traversable);
     }
-
     /**
      * Asserts all members are strings or objects with magic __toString() method.
      *
@@ -79,11 +76,11 @@ class Inspector
      *   TRUE if $traversable can be traversed and all members are strings or
      *   objects with __toString().
      */
-    public static function assertAllStringable($traversable): bool
+    public static function assert_all_stringable($traversable): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
-                if (!static::assertStringable($member)) {
+                if (!static::assert_stringable($member)) {
                     return false;
                 }
             }
@@ -91,7 +88,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts argument is a string or an object castable to a string.
      *
@@ -104,11 +100,10 @@ class Inspector
      * @return bool
      *   TRUE if $string is a string or an object castable to a string.
      */
-    public static function assertStringable($string): bool
+    public static function assert_stringable($string): bool
     {
-        return is_string($string) || (is_object($string) && method_exists($string, '__toString'));
+        return is_string($string) || is_object($string) && method_exists($string, '__toString');
     }
-
     /**
      * Asserts that all members are arrays.
      *
@@ -118,11 +113,10 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members are arrays.
      */
-    public static function assertAllArrays($traversable)
+    public static function assert_all_arrays($traversable)
     {
-        return static::assertAll('is_array', $traversable);
+        return static::assert_all('is_array', $traversable);
     }
-
     /**
      * Asserts that the array is strict.
      *
@@ -139,13 +133,12 @@ class Inspector
      *
      * @see http://php.net/manual/language.types.array.php
      */
-    public static function assertStrictArray($array): bool
+    public static function assert_strict_array($array): bool
     {
         if (!is_array($array)) {
             return false;
         }
         $i = 0;
-
         foreach (array_keys($array) as $key) {
             if ($i !== $key) {
                 return false;
@@ -154,7 +147,6 @@ class Inspector
         }
         return true;
     }
-
     /**
      * Asserts all members are strict arrays.
      *
@@ -166,11 +158,10 @@ class Inspector
      *
      * @see ::assertStrictArray
      */
-    public static function assertAllStrictArrays($traversable)
+    public static function assert_all_strict_arrays($traversable)
     {
-        return static::assertAll(self::assertStrictArray(...), $traversable);
+        return static::assert_all(self::assert_strict_array(...), $traversable);
     }
-
     /**
      * Asserts all given keys exist in every member array.
      *
@@ -199,7 +190,7 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members have all keys.
      */
-    public static function assertAllHaveKey($traversable, string ...$keys): bool
+    public static function assert_all_have_key($traversable, string ...$keys): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
@@ -213,7 +204,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts that all members are integer values.
      *
@@ -223,11 +213,10 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members are integers.
      */
-    public static function assertAllIntegers($traversable)
+    public static function assert_all_integers($traversable)
     {
-        return static::assertAll('is_int', $traversable);
+        return static::assert_all('is_int', $traversable);
     }
-
     /**
      * Asserts that all members are float values.
      *
@@ -238,11 +227,10 @@ class Inspector
      *   TRUE if $traversable can be traversed and all members are floating point
      *   numbers.
      */
-    public static function assertAllFloat($traversable)
+    public static function assert_all_float($traversable)
     {
-        return static::assertAll('is_float', $traversable);
+        return static::assert_all('is_float', $traversable);
     }
-
     /**
      * Asserts that all members are callable.
      *
@@ -252,11 +240,10 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members are callable.
      */
-    public static function assertAllCallable($traversable)
+    public static function assert_all_callable($traversable)
     {
-        return static::assertAll('is_callable', $traversable);
+        return static::assert_all('is_callable', $traversable);
     }
-
     /**
      * Asserts that all members are not empty.
      *
@@ -266,7 +253,7 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members not empty.
      */
-    public static function assertAllNotEmpty($traversable): bool
+    public static function assert_all_not_empty($traversable): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
@@ -278,7 +265,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts all members are numeric data types or strings castable to such.
      *
@@ -288,11 +274,10 @@ class Inspector
      * @return bool
      *   TRUE if $traversable can be traversed and all members are numeric.
      */
-    public static function assertAllNumeric($traversable)
+    public static function assert_all_numeric($traversable)
     {
-        return static::assertAll('is_numeric', $traversable);
+        return static::assert_all('is_numeric', $traversable);
     }
-
     /**
      * Asserts that all members are strings that contain the specified string.
      *
@@ -309,7 +294,7 @@ class Inspector
      *   TRUE if $traversable can be traversed and all members are strings
      *   containing $pattern.
      */
-    public static function assertAllMatch($pattern, $traversable, $case_sensitive = false): bool
+    public static function assert_all_match($pattern, $traversable, $case_sensitive = false): bool
     {
         if (is_iterable($traversable)) {
             if ($case_sensitive) {
@@ -329,7 +314,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts that all members are strings matching a regular expression.
      *
@@ -342,14 +326,13 @@ class Inspector
      *   TRUE if $traversable can be traversed and all members are strings
      *   matching $pattern.
      */
-    public static function assertAllRegularExpressionMatch($pattern, $traversable): bool
+    public static function assert_all_regular_expression_match($pattern, $traversable): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
                 if (!is_string($member)) {
                     return false;
                 }
-
                 if (!preg_match($pattern, $member)) {
                     return false;
                 }
@@ -358,7 +341,6 @@ class Inspector
         }
         return false;
     }
-
     /**
      * Asserts that all members are objects.
      *
@@ -390,7 +372,7 @@ class Inspector
      *   TRUE if $traversable can be traversed and all members are objects with
      *   at least one of the listed classes or interfaces.
      */
-    public static function assertAllObjects($traversable, string ...$classes): bool
+    public static function assert_all_objects($traversable, string ...$classes): bool
     {
         if (is_iterable($traversable)) {
             foreach ($traversable as $member) {
@@ -412,5 +394,4 @@ class Inspector
         }
         return false;
     }
-
 }

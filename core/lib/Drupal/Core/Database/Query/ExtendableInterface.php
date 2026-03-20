@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Core\Database\Query;
  * methods or override existing methods as appropriate. Extenders may also wrap
  * other extender objects, allowing for arbitrarily complex "enhanced" queries.
  */
-interface ExtendableInterface
+interface Extendable_Interface
 {
     /**
      * Enhance this object by wrapping it in an extender object.
@@ -30,5 +29,4 @@ interface ExtendableInterface
      *   The extender object, which now contains a reference to this object.
      */
     public function extend($extender_name);
-
 }

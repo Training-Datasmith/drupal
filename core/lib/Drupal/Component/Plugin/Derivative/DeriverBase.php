@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Derivative;
 
 /**
  * Provides a basic deriver.
  */
-abstract class DeriverBase implements DeriverInterface
+abstract class Deriver_Base implements Deriver_Interface
 {
     /**
      * List of derivative definitions.
@@ -15,25 +14,22 @@ abstract class DeriverBase implements DeriverInterface
      * @var array
      */
     protected $derivatives = [];
-
     /**
      * {@inheritdoc}
      */
-    public function getDerivativeDefinition($derivative_id, $base_plugin_definition)
+    public function get_derivative_definition($derivative_id, $base_plugin_definition)
     {
         if (!empty($this->derivatives) && !empty($this->derivatives[$derivative_id])) {
             return $this->derivatives[$derivative_id];
         }
-        $this->getDerivativeDefinitions($base_plugin_definition);
+        $this->get_derivative_definitions($base_plugin_definition);
         return $this->derivatives[$derivative_id];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDerivativeDefinitions($base_plugin_definition)
+    public function get_derivative_definitions($base_plugin_definition)
     {
         return $this->derivatives;
     }
-
 }

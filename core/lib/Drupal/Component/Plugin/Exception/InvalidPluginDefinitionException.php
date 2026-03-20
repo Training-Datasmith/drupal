@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Exception;
 
 /**
  * Defines a class for invalid plugin definition exceptions.
  */
-class InvalidPluginDefinitionException extends PluginException
+class Invalid_Plugin_Definition_Exception extends Plugin_Exception
 {
     /**
      * Constructs an InvalidPluginDefinitionException.
@@ -23,26 +22,26 @@ class InvalidPluginDefinitionException extends PluginException
      *
      * @see \Exception
      */
-    public function __construct(/**
-   * The plugin ID of the mapper.
-   */
-        protected $pluginId,
+    public function __construct(
+        /**
+         * The plugin ID of the mapper.
+         */
+        protected $plugin_id,
         $message = '',
         $code = 0,
         ?\Throwable $previous = null
-    ) {
+    )
+    {
         parent::__construct($message, $code, $previous);
     }
-
     /**
      * Gets the plugin ID of the mapper that raised the exception.
      *
      * @return string
      *   The plugin ID.
      */
-    public function getPluginId()
+    public function get_plugin_id()
     {
-        return $this->pluginId;
+        return $this->plugin_id;
     }
-
 }

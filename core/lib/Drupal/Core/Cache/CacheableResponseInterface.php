@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Cache;
  *
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-interface CacheableResponseInterface
+interface Cacheable_Response_Interface
 {
     /**
      * Adds a dependency on an object: merges its cacheability metadata.
@@ -27,14 +26,12 @@ interface CacheableResponseInterface
      *
      * @see \Drupal\Core\Cache\CacheableMetadata::createFromObject()
      */
-    public function addCacheableDependency($dependency);
-
+    public function add_cacheable_dependency($dependency);
     /**
      * Returns the cacheability metadata for this response.
      *
      * @return \Drupal\Core\Cache\CacheableMetadata
      *   The cacheable metadata.
      */
-    public function getCacheableMetadata();
-
+    public function get_cacheable_metadata();
 }

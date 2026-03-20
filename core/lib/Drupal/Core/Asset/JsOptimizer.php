@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 use Drupal\Component\Utility\Unicode;
@@ -10,12 +9,11 @@ use Peast\Formatter\Compact as CompactFormatter;
 use Peast\Peast;
 use Peast\Renderer;
 use Peast\Syntax\Exception as PeastSyntaxException;
-use Psr\Log\LoggerInterface;
-
+use Psr\Log\Logger_Interface;
 /**
  * Optimizes a JavaScript asset.
  */
-class JsOptimizer implements AssetOptimizerInterface
+class Js_Optimizer implements Asset_Optimizer_Interface
 {
     /**
      * Constructs a new JsOptimizer object.
@@ -23,10 +21,9 @@ class JsOptimizer implements AssetOptimizerInterface
      * @param \Psr\Log\LoggerInterface $logger
      *   The logger.
      */
-    public function __construct(protected readonly LoggerInterface $logger)
+    public function __construct(protected readonly Logger_Interface $logger)
     {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -40,39 +37,30 @@ class JsOptimizer implements AssetOptimizerInterface
         if (!$js_asset['preprocess']) {
             throw new \Exception("Error trying to optimize JavaScript asset: {$js_asset['data']}. Only file JavaScript assets with preprocessing enabled can be optimized.");
         }
-
         // If a BOM is found, convert the file to UTF-8, then use substr() to
         // remove the BOM from the result.
         $data = file_get_contents($js_asset['data']);
-        if ($encoding = (Unicode::encodingFromBOM($data))) {
-            $data = mb_substr(Unicode::convertToUtf8($data, $encoding), 1);
-        }
-        // If no BOM is found, check for the charset attribute.
-        elseif (isset($js_asset['attributes']['charset'])) {
-            $data = Unicode::convertToUtf8($data, $js_asset['attributes']['charset']);
+        if ($encoding = Unicode::encoding_from_bom($data)) {
+            $data = mb_substr(Unicode::convert_to_utf8($data, $encoding), 1);
+        } elseif (isset($js_asset['attributes']['charset'])) {
+            $data = Unicode::convert_to_utf8($data, $js_asset['attributes']['charset']);
         }
         // Remove comments, whitespace, and optional braces.
         try {
             $ast = Peast::latest($data)->parse();
             $renderer = new Renderer();
-            $renderer->setFormatter(new CompactFormatter());
+            $renderer->set_formatter(new Compact_Formatter());
             return $renderer->render($ast);
         } catch (\Exception $exception) {
-            if ($exception instanceof PeastSyntaxException) {
-                $position = $exception->getPosition();
-                Error::logException($this->logger, $exception, 'Syntax error:  @message, File: @asset_file, Line: @asset_line, Column: @asset_column, Index: @asset_index', [
-                  '@asset_file' => $js_asset['data'],
-                  '@asset_line' => $position->getLine(),
-                  '@asset_column' => $position->getColumn(),
-                  '@asset_index' => $position->getIndex(),
-                ]);
+            if ($exception instanceof Peast_Syntax_Exception) {
+                $position = $exception->get_position();
+                Error::log_exception($this->logger, $exception, 'Syntax error:  @message, File: @asset_file, Line: @asset_line, Column: @asset_column, Index: @asset_index', ['@asset_file' => $js_asset['data'], '@asset_line' => $position->get_line(), '@asset_column' => $position->get_column(), '@asset_index' => $position->get_index()]);
             } else {
-                Error::logException($this->logger, $exception);
+                Error::log_exception($this->logger, $exception);
             }
             return $data;
         }
     }
-
     /**
      * Processes the contents of a javascript asset for cleanup.
      *
@@ -86,8 +74,6 @@ class JsOptimizer implements AssetOptimizerInterface
     {
         // Remove JS source and source mapping URLs or these may cause 404 errors.
         $contents = preg_replace('/\/\/(#|@)\s(sourceURL|sourceMappingURL)=\s*(\S*?)\s*$/m', '', $contents);
-
         return $contents;
     }
-
 }

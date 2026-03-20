@@ -1,47 +1,41 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Core\Installer\InstallerKernel;
+use Drupal\Core\Installer\Installer_Kernel;
 use Drupal\Core\Site\Settings;
-use Psr\Container\ContainerInterface;
-
+use Psr\Container\Container_Interface;
 /**
  * Defines the chained fast cache backend factory.
  *
  * @see \Drupal\Core\Cache\ChainedFastBackend
  */
-class ChainedFastBackendFactory implements CacheFactoryInterface
+class Chained_Fast_Backend_Factory implements Cache_Factory_Interface
 {
     /**
      * The service name of the consistent backend factory.
      *
      * @var string
      */
-    protected $consistentServiceName;
-
+    protected $consistent_service_name;
     /**
      * The service name of the fast backend factory.
      *
      * @var string
      */
-    protected $fastServiceName;
-
+    protected $fast_service_name;
     /**
      * The service container.
      */
-    protected ContainerInterface $container;
-
+    protected Container_Interface $container;
     /**
      * Sets the service container.
      */
-    public function setContainer(ContainerInterface $container): void
+    public function set_container(Container_Interface $container): void
     {
         $this->container = $container;
     }
-
     /**
      * Constructs ChainedFastBackendFactory object.
      *
@@ -64,22 +58,18 @@ class ChainedFastBackendFactory implements CacheFactoryInterface
             $cache_settings = isset($settings) ? $settings->get('cache') : [];
             $consistent_service_name = $cache_settings['default'] ?? 'cache.backend.database';
         }
-
         // Default the fast backend to APCu if it's available.
         if (!isset($fast_service_name) && function_exists('apcu_fetch')) {
             $fast_service_name = 'cache.backend.apcu';
         }
-
-        $this->consistentServiceName = $consistent_service_name;
-
+        $this->consistent_service_name = $consistent_service_name;
         // Do not use the fast chained backend during installation. In those cases,
         // we expect many cache invalidations and writes, the fast chained cache
         // backend performs badly in such a scenario.
-        if (!InstallerKernel::installationAttempted()) {
-            $this->fastServiceName = $fast_service_name;
+        if (!Installer_Kernel::installation_attempted()) {
+            $this->fast_service_name = $fast_service_name;
         }
     }
-
     /**
      * Instantiates a chained, fast cache backend class for a given cache bin.
      *
@@ -94,18 +84,9 @@ class ChainedFastBackendFactory implements CacheFactoryInterface
         // Use the chained backend only if there is a fast backend available and it
         // is not the same as the consistent backend; otherwise, just return the
         // consistent backend directly.
-        if (
-            isset($this->fastServiceName)
-            &&
-            $this->fastServiceName !== $this->consistentServiceName
-        ) {
-            return new ChainedFastBackend(
-                $this->container->get($this->consistentServiceName)->get($bin),
-                $this->container->get($this->fastServiceName)->get($bin),
-                $bin
-            );
+        if (isset($this->fast_service_name) && $this->fast_service_name !== $this->consistent_service_name) {
+            return new Chained_Fast_Backend($this->container->get($this->consistent_service_name)->get($bin), $this->container->get($this->fast_service_name)->get($bin), $bin);
         }
-        return $this->container->get($this->consistentServiceName)->get($bin);
+        return $this->container->get($this->consistent_service_name)->get($bin);
     }
-
 }

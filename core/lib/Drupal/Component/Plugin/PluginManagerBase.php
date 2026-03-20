@@ -1,96 +1,85 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
-use Drupal\Component\Plugin\Discovery\DiscoveryTrait;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-
+use Drupal\Component\Plugin\Discovery\Discovery_Trait;
+use Drupal\Component\Plugin\Exception\Plugin_Not_Found_Exception;
 /**
  * Base class for plugin managers.
  */
-abstract class PluginManagerBase implements PluginManagerInterface
+abstract class Plugin_Manager_Base implements Plugin_Manager_Interface
 {
-    use DiscoveryTrait;
-
+    use Discovery_Trait;
     /**
      * The object that discovers plugins managed by this manager.
      *
      * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
      */
     protected $discovery;
-
     /**
      * The object that instantiates plugins managed by this manager.
      *
      * @var \Drupal\Component\Plugin\Factory\FactoryInterface
      */
     protected $factory;
-
     /**
      * The preconfigured plugin instance for a particular runtime condition.
      *
      * @var \Drupal\Component\Plugin\Mapper\MapperInterface|null
      */
     protected $mapper;
-
     /**
      * Gets the plugin discovery.
      *
      * @return \Drupal\Component\Plugin\Discovery\DiscoveryInterface
      *   The plugin discovery.
      */
-    protected function getDiscovery()
+    protected function get_discovery()
     {
         return $this->discovery;
     }
-
     /**
      * Gets the plugin factory.
      *
      * @return \Drupal\Component\Plugin\Factory\FactoryInterface
      *   The plugin factory.
      */
-    protected function getFactory()
+    protected function get_factory()
     {
         return $this->factory;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDefinition($plugin_id, $exception_on_invalid = true)
+    public function get_definition($plugin_id, $exception_on_invalid = true)
     {
-        return $this->getDiscovery()->getDefinition($plugin_id, $exception_on_invalid);
+        return $this->get_discovery()->get_definition($plugin_id, $exception_on_invalid);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDefinitions()
+    public function get_definitions()
     {
-        return $this->getDiscovery()->getDefinitions();
+        return $this->get_discovery()->get_definitions();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createInstance($plugin_id, array $configuration = [])
+    public function create_instance($plugin_id, array $configuration = [])
     {
         // If this PluginManager has fallback capabilities catch
         // PluginNotFoundExceptions.
-        if ($this instanceof FallbackPluginManagerInterface) {
+        if ($this instanceof Fallback_Plugin_Manager_Interface) {
             try {
-                return $this->getFactory()->createInstance($plugin_id, $configuration);
-            } catch (PluginNotFoundException) {
-                return $this->handlePluginNotFound($plugin_id, $configuration);
+                return $this->get_factory()->create_instance($plugin_id, $configuration);
+            } catch (Plugin_Not_Found_Exception) {
+                return $this->handle_plugin_not_found($plugin_id, $configuration);
             }
         } else {
-            return $this->getFactory()->createInstance($plugin_id, $configuration);
+            return $this->get_factory()->create_instance($plugin_id, $configuration);
         }
     }
-
     /**
      * Allows plugin managers to specify custom behavior if a plugin is not found.
      *
@@ -106,12 +95,11 @@ abstract class PluginManagerBase implements PluginManagerInterface
      *   When ::getFallbackPluginId() is not implemented in the concrete plugin
      *   manager class.
      */
-    protected function handlePluginNotFound($plugin_id, array $configuration)
+    protected function handle_plugin_not_found($plugin_id, array $configuration)
     {
-        $fallback_id = $this->getFallbackPluginId($plugin_id, $configuration);
-        return $this->getFactory()->createInstance($fallback_id, $configuration);
+        $fallback_id = $this->get_fallback_plugin_id($plugin_id, $configuration);
+        return $this->get_factory()->create_instance($fallback_id, $configuration);
     }
-
     /**
      * Gets a fallback id for a missing plugin.
      *
@@ -133,20 +121,18 @@ abstract class PluginManagerBase implements PluginManagerInterface
      * @throws \BadMethodCallException
      *   If the method is not implemented in the concrete plugin manager class.
      */
-    protected function getFallbackPluginId($plugin_id, array $configuration = [])
+    protected function get_fallback_plugin_id($plugin_id, array $configuration = [])
     {
         throw new \BadMethodCallException(static::class . '::getFallbackPluginId() not implemented.');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getInstance(array $options)
+    public function get_instance(array $options)
     {
         if (!$this->mapper) {
             throw new \BadMethodCallException(sprintf('%s does not support this method unless %s::$mapper is set.', static::class, static::class));
         }
-        return $this->mapper->getInstance($options);
+        return $this->mapper->get_instance($options);
     }
-
 }

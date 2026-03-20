@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -9,15 +8,14 @@ namespace Drupal\Component\Utility;
  *
  * @ingroup utility
  */
-class UrlHelper
+class Url_Helper
 {
     /**
      * The list of allowed protocols.
      *
      * @var array
      */
-    protected static $allowedProtocols = ['http', 'https'];
-
+    protected static $allowed_protocols = ['http', 'https'];
     /**
      * Parses an array into a valid query string encoded with rawurlencode().
      *
@@ -41,29 +39,23 @@ class UrlHelper
      *
      * @ingroup php_wrappers
      */
-    public static function buildQuery(array $query, ?string $parent = ''): string
+    public static function build_query(array $query, ?string $parent = ''): string
     {
         $params = [];
-
         foreach ($query as $key => $value) {
-            $key = ($parent ? $parent . rawurlencode('[' . $key . ']') : rawurlencode((string) $key));
-
+            $key = $parent ? $parent . rawurlencode('[' . $key . ']') : rawurlencode((string) $key);
             // Recurse into children.
             if (is_array($value)) {
-                $params[] = static::buildQuery($value, $key);
-            }
-            // If a query parameter value is NULL, only append its key.
-            elseif (!isset($value)) {
+                $params[] = static::build_query($value, $key);
+            } elseif (!isset($value)) {
                 $params[] = $key;
             } else {
                 // For better readability of paths in query strings, we decode slashes.
                 $params[] = $key . '=' . str_replace('%2F', '/', rawurlencode((string) $value));
             }
         }
-
         return implode('&', $params);
     }
-
     /**
      * Compresses a string for use in a query parameter.
      *
@@ -81,7 +73,7 @@ class UrlHelper
      *
      * @see \Drupal\Component\Utility\UrlHelper::uncompressQueryParameter()
      */
-    public static function compressQueryParameter(string $data): string
+    public static function compress_query_parameter(string $data): string
     {
         // Use 'base64url' encoding. Note that the '=' sign is only used for padding
         // on the right of the string, and is otherwise not part of the data.
@@ -89,7 +81,6 @@ class UrlHelper
         // @see https://www.php.net/manual/en/function.base64-encode.php#123098
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(gzcompress($data)));
     }
-
     /**
      * Takes a compressed parameter and converts it back to the original.
      *
@@ -103,19 +94,17 @@ class UrlHelper
      *
      * @see \Drupal\Component\Utility\UrlHelper::compressQueryParameter()
      */
-    public static function uncompressQueryParameter(string $compressed): string
+    public static function uncompress_query_parameter(string $compressed): string
     {
         // Because this comes from user data, suppress the PHP warning that
         // gzcompress() throws if the base64-encoded string is invalid.
         $return = @gzuncompress(base64_decode(str_replace(['-', '_'], ['+', '/'], $compressed)));
-
         // If we failed to uncompress the query parameter, it may be a stale link
         // from before compression was implemented with the URL parameter
         // uncompressed already, or it may be an incorrectly formatted URL.
         // In either case, pass back the original string to the caller.
         return $return === false ? $compressed : $return;
     }
-
     /**
      * Filters a URL query parameter array to remove unwanted elements.
      *
@@ -130,7 +119,7 @@ class UrlHelper
      * @return array
      *   An array containing query parameters.
      */
-    public static function filterQueryParameters(array $query, array $exclude = [], ?string $parent = ''): array
+    public static function filter_query_parameters(array $query, array $exclude = [], ?string $parent = ''): array
     {
         // If $exclude is empty, there is nothing to filter.
         if (empty($exclude)) {
@@ -140,24 +129,20 @@ class UrlHelper
         if (!$parent) {
             $exclude = array_flip($exclude);
         }
-
         $params = [];
         foreach ($query as $key => $value) {
-            $string_key = ($parent ? $parent . '[' . $key . ']' : $key);
+            $string_key = $parent ? $parent . '[' . $key . ']' : $key;
             if (isset($exclude[$string_key])) {
                 continue;
             }
-
             if (is_array($value)) {
-                $params[$key] = static::filterQueryParameters($value, $exclude, $string_key);
+                $params[$key] = static::filter_query_parameters($value, $exclude, $string_key);
             } else {
                 $params[$key] = $value;
             }
         }
-
         return $params;
     }
-
     /**
      * Parses a URL string into its path, query, and fragment components.
      *
@@ -186,12 +171,7 @@ class UrlHelper
      */
     public static function parse(string $url): array
     {
-        $options = [
-          'path' => null,
-          'query' => [],
-          'fragment' => '',
-        ];
-
+        $options = ['path' => null, 'query' => [], 'fragment' => ''];
         // External URLs: not using parse_url() here, so we do not have to rebuild
         // the scheme, host, and path without having any use for it.
         // The URL is considered external if it contains the '://' delimiter. Since
@@ -205,10 +185,8 @@ class UrlHelper
             if ($fragment_delimiter_position !== false) {
                 [$url, $options['fragment']] = explode('#', $url, 2);
             }
-
             // Split off everything before the query string into 'path'.
             $parts = explode('?', $url, 2);
-
             // Don't support URLs without a path, like 'http://'.
             [, $path] = explode('://', $parts[0], 2);
             if ($path != '') {
@@ -218,9 +196,7 @@ class UrlHelper
             if (isset($parts[1])) {
                 parse_str($parts[1], $options['query']);
             }
-        }
-        // Internal URLs.
-        else {
+        } else {
             // parse_url() does not support relative URLs, so make it absolute. For
             // instance, the relative URL "foo/bar:1" isn't properly parsed.
             $parts = parse_url('https://example.com/' . $url);
@@ -233,10 +209,8 @@ class UrlHelper
                 $options['fragment'] = $parts['fragment'];
             }
         }
-
         return $options;
     }
-
     /**
      * Encodes a Drupal path for use in a URL.
      *
@@ -248,11 +222,10 @@ class UrlHelper
      * @return string
      *   The encoded path.
      */
-    public static function encodePath($path): string
+    public static function encode_path($path): string
     {
         return str_replace('%2F', '/', rawurlencode($path));
     }
-
     /**
      * Determines whether a path is external to Drupal.
      *
@@ -267,27 +240,15 @@ class UrlHelper
      * @return bool
      *   TRUE or FALSE, where TRUE indicates an external path.
      */
-    public static function isExternal($path): bool
+    public static function is_external($path): bool
     {
         $colon_position = strpos($path, ':');
         // Some browsers treat \ as / so normalize to forward slashes.
         $path = str_replace('\\', '/', $path);
         // If the path starts with 2 slashes then it is always considered an
         // external URL without an explicit protocol part.
-        return (str_starts_with($path, '//'))
-          // Leading control characters may be ignored or mishandled by browsers,
-          // so assume such a path may lead to an external location. The \p{C}
-          // character class matches all UTF-8 control, unassigned, and private
-          // characters.
-          || (preg_match('/^\p{C}/u', $path) !== 0)
-          // Avoid calling static::stripDangerousProtocols() if there is any slash
-          // (/), hash (#) or question_mark (?) before the colon (:) occurrence -
-          // if any - as this would clearly mean it is not a URL.
-          || ($colon_position !== false
-            && !preg_match('![/?#]!', substr($path, 0, $colon_position))
-            && static::stripDangerousProtocols($path) == $path);
+        return str_starts_with($path, '//') || preg_match('/^\p{C}/u', $path) !== 0 || $colon_position !== false && !preg_match('![/?#]!', substr($path, 0, $colon_position)) && static::strip_dangerous_protocols($path) == $path;
     }
-
     /**
      * Determines if an external URL points to this installation.
      *
@@ -302,35 +263,29 @@ class UrlHelper
      * @throws \InvalidArgumentException
      *   Exception thrown when either $url or $base_url are not fully qualified.
      */
-    public static function externalIsLocal($url, $base_url)
+    public static function external_is_local($url, $base_url)
     {
         // Some browsers treat \ as / so normalize to forward slashes.
         $url = str_replace('\\', '/', $url);
-
         // Leading control characters may be ignored or mishandled by browsers, so
         // assume such a path may lead to a non-local location. The \p{C} character
         // class matches all UTF-8 control, unassigned, and private characters.
         if (preg_match('/^\p{C}/u', $url) !== 0) {
             return false;
         }
-
         $url_parts = parse_url($url);
         $base_parts = parse_url($base_url);
-
         if (empty($base_parts['host']) || empty($url_parts['host'])) {
             throw new \InvalidArgumentException('A path was passed when a fully qualified domain was expected.');
         }
-
         if (!isset($url_parts['path']) || !isset($base_parts['path'])) {
-            return (!isset($base_parts['path']) || $base_parts['path'] == '/')
-              && ($url_parts['host'] == $base_parts['host']);
+            return (!isset($base_parts['path']) || $base_parts['path'] == '/') && $url_parts['host'] == $base_parts['host'];
         }
         // When comparing base paths, we need a trailing slash to make sure a
         // partial URL match isn't occurring. Since base_path() always returns
         // with a trailing slash, we don't need to add the trailing slash here.
-        return ($url_parts['host'] == $base_parts['host'] && stripos($url_parts['path'], $base_parts['path']) === 0);
+        return $url_parts['host'] == $base_parts['host'] && stripos($url_parts['path'], $base_parts['path']) === 0;
     }
-
     /**
      * Processes an HTML attribute value and strips dangerous protocols from URLs.
      *
@@ -340,36 +295,33 @@ class UrlHelper
      * @return string
      *   Cleaned up and HTML-escaped version of $string.
      */
-    public static function filterBadProtocol($string): string
+    public static function filter_bad_protocol($string): string
     {
         // Get the plain text representation of the attribute value (i.e. its
         // meaning).
-        $string = Html::decodeEntities($string);
-        return Html::escape(static::stripDangerousProtocols($string));
+        $string = Html::decode_entities($string);
+        return Html::escape(static::strip_dangerous_protocols($string));
     }
-
     /**
      * Gets the allowed protocols.
      *
      * @return array
      *   An array of protocols, for example http, https and irc.
      */
-    public static function getAllowedProtocols()
+    public static function get_allowed_protocols()
     {
-        return static::$allowedProtocols;
+        return static::$allowed_protocols;
     }
-
     /**
      * Sets the allowed protocols.
      *
      * @param array $protocols
      *   An array of protocols, for example http, https and irc.
      */
-    public static function setAllowedProtocols(array $protocols = []): void
+    public static function set_allowed_protocols(array $protocols = []): void
     {
-        static::$allowedProtocols = $protocols;
+        static::$allowed_protocols = $protocols;
     }
-
     /**
      * Strips dangerous protocols (for example, 'javascript:') from a URI.
      *
@@ -409,10 +361,9 @@ class UrlHelper
      * @see \Drupal\Core\Url::toString()
      * @see \Drupal\Core\Url::fromUri()
      */
-    public static function stripDangerousProtocols($uri)
+    public static function strip_dangerous_protocols($uri)
     {
-        $allowed_protocols = array_flip(static::$allowedProtocols);
-
+        $allowed_protocols = array_flip(static::$allowed_protocols);
         // Iteratively remove any invalid protocol found.
         do {
             $before = $uri;
@@ -433,10 +384,8 @@ class UrlHelper
                 }
             }
         } while ($before != $uri);
-
         return $uri;
     }
-
     /**
      * Verifies the syntax of the given URL.
      *
@@ -452,27 +401,11 @@ class UrlHelper
      * @return bool
      *   TRUE if the URL is in a valid format, FALSE otherwise.
      */
-    public static function isValid($url, $absolute = false): bool
+    public static function is_valid($url, $absolute = false): bool
     {
         if ($absolute) {
-            return (bool) preg_match("
-        /^                                                      # Start at the beginning of the text
-        (?:ftp|https?|feed):\/\/                                # Look for ftp, http, https or feed schemes
-        (?:                                                     # Userinfo (optional) which is typically
-          (?:(?:[\w\.\-\+!$&'\(\)*\+,;=]|%[0-9a-f]{2})+:)*      # a username or a username and password
-          (?:[\w\.\-\+%!$&'\(\)*\+,;=]|%[0-9a-f]{2})+@          # combination
-        )?
-        (?:
-          (?:[a-z0-9\-\.]|%[0-9a-f]{2})+                        # A domain name or a IPv4 address
-          |(?:\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\])         # or a well formed IPv6 address
-        )
-        (?::[0-9]+)?                                            # Server port number (optional)
-        (?:[\/|\?]
-          (?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})   # The path and query (optional)
-        *)?
-      $/xi", $url);
+            return (bool) preg_match("\n        /^                                                      # Start at the beginning of the text\n        (?:ftp|https?|feed):\\/\\/                                # Look for ftp, http, https or feed schemes\n        (?:                                                     # Userinfo (optional) which is typically\n          (?:(?:[\\w\\.\\-\\+!\$&'\\(\\)*\\+,;=]|%[0-9a-f]{2})+:)*      # a username or a username and password\n          (?:[\\w\\.\\-\\+%!\$&'\\(\\)*\\+,;=]|%[0-9a-f]{2})+@          # combination\n        )?\n        (?:\n          (?:[a-z0-9\\-\\.]|%[0-9a-f]{2})+                        # A domain name or a IPv4 address\n          |(?:\\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\\])         # or a well formed IPv6 address\n        )\n        (?::[0-9]+)?                                            # Server port number (optional)\n        (?:[\\/|\\?]\n          (?:[\\w#!:\\.\\?\\+=&@\$'~*,;\\/\\(\\)\\[\\]\\-]|%[0-9a-f]{2})   # The path and query (optional)\n        *)?\n      \$/xi", $url);
         }
-        return (bool) preg_match("/^(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})+$/i", $url);
+        return (bool) preg_match("/^(?:[\\w#!:\\.\\?\\+=&@\$'~*,;\\/\\(\\)\\[\\]\\-]|%[0-9a-f]{2})+\$/i", $url);
     }
-
 }

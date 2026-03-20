@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime;
 
-use Drupal\Component\Datetime\DateTimePlus;
-use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
+use Drupal\Component\Datetime\Date_Time_Plus;
+use Drupal\Core\Dependency_Injection\Dependency_Serialization_Trait;
+use Drupal\Core\String_Translation\String_Translation_Trait;
 /**
  * Extends DateTimePlus().
  *
@@ -23,13 +21,12 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * @see \Drupal\Component\Datetime\DateTimePlus
  */
-class DrupalDateTime extends DateTimePlus
+class Drupal_Date_Time extends Date_Time_Plus
 {
-    use StringTranslationTrait;
-    use DependencySerializationTrait {
+    use String_Translation_Trait;
+    use Dependency_Serialization_Trait {
         __sleep as defaultSleep;
     }
-
     /**
      * Formatted strings translation cache.
      *
@@ -59,8 +56,7 @@ class DrupalDateTime extends DateTimePlus
      *   ]
      * @endcode
      */
-    protected $formatTranslationCache = [];
-
+    protected $format_translation_cache = [];
     /**
      * Constructs a date object.
      *
@@ -90,29 +86,25 @@ class DrupalDateTime extends DateTimePlus
     public function __construct($time = 'now', $timezone = null, array $settings = [])
     {
         if (!isset($settings['langcode'])) {
-            $settings['langcode'] = \Drupal::languageManager()->getCurrentLanguage()->getId();
+            $settings['langcode'] = \Drupal::language_manager()->get_current_language()->get_id();
         }
-
         // Instantiate the parent class.
         parent::__construct($time, $timezone, $settings);
-
     }
-
     /**
      * Overrides prepareTimezone().
      *
      * Override basic component timezone handling to use Drupal's
      * knowledge of the preferred user timezone.
      */
-    protected function prepareTimezone($timezone)
+    protected function prepare_timezone($timezone)
     {
         if (empty($timezone)) {
             // Fallback to user or system default timezone.
             $timezone = date_default_timezone_get();
         }
-        return parent::prepareTimezone($timezone);
+        return parent::prepare_timezone($timezone);
     }
-
     /**
      * Overrides format().
      *
@@ -140,18 +132,16 @@ class DrupalDateTime extends DateTimePlus
             // Paired backslashes are isolated to prevent errors in
             // read-ahead evaluation. The read-ahead expression ensures that
             // A matches, but not \A.
-            $format = preg_replace(['/\\\\\\\\/', '/(?<!\\\\)([SAaeDlMTF])/'], ["\xEF\\\\\\\\\xFF", "\xEF\\\\\$1\$1\xFF"], $format);
-
+            $format = preg_replace(['/\\\\\\\\/', '/(?<!\\\\)([SAaeDlMTF])/'], ["\xef\\\\\\\\\xff", "\xef\\\\\$1\$1\xff"], $format);
             // Call date_format().
             $format = parent::format($format, $settings);
-
             // $format will be NULL if there are any errors.
             if ($format !== null) {
                 // Translates a formatted date string.
                 $translation_callback = function ($matches) use ($langcode) {
                     $code = $matches[1];
                     $string = $matches[2];
-                    if (!isset($this->formatTranslationCache[$langcode][$code][$string])) {
+                    if (!isset($this->format_translation_cache[$langcode][$code][$string])) {
                         $options = ['langcode' => $langcode];
                         if ($code == 'F') {
                             $options['context'] = 'Long month name';
@@ -162,32 +152,28 @@ class DrupalDateTime extends DateTimePlus
                         if ($code == 'S') {
                             $options['context'] = 'Day ordinal suffix';
                         }
-
                         if ($code == '') {
-                            $this->formatTranslationCache[$langcode][$code][$string] = $string;
+                            $this->format_translation_cache[$langcode][$code][$string] = $string;
                         } else {
                             // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-                            $this->formatTranslationCache[$langcode][$code][$string] = $this->t($string, [], $options);
+                            $this->format_translation_cache[$langcode][$code][$string] = $this->t($string, [], $options);
                         }
                     }
-                    return $this->formatTranslationCache[$langcode][$code][$string];
+                    return $this->format_translation_cache[$langcode][$code][$string];
                 };
-
                 // Translate the marked sequences.
                 $value = preg_replace_callback('/\xEF([SAaeDlMTF]?)(.*?)\xFF/', $translation_callback, $format);
             }
         } catch (\Exception $e) {
-            $this->errors[] = $e->getMessage();
+            $this->errors[] = $e->get_message();
         }
         return $value;
     }
-
     /**
      * {@inheritdoc}
      */
     public function __sleep(): array
     {
-        return array_diff($this->defaultSleep(), ['formatTranslationCache']);
+        return array_diff($this->default_sleep(), ['formatTranslationCache']);
     }
-
 }

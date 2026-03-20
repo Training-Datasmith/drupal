@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -32,10 +31,9 @@ class Number
      *
      * @see http://opensource.apple.com/source/WebCore/WebCore-1298/html/NumberInputType.cpp
      */
-    public static function validStep($value, $step, $offset = 0.0)
+    public static function valid_step($value, $step, $offset = 0.0)
     {
         $double_value = abs($value - $offset);
-
         // The fractional part of a double has 53 bits. The greatest number that
         // could be represented with that is 2^53. If the given value is even bigger
         // than $step * 2^53, then dividing by $step will result in a very small
@@ -45,19 +43,15 @@ class Number
         if ($double_value / 2.0 ** 53 > $step) {
             return true;
         }
-
         // Now compute that remainder of a division by $step.
         $remainder = abs($double_value - $step * round($double_value / $step));
-
         // $remainder is a double precision floating point number. Remainders that
         // can't be represented with single precision floats are acceptable. The
         // fractional part of a float has 24 bits. That means remainders smaller
         // than $step * 2^-24 are acceptable.
         $computed_acceptable_error = (float) ($step / 2.0 ** 24);
-
-        return $computed_acceptable_error >= $remainder || $remainder >= ($step - $computed_acceptable_error);
+        return $computed_acceptable_error >= $remainder || $remainder >= $step - $computed_acceptable_error;
     }
-
     /**
      * Generates a sorting code from an integer.
      *
@@ -79,14 +73,12 @@ class Number
      *
      * @see \Drupal\Component\Utility\Number::alphadecimalToInt
      */
-    public static function intToAlphadecimal($i = 0): string
+    public static function int_to_alphadecimal($i = 0): string
     {
         $num = base_convert((string) $i, 10, 36);
         $length = strlen($num);
-
         return chr($length + ord('0') - 1) . $num;
     }
-
     /**
      * Decodes a sorting code back to an integer.
      *
@@ -101,13 +93,12 @@ class Number
      *
      * @see \Drupal\Component\Utility\Number::intToAlphadecimal
      */
-    public static function alphadecimalToInt($string = '00'): int
+    public static function alphadecimal_to_int($string = '00'): int
     {
         $alpha_decimal_substring = substr($string, 1);
         if (!ctype_alnum($alpha_decimal_substring)) {
-            throw new \InvalidArgumentException("Invalid characters passed for attempted conversion: $string");
+            throw new \InvalidArgumentException("Invalid characters passed for attempted conversion: {$string}");
         }
         return (int) base_convert($alpha_decimal_substring, 36, 10);
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
 /**
@@ -11,7 +10,7 @@ namespace Drupal\Core\Cache\Context;
  * \Drupal\Core\Cache\Context\CacheContextInterface or
  * \Drupal\Core\Cache\Context\CalculatedCacheContextInterface.
  */
-abstract class UserCacheContextBase
+abstract class User_Cache_Context_Base
 {
     /**
      * Constructs a new UserCacheContextBase class.
@@ -19,8 +18,7 @@ abstract class UserCacheContextBase
      * @param \Drupal\Core\Session\AccountInterface $user
      *   The current user.
      */
-    public function __construct(protected \Drupal\Core\Session\AccountInterface $user)
+    public function __construct(protected \Drupal\Core\Session\Account_Interface $user)
     {
     }
-
 }

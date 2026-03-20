@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity\Query;
 
-use Drupal\Core\Entity\Query\ConditionBase;
-use Drupal\Core\Entity\Query\ConditionInterface;
-use Drupal\Core\Entity\Query\QueryException;
-
+use Drupal\Core\Entity\Query\Condition_Base;
+use Drupal\Core\Entity\Query\Condition_Interface;
+use Drupal\Core\Entity\Query\Query_Exception;
 /**
  * Defines the condition class for the config entity query.
  *
  * @see \Drupal\Core\Config\Entity\Query\Query
  */
-class Condition extends ConditionBase
+class Condition extends Condition_Base
 {
     /**
      * {@inheritdoc}
@@ -24,13 +22,12 @@ class Condition extends ConditionBase
         $single_conditions = [];
         $condition_groups = [];
         foreach ($this->conditions as $condition) {
-            if ($condition['field'] instanceof ConditionInterface) {
+            if ($condition['field'] instanceof Condition_Interface) {
                 $condition_groups[] = $condition;
             } else {
                 if (!isset($condition['operator'])) {
                     $condition['operator'] = is_array($condition['value']) ? 'IN' : '=';
                 }
-
                 // Process the value for operator that use it.
                 if (!in_array($condition['operator'], ['IS NULL', 'IS NOT NULL'], true)) {
                     // Lowercase condition value(s) for case-insensitive matches.
@@ -40,7 +37,6 @@ class Condition extends ConditionBase
                         $condition['value'] = mb_strtolower((string) $condition['value']);
                     }
                 }
-
                 $single_conditions[] = $condition;
             }
         }
@@ -48,7 +44,7 @@ class Condition extends ConditionBase
         if ($single_conditions) {
             foreach ($configs as $config_name => $config) {
                 foreach ($single_conditions as $condition) {
-                    $match = $this->matchArray($condition, $config, explode('.', (string) $condition['field']));
+                    $match = $this->match_array($condition, $config, explode('.', (string) $condition['field']));
                     // If AND and it's not matching, then the rest of conditions do not
                     // matter and this config object does not match.
                     // If OR and it is matching, then the rest of conditions do not
@@ -77,10 +73,8 @@ class Condition extends ConditionBase
                 $return = $return + $group_entities;
             }
         }
-
         return $return;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -88,15 +82,13 @@ class Condition extends ConditionBase
     {
         return $this->condition($field, null, 'IS NOT NULL', $langcode);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function notExists($field, $langcode = null)
+    public function not_exists($field, $langcode = null)
     {
         return $this->condition($field, null, 'IS NULL', $langcode);
     }
-
     /**
      * Matches for an array representing one or more config paths.
      *
@@ -113,7 +105,7 @@ class Condition extends ConditionBase
      * @return bool
      *   TRUE when the condition matched to the data else FALSE.
      */
-    protected function matchArray(array $condition, array $data, array $needs_matching, array $parents = []): bool
+    protected function match_array(array $condition, array $data, array $needs_matching, array $parents = []): bool
     {
         $parent = array_shift($needs_matching);
         if ($parent === '*') {
@@ -130,26 +122,18 @@ class Condition extends ConditionBase
                 if (is_array($data[$key])) {
                     $new_parents = $parents;
                     $new_parents[] = $key;
-                    if ($this->matchArray($condition, $data[$key], $needs_matching, $new_parents)) {
+                    if ($this->match_array($condition, $data[$key], $needs_matching, $new_parents)) {
                         return true;
                     }
-                }
-                // If the parent does not exist, it's safe to say the actual property
-                // we're checking for is also NULL.
-                elseif ($condition['operator'] === 'IS NULL') {
+                } elseif ($condition['operator'] === 'IS NULL') {
                     return true;
                 }
-            }
-            // Only try to match a scalar if there are no remaining keys in
-            // $needs_matching as this indicates that we are looking for a specific
-            // subkey and a scalar can never match that.
-            elseif ($this->match($condition, $data[$key])) {
+            } elseif ($this->match($condition, $data[$key])) {
                 return true;
             }
         }
         return false;
     }
-
     /**
      * Perform the actual matching.
      *
@@ -169,13 +153,11 @@ class Condition extends ConditionBase
             $should_be_set = $condition['operator'] === 'IS NOT NULL';
             return $should_be_set === isset($value);
         }
-
         if (isset($value)) {
             // We always want a case-insensitive match.
             if (!is_bool($value)) {
                 $value = mb_strtolower($value);
             }
-
             return match ($condition['operator']) {
                 '=' => $value == $condition['value'],
                 '>' => $value > $condition['value'],
@@ -188,10 +170,9 @@ class Condition extends ConditionBase
                 'STARTS_WITH' => str_starts_with($value, (string) $condition['value']),
                 'CONTAINS' => str_contains($value, (string) $condition['value']),
                 'ENDS_WITH' => str_ends_with($value, (string) $condition['value']),
-                default => throw new QueryException('Invalid condition operator.'),
+                default => throw new Query_Exception('Invalid condition operator.'),
             };
         }
         return false;
     }
-
 }

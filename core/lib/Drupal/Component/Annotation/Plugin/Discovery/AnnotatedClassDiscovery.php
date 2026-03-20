@@ -1,40 +1,35 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation\Plugin\Discovery;
 
-use Drupal\Component\Annotation\AnnotationInterface;
-use Drupal\Component\Annotation\Doctrine\AnnotationRegistry;
-use Drupal\Component\Annotation\Doctrine\SimpleAnnotationReader;
-use Drupal\Component\Annotation\Doctrine\StaticReflectionParser;
-use Drupal\Component\Annotation\Reflection\MockFileFinder;
-use Drupal\Component\FileCache\FileCacheFactory;
-use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
-use Drupal\Component\Plugin\Discovery\DiscoveryTrait;
+use Drupal\Component\Annotation\Annotation_Interface;
+use Drupal\Component\Annotation\Doctrine\Annotation_Registry;
+use Drupal\Component\Annotation\Doctrine\Simple_Annotation_Reader;
+use Drupal\Component\Annotation\Doctrine\Static_Reflection_Parser;
+use Drupal\Component\Annotation\Reflection\Mock_File_Finder;
+use Drupal\Component\File_Cache\File_Cache_Factory;
+use Drupal\Component\Plugin\Discovery\Discovery_Interface;
+use Drupal\Component\Plugin\Discovery\Discovery_Trait;
 use Drupal\Component\Utility\Crypt;
-
 /**
  * Defines a discovery mechanism to find annotated plugins in PSR-4 namespaces.
  */
-class AnnotatedClassDiscovery implements DiscoveryInterface
+class Annotated_Class_Discovery implements Discovery_Interface
 {
-    use DiscoveryTrait;
-
+    use Discovery_Trait;
     /**
      * The doctrine annotation reader.
      *
      * @var \Doctrine\Common\Annotations\Reader
      */
-    protected $annotationReader;
-
+    protected $annotation_reader;
     /**
      * The file cache object.
      *
      * @var \Drupal\Component\FileCache\FileCacheInterface
      */
-    protected $fileCache;
-
+    protected $file_cache;
     /**
      * Constructs a new instance.
      *
@@ -47,71 +42,66 @@ class AnnotatedClassDiscovery implements DiscoveryInterface
      * @param string[] $annotationNamespaces
      *   (optional) Additional namespaces to be scanned for annotation classes.
      */
-    public function __construct(/**
-   * The namespaces within which to find plugin classes.
-   */
-        protected $pluginNamespaces = [], /**
-   * The name of the annotation that contains the plugin definition.
-   *
-   * The class corresponding to this name must implement
-   * \Drupal\Component\Annotation\AnnotationInterface.
-   */
-        protected $pluginDefinitionAnnotationName = \Drupal\Component\Annotation\Plugin::class, /**
-   * Additional namespaces to be scanned for annotation classes.
-   */
-        protected array $annotationNamespaces = []
-    ) {
-        $file_cache_suffix = str_replace('\\', '_', $this->pluginDefinitionAnnotationName);
-        $file_cache_suffix .= ':' . Crypt::hashBase64(serialize($this->annotationNamespaces));
-        $this->fileCache = FileCacheFactory::get('annotation_discovery:' . $file_cache_suffix);
+    public function __construct(
+        /**
+         * The namespaces within which to find plugin classes.
+         */
+        protected $plugin_namespaces = [],
+        /**
+         * The name of the annotation that contains the plugin definition.
+         *
+         * The class corresponding to this name must implement
+         * \Drupal\Component\Annotation\AnnotationInterface.
+         */
+        protected $plugin_definition_annotation_name = \Drupal\Component\Annotation\Plugin::class,
+        /**
+         * Additional namespaces to be scanned for annotation classes.
+         */
+        protected array $annotation_namespaces = []
+    )
+    {
+        $file_cache_suffix = str_replace('\\', '_', $this->plugin_definition_annotation_name);
+        $file_cache_suffix .= ':' . Crypt::hash_base64(serialize($this->annotation_namespaces));
+        $this->file_cache = File_Cache_Factory::get('annotation_discovery:' . $file_cache_suffix);
     }
-
     /**
      * Gets the used doctrine annotation reader.
      *
      * @return \Doctrine\Common\Annotations\Reader
      *   The annotation reader.
      */
-    protected function getAnnotationReader()
+    protected function get_annotation_reader()
     {
-        if (!isset($this->annotationReader)) {
-            $this->annotationReader = new SimpleAnnotationReader();
-
+        if (!isset($this->annotation_reader)) {
+            $this->annotation_reader = new Simple_Annotation_Reader();
             // Add the namespaces from the main plugin annotation, like @EntityType.
-            $namespace = substr($this->pluginDefinitionAnnotationName, 0, strrpos($this->pluginDefinitionAnnotationName, '\\'));
-            $this->annotationReader->addNamespace($namespace);
-
+            $namespace = substr($this->plugin_definition_annotation_name, 0, strrpos($this->plugin_definition_annotation_name, '\\'));
+            $this->annotation_reader->add_namespace($namespace);
             // Register additional namespaces to be scanned for annotations.
-            foreach ($this->annotationNamespaces as $namespace) {
-                $this->annotationReader->addNamespace($namespace);
+            foreach ($this->annotation_namespaces as $namespace) {
+                $this->annotation_reader->add_namespace($namespace);
             }
         }
-        return $this->annotationReader;
+        return $this->annotation_reader;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function getDefinitions(): array
+    public function get_definitions(): array
     {
         $definitions = [];
-
-        $reader = $this->getAnnotationReader();
-
+        $reader = $this->get_annotation_reader();
         // Clear the annotation loaders of any previous annotation classes.
-        AnnotationRegistry::reset();
-
+        Annotation_Registry::reset();
         // Search for classes within all PSR-4 namespace locations.
-        foreach ($this->getPluginNamespaces() as $namespace => $dirs) {
+        foreach ($this->get_plugin_namespaces() as $namespace => $dirs) {
             foreach ($dirs as $dir) {
                 if (file_exists($dir)) {
-                    $iterator = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS)
-                    );
+                    $iterator = new \Recursive_Iterator_Iterator(new \Recursive_Directory_Iterator($dir, \Recursive_Directory_Iterator::SKIP_DOTS));
                     foreach ($iterator as $fileinfo) {
-                        if ($fileinfo->getExtension() == 'php') {
-                            if ($cached = $this->fileCache->get($fileinfo->getPathName())) {
+                        if ($fileinfo->get_extension() == 'php') {
+                            if ($cached = $this->file_cache->get($fileinfo->get_path_name())) {
                                 if (isset($cached['id'])) {
                                     // Explicitly unserialize this to create a new object
                                     // instance.
@@ -119,42 +109,35 @@ class AnnotatedClassDiscovery implements DiscoveryInterface
                                 }
                                 continue;
                             }
-
-                            $sub_path = $iterator->getSubIterator()->getSubPath();
+                            $sub_path = $iterator->get_sub_iterator()->get_sub_path();
                             $sub_path = $sub_path ? str_replace(DIRECTORY_SEPARATOR, '\\', $sub_path) . '\\' : '';
-                            $class = $namespace . '\\' . $sub_path . $fileinfo->getBasename('.php');
-
+                            $class = $namespace . '\\' . $sub_path . $fileinfo->get_basename('.php');
                             // The filename is already known, so there is no need to find the
                             // file. However, StaticReflectionParser needs a finder, so use a
                             // mock version.
-                            $finder = MockFileFinder::create($fileinfo->getPathName());
-                            $parser = new StaticReflectionParser($class, $finder, true);
-
+                            $finder = Mock_File_Finder::create($fileinfo->get_path_name());
+                            $parser = new Static_Reflection_Parser($class, $finder, true);
                             /** @var \Drupal\Component\Annotation\AnnotationInterface $annotation */
-                            if ($annotation = $reader->getClassAnnotation($parser->getReflectionClass(), $this->pluginDefinitionAnnotationName)) {
-                                $this->prepareAnnotationDefinition($annotation, $class);
-
-                                $id = $annotation->getId();
+                            if ($annotation = $reader->get_class_annotation($parser->get_reflection_class(), $this->plugin_definition_annotation_name)) {
+                                $this->prepare_annotation_definition($annotation, $class);
+                                $id = $annotation->get_id();
                                 $content = $annotation->get();
                                 $definitions[$id] = $content;
                                 // Explicitly serialize this to create a new object instance.
-                                $this->fileCache->set($fileinfo->getPathName(), ['id' => $id, 'content' => serialize($content)]);
+                                $this->file_cache->set($fileinfo->get_path_name(), ['id' => $id, 'content' => serialize($content)]);
                             } else {
                                 // Store a NULL object, so the file is not parsed again.
-                                $this->fileCache->set($fileinfo->getPathName(), [null]);
+                                $this->file_cache->set($fileinfo->get_path_name(), [null]);
                             }
                         }
                     }
                 }
             }
         }
-
         // Don't let annotation loaders pile up.
-        AnnotationRegistry::reset();
-
+        Annotation_Registry::reset();
         return $definitions;
     }
-
     /**
      * Prepares the annotation definition.
      *
@@ -163,20 +146,18 @@ class AnnotatedClassDiscovery implements DiscoveryInterface
      * @param string $class
      *   The class used for the plugin.
      */
-    protected function prepareAnnotationDefinition(AnnotationInterface $annotation, $class)
+    protected function prepare_annotation_definition(Annotation_Interface $annotation, $class)
     {
-        $annotation->setClass($class);
+        $annotation->set_class($class);
     }
-
     /**
      * Gets an array of PSR-4 namespaces to search for plugin classes.
      *
      * @return array<string, list<string>>
      *   The PSR-4 namespaces for the plugin class.
      */
-    protected function getPluginNamespaces()
+    protected function get_plugin_namespaces()
     {
-        return $this->pluginNamespaces;
+        return $this->plugin_namespaces;
     }
-
 }

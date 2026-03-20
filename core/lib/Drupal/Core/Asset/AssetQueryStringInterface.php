@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Provides a cache busting query string service for asset URLs.
  */
-interface AssetQueryStringInterface
+interface Asset_Query_String_Interface
 {
     /**
      * Resets the cache query string added to all CSS and JavaScript URLs.
@@ -16,10 +15,8 @@ interface AssetQueryStringInterface
      * all browsers to fetch fresh files.
      */
     public function reset(): void;
-
     /**
      * Gets the query string value.
      */
     public function get(): string;
-
 }

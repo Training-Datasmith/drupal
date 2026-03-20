@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Symfony\Component\Routing\RouteCollection;
-
+use Symfony\Component\Routing\Route_Collection;
 /**
  * Provides the available access checkers by service IDs.
  *
@@ -15,7 +13,7 @@ use Symfony\Component\Routing\RouteCollection;
  * The checker provider service and the actual checking is separated in order
  * to not require the full access manager on route build time.
  */
-interface CheckProviderInterface
+interface Check_Provider_Interface
 {
     /**
      * For each route, saves a list of applicable access checks to the route.
@@ -23,8 +21,7 @@ interface CheckProviderInterface
      * @param \Symfony\Component\Routing\RouteCollection $routes
      *   A collection of routes to apply checks to.
      */
-    public function setChecks(RouteCollection $routes);
-
+    public function set_checks(Route_Collection $routes);
     /**
      * Registers a new AccessCheck by service ID.
      *
@@ -38,8 +35,7 @@ interface CheckProviderInterface
      * @param bool $needs_incoming_request
      *   (optional) True if access-check method only acts on an incoming request.
      */
-    public function addCheckService($service_id, $service_method, array $applies_checks = [], $needs_incoming_request = false);
-
+    public function add_check_service($service_id, $service_method, array $applies_checks = [], $needs_incoming_request = false);
     /**
      * Lazy-loads access check services.
      *
@@ -54,14 +50,12 @@ interface CheckProviderInterface
      * @throws \Drupal\Core\Access\AccessException
      *   Thrown when the service doesn't implement the required interface.
      */
-    public function loadCheck($service_id);
-
+    public function load_check($service_id);
     /**
      * A list of checks that needs the request.
      *
      * @return array
      *   Array of access checks which will only be run on the incoming request.
      */
-    public function getChecksNeedRequest();
-
+    public function get_checks_need_request();
 }

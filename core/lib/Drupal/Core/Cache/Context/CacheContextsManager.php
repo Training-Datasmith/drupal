@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Converts cache context tokens into cache keys.
  *
@@ -22,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\Core\Cache\Context\CalculatedCacheContextInterface
  * @see \Drupal\Core\Cache\Context\CacheContextsPass
  */
-class CacheContextsManager
+class Cache_Contexts_Manager
 {
     /**
      * The service container.
@@ -30,12 +28,10 @@ class CacheContextsManager
      * @var \Symfony\Component\DependencyInjection\ContainerInterface
      */
     protected $container;
-
     /**
      * The set of valid context tokens.
      */
-    protected array $validContextTokens;
-
+    protected array $valid_context_tokens;
     /**
      * Constructs a CacheContextsManager object.
      *
@@ -44,25 +40,26 @@ class CacheContextsManager
      * @param string[] $contexts
      *   An array of the available cache context IDs.
      */
-    public function __construct(ContainerInterface $container, /**
-   * Available cache context IDs and corresponding labels.
-   */
-        protected array $contexts)
+    public function __construct(
+        Container_Interface $container,
+        /**
+         * Available cache context IDs and corresponding labels.
+         */
+        protected array $contexts
+    )
     {
         $this->container = $container;
     }
-
     /**
      * Provides an array of available cache contexts.
      *
      * @return string[]
      *   An array of available cache context IDs.
      */
-    public function getAll()
+    public function get_all()
     {
         return $this->contexts;
     }
-
     /**
      * Provides an array of available cache context labels.
      *
@@ -74,19 +71,18 @@ class CacheContextsManager
      * @return array
      *   An array of available cache contexts and corresponding labels.
      */
-    public function getLabels($include_calculated_cache_contexts = false): array
+    public function get_labels($include_calculated_cache_contexts = false): array
     {
         $with_labels = [];
         foreach ($this->contexts as $context) {
-            $service = $this->getService($context);
-            if (!$include_calculated_cache_contexts && $service instanceof CalculatedCacheContextInterface) {
+            $service = $this->get_service($context);
+            if (!$include_calculated_cache_contexts && $service instanceof Calculated_Cache_Context_Interface) {
                 continue;
             }
-            $with_labels[$context] = $service->getLabel();
+            $with_labels[$context] = $service->get_label();
         }
         return $with_labels;
     }
-
     /**
      * Converts cache context tokens to cache keys.
      *
@@ -104,31 +100,28 @@ class CacheContextsManager
      *   The ContextCacheKeys object containing the converted cache keys and
      *   cacheability metadata.
      */
-    public function convertTokensToKeys(array $context_tokens)
+    public function convert_tokens_to_keys(array $context_tokens)
     {
-        assert($this->assertValidTokens($context_tokens));
-        $cacheable_metadata = new CacheableMetadata();
-        $optimized_tokens = $this->optimizeTokens($context_tokens);
+        assert($this->assert_valid_tokens($context_tokens));
+        $cacheable_metadata = new Cacheable_Metadata();
+        $optimized_tokens = $this->optimize_tokens($context_tokens);
         // Iterate over cache contexts that have been optimized away and get their
         // cacheability metadata.
-        foreach (static::parseTokens(array_diff($context_tokens, $optimized_tokens)) as $context_token) {
+        foreach (static::parse_tokens(array_diff($context_tokens, $optimized_tokens)) as $context_token) {
             [$context_id, $parameter] = $context_token;
-            $context = $this->getService($context_id);
-            $cacheable_metadata = $cacheable_metadata->merge($context->getCacheableMetadata($parameter));
+            $context = $this->get_service($context_id);
+            $cacheable_metadata = $cacheable_metadata->merge($context->get_cacheable_metadata($parameter));
         }
-
         sort($optimized_tokens);
         $keys = [];
-        foreach (array_combine($optimized_tokens, static::parseTokens($optimized_tokens)) as $context_token => $context) {
+        foreach (array_combine($optimized_tokens, static::parse_tokens($optimized_tokens)) as $context_token => $context) {
             [$context_id, $parameter] = $context;
-            $keys[] = '[' . $context_token . ']=' . $this->getService($context_id)->getContext($parameter);
+            $keys[] = '[' . $context_token . ']=' . $this->get_service($context_id)->get_context($parameter);
         }
-
         // Create the returned object and merge in the cacheability metadata.
-        $context_cache_keys = new ContextCacheKeys($keys);
+        $context_cache_keys = new Context_Cache_Keys($keys);
         return $context_cache_keys->merge($cacheable_metadata);
     }
-
     /**
      * Optimizes cache context tokens (the minimal representative subset).
      *
@@ -162,33 +155,25 @@ class CacheContextsManager
      * @return string[]
      *   A representative subset of the given set of cache context tokens.
      */
-    public function optimizeTokens(array $context_tokens): array
+    public function optimize_tokens(array $context_tokens): array
     {
         $optimized_content_tokens = [];
         foreach ($context_tokens as $context_token) {
-
             // Extract the parameter if available.
             $parameter = null;
             $context_id = $context_token;
             if (str_contains($context_token, ':')) {
                 [$context_id, $parameter] = explode(':', $context_token);
             }
-
             // Context tokens without:
             // - a period means they don't have a parent
             // - a colon means they're not a specific value of a cache context
             // hence no optimizations are possible.
             if (!str_contains($context_token, '.') && !str_contains($context_token, ':')) {
                 $optimized_content_tokens[] = $context_token;
-            }
-            // Check cacheability. If the context defines a max-age of 0, then it
-            // can not be optimized away. Pass the parameter along if we have one.
-            elseif ($this->getService($context_id)->getCacheableMetadata($parameter)->getCacheMaxAge() === 0) {
+            } elseif ($this->get_service($context_id)->get_cacheable_metadata($parameter)->get_cache_max_age() === 0) {
                 $optimized_content_tokens[] = $context_token;
-            }
-            // The context token has a period or a colon. Iterate over all ancestor
-            // cache contexts. If one exists, omit the context token.
-            else {
+            } else {
                 $ancestor_found = false;
                 // Treat a colon like a period, that allows us to consider 'a' the
                 // ancestor of 'a:foo', without any additional code for the colon.
@@ -200,7 +185,6 @@ class CacheContextsManager
                         // context is implied.
                         $ancestor_found = true;
                     }
-
                 } while (!$ancestor_found && str_contains($ancestor, '.'));
                 if (!$ancestor_found) {
                     $optimized_content_tokens[] = $context_token;
@@ -209,7 +193,6 @@ class CacheContextsManager
         }
         return $optimized_content_tokens;
     }
-
     /**
      * Retrieves a cache context service from the container.
      *
@@ -220,11 +203,10 @@ class CacheContextsManager
      * @return \Drupal\Core\Cache\Context\CacheContextInterface
      *   The requested cache context service.
      */
-    protected function getService(string $context_id)
+    protected function get_service(string $context_id)
     {
         return $this->container->get('cache_context.' . $context_id);
     }
-
     /**
      * Parses cache context tokens into context IDs and optional parameters.
      *
@@ -238,7 +220,7 @@ class CacheContextsManager
      *   - The associated parameter (for a calculated cache context), or NULL if
      *     there is no parameter.
      */
-    public static function parseTokens(array $context_tokens): array
+    public static function parse_tokens(array $context_tokens): array
     {
         $contexts_with_parameters = [];
         foreach ($context_tokens as $context) {
@@ -251,7 +233,6 @@ class CacheContextsManager
         }
         return $contexts_with_parameters;
     }
-
     /**
      * Validates an array of cache context tokens.
      *
@@ -264,26 +245,22 @@ class CacheContextsManager
      *
      * @see \Drupal\Core\Cache\Context\CacheContextsManager::parseTokens()
      */
-    public function validateTokens(array $context_tokens = []): void
+    public function validate_tokens(array $context_tokens = []): void
     {
         if (empty($context_tokens)) {
             return;
         }
-
         // Initialize the set of valid context tokens with the container's contexts.
-        if (!isset($this->validContextTokens)) {
-            $this->validContextTokens = array_flip($this->contexts);
+        if (!isset($this->valid_context_tokens)) {
+            $this->valid_context_tokens = array_flip($this->contexts);
         }
-
         foreach ($context_tokens as $context_token) {
             if (!is_string($context_token)) {
                 throw new \LogicException(sprintf('Cache contexts must be strings, %s given.', gettype($context_token)));
             }
-
-            if (isset($this->validContextTokens[$context_token])) {
+            if (isset($this->valid_context_tokens[$context_token])) {
                 continue;
             }
-
             // If it's a valid context token, then the ID must be stored in the set
             // of valid context tokens (since we initialized it with the list of cache
             // context IDs using the container). In case of an invalid context token,
@@ -294,14 +271,13 @@ class CacheContextsManager
             if ($colon_pos !== false) {
                 $context_id = substr($context_id, 0, $colon_pos);
             }
-            if (isset($this->validContextTokens[$context_id])) {
-                $this->validContextTokens[$context_token] = true;
+            if (isset($this->valid_context_tokens[$context_id])) {
+                $this->valid_context_tokens[$context_token] = true;
             } else {
                 throw new \LogicException(sprintf('"%s" is not a valid cache context ID.', $context_id));
             }
         }
     }
-
     /**
      * Asserts the context tokens are valid.
      *
@@ -316,19 +292,16 @@ class CacheContextsManager
      * @return bool
      *   TRUE if context_tokens is an array of valid tokens.
      */
-    public function assertValidTokens($context_tokens): bool
+    public function assert_valid_tokens($context_tokens): bool
     {
         if (!is_array($context_tokens)) {
             return false;
         }
-
         try {
-            $this->validateTokens($context_tokens);
+            $this->validate_tokens($context_tokens);
         } catch (\LogicException) {
             return false;
         }
-
         return true;
     }
-
 }

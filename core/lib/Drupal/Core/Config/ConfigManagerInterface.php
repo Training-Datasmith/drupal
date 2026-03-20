@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * Provides an interface for configuration manager.
  */
-interface ConfigManagerInterface
+interface Config_Manager_Interface
 {
     /**
      * Returns the entity type of a configuration object.
@@ -18,8 +17,7 @@ interface ConfigManagerInterface
      * @return string|null
      *   Either the entity type name, or NULL if none match.
      */
-    public function getEntityTypeIdByName($name);
-
+    public function get_entity_type_id_by_name($name);
     /**
      * Loads a configuration entity using the configuration name.
      *
@@ -29,24 +27,21 @@ interface ConfigManagerInterface
      * @return \Drupal\Core\Entity\EntityInterface|null
      *   The configuration entity or NULL if it does not exist.
      */
-    public function loadConfigEntityByName($name);
-
+    public function load_config_entity_by_name($name);
     /**
      * Gets the entity type manager.
      *
      * @return \Drupal\Core\Entity\EntityTypeManagerInterface
      *   The entity type manager.
      */
-    public function getEntityTypeManager();
-
+    public function get_entity_type_manager();
     /**
      * Gets the config factory.
      *
      * @return \Drupal\Core\Config\ConfigFactoryInterface
      *   The config factory.
      */
-    public function getConfigFactory();
-
+    public function get_config_factory();
     /**
      * Creates a Diff object using the config data from the two storages.
      *
@@ -70,8 +65,7 @@ interface ConfigManagerInterface
      *
      * @see \Drupal\Core\Diff\DiffFormatter
      */
-    public function diff(StorageInterface $source_storage, StorageInterface $target_storage, $source_name, $target_name = null, $collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function diff(Storage_Interface $source_storage, Storage_Interface $target_storage, $source_name, $target_name = null, $collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Creates a configuration snapshot following a successful import.
      *
@@ -80,8 +74,7 @@ interface ConfigManagerInterface
      * @param \Drupal\Core\Config\StorageInterface $snapshot_storage
      *   The storage to synchronize configuration to.
      */
-    public function createSnapshot(StorageInterface $source_storage, StorageInterface $snapshot_storage);
-
+    public function create_snapshot(Storage_Interface $source_storage, Storage_Interface $snapshot_storage);
     /**
      * Uninstalls the configuration of a given extension.
      *
@@ -91,7 +84,6 @@ interface ConfigManagerInterface
      *   The name of the module or theme to install configuration for.
      */
     public function uninstall($type, $name);
-
     /**
      * Creates and populates a ConfigDependencyManager object.
      *
@@ -101,8 +93,7 @@ interface ConfigManagerInterface
      * @return \Drupal\Core\Config\Entity\ConfigDependencyManager
      *   The configuration dependency manager.
      */
-    public function getConfigDependencyManager();
-
+    public function get_config_dependency_manager();
     /**
      * Finds config entities that are dependent on extensions or entities.
      *
@@ -117,8 +108,7 @@ interface ConfigManagerInterface
      * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
      *   An array of configuration entity dependency objects.
      */
-    public function findConfigEntityDependencies($type, array $names);
-
+    public function find_config_entity_dependencies($type, array $names);
     /**
      * Finds config entities that are dependent on extensions or entities.
      *
@@ -133,8 +123,7 @@ interface ConfigManagerInterface
      * @return \Drupal\Core\Config\Entity\ConfigEntityInterface[]
      *   An array of dependencies as configuration entities.
      */
-    public function findConfigEntityDependenciesAsEntities($type, array $names);
-
+    public function find_config_entity_dependencies_as_entities($type, array $names);
     /**
      * Lists config entities to update and delete on removal of a dependency.
      *
@@ -157,16 +146,14 @@ interface ConfigManagerInterface
      *   processed before deletes. The order of the deletes is significant and
      *   must be processed in the returned order.
      */
-    public function getConfigEntitiesToChangeOnDependencyRemoval($type, array $names, $dry_run = true);
-
+    public function get_config_entities_to_change_on_dependency_removal($type, array $names, $dry_run = true);
     /**
      * Gets available collection information using the event system.
      *
      * @return \Drupal\Core\Config\ConfigCollectionInfo
      *   The object which contains information about the available collections.
      */
-    public function getConfigCollectionInfo();
-
+    public function get_config_collection_info();
     /**
      * Finds missing content dependencies declared in configuration entities.
      *
@@ -175,6 +162,5 @@ interface ConfigManagerInterface
      *   value is an array with the following keys: 'entity_type', 'bundle' and
      *   'uuid'.
      */
-    public function findMissingContentDependencies();
-
+    public function find_missing_content_dependencies();
 }

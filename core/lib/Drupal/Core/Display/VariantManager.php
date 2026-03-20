@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display;
 
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Display\Attribute\DisplayVariant;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\DefaultPluginManager;
-
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Display\Attribute\Display_Variant;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Plugin\Default_Plugin_Manager;
 /**
  * Manages discovery of display variant plugins.
  *
@@ -17,7 +15,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * @see \Drupal\Core\Display\VariantBase
  * @see plugin_api
  */
-class VariantManager extends DefaultPluginManager
+class Variant_Manager extends Default_Plugin_Manager
 {
     /**
      * Constructs a new VariantManager.
@@ -30,12 +28,10 @@ class VariantManager extends DefaultPluginManager
      * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
      *   The module handler to invoke the alter hook with.
      */
-    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler)
+    public function __construct(\Traversable $namespaces, Cache_Backend_Interface $cache_backend, Module_Handler_Interface $module_handler)
     {
-        parent::__construct('Plugin/DisplayVariant', $namespaces, $module_handler, VariantInterface::class, DisplayVariant::class, \Drupal\Core\Display\Annotation\DisplayVariant::class);
-
-        $this->setCacheBackend($cache_backend, 'variant_plugins');
-        $this->alterInfo('display_variant_plugin');
+        parent::__construct('Plugin/DisplayVariant', $namespaces, $module_handler, Variant_Interface::class, Display_Variant::class, \Drupal\Core\Display\Annotation\Display_Variant::class);
+        $this->set_cache_backend($cache_backend, 'variant_plugins');
+        $this->alter_info('display_variant_plugin');
     }
-
 }

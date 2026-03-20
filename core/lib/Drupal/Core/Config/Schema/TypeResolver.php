@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\TypedData\TypedDataInterface;
-
+use Drupal\Core\Typed_Data\Typed_Data_Interface;
 /**
  * Provides helper methods for resolving config schema types.
  *
@@ -13,7 +11,7 @@ use Drupal\Core\TypedData\TypedDataInterface;
  *   This is an internal part of the config schema system and may be changed or
  *   removed any time. External code should not interact with this class.
  */
-class TypeResolver
+class Type_Resolver
 {
     /**
      * Replaces dynamic type expressions in configuration type.
@@ -31,19 +29,18 @@ class TypeResolver
      * @return string
      *   Configuration type name with all expressions resolved.
      */
-    public static function resolveDynamicTypeName(string $name, mixed $data): string
+    public static function resolve_dynamic_type_name(string $name, mixed $data): string
     {
-        if (preg_match_all("/\[(.*)\]/U", $name, $matches)) {
+        if (preg_match_all("/\\[(.*)\\]/U", $name, $matches)) {
             // Build our list of '[value]' => replacement.
             $replace = [];
             foreach (array_combine($matches[0], $matches[1]) as $key => $value) {
-                $replace[$key] = self::resolveExpression($value, $data);
+                $replace[$key] = self::resolve_expression($value, $data);
             }
             return strtr($name, $replace);
         }
         return $name;
     }
-
     /**
      * Resolves a dynamic type expression using configuration data.
      *
@@ -79,16 +76,11 @@ class TypeResolver
      * @throws \LogicException
      *    Exception thrown if $expression is not a valid dynamic type expression.
      */
-    public static function resolveExpression(string $expression, array|TypedDataInterface $data): string
+    public static function resolve_expression(string $expression, array|Typed_Data_Interface $data): string
     {
-        if ($data instanceof TypedDataInterface) {
-            $data = [
-              '%parent' => $data->getParent(),
-              '%key' => $data->getName(),
-              '%type' => $data->getDataDefinition()->getDataType(),
-            ];
+        if ($data instanceof Typed_Data_Interface) {
+            $data = ['%parent' => $data->get_parent(), '%key' => $data->get_name(), '%type' => $data->get_data_definition()->get_data_type()];
         }
-
         $parts = explode('.', $expression);
         $previous_name = null;
         // Process each value part, one at a time.
@@ -117,12 +109,12 @@ class TypeResolver
                 /** @var \Drupal\Core\Config\Schema\ArrayElement $parent */
                 // Switch replacement values with values from the parent.
                 $parent = $data['%parent'];
-                $data = $parent->getValue();
-                $data['%type'] = $parent->getDataDefinition()->getDataType();
+                $data = $parent->get_value();
+                $data['%type'] = $parent->get_data_definition()->get_data_type();
                 // The special %parent and %key values now need to point one level up.
-                if ($new_parent = $parent->getParent()) {
+                if ($new_parent = $parent->get_parent()) {
                     $data['%parent'] = $new_parent;
-                    $data['%key'] = $new_parent->getName();
+                    $data['%key'] = $new_parent->get_name();
                 }
                 continue;
             }
@@ -131,5 +123,4 @@ class TypeResolver
         // Return the original value.
         return $expression;
     }
-
 }

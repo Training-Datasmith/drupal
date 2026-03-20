@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Core\Asset\AttachedAssets;
-
+use Drupal\Core\Asset\Attached_Assets;
 /**
  * AJAX command for a JavaScript Drupal.announce() call.
  *
@@ -20,7 +18,7 @@ use Drupal\Core\Asset\AttachedAssets;
  *
  * @ingroup ajax
  */
-class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+class Announce_Command implements Command_Interface, Command_With_Attached_Assets_Interface
 {
     /**
      * The assertive priority attribute value.
@@ -28,14 +26,12 @@ class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInte
      * @var string
      */
     public const PRIORITY_ASSERTIVE = 'assertive';
-
     /**
      * The polite priority attribute value.
      *
      * @var string
      */
     public const PRIORITY_POLITE = 'polite';
-
     /**
      * Constructs an AnnounceCommand object.
      *
@@ -56,32 +52,27 @@ class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInte
          * The priority that will be used for the announcement.
          */
         protected $priority = null
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        $render = [
-          'command' => 'announce',
-          'text' => $this->text,
-        ];
+        $render = ['command' => 'announce', 'text' => $this->text];
         if ($this->priority !== null) {
             $render['priority'] = $this->priority;
         }
         return $render;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets
+    public function get_attached_assets(): \Drupal\Core\Asset\Attached_Assets
     {
-        $assets = new AttachedAssets();
-        $assets->setLibraries(['core/drupal.announce']);
+        $assets = new Attached_Assets();
+        $assets->set_libraries(['core/drupal.announce']);
         return $assets;
     }
-
 }

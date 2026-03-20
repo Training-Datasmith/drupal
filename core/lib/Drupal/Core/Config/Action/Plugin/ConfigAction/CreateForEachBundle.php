@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Config\Action\Plugin\Config_Action;
 
-namespace Drupal\Core\Config\Action\Plugin\ConfigAction;
-
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Core\Config\Action\Attribute\ConfigAction;
-use Drupal\Core\Config\Action\ConfigActionManager;
-use Drupal\Core\Config\Action\ConfigActionPluginInterface;
-use Drupal\Core\Config\Action\Plugin\ConfigAction\Deriver\CreateForEachBundleDeriver;
-use Drupal\Core\Config\ConfigManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Component\Plugin\Exception\Invalid_Plugin_Definition_Exception;
+use Drupal\Core\Config\Action\Attribute\Config_Action;
+use Drupal\Core\Config\Action\Config_Action_Manager;
+use Drupal\Core\Config\Action\Config_Action_Plugin_Interface;
+use Drupal\Core\Config\Action\Plugin\Config_Action\Deriver\Create_For_Each_Bundle_Deriver;
+use Drupal\Core\Config\Config_Manager_Interface;
+use Drupal\Core\Plugin\Container_Factory_Plugin_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Creates config entities for each bundle of a particular entity type.
  *
@@ -37,12 +35,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   This API is experimental.
  */
-#[ConfigAction(
-    id: 'create_for_each_bundle',
-    admin_label: new TranslatableMarkup('Create entities for each bundle of an entity type'),
-    deriver: CreateForEachBundleDeriver::class,
-)]
-final readonly class CreateForEachBundle implements ConfigActionPluginInterface, ContainerFactoryPluginInterface
+#[Config_Action(id: 'create_for_each_bundle', admin_label: new Translatable_Markup('Create entities for each bundle of an entity type'), deriver: Create_For_Each_Bundle_Deriver::class)]
+final readonly class Create_For_Each_Bundle implements Config_Action_Plugin_Interface, Container_Factory_Plugin_Interface
 {
     /**
      * The placeholder which is replaced with the ID of the current bundle.
@@ -50,59 +44,41 @@ final readonly class CreateForEachBundle implements ConfigActionPluginInterface,
      * @var string
      */
     private const BUNDLE_PLACEHOLDER = '%bundle';
-
     /**
      * The placeholder which is replaced with the label of the current bundle.
      *
      * @var string
      */
     private const LABEL_PLACEHOLDER = '%label';
-
-    public function __construct(
-        private ConfigManagerInterface $configManager,
-        private string $createAction,
-        private ConfigActionManager $configActionManager,
-    ) {
+    public function __construct(private Config_Manager_Interface $config_manager, private string $create_action, private Config_Action_Manager $config_action_manager)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    public static function create(Container_Interface $container, array $configuration, $plugin_id, $plugin_definition): static
     {
         // If there are no bundle entity types, this plugin should not be usable.
         if (empty($plugin_definition['entity_types'])) {
-            throw new InvalidPluginDefinitionException($plugin_id, "The $plugin_id config action must be restricted to entity types that are bundles of another entity type.");
+            throw new Invalid_Plugin_Definition_Exception($plugin_id, "The {$plugin_id} config action must be restricted to entity types that are bundles of another entity type.");
         }
-
-        return new static(
-            $container->get(ConfigManagerInterface::class),
-            $plugin_definition['create_action'],
-            $container->get('plugin.manager.config_action'),
-        );
+        return new static($container->get(Config_Manager_Interface::class), $plugin_definition['create_action'], $container->get('plugin.manager.config_action'));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function apply(string $configName, mixed $value): void
+    public function apply(string $config_name, mixed $value): void
     {
         assert(is_array($value));
-
-        $bundle = $this->configManager->loadConfigEntityByName($configName);
+        $bundle = $this->config_manager->load_config_entity_by_name($config_name);
         assert(is_object($bundle));
-        $value = static::replacePlaceholders($value, [
-          static::BUNDLE_PLACEHOLDER => $bundle->id(),
-          static::LABEL_PLACEHOLDER => $bundle->label(),
-        ]);
-
+        $value = static::replace_placeholders($value, [static::BUNDLE_PLACEHOLDER => $bundle->id(), static::LABEL_PLACEHOLDER => $bundle->label()]);
         foreach ($value as $name => $values) {
             // Invoke the actual create action via the config action manager, so that
             // the created entity will be validated.
-            $this->configActionManager->applyAction('entity_create:' . $this->createAction, $name, $values);
+            $this->config_action_manager->apply_action('entity_create:' . $this->create_action, $name, $values);
         }
     }
-
     /**
      * Replaces placeholders recursively.
      *
@@ -117,21 +93,17 @@ final readonly class CreateForEachBundle implements ConfigActionPluginInterface,
      * @return mixed
      *   The given $data, with the `%bundle` and `%label` placeholders replaced.
      */
-    private static function replacePlaceholders(mixed $data, array $replacements): mixed
+    private static function replace_placeholders(mixed $data, array $replacements): mixed
     {
         assert(array_key_exists(static::BUNDLE_PLACEHOLDER, $replacements));
-
         if (is_string($data)) {
             return str_replace(array_keys($replacements), $replacements, $data);
         }
-
         if (!is_array($data)) {
             return $data;
         }
-
         foreach ($data as $old_key => $value) {
-            $value = static::replacePlaceholders($value, $replacements);
-
+            $value = static::replace_placeholders($value, $replacements);
             // Only replace the `%bundle` placeholder in array keys.
             // Non-string keys cannot contain placeholders.
             if (is_string($old_key)) {
@@ -140,8 +112,6 @@ final readonly class CreateForEachBundle implements ConfigActionPluginInterface,
                 $data[$new_key] = $value;
             }
         }
-
         return $data;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Core\Config\Action;
  * @internal
  *   This API is experimental.
  */
-class DuplicateConfigActionIdException extends \RuntimeException
+class Duplicate_Config_Action_Id_Exception extends \RuntimeException
 {
 }

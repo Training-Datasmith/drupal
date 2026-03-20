@@ -1,30 +1,26 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 use Drupal\Core\Site\Settings;
-use Psr\Container\ContainerInterface;
-
+use Psr\Container\Container_Interface;
 /**
  * Defines the cache backend factory.
  */
-class CacheFactory implements CacheFactoryInterface
+class Cache_Factory implements Cache_Factory_Interface
 {
     /**
      * The service container.
      */
-    protected ContainerInterface $container;
-
+    protected Container_Interface $container;
     /**
      * Sets the service container.
      */
-    public function setContainer(ContainerInterface $container): void
+    public function set_container(Container_Interface $container): void
     {
         $this->container = $container;
     }
-
     /**
      * Constructs CacheFactory object.
      *
@@ -37,10 +33,9 @@ class CacheFactory implements CacheFactoryInterface
      *   (optional) A mapping of bin to backend service name. Mappings in
      *   $settings take precedence over this.
      */
-    public function __construct(protected \Drupal\Core\Site\Settings $settings, protected array $defaultBinBackends = [], protected array $memoryDefaultBinBackends = [])
+    public function __construct(protected \Drupal\Core\Site\Settings $settings, protected array $default_bin_backends = [], protected array $memory_default_bin_backends = [])
     {
     }
-
     /**
      * Instantiates a cache backend class for a given cache bin.
      *
@@ -62,15 +57,11 @@ class CacheFactory implements CacheFactoryInterface
         // First, look for a cache bin specific setting.
         if (isset($cache_settings['bins'][$bin])) {
             $service_name = $cache_settings['bins'][$bin];
-        }
-        // Second, use the default backend specified by the cache bin.
-        elseif (isset($this->defaultBinBackends[$bin])) {
-            $service_name = $this->defaultBinBackends[$bin];
-        } elseif (isset($this->memoryDefaultBinBackends[$bin])) {
-            $service_name = $this->memoryDefaultBinBackends[$bin];
-        }
-        // Third, use configured default backend.
-        elseif (isset($cache_settings['default'])) {
+        } elseif (isset($this->default_bin_backends[$bin])) {
+            $service_name = $this->default_bin_backends[$bin];
+        } elseif (isset($this->memory_default_bin_backends[$bin])) {
+            $service_name = $this->memory_default_bin_backends[$bin];
+        } elseif (isset($cache_settings['default'])) {
             $service_name = $cache_settings['default'];
         } else {
             // Fall back to the database backend if nothing else is configured.
@@ -78,5 +69,4 @@ class CacheFactory implements CacheFactoryInterface
         }
         return $this->container->get($service_name)->get($bin);
     }
-
 }

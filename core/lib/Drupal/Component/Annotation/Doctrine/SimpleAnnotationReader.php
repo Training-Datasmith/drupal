@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
-
 /**
  * @file
  *
@@ -25,7 +24,6 @@ declare(strict_types=1);
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 namespace Drupal\Component\Annotation\Doctrine;
 
 /**
@@ -36,35 +34,10 @@ namespace Drupal\Component\Annotation\Doctrine;
  *
  * @internal
  */
-final class SimpleAnnotationReader
+final class Simple_Annotation_Reader
 {
-    protected $ignoredAnnotations = [
-      'addtogroup' => true,
-      'code' => true,
-      'defgroup' => true,
-      'deprecated' => true,
-      'endcode' => true,
-      'endlink' => true,
-      'file' => true,
-      'ingroup' => true,
-      'group' => true,
-      'link' => true,
-      'mainpage' => true,
-      'param' => true,
-      'ref' => true,
-      'return' => true,
-      'section' => true,
-      'see' => true,
-      'subsection' => true,
-      'throws' => true,
-      'todo' => true,
-      'var' => true,
-      '{' => true,
-      '}' => true,
-    ];
-
-    private readonly \Drupal\Component\Annotation\Doctrine\DocParser $parser;
-
+    protected $ignored_annotations = ['addtogroup' => true, 'code' => true, 'defgroup' => true, 'deprecated' => true, 'endcode' => true, 'endlink' => true, 'file' => true, 'ingroup' => true, 'group' => true, 'link' => true, 'mainpage' => true, 'param' => true, 'ref' => true, 'return' => true, 'section' => true, 'see' => true, 'subsection' => true, 'throws' => true, 'todo' => true, 'var' => true, '{' => true, '}' => true];
+    private readonly \Drupal\Component\Annotation\Doctrine\Doc_Parser $parser;
     /**
      * Constructor.
      *
@@ -72,21 +45,19 @@ final class SimpleAnnotationReader
      */
     public function __construct()
     {
-        $this->parser = new DocParser();
-        $this->parser->setIgnoreNotImportedAnnotations(true);
-        $this->parser->setIgnoredAnnotationNames($this->ignoredAnnotations);
+        $this->parser = new Doc_Parser();
+        $this->parser->set_ignore_not_imported_annotations(true);
+        $this->parser->set_ignored_annotation_names($this->ignored_annotations);
     }
-
     /**
      * Adds a namespace in which we will look for annotations.
      *
      * @param string $namespace
      */
-    public function addNamespace($namespace): void
+    public function add_namespace($namespace): void
     {
-        $this->parser->addNamespace($namespace);
+        $this->parser->add_namespace($namespace);
     }
-
     /**
      * Gets the annotations applied to a class.
      *
@@ -95,11 +66,10 @@ final class SimpleAnnotationReader
      *
      * @return array<object> An array of Annotations.
      */
-    public function getClassAnnotations(\ReflectionClass $class)
+    public function get_class_annotations(\ReflectionClass $class)
     {
-        return $this->parser->parse($class->getDocComment(), 'class '.$class->getName());
+        return $this->parser->parse($class->get_doc_comment(), 'class ' . $class->get_name());
     }
-
     /**
      * Gets the annotations applied to a method.
      *
@@ -108,11 +78,10 @@ final class SimpleAnnotationReader
      *
      * @return array<object> An array of Annotations.
      */
-    public function getMethodAnnotations(\ReflectionMethod $method)
+    public function get_method_annotations(\ReflectionMethod $method)
     {
-        return $this->parser->parse($method->getDocComment(), 'method '.$method->getDeclaringClass()->name.'::'.$method->getName().'()');
+        return $this->parser->parse($method->get_doc_comment(), 'method ' . $method->get_declaring_class()->name . '::' . $method->get_name() . '()');
     }
-
     /**
      * Gets the annotations applied to a property.
      *
@@ -121,11 +90,10 @@ final class SimpleAnnotationReader
      *
      * @return array<object> An array of Annotations.
      */
-    public function getPropertyAnnotations(\ReflectionProperty $property)
+    public function get_property_annotations(\ReflectionProperty $property)
     {
-        return $this->parser->parse($property->getDocComment(), 'property '.$property->getDeclaringClass()->name.'::$'.$property->getName());
+        return $this->parser->parse($property->get_doc_comment(), 'property ' . $property->get_declaring_class()->name . '::$' . $property->get_name());
     }
-
     /**
      * Gets a class annotation.
      *
@@ -137,17 +105,15 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getClassAnnotation(\ReflectionClass $class, $annotationName): ?object
+    public function get_class_annotation(\ReflectionClass $class, $annotation_name): ?object
     {
-        foreach ($this->getClassAnnotations($class) as $annotation) {
-            if ($annotation instanceof $annotationName) {
+        foreach ($this->get_class_annotations($class) as $annotation) {
+            if ($annotation instanceof $annotation_name) {
                 return $annotation;
             }
         }
-
         return null;
     }
-
     /**
      * Gets a method annotation.
      *
@@ -158,17 +124,15 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getMethodAnnotation(\ReflectionMethod $method, $annotationName): ?object
+    public function get_method_annotation(\ReflectionMethod $method, $annotation_name): ?object
     {
-        foreach ($this->getMethodAnnotations($method) as $annotation) {
-            if ($annotation instanceof $annotationName) {
+        foreach ($this->get_method_annotations($method) as $annotation) {
+            if ($annotation instanceof $annotation_name) {
                 return $annotation;
             }
         }
-
         return null;
     }
-
     /**
      * Gets a property annotation.
      *
@@ -179,14 +143,13 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getPropertyAnnotation(\ReflectionProperty $property, $annotationName): ?object
+    public function get_property_annotation(\ReflectionProperty $property, $annotation_name): ?object
     {
-        foreach ($this->getPropertyAnnotations($property) as $annotation) {
-            if ($annotation instanceof $annotationName) {
+        foreach ($this->get_property_annotations($property) as $annotation) {
+            if ($annotation instanceof $annotation_name) {
                 return $annotation;
             }
         }
-
         return null;
     }
 }

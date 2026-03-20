@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * A ReadOnlyStorage decorates a storage and does not allow writing to it.
  */
-class ReadOnlyStorage implements StorageInterface
+class Read_Only_Storage implements Storage_Interface
 {
     /**
      * Create a ReadOnlyStorage decorating another storage.
@@ -15,10 +14,9 @@ class ReadOnlyStorage implements StorageInterface
      * @param \Drupal\Core\Config\StorageInterface $storage
      *   The decorated storage.
      */
-    public function __construct(protected \Drupal\Core\Config\StorageInterface $storage)
+    public function __construct(protected \Drupal\Core\Config\Storage_Interface $storage)
     {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -26,7 +24,6 @@ class ReadOnlyStorage implements StorageInterface
     {
         return $this->storage->exists($name);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -34,15 +31,13 @@ class ReadOnlyStorage implements StorageInterface
     {
         return $this->storage->read($name);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function readMultiple(array $names)
+    public function read_multiple(array $names)
     {
-        return $this->storage->readMultiple($names);
+        return $this->storage->read_multiple($names);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -50,7 +45,6 @@ class ReadOnlyStorage implements StorageInterface
     {
         throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
     }
-
     /**
      * {@inheritdoc}
      */
@@ -58,7 +52,6 @@ class ReadOnlyStorage implements StorageInterface
     {
         throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
     }
-
     /**
      * {@inheritdoc}
      */
@@ -66,7 +59,6 @@ class ReadOnlyStorage implements StorageInterface
     {
         throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
     }
-
     /**
      * {@inheritdoc}
      */
@@ -74,7 +66,6 @@ class ReadOnlyStorage implements StorageInterface
     {
         return $this->storage->encode($data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -82,45 +73,39 @@ class ReadOnlyStorage implements StorageInterface
     {
         return $this->storage->decode($raw);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function listAll($prefix = '')
+    public function list_all($prefix = '')
     {
-        return $this->storage->listAll($prefix);
+        return $this->storage->list_all($prefix);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll($prefix = ''): never
+    public function delete_all($prefix = ''): never
     {
         throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection): static
+    public function create_collection($collection): static
     {
-        return new static($this->storage->createCollection($collection));
+        return new static($this->storage->create_collection($collection));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAllCollectionNames()
+    public function get_all_collection_names()
     {
-        return $this->storage->getAllCollectionNames();
+        return $this->storage->get_all_collection_names();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCollectionName()
+    public function get_collection_name()
     {
-        return $this->storage->getCollectionName();
+        return $this->storage->get_collection_name();
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -16,10 +15,9 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class InsertCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+class Insert_Command implements Command_Interface, Command_With_Attached_Assets_Interface
 {
-    use CommandWithAttachedAssetsTrait;
-
+    use Command_With_Attached_Assets_Trait;
     /**
      * Constructs an InsertCommand object.
      *
@@ -46,22 +44,14 @@ class InsertCommand implements CommandInterface, CommandWithAttachedAssetsInterf
          */
         protected $content,
         protected ?array $settings = null
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'insert',
-          'method' => null,
-          'selector' => $this->selector,
-          'data' => $this->getRenderedContent(),
-          'settings' => $this->settings,
-        ];
+        return ['command' => 'insert', 'method' => null, 'selector' => $this->selector, 'data' => $this->get_rendered_content(), 'settings' => $this->settings];
     }
-
 }

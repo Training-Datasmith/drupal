@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
-use Egulias\EmailValidator\EmailValidator as EmailValidatorUtility;
-use Egulias\EmailValidator\Validation\EmailValidation;
-use Egulias\EmailValidator\Validation\RFCValidation;
-
+use Egulias\Email_Validator\Email_Validator as EmailValidatorUtility;
+use Egulias\Email_Validator\Validation\Email_Validation;
+use Egulias\Email_Validator\Validation\Rfc_Validation;
 /**
  * Validates email addresses.
  */
-class EmailValidator extends EmailValidatorUtility implements EmailValidatorInterface
+class Email_Validator extends Email_Validator_Utility implements Email_Validator_Interface
 {
     /**
      * Validates an email address.
@@ -25,12 +23,11 @@ class EmailValidator extends EmailValidatorUtility implements EmailValidatorInte
      * @return bool
      *   TRUE if the address is valid.
      */
-    public function isValid($email, ?EmailValidation $email_validation = null)
+    public function is_valid($email, ?Email_Validation $email_validation = null)
     {
         if ($email_validation) {
             throw new \BadMethodCallException('Calling \Drupal\Component\Utility\EmailValidator::isValid() with the second argument is not supported. See https://www.drupal.org/node/2997196');
         }
-        return parent::isValid($email, (new RFCValidation()));
+        return parent::is_valid($email, new Rfc_Validation());
     }
-
 }

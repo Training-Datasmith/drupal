@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
-use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Restrict authentication methods to a subset of the site.
  *
@@ -14,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
  * basic authentication or a URL token authentication method to API-only
  * routes.
  */
-interface AuthenticationProviderFilterInterface
+interface Authentication_Provider_Filter_Interface
 {
     /**
      * Checks whether the authentication method is allowed on a given route.
@@ -32,6 +30,5 @@ interface AuthenticationProviderFilterInterface
      *   TRUE if an authentication method is allowed on the request, otherwise
      *   FALSE.
      */
-    public function appliesToRoutedRequest(Request $request, $authenticated);
-
+    public function applies_to_routed_request(Request $request, $authenticated);
 }

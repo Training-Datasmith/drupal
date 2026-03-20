@@ -1,65 +1,49 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Config\Action\Plugin\Config_Action;
 
-namespace Drupal\Core\Config\Action\Plugin\ConfigAction;
-
-use Drupal\Core\Config\Action\Attribute\ConfigAction;
-use Drupal\Core\Config\Action\ConfigActionException;
-use Drupal\Core\Config\Action\ConfigActionManager;
-use Drupal\Core\Config\Action\ConfigActionPluginInterface;
-use Drupal\Core\Config\ConfigManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Core\Config\Action\Attribute\Config_Action;
+use Drupal\Core\Config\Action\Config_Action_Exception;
+use Drupal\Core\Config\Action\Config_Action_Manager;
+use Drupal\Core\Config\Action\Config_Action_Plugin_Interface;
+use Drupal\Core\Config\Config_Manager_Interface;
+use Drupal\Core\Plugin\Container_Factory_Plugin_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * @internal
  *   This API is experimental.
  */
-#[ConfigAction(
-    id: 'cloneAs',
-    admin_label: new TranslatableMarkup('Clone entity with a new ID'),
-    entity_types: ['*'],
-)]
-final readonly class EntityClone implements ConfigActionPluginInterface, ContainerFactoryPluginInterface
+#[Config_Action(id: 'cloneAs', admin_label: new Translatable_Markup('Clone entity with a new ID'), entity_types: ['*'])]
+final readonly class Entity_Clone implements Config_Action_Plugin_Interface, Container_Factory_Plugin_Interface
 {
-    public function __construct(
-        private ConfigManagerInterface $configManager,
-        private ConfigActionManager $configActionManager,
-    ) {
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static
+    public function __construct(private Config_Manager_Interface $config_manager, private Config_Action_Manager $config_action_manager)
     {
-        return new static(
-            $container->get(ConfigManagerInterface::class),
-            $container->get('plugin.manager.config_action'),
-        );
     }
-
     /**
      * {@inheritdoc}
      */
-    public function apply(string $configName, mixed $value): void
+    public static function create(Container_Interface $container, array $configuration, $plugin_id, $plugin_definition): static
+    {
+        return new static($container->get(Config_Manager_Interface::class), $container->get('plugin.manager.config_action'));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function apply(string $config_name, mixed $value): void
     {
         if (!is_array($value)) {
             $value = ['id' => $value];
         }
         assert(is_string($value['id']));
-
         $value += ['fail_if_exists' => false];
         assert(is_bool($value['fail_if_exists']));
-
         // If the original doesn't exist, there's nothing to clone.
-        $original = $this->configManager->loadConfigEntityByName($configName);
+        $original = $this->config_manager->load_config_entity_by_name($config_name);
         if (empty($original)) {
-            throw new ConfigActionException("Cannot clone '$configName' because it does not exist.");
+            throw new Config_Action_Exception("Cannot clone '{$config_name}' because it does not exist.");
         }
-
         // Treat the original ID like a period-separated array of strings, and
         // replace any `%` parts in the clone's ID with the corresponding part of
         // the original ID. For example, if we're cloning an entity view display
@@ -73,14 +57,11 @@ final readonly class EntityClone implements ConfigActionPluginInterface, Contain
             $clone_id_parts[$index] = $part === '%' ? $original_id_parts[$index] : $part;
         }
         $value['id'] = implode('.', $clone_id_parts);
-
-        $clone = $original->createDuplicate();
-        $clone->set($original->getEntityType()->getKey('id'), $value['id']);
-
+        $clone = $original->create_duplicate();
+        $clone->set($original->get_entity_type()->get_key('id'), $value['id']);
         $create_action = 'entity_create:' . ($value['fail_if_exists'] ? 'create' : 'createIfNotExists');
         // Use the config action manager to invoke the create action on the clone,
         // so that it will be validated.
-        $this->configActionManager->applyAction($create_action, $clone->getConfigDependencyName(), $clone->toArray());
+        $this->config_action_manager->apply_action($create_action, $clone->get_config_dependency_name(), $clone->to_array());
     }
-
 }

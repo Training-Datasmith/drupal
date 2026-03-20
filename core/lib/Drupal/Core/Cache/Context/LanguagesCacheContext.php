@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the LanguagesCacheContext service, for "per language" caching.
  */
-class LanguagesCacheContext implements CalculatedCacheContextInterface
+class Languages_Cache_Context implements Calculated_Cache_Context_Interface
 {
     /**
      * Constructs a new LanguagesCacheContext service.
@@ -17,18 +15,16 @@ class LanguagesCacheContext implements CalculatedCacheContextInterface
      * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
      *   The language manager.
      */
-    public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+    public function __construct(protected \Drupal\Core\Language\Language_Manager_Interface $language_manager)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Language');
     }
-
     /**
      * {@inheritdoc}
      *
@@ -43,32 +39,30 @@ class LanguagesCacheContext implements CalculatedCacheContextInterface
      * @throws \RuntimeException
      *   In case an invalid language type is specified.
      */
-    public function getContext($type = null)
+    public function get_context($type = null)
     {
         if ($type === null) {
             $context_parts = [];
-            if ($this->languageManager->isMultilingual()) {
-                foreach ($this->languageManager->getLanguageTypes() as $type) {
-                    $context_parts[] = $this->languageManager->getCurrentLanguage($type)->getId();
+            if ($this->language_manager->is_multilingual()) {
+                foreach ($this->language_manager->get_language_types() as $type) {
+                    $context_parts[] = $this->language_manager->get_current_language($type)->get_id();
                 }
             } else {
-                $context_parts[] = $this->languageManager->getCurrentLanguage()->getId();
+                $context_parts[] = $this->language_manager->get_current_language()->get_id();
             }
             return implode(',', $context_parts);
         }
-        $language_types = $this->languageManager->getDefinedLanguageTypesInfo();
+        $language_types = $this->language_manager->get_defined_language_types_info();
         if (!isset($language_types[$type])) {
             throw new \RuntimeException(sprintf('The language type "%s" is invalid.', $type));
         }
-        return $this->languageManager->getCurrentLanguage($type)->getId();
+        return $this->language_manager->get_current_language($type)->get_id();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata($type = null): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata($type = null): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

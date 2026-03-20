@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * Provides an implementation of ConditionInterface.
  *
  * @see \Drupal\Core\Database\Query\ConditionInterface
  */
-trait QueryConditionTrait
+trait Query_Condition_Trait
 {
     /**
      * The condition object for this query.
@@ -21,7 +19,6 @@ trait QueryConditionTrait
      * @var \Drupal\Core\Database\Query\Condition
      */
     protected $condition;
-
     /**
      * {@inheritdoc}
      */
@@ -30,52 +27,46 @@ trait QueryConditionTrait
         $this->condition->condition($field, $value, $operator);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isNull($field)
+    public function is_null($field)
     {
-        $this->condition->isNull($field);
+        $this->condition->is_null($field);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isNotNull($field)
+    public function is_not_null($field)
     {
-        $this->condition->isNotNull($field);
+        $this->condition->is_not_null($field);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function exists(SelectInterface $select)
+    public function exists(Select_Interface $select)
     {
         $this->condition->exists($select);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function notExists(SelectInterface $select)
+    public function not_exists(Select_Interface $select)
     {
-        $this->condition->notExists($select);
+        $this->condition->not_exists($select);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function alwaysFalse()
+    public function always_false()
     {
-        $this->condition->alwaysFalse();
+        $this->condition->always_false();
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -83,7 +74,6 @@ trait QueryConditionTrait
     {
         return $this->condition->conditions();
     }
-
     /**
      * {@inheritdoc}
      */
@@ -91,7 +81,6 @@ trait QueryConditionTrait
     {
         return $this->condition->arguments();
     }
-
     /**
      * {@inheritdoc}
      */
@@ -100,15 +89,13 @@ trait QueryConditionTrait
         $this->condition->where($snippet, $args);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder): void
+    public function compile(Connection $connection, Placeholder_Interface $query_placeholder): void
     {
-        $this->condition->compile($connection, $queryPlaceholder);
+        $this->condition->compile($connection, $query_placeholder);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -116,29 +103,25 @@ trait QueryConditionTrait
     {
         return $this->condition->compiled();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function conditionGroupFactory($conjunction = 'AND')
+    public function condition_group_factory($conjunction = 'AND')
     {
         return $this->connection->condition($conjunction);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function andConditionGroup()
+    public function and_condition_group()
     {
-        return $this->conditionGroupFactory('AND');
+        return $this->condition_group_factory('AND');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function orConditionGroup()
+    public function or_condition_group()
     {
-        return $this->conditionGroupFactory('OR');
+        return $this->condition_group_factory('OR');
     }
-
 }

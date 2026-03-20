@@ -1,26 +1,24 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Core\Extension\ModuleExtensionList;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ModuleInstallerInterface;
-use Drupal\Core\Extension\ThemeExtensionList;
-use Drupal\Core\Extension\ThemeHandlerInterface;
-use Drupal\Core\Lock\LockBackendInterface;
-use Drupal\Core\StringTranslation\TranslationInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-
+use Drupal\Core\Extension\Module_Extension_List;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Extension\Module_Installer_Interface;
+use Drupal\Core\Extension\Theme_Extension_List;
+use Drupal\Core\Extension\Theme_Handler_Interface;
+use Drupal\Core\Lock\Lock_Backend_Interface;
+use Drupal\Core\String_Translation\Translation_Interface;
+use Symfony\Component\Dependency_Injection\Attribute\Autowire;
+use Symfony\Component\Event_Dispatcher\Event_Dispatcher_Interface;
 /**
  * Factory class to create config importer objects.
  *
  * This class is declared as final because the ConfigImporter class is not
  * intended to be swappable.
  */
-final class ConfigImporterFactory
+final class Config_Importer_Factory
 {
     /**
      * Creates a ConfigImporterFactory instance.
@@ -47,20 +45,20 @@ final class ConfigImporterFactory
      *   The theme extension list service.
      */
     public function __construct(
-        protected EventDispatcherInterface $eventDispatcher,
-        protected ConfigManagerInterface $configManager,
+        protected Event_Dispatcher_Interface $event_dispatcher,
+        protected Config_Manager_Interface $config_manager,
         #[Autowire(service: 'lock.persistent')]
-        protected LockBackendInterface $lock,
-        protected TypedConfigManagerInterface $typedConfigManager,
-        protected ModuleHandlerInterface $moduleHandler,
-        protected ModuleInstallerInterface $moduleInstaller,
-        protected ThemeHandlerInterface $themeHandler,
-        protected TranslationInterface $stringTranslation,
-        protected ModuleExtensionList $moduleExtensionList,
-        protected ThemeExtensionList $themeExtensionList,
-    ) {
+        protected Lock_Backend_Interface $lock,
+        protected Typed_Config_Manager_Interface $typed_config_manager,
+        protected Module_Handler_Interface $module_handler,
+        protected Module_Installer_Interface $module_installer,
+        protected Theme_Handler_Interface $theme_handler,
+        protected Translation_Interface $string_translation,
+        protected Module_Extension_List $module_extension_list,
+        protected Theme_Extension_List $theme_extension_list
+    )
+    {
     }
-
     /**
      * Creates a ConfigImporter instance.
      *
@@ -72,21 +70,8 @@ final class ConfigImporterFactory
      * @return \Drupal\Core\Config\ConfigImporter
      *   A config importer instance.
      */
-    public function get(StorageComparer $storage_comparer): ConfigImporter
+    public function get(Storage_Comparer $storage_comparer): Config_Importer
     {
-        return new ConfigImporter(
-            $storage_comparer,
-            $this->eventDispatcher,
-            $this->configManager,
-            $this->lock,
-            $this->typedConfigManager,
-            $this->moduleHandler,
-            $this->moduleInstaller,
-            $this->themeHandler,
-            $this->stringTranslation,
-            $this->moduleExtensionList,
-            $this->themeExtensionList,
-        );
+        return new Config_Importer($storage_comparer, $this->event_dispatcher, $this->config_manager, $this->lock, $this->typed_config_manager, $this->module_handler, $this->module_installer, $this->theme_handler, $this->string_translation, $this->module_extension_list, $this->theme_extension_list);
     }
-
 }

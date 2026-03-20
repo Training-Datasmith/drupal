@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Provides an implementation of a content entity type and its metadata.
  */
-class ContentEntityType extends EntityType implements ContentEntityTypeInterface
+class Content_Entity_Type extends Entity_Type implements Content_Entity_Type_Interface
 {
     /**
      * An array of entity revision metadata keys.
@@ -16,32 +15,22 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
     protected $revision_metadata_keys = [];
-
     /**
      * {@inheritdoc}
      */
     public function __construct($definition)
     {
         parent::__construct($definition);
-
-        $this->handlers += [
-          'storage' => \Drupal\Core\Entity\Sql\SqlContentEntityStorage::class,
-          'view_builder' => \Drupal\Core\Entity\EntityViewBuilder::class,
-        ];
-
-        $this->revision_metadata_keys += [
-          'revision_default' => 'revision_default',
-        ];
+        $this->handlers += ['storage' => \Drupal\Core\Entity\Sql\Sql_Content_Entity_Storage::class, 'view_builder' => \Drupal\Core\Entity\Entity_View_Builder::class];
+        $this->revision_metadata_keys += ['revision_default' => 'revision_default'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfigDependencyKey(): string
+    public function get_config_dependency_key(): string
     {
         return 'content';
     }
-
     /**
      * {@inheritdoc}
      *
@@ -51,44 +40,40 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
      *
      * @see \Drupal\Core\Entity\ContentEntityStorageInterface
      */
-    protected function checkStorageClass($class)
+    protected function check_storage_class($class)
     {
-        $required_interface = ContentEntityStorageInterface::class;
+        $required_interface = Content_Entity_Storage_Interface::class;
         if (!is_subclass_of($class, $required_interface)) {
-            throw new \InvalidArgumentException("$class does not implement $required_interface");
+            throw new \InvalidArgumentException("{$class} does not implement {$required_interface}");
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRevisionMetadataKeys()
+    public function get_revision_metadata_keys()
     {
         return $this->revision_metadata_keys;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRevisionMetadataKey($key)
+    public function get_revision_metadata_key($key)
     {
-        $keys = $this->getRevisionMetadataKeys();
+        $keys = $this->get_revision_metadata_keys();
         return $keys[$key] ?? false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function hasRevisionMetadataKey($key): bool
+    public function has_revision_metadata_key($key): bool
     {
-        $keys = $this->getRevisionMetadataKeys();
+        $keys = $this->get_revision_metadata_keys();
         return isset($keys[$key]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setRevisionMetadataKey($key, $field_name): static
+    public function set_revision_metadata_key($key, $field_name): static
     {
         if ($field_name !== null) {
             $this->revision_metadata_keys[$key] = $field_name;
@@ -97,17 +82,15 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
         }
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function hasIntegerId(): ?bool
+    public function has_integer_id(): ?bool
     {
-        if ($this->hasKey('id') && $this->entityClassImplements(FieldableEntityInterface::class)) {
-            $definitions = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($this->id());
-            return $definitions[$this->getKey('id')]->getType() === 'integer';
+        if ($this->has_key('id') && $this->entity_class_implements(Fieldable_Entity_Interface::class)) {
+            $definitions = \Drupal::service('entity_field.manager')->get_base_field_definitions($this->id());
+            return $definitions[$this->get_key('id')]->get_type() === 'integer';
         }
         return null;
     }
-
 }

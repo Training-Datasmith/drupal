@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines an Action attribute object.
  *
@@ -40,15 +38,7 @@ class Action extends Plugin
      * @param string|null $type
      *   (optional) The entity type the action can apply to.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly ?TranslatableMarkup $label = null,
-        public readonly ?TranslatableMarkup $action_label = null,
-        public readonly ?TranslatableMarkup $category = null,
-        public readonly ?string $deriver = null,
-        public readonly ?string $confirm_form_route_name = null,
-        public readonly ?string $type = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly ?Translatable_Markup $label = null, public readonly ?Translatable_Markup $action_label = null, public readonly ?Translatable_Markup $category = null, public readonly ?string $deriver = null, public readonly ?string $confirm_form_route_name = null, public readonly ?string $type = null)
+    {
     }
-
 }

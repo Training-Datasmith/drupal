@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Uuid;
 
 /**
@@ -13,7 +12,6 @@ class Uuid
      * The pattern used to validate a UUID string.
      */
     public const VALID_PATTERN = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}';
-
     /**
      * Checks that a string appears to be in the format of a lower-case UUID.
      *
@@ -26,9 +24,8 @@ class Uuid
      * @return bool
      *   TRUE if the string is well formed, FALSE otherwise.
      */
-    public static function isValid($uuid): bool
+    public static function is_valid($uuid): bool
     {
         return (bool) preg_match('/^' . self::VALID_PATTERN . '$/', $uuid);
     }
-
 }

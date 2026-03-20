@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AlertCommand implements CommandInterface
+class Alert_Command implements Command_Interface
 {
     /**
      * Constructs an AlertCommand object.
@@ -22,19 +21,14 @@ class AlertCommand implements CommandInterface
          * The text to be displayed in the alert box.
          */
         protected $text
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'alert',
-          'text' => $this->text,
-        ];
+        return ['command' => 'alert', 'text' => $this->text];
     }
-
 }

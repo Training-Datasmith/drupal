@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Attribute;
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a configuration entity type attribute object.
  *
@@ -21,18 +19,18 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\Core\Config\Entity\ConfigEntityTypeInterface
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class ConfigEntityType extends EntityType
+class Config_Entity_Type extends Entity_Type
 {
     public function __construct(
         public readonly string $id,
-        public readonly ?TranslatableMarkup $label = null,
-        public readonly ?TranslatableMarkup $label_collection = null,
-        public readonly ?TranslatableMarkup $label_singular = null,
-        public readonly ?TranslatableMarkup $label_plural = null,
+        public readonly ?Translatable_Markup $label = null,
+        public readonly ?Translatable_Markup $label_collection = null,
+        public readonly ?Translatable_Markup $label_singular = null,
+        public readonly ?Translatable_Markup $label_plural = null,
         public readonly ?string $config_prefix = null,
-        public readonly string $entity_type_class = \Drupal\Core\Config\Entity\ConfigEntityType::class,
+        public readonly string $entity_type_class = \Drupal\Core\Config\Entity\Config_Entity_Type::class,
         public readonly string $group = 'configuration',
-        public readonly TranslatableMarkup $group_label = new TranslatableMarkup('Configuration', [], ['context' => 'Entity type group']),
+        public readonly Translatable_Markup $group_label = new Translatable_Markup('Configuration', [], ['context' => 'Entity type group']),
         public readonly bool $static_cache = false,
         public readonly bool $persistent_cache = true,
         protected readonly array $entity_keys = [],
@@ -42,7 +40,7 @@ class ConfigEntityType extends EntityType
         public readonly ?string $collection_permission = null,
         public readonly string $permission_granularity = 'entity_type',
         public readonly ?string $bundle_of = null,
-        public readonly ?TranslatableMarkup $bundle_label = null,
+        public readonly ?Translatable_Markup $bundle_label = null,
         public readonly bool $internal = false,
         public readonly array $label_count = [],
         /**
@@ -60,12 +58,12 @@ class ConfigEntityType extends EntityType
         public readonly array $constraints = [],
         public readonly array $additional = [],
         public readonly array $lookup_keys = [],
-        public readonly array $config_export = [],
-    ) {
+        public readonly array $config_export = []
+    )
+    {
         // @phpstan-ignore property.deprecated
         if ($this->uri_callback !== null) {
             @trigger_error('The "uri_callback" property on entity types is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use link templates or a route provider to specify entity URIs. See https://www.drupal.org/node/3575062', E_USER_DEPRECATED);
         }
     }
-
 }

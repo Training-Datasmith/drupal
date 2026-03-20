@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileCache;
+declare (strict_types=1);
+namespace Drupal\Component\File_Cache;
 
 /**
  * Interface for objects that allow caching file data.
@@ -15,7 +14,7 @@ namespace Drupal\Component\FileCache;
  * on the file modification to ensure that cached data is still up to date and
  * does not need to be invalidated externally.
  */
-interface FileCacheInterface
+interface File_Cache_Interface
 {
     /**
      * Gets data based on a filename.
@@ -28,7 +27,6 @@ interface FileCacheInterface
      *   or the file has been modified.
      */
     public function get($filepath);
-
     /**
      * Gets data based on filenames.
      *
@@ -38,8 +36,7 @@ interface FileCacheInterface
      * @return array
      *   List of cached data keyed by the passed in file paths.
      */
-    public function getMultiple(array $filepaths);
-
+    public function get_multiple(array $filepaths);
     /**
      * Stores data based on a filename.
      *
@@ -49,7 +46,6 @@ interface FileCacheInterface
      *   The data that should be cached.
      */
     public function set($filepath, $data);
-
     /**
      * Deletes data from the cache.
      *
@@ -57,5 +53,4 @@ interface FileCacheInterface
      *   Path of the file that the cached data is based on.
      */
     public function delete($filepath);
-
 }

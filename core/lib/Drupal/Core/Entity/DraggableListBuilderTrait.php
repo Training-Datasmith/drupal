@@ -1,47 +1,41 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
-use Drupal\Core\Form\FormStateInterface;
-
+use Drupal\Core\Form\Form_State_Interface;
 /**
  * Provides a trait for draggable listings of entities.
  *
  * Classes using this trait must implement \Drupal\Core\Form\FormInterface and
  * are expected to set the $formBuilder property in their constructor.
  */
-trait DraggableListBuilderTrait
+trait Draggable_List_Builder_Trait
 {
     /**
      * The key to use for the form element containing the entities.
      *
      * @var string
      */
-    protected $entitiesKey = 'entities';
-
+    protected $entities_key = 'entities';
     /**
      * The entities being listed.
      *
      * @var \Drupal\Core\Entity\EntityInterface[]
      */
     protected $entities = [];
-
     /**
      * Name of the entity's weight field or FALSE if no field is provided.
      *
      * @var string|bool
      */
-    protected $weightKey = false;
-
+    protected $weight_key = false;
     /**
      * The form builder.
      *
      * @var \Drupal\Core\Form\FormBuilderInterface
      */
-    protected $formBuilder;
-
+    protected $form_builder;
     /**
      * Gets the weight of the given entity.
      *
@@ -51,8 +45,7 @@ trait DraggableListBuilderTrait
      * @return int|float
      *   The weight of the entity.
      */
-    abstract protected function getWeight(EntityInterface $entity): int|float;
-
+    abstract protected function get_weight(Entity_Interface $entity): int|float;
     /**
      * Sets the weight of an entity.
      *
@@ -63,8 +56,7 @@ trait DraggableListBuilderTrait
      *
      * @return $this
      */
-    abstract protected function setWeight(EntityInterface $entity, int|float $weight): EntityInterface;
-
+    abstract protected function set_weight(Entity_Interface $entity, int|float $weight): Entity_Interface;
     /**
      * Builds the header row for the entity listing.
      *
@@ -73,15 +65,14 @@ trait DraggableListBuilderTrait
      *
      * @see \Drupal\Core\Entity\EntityListBuilder::buildHeader()
      */
-    public function buildHeader()
+    public function build_header()
     {
         $header = [];
-        if (!empty($this->weightKey)) {
+        if (!empty($this->weight_key)) {
             $header['weight'] = t('Weight');
         }
-        return $header + parent::buildHeader();
+        return $header + parent::build_header();
     }
-
     /**
      * Builds a row for an entity in the entity listing.
      *
@@ -93,25 +84,18 @@ trait DraggableListBuilderTrait
      *
      * @see \Drupal\Core\Entity\EntityListBuilder::buildRow()
      */
-    public function buildRow(EntityInterface $entity)
+    public function build_row(Entity_Interface $entity)
     {
         $row = [];
-        if (!empty($this->weightKey)) {
+        if (!empty($this->weight_key)) {
             // Override default values to markup elements.
             $row['#attributes']['class'][] = 'draggable';
-            $row['#weight'] = $this->getWeight($entity);
+            $row['#weight'] = $this->get_weight($entity);
             // Add weight column.
-            $row['weight'] = [
-              '#type' => 'weight',
-              '#title' => t('Weight for @title', ['@title' => $entity->label()]),
-              '#title_display' => 'invisible',
-              '#default_value' => $this->getWeight($entity),
-              '#attributes' => ['class' => ['weight']],
-            ];
+            $row['weight'] = ['#type' => 'weight', '#title' => t('Weight for @title', ['@title' => $entity->label()]), '#title_display' => 'invisible', '#default_value' => $this->get_weight($entity), '#attributes' => ['class' => ['weight']]];
         }
-        return $row + parent::buildRow($entity);
+        return $row + parent::build_row($entity);
     }
-
     /**
      * Builds a listing of entities for the given entity type.
      *
@@ -122,12 +106,11 @@ trait DraggableListBuilderTrait
      */
     public function render()
     {
-        if (!empty($this->weightKey)) {
-            return $this->formBuilder->getForm($this);
+        if (!empty($this->weight_key)) {
+            return $this->form_builder->get_form($this);
         }
         return parent::render();
     }
-
     /**
      * Form constructor.
      *
@@ -141,51 +124,32 @@ trait DraggableListBuilderTrait
      *
      * @see \Drupal\Core\Form\FormInterface::buildForm())
      */
-    public function buildForm(array $form, FormStateInterface $form_state): array
+    public function build_form(array $form, Form_State_Interface $form_state): array
     {
-        $form[$this->entitiesKey] = [
-          '#type' => 'table',
-          '#header' => $this->buildHeader(),
-          '#empty' => t('There are no @label yet.', ['@label' => $this->entityType->getPluralLabel()]),
-          '#tabledrag' => [
-            [
-              'action' => 'order',
-              'relationship' => 'sibling',
-              'group' => 'weight',
-            ],
-          ],
-        ];
-
+        $form[$this->entities_key] = ['#type' => 'table', '#header' => $this->build_header(), '#empty' => t('There are no @label yet.', ['@label' => $this->entity_type->get_plural_label()]), '#tabledrag' => [['action' => 'order', 'relationship' => 'sibling', 'group' => 'weight']]];
         $this->entities = $this->load();
         $delta = 10;
         // Change the delta of the weight field if there are more than 20 entities.
-        if (!empty($this->weightKey)) {
+        if (!empty($this->weight_key)) {
             $count = count($this->entities);
             if ($count > 20) {
                 $delta = ceil($count / 2);
             }
         }
         foreach ($this->entities as $entity) {
-            $row = $this->buildRow($entity);
+            $row = $this->build_row($entity);
             if (isset($row['label'])) {
                 $row['label'] = ['#plain_text' => $row['label']];
             }
             if (isset($row['weight'])) {
                 $row['weight']['#delta'] = $delta;
             }
-            $form[$this->entitiesKey][$entity->id()] = $row;
+            $form[$this->entities_key][$entity->id()] = $row;
         }
-
         $form['actions']['#type'] = 'actions';
-        $form['actions']['submit'] = [
-          '#type' => 'submit',
-          '#value' => t('Save'),
-          '#button_type' => 'primary',
-        ];
-
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => t('Save'), '#button_type' => 'primary'];
         return $form;
     }
-
     /**
      * Form validation handler.
      *
@@ -196,11 +160,10 @@ trait DraggableListBuilderTrait
      *
      * @see \Drupal\Core\Form\FormInterface::validateForm())
      */
-    public function validateForm(array &$form, FormStateInterface $form_state): void
+    public function validate_form(array &$form, Form_State_Interface $form_state): void
     {
         // No validation.
     }
-
     /**
      * Form submission handler.
      *
@@ -214,15 +177,14 @@ trait DraggableListBuilderTrait
      * @throws \Drupal\Core\Entity\EntityStorageException
      *   If there is a failure when saving the entity.
      */
-    public function submitForm(array &$form, FormStateInterface $form_state): void
+    public function submit_form(array &$form, Form_State_Interface $form_state): void
     {
-        foreach ($form_state->getValue($this->entitiesKey) as $id => $value) {
-            if (isset($this->entities[$id]) && $this->getWeight($this->entities[$id]) != $value['weight']) {
+        foreach ($form_state->get_value($this->entities_key) as $id => $value) {
+            if (isset($this->entities[$id]) && $this->get_weight($this->entities[$id]) != $value['weight']) {
                 // Save entity only when its weight was changed.
-                $this->setWeight($this->entities[$id], $value['weight']);
+                $this->set_weight($this->entities[$id], $value['weight']);
                 $this->entities[$id]->save();
             }
         }
     }
-
 }

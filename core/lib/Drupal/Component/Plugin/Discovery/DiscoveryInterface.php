@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Discovery;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Plugin\Discovery;
  *
  * @ingroup plugin_api
  */
-interface DiscoveryInterface
+interface Discovery_Interface
 {
     /**
      * Gets a specific plugin definition.
@@ -26,8 +25,7 @@ interface DiscoveryInterface
      * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
      *   Thrown if $plugin_id is invalid and $exception_on_invalid is TRUE.
      */
-    public function getDefinition($plugin_id, $exception_on_invalid = true);
-
+    public function get_definition($plugin_id, $exception_on_invalid = true);
     /**
      * Gets the definition of all plugins for this type.
      *
@@ -37,8 +35,7 @@ interface DiscoveryInterface
      *
      * @see \Drupal\Core\Plugin\FilteredPluginManagerInterface::getFilteredDefinitions()
      */
-    public function getDefinitions();
-
+    public function get_definitions();
     /**
      * Indicates if a specific plugin definition exists.
      *
@@ -48,6 +45,5 @@ interface DiscoveryInterface
      * @return bool
      *   TRUE if the definition exists, FALSE otherwise.
      */
-    public function hasDefinition($plugin_id);
-
+    public function has_definition($plugin_id);
 }

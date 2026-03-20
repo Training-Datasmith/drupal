@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Symfony\Component\HttpFoundation\Response;
-
+use Symfony\Component\Http_Foundation\Response;
 /**
  * A response that contains and can expose cacheability metadata.
  *
@@ -16,8 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @see \Drupal\Core\Cache\CacheableMetadata
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-class CacheableResponse extends Response implements CacheableResponseInterface
+class Cacheable_Response extends Response implements Cacheable_Response_Interface
 {
-    use CacheableResponseTrait;
-
+    use Cacheable_Response_Trait;
 }

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Core\Ajax\AjaxResponse;
-
+use Drupal\Core\Ajax\Ajax_Response;
 /**
  * A AjaxResponse that contains and can expose cacheability metadata.
  *
@@ -16,8 +14,7 @@ use Drupal\Core\Ajax\AjaxResponse;
  * @see \Drupal\Core\Cache\CacheableMetadata
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-class CacheableAjaxResponse extends AjaxResponse implements CacheableResponseInterface
+class Cacheable_Ajax_Response extends Ajax_Response implements Cacheable_Response_Interface
 {
-    use CacheableResponseTrait;
-
+    use Cacheable_Response_Trait;
 }

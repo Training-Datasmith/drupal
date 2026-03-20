@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-
+use Drupal\Core\Dependency_Injection\Dependency_Serialization_Trait;
 /**
  * Defines the cached storage.
  *
@@ -13,17 +11,15 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
  * the cache and delegates the read to the storage on a cache miss. It also
  * handles cache invalidation.
  */
-class CachedStorage implements StorageInterface, StorageCacheInterface
+class Cached_Storage implements Storage_Interface, Storage_Cache_Interface
 {
-    use DependencySerializationTrait;
-
+    use Dependency_Serialization_Trait;
     /**
      * List of listAll() prefixes with their results.
      *
      * @var array
      */
-    protected $findByPrefixCache = [];
-
+    protected $find_by_prefix_cache = [];
     /**
      * Constructs a new CachedStorage.
      *
@@ -32,10 +28,9 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
      * @param \Drupal\Core\Cache\CacheBackendInterface $cache
      *   A cache backend used to store configuration.
      */
-    public function __construct(protected \Drupal\Core\Config\StorageInterface $storage, protected \Drupal\Core\Cache\CacheBackendInterface $cache)
+    public function __construct(protected \Drupal\Core\Config\Storage_Interface $storage, protected \Drupal\Core\Cache\Cache_Backend_Interface $cache)
     {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -46,13 +41,12 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
         // lookup would have to happen, so check the storage directly.
         return $this->storage->exists($name);
     }
-
     /**
      * {@inheritdoc}
      */
     public function read($name)
     {
-        $cache_key = $this->getCacheKey($name);
+        $cache_key = $this->get_cache_key($name);
         if ($cache = $this->cache->get($cache_key)) {
             // The cache contains either the cached configuration data or FALSE
             // if the configuration file does not exist.
@@ -64,25 +58,22 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
         $this->cache->set($cache_key, $data);
         return $data;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function readMultiple(array $names): array
+    public function read_multiple(array $names): array
     {
         $data_to_return = [];
-
-        $cache_keys_map = $this->getCacheKeys($names);
+        $cache_keys_map = $this->get_cache_keys($names);
         $cache_keys = array_values($cache_keys_map);
-        $cached_list = $this->cache->getMultiple($cache_keys);
-
+        $cached_list = $this->cache->get_multiple($cache_keys);
         if (!empty($cache_keys)) {
             // $cache_keys_map contains the full $name => $cache_key map, while
             // $cache_keys contains just the $cache_key values that weren't found in
             // the cache.
             // @see \Drupal\Core\Cache\CacheBackendInterface::getMultiple()
             $names_to_get = array_keys(array_intersect($cache_keys_map, $cache_keys));
-            $list = $this->storage->readMultiple($names_to_get);
+            $list = $this->storage->read_multiple($names_to_get);
             // Cache configuration objects that were loaded from the storage, cache
             // missing configuration objects as an explicit FALSE.
             $items = [];
@@ -91,22 +82,18 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
                 $data_to_return[$name] = $data;
                 $items[$cache_keys_map[$name]] = ['data' => $data];
             }
-
-            $this->cache->setMultiple($items);
+            $this->cache->set_multiple($items);
         }
-
         // Add the configuration objects from the cache to the list.
         $cache_keys_inverse_map = array_flip($cache_keys_map);
         foreach ($cached_list as $cache_key => $cache) {
             $name = $cache_keys_inverse_map[$cache_key];
             $data_to_return[$name] = $cache->data;
         }
-
         // Ensure that only existing configuration objects are returned, filter out
         // cached information about missing objects.
         return array_filter($data_to_return);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -115,13 +102,12 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
         if ($this->storage->write($name, $data)) {
             // While not all written data is read back, setting the cache instead of
             // just deleting it avoids cache rebuild stampedes.
-            $this->cache->set($this->getCacheKey($name), $data);
-            $this->findByPrefixCache = [];
+            $this->cache->set($this->get_cache_key($name), $data);
+            $this->find_by_prefix_cache = [];
             return true;
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -130,13 +116,12 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
         // If the cache was the first to be deleted, another process might start
         // rebuilding the cache before the storage is gone.
         if ($this->storage->delete($name)) {
-            $this->cache->delete($this->getCacheKey($name));
-            $this->findByPrefixCache = [];
+            $this->cache->delete($this->get_cache_key($name));
+            $this->find_by_prefix_cache = [];
             return true;
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -145,14 +130,13 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
         // If the cache was the first to be deleted, another process might start
         // rebuilding the cache before the storage is renamed.
         if ($this->storage->rename($name, $new_name)) {
-            $this->cache->delete($this->getCacheKey($name));
-            $this->cache->delete($this->getCacheKey($new_name));
-            $this->findByPrefixCache = [];
+            $this->cache->delete($this->get_cache_key($name));
+            $this->cache->delete($this->get_cache_key($new_name));
+            $this->find_by_prefix_cache = [];
             return true;
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -160,7 +144,6 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
     {
         return $this->storage->encode($data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -168,19 +151,17 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
     {
         return $this->storage->decode($raw);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function listAll($prefix = '')
+    public function list_all($prefix = '')
     {
         // Do not cache when a prefix is not provided.
         if ($prefix) {
-            return $this->findByPrefix($prefix);
+            return $this->find_by_prefix($prefix);
         }
-        return $this->storage->listAll();
+        return $this->storage->list_all();
     }
-
     /**
      * Finds configuration object names starting with a given prefix.
      *
@@ -197,65 +178,56 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
      * @return array
      *   An array containing matching configuration object names.
      */
-    protected function findByPrefix($prefix)
+    protected function find_by_prefix($prefix)
     {
-        $cache_key = $this->getCacheKey($prefix);
-        if (!isset($this->findByPrefixCache[$cache_key])) {
-            $this->findByPrefixCache[$cache_key] = $this->storage->listAll($prefix);
+        $cache_key = $this->get_cache_key($prefix);
+        if (!isset($this->find_by_prefix_cache[$cache_key])) {
+            $this->find_by_prefix_cache[$cache_key] = $this->storage->list_all($prefix);
         }
-        return $this->findByPrefixCache[$cache_key];
+        return $this->find_by_prefix_cache[$cache_key];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll($prefix = ''): bool
+    public function delete_all($prefix = ''): bool
     {
         // If the cache was the first to be deleted, another process might start
         // rebuilding the cache before the storage is renamed.
-        $names = $this->storage->listAll($prefix);
-        if ($this->storage->deleteAll($prefix)) {
-            $this->cache->deleteMultiple($this->getCacheKeys($names));
+        $names = $this->storage->list_all($prefix);
+        if ($this->storage->delete_all($prefix)) {
+            $this->cache->delete_multiple($this->get_cache_keys($names));
             return true;
         }
         return false;
     }
-
     /**
      * Clears the static list cache.
      */
-    public function resetListCache(): void
+    public function reset_list_cache(): void
     {
-        $this->findByPrefixCache = [];
+        $this->find_by_prefix_cache = [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection): static
+    public function create_collection($collection): static
     {
-        return new static(
-            $this->storage->createCollection($collection),
-            $this->cache
-        );
+        return new static($this->storage->create_collection($collection), $this->cache);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAllCollectionNames()
+    public function get_all_collection_names()
     {
-        return $this->storage->getAllCollectionNames();
+        return $this->storage->get_all_collection_names();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCollectionName()
+    public function get_collection_name()
     {
-        return $this->storage->getCollectionName();
+        return $this->storage->get_collection_name();
     }
-
     /**
      * Returns a cache key for a configuration name using the collection.
      *
@@ -265,11 +237,10 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
      * @return string
      *   The cache key for the configuration name.
      */
-    protected function getCacheKey(string $name): string
+    protected function get_cache_key(string $name): string
     {
-        return $this->getCollectionPrefix() . $name;
+        return $this->get_collection_prefix() . $name;
     }
-
     /**
      * Returns a cache key map for an array of configuration names.
      *
@@ -279,27 +250,24 @@ class CachedStorage implements StorageInterface, StorageCacheInterface
      * @return array
      *   An array of cache keys keyed by configuration names.
      */
-    protected function getCacheKeys(array $names): array
+    protected function get_cache_keys(array $names): array
     {
-        $prefix = $this->getCollectionPrefix();
-        $cache_keys = array_map(fn ($name) => $prefix . $name, $names);
-
+        $prefix = $this->get_collection_prefix();
+        $cache_keys = array_map(fn($name) => $prefix . $name, $names);
         return array_combine($names, $cache_keys);
     }
-
     /**
      * Returns a cache ID prefix to use for the collection.
      *
      * @return string
      *   The cache ID prefix.
      */
-    protected function getCollectionPrefix(): string
+    protected function get_collection_prefix(): string
     {
-        $collection = $this->storage->getCollectionName();
-        if ($collection == StorageInterface::DEFAULT_COLLECTION) {
+        $collection = $this->storage->get_collection_name();
+        if ($collection == Storage_Interface::DEFAULT_COLLECTION) {
             return '';
         }
         return $collection . ':';
     }
-
 }

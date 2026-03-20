@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\EventDispatcher\Event;
-
+use Drupal\Component\Event_Dispatcher\Event;
 /**
  * Configuration event fired when importing a configuration object.
  */
-class ConfigImporterEvent extends Event
+class Config_Importer_Event extends Event
 {
     /**
      * Constructs ConfigImporterEvent.
@@ -17,21 +15,19 @@ class ConfigImporterEvent extends Event
      * @param \Drupal\Core\Config\ConfigImporter $configImporter
      *   A config import object to notify listeners about.
      */
-    public function __construct(protected \Drupal\Core\Config\ConfigImporter $configImporter)
+    public function __construct(protected \Drupal\Core\Config\Config_Importer $config_importer)
     {
     }
-
     /**
      * Gets the config import object.
      *
      * @return \Drupal\Core\Config\ConfigImporter
      *   The ConfigImporter object.
      */
-    public function getConfigImporter()
+    public function get_config_importer()
     {
-        return $this->configImporter;
+        return $this->config_importer;
     }
-
     /**
      * Gets the list of changes that will be imported.
      *
@@ -47,9 +43,8 @@ class ConfigImporterEvent extends Event
      *
      * @see \Drupal\Core\Config\StorageComparerInterface::getChangelist()
      */
-    public function getChangelist($op = null, $collection = StorageInterface::DEFAULT_COLLECTION)
+    public function get_changelist($op = null, $collection = Storage_Interface::DEFAULT_COLLECTION)
     {
-        return $this->configImporter->getStorageComparer()->getChangelist($op, $collection);
+        return $this->config_importer->get_storage_comparer()->get_changelist($op, $collection);
     }
-
 }

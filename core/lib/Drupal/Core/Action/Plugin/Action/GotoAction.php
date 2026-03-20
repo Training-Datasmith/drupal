@@ -1,29 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action\Plugin\Action;
 
-use Drupal\Component\Utility\UrlHelper;
-use Drupal\Core\Access\AccessResult;
+use Drupal\Component\Utility\Url_Helper;
+use Drupal\Core\Access\Access_Result;
 use Drupal\Core\Action\Attribute\Action;
-use Drupal\Core\Action\ConfigurableActionBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpKernel\KernelEvents;
-
+use Drupal\Core\Action\Configurable_Action_Base;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Plugin\Container_Factory_Plugin_Interface;
+use Drupal\Core\Session\Account_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
+use Symfony\Component\Http_Foundation\Redirect_Response;
+use Symfony\Component\Http_Kernel\Kernel_Events;
 /**
  * Redirects to a different URL.
  */
-#[Action(
-    id: 'action_goto_action',
-    label: new TranslatableMarkup('Redirect to URL'),
-    type: 'system'
-)]
-class GotoAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface
+#[Action(id: 'action_goto_action', label: new Translatable_Markup('Redirect to URL'), type: 'system')]
+class Goto_Action extends Configurable_Action_Base implements Container_Factory_Plugin_Interface
 {
     /**
      * Constructs a GotoAction object.
@@ -39,11 +33,10 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
      * @param \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler
      *   The unrouted URL assembler service.
      */
-    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler)
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\Event_Dispatcher\Event_Dispatcher_Interface $dispatcher, protected \Drupal\Core\Utility\Unrouted_Url_Assembler_Interface $unrouted_url_assembler)
     {
         parent::__construct($configuration, $plugin_id, $plugin_definition);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -52,71 +45,54 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
         $url = $this->configuration['url'];
         // Leave external URLs unchanged, and assemble others as absolute URLs
         // relative to the site's base URL.
-        if (!UrlHelper::isExternal($url)) {
-            $parts = UrlHelper::parse($url);
+        if (!Url_Helper::is_external($url)) {
+            $parts = Url_Helper::parse($url);
             // @todo '<front>' is valid input for BC reasons, may be removed by
             //   https://www.drupal.org/node/2421941
             if ($parts['path'] === '<front>') {
                 $parts['path'] = '';
             }
             $uri = 'base:' . $parts['path'];
-            $options = [
-              'query' => $parts['query'],
-              'fragment' => $parts['fragment'],
-              'absolute' => true,
-            ];
+            $options = ['query' => $parts['query'], 'fragment' => $parts['fragment'], 'absolute' => true];
             // Treat this as if it's user input of a path relative to the site's
             // base URL.
-            $url = $this->unroutedUrlAssembler->assemble($uri, $options);
+            $url = $this->unrouted_url_assembler->assemble($uri, $options);
         }
-        $response = new RedirectResponse($url);
+        $response = new Redirect_Response($url);
         $listener = function ($event) use ($response): void {
-            $event->setResponse($response);
+            $event->set_response($response);
         };
         // Add the listener to the event dispatcher.
-        $this->dispatcher->addListener(KernelEvents::RESPONSE, $listener);
+        $this->dispatcher->add_listener(Kernel_Events::RESPONSE, $listener);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration(): array
+    public function default_configuration(): array
     {
-        return [
-          'url' => '',
-        ];
+        return ['url' => ''];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    public function build_configuration_form(array $form, Form_State_Interface $form_state): array
     {
-        $form['url'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('URL'),
-          '#description' => $this->t('The URL to which the user should be redirected. This can be an internal URL like /node/1234 or an external URL like @url.', ['@url' => 'https://example.com']),
-          '#default_value' => $this->configuration['url'],
-          '#required' => true,
-        ];
+        $form['url'] = ['#type' => 'textfield', '#title' => $this->t('URL'), '#description' => $this->t('The URL to which the user should be redirected. This can be an internal URL like /node/1234 or an external URL like @url.', ['@url' => 'https://example.com']), '#default_value' => $this->configuration['url'], '#required' => true];
         return $form;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    public function submit_configuration_form(array &$form, Form_State_Interface $form_state): void
     {
-        $this->configuration['url'] = $form_state->getValue('url');
+        $this->configuration['url'] = $form_state->get_value('url');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
+    public function access($object, ?Account_Interface $account = null, $return_as_object = false)
     {
-        $access = AccessResult::allowed();
-        return $return_as_object ? $access : $access->isAllowed();
+        $access = Access_Result::allowed();
+        return $return_as_object ? $access : $access->is_allowed();
     }
-
 }

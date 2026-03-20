@@ -1,28 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
  * Provides methods to use a cache backend while respecting a 'use caches' flag.
  */
-trait UseCacheBackendTrait
+trait Use_Cache_Backend_Trait
 {
     /**
      * Cache backend instance.
      *
      * @var \Drupal\Core\Cache\CacheBackendInterface
      */
-    protected $cacheBackend;
-
+    protected $cache_backend;
     /**
      * Flag whether caches should be used or skipped.
      *
      * @var bool
      */
-    protected $useCaches = true;
-
+    protected $use_caches = true;
     /**
      * Fetches from the cache backend, respecting the use caches flag.
      *
@@ -34,14 +31,13 @@ trait UseCacheBackendTrait
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::get()
      */
-    protected function cacheGet($cid)
+    protected function cache_get($cid)
     {
-        if ($this->useCaches && $this->cacheBackend) {
-            return $this->cacheBackend->get($cid);
+        if ($this->use_caches && $this->cache_backend) {
+            return $this->cache_backend->get($cid);
         }
         return false;
     }
-
     /**
      * Stores data in the persistent cache, respecting the use caches flag.
      *
@@ -69,11 +65,10 @@ trait UseCacheBackendTrait
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::set()
      */
-    protected function cacheSet($cid, $data, $expire = Cache::PERMANENT, array $tags = [])
+    protected function cache_set($cid, $data, $expire = Cache::PERMANENT, array $tags = [])
     {
-        if ($this->cacheBackend && $this->useCaches) {
-            $this->cacheBackend->set($cid, $data, $expire, $tags);
+        if ($this->cache_backend && $this->use_caches) {
+            $this->cache_backend->set($cid, $data, $expire, $tags);
         }
     }
-
 }

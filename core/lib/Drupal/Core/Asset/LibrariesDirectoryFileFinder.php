@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Finds files that are located in the supported 'libraries' directories.
  */
-class LibrariesDirectoryFileFinder
+class Libraries_Directory_File_Finder
 {
     /**
      * Constructs a new LibrariesDirectoryFileFinder instance.
@@ -29,15 +28,15 @@ class LibrariesDirectoryFileFinder
         /**
          * The site path.
          */
-        protected $sitePath,
-        protected \Drupal\Core\Extension\ProfileExtensionList $profileExtensionList,
+        protected $site_path,
+        protected \Drupal\Core\Extension\Profile_Extension_List $profile_extension_list,
         /**
          * The install profile.
          */
-        protected $installProfile
-    ) {
+        protected $install_profile
+    )
+    {
     }
-
     /**
      * Finds files that are located in the supported 'libraries' directories.
      *
@@ -60,17 +59,14 @@ class LibrariesDirectoryFileFinder
     public function find(string $path): string|false
     {
         // Search sites/<domain>/*.
-        $directories[] = "{$this->sitePath}/libraries/";
-
+        $directories[] = "{$this->site_path}/libraries/";
         // Always search the root 'libraries' directory.
         $directories[] = 'libraries/';
-
         // Installation profiles can place libraries into a 'libraries' directory.
-        if ($this->installProfile) {
-            $profile_path = $this->profileExtensionList->getPath($this->installProfile);
-            $directories[] = "$profile_path/libraries/";
+        if ($this->install_profile) {
+            $profile_path = $this->profile_extension_list->get_path($this->install_profile);
+            $directories[] = "{$profile_path}/libraries/";
         }
-
         foreach ($directories as $dir) {
             if (file_exists($this->root . '/' . $dir . $path)) {
                 return $dir . $path;
@@ -79,5 +75,4 @@ class LibrariesDirectoryFileFinder
         // The library has not been found.
         return false;
     }
-
 }

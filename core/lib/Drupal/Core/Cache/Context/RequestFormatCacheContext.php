@@ -1,40 +1,35 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the RequestFormatCacheContext service, for "per format" caching.
  *
  * Cache context ID: 'request_format'.
  */
-class RequestFormatCacheContext extends RequestStackCacheContextBase
+class Request_Format_Cache_Context extends Request_Stack_Cache_Context_Base
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Request format');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext()
+    public function get_context()
     {
-        return $this->requestStack->getCurrentRequest()->getRequestFormat();
+        return $this->request_stack->get_current_request()->get_request_format();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

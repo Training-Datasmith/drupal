@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
 /**
  * Provides an interface for defining a calculated cache context service.
  */
-interface CalculatedCacheContextInterface
+interface Calculated_Cache_Context_Interface
 {
     /**
      * Returns the label of the cache context.
@@ -17,8 +16,7 @@ interface CalculatedCacheContextInterface
      *
      * @see Cache
      */
-    public static function getLabel();
-
+    public static function get_label();
     /**
      * Returns the string representation of the cache context.
      *
@@ -35,8 +33,7 @@ interface CalculatedCacheContextInterface
      * @throws \LogicException
      *   Thrown if the passed in parameter is invalid.
      */
-    public function getContext($parameter = null);
-
+    public function get_context($parameter = null);
     /**
      * Gets cacheability metadata for the context based on the parameter value.
      *
@@ -57,6 +54,5 @@ interface CalculatedCacheContextInterface
      * @throws \LogicException
      *   Thrown if the passed in parameter is invalid.
      */
-    public function getCacheableMetadata($parameter = null);
-
+    public function get_cacheable_metadata($parameter = null);
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -18,21 +17,13 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class BeforeCommand extends InsertCommand
+class Before_Command extends Insert_Command
 {
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'insert',
-          'method' => 'before',
-          'selector' => $this->selector,
-          'data' => $this->getRenderedContent(),
-          'settings' => $this->settings,
-        ];
+        return ['command' => 'insert', 'method' => 'before', 'selector' => $this->selector, 'data' => $this->get_rendered_content(), 'settings' => $this->settings];
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
 /**
  * Interface for collectors of registered authentication providers.
  */
-interface AuthenticationCollectorInterface
+interface Authentication_Collector_Interface
 {
     /**
      * Adds a provider to the array of registered providers.
@@ -22,8 +21,7 @@ interface AuthenticationCollectorInterface
      *   (optional) TRUE if the provider is to be applied globally on all routes.
      *   Defaults to FALSE.
      */
-    public function addProvider(AuthenticationProviderInterface $provider, $provider_id, $priority = 0, $global = false);
-
+    public function add_provider(Authentication_Provider_Interface $provider, $provider_id, $priority = 0, $global = false);
     /**
      * Returns whether a provider is considered global.
      *
@@ -35,8 +33,7 @@ interface AuthenticationCollectorInterface
      *
      * @see \Drupal\Core\Authentication\AuthenticationCollectorInterface::addProvider
      */
-    public function isGlobal($provider_id);
-
+    public function is_global($provider_id);
     /**
      * Returns an authentication provider.
      *
@@ -46,14 +43,12 @@ interface AuthenticationCollectorInterface
      * @return \Drupal\Core\Authentication\AuthenticationProviderInterface|null
      *   The authentication provider which matches the ID.
      */
-    public function getProvider(string $provider_id);
-
+    public function get_provider(string $provider_id);
     /**
      * Returns the sorted array of authentication providers.
      *
      * @return \Drupal\Core\Authentication\AuthenticationProviderInterface[]
      *   An array of authentication provider objects.
      */
-    public function getSortedProviders();
-
+    public function get_sorted_providers();
 }

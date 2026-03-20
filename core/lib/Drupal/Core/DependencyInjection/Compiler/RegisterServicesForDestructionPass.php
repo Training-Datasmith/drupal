@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\Compiler\PriorityTaggedServiceTrait;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Compiler\Priority_Tagged_Service_Trait;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Adds services to the "kernel.destructable_services" container parameter.
  *
@@ -15,17 +13,15 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *
  * @see \Drupal\Core\DestructableInterface
  */
-class RegisterServicesForDestructionPass implements CompilerPassInterface
+class Register_Services_For_Destruction_Pass implements Compiler_Pass_Interface
 {
-    use PriorityTaggedServiceTrait;
-
+    use Priority_Tagged_Service_Trait;
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
-        $service_ids = array_values(array_map(strval(...), $this->findAndSortTaggedServices('needs_destruction', $container)));
-        $container->setParameter('kernel.destructable_services', $service_ids);
+        $service_ids = array_values(array_map(strval(...), $this->find_and_sort_tagged_services('needs_destruction', $container)));
+        $container->set_parameter('kernel.destructable_services', $service_ids);
     }
-
 }

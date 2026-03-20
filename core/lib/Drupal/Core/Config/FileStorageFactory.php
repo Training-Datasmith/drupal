@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Site\Settings;
-
 /**
  * Provides a factory for creating config file storage objects.
  */
-class FileStorageFactory
+class File_Storage_Factory
 {
     /**
      * Returns a FileStorage object working with the sync config directory.
@@ -21,13 +19,12 @@ class FileStorageFactory
      *   In case the sync directory does not exist or is not defined in
      *   $settings['config_sync_directory'].
      */
-    public static function getSync(): \Drupal\Core\Config\FileStorage
+    public static function get_sync(): \Drupal\Core\Config\File_Storage
     {
         $directory = Settings::get('config_sync_directory', false);
         if ($directory === false) {
-            throw new ConfigDirectoryNotDefinedException('The config sync directory is not defined in $settings["config_sync_directory"]');
+            throw new Config_Directory_Not_Defined_Exception('The config sync directory is not defined in $settings["config_sync_directory"]');
         }
-        return new FileStorage($directory);
+        return new File_Storage($directory);
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display;
 
 /**
@@ -21,7 +20,7 @@ namespace Drupal\Core\Display;
  * @see \Drupal\Core\Display\VariantManager
  * @see plugin_api
  */
-interface PageVariantInterface extends VariantInterface
+interface Page_Variant_Interface extends Variant_Interface
 {
     /**
      * Sets the main content for the page being rendered.
@@ -31,8 +30,7 @@ interface PageVariantInterface extends VariantInterface
      *
      * @return $this
      */
-    public function setMainContent(array $main_content);
-
+    public function set_main_content(array $main_content);
     /**
      * Sets the title for the page being rendered.
      *
@@ -42,6 +40,5 @@ interface PageVariantInterface extends VariantInterface
      *
      * @return $this
      */
-    public function setTitle($title);
-
+    public function set_title($title);
 }

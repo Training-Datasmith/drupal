@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
-use Drupal\Core\Database\Statement\FetchAs;
-
+use Drupal\Core\Database\Statement\Fetch_As;
 /**
  * Provide helper methods for statement fetching.
  */
-trait FetchModeTrait
+trait Fetch_Mode_Trait
 {
     /**
      * Converts a row of data in associative format to list.
@@ -20,11 +18,10 @@ trait FetchModeTrait
      * @return array
      *   The row in list format.
      */
-    protected function assocToNum(array $rowAssoc): array
+    protected function assoc_to_num(array $row_assoc): array
     {
-        return array_values($rowAssoc);
+        return array_values($row_assoc);
     }
-
     /**
      * Converts a row of data in associative format to object.
      *
@@ -34,11 +31,10 @@ trait FetchModeTrait
      * @return object
      *   The row in object format.
      */
-    protected function assocToObj(array $rowAssoc): \stdClass
+    protected function assoc_to_obj(array $row_assoc): \stdClass
     {
-        return (object) $rowAssoc;
+        return (object) $row_assoc;
     }
-
     /**
      * Converts a row of data in associative format to classed object.
      *
@@ -52,15 +48,14 @@ trait FetchModeTrait
      * @return object
      *   The row in classed object format.
      */
-    protected function assocToClass(array $rowAssoc, string $className, array $constructorArguments): object
+    protected function assoc_to_class(array $row_assoc, string $class_name, array $constructor_arguments): object
     {
-        $classObj = new $className(...$constructorArguments);
-        foreach ($rowAssoc as $column => $value) {
-            $classObj->$column = $value;
+        $class_obj = new $class_name(...$constructor_arguments);
+        foreach ($row_assoc as $column => $value) {
+            $class_obj->{$column} = $value;
         }
-        return $classObj;
+        return $class_obj;
     }
-
     /**
      * Converts a row of data in associative format to column.
      *
@@ -77,14 +72,13 @@ trait FetchModeTrait
      * @throws \ValueError
      *   If the column index is not defined.
      */
-    protected function assocToColumn(array $rowAssoc, array $columnNames, int $columnIndex): mixed
+    protected function assoc_to_column(array $row_assoc, array $column_names, int $column_index): mixed
     {
-        if (!isset($columnNames[$columnIndex])) {
-            throw new \ValueError('Invalid column index');
+        if (!isset($column_names[$column_index])) {
+            throw new \Value_Error('Invalid column index');
         }
-        return $rowAssoc[$columnNames[$columnIndex]];
+        return $row_assoc[$column_names[$column_index]];
     }
-
     /**
      * Converts a row of data in associative format to a specified format.
      *
@@ -101,15 +95,14 @@ trait FetchModeTrait
      * @throws \ValueError
      *   If the column index is not defined.
      */
-    protected function assocToFetchMode(array $rowAssoc, FetchAs $mode, array $fetchOptions): array|object|int|float|string|bool|null
+    protected function assoc_to_fetch_mode(array $row_assoc, Fetch_As $mode, array $fetch_options): array|object|int|float|string|bool|null
     {
-        return match($mode) {
-            FetchAs::Associative => $rowAssoc,
-            FetchAs::ClassObject => $this->assocToClass($rowAssoc, $fetchOptions['class'], $fetchOptions['constructor_args']),
-            FetchAs::Column => $this->assocToColumn($rowAssoc, array_keys($rowAssoc), $fetchOptions['column']),
-            FetchAs::List => $this->assocToNum($rowAssoc),
-            FetchAs::Object => $this->assocToObj($rowAssoc),
+        return match ($mode) {
+            Fetch_As::Associative => $row_assoc,
+            Fetch_As::ClassObject => $this->assoc_to_class($row_assoc, $fetch_options['class'], $fetch_options['constructor_args']),
+            Fetch_As::Column => $this->assoc_to_column($row_assoc, array_keys($row_assoc), $fetch_options['column']),
+            Fetch_As::List => $this->assoc_to_num($row_assoc),
+            Fetch_As::Object => $this->assoc_to_obj($row_assoc),
         };
     }
-
 }

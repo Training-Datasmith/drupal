@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Interface defining a service that optimizes a collection of assets.
  */
-interface AssetCollectionOptimizerInterface
+interface Asset_Collection_Optimizer_Interface
 {
     /**
      * Optimizes a collection of assets.
@@ -21,10 +20,8 @@ interface AssetCollectionOptimizerInterface
      *   An optimized asset collection.
      */
     public function optimize(array $assets, array $libraries);
-
     /**
      * Deletes all optimized asset collections assets.
      */
-    public function deleteAll();
-
+    public function delete_all();
 }

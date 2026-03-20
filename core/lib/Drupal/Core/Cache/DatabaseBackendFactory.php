@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Serialization\ObjectAwareSerializationInterface;
+use Drupal\Component\Datetime\Time_Interface;
+use Drupal\Component\Serialization\Object_Aware_Serialization_Interface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Site\Settings;
-
 /**
  * Defines a default cache backend factory.
  */
-class DatabaseBackendFactory implements CacheFactoryInterface
+class Database_Backend_Factory implements Cache_Factory_Interface
 {
     /**
      * Constructs the DatabaseBackendFactory object.
@@ -30,10 +28,9 @@ class DatabaseBackendFactory implements CacheFactoryInterface
      *
      * @throws \BadMethodCallException
      */
-    public function __construct(protected \Drupal\Core\Database\Connection $connection, protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider, protected Settings $settings, protected ObjectAwareSerializationInterface $serializer, protected TimeInterface $time)
+    public function __construct(protected \Drupal\Core\Database\Connection $connection, protected \Drupal\Core\Cache\Cache_Tags_Checksum_Interface $checksum_provider, protected Settings $settings, protected Object_Aware_Serialization_Interface $serializer, protected Time_Interface $time)
     {
     }
-
     /**
      * Gets DatabaseBackend for the specified cache bin.
      *
@@ -43,12 +40,11 @@ class DatabaseBackendFactory implements CacheFactoryInterface
      * @return \Drupal\Core\Cache\DatabaseBackend
      *   The cache backend object for the specified cache bin.
      */
-    public function get($bin): \Drupal\Core\Cache\DatabaseBackend
+    public function get($bin): \Drupal\Core\Cache\Database_Backend
     {
-        $max_rows = $this->getMaxRowsForBin($bin);
-        return new DatabaseBackend($this->connection, $this->checksumProvider, $bin, $this->serializer, $this->time, $max_rows);
+        $max_rows = $this->get_max_rows_for_bin($bin);
+        return new Database_Backend($this->connection, $this->checksum_provider, $bin, $this->serializer, $this->time, $max_rows);
     }
-
     /**
      * Gets the max rows for the specified cache bin.
      *
@@ -59,21 +55,18 @@ class DatabaseBackendFactory implements CacheFactoryInterface
      *   The maximum number of rows for the given bin. Defaults to
      *   DatabaseBackend::DEFAULT_MAX_ROWS.
      */
-    protected function getMaxRowsForBin($bin)
+    protected function get_max_rows_for_bin($bin)
     {
         $max_rows_settings = $this->settings->get('database_cache_max_rows');
         // First, look for a cache bin specific setting.
         if (isset($max_rows_settings['bins'][$bin])) {
             $max_rows = $max_rows_settings['bins'][$bin];
-        }
-        // Second, use configured default backend.
-        elseif (isset($max_rows_settings['default'])) {
+        } elseif (isset($max_rows_settings['default'])) {
             $max_rows = $max_rows_settings['default'];
         } else {
             // Fall back to the default max rows if nothing else is configured.
-            $max_rows = DatabaseBackend::DEFAULT_MAX_ROWS;
+            $max_rows = Database_Backend::DEFAULT_MAX_ROWS;
         }
         return $max_rows;
     }
-
 }

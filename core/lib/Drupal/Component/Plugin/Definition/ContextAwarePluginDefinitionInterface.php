@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Definition;
 
-use Drupal\Component\Plugin\Context\ContextDefinitionInterface;
-
+use Drupal\Component\Plugin\Context\Context_Definition_Interface;
 /**
  * Provides an interface for plugin definitions which use contexts.
  *
  * @ingroup Plugin
  */
-interface ContextAwarePluginDefinitionInterface extends PluginDefinitionInterface
+interface Context_Aware_Plugin_Definition_Interface extends Plugin_Definition_Interface
 {
     /**
      * Checks if the plugin defines a particular context.
@@ -22,16 +20,14 @@ interface ContextAwarePluginDefinitionInterface extends PluginDefinitionInterfac
      * @return bool
      *   TRUE if the plugin defines the given context, otherwise FALSE.
      */
-    public function hasContextDefinition($name);
-
+    public function has_context_definition($name);
     /**
      * Returns all context definitions for this plugin.
      *
      * @return \Drupal\Component\Plugin\Context\ContextDefinitionInterface[]
      *   The context definitions.
      */
-    public function getContextDefinitions();
-
+    public function get_context_definitions();
     /**
      * Returns a particular context definition for this plugin.
      *
@@ -44,8 +40,7 @@ interface ContextAwarePluginDefinitionInterface extends PluginDefinitionInterfac
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   Thrown if the plugin does not define the given context.
      */
-    public function getContextDefinition($name);
-
+    public function get_context_definition($name);
     /**
      * Adds a context to this plugin definition.
      *
@@ -57,8 +52,7 @@ interface ContextAwarePluginDefinitionInterface extends PluginDefinitionInterfac
      * @return $this
      *   The called object.
      */
-    public function addContextDefinition($name, ContextDefinitionInterface $definition);
-
+    public function add_context_definition($name, Context_Definition_Interface $definition);
     /**
      * Removes a context definition from this plugin.
      *
@@ -68,6 +62,5 @@ interface ContextAwarePluginDefinitionInterface extends PluginDefinitionInterfac
      * @return $this
      *   The called object.
      */
-    public function removeContextDefinition($name);
-
+    public function remove_context_definition($name);
 }

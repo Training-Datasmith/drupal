@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Render;
 
 use Drupal\Component\Utility\Html;
-
 /**
  * Escapes HTML syntax characters to HTML entities for display in markup.
  *
@@ -14,13 +12,12 @@ use Drupal\Component\Utility\Html;
  *
  * @ingroup sanitization
  */
-class HtmlEscapedText implements MarkupInterface, \Countable
+class Html_Escaped_Text implements Markup_Interface, \Countable
 {
     /**
      * The string to escape.
      */
     protected string $string;
-
     /**
      * Constructs an HtmlEscapedText object.
      *
@@ -31,7 +28,6 @@ class HtmlEscapedText implements MarkupInterface, \Countable
     {
         $this->string = (string) $string;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -39,7 +35,6 @@ class HtmlEscapedText implements MarkupInterface, \Countable
     {
         return Html::escape($this->string);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -47,7 +42,6 @@ class HtmlEscapedText implements MarkupInterface, \Countable
     {
         return mb_strlen($this->string);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -55,5 +49,4 @@ class HtmlEscapedText implements MarkupInterface, \Countable
     {
         return $this->__toString();
     }
-
 }

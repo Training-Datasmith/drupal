@@ -1,74 +1,66 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Core\Config\ConfigNameException;
-use Drupal\Core\Entity\EntityStorageInterface;
-
+use Drupal\Core\Config\Config_Name_Exception;
+use Drupal\Core\Entity\Entity_Storage_Interface;
 /**
  * A base class for config entity types that act as bundles.
  *
  * Entity types that want to use this base class must use bundle_of in their
  * annotation to specify for which entity type they are providing bundles for.
  */
-abstract class ConfigEntityBundleBase extends ConfigEntityBase
+abstract class Config_Entity_Bundle_Base extends Config_Entity_Base
 {
     /**
      * Deletes display if a bundle is deleted.
      */
-    protected function deleteDisplays()
+    protected function delete_displays()
     {
         // Remove entity displays of the deleted bundle.
-        if ($displays = $this->loadDisplays('entity_view_display')) {
-            $storage = $this->entityTypeManager()->getStorage('entity_view_display');
+        if ($displays = $this->load_displays('entity_view_display')) {
+            $storage = $this->entity_type_manager()->get_storage('entity_view_display');
             $storage->delete($displays);
         }
-
         // Remove entity form displays of the deleted bundle.
-        if ($displays = $this->loadDisplays('entity_form_display')) {
-            $storage = $this->entityTypeManager()->getStorage('entity_form_display');
+        if ($displays = $this->load_displays('entity_form_display')) {
+            $storage = $this->entity_type_manager()->get_storage('entity_form_display');
             $storage->delete($displays);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function postSave(EntityStorageInterface $storage, $update = true): void
+    public function post_save(Entity_Storage_Interface $storage, $update = true): void
     {
-        parent::postSave($storage, $update);
-
-        $entity_type_manager = $this->entityTypeManager();
-        $bundle_of = $this->getEntityType()->getBundleOf();
+        parent::post_save($storage, $update);
+        $entity_type_manager = $this->entity_type_manager();
+        $bundle_of = $this->get_entity_type()->get_bundle_of();
         if (!$update) {
-            \Drupal::service('entity_bundle.listener')->onBundleCreate($this->id(), $bundle_of);
+            \Drupal::service('entity_bundle.listener')->on_bundle_create($this->id(), $bundle_of);
         } else {
             // Invalidate the render cache of entities for which this entity
             // is a bundle.
-            if ($entity_type_manager->hasHandler($bundle_of, 'view_builder')) {
-                $entity_type_manager->getViewBuilder($bundle_of)->resetCache();
+            if ($entity_type_manager->has_handler($bundle_of, 'view_builder')) {
+                $entity_type_manager->get_view_builder($bundle_of)->reset_cache();
             }
             // Entity bundle field definitions may depend on bundle settings.
-            \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
-            $this->entityTypeBundleInfo()->clearCachedBundles();
+            \Drupal::service('entity_field.manager')->clear_cached_field_definitions();
+            $this->entity_type_bundle_info()->clear_cached_bundles();
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function postDelete(EntityStorageInterface $storage, array $entities): void
+    public static function post_delete(Entity_Storage_Interface $storage, array $entities): void
     {
-        parent::postDelete($storage, $entities);
-
+        parent::post_delete($storage, $entities);
         foreach ($entities as $entity) {
-            $entity->deleteDisplays();
-            \Drupal::service('entity_bundle.listener')->onBundleDelete($entity->id(), $entity->getEntityType()->getBundleOf());
+            $entity->delete_displays();
+            \Drupal::service('entity_bundle.listener')->on_bundle_delete($entity->id(), $entity->get_entity_type()->get_bundle_of());
         }
     }
-
     /**
      * Acts on an entity before the presave hook is invoked.
      *
@@ -83,20 +75,18 @@ abstract class ConfigEntityBundleBase extends ConfigEntityBase
      * @throws \Drupal\Core\Config\ConfigNameException
      *   Thrown when attempting to rename a bundle entity.
      */
-    public function preSave(EntityStorageInterface $storage): void
+    public function pre_save(Entity_Storage_Interface $storage): void
     {
-        parent::preSave($storage);
-
+        parent::pre_save($storage);
         // Only handle renames, not creations.
-        if (!$this->isNew() && $this->getOriginalId() !== $this->id()) {
-            $bundle_type = $this->getEntityType();
-            $bundle_of = $bundle_type->getBundleOf();
+        if (!$this->is_new() && $this->get_original_id() !== $this->id()) {
+            $bundle_type = $this->get_entity_type();
+            $bundle_of = $bundle_type->get_bundle_of();
             if (!empty($bundle_of)) {
-                throw new ConfigNameException("The machine name of the '{$bundle_type->getLabel()}' bundle cannot be changed.");
+                throw new Config_Name_Exception("The machine name of the '{$bundle_type->get_label()}' bundle cannot be changed.");
             }
         }
     }
-
     /**
      * Returns view or form displays for this bundle.
      *
@@ -106,18 +96,15 @@ abstract class ConfigEntityBundleBase extends ConfigEntityBase
      * @return \Drupal\Core\Entity\Display\EntityDisplayInterface[]
      *   A list of matching displays.
      */
-    protected function loadDisplays($entity_type_id)
+    protected function load_displays($entity_type_id)
     {
         /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
-        $storage = $this->entityTypeManager()->getStorage($entity_type_id);
-        $ids = $storage->getQuery()
-          ->condition('id', $this->getEntityType()->getBundleOf() . '.' . $this->getOriginalId() . '.', 'STARTS_WITH')
-          ->execute();
+        $storage = $this->entity_type_manager()->get_storage($entity_type_id);
+        $ids = $storage->get_query()->condition('id', $this->get_entity_type()->get_bundle_of() . '.' . $this->get_original_id() . '.', 'STARTS_WITH')->execute();
         if ($ids) {
-            $storage = $this->entityTypeManager()->getStorage($entity_type_id);
-            return $storage->loadMultiple($ids);
+            $storage = $this->entity_type_manager()->get_storage($entity_type_id);
+            return $storage->load_multiple($ids);
         }
         return [];
     }
-
 }

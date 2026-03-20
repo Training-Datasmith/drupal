@@ -1,27 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Component\Render\PlainTextOutput;
-
+use Drupal\Component\Render\Plain_Text_Output;
 /**
  * Defines an AJAX command to open certain content in a dialog.
  *
  * @ingroup ajax
  */
-class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+class Open_Dialog_Command implements Command_Interface, Command_With_Attached_Assets_Interface
 {
-    use CommandWithAttachedAssetsTrait;
-
+    use Command_With_Attached_Assets_Trait;
     /**
      * The title of the dialog.
      *
      * @var string
      */
     protected $title;
-
     /**
      * Stores dialog-specific options passed directly to jQuery UI dialogs.
      *
@@ -30,8 +26,7 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
      *
      * @see http://api.jqueryui.com/dialog.
      */
-    protected array $dialogOptions;
-
+    protected array $dialog_options;
     /**
      * Constructs an OpenDialogCommand object.
      *
@@ -50,24 +45,27 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
      *   on the content of the dialog. If left empty, the settings will be
      *   populated automatically from the current request.
      */
-    public function __construct(/**
-   * The selector of the dialog.
-   */
+    public function __construct(
+        /**
+         * The selector of the dialog.
+         */
         protected $selector,
-        string|\Stringable|null $title, /**
-   * The content for the dialog.
-   *
-   * Either a render array or an HTML string.
-   */
+        string|\Stringable|null $title,
+        /**
+         * The content for the dialog.
+         *
+         * Either a render array or an HTML string.
+         */
         protected $content,
-        array $dialog_options = [], /**
-   * Custom settings passed to Drupal behaviors on the content of the dialog.
-   */
+        array $dialog_options = [],
+        /**
+         * Custom settings passed to Drupal behaviors on the content of the dialog.
+         */
         protected $settings = null
-    ) {
-        $title = PlainTextOutput::renderFromHtml($title);
+    )
+    {
+        $title = Plain_Text_Output::render_from_html($title);
         $dialog_options += ['title' => $title];
-
         $classes = [];
         if (isset($dialog_options['classes']['ui-dialog'])) {
             $classes[] = $dialog_options['classes']['ui-dialog'];
@@ -75,9 +73,8 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
         if ($classes) {
             $dialog_options['classes']['ui-dialog'] = implode(' ', $classes);
         }
-        $this->dialogOptions = $dialog_options;
+        $this->dialog_options = $dialog_options;
     }
-
     /**
      * Returns the dialog options.
      *
@@ -85,11 +82,10 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
      *   An array of the dialog-specific options passed directly to jQuery UI
      *   dialogs.
      */
-    public function getDialogOptions()
+    public function get_dialog_options()
     {
-        return $this->dialogOptions;
+        return $this->dialog_options;
     }
-
     /**
      * Sets the dialog options array.
      *
@@ -97,11 +93,10 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
      *   Options to be passed to the dialog implementation. Any jQuery UI option
      *   can be used. See http://api.jqueryui.com/dialog.
      */
-    public function setDialogOptions($dialog_options): void
+    public function set_dialog_options($dialog_options): void
     {
-        $this->dialogOptions = $dialog_options;
+        $this->dialog_options = $dialog_options;
     }
-
     /**
      * Sets a single dialog option value.
      *
@@ -111,36 +106,27 @@ class OpenDialogCommand implements CommandInterface, CommandWithAttachedAssetsIn
      * @param mixed $value
      *   Option to be passed to the dialog implementation.
      */
-    public function setDialogOption($key, $value): void
+    public function set_dialog_option($key, $value): void
     {
-        $this->dialogOptions[$key] = $value;
+        $this->dialog_options[$key] = $value;
     }
-
     /**
      * Sets the dialog title (an alias of setDialogOptions).
      *
      * @param string $title
      *   The new title of the dialog.
      */
-    public function setDialogTitle($title): void
+    public function set_dialog_title($title): void
     {
-        $this->setDialogOption('title', $title);
+        $this->set_dialog_option('title', $title);
     }
-
     /**
      * Implements \Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
         // For consistency ensure the modal option is set to TRUE or FALSE.
-        $this->dialogOptions['modal'] = isset($this->dialogOptions['modal']) && $this->dialogOptions['modal'];
-        return [
-          'command' => 'openDialog',
-          'selector' => $this->selector,
-          'settings' => $this->settings,
-          'data' => $this->getRenderedContent(),
-          'dialogOptions' => $this->dialogOptions,
-        ];
+        $this->dialog_options['modal'] = isset($this->dialog_options['modal']) && $this->dialog_options['modal'];
+        return ['command' => 'openDialog', 'selector' => $this->selector, 'settings' => $this->settings, 'data' => $this->get_rendered_content(), 'dialogOptions' => $this->dialog_options];
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Definition;
 
 /**
@@ -11,7 +10,7 @@ namespace Drupal\Component\Plugin\Definition;
  *
  * @ingroup Plugin
  */
-interface PluginDefinitionInterface
+interface Plugin_Definition_Interface
 {
     /**
      * Gets the unique identifier of the plugin.
@@ -20,7 +19,6 @@ interface PluginDefinitionInterface
      *   The unique identifier of the plugin.
      */
     public function id();
-
     /**
      * Sets the class.
      *
@@ -32,16 +30,14 @@ interface PluginDefinitionInterface
      * @throws \InvalidArgumentException
      *   If the class is invalid.
      */
-    public function setClass($class);
-
+    public function set_class($class);
     /**
      * Gets the class.
      *
      * @return string
      *   A fully qualified class name.
      */
-    public function getClass();
-
+    public function get_class();
     /**
      * Gets the plugin provider.
      *
@@ -51,6 +47,5 @@ interface PluginDefinitionInterface
      * @return string
      *   The provider.
      */
-    public function getProvider();
-
+    public function get_provider();
 }

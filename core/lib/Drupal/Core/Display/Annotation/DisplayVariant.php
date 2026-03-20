@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-
 /**
  * Defines a display variant annotation object.
  *
@@ -34,7 +32,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class DisplayVariant extends Plugin
+class Display_Variant extends Plugin
 {
     /**
      * The plugin ID.
@@ -42,7 +40,6 @@ class DisplayVariant extends Plugin
      * @var string
      */
     public $id;
-
     /**
      * The administrative label.
      *
@@ -51,5 +48,4 @@ class DisplayVariant extends Plugin
      * @ingroup plugin_translatable
      */
     public $admin_label = '';
-
 }

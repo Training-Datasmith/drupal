@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
 /**
  * Provides an interface for defining a cache context service.
  */
-interface CacheContextInterface
+interface Cache_Context_Interface
 {
     /**
      * Returns the label of the cache context.
@@ -15,8 +14,7 @@ interface CacheContextInterface
      * @return string
      *   The label of the cache context.
      */
-    public static function getLabel();
-
+    public static function get_label();
     /**
      * Returns the string representation of the cache context.
      *
@@ -26,8 +24,7 @@ interface CacheContextInterface
      * @return string
      *   The string representation of the cache context.
      */
-    public function getContext();
-
+    public function get_context();
     /**
      * Gets the cacheability metadata for the context.
      *
@@ -42,6 +39,5 @@ interface CacheContextInterface
      * @return \Drupal\Core\Cache\CacheableMetadata
      *   A cacheable metadata object.
      */
-    public function getCacheableMetadata();
-
+    public function get_cacheable_metadata();
 }

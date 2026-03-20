@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
 /**
  * Defines an interface for plugin managers that categorize plugin definitions.
  */
-interface CategorizingPluginManagerInterface extends PluginManagerInterface
+interface Categorizing_Plugin_Manager_Interface extends Plugin_Manager_Interface
 {
     /**
      * Gets the names of all categories.
@@ -15,8 +14,7 @@ interface CategorizingPluginManagerInterface extends PluginManagerInterface
      * @return string[]
      *   An array of translated categories, sorted alphabetically.
      */
-    public function getCategories();
-
+    public function get_categories();
     /**
      * Gets sorted plugin definitions.
      *
@@ -29,8 +27,7 @@ interface CategorizingPluginManagerInterface extends PluginManagerInterface
      * @return array[]
      *   An array of plugin definitions, sorted by category and label.
      */
-    public function getSortedDefinitions(?array $definitions = null, string $label_key = 'label');
-
+    public function get_sorted_definitions(?array $definitions = null, string $label_key = 'label');
     /**
      * Gets sorted plugin definitions grouped by category.
      *
@@ -47,6 +44,5 @@ interface CategorizingPluginManagerInterface extends PluginManagerInterface
      *   Keys are category names, and values are arrays of which the keys are
      *   plugin IDs and the values are plugin definitions.
      */
-    public function getGroupedDefinitions(?array $definitions = null, string $label_key = 'label');
-
+    public function get_grouped_definitions(?array $definitions = null, string $label_key = 'label');
 }

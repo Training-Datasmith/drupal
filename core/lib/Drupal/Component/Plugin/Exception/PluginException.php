@@ -1,12 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Exception;
 
 /**
  * Base class for plugin exceptions.
  */
-class PluginException extends \Exception implements ExceptionInterface
+class Plugin_Exception extends \Exception implements Exception_Interface
 {
 }

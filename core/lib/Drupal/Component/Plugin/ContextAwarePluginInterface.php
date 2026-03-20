@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
-use Drupal\Component\Plugin\Context\ContextInterface;
-
+use Drupal\Component\Plugin\Context\Context_Interface;
 /**
  * Interface for defining context aware plugins.
  *
@@ -14,7 +12,7 @@ use Drupal\Component\Plugin\Context\ContextInterface;
  *
  * @ingroup plugin_api
  */
-interface ContextAwarePluginInterface extends PluginInspectionInterface
+interface Context_Aware_Plugin_Interface extends Plugin_Inspection_Interface
 {
     /**
      * Gets the context definitions of the plugin.
@@ -22,8 +20,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @return \Drupal\Component\Plugin\Context\ContextDefinitionInterface[]
      *   The array of context definitions, keyed by context name.
      */
-    public function getContextDefinitions();
-
+    public function get_context_definitions();
     /**
      * Gets a specific context definition of the plugin.
      *
@@ -36,8 +33,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   If the requested context is not defined.
      */
-    public function getContextDefinition($name);
-
+    public function get_context_definition($name);
     /**
      * Gets the defined contexts.
      *
@@ -47,8 +43,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   If contexts are defined but not set.
      */
-    public function getContexts();
-
+    public function get_contexts();
     /**
      * Gets a defined context.
      *
@@ -61,8 +56,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   If the requested context is not set.
      */
-    public function getContext($name);
-
+    public function get_context($name);
     /**
      * Gets the values for all defined contexts.
      *
@@ -70,8 +64,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      *   An array of set context values, keyed by context name. If a context is
      *   unset its value is returned as NULL.
      */
-    public function getContextValues();
-
+    public function get_context_values();
     /**
      * Gets the value for a defined context.
      *
@@ -84,8 +77,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   If the requested context is not set.
      */
-    public function getContextValue($name);
-
+    public function get_context_value($name);
     /**
      * Set a context on this plugin.
      *
@@ -94,8 +86,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @param \Drupal\Component\Plugin\Context\ContextInterface $context
      *   The context object to set.
      */
-    public function setContext($name, ContextInterface $context);
-
+    public function set_context($name, Context_Interface $context);
     /**
      * Sets the value for a defined context.
      *
@@ -111,8 +102,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      * @throws \Drupal\Component\Plugin\Exception\ContextException
      *   If the value does not pass validation.
      */
-    public function setContextValue($name, $value);
-
+    public function set_context_value($name, $value);
     /**
      * Validates the set values for the defined contexts.
      *
@@ -120,8 +110,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      *   A list of constraint violations. If the list is empty, validation
      *   succeeded.
      */
-    public function validateContexts();
-
+    public function validate_contexts();
     /**
      * Gets a mapping of the expected assignment names to their context names.
      *
@@ -131,8 +120,7 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      *   plugin expects a context named 'user', then this map would contain
      *   'user' => 'user.current_user'.
      */
-    public function getContextMapping();
-
+    public function get_context_mapping();
     /**
      * Sets a mapping of the expected assignment names to their context names.
      *
@@ -144,6 +132,5 @@ interface ContextAwarePluginInterface extends PluginInspectionInterface
      *
      * @return $this
      */
-    public function setContextMapping(array $context_mapping);
-
+    public function set_context_mapping(array $context_mapping);
 }

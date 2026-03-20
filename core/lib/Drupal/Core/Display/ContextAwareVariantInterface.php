@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display;
 
 /**
  * Provides an interface for variant plugins that are context-aware.
  */
-interface ContextAwareVariantInterface extends VariantInterface
+interface Context_Aware_Variant_Interface extends Variant_Interface
 {
     /**
      * Gets the values for all defined contexts.
@@ -15,8 +14,7 @@ interface ContextAwareVariantInterface extends VariantInterface
      * @return \Drupal\Component\Plugin\Context\ContextInterface[]
      *   An array of set contexts, keyed by context name.
      */
-    public function getContexts();
-
+    public function get_contexts();
     /**
      * Sets the context values for this display variant.
      *
@@ -25,6 +23,5 @@ interface ContextAwareVariantInterface extends VariantInterface
      *
      * @return $this
      */
-    public function setContexts(array $contexts);
-
+    public function set_contexts(array $contexts);
 }

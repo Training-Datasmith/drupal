@@ -1,20 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
  * Value object indicating an allowed access result, with cacheability metadata.
  */
-class AccessResultAllowed extends AccessResult
+class Access_Result_Allowed extends Access_Result
 {
     /**
      * {@inheritdoc}
      */
-    public function isAllowed(): bool
+    public function is_allowed(): bool
     {
         return true;
     }
-
 }

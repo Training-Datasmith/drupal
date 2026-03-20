@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Derivative;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Plugin\Derivative;
  *
  * @ingroup plugin_api
  */
-interface DeriverInterface
+interface Deriver_Interface
 {
     /**
      * Gets the definition of a derivative plugin.
@@ -27,8 +26,7 @@ interface DeriverInterface
      *   $base_plugin_definition with extra derivative-specific information. NULL
      *   if the derivative doesn't exist.
      */
-    public function getDerivativeDefinition($derivative_id, $base_plugin_definition);
-
+    public function get_derivative_definition($derivative_id, $base_plugin_definition);
     /**
      * Gets the definition of all derivatives of a base plugin.
      *
@@ -40,6 +38,5 @@ interface DeriverInterface
      *
      * @see getDerivativeDefinition()
      */
-    public function getDerivativeDefinitions($base_plugin_definition);
-
+    public function get_derivative_definitions($base_plugin_definition);
 }

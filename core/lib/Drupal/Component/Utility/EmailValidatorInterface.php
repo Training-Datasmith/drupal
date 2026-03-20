@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
  * Validates email addresses.
  */
-interface EmailValidatorInterface
+interface Email_Validator_Interface
 {
     /**
      * Validates an email address.
@@ -18,6 +17,5 @@ interface EmailValidatorInterface
      * @return bool
      *   TRUE if the address is valid.
      */
-    public function isValid($email);
-
+    public function is_valid($email);
 }

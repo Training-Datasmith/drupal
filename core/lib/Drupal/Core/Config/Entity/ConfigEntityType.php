@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Core\Config\ConfigPrefixLengthException;
-use Drupal\Core\Config\Entity\Exception\ConfigEntityStorageClassException;
-use Drupal\Core\Entity\EntityType;
-
+use Drupal\Core\Config\Config_Prefix_Length_Exception;
+use Drupal\Core\Config\Entity\Exception\Config_Entity_Storage_Class_Exception;
+use Drupal\Core\Entity\Entity_Type;
 /**
  * Provides an implementation of a configuration entity type and its metadata.
  */
-class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
+class Config_Entity_Type extends Entity_Type implements Config_Entity_Type_Interface
 {
     /**
      * The config prefix set in the configuration entity type annotation.
@@ -22,13 +20,11 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
     protected $config_prefix;
-
     /**
      * {@inheritdoc}
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
     protected $static_cache = false;
-
     /**
      * Keys that are stored key value store for fast lookup.
      *
@@ -36,7 +32,6 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
     protected $lookup_keys = [];
-
     /**
      * The list of configuration entity properties to export from the annotation.
      *
@@ -44,7 +39,6 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
     protected $config_export = [];
-
     /**
      * The result of merging config_export annotation with the defaults.
      *
@@ -52,8 +46,7 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
      *
      * @var array
      */
-    protected $mergedConfigExport = [];
-
+    protected $merged_config_export = [];
     /**
      * {@inheritdoc}
      *
@@ -68,21 +61,17 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
         if (empty($definition['list_cache_tags'])) {
             $definition['list_cache_tags'] = ['config:' . $definition['id'] . '_list'];
         }
-
         parent::__construct($definition);
         // Always add a default 'uuid' key.
         $this->entity_keys['uuid'] = 'uuid';
         $this->entity_keys['langcode'] = 'langcode';
-        $this->handlers += [
-          'storage' => \Drupal\Core\Config\Entity\ConfigEntityStorage::class,
-        ];
+        $this->handlers += ['storage' => \Drupal\Core\Config\Entity\Config_Entity_Storage::class];
         $this->lookup_keys[] = 'uuid';
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfigPrefix(): string
+    public function get_config_prefix(): string
     {
         // Ensure that all configuration entities are prefixed by the name of the
         // module that provides the configuration entity type.
@@ -91,53 +80,46 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
         } else {
             $config_prefix = $this->provider . '.' . $this->id();
         }
-
         if (strlen($config_prefix) > static::PREFIX_LENGTH) {
-            throw new ConfigPrefixLengthException("The configuration file name prefix $config_prefix exceeds the maximum character limit of " . static::PREFIX_LENGTH);
+            throw new Config_Prefix_Length_Exception("The configuration file name prefix {$config_prefix} exceeds the maximum character limit of " . static::PREFIX_LENGTH);
         }
         return $config_prefix;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getBaseTable(): null
+    public function get_base_table(): null
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRevisionDataTable(): null
+    public function get_revision_data_table(): null
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRevisionTable(): null
+    public function get_revision_table(): null
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDataTable(): null
+    public function get_data_table(): null
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfigDependencyKey(): string
+    public function get_config_dependency_key(): string
     {
         return 'config';
     }
-
     /**
      * {@inheritdoc}
      *
@@ -147,73 +129,59 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface
      *
      * @see \Drupal\Core\Config\Entity\ConfigEntityStorage
      */
-    protected function checkStorageClass($class)
+    protected function check_storage_class($class)
     {
         if (!is_a($class, 'Drupal\Core\Config\Entity\ConfigEntityStorage', true)) {
-            throw new ConfigEntityStorageClassException("$class is not \\Drupal\\Core\\Config\\Entity\\ConfigEntityStorage or it does not extend it");
+            throw new Config_Entity_Storage_Class_Exception("{$class} is not \\Drupal\\Core\\Config\\Entity\\ConfigEntityStorage or it does not extend it");
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getPropertiesToExport($id = null)
+    public function get_properties_to_export($id = null)
     {
         // @todo https://www.drupal.org/project/drupal/issues/3113620 Make the
         //   config_export annotation required earlier, remove the possibility of
         //   returning NULL and deprecate the $id argument.
-        if (!empty($this->mergedConfigExport)) {
-            return $this->mergedConfigExport;
+        if (!empty($this->merged_config_export)) {
+            return $this->merged_config_export;
         }
         if (!empty($this->config_export)) {
             // Always add default properties to be exported.
-            $this->mergedConfigExport = [
-              'uuid' => 'uuid',
-              'langcode' => 'langcode',
-              'status' => 'status',
-              'dependencies' => 'dependencies',
-              'third_party_settings' => 'third_party_settings',
-              '_core' => '_core',
-            ];
+            $this->merged_config_export = ['uuid' => 'uuid', 'langcode' => 'langcode', 'status' => 'status', 'dependencies' => 'dependencies', 'third_party_settings' => 'third_party_settings', '_core' => '_core'];
             foreach ($this->config_export as $property => $name) {
                 if (is_numeric($property)) {
-                    $this->mergedConfigExport[$name] = $name;
+                    $this->merged_config_export[$name] = $name;
                 } else {
-                    $this->mergedConfigExport[$property] = $name;
+                    $this->merged_config_export[$property] = $name;
                 }
             }
         } else {
             return null;
         }
-        return $this->mergedConfigExport;
+        return $this->merged_config_export;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getLookupKeys()
+    public function get_lookup_keys()
     {
         return $this->lookup_keys;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConstraints()
+    public function get_constraints()
     {
-        $constraints = parent::getConstraints();
-
+        $constraints = parent::get_constraints();
         // If there is an ID key for this config entity type, make it immutable by
         // default. Individual config entities can override this with an
         // `ImmutableProperties` constraint in their definition that is either
         // empty, or with an alternative set of immutable properties.
-        $id_key = $this->getKey('id');
+        $id_key = $this->get_key('id');
         if ($id_key) {
-            $constraints += [
-              'ImmutableProperties' => ['properties' => [$id_key]],
-            ];
+            $constraints += ['ImmutableProperties' => ['properties' => [$id_key]]];
         }
         return $constraints;
     }
-
 }

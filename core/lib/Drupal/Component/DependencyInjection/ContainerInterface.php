@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Component\Dependency_Injection;
 
-namespace Drupal\Component\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\ContainerInterface as BaseContainerInterface;
-
+use Symfony\Component\Dependency_Injection\Container_Interface as BaseContainerInterface;
 /**
  * The interface for Drupal service container classes.
  */
-interface ContainerInterface extends BaseContainerInterface
+interface Container_Interface extends Base_Container_Interface
 {
     /**
      * Gets all defined service IDs.
@@ -17,6 +15,5 @@ interface ContainerInterface extends BaseContainerInterface
      * @return array
      *   An array of all defined service IDs.
      */
-    public function getServiceIds();
-
+    public function get_service_ids();
 }

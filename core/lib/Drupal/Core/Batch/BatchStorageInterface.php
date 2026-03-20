@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Batch;
 
 /**
  * Defines a common interface for batch storage operations.
  */
-interface BatchStorageInterface
+interface Batch_Storage_Interface
 {
     /**
      * Loads a batch.
@@ -19,7 +18,6 @@ interface BatchStorageInterface
      *   An array representing the batch, or FALSE if no batch was found.
      */
     public function load($id);
-
     /**
      * Creates and saves a batch.
      *
@@ -27,7 +25,6 @@ interface BatchStorageInterface
      *   The array representing the batch to create.
      */
     public function create(array $batch);
-
     /**
      * Updates a batch.
      *
@@ -35,7 +32,6 @@ interface BatchStorageInterface
      *   The array representing the batch to update.
      */
     public function update(array $batch);
-
     /**
      * Deletes a batch.
      *
@@ -43,10 +39,8 @@ interface BatchStorageInterface
      *   The ID of the batch to delete.
      */
     public function delete($id);
-
     /**
      * Cleans up failed or old batches.
      */
     public function cleanup();
-
 }

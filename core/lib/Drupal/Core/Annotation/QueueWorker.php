@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-
 /**
  * Declare a worker class for processing a queue item.
  *
@@ -37,7 +35,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class QueueWorker extends Plugin
+class Queue_Worker extends Plugin
 {
     /**
      * The plugin ID.
@@ -45,7 +43,6 @@ class QueueWorker extends Plugin
      * @var string
      */
     public $id;
-
     /**
      * The human-readable title of the plugin.
      *
@@ -54,7 +51,6 @@ class QueueWorker extends Plugin
      * @ingroup plugin_translatable
      */
     public $title;
-
     /**
      * An optional associative array of settings for cron.
      *
@@ -66,5 +62,4 @@ class QueueWorker extends Plugin
      * @see \Drupal\Core\Queue\QueueWorkerManager::processDefinition()
      */
     public $cron;
-
 }

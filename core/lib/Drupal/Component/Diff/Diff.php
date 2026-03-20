@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff;
 
-use SebastianBergmann\Diff\Differ;
-
+use Sebastian_Bergmann\Diff\Differ;
 /**
  * Class representing a 'diff' between two sequences of strings.
  *
@@ -22,7 +20,6 @@ class Diff
      * @var \Drupal\Component\Diff\Engine\DiffOp[]
      */
     protected array $edits;
-
     /**
      * Constructor.
      * Computes diff between sequences of strings.
@@ -35,20 +32,18 @@ class Diff
      */
     public function __construct(array|string $from_lines, array|string $to_lines)
     {
-        $diffOpBuilder = new DiffOpOutputBuilder();
-        $differ = new Differ($diffOpBuilder);
-        $this->edits = $diffOpBuilder->toOpsArray($differ->diffToArray($from_lines, $to_lines));
+        $diff_op_builder = new Diff_Op_Output_Builder();
+        $differ = new Differ($diff_op_builder);
+        $this->edits = $diff_op_builder->to_ops_array($differ->diff_to_array($from_lines, $to_lines));
     }
-
     /**
      * Gets the list of differences as an array of diff operations.
      *
      * @return \Drupal\Component\Diff\Engine\DiffOp[]
      *   The list of differences as an array of diff operations.
      */
-    public function getEdits()
+    public function get_edits()
     {
         return $this->edits;
     }
-
 }

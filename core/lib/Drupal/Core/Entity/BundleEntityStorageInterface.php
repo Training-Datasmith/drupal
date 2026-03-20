@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * A storage that supports entities with bundle specific classes.
  */
-interface BundleEntityStorageInterface
+interface Bundle_Entity_Storage_Interface
 {
     /**
      * Retrieves the bundle name for a provided class name.
@@ -22,6 +21,5 @@ interface BundleEntityStorageInterface
      * @throws \Drupal\Core\Entity\Exception\AmbiguousBundleClassException
      *   Thrown when multiple bundles are using the provided class.
      */
-    public function getBundleFromClass(string $class_name): ?string;
-
+    public function get_bundle_from_class(string $class_name): ?string;
 }

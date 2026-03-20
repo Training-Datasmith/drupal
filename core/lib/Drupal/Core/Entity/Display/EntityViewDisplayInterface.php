@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Display;
 
-use Drupal\Core\Entity\FieldableEntityInterface;
-
+use Drupal\Core\Entity\Fieldable_Entity_Interface;
 /**
  * Provides a common interface for entity view displays.
  */
-interface EntityViewDisplayInterface extends EntityDisplayInterface
+interface Entity_View_Display_Interface extends Entity_Display_Interface
 {
     /**
      * Builds a renderable array for the components of an entity.
@@ -24,8 +22,7 @@ interface EntityViewDisplayInterface extends EntityDisplayInterface
      *
      * @see \Drupal\Core\Entity\Display\EntityViewDisplayInterface::buildMultiple()
      */
-    public function build(FieldableEntityInterface $entity);
-
+    public function build(Fieldable_Entity_Interface $entity);
     /**
      * Builds a renderable array for the components of a set of entities.
      *
@@ -46,6 +43,5 @@ interface EntityViewDisplayInterface extends EntityDisplayInterface
      *
      * @see hook_entity_display_build_alter()
      */
-    public function buildMultiple(array $entities);
-
+    public function build_multiple(array $entities);
 }

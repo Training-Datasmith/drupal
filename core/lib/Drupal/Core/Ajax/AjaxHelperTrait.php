@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
-
+use Drupal\Core\Event_Subscriber\Main_Content_View_Subscriber;
 /**
  * Provides a helper to determine if the current request is via AJAX.
  *
  * @internal
  */
-trait AjaxHelperTrait
+trait Ajax_Helper_Trait
 {
     /**
      * Determines if the current request is via AJAX.
@@ -19,23 +17,19 @@ trait AjaxHelperTrait
      * @return bool
      *   TRUE if the current request is via AJAX, FALSE otherwise.
      */
-    protected function isAjax(): bool
+    protected function is_ajax(): bool
     {
-        $wrapper_format = $this->getRequestWrapperFormat() ?? '';
-        return str_contains($wrapper_format, 'drupal_ajax') ||
-          str_contains($wrapper_format, 'drupal_modal') ||
-          str_contains($wrapper_format, 'drupal_dialog');
+        $wrapper_format = $this->get_request_wrapper_format() ?? '';
+        return str_contains($wrapper_format, 'drupal_ajax') || str_contains($wrapper_format, 'drupal_modal') || str_contains($wrapper_format, 'drupal_dialog');
     }
-
     /**
      * Gets the wrapper format of the current request.
      *
      * @return string|null
      *   The wrapper format. NULL if the wrapper format is not set.
      */
-    protected function getRequestWrapperFormat()
+    protected function get_request_wrapper_format()
     {
-        return \Drupal::request()->query->get(MainContentViewSubscriber::WRAPPER_FORMAT);
+        return \Drupal::request()->query->get(Main_Content_View_Subscriber::WRAPPER_FORMAT);
     }
-
 }

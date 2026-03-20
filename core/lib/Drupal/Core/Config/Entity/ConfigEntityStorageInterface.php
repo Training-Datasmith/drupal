@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-
+use Drupal\Core\Entity\Entity_Storage_Interface;
 /**
  * Provides an interface for configuration entity storage.
  */
-interface ConfigEntityStorageInterface extends EntityStorageInterface
+interface Config_Entity_Storage_Interface extends Entity_Storage_Interface
 {
     /**
      * Extracts the configuration entity ID from the full configuration name.
@@ -23,8 +21,7 @@ interface ConfigEntityStorageInterface extends EntityStorageInterface
      * @return string
      *   The ID of the configuration entity.
      */
-    public static function getIDFromConfigName($config_name, $config_prefix);
-
+    public static function get_id_from_config_name($config_name, $config_prefix);
     /**
      * Creates a configuration entity from storage values.
      *
@@ -40,8 +37,7 @@ interface ConfigEntityStorageInterface extends EntityStorageInterface
      * @see \Drupal\Core\Entity\EntityStorageBase::mapFromStorageRecords()
      * @see \Drupal\field\FieldStorageConfigStorage::mapFromStorageRecords()
      */
-    public function createFromStorageRecord(array $values);
-
+    public function create_from_storage_record(array $values);
     /**
      * Updates a configuration entity from storage values.
      *
@@ -59,8 +55,7 @@ interface ConfigEntityStorageInterface extends EntityStorageInterface
      * @see \Drupal\Core\Entity\EntityStorageBase::mapFromStorageRecords()
      * @see \Drupal\field\FieldStorageConfigStorage::mapFromStorageRecords()
      */
-    public function updateFromStorageRecord(ConfigEntityInterface $entity, array $values);
-
+    public function update_from_storage_record(Config_Entity_Interface $entity, array $values);
     /**
      * Loads one entity in their original form without overrides.
      *
@@ -70,8 +65,7 @@ interface ConfigEntityStorageInterface extends EntityStorageInterface
      * @return \Drupal\Core\Entity\EntityInterface|null
      *   An entity object. NULL if no matching entity is found.
      */
-    public function loadOverrideFree($id);
-
+    public function load_override_free($id);
     /**
      * Loads one or more entities in their original form without overrides.
      *
@@ -82,6 +76,5 @@ interface ConfigEntityStorageInterface extends EntityStorageInterface
      *   An array of entity objects indexed by their IDs. Returns an empty array
      *   if no matching entities are found.
      */
-    public function loadMultipleOverrideFree(?array $ids = null);
-
+    public function load_multiple_override_free(?array $ids = null);
 }

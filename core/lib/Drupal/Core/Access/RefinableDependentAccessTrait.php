@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
@@ -9,47 +8,43 @@ namespace Drupal\Core\Access;
  *
  * @internal
  */
-trait RefinableDependentAccessTrait
+trait Refinable_Dependent_Access_Trait
 {
     /**
      * The access dependency.
      *
      * @var \Drupal\Core\Access\AccessibleInterface
      */
-    protected $accessDependency;
-
+    protected $access_dependency;
     /**
      * {@inheritdoc}
      */
-    public function setAccessDependency(AccessibleInterface $access_dependency)
+    public function set_access_dependency(Accessible_Interface $access_dependency)
     {
-        $this->accessDependency = $access_dependency;
+        $this->access_dependency = $access_dependency;
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAccessDependency()
+    public function get_access_dependency()
     {
-        return $this->accessDependency;
+        return $this->access_dependency;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function addAccessDependency(AccessibleInterface $access_dependency)
+    public function add_access_dependency(Accessible_Interface $access_dependency)
     {
-        if (empty($this->accessDependency)) {
-            $this->accessDependency = $access_dependency;
+        if (empty($this->access_dependency)) {
+            $this->access_dependency = $access_dependency;
             return $this;
         }
-        if (!$this->accessDependency instanceof AccessGroupAnd) {
-            $accessGroup = new AccessGroupAnd();
-            $this->accessDependency = $accessGroup->addDependency($this->accessDependency);
+        if (!$this->access_dependency instanceof Access_Group_And) {
+            $access_group = new Access_Group_And();
+            $this->access_dependency = $access_group->add_dependency($this->access_dependency);
         }
-        $this->accessDependency->addDependency($access_dependency);
+        $this->access_dependency->add_dependency($access_dependency);
         return $this;
     }
-
 }

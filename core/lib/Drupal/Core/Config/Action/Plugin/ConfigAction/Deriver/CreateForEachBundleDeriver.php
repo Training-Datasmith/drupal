@@ -1,59 +1,43 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Config\Action\Plugin\Config_Action\Deriver;
 
-namespace Drupal\Core\Config\Action\Plugin\ConfigAction\Deriver;
-
-use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Component\Plugin\Derivative\Deriver_Base;
+use Drupal\Core\Entity\Entity_Type_Interface;
+use Drupal\Core\Entity\Entity_Type_Manager_Interface;
+use Drupal\Core\Plugin\Discovery\Container_Deriver_Interface;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Generates derivatives for the create_for_each_bundle config action.
  *
  * @internal
  *   This API is experimental.
  */
-final class CreateForEachBundleDeriver extends DeriverBase implements ContainerDeriverInterface
+final class Create_For_Each_Bundle_Deriver extends Deriver_Base implements Container_Deriver_Interface
 {
-    public function __construct(
-        private readonly EntityTypeManagerInterface $entityTypeManager,
-    ) {
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container, $base_plugin_id): static
+    public function __construct(private readonly Entity_Type_Manager_Interface $entity_type_manager)
     {
-        return new static(
-            $container->get(EntityTypeManagerInterface::class),
-        );
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDerivativeDefinitions($base_plugin_definition): array
+    public static function create(Container_Interface $container, $base_plugin_id): static
+    {
+        return new static($container->get(Entity_Type_Manager_Interface::class));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function get_derivative_definitions($base_plugin_definition): array
     {
         // The action should only be available for entity types that are bundles of
         // another entity type, such as node types, media types, taxonomy
         // vocabularies, and so forth.
-        $bundle_entity_types = array_filter(
-            $this->entityTypeManager->getDefinitions(),
-            fn (EntityTypeInterface $entity_type): bool => is_string($entity_type->getBundleOf()),
-        );
+        $bundle_entity_types = array_filter($this->entity_type_manager->get_definitions(), fn(Entity_Type_Interface $entity_type): bool => is_string($entity_type->get_bundle_of()));
         $base_plugin_definition['entity_types'] = array_keys($bundle_entity_types);
-
-        $this->derivatives['createForEachIfNotExists'] = $base_plugin_definition + [
-          'create_action' => 'createIfNotExists',
-        ];
-        $this->derivatives['createForEach'] = $base_plugin_definition + [
-          'create_action' => 'create',
-        ];
+        $this->derivatives['createForEachIfNotExists'] = $base_plugin_definition + ['create_action' => 'createIfNotExists'];
+        $this->derivatives['createForEach'] = $base_plugin_definition + ['create_action' => 'create'];
         return $this->derivatives;
     }
-
 }

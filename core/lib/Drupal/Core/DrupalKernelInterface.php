@@ -1,20 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-
+use Symfony\Component\Dependency_Injection\Container_Interface;
+use Symfony\Component\Http_Foundation\Request;
+use Symfony\Component\Http_Kernel\Http_Kernel_Interface;
 /**
  * The interface for DrupalKernel, the core of Drupal.
  *
  * This interface extends Symfony's KernelInterface and adds methods for
  * responding to modules being enabled or disabled during its lifetime.
  */
-interface DrupalKernelInterface extends HttpKernelInterface
+interface Drupal_Kernel_Interface extends Http_Kernel_Interface
 {
     /**
      * Event fired when the service container finished initializing in subrequest.
@@ -25,27 +23,23 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * @var string
      */
     public const CONTAINER_INITIALIZE_SUBREQUEST_FINISHED = 'kernel.container.finish_container_initialize_subrequest';
-
     /**
      * Boots the current kernel.
      *
      * @return $this
      */
     public function boot();
-
     /**
      * Shuts down the kernel.
      */
     public function shutdown();
-
     /**
      * Discovers available serviceProviders.
      *
      * @return array
      *   The available serviceProviders.
      */
-    public function discoverServiceProviders();
-
+    public function discover_service_providers();
     /**
      * Returns all registered service providers.
      *
@@ -55,16 +49,14 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * @return array
      *   An associative array of ServiceProvider objects, keyed by name.
      */
-    public function getServiceProviders($origin);
-
+    public function get_service_providers($origin);
     /**
      * Gets the current container.
      *
      * @return \Symfony\Component\DependencyInjection\ContainerInterface
      *   A ContainerInterface instance.
      */
-    public function getContainer();
-
+    public function get_container();
     /**
      * Returns the cached container definition - if any.
      *
@@ -73,8 +65,7 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * @return array|null
      *   The cached container definition or NULL if not found in cache.
      */
-    public function getCachedContainerDefinition();
-
+    public function get_cached_container_definition();
     /**
      * Set the current site path directory.
      *
@@ -86,24 +77,21 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * @throws \LogicException
      *   In case the kernel is already booted.
      */
-    public function setSitePath($path);
-
+    public function set_site_path($path);
     /**
      * Gets the site path directory.
      *
      * @return string
      *   The current site path directory.
      */
-    public function getSitePath();
-
+    public function get_site_path();
     /**
      * Gets the app root.
      *
      * @return string
      *   The path of the application root.
      */
-    public function getAppRoot();
-
+    public function get_app_root();
     /**
      * Updates the kernel's list of modules to the new list.
      *
@@ -115,8 +103,7 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * @param array $module_filenames
      *   List of module filenames, keyed by module name.
      */
-    public function updateModules(array $module_list, array $module_filenames = []);
-
+    public function update_modules(array $module_list, array $module_filenames = []);
     /**
      * Updates the kernel's list of themes to the new list.
      *
@@ -126,40 +113,34 @@ interface DrupalKernelInterface extends HttpKernelInterface
      * array<string, \Drupal\Core\Extension\Extension> $register_themes
      *   List of theme extensions, keyed by theme name.
      */
-    public function updateThemes(array $register_themes = []): void;
-
+    public function update_themes(array $register_themes = []): void;
     /**
      * Force a container rebuild.
      *
      * @return \Symfony\Component\DependencyInjection\ContainerInterface
      *   The rebuilt Symfony container.
      */
-    public function rebuildContainer();
-
+    public function rebuild_container();
     /**
      * Force a container reset.
      *
      * @return \Symfony\Component\DependencyInjection\ContainerInterface
      *   The Symfony container.
      */
-    public function resetContainer(): ContainerInterface;
-
+    public function reset_container(): Container_Interface;
     /**
      * Invalidate the service container for the next request.
      */
-    public function invalidateContainer();
-
+    public function invalidate_container();
     /**
      * Helper method that does request related initialization.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      *   The current request.
      */
-    public function preHandle(Request $request);
-
+    public function pre_handle(Request $request);
     /**
      * Helper method that loads legacy Drupal include files.
      */
-    public function loadLegacyIncludes();
-
+    public function load_legacy_includes();
 }

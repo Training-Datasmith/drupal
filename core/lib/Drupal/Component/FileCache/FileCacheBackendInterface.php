@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileCache;
+declare (strict_types=1);
+namespace Drupal\Component\File_Cache;
 
 /**
  * Defines an interface inspired by APCu for FileCache backends.
  */
-interface FileCacheBackendInterface
+interface File_Cache_Backend_Interface
 {
     /**
      * Fetches data from the cache backend.
@@ -19,7 +18,6 @@ interface FileCacheBackendInterface
      *   An array containing cache entries keyed by cache ID.
      */
     public function fetch(array $cids);
-
     /**
      * Stores data into a cache backend.
      *
@@ -29,7 +27,6 @@ interface FileCacheBackendInterface
      *   The data to store.
      */
     public function store($cid, $data);
-
     /**
      * Deletes data from a cache backend.
      *
@@ -37,5 +34,4 @@ interface FileCacheBackendInterface
      *   The cache ID to delete.
      */
     public function delete($cid);
-
 }

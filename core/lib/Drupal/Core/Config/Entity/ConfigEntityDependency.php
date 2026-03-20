@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Component\Utility\NestedArray;
-
+use Drupal\Component\Utility\Nested_Array;
 /**
  * Provides a value object to discover configuration dependencies.
  *
  * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
  */
-class ConfigEntityDependency
+class Config_Entity_Dependency
 {
     /**
      * The configuration entity's dependencies.
@@ -19,7 +17,6 @@ class ConfigEntityDependency
      * @var array
      */
     protected $dependencies = [];
-
     /**
      * Constructs the configuration entity dependency from the entity values.
      *
@@ -28,22 +25,23 @@ class ConfigEntityDependency
      * @param array $values
      *   (optional) The configuration entity's values.
      */
-    public function __construct(/**
-   * The configuration entity's configuration object name.
-   */
+    public function __construct(
+        /**
+         * The configuration entity's configuration object name.
+         */
         protected $name,
         array $values = []
-    ) {
+    )
+    {
         if (isset($values['dependencies']) && isset($values['dependencies']['enforced'])) {
             // Merge the enforced dependencies into the list of dependencies.
             $enforced_dependencies = $values['dependencies']['enforced'];
             unset($values['dependencies']['enforced']);
-            $this->dependencies = NestedArray::mergeDeep($values['dependencies'], $enforced_dependencies);
+            $this->dependencies = Nested_Array::merge_deep($values['dependencies'], $enforced_dependencies);
         } elseif (isset($values['dependencies'])) {
             $this->dependencies = $values['dependencies'];
         }
     }
-
     /**
      * Gets the configuration entity's dependencies of the supplied type.
      *
@@ -54,7 +52,7 @@ class ConfigEntityDependency
      * @return array
      *   The list of dependencies of the supplied type.
      */
-    public function getDependencies($type)
+    public function get_dependencies($type)
     {
         $dependencies = [];
         if (isset($this->dependencies[$type])) {
@@ -67,7 +65,6 @@ class ConfigEntityDependency
         }
         return $dependencies;
     }
-
     /**
      * Determines if the entity is dependent on extensions or entities.
      *
@@ -83,7 +80,7 @@ class ConfigEntityDependency
      *   TRUE when this entity is dependency on any extension or entity. False
      *   otherwise.
      */
-    public function hasDependency($type, string $name)
+    public function has_dependency($type, string $name)
     {
         // Add a dependency on the provider module (which defines this config
         // entity type, such as 'node' in the case of 'node.type' configuration).
@@ -92,7 +89,6 @@ class ConfigEntityDependency
         }
         return isset($this->dependencies[$type]) && array_search($name, $this->dependencies[$type]) !== false;
     }
-
     /**
      * Gets the configuration entity's configuration dependency name.
      *
@@ -101,9 +97,8 @@ class ConfigEntityDependency
      * @return string
      *   The configuration dependency name for the entity.
      */
-    public function getConfigDependencyName()
+    public function get_config_dependency_name()
     {
         return $this->name;
     }
-
 }

@@ -1,28 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Statement;
 
-use Drupal\Core\Database\FetchModeTrait;
-
+use Drupal\Core\Database\Fetch_Mode_Trait;
 /**
  * Class for prefetched results of a data query language (DQL) statement.
  */
-class PrefetchedResult extends ResultBase
+class Prefetched_Result extends Result_Base
 {
-    use FetchModeTrait;
-
+    use Fetch_Mode_Trait;
     /**
      * The column names.
      */
-    public readonly array $columnNames;
-
+    public readonly array $column_names;
     /**
      * The current row index in the result set.
      */
-    protected ?int $currentRowIndex = null;
-
+    protected ?int $current_row_index = null;
     /**
      * Constructor.
      *
@@ -35,29 +30,23 @@ class PrefetchedResult extends ResultBase
      * @param int|null $rowCount
      *   The row count.
      */
-    public function __construct(
-        FetchAs $fetchMode,
-        array $fetchOptions,
-        protected array $data,
-        public readonly ?int $rowCount,
-    ) {
-        parent::__construct($fetchMode, $fetchOptions);
-        $this->columnNames = isset($this->data[0]) ? array_keys($this->data[0]) : [];
-        $this->currentRowIndex = -1;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function rowCount(): ?int
+    public function __construct(Fetch_As $fetch_mode, array $fetch_options, protected array $data, public readonly ?int $row_count)
     {
-        return $this->rowCount;
+        parent::__construct($fetch_mode, $fetch_options);
+        $this->column_names = isset($this->data[0]) ? array_keys($this->data[0]) : [];
+        $this->current_row_index = -1;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setFetchMode(FetchAs $mode, array $fetchOptions): bool
+    public function row_count(): ?int
+    {
+        return $this->row_count;
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function set_fetch_mode(Fetch_As $mode, array $fetch_options): bool
     {
         // We do not really need to do anything here, since calls to any of this
         // class' methods require an explicit fetch mode to be passed in, and we
@@ -65,39 +54,34 @@ class PrefetchedResult extends ResultBase
         // the default fetch mode. Just return TRUE.
         return true;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetch(FetchAs $mode, array $fetchOptions): array|object|int|float|string|bool|null
+    public function fetch(Fetch_As $mode, array $fetch_options): array|object|int|float|string|bool|null
     {
-        $this->currentRowIndex++;
-        if (!isset($this->data[$this->currentRowIndex])) {
-            $this->currentRowIndex = null;
+        $this->current_row_index++;
+        if (!isset($this->data[$this->current_row_index])) {
+            $this->current_row_index = null;
             return false;
         }
-        $rowAssoc = $this->data[$this->currentRowIndex];
-        unset($this->data[$this->currentRowIndex]);
-        return $this->assocToFetchMode($rowAssoc, $mode, $fetchOptions);
+        $row_assoc = $this->data[$this->current_row_index];
+        unset($this->data[$this->current_row_index]);
+        return $this->assoc_to_fetch_mode($row_assoc, $mode, $fetch_options);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAllKeyed(int $keyIndex = 0, int $valueIndex = 1): array
+    public function fetch_all_keyed(int $key_index = 0, int $value_index = 1): array
     {
-        if (!isset($this->columnNames[$keyIndex]) || !isset($this->columnNames[$valueIndex])) {
+        if (!isset($this->column_names[$key_index]) || !isset($this->column_names[$value_index])) {
             return [];
         }
-
-        $key = $this->columnNames[$keyIndex];
-        $value = $this->columnNames[$valueIndex];
-
+        $key = $this->column_names[$key_index];
+        $value = $this->column_names[$value_index];
         $result = [];
-        while ($row = $this->fetch(FetchAs::Associative, $this->fetchOptions)) {
+        while ($row = $this->fetch(Fetch_As::Associative, $this->fetch_options)) {
             $result[$row[$key]] = $row[$value];
         }
         return $result;
     }
-
 }

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Annotation;
 
-use Drupal\Component\Annotation\AnnotationBase;
-
+use Drupal\Component\Annotation\Annotation_Base;
 /**
  * Defines an annotation object for strings that require plural forms.
  *
@@ -42,7 +40,7 @@ use Drupal\Component\Annotation\AnnotationBase;
  *
  * @Annotation
  */
-class PluralTranslation extends AnnotationBase
+class Plural_Translation extends Annotation_Base
 {
     /**
      * The string for the singular case.
@@ -50,21 +48,18 @@ class PluralTranslation extends AnnotationBase
      * @var string
      */
     protected $singular;
-
     /**
      * The string for the plural case.
      *
      * @var string
      */
     protected $plural;
-
     /**
      * The context the source strings belong to.
      *
      * @var string
      */
     protected $context;
-
     /**
      * Constructs a new class instance.
      *
@@ -86,24 +81,17 @@ class PluralTranslation extends AnnotationBase
         if (!isset($values['plural'])) {
             throw new \InvalidArgumentException('Missing "plural" value in the PluralTranslation annotation');
         }
-
         $this->singular = $values['singular'];
         $this->plural = $values['plural'];
         if (isset($values['context'])) {
             $this->context = $values['context'];
         }
     }
-
     /**
      * {@inheritdoc}
      */
     public function get(): array
     {
-        return [
-          'singular' => $this->singular,
-          'plural' => $this->plural,
-          'context' => $this->context,
-        ];
+        return ['singular' => $this->singular, 'plural' => $this->plural, 'context' => $this->context];
     }
-
 }

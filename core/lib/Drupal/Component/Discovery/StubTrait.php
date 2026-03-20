@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Discovery;
 
 /**
@@ -9,6 +8,6 @@ namespace Drupal\Component\Discovery;
  *
  * @internal
  */
-trait StubTrait
+trait Stub_Trait
 {
 }

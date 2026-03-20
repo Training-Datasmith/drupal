@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Block;
 
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
-use Drupal\Core\Plugin\ContextAwarePluginInterface;
-use Drupal\Core\Plugin\ContextAwarePluginTrait;
-use Drupal\Core\Plugin\PluginBase;
-use Drupal\Core\Plugin\PluginWithFormsInterface;
-use Drupal\Core\Plugin\PreviewAwarePluginInterface;
-use Drupal\Core\Render\PreviewFallbackInterface;
-
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Plugin\Context_Aware_Plugin_Assignment_Trait;
+use Drupal\Core\Plugin\Context_Aware_Plugin_Interface;
+use Drupal\Core\Plugin\Context_Aware_Plugin_Trait;
+use Drupal\Core\Plugin\Plugin_Base;
+use Drupal\Core\Plugin\Plugin_With_Forms_Interface;
+use Drupal\Core\Plugin\Preview_Aware_Plugin_Interface;
+use Drupal\Core\Render\Preview_Fallback_Interface;
 /**
  * Defines a base block implementation that most blocks plugins will extend.
  *
@@ -22,38 +20,33 @@ use Drupal\Core\Render\PreviewFallbackInterface;
  *
  * @ingroup block_api
  */
-abstract class BlockBase extends PluginBase implements BlockPluginInterface, PluginWithFormsInterface, PreviewAwarePluginInterface, PreviewFallbackInterface, ContextAwarePluginInterface
+abstract class Block_Base extends Plugin_Base implements Block_Plugin_Interface, Plugin_With_Forms_Interface, Preview_Aware_Plugin_Interface, Preview_Fallback_Interface, Context_Aware_Plugin_Interface
 {
-    use BlockPluginTrait {
+    use Block_Plugin_Trait {
         buildConfigurationForm as traitBuildConfigurationForm;
         submitConfigurationForm as traitSubmitConfigurationForm;
     }
-    use ContextAwarePluginTrait;
-    use ContextAwarePluginAssignmentTrait;
-
+    use Context_Aware_Plugin_Trait;
+    use Context_Aware_Plugin_Assignment_Trait;
     /**
      * {@inheritdoc}
      */
-    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    public function build_configuration_form(array $form, Form_State_Interface $form_state)
     {
-        $form = $this->traitBuildConfigurationForm($form, $form_state);
-
+        $form = $this->trait_build_configuration_form($form, $form_state);
         // Add context mapping UI form elements.
-        $contexts = $form_state->getTemporaryValue('gathered_contexts') ?: [];
-        $form['context_mapping'] = $this->addContextAssignmentElement($this, $contexts);
-
+        $contexts = $form_state->get_temporary_value('gathered_contexts') ?: [];
+        $form['context_mapping'] = $this->add_context_assignment_element($this, $contexts);
         return $form;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    public function submit_configuration_form(array &$form, Form_State_Interface $form_state): void
     {
-        if (!$form_state->getErrors() && $form_state->getValue('context_mapping')) {
-            $this->configuration['context_mapping'] = $form_state->getValue('context_mapping');
+        if (!$form_state->get_errors() && $form_state->get_value('context_mapping')) {
+            $this->configuration['context_mapping'] = $form_state->get_value('context_mapping');
         }
-        $this->traitSubmitConfigurationForm($form, $form_state);
+        $this->trait_submit_configuration_form($form, $form_state);
     }
-
 }

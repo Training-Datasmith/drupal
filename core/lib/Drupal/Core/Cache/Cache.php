@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 use Drupal\Component\Assertion\Inspector;
-
 /**
  * Helper methods for cache.
  *
@@ -16,8 +14,7 @@ class Cache
     /**
      * Indicates that the item should never be removed unless explicitly deleted.
      */
-    public const PERMANENT = CacheBackendInterface::CACHE_PERMANENT;
-
+    public const PERMANENT = Cache_Backend_Interface::CACHE_PERMANENT;
     /**
      * Merges lists of cache contexts and removes duplicates.
      *
@@ -27,13 +24,12 @@ class Cache
      * @return list<string>
      *   The merged list of cache contexts.
      */
-    public static function mergeContexts(array ...$cache_contexts): array
+    public static function merge_contexts(array ...$cache_contexts): array
     {
         $cache_contexts = array_values(array_unique(array_merge(...$cache_contexts)));
-        assert(\Drupal::service('cache_contexts_manager')->assertValidTokens($cache_contexts), sprintf('Failed to assert that "%s" are valid cache contexts.', implode(', ', $cache_contexts)));
+        assert(\Drupal::service('cache_contexts_manager')->assert_valid_tokens($cache_contexts), sprintf('Failed to assert that "%s" are valid cache contexts.', implode(', ', $cache_contexts)));
         return $cache_contexts;
     }
-
     /**
      * Merges lists of cache tags and removes duplicates.
      *
@@ -51,13 +47,12 @@ class Cache
      * @return list<string>
      *   The merged list of cache tags.
      */
-    public static function mergeTags(array ...$cache_tags): array
+    public static function merge_tags(array ...$cache_tags): array
     {
         $cache_tags = array_values(array_unique(array_merge(...$cache_tags)));
-        assert(Inspector::assertAllStrings($cache_tags), 'Cache tags must be valid strings');
+        assert(Inspector::assert_all_strings($cache_tags), 'Cache tags must be valid strings');
         return $cache_tags;
     }
-
     /**
      * Merges max-age values (expressed in seconds), finds the lowest max-age.
      *
@@ -69,16 +64,14 @@ class Cache
      * @return int
      *   The minimum max-age value.
      */
-    public static function mergeMaxAges(...$max_ages)
+    public static function merge_max_ages(...$max_ages)
     {
         // Remove Cache::PERMANENT values to return the correct minimum value.
-        $max_ages = array_filter($max_ages, fn (int $max_age) => $max_age !== Cache::PERMANENT);
-
+        $max_ages = array_filter($max_ages, fn(int $max_age) => $max_age !== Cache::PERMANENT);
         // If there are no max ages left return Cache::PERMANENT, otherwise return
         // the minimum value.
         return empty($max_ages) ? Cache::PERMANENT : min($max_ages);
     }
-
     /**
      * Build a list of cache tags from a given prefix and an array of suffixes.
      *
@@ -95,7 +88,7 @@ class Cache
      * @return list<string>
      *   A list of cache tags.
      */
-    public static function buildTags(string $prefix, array $suffixes, string $glue = ':'): array
+    public static function build_tags(string $prefix, array $suffixes, string $glue = ':'): array
     {
         $tags = [];
         foreach ($suffixes as $suffix) {
@@ -103,48 +96,44 @@ class Cache
         }
         return $tags;
     }
-
     /**
      * Marks cache items from all bins with any of the specified tags as invalid.
      *
      * @param string[] $tags
      *   The list of tags to invalidate cache items for.
      */
-    public static function invalidateTags(array $tags): void
+    public static function invalidate_tags(array $tags): void
     {
-        \Drupal::service('cache_tags.invalidator')->invalidateTags($tags);
+        \Drupal::service('cache_tags.invalidator')->invalidate_tags($tags);
     }
-
     /**
      * Gets all cache bin services.
      *
      * @return \Drupal\Core\Cache\CacheBackendInterface[]
      *   An array of cache backend objects keyed by cache bins.
      */
-    public static function getBins(): array
+    public static function get_bins(): array
     {
         $bins = [];
-        $container = \Drupal::getContainer();
-        foreach ($container->getParameter('cache_bins') as $service_id => $bin) {
+        $container = \Drupal::get_container();
+        foreach ($container->get_parameter('cache_bins') as $service_id => $bin) {
             $bins[$bin] = $container->get($service_id);
         }
         return $bins;
     }
-
     /**
      * Gets all memory cache bin services.
      *
      * @return \Drupal\Core\Cache\CacheBackendInterface[]
      *   An array of cache backend objects keyed by memory cache bins.
      */
-    public static function getMemoryBins(): array
+    public static function get_memory_bins(): array
     {
         $bins = [];
-        $container = \Drupal::getContainer();
-        foreach ($container->getParameter('memory_cache_bins') as $service_id => $bin) {
+        $container = \Drupal::get_container();
+        foreach ($container->get_parameter('memory_cache_bins') as $service_id => $bin) {
             $bins[$bin] = $container->get($service_id);
         }
         return $bins;
     }
-
 }

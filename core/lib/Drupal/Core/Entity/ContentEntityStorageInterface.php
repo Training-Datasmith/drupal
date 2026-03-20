@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * A storage that supports content entity types.
  */
-interface ContentEntityStorageInterface extends TranslatableRevisionableStorageInterface
+interface Content_Entity_Storage_Interface extends Translatable_Revisionable_Storage_Interface
 {
     /**
      * Creates an entity with sample field values.
@@ -23,6 +22,5 @@ interface ContentEntityStorageInterface extends TranslatableRevisionableStorageI
      * @throws \Drupal\Core\Entity\EntityStorageException
      *   Thrown if the bundle does not exist or was needed but not specified.
      */
-    public function createWithSampleValues($bundle = false, array $values = []);
-
+    public function create_with_sample_values($bundle = false, array $values = []);
 }

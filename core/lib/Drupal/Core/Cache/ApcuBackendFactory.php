@@ -1,29 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Datetime\Time_Interface;
 use Drupal\Core\Site\Settings;
-
 /**
  * Defines the APCU backend factory.
  */
-class ApcuBackendFactory implements CacheFactoryInterface
+class Apcu_Backend_Factory implements Cache_Factory_Interface
 {
     /**
      * The site prefix string.
      *
      * @var string
      */
-    protected $sitePrefix;
-
+    protected $site_prefix;
     /**
      * The APCU backend class to use.
      */
-    protected string $backendClass;
-
+    protected string $backend_class;
     /**
      * Constructs an ApcuBackendFactory object.
      *
@@ -36,12 +32,11 @@ class ApcuBackendFactory implements CacheFactoryInterface
      * @param \Drupal\Component\Datetime\TimeInterface $time
      *   The time service.
      */
-    public function __construct($root, $site_path, protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider, protected TimeInterface $time)
+    public function __construct($root, $site_path, protected \Drupal\Core\Cache\Cache_Tags_Checksum_Interface $checksum_provider, protected Time_Interface $time)
     {
-        $this->sitePrefix = Settings::getApcuPrefix('apcu_backend', $root, $site_path);
-        $this->backendClass = \Drupal\Core\Cache\ApcuBackend::class;
+        $this->site_prefix = Settings::get_apcu_prefix('apcu_backend', $root, $site_path);
+        $this->backend_class = \Drupal\Core\Cache\Apcu_Backend::class;
     }
-
     /**
      * Gets ApcuBackend for the specified cache bin.
      *
@@ -53,7 +48,6 @@ class ApcuBackendFactory implements CacheFactoryInterface
      */
     public function get($bin)
     {
-        return new $this->backendClass($bin, $this->sitePrefix, $this->checksumProvider, $this->time);
+        return new $this->backend_class($bin, $this->site_prefix, $this->checksum_provider, $this->time);
     }
-
 }

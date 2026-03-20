@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Statement;
 
 /**
  * Class for PDO-provided results of a data query language (DQL) statement.
  */
-class PdoResult extends ResultBase
+class Pdo_Result extends Result_Base
 {
-    use PdoTrait;
-
+    use Pdo_Trait;
     /**
      * Constructor.
      *
@@ -22,14 +20,10 @@ class PdoResult extends ResultBase
      *   The PDO Statement object. PDO does not provide a separate object for
      *   results, se we need to fetch data from the Statement.
      */
-    public function __construct(
-        FetchAs $fetchMode,
-        array $fetchOptions,
-        protected readonly \PDOStatement $clientStatement,
-    ) {
-        parent::__construct($fetchMode, $fetchOptions);
+    public function __construct(Fetch_As $fetch_mode, array $fetch_options, protected readonly \PDOStatement $client_statement)
+    {
+        parent::__construct($fetch_mode, $fetch_options);
     }
-
     /**
      * Returns the client-level database PDO statement object.
      *
@@ -38,54 +32,49 @@ class PdoResult extends ResultBase
      * @return \PDOStatement
      *   The client-level database PDO statement.
      */
-    public function getClientStatement(): \PDOStatement
+    public function get_client_statement(): \PDOStatement
     {
-        return $this->clientStatement;
+        return $this->client_statement;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function rowCount(): ?int
+    public function row_count(): ?int
     {
-        return $this->clientRowCount();
+        return $this->client_row_count();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setFetchMode(FetchAs $mode, array $fetchOptions): bool
+    public function set_fetch_mode(Fetch_As $mode, array $fetch_options): bool
     {
         return match ($mode) {
-            FetchAs::ClassObject => $this->clientSetFetchMode($mode, $fetchOptions['class'], $fetchOptions['constructor_args'] ?? null),
-            FetchAs::Column => $this->clientSetFetchMode($mode, $fetchOptions['column']),
-            default => $this->clientSetFetchMode($mode),
+            Fetch_As::ClassObject => $this->client_set_fetch_mode($mode, $fetch_options['class'], $fetch_options['constructor_args'] ?? null),
+            Fetch_As::Column => $this->client_set_fetch_mode($mode, $fetch_options['column']),
+            default => $this->client_set_fetch_mode($mode),
         };
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetch(FetchAs $mode, array $fetchOptions): array|object|int|float|string|bool|null
+    public function fetch(Fetch_As $mode, array $fetch_options): array|object|int|float|string|bool|null
     {
-        if (!empty($fetchOptions)) {
-            $this->setFetchMode($mode, $fetchOptions);
+        if (!empty($fetch_options)) {
+            $this->set_fetch_mode($mode, $fetch_options);
         }
-        if (isset($fetchOptions['cursor_orientation'])) {
-            if (isset($fetchOptions['cursor_offset'])) {
-                return $this->clientFetch($mode, $fetchOptions['cursor_orientation'], $fetchOptions['cursor_offset']);
+        if (isset($fetch_options['cursor_orientation'])) {
+            if (isset($fetch_options['cursor_offset'])) {
+                return $this->client_fetch($mode, $fetch_options['cursor_orientation'], $fetch_options['cursor_offset']);
             }
-            return $this->clientFetch($mode, $fetchOptions['cursor_orientation']);
+            return $this->client_fetch($mode, $fetch_options['cursor_orientation']);
         }
-        return $this->clientFetch($mode);
+        return $this->client_fetch($mode);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAll(FetchAs $mode, array $fetchOptions): array
+    public function fetch_all(Fetch_As $mode, array $fetch_options): array
     {
-        return $this->clientFetchAll($mode, $fetchOptions['column'] ?? $fetchOptions['class'] ?? null, $fetchOptions['constructor_args'] ?? null);
+        return $this->client_fetch_all($mode, $fetch_options['column'] ?? $fetch_options['class'] ?? null, $fetch_options['constructor_args'] ?? null);
     }
-
 }

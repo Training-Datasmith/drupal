@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
-
+use Drupal\Core\Controller\Controller_Base;
 /**
  * Defines a generic controller to list entities.
  */
-class EntityListController extends ControllerBase
+class Entity_List_Controller extends Controller_Base
 {
     /**
      * Provides the listing page for any entity type.
@@ -23,7 +21,6 @@ class EntityListController extends ControllerBase
      */
     public function listing($entity_type)
     {
-        return $this->entityTypeManager()->getListBuilder($entity_type)->render();
+        return $this->entity_type_manager()->get_list_builder($entity_type)->render();
     }
-
 }

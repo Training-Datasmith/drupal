@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
-use Masterminds\HTML5\Serializer\OutputRules;
-
+use Masterminds\HTML5\Serializer\Output_Rules;
 // cspell:ignore drupalhtmlbuilder
-
 /**
  * Drupal-specific HTML5 serializer rules.
  *
@@ -20,7 +17,7 @@ use Masterminds\HTML5\Serializer\OutputRules;
  *
  * @see core/modules/ckeditor5/js/ckeditor5_plugins/drupalHtmlEngine/src/drupalhtmlbuilder.js
  */
-class HtmlSerializerRules extends OutputRules
+class Html_Serializer_Rules extends Output_Rules
 {
     /**
      * {@inheritdoc}
@@ -28,15 +25,9 @@ class HtmlSerializerRules extends OutputRules
     protected function escape($text, $attribute = false)
     {
         $text = parent::escape($text, $attribute);
-
         if ($attribute) {
-            return strtr($text, [
-              '<' => '&lt;',
-              '>' => '&gt;',
-            ]);
+            return strtr($text, ['<' => '&lt;', '>' => '&gt;']);
         }
-
         return $text;
     }
-
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface as BaseControllerResolverInterface;
-
+use Symfony\Component\Http_Kernel\Controller\Controller_Resolver_Interface as BaseControllerResolverInterface;
 /**
  * Extends the ControllerResolverInterface from symfony.
  */
-interface ControllerResolverInterface extends BaseControllerResolverInterface
+interface Controller_Resolver_Interface extends Base_Controller_Resolver_Interface
 {
     /**
      * Returns the Controller instance with a given controller route definition.
@@ -30,6 +28,5 @@ interface ControllerResolverInterface extends BaseControllerResolverInterface
      *
      * @see \Symfony\Component\HttpKernel\Controller\ControllerResolverInterface::getController()
      */
-    public function getControllerFromDefinition($controller);
-
+    public function get_controller_from_definition($controller);
 }

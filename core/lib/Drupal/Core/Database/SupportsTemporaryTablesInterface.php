@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Database;
  *
  * @ingroup database
  */
-interface SupportsTemporaryTablesInterface
+interface Supports_Temporary_Tables_Interface
 {
     /**
      * Runs a SELECT query and stores its results in a temporary table.
@@ -36,6 +35,5 @@ interface SupportsTemporaryTablesInterface
      * @return string
      *   The name of the temporary table.
      */
-    public function queryTemporary($query, array $args = [], array $options = []);
-
+    public function query_temporary($query, array $args = [], array $options = []);
 }

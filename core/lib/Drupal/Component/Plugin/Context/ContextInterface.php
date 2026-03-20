@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Context;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Component\Plugin\Context;
  *
  * @see \Drupal\Component\Plugin\Context\ContextDefinitionInterface
  */
-interface ContextInterface
+interface Context_Interface
 {
     /**
      * Gets the context value.
@@ -22,24 +21,21 @@ interface ContextInterface
      * @return mixed
      *   The currently set context value, or NULL if it is not set.
      */
-    public function getContextValue();
-
+    public function get_context_value();
     /**
      * Returns whether the context has a value.
      *
      * @return bool
      *   TRUE if the context has a value, FALSE otherwise.
      */
-    public function hasContextValue();
-
+    public function has_context_value();
     /**
      * Gets the provided definition that the context must conform to.
      *
      * @return \Drupal\Component\Plugin\Context\ContextDefinitionInterface
      *   The defining characteristic representation of the context.
      */
-    public function getContextDefinition();
-
+    public function get_context_definition();
     /**
      * Gets a list of validation constraints.
      *
@@ -47,8 +43,7 @@ interface ContextInterface
      *   Array of constraints, each being an instance of
      *   \Symfony\Component\Validator\Constraint.
      */
-    public function getConstraints();
-
+    public function get_constraints();
     /**
      * Validates the set context value.
      *
@@ -57,5 +52,4 @@ interface ContextInterface
      *   succeeded.
      */
     public function validate();
-
 }

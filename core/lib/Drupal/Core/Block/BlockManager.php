@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Block;
 
-use Drupal\Component\Plugin\FallbackPluginManagerInterface;
+use Drupal\Component\Plugin\Fallback_Plugin_Manager_Interface;
 use Drupal\Core\Block\Attribute\Block;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
-use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Plugin\FilteredPluginManagerTrait;
-
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Plugin\Categorizing_Plugin_Manager_Trait;
+use Drupal\Core\Plugin\Default_Plugin_Manager;
+use Drupal\Core\Plugin\Filtered_Plugin_Manager_Trait;
 /**
  * Manages discovery and instantiation of block plugins.
  *
@@ -19,13 +17,12 @@ use Drupal\Core\Plugin\FilteredPluginManagerTrait;
  *
  * @see \Drupal\Core\Block\BlockPluginInterface
  */
-class BlockManager extends DefaultPluginManager implements BlockManagerInterface, FallbackPluginManagerInterface
+class Block_Manager extends Default_Plugin_Manager implements Block_Manager_Interface, Fallback_Plugin_Manager_Interface
 {
-    use CategorizingPluginManagerTrait {
+    use Categorizing_Plugin_Manager_Trait {
         getSortedDefinitions as traitGetSortedDefinitions;
     }
-    use FilteredPluginManagerTrait;
-
+    use Filtered_Plugin_Manager_Trait;
     /**
      * Constructs a new \Drupal\Core\Block\BlockManager object.
      *
@@ -39,58 +36,51 @@ class BlockManager extends DefaultPluginManager implements BlockManagerInterface
      * @param \Psr\Log\LoggerInterface $logger
      *   The logger.
      */
-    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Psr\Log\LoggerInterface $logger)
+    public function __construct(\Traversable $namespaces, Cache_Backend_Interface $cache_backend, Module_Handler_Interface $module_handler, protected \Psr\Log\Logger_Interface $logger)
     {
-        parent::__construct('Plugin/Block', $namespaces, $module_handler, BlockPluginInterface::class, Block::class, \Drupal\Core\Block\Annotation\Block::class);
-
-        $this->alterInfo($this->getType());
-        $this->setCacheBackend($cache_backend, 'block_plugins');
+        parent::__construct('Plugin/Block', $namespaces, $module_handler, Block_Plugin_Interface::class, Block::class, \Drupal\Core\Block\Annotation\Block::class);
+        $this->alter_info($this->get_type());
+        $this->set_cache_backend($cache_backend, 'block_plugins');
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getType(): string
+    protected function get_type(): string
     {
         return 'block';
     }
-
     /**
      * {@inheritdoc}
      */
-    public function processDefinition(&$definition, $plugin_id): void
+    public function process_definition(&$definition, $plugin_id): void
     {
-        parent::processDefinition($definition, $plugin_id);
-        $this->processDefinitionCategory($definition);
+        parent::process_definition($definition, $plugin_id);
+        $this->process_definition_category($definition);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getSortedDefinitions(?array $definitions = null, string $label_key = 'label')
+    public function get_sorted_definitions(?array $definitions = null, string $label_key = 'label')
     {
         // Sort the plugins first by category, then by admin label.
-        $definitions = $this->traitGetSortedDefinitions($definitions, 'admin_label');
+        $definitions = $this->trait_get_sorted_definitions($definitions, 'admin_label');
         // Do not display the 'broken' plugin in the UI.
         unset($definitions['broken']);
         return $definitions;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getFallbackPluginId($plugin_id, array $configuration = []): string
+    public function get_fallback_plugin_id($plugin_id, array $configuration = []): string
     {
         return 'broken';
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function handlePluginNotFound($plugin_id, array $configuration)
+    protected function handle_plugin_not_found($plugin_id, array $configuration)
     {
         $this->logger->warning('The "%plugin_id" block plugin was not found', ['%plugin_id' => $plugin_id]);
-        return parent::handlePluginNotFound($plugin_id, $configuration);
+        return parent::handle_plugin_not_found($plugin_id, $configuration);
     }
-
 }

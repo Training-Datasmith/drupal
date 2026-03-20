@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Condition;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Executable\ExecutableInterface;
-use Drupal\Core\Executable\ExecutableManagerInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
-
+use Drupal\Component\Plugin\Configurable_Interface;
+use Drupal\Component\Plugin\Dependent_Plugin_Interface;
+use Drupal\Component\Plugin\Plugin_Inspection_Interface;
+use Drupal\Core\Cache\Cacheable_Dependency_Interface;
+use Drupal\Core\Executable\Executable_Interface;
+use Drupal\Core\Executable\Executable_Manager_Interface;
+use Drupal\Core\Plugin\Plugin_Form_Interface;
 /**
  * An interface for condition plugins.
  *
@@ -46,7 +44,7 @@ use Drupal\Core\Plugin\PluginFormInterface;
  *
  * @ingroup plugin_api
  */
-interface ConditionInterface extends ExecutableInterface, PluginFormInterface, ConfigurableInterface, DependentPluginInterface, PluginInspectionInterface, CacheableDependencyInterface
+interface Condition_Interface extends Executable_Interface, Plugin_Form_Interface, Configurable_Interface, Dependent_Plugin_Interface, Plugin_Inspection_Interface, Cacheable_Dependency_Interface
 {
     /**
      * Determines whether condition result will be negated.
@@ -54,8 +52,7 @@ interface ConditionInterface extends ExecutableInterface, PluginFormInterface, C
      * @return bool
      *   Whether the condition result will be negated.
      */
-    public function isNegated();
-
+    public function is_negated();
     /**
      * Evaluates the condition and returns TRUE or FALSE accordingly.
      *
@@ -63,18 +60,15 @@ interface ConditionInterface extends ExecutableInterface, PluginFormInterface, C
      *   TRUE if the condition has been met, FALSE otherwise.
      */
     public function evaluate();
-
     /**
      * Provides a human readable summary of the condition's configuration.
      */
     public function summary();
-
     /**
      * Sets the executable manager class.
      *
      * @param \Drupal\Core\Executable\ExecutableManagerInterface $executableManager
      *   The executable manager.
      */
-    public function setExecutableManager(ExecutableManagerInterface $executableManager);
-
+    public function set_executable_manager(Executable_Manager_Interface $executable_manager);
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
@@ -9,26 +8,21 @@ namespace Drupal\Core\Entity;
  *
  * @ingroup entity_api
  */
-abstract class EditorialContentEntityBase extends ContentEntityBase implements EntityChangedInterface, EntityPublishedInterface, RevisionLogInterface
+abstract class Editorial_Content_Entity_Base extends Content_Entity_Base implements Entity_Changed_Interface, Entity_Published_Interface, Revision_Log_Interface
 {
-    use EntityChangedTrait;
-    use EntityPublishedTrait;
-    use RevisionLogEntityTrait;
-
+    use Entity_Changed_Trait;
+    use Entity_Published_Trait;
+    use Revision_Log_Entity_Trait;
     /**
      * {@inheritdoc}
      */
-    public static function baseFieldDefinitions(EntityTypeInterface $entity_type)
+    public static function base_field_definitions(Entity_Type_Interface $entity_type)
     {
-        $fields = parent::baseFieldDefinitions($entity_type);
-
+        $fields = parent::base_field_definitions($entity_type);
         // Add the revision metadata fields.
-        $fields += static::revisionLogBaseFieldDefinitions($entity_type);
-
+        $fields += static::revision_log_base_field_definitions($entity_type);
         // Add the published field.
-        $fields += static::publishedBaseFieldDefinitions($entity_type);
-
+        $fields += static::published_base_field_definitions($entity_type);
         return $fields;
     }
-
 }

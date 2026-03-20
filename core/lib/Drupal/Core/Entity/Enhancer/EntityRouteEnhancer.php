@@ -1,41 +1,37 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Enhancer;
 
-use Drupal\Core\Routing\EnhancerInterface;
-use Drupal\Core\Routing\RouteObjectInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Routing\Enhancer_Interface;
+use Drupal\Core\Routing\Route_Object_Interface;
+use Symfony\Component\Http_Foundation\Request;
 use Symfony\Component\Routing\Route;
-
 /**
  * Enhances an entity form route with the appropriate controller.
  */
-class EntityRouteEnhancer implements EnhancerInterface
+class Entity_Route_Enhancer implements Enhancer_Interface
 {
     /**
      * {@inheritdoc}
      */
     public function enhance(array $defaults, Request $request)
     {
-        $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
+        $route = $defaults[Route_Object_Interface::ROUTE_OBJECT];
         if (!$this->applies($route)) {
             return $defaults;
         }
-
-        if (empty($defaults[RouteObjectInterface::CONTROLLER_NAME])) {
+        if (empty($defaults[Route_Object_Interface::CONTROLLER_NAME])) {
             if (!empty($defaults['_entity_form'])) {
-                $defaults = $this->enhanceEntityForm($defaults, $request);
+                $defaults = $this->enhance_entity_form($defaults, $request);
             } elseif (!empty($defaults['_entity_list'])) {
-                $defaults = $this->enhanceEntityList($defaults, $request);
+                $defaults = $this->enhance_entity_list($defaults, $request);
             } elseif (!empty($defaults['_entity_view'])) {
-                $defaults = $this->enhanceEntityView($defaults, $request);
+                $defaults = $this->enhance_entity_view($defaults, $request);
             }
         }
         return $defaults;
     }
-
     /**
      * Returns whether the enhancer runs on the current route.
      *
@@ -47,14 +43,8 @@ class EntityRouteEnhancer implements EnhancerInterface
      */
     protected function applies(Route $route): bool
     {
-        return !$route->hasDefault(RouteObjectInterface::CONTROLLER_NAME) &&
-          (
-              $route->hasDefault('_entity_form')
-        || $route->hasDefault('_entity_list')
-        || $route->hasDefault('_entity_view')
-          );
+        return !$route->has_default(Route_Object_Interface::CONTROLLER_NAME) && ($route->has_default('_entity_form') || $route->has_default('_entity_list') || $route->has_default('_entity_view'));
     }
-
     /**
      * Update defaults for entity forms.
      *
@@ -66,13 +56,11 @@ class EntityRouteEnhancer implements EnhancerInterface
      * @return array
      *   The modified defaults.
      */
-    protected function enhanceEntityForm(array $defaults, Request $request): array
+    protected function enhance_entity_form(array $defaults, Request $request): array
     {
-        $defaults[RouteObjectInterface::CONTROLLER_NAME] = 'controller.entity_form:getContentResult';
-
+        $defaults[Route_Object_Interface::CONTROLLER_NAME] = 'controller.entity_form:getContentResult';
         return $defaults;
     }
-
     /**
      * Update defaults for an entity list.
      *
@@ -84,15 +72,13 @@ class EntityRouteEnhancer implements EnhancerInterface
      * @return array
      *   The modified defaults.
      */
-    protected function enhanceEntityList(array $defaults, Request $request): array
+    protected function enhance_entity_list(array $defaults, Request $request): array
     {
-        $defaults[RouteObjectInterface::CONTROLLER_NAME] = '\Drupal\Core\Entity\Controller\EntityListController::listing';
+        $defaults[Route_Object_Interface::CONTROLLER_NAME] = '\Drupal\Core\Entity\Controller\EntityListController::listing';
         $defaults['entity_type'] = $defaults['_entity_list'];
         unset($defaults['_entity_list']);
-
         return $defaults;
     }
-
     /**
      * Update defaults for an entity view.
      *
@@ -107,9 +93,9 @@ class EntityRouteEnhancer implements EnhancerInterface
      * @throws \RuntimeException
      *   Thrown when an entity of a type cannot be found in a route.
      */
-    protected function enhanceEntityView(array $defaults, Request $request): array
+    protected function enhance_entity_view(array $defaults, Request $request): array
     {
-        $defaults[RouteObjectInterface::CONTROLLER_NAME] = '\Drupal\Core\Entity\Controller\EntityViewController::view';
+        $defaults[Route_Object_Interface::CONTROLLER_NAME] = '\Drupal\Core\Entity\Controller\EntityViewController::view';
         if (str_contains((string) $defaults['_entity_view'], '.')) {
             // The _entity_view entry is of the form entity_type.view_mode.
             [$entity_type, $view_mode] = explode('.', (string) $defaults['_entity_view']);
@@ -121,13 +107,13 @@ class EntityRouteEnhancer implements EnhancerInterface
         }
         // Set by reference so that we get the upcast value.
         if (!empty($defaults[$entity_type])) {
-            $defaults['_entity'] = &$defaults[$entity_type];
+            $defaults['_entity'] =& $defaults[$entity_type];
         } else {
             // The entity is not keyed by its entity_type. Attempt to find it
             // using a converter.
-            $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
+            $route = $defaults[Route_Object_Interface::ROUTE_OBJECT];
             if ($route && is_object($route)) {
-                $options = $route->getOptions();
+                $options = $route->get_options();
                 if (isset($options['parameters'])) {
                     foreach ($options['parameters'] as $name => $details) {
                         if (!empty($details['type'])) {
@@ -138,20 +124,18 @@ class EntityRouteEnhancer implements EnhancerInterface
                                 // We have the matching entity type. Set the '_entity' key
                                 // to point to this named placeholder. The entity in this
                                 // position is the one being rendered.
-                                $defaults['_entity'] = &$defaults[$name];
+                                $defaults['_entity'] =& $defaults[$name];
                             }
                         }
                     }
                 } else {
-                    throw new \RuntimeException(sprintf('Failed to find entity of type %s in route named %s', $entity_type, $defaults[RouteObjectInterface::ROUTE_NAME]));
+                    throw new \RuntimeException(sprintf('Failed to find entity of type %s in route named %s', $entity_type, $defaults[Route_Object_Interface::ROUTE_NAME]));
                 }
             } else {
-                throw new \RuntimeException(sprintf('Failed to find entity of type %s in route named %s', $entity_type, $defaults[RouteObjectInterface::ROUTE_NAME]));
+                throw new \RuntimeException(sprintf('Failed to find entity of type %s in route named %s', $entity_type, $defaults[Route_Object_Interface::ROUTE_NAME]));
             }
         }
         unset($defaults['_entity_view']);
-
         return $defaults;
     }
-
 }

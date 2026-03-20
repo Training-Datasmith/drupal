@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -13,7 +12,7 @@ namespace Drupal\Core\Cache;
  *
  * @see \Drupal\Core\Cache\EventSubscriber\CacheTagPreloadSubscriber
  */
-interface CacheTagsChecksumPreloadInterface
+interface Cache_Tags_Checksum_Preload_Interface
 {
     /**
      * Register cache tags for preloading.
@@ -21,6 +20,5 @@ interface CacheTagsChecksumPreloadInterface
      * @param array $cache_tags
      *   List of cache tags to load.
      */
-    public function registerCacheTagsForPreload(array $cache_tags): void;
-
+    public function register_cache_tags_for_preload(array $cache_tags): void;
 }

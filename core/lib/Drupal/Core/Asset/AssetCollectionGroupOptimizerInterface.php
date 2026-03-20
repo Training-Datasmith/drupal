@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Asset;
  *
  * Contains an additional method to allow for optimizing an asset group.
  */
-interface AssetCollectionGroupOptimizerInterface extends AssetCollectionOptimizerInterface
+interface Asset_Collection_Group_Optimizer_Interface extends Asset_Collection_Optimizer_Interface
 {
     /**
      * Optimizes a specific group of assets.
@@ -20,6 +19,5 @@ interface AssetCollectionGroupOptimizerInterface extends AssetCollectionOptimize
      * @return string
      *   The optimized string for the group.
      */
-    public function optimizeGroup(array $group): string;
-
+    public function optimize_group(array $group): string;
 }

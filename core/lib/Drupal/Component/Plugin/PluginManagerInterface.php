@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
-use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
-use Drupal\Component\Plugin\Factory\FactoryInterface;
-use Drupal\Component\Plugin\Mapper\MapperInterface;
-
+use Drupal\Component\Plugin\Discovery\Discovery_Interface;
+use Drupal\Component\Plugin\Factory\Factory_Interface;
+use Drupal\Component\Plugin\Mapper\Mapper_Interface;
 /**
  * Interface implemented by plugin managers.
  *
@@ -27,6 +25,6 @@ use Drupal\Component\Plugin\Mapper\MapperInterface;
  *
  * @ingroup plugin_api
  */
-interface PluginManagerInterface extends DiscoveryInterface, FactoryInterface, MapperInterface
+interface Plugin_Manager_Interface extends Discovery_Interface, Factory_Interface, Mapper_Interface
 {
 }

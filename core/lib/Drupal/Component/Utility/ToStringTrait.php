@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
  * Wraps __toString in a trait to avoid some fatal errors.
  */
-trait ToStringTrait
+trait To_String_Trait
 {
     /**
      * Implements the magic __toString() method.
@@ -19,22 +18,20 @@ trait ToStringTrait
         } catch (\Exception $e) {
             // User errors in __toString() methods are considered fatal in the Drupal
             // error handler.
-            trigger_error($e::class . ' thrown while calling __toString on a ' . static::class . ' object in ' . $e->getFile() . ' on line ' . $e->getLine() . ': ' . $e->getMessage(), E_USER_WARNING);
+            trigger_error($e::class . ' thrown while calling __toString on a ' . static::class . ' object in ' . $e->get_file() . ' on line ' . $e->get_line() . ': ' . $e->get_message(), E_USER_WARNING);
             // In case we are using another error handler that did not fatal on the
             // E_USER_ERROR, we terminate execution. However, for test purposes allow
             // a return value.
             return $this->_die();
         }
     }
-
     /**
      * For test purposes, wrap die() in an overridable method.
      */
     protected function _die(): never
     {
-        die();
+        die;
     }
-
     /**
      * Renders the object as a string.
      *
@@ -42,5 +39,4 @@ trait ToStringTrait
      *   The rendered string or an object implementing __toString().
      */
     abstract public function render();
-
 }

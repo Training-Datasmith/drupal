@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation;
 
 /**
  * Provides a base class for classed annotations.
  */
-abstract class AnnotationBase implements AnnotationInterface
+abstract class Annotation_Base implements Annotation_Interface
 {
     /**
      * The annotated class ID.
@@ -15,59 +14,51 @@ abstract class AnnotationBase implements AnnotationInterface
      * @var string
      */
     public $id;
-
     /**
      * The class used for this annotated class.
      *
      * @var string
      */
     protected $class;
-
     /**
      * The provider of the annotated class.
      *
      * @var string
      */
     protected $provider;
-
     /**
      * {@inheritdoc}
      */
-    public function getProvider()
+    public function get_provider()
     {
         return $this->provider;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setProvider($provider): void
+    public function set_provider($provider): void
     {
         $this->provider = $provider;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function get_id()
     {
         return $this->id;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getClass()
+    public function get_class()
     {
         return $this->class;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setClass($class): void
+    public function set_class($class): void
     {
         $this->class = $class;
     }
-
 }

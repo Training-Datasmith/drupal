@@ -1,12 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset\Exception;
 
 /**
  * Defines a custom exception if a library has no CSS/JS/JS setting specified.
  */
-class IncompleteLibraryDefinitionException extends \RuntimeException
+class Incomplete_Library_Definition_Exception extends \RuntimeException
 {
 }

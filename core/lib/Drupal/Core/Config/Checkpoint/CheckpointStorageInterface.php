@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Checkpoint;
 
-use Drupal\Core\Config\StorageInterface;
-
+use Drupal\Core\Config\Storage_Interface;
 /**
  * Provides an interface for checkpoint storages.
  *
  * @internal
  *   This API is experimental.
  */
-interface CheckpointStorageInterface extends StorageInterface
+interface Checkpoint_Storage_Interface extends Storage_Interface
 {
     /**
      * Creates a checkpoint, if required, and returns the active checkpoint.
@@ -27,7 +25,6 @@ interface CheckpointStorageInterface extends StorageInterface
      *   The currently active checkpoint.
      */
     public function checkpoint(string|\Stringable $label): Checkpoint;
-
     /**
      * Sets the checkpoint to read from.
      *
@@ -43,6 +40,5 @@ interface CheckpointStorageInterface extends StorageInterface
      * @throws \Drupal\Core\Config\Checkpoint\UnknownCheckpointException
      *   Thrown when the provided checkpoint does not exist.
      */
-    public function setCheckpointToReadFrom(string|Checkpoint $checkpoint_id): static;
-
+    public function set_checkpoint_to_read_from(string|Checkpoint $checkpoint_id): static;
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Uuid;
 
 /**
  * Interface for generating UUIDs.
  */
-interface UuidInterface
+interface Uuid_Interface
 {
     /**
      * Generates a Universally Unique IDentifier (UUID).
@@ -16,5 +15,4 @@ interface UuidInterface
      *   A 16 byte integer represented as a hex string formatted with 4 hyphens.
      */
     public function generate();
-
 }

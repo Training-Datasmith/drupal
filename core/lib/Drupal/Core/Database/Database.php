@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
-use Composer\Autoload\ClassLoader;
-use Drupal\Core\Cache\NullBackend;
-use Drupal\Core\Database\Event\StatementEvent;
-use Drupal\Core\Extension\DatabaseDriverList;
-
+use Composer\Autoload\Class_Loader;
+use Drupal\Core\Cache\Null_Backend;
+use Drupal\Core\Database\Event\Statement_Event;
+use Drupal\Core\Extension\Database_Driver_List;
 /**
  * Primary front-controller for the database system.
  *
@@ -26,28 +24,24 @@ abstract class Database
      * @var array
      */
     protected static $connections = [];
-
     /**
      * A processed copy of the database connection information from settings.php.
      *
      * @var array
      */
-    protected static $databaseInfo = [];
-
+    protected static $database_info = [];
     /**
      * A list of key/target credentials to simply ignore.
      *
      * @var array
      */
-    protected static $ignoreTargets = [];
-
+    protected static $ignore_targets = [];
     /**
      * The key of the currently active database connection.
      *
      * @var string
      */
-    protected static $activeKey = 'default';
-
+    protected static $active_key = 'default';
     /**
      * An array of active query log objects.
      *
@@ -62,7 +56,6 @@ abstract class Database
      * @endcode
      */
     protected static $logs = [];
-
     /**
      * Starts logging a given logging key on the specified connection.
      *
@@ -78,25 +71,22 @@ abstract class Database
      *
      * @see \Drupal\Core\Database\Log
      */
-    final public static function startLog($logging_key, $key = 'default')
+    final public static function start_log($logging_key, $key = 'default')
     {
         if (empty(self::$logs[$key])) {
             self::$logs[$key] = new Log($key);
-
             // Every target already active for this connection key needs to have the
             // logging object associated with it.
             if (!empty(self::$connections[$key])) {
                 foreach (self::$connections[$key] as $connection) {
-                    $connection->enableEvents(StatementEvent::all());
-                    $connection->setLogger(self::$logs[$key]);
+                    $connection->enable_events(Statement_Event::all());
+                    $connection->set_logger(self::$logs[$key]);
                 }
             }
         }
-
         self::$logs[$key]->start($logging_key);
         return self::$logs[$key];
     }
-
     /**
      * Retrieves the queries logged on for given logging key.
      *
@@ -115,7 +105,7 @@ abstract class Database
      *
      * @see \Drupal\Core\Database\Log
      */
-    final public static function getLog($logging_key, $key = 'default')
+    final public static function get_log($logging_key, $key = 'default')
     {
         if (empty(self::$logs[$key])) {
             return [];
@@ -124,7 +114,6 @@ abstract class Database
         self::$logs[$key]->end($logging_key);
         return $queries;
     }
-
     /**
      * Gets the connection object for the specified database key and target.
      *
@@ -136,28 +125,26 @@ abstract class Database
      * @return \Drupal\Core\Database\Connection
      *   The corresponding connection object.
      */
-    final public static function getConnection($target = 'default', $key = null)
+    final public static function get_connection($target = 'default', $key = null)
     {
         if (!isset($key)) {
             // By default, we want the active connection, set in setActiveConnection.
-            $key = self::$activeKey;
+            $key = self::$active_key;
         }
         // If the requested target does not exist, or if it is ignored, we fall back
         // to the default target. The target is typically either "default" or
         // "replica", indicating to use a replica SQL server if one is available. If
         // it's not available, then the default/primary server is the correct server
         // to use.
-        if (!empty(self::$ignoreTargets[$key][$target]) || !isset(self::$databaseInfo[$key][$target])) {
+        if (!empty(self::$ignore_targets[$key][$target]) || !isset(self::$database_info[$key][$target])) {
             $target = 'default';
         }
-
         if (!isset(self::$connections[$key][$target])) {
             // If necessary, a new connection is opened.
-            self::$connections[$key][$target] = self::openConnection($key, $target);
+            self::$connections[$key][$target] = self::open_connection($key, $target);
         }
         return self::$connections[$key][$target];
     }
-
     /**
      * Determines if there is an active connection.
      *
@@ -168,26 +155,24 @@ abstract class Database
      *   TRUE if there is at least one database connection established, FALSE
      *   otherwise.
      */
-    final public static function isActiveConnection()
+    final public static function is_active_connection()
     {
-        return !empty(self::$activeKey) && !empty(self::$connections) && !empty(self::$connections[self::$activeKey]);
+        return !empty(self::$active_key) && !empty(self::$connections) && !empty(self::$connections[self::$active_key]);
     }
-
     /**
      * Sets the active connection to the specified key.
      *
      * @return string|null
      *   The previous database connection key.
      */
-    final public static function setActiveConnection($key = 'default')
+    final public static function set_active_connection($key = 'default')
     {
-        if (!empty(self::$databaseInfo[$key])) {
-            $old_key = self::$activeKey;
-            self::$activeKey = $key;
+        if (!empty(self::$database_info[$key])) {
+            $old_key = self::$active_key;
+            self::$active_key = $key;
             return $old_key;
         }
     }
-
     /**
      * Process the configuration file for database information.
      *
@@ -196,7 +181,7 @@ abstract class Database
      *   structure of this array depends on the database driver it is connecting
      *   to.
      */
-    final public static function parseConnectionInfo(array $info)
+    final public static function parse_connection_info(array $info)
     {
         // If there is no "driver" property, then we assume it's an array of
         // possible connections for this target. Pick one at random. That allows
@@ -204,25 +189,21 @@ abstract class Database
         if (empty($info['driver'])) {
             $info = $info[mt_rand(0, count($info) - 1)];
         }
-
         // Prefix information, default to an empty prefix.
         $info['prefix'] ??= '';
-
         // Backwards compatibility layer for Drupal 8 style database connection
         // arrays. Those have the wrong 'namespace' key set, or not set at all
         // for core supported database drivers.
-        if (empty($info['namespace']) || str_starts_with((string) $info['namespace'], 'Drupal\\Core\\Database\\Driver\\')) {
+        if (empty($info['namespace']) || str_starts_with((string) $info['namespace'], 'Drupal\Core\Database\Driver\\')) {
             switch (strtolower((string) $info['driver'])) {
                 case 'mysql':
-                    $info['namespace'] = 'Drupal\\mysql\\Driver\\Database\\mysql';
+                    $info['namespace'] = 'Drupal\mysql\Driver\Database\mysql';
                     break;
-
                 case 'pgsql':
-                    $info['namespace'] = 'Drupal\\pgsql\\Driver\\Database\\pgsql';
+                    $info['namespace'] = 'Drupal\pgsql\Driver\Database\pgsql';
                     break;
-
                 case 'sqlite':
-                    $info['namespace'] = 'Drupal\\sqlite\\Driver\\Database\\sqlite';
+                    $info['namespace'] = 'Drupal\sqlite\Driver\Database\sqlite';
                     break;
             }
         }
@@ -231,23 +212,19 @@ abstract class Database
         // drivers.
         if (empty($info['autoload'])) {
             switch (trim((string) $info['namespace'], '\\')) {
-                case 'Drupal\\mysql\\Driver\\Database\\mysql':
+                case 'Drupal\mysql\Driver\Database\mysql':
                     $info['autoload'] = 'core/modules/mysql/src/Driver/Database/mysql/';
                     break;
-
-                case 'Drupal\\pgsql\\Driver\\Database\\pgsql':
+                case 'Drupal\pgsql\Driver\Database\pgsql':
                     $info['autoload'] = 'core/modules/pgsql/src/Driver/Database/pgsql/';
                     break;
-
-                case 'Drupal\\sqlite\\Driver\\Database\\sqlite':
+                case 'Drupal\sqlite\Driver\Database\sqlite':
                     $info['autoload'] = 'core/modules/sqlite/src/Driver/Database/sqlite/';
                     break;
             }
         }
-
         return $info;
     }
-
     /**
      * Adds database connection information for a given key/target.
      *
@@ -278,12 +255,11 @@ abstract class Database
      *
      * @see \Drupal\Core\Database\Database::setActiveConnection
      */
-    final public static function addConnectionInfo($key, $target, array $info, $class_loader = null, $app_root = null): void
+    final public static function add_connection_info($key, $target, array $info, $class_loader = null, $app_root = null): void
     {
-        if (empty(self::$databaseInfo[$key][$target])) {
-            $info = self::parseConnectionInfo($info);
-            self::$databaseInfo[$key][$target] = $info;
-
+        if (empty(self::$database_info[$key][$target])) {
+            $info = self::parse_connection_info($info);
+            self::$database_info[$key][$target] = $info;
             // If the database driver is provided by a module, then its code may need
             // to be instantiated prior to when the module's root namespace is added
             // to the autoloader, because that happens during service container
@@ -291,8 +267,7 @@ abstract class Database
             // Therefore, allow the connection info to specify an autoload directory
             // for the driver.
             if (isset($info['autoload']) && $class_loader && $app_root) {
-                $class_loader->addPsr4($info['namespace'] . '\\', $app_root . '/' . $info['autoload']);
-
+                $class_loader->add_psr4($info['namespace'] . '\\', $app_root . '/' . $info['autoload']);
                 // When the database driver is extending from other database drivers,
                 // then add autoload directory for the parent database driver modules
                 // as well.
@@ -300,14 +275,13 @@ abstract class Database
                     assert(is_array($info['dependencies']));
                     foreach ($info['dependencies'] as $dependency) {
                         if (isset($dependency['namespace']) && isset($dependency['autoload'])) {
-                            $class_loader->addPsr4($dependency['namespace'] . '\\', $app_root . '/' . $dependency['autoload']);
+                            $class_loader->add_psr4($dependency['namespace'] . '\\', $app_root . '/' . $dependency['autoload']);
                         }
                     }
                 }
             }
         }
     }
-
     /**
      * Gets information on the specified database connection.
      *
@@ -317,13 +291,12 @@ abstract class Database
      * @return array|null
      *   An associative array of database information. Defaults to an empty array.
      */
-    final public static function getConnectionInfo($key = 'default')
+    final public static function get_connection_info($key = 'default')
     {
-        if (!empty(self::$databaseInfo[$key])) {
-            return self::$databaseInfo[$key];
+        if (!empty(self::$database_info[$key])) {
+            return self::$database_info[$key];
         }
     }
-
     /**
      * Gets connection information for all available databases.
      *
@@ -331,11 +304,10 @@ abstract class Database
      *   An associative array of database information for all available database,
      *   keyed by the database name. Defaults to an empty array.
      */
-    final public static function getAllConnectionInfo()
+    final public static function get_all_connection_info()
     {
-        return self::$databaseInfo;
+        return self::$database_info;
     }
-
     /**
      * Sets connection information for multiple databases.
      *
@@ -348,15 +320,14 @@ abstract class Database
      * @param string $app_root
      *   The app root.
      */
-    final public static function setMultipleConnectionInfo(array $databases, $class_loader = null, $app_root = null): void
+    final public static function set_multiple_connection_info(array $databases, $class_loader = null, $app_root = null): void
     {
         foreach ($databases as $key => $targets) {
             foreach ($targets as $target => $info) {
-                self::addConnectionInfo($key, $target, $info, $class_loader, $app_root);
+                self::add_connection_info($key, $target, $info, $class_loader, $app_root);
             }
         }
     }
-
     /**
      * Rename a connection and its corresponding connection information.
      *
@@ -368,24 +339,21 @@ abstract class Database
      * @return bool
      *   TRUE in case of success, FALSE otherwise.
      */
-    final public static function renameConnection($old_key, $new_key)
+    final public static function rename_connection($old_key, $new_key)
     {
-        if (!empty(self::$databaseInfo[$old_key]) && empty(self::$databaseInfo[$new_key])) {
+        if (!empty(self::$database_info[$old_key]) && empty(self::$database_info[$new_key])) {
             // Migrate the database connection information.
-            self::$databaseInfo[$new_key] = self::$databaseInfo[$old_key];
-            unset(self::$databaseInfo[$old_key]);
-
+            self::$database_info[$new_key] = self::$database_info[$old_key];
+            unset(self::$database_info[$old_key]);
             // Migrate over the DatabaseConnection object if it exists.
             if (isset(self::$connections[$old_key])) {
                 self::$connections[$new_key] = self::$connections[$old_key];
                 unset(self::$connections[$old_key]);
             }
-
             return true;
         }
         return false;
     }
-
     /**
      * Remove a connection and its corresponding connection information.
      *
@@ -395,16 +363,15 @@ abstract class Database
      * @return bool
      *   TRUE in case of success, FALSE otherwise.
      */
-    final public static function removeConnection($key)
+    final public static function remove_connection($key)
     {
-        if (isset(self::$databaseInfo[$key])) {
-            self::closeConnection(null, $key);
-            unset(self::$databaseInfo[$key]);
+        if (isset(self::$database_info[$key])) {
+            self::close_connection(null, $key);
+            unset(self::$database_info[$key]);
             return true;
         }
         return false;
     }
-
     /**
      * Opens a connection to the server specified by the given key and target.
      *
@@ -417,35 +384,29 @@ abstract class Database
      * @throws \Drupal\Core\Database\ConnectionNotDefinedException
      * @throws \Drupal\Core\Database\DriverNotSpecifiedException
      */
-    final protected static function openConnection($key, $target)
+    final protected static function open_connection($key, $target)
     {
         // If the requested database does not exist then it is an unrecoverable
         // error.
-        if (!isset(self::$databaseInfo[$key])) {
-            throw new ConnectionNotDefinedException('The specified database connection is not defined: ' . $key);
+        if (!isset(self::$database_info[$key])) {
+            throw new Connection_Not_Defined_Exception('The specified database connection is not defined: ' . $key);
         }
-
-        if (!self::$databaseInfo[$key][$target]['driver']) {
-            throw new DriverNotSpecifiedException('Driver not specified for this database connection: ' . $key);
+        if (!self::$database_info[$key][$target]['driver']) {
+            throw new Driver_Not_Specified_Exception('Driver not specified for this database connection: ' . $key);
         }
-
-        $driver_class = self::$databaseInfo[$key][$target]['namespace'] . '\\Connection';
-
-        $client_connection = $driver_class::open(self::$databaseInfo[$key][$target]);
-        $new_connection = new $driver_class($client_connection, self::$databaseInfo[$key][$target]);
-        $new_connection->setTarget($target);
-        $new_connection->setKey($key);
-
+        $driver_class = self::$database_info[$key][$target]['namespace'] . '\Connection';
+        $client_connection = $driver_class::open(self::$database_info[$key][$target]);
+        $new_connection = new $driver_class($client_connection, self::$database_info[$key][$target]);
+        $new_connection->set_target($target);
+        $new_connection->set_key($key);
         // If we have any active logging objects for this connection key, we need
         // to associate them with the connection we just opened.
         if (!empty(self::$logs[$key])) {
-            $new_connection->enableEvents(StatementEvent::all());
-            $new_connection->setLogger(self::$logs[$key]);
+            $new_connection->enable_events(Statement_Event::all());
+            $new_connection->set_logger(self::$logs[$key]);
         }
-
         return $new_connection;
     }
-
     /**
      * Closes a connection to the server specified by the given key and target.
      *
@@ -455,37 +416,34 @@ abstract class Database
      * @param string $key
      *   The database connection key. Defaults to NULL which means the active key.
      */
-    public static function closeConnection($target = null, $key = null): void
+    public static function close_connection($target = null, $key = null): void
     {
         // Gets the active connection by default.
         if (!isset($key)) {
-            $key = self::$activeKey;
+            $key = self::$active_key;
         }
         if (isset($target) && isset(self::$connections[$key][$target])) {
             if (self::$connections[$key][$target] instanceof Connection) {
-                self::$connections[$key][$target]->commitAll();
+                self::$connections[$key][$target]->commit_all();
             }
             unset(self::$connections[$key][$target]);
         } elseif (isset(self::$connections[$key])) {
             foreach (self::$connections[$key] as $connection) {
                 if ($connection instanceof Connection) {
-                    $connection->commitAll();
+                    $connection->commit_all();
                 }
             }
             unset(self::$connections[$key]);
         }
-
         // When last connection for $key is closed, we also stop any active
         // logging.
         if (empty(self::$connections[$key])) {
             unset(self::$logs[$key]);
         }
-
         // Force garbage collection to run. This ensures that client connection
         // objects and results in the connection being closed are destroyed.
         gc_collect_cycles();
     }
-
     /**
      * Instructs the system to temporarily ignore a given key/target.
      *
@@ -499,11 +457,10 @@ abstract class Database
      * @param string $target
      *   The target of the specified key to ignore.
      */
-    public static function ignoreTarget($key, $target): void
+    public static function ignore_target($key, $target): void
     {
-        self::$ignoreTargets[$key][$target] = true;
+        self::$ignore_targets[$key][$target] = true;
     }
-
     /**
      * Converts a URL to a database connection info array.
      *
@@ -523,81 +480,67 @@ abstract class Database
      * @throws \RuntimeException
      *   Exception thrown when a module provided database driver does not exist.
      */
-    public static function convertDbUrlToConnectionInfo(string $url, ?bool $include_test_drivers = null): array
+    public static function convert_db_url_to_connection_info(string $url, ?bool $include_test_drivers = null): array
     {
         // Check that the URL is well formed, starting with 'scheme://', where
         // 'scheme' is a database driver name.
         if (preg_match('/^(.*):\/\//', $url, $matches) !== 1) {
-            throw new \InvalidArgumentException("Missing scheme in URL '$url'");
+            throw new \InvalidArgumentException("Missing scheme in URL '{$url}'");
         }
-        $driverName = $matches[1];
-
+        $driver_name = $matches[1];
         // Determine if the database driver is provided by a module.
         // @todo https://www.drupal.org/project/drupal/issues/3250999. Refactor when
         // all database drivers are provided by modules.
         $url_components = parse_url($url);
         $url_component_query = $url_components['query'] ?? '';
         parse_str($url_component_query, $query);
-
         // Use the driver name as the module name when the module name is not
         // provided.
-        $module = $query['module'] ?? $driverName;
-
-        $driverNamespace = "Drupal\\{$module}\\Driver\\Database\\{$driverName}";
-
+        $module = $query['module'] ?? $driver_name;
+        $driver_namespace = "Drupal\\{$module}\\Driver\\Database\\{$driver_name}";
         /** @var \Drupal\Core\Extension\DatabaseDriver $driver */
-        $driver = self::getDriverList()
-          ->includeTestDrivers($include_test_drivers)
-          ->get($driverNamespace);
-
+        $driver = self::get_driver_list()->include_test_drivers($include_test_drivers)->get($driver_namespace);
         // Set up an additional autoloader. We don't use the main autoloader as
         // this method can be called before Drupal is installed and is never
         // called during regular runtime.
-        $additional_class_loader = new ClassLoader();
-        $additional_class_loader->addPsr4($driverNamespace . '\\', $driver->getPath());
+        $additional_class_loader = new Class_Loader();
+        $additional_class_loader->add_psr4($driver_namespace . '\\', $driver->get_path());
         $additional_class_loader->register();
-        $connection_class = $driverNamespace . '\\Connection';
+        $connection_class = $driver_namespace . '\Connection';
         if (!class_exists($connection_class)) {
-            throw new \InvalidArgumentException("Can not convert '$url' to a database connection, class '$connection_class' does not exist");
+            throw new \InvalidArgumentException("Can not convert '{$url}' to a database connection, class '{$connection_class}' does not exist");
         }
-
         // When the database driver is extending another database driver, then
         // add autoload info for the parent database driver as well.
-        $autoloadInfo = $driver->getAutoloadInfo();
-        if (isset($autoloadInfo['dependencies'])) {
-            foreach ($autoloadInfo['dependencies'] as $dependency) {
-                $additional_class_loader->addPsr4($dependency['namespace'] . '\\', $dependency['autoload']);
+        $autoload_info = $driver->get_autoload_info();
+        if (isset($autoload_info['dependencies'])) {
+            foreach ($autoload_info['dependencies'] as $dependency) {
+                $additional_class_loader->add_psr4($dependency['namespace'] . '\\', $dependency['autoload']);
             }
         }
-
         $additional_class_loader->register(true);
-
-        $options = $connection_class::createConnectionOptionsFromUrl($url);
-
+        $options = $connection_class::create_connection_options_from_url($url);
         // Add the necessary information to autoload code.
         // @see \Drupal\Core\Site\Settings::initialize()
-        $options['autoload'] = $driver->getPath() . DIRECTORY_SEPARATOR;
-        if (isset($autoloadInfo['dependencies'])) {
-            $options['dependencies'] = $autoloadInfo['dependencies'];
+        $options['autoload'] = $driver->get_path() . DIRECTORY_SEPARATOR;
+        if (isset($autoload_info['dependencies'])) {
+            $options['dependencies'] = $autoload_info['dependencies'];
         }
-
         return $options;
     }
-
     /**
      * Returns the list provider for available database drivers.
      *
      * @return \Drupal\Core\Extension\DatabaseDriverList
      *   The list provider for available database drivers.
      */
-    public static function getDriverList(): DatabaseDriverList
+    public static function get_driver_list(): Database_Driver_List
     {
-        if (\Drupal::hasContainer() && \Drupal::hasService('extension.list.database_driver')) {
+        if (\Drupal::has_container() && \Drupal::has_service('extension.list.database_driver')) {
             return \Drupal::service('extension.list.database_driver');
         }
-        return new DatabaseDriverList(DRUPAL_ROOT, 'database_driver', new NullBackend('database_driver'));
+        return new Database_Driver_List(DRUPAL_ROOT, 'database_driver', new Null_Backend('database_driver'));
     }
-
     /**
      * Gets database connection info as a URL.
      *
@@ -610,21 +553,20 @@ abstract class Database
      * @throws \RuntimeException
      *   When the database connection is not defined.
      */
-    public static function getConnectionInfoAsUrl($key = 'default')
+    public static function get_connection_info_as_url($key = 'default')
     {
-        $db_info = static::getConnectionInfo($key);
+        $db_info = static::get_connection_info($key);
         if (empty($db_info) || empty($db_info['default'])) {
-            throw new \RuntimeException("Database connection $key not defined or missing the 'default' settings");
+            throw new \RuntimeException("Database connection {$key} not defined or missing the 'default' settings");
         }
         $namespace = $db_info['default']['namespace'];
         // Add the module name to the connection options to make it easy for the
         // connection class's createUrlFromConnectionOptions() method to add it to
         // the URL.
         $db_info['default']['module'] = explode('\\', (string) $namespace)[1];
-        $connection_class = $namespace . '\\Connection';
-        return $connection_class::createUrlFromConnectionOptions($db_info['default']);
+        $connection_class = $namespace . '\Connection';
+        return $connection_class::create_url_from_connection_options($db_info['default']);
     }
-
     /**
      * Calls commitAll() on all the open connections.
      *
@@ -640,29 +582,25 @@ abstract class Database
      *   relying on object destruction order to commit transactions. Xdebug 3.3.0
      *   changes the order of object destruction when the develop mode is enabled.
      */
-    public static function commitAllOnShutdown(bool $shutdown = false): void
+    public static function commit_all_on_shutdown(bool $shutdown = false): void
     {
         static $registered = false;
-
         if ($shutdown) {
             foreach (self::$connections as $targets) {
                 foreach ($targets as $connection) {
                     if ($connection instanceof Connection) {
-                        $connection->commitAll();
+                        $connection->commit_all();
                     }
                 }
             }
             return;
         }
-
         if (!function_exists('drupal_register_shutdown_function')) {
             return;
         }
-
         if (!$registered) {
             $registered = true;
             drupal_register_shutdown_function('\Drupal\Core\Database\Database::commitAllOnShutdown', true);
         }
     }
-
 }

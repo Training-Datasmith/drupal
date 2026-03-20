@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Core\Access;
  *
  * @see \Drupal\Core\Access\AccessResultInterface
  */
-interface AccessResultReasonInterface extends AccessResultInterface
+interface Access_Result_Reason_Interface extends Access_Result_Interface
 {
     /**
      * Gets the reason for this access result.
@@ -23,8 +22,7 @@ interface AccessResultReasonInterface extends AccessResultInterface
      *   The reason of this access result or an empty string if no reason is
      *   provided.
      */
-    public function getReason();
-
+    public function get_reason();
     /**
      * Sets the reason for this access result.
      *
@@ -34,6 +32,5 @@ interface AccessResultReasonInterface extends AccessResultInterface
      * @return \Drupal\Core\Access\AccessResultInterface
      *   The access result instance.
      */
-    public function setReason($reason);
-
+    public function set_reason($reason);
 }

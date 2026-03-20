@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AddJsCommand implements CommandInterface
+class Add_Js_Command implements Command_Interface
 {
     /**
      * Constructs an AddJsCommand.
@@ -33,19 +32,14 @@ class AddJsCommand implements CommandInterface
          */
         protected array $scripts,
         protected string $selector = 'body'
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'add_js',
-          'selector' => $this->selector,
-          'data' => $this->scripts,
-        ];
+        return ['command' => 'add_js', 'selector' => $this->selector, 'data' => $this->scripts];
     }
-
 }

@@ -1,58 +1,53 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\InvalidQueryException;
-
+use Drupal\Core\Database\Invalid_Query_Exception;
 /**
  * Generic class for a series of conditions in a query.
  */
-class Condition implements ConditionInterface, \Countable, \Stringable
+class Condition implements Condition_Interface, \Countable, \Stringable
 {
     /**
      * Provides a map of condition operators to condition operator options.
      *
      * @var string[][]
      */
-    protected static $conditionOperatorMap = [
-      'BETWEEN' => ['delimiter' => ' AND '],
-      'NOT BETWEEN' => ['delimiter' => ' AND '],
-      'IN' => ['delimiter' => ', ', 'prefix' => '(', 'postfix' => ')'],
-      'NOT IN' => ['delimiter' => ', ', 'prefix' => '(', 'postfix' => ')'],
-      'IS NULL' => ['use_value' => false],
-      'IS NOT NULL' => ['use_value' => false],
-      // Use backslash for escaping wildcard characters.
-      'LIKE' => ['postfix' => " ESCAPE '\\\\'"],
-      'NOT LIKE' => ['postfix' => " ESCAPE '\\\\'"],
-      // Exists expects an already bracketed subquery as right hand part. Do
-      // not define additional brackets.
-      'EXISTS' => [],
-      'NOT EXISTS' => [],
-      // These ones are here for performance reasons.
-      '=' => [],
-      '<' => [],
-      '>' => [],
-      '>=' => [],
-      '<=' => [],
+    protected static $condition_operator_map = [
+        'BETWEEN' => ['delimiter' => ' AND '],
+        'NOT BETWEEN' => ['delimiter' => ' AND '],
+        'IN' => ['delimiter' => ', ', 'prefix' => '(', 'postfix' => ')'],
+        'NOT IN' => ['delimiter' => ', ', 'prefix' => '(', 'postfix' => ')'],
+        'IS NULL' => ['use_value' => false],
+        'IS NOT NULL' => ['use_value' => false],
+        // Use backslash for escaping wildcard characters.
+        'LIKE' => ['postfix' => " ESCAPE '\\\\'"],
+        'NOT LIKE' => ['postfix' => " ESCAPE '\\\\'"],
+        // Exists expects an already bracketed subquery as right hand part. Do
+        // not define additional brackets.
+        'EXISTS' => [],
+        'NOT EXISTS' => [],
+        // These ones are here for performance reasons.
+        '=' => [],
+        '<' => [],
+        '>' => [],
+        '>=' => [],
+        '<=' => [],
     ];
-
     /**
      * Array of conditions.
      *
      * @var array
      */
     protected $conditions = [];
-
     /**
      * Array of arguments.
      *
      * @var array
      */
     protected $arguments = [];
-
     /**
      * Whether the conditions have been changed.
      *
@@ -62,21 +57,18 @@ class Condition implements ConditionInterface, \Countable, \Stringable
      * @var bool
      */
     protected $changed = true;
-
     /**
      * The query placeholder identifier this condition has been compiled against.
      *
      * @var string
      */
-    protected $queryPlaceholderIdentifier;
-
+    protected $query_placeholder_identifier;
     /**
      * Contains the string version of the Condition.
      *
      * @var string
      */
-    protected $stringVersion;
-
+    protected $string_version;
     /**
      * Constructs a Condition object.
      *
@@ -87,7 +79,6 @@ class Condition implements ConditionInterface, \Countable, \Stringable
     {
         $this->conditions['#conjunction'] = $conjunction;
     }
-
     /**
      * Implements Countable::count().
      *
@@ -99,7 +90,6 @@ class Condition implements ConditionInterface, \Countable, \Stringable
     {
         return count($this->conditions) - 1;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -109,82 +99,63 @@ class Condition implements ConditionInterface, \Countable, \Stringable
             $operator = '=';
         }
         if (empty($value) && is_array($value)) {
-            throw new InvalidQueryException(sprintf("Query condition '%s %s ()' cannot be empty.", $field, $operator));
+            throw new Invalid_Query_Exception(sprintf("Query condition '%s %s ()' cannot be empty.", $field, $operator));
         }
         if (is_array($value) && in_array($operator, ['=', '<', '>', '<=', '>=', 'IS NULL', 'IS NOT NULL'], true)) {
             if (count($value) > 1) {
                 $value = implode(', ', $value);
-                throw new InvalidQueryException(sprintf("Query condition '%s %s %s' must have an array compatible operator.", $field, $operator, $value));
+                throw new Invalid_Query_Exception(sprintf("Query condition '%s %s %s' must have an array compatible operator.", $field, $operator, $value));
             }
-            throw new InvalidQueryException('Calling ' . __METHOD__ . '() without an array compatible operator is not supported. See https://www.drupal.org/node/3350985');
+            throw new Invalid_Query_Exception('Calling ' . __METHOD__ . '() without an array compatible operator is not supported. See https://www.drupal.org/node/3350985');
         }
-
-        $this->conditions[] = [
-          'field' => $field,
-          'value' => $value,
-          'operator' => $operator,
-        ];
-
+        $this->conditions[] = ['field' => $field, 'value' => $value, 'operator' => $operator];
         $this->changed = true;
-
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
     public function where($snippet, $args = []): static
     {
-        $this->conditions[] = [
-          'field' => $snippet,
-          'value' => $args,
-          'operator' => null,
-        ];
+        $this->conditions[] = ['field' => $snippet, 'value' => $args, 'operator' => null];
         $this->changed = true;
-
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isNull($field)
+    public function is_null($field)
     {
         return $this->condition($field, null, 'IS NULL');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isNotNull($field)
+    public function is_not_null($field)
     {
         return $this->condition($field, null, 'IS NOT NULL');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function exists(SelectInterface $select)
+    public function exists(Select_Interface $select)
     {
         return $this->condition('', $select, 'EXISTS');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function notExists(SelectInterface $select)
+    public function not_exists(Select_Interface $select)
     {
         return $this->condition('', $select, 'NOT EXISTS');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function alwaysFalse()
+    public function always_false()
     {
         return $this->where('1 = 0');
     }
-
     /**
      * {@inheritdoc}
      */
@@ -192,7 +163,6 @@ class Condition implements ConditionInterface, \Countable, \Stringable
     {
         return $this->conditions;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -204,32 +174,29 @@ class Condition implements ConditionInterface, \Countable, \Stringable
         }
         return $this->arguments;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder): void
+    public function compile(Connection $connection, Placeholder_Interface $query_placeholder): void
     {
         // Re-compile if this condition changed or if we are compiled against a
         // different query placeholder object.
-        if ($this->changed || isset($this->queryPlaceholderIdentifier) && ($this->queryPlaceholderIdentifier != $queryPlaceholder->uniqueIdentifier())) {
-            $this->queryPlaceholderIdentifier = $queryPlaceholder->uniqueIdentifier();
-
+        if ($this->changed || isset($this->query_placeholder_identifier) && $this->query_placeholder_identifier != $query_placeholder->unique_identifier()) {
+            $this->query_placeholder_identifier = $query_placeholder->unique_identifier();
             $condition_fragments = [];
             $arguments = [];
-
             $conditions = $this->conditions;
             $conjunction = $conditions['#conjunction'];
             unset($conditions['#conjunction']);
             foreach ($conditions as $condition) {
                 // Process field.
-                if ($condition['field'] instanceof ConditionInterface) {
+                if ($condition['field'] instanceof Condition_Interface) {
                     // Left hand part is a structured condition or a subquery. Compile,
                     // put brackets around it (if it is a query), and collect any
                     // arguments.
-                    $condition['field']->compile($connection, $queryPlaceholder);
+                    $condition['field']->compile($connection, $query_placeholder);
                     $field_fragment = (string) $condition['field'];
-                    if ($condition['field'] instanceof SelectInterface) {
+                    if ($condition['field'] instanceof Select_Interface) {
                         $field_fragment = '(' . $field_fragment . ')';
                     }
                     $arguments += $condition['field']->arguments();
@@ -248,10 +215,9 @@ class Condition implements ConditionInterface, \Countable, \Stringable
                     $ignore_operator = true;
                 } else {
                     // Left hand part is a normal field. Add it as is.
-                    $field_fragment = $connection->escapeField($condition['field']);
+                    $field_fragment = $connection->escape_field($condition['field']);
                     $ignore_operator = false;
                 }
-
                 // Process operator.
                 if ($ignore_operator) {
                     $operator = ['operator' => '', 'use_value' => false];
@@ -264,37 +230,29 @@ class Condition implements ConditionInterface, \Countable, \Stringable
                         $this->changed = true;
                         $this->arguments = [];
                         // Provide a string which will result into an empty query result.
-                        $this->stringVersion = '( AND 1 = 0 )';
-
-                        throw new InvalidQueryException('Invalid characters in query operator: ' . $condition['operator']);
+                        $this->string_version = '( AND 1 = 0 )';
+                        throw new Invalid_Query_Exception('Invalid characters in query operator: ' . $condition['operator']);
                     }
-
                     // For simplicity, we convert all operators to a data structure to
                     // allow to specify a prefix, a delimiter and such. Find the
                     // associated data structure by first doing a database specific
                     // lookup, followed by a specification according to the SQL standard.
-                    $operator = $connection->mapConditionOperator($condition['operator']);
+                    $operator = $connection->map_condition_operator($condition['operator']);
                     if (!isset($operator)) {
-                        $operator = $this->mapConditionOperator($condition['operator']);
+                        $operator = $this->map_condition_operator($condition['operator']);
                     }
                     $operator += ['operator' => $condition['operator']];
                 }
                 // Add defaults.
-                $operator += [
-                  'prefix' => '',
-                  'postfix' => '',
-                  'delimiter' => '',
-                  'use_value' => true,
-                ];
+                $operator += ['prefix' => '', 'postfix' => '', 'delimiter' => '', 'use_value' => true];
                 $operator_fragment = $operator['operator'];
-
                 // Process value.
                 $value_fragment = '';
                 if ($operator['use_value']) {
                     // For simplicity, we first convert to an array, so that we can handle
                     // the single and multi value cases the same.
                     if (!is_array($condition['value'])) {
-                        if ($condition['value'] instanceof SelectInterface && ($operator['operator'] === 'IN' || $operator['operator'] === 'NOT IN')) {
+                        if ($condition['value'] instanceof Select_Interface && ($operator['operator'] === 'IN' || $operator['operator'] === 'NOT IN')) {
                             // Special case: IN is followed by a single select query instead
                             // of a set of values: unset prefix and postfix to prevent double
                             // brackets.
@@ -306,35 +264,32 @@ class Condition implements ConditionInterface, \Countable, \Stringable
                     // Process all individual values.
                     $value_fragment = [];
                     foreach ($condition['value'] as $value) {
-                        if ($value instanceof SelectInterface) {
+                        if ($value instanceof Select_Interface) {
                             // Right hand part is a subquery. Compile, put brackets around it
                             // and collect any arguments.
-                            $value->compile($connection, $queryPlaceholder);
+                            $value->compile($connection, $query_placeholder);
                             $value_fragment[] = '(' . $value . ')';
                             $arguments += $value->arguments();
                         } else {
                             // Right hand part is a normal value. Replace the value with a
                             // placeholder and add the value as an argument.
-                            $placeholder = ':db_condition_placeholder_' . $queryPlaceholder->nextPlaceholder();
+                            $placeholder = ':db_condition_placeholder_' . $query_placeholder->next_placeholder();
                             $value_fragment[] = $placeholder;
                             $arguments[$placeholder] = $value;
                         }
                     }
                     $value_fragment = $operator['prefix'] . implode($operator['delimiter'], $value_fragment) . $operator['postfix'];
                 }
-
                 // Concatenate the left hand part, operator and right hand part.
                 $condition_fragments[] = trim(implode(' ', [$field_fragment, $operator_fragment, $value_fragment]));
             }
-
             // Concatenate all conditions using the conjunction and brackets around
             // the individual conditions to assure the proper evaluation order.
-            $this->stringVersion = count($condition_fragments) > 1 ? '(' . implode(") $conjunction (", $condition_fragments) . ')' : implode('', $condition_fragments);
+            $this->string_version = count($condition_fragments) > 1 ? '(' . implode(") {$conjunction} (", $condition_fragments) . ')' : implode('', $condition_fragments);
             $this->arguments = $arguments;
             $this->changed = false;
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -342,7 +297,6 @@ class Condition implements ConditionInterface, \Countable, \Stringable
     {
         return !$this->changed;
     }
-
     /**
      * Implements PHP magic __toString method to convert the conditions to string.
      *
@@ -355,9 +309,8 @@ class Condition implements ConditionInterface, \Countable, \Stringable
         if ($this->changed) {
             return '';
         }
-        return $this->stringVersion;
+        return $this->string_version;
     }
-
     /**
      * PHP magic __clone() method.
      *
@@ -370,16 +323,15 @@ class Condition implements ConditionInterface, \Countable, \Stringable
         $this->changed = true;
         foreach ($this->conditions as $key => $condition) {
             if ($key !== '#conjunction') {
-                if ($condition['field'] instanceof ConditionInterface) {
-                    $this->conditions[$key]['field'] = clone($condition['field']);
+                if ($condition['field'] instanceof Condition_Interface) {
+                    $this->conditions[$key]['field'] = clone $condition['field'];
                 }
-                if ($condition['value'] instanceof SelectInterface) {
-                    $this->conditions[$key]['value'] = clone($condition['value']);
+                if ($condition['value'] instanceof Select_Interface) {
+                    $this->conditions[$key]['value'] = clone $condition['value'];
                 }
             }
         }
     }
-
     /**
      * Gets any special processing requirements for the condition operator.
      *
@@ -394,43 +346,38 @@ class Condition implements ConditionInterface, \Countable, \Stringable
      *   The extra handling directives for the specified operator or an empty
      *   array if there are no extra handling directives.
      */
-    protected function mapConditionOperator($operator)
+    protected function map_condition_operator($operator)
     {
-        if (isset(static::$conditionOperatorMap[$operator])) {
-            $return = static::$conditionOperatorMap[$operator];
+        if (isset(static::$condition_operator_map[$operator])) {
+            $return = static::$condition_operator_map[$operator];
         } else {
             // We need to upper case because PHP index matches are case sensitive but
             // do not need the more expensive mb_strtoupper() because SQL statements
             // are ASCII.
             $operator = strtoupper($operator);
-            $return = static::$conditionOperatorMap[$operator] ?? [];
+            $return = static::$condition_operator_map[$operator] ?? [];
         }
-
         return $return + ['operator' => $operator];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function conditionGroupFactory($conjunction = 'AND'): static
+    public function condition_group_factory($conjunction = 'AND'): static
     {
         return new static($conjunction);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function andConditionGroup()
+    public function and_condition_group()
     {
-        return $this->conditionGroupFactory('AND');
+        return $this->condition_group_factory('AND');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function orConditionGroup()
+    public function or_condition_group()
     {
-        return $this->conditionGroupFactory('OR');
+        return $this->condition_group_factory('OR');
     }
-
 }

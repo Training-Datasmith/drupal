@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class RedirectCommand implements CommandInterface
+class Redirect_Command implements Command_Interface
 {
     /**
      * Constructs an RedirectCommand object.
@@ -23,18 +22,14 @@ class RedirectCommand implements CommandInterface
          * The URL that will be loaded into window.location.
          */
         protected $url
-    ) {
+    )
+    {
     }
-
     /**
      * Implements \Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-        return [
-          'command' => 'redirect',
-          'url' => $this->url,
-        ];
+        return ['command' => 'redirect', 'url' => $this->url];
     }
-
 }

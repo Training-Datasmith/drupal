@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
-namespace Drupal\Core\DependencyInjection;
-
-use Drupal\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Alias;
-use Symfony\Component\DependencyInjection\Container as SymfonyContainer;
-use Symfony\Component\DependencyInjection\ContainerBuilder as SymfonyContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-
+use Drupal\Component\Dependency_Injection\Container_Interface;
+use Symfony\Component\Dependency_Injection\Alias;
+use Symfony\Component\Dependency_Injection\Container as SymfonyContainer;
+use Symfony\Component\Dependency_Injection\Container_Builder as SymfonyContainerBuilder;
+use Symfony\Component\Dependency_Injection\Definition;
+use Symfony\Component\Dependency_Injection\Parameter_Bag\Parameter_Bag_Interface;
 /**
  * Drupal's dependency injection container builder.
  *
@@ -18,17 +16,16 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  *
  * @ingroup container
  */
-class ContainerBuilder extends SymfonyContainerBuilder implements ContainerInterface
+class Container_Builder extends Symfony_Container_Builder implements Container_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function __construct(?ParameterBagInterface $parameterBag = null)
+    public function __construct(?Parameter_Bag_Interface $parameter_bag = null)
     {
-        parent::__construct($parameterBag);
-        $this->setResourceTracking(false);
+        parent::__construct($parameter_bag);
+        $this->set_resource_tracking(false);
     }
-
     /**
      * Overrides Symfony\Component\DependencyInjection\ContainerBuilder::set().
      *
@@ -42,9 +39,8 @@ class ContainerBuilder extends SymfonyContainerBuilder implements ContainerInter
      */
     public function set(string $id, ?object $service): void
     {
-        SymfonyContainer::set($id, $service);
+        Symfony_Container::set($id, $service);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -53,32 +49,29 @@ class ContainerBuilder extends SymfonyContainerBuilder implements ContainerInter
         $definition = new Definition($class);
         // As of Symfony 5.2 all services are private by default, but in Drupal
         // services are still public by default.
-        $definition->setPublic(true);
-        return $this->setDefinition($id, $definition);
+        $definition->set_public(true);
+        return $this->set_definition($id, $definition);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setAlias($alias, $id): Alias
+    public function set_alias($alias, $id): Alias
     {
-        $alias = parent::setAlias($alias, $id);
+        $alias = parent::set_alias($alias, $id);
         // As of Symfony 3.4 all aliases are private by default.
-        $alias->setPublic(true);
+        $alias->set_public(true);
         return $alias;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setParameter(string $name, array|bool|string|int|float|\UnitEnum|null $value): void
+    public function set_parameter(string $name, array|bool|string|int|float|\Unit_Enum|null $value): void
     {
         if (strtolower($name) !== $name) {
-            throw new \InvalidArgumentException("Parameter names must be lowercase: $name");
+            throw new \InvalidArgumentException("Parameter names must be lowercase: {$name}");
         }
-        parent::setParameter($name, $value);
+        parent::set_parameter($name, $value);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -87,5 +80,4 @@ class ContainerBuilder extends SymfonyContainerBuilder implements ContainerInter
         assert(false, 'The container was serialized.');
         return array_keys(get_object_vars($this));
     }
-
 }

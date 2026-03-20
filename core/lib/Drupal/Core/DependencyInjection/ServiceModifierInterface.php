@@ -1,15 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\DependencyInjection;
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
 /**
  * Interface that service providers can implement to modify services.
  *
  * @ingroup container
  */
-interface ServiceModifierInterface
+interface Service_Modifier_Interface
 {
     /**
      * Modifies existing service definitions.
@@ -17,6 +16,5 @@ interface ServiceModifierInterface
      * @param ContainerBuilder $container
      *   The ContainerBuilder whose service definitions can be altered.
      */
-    public function alter(ContainerBuilder $container);
-
+    public function alter(Container_Builder $container);
 }

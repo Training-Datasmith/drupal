@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the SiteCacheContext service, for "per site" caching.
  *
@@ -19,31 +17,28 @@ use Drupal\Core\Cache\CacheableMetadata;
  * @see \Symfony\Component\HttpFoundation\Request::getSchemeAndHttpHost()
  * @see \Symfony\Component\HttpFoundation\Request::getBaseUrl()
  */
-class SiteCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+class Site_Cache_Context extends Request_Stack_Cache_Context_Base implements Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Site');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext(): string
+    public function get_context(): string
     {
-        $request = $this->requestStack->getCurrentRequest();
-        return $request->getSchemeAndHttpHost() . $request->getBaseUrl();
+        $request = $this->request_stack->get_current_request();
+        return $request->get_scheme_and_http_host() . $request->get_base_url();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

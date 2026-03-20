@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\PhpStorage;
+declare (strict_types=1);
+namespace Drupal\Component\Php_Storage;
 
 /**
  * Stores and loads PHP code.
@@ -13,7 +12,7 @@ namespace Drupal\Component\PhpStorage;
  * use a remote stream, combine multiple virtual files into an archive, store
  * them in database records, or use some other storage technique.
  */
-interface PhpStorageInterface
+interface Php_Storage_Interface
 {
     /**
      * Checks whether the PHP code exists in storage.
@@ -25,7 +24,6 @@ interface PhpStorageInterface
      *   TRUE if the virtual file exists, FALSE otherwise.
      */
     public function exists($name);
-
     /**
      * Loads PHP code from storage.
      *
@@ -39,7 +37,6 @@ interface PhpStorageInterface
      *   The virtual file name. Can be a relative path.
      */
     public function load($name);
-
     /**
      * Saves PHP code to storage.
      *
@@ -52,7 +49,6 @@ interface PhpStorageInterface
      *   TRUE if the save succeeded, FALSE if it failed.
      */
     public function save($name, $code);
-
     /**
      * Deletes PHP code from storage.
      *
@@ -63,12 +59,10 @@ interface PhpStorageInterface
      *   TRUE if the delete succeeded, FALSE if it failed.
      */
     public function delete($name);
-
     /**
      * Removes all files in this bin.
      */
-    public function deleteAll();
-
+    public function delete_all();
     /**
      * Gets the full file path.
      *
@@ -79,21 +73,18 @@ interface PhpStorageInterface
      *   The full file path for the provided name. Return FALSE if the
      *   implementation needs to prevent access to the file.
      */
-    public function getFullPath($name);
-
+    public function get_full_path($name);
     /**
      * Lists all the files in the storage.
      *
      * @return array
      *   Array of filenames.
      */
-    public function listAll();
-
+    public function list_all();
     /**
      * Performs garbage collection on the storage.
      *
      * The storage may choose to delete expired or invalidated items.
      */
-    public function garbageCollection();
-
+    public function garbage_collection();
 }

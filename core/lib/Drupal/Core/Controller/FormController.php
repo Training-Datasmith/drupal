@@ -1,29 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Drupal\Core\Form\FormState;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface;
-
+use Drupal\Core\Dependency_Injection\Dependency_Serialization_Trait;
+use Drupal\Core\Form\Form_State;
+use Drupal\Core\Routing\Route_Match_Interface;
+use Symfony\Component\Http_Foundation\Request;
+use Symfony\Component\Http_Kernel\Controller\Argument_Resolver_Interface;
 /**
  * Common base class for form interstitial controllers.
  */
-abstract class FormController
+abstract class Form_Controller
 {
-    use DependencySerializationTrait;
-
+    use Dependency_Serialization_Trait;
     /**
      * The argument resolver.
      *
      * @var \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface
      */
-    protected $argumentResolver;
-
+    protected $argument_resolver;
     /**
      * Constructs a new \Drupal\Core\Controller\FormController object.
      *
@@ -32,11 +28,10 @@ abstract class FormController
      * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
      *   The form builder.
      */
-    public function __construct(ArgumentResolverInterface $argument_resolver, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder)
+    public function __construct(Argument_Resolver_Interface $argument_resolver, protected \Drupal\Core\Form\Form_Builder_Interface $form_builder)
     {
-        $this->argumentResolver = $argument_resolver;
+        $this->argument_resolver = $argument_resolver;
     }
-
     /**
      * Invokes the form and returns the result.
      *
@@ -48,27 +43,23 @@ abstract class FormController
      * @return array
      *   The render array that results from invoking the controller.
      */
-    public function getContentResult(Request $request, RouteMatchInterface $route_match)
+    public function get_content_result(Request $request, Route_Match_Interface $route_match)
     {
-        $form_arg = $this->getFormArgument($route_match);
-        $form_object = $this->getFormObject($route_match, $form_arg);
-
+        $form_arg = $this->get_form_argument($route_match);
+        $form_object = $this->get_form_object($route_match, $form_arg);
         // Add the form and form_state to trick the getArguments method of the
         // controller resolver.
-        $form_state = new FormState();
+        $form_state = new Form_State();
         $request->attributes->set('form', []);
         $request->attributes->set('form_state', $form_state);
-        $args = $this->argumentResolver->getArguments($request, $form_object->buildForm(...));
+        $args = $this->argument_resolver->get_arguments($request, $form_object->build_form(...));
         $request->attributes->remove('form');
         $request->attributes->remove('form_state');
-
         // Remove $form and $form_state from the arguments, and re-index them.
         unset($args[0], $args[1]);
-        $form_state->addBuildInfo('args', array_values($args));
-
-        return $this->formBuilder->buildForm($form_object, $form_state);
+        $form_state->add_build_info('args', array_values($args));
+        return $this->form_builder->build_form($form_object, $form_state);
     }
-
     /**
      * Extracts the form argument string from a request.
      *
@@ -87,8 +78,7 @@ abstract class FormController
      * @return string
      *   The form definition string.
      */
-    abstract protected function getFormArgument(RouteMatchInterface $route_match);
-
+    abstract protected function get_form_argument(Route_Match_Interface $route_match);
     /**
      * Returns the object used to build the form.
      *
@@ -100,6 +90,5 @@ abstract class FormController
      * @return \Drupal\Core\Form\FormInterface
      *   The form object to use.
      */
-    abstract protected function getFormObject(RouteMatchInterface $route_match, $form_arg);
-
+    abstract protected function get_form_object(Route_Match_Interface $route_match, $form_arg);
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class AddCssCommand implements CommandInterface
+class Add_Css_Command implements Command_Interface
 {
     /**
      * Constructs an AddCssCommand.
@@ -28,18 +27,14 @@ class AddCssCommand implements CommandInterface
          * Arrays containing attributes of the stylesheets to be added to the page.
          */
         protected array $styles
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'add_css',
-          'data' => $this->styles,
-        ];
+        return ['command' => 'add_css', 'data' => $this->styles];
     }
-
 }

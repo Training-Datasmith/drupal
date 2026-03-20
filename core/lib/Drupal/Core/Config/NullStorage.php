@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -18,7 +17,7 @@ namespace Drupal\Core\Config;
  *
  * This also can be used for testing purposes.
  */
-class NullStorage implements StorageInterface
+class Null_Storage implements Storage_Interface
 {
     /**
      * Constructs a new NullStorage.
@@ -31,10 +30,10 @@ class NullStorage implements StorageInterface
         /**
          * The storage collection.
          */
-        protected $collection = StorageInterface::DEFAULT_COLLECTION
-    ) {
+        protected $collection = Storage_Interface::DEFAULT_COLLECTION
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -42,7 +41,6 @@ class NullStorage implements StorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -50,15 +48,13 @@ class NullStorage implements StorageInterface
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function readMultiple(array $names): array
+    public function read_multiple(array $names): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
@@ -66,7 +62,6 @@ class NullStorage implements StorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -74,7 +69,6 @@ class NullStorage implements StorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -82,7 +76,6 @@ class NullStorage implements StorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -90,7 +83,6 @@ class NullStorage implements StorageInterface
     {
         return $data;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -98,46 +90,40 @@ class NullStorage implements StorageInterface
     {
         return $raw;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function listAll($prefix = ''): array
+    public function list_all($prefix = ''): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll($prefix = ''): bool
+    public function delete_all($prefix = ''): bool
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection): static
+    public function create_collection($collection): static
     {
         return new static($collection);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAllCollectionNames(): array
+    public function get_all_collection_names(): array
     {
         // Returns only non empty collections.
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCollectionName()
+    public function get_collection_name()
     {
         return $this->collection;
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Transaction;
 
 /**
  * A value object for items on the transaction stack.
  */
-final readonly class StackItem
+final readonly class Stack_Item
 {
     /**
      * Constructor.
@@ -17,10 +16,7 @@ final readonly class StackItem
      * @param StackItemType $type
      *   The stack item type.
      */
-    public function __construct(
-        public string $name,
-        public StackItemType $type,
-    ) {
+    public function __construct(public string $name, public Stack_Item_Type $type)
+    {
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Context;
 
 /**
@@ -12,7 +11,7 @@ namespace Drupal\Component\Plugin\Context;
  * @todo WARNING: This interface is going to receive some additions as part of
  * https://www.drupal.org/node/2346999.
  */
-interface ContextDefinitionInterface
+interface Context_Definition_Interface
 {
     /**
      * Gets a human readable label.
@@ -20,8 +19,7 @@ interface ContextDefinitionInterface
      * @return string
      *   The label.
      */
-    public function getLabel();
-
+    public function get_label();
     /**
      * Sets the human readable label.
      *
@@ -30,16 +28,14 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setLabel($label);
-
+    public function set_label($label);
     /**
      * Gets a human readable description.
      *
      * @return string|null
      *   The description, or NULL if no description is available.
      */
-    public function getDescription();
-
+    public function get_description();
     /**
      * Sets the human readable description.
      *
@@ -48,8 +44,7 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setDescription($description);
-
+    public function set_description($description);
     /**
      * Gets the data type needed by the context.
      *
@@ -58,8 +53,7 @@ interface ContextDefinitionInterface
      * @return string
      *   The data type.
      */
-    public function getDataType();
-
+    public function get_data_type();
     /**
      * Sets the data type needed by the context.
      *
@@ -68,16 +62,14 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setDataType($data_type);
-
+    public function set_data_type($data_type);
     /**
      * Determines whether the data is multi-valued, i.e. a list of data items.
      *
      * @return bool
      *   Whether the data is multi-valued; i.e. a list of data items.
      */
-    public function isMultiple();
-
+    public function is_multiple();
     /**
      * Sets whether the data is multi-valued.
      *
@@ -86,8 +78,7 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setMultiple($multiple = true);
-
+    public function set_multiple($multiple = true);
     /**
      * Determines whether the context is required.
      *
@@ -96,8 +87,7 @@ interface ContextDefinitionInterface
      * @return bool
      *   Whether a data value is required.
      */
-    public function isRequired();
-
+    public function is_required();
     /**
      * Sets whether the data is required.
      *
@@ -106,16 +96,14 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setRequired($required = true);
-
+    public function set_required($required = true);
     /**
      * Gets the default value for this context definition.
      *
      * @return mixed
      *   The default value or NULL if no default value is set.
      */
-    public function getDefaultValue();
-
+    public function get_default_value();
     /**
      * Sets the default data value.
      *
@@ -124,8 +112,7 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function setDefaultValue($default_value);
-
+    public function set_default_value($default_value);
     /**
      * Gets an array of validation constraints.
      *
@@ -134,8 +121,7 @@ interface ContextDefinitionInterface
      *   Each constraint definition can be used for instantiating
      *   \Symfony\Component\Validator\Constraint objects.
      */
-    public function getConstraints();
-
+    public function get_constraints();
     /**
      * Sets the array of validation constraints.
      *
@@ -149,8 +135,7 @@ interface ContextDefinitionInterface
      *
      * @see self::addConstraint()
      */
-    public function setConstraints(array $constraints);
-
+    public function set_constraints(array $constraints);
     /**
      * Adds a validation constraint.
      *
@@ -161,8 +146,7 @@ interface ContextDefinitionInterface
      *
      * @return $this
      */
-    public function addConstraint(string $constraint_name, ?array $options = null): static;
-
+    public function add_constraint(string $constraint_name, ?array $options = null): static;
     /**
      * Gets a validation constraint.
      *
@@ -173,6 +157,5 @@ interface ContextDefinitionInterface
      *   A validation constraint definition which can be used for instantiating a
      *   \Symfony\Component\Validator\Constraint object.
      */
-    public function getConstraint($constraint_name);
-
+    public function get_constraint($constraint_name);
 }

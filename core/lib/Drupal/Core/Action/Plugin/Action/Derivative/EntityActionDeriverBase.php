@@ -1,23 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action\Plugin\Action\Derivative;
 
-use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslationInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Component\Plugin\Derivative\Deriver_Base;
+use Drupal\Core\Entity\Entity_Type_Interface;
+use Drupal\Core\Plugin\Discovery\Container_Deriver_Interface;
+use Drupal\Core\String_Translation\String_Translation_Trait;
+use Drupal\Core\String_Translation\Translation_Interface;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Provides a base action for each entity type with specific interfaces.
  */
-abstract class EntityActionDeriverBase extends DeriverBase implements ContainerDeriverInterface
+abstract class Entity_Action_Deriver_Base extends Deriver_Base implements Container_Deriver_Interface
 {
-    use StringTranslationTrait;
-
+    use String_Translation_Trait;
     /**
      * Constructs a new EntityActionDeriverBase object.
      *
@@ -26,22 +23,17 @@ abstract class EntityActionDeriverBase extends DeriverBase implements ContainerD
      * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
      *   The string translation service.
      */
-    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation)
+    public function __construct(protected \Drupal\Core\Entity\Entity_Type_Manager_Interface $entity_type_manager, Translation_Interface $string_translation)
     {
-        $this->stringTranslation = $string_translation;
+        $this->string_translation = $string_translation;
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container, $base_plugin_id)
+    public static function create(Container_Interface $container, $base_plugin_id)
     {
-        return new static(
-            $container->get('entity_type.manager'),
-            $container->get('string_translation')
-        );
+        return new static($container->get('entity_type.manager'), $container->get('string_translation'));
     }
-
     /**
      * Indicates whether the deriver can be used for the provided entity type.
      *
@@ -51,27 +43,24 @@ abstract class EntityActionDeriverBase extends DeriverBase implements ContainerD
      * @return bool
      *   TRUE if the entity type can be used, FALSE otherwise.
      */
-    abstract protected function isApplicable(EntityTypeInterface $entity_type);
-
+    abstract protected function is_applicable(Entity_Type_Interface $entity_type);
     /**
      * {@inheritdoc}
      */
-    public function getDerivativeDefinitions($base_plugin_definition)
+    public function get_derivative_definitions($base_plugin_definition)
     {
         if (empty($this->derivatives)) {
             $definitions = [];
-            foreach ($this->getApplicableEntityTypes() as $entity_type_id => $entity_type) {
+            foreach ($this->get_applicable_entity_types() as $entity_type_id => $entity_type) {
                 $definition = $base_plugin_definition;
                 $definition['type'] = $entity_type_id;
-                $definition['label'] = sprintf('%s %s', $base_plugin_definition['action_label'], $entity_type->getSingularLabel());
+                $definition['label'] = sprintf('%s %s', $base_plugin_definition['action_label'], $entity_type->get_singular_label());
                 $definitions[$entity_type_id] = $definition;
             }
             $this->derivatives = $definitions;
         }
-
-        return parent::getDerivativeDefinitions($base_plugin_definition);
+        return parent::get_derivative_definitions($base_plugin_definition);
     }
-
     /**
      * Gets a list of applicable entity types.
      *
@@ -83,11 +72,9 @@ abstract class EntityActionDeriverBase extends DeriverBase implements ContainerD
      * @return \Drupal\Core\Entity\EntityTypeInterface[]
      *   The applicable entity types, keyed by entity type ID.
      */
-    protected function getApplicableEntityTypes()
+    protected function get_applicable_entity_types()
     {
-        $entity_types = $this->entityTypeManager->getDefinitions();
-
-        return array_filter($entity_types, fn (EntityTypeInterface $entity_type) => $this->isApplicable($entity_type));
+        $entity_types = $this->entity_type_manager->get_definitions();
+        return array_filter($entity_types, fn(Entity_Type_Interface $entity_type) => $this->is_applicable($entity_type));
     }
-
 }

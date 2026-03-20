@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Core\Extension\ExtensionDiscovery;
-
+use Drupal\Core\Extension\Extension_Discovery;
 /**
  * Storage to access configuration and schema in enabled extensions.
  *
  * @see \Drupal\Core\Config\ConfigInstaller
  * @see \Drupal\Core\Config\TypedConfigManager
  */
-class ExtensionInstallStorage extends InstallStorage
+class Extension_Install_Storage extends Install_Storage
 {
     /**
      * Overrides \Drupal\Core\Config\InstallStorage::__construct().
@@ -30,33 +28,31 @@ class ExtensionInstallStorage extends InstallStorage
      * @param string $installProfile
      *   The current installation profile.
      */
-    public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, $directory, $collection, /**
-   * Flag to include the profile in the list of enabled modules.
-   */
-        protected $includeProfile, /**
-   * The name of the currently active installation profile.
-   *
-   * In the early installer this value can be NULL.
-   */
-        protected $installProfile)
+    public function __construct(
+        protected \Drupal\Core\Config\Storage_Interface $config_storage,
+        $directory,
+        $collection,
+        /**
+         * Flag to include the profile in the list of enabled modules.
+         */
+        protected $include_profile,
+        /**
+         * The name of the currently active installation profile.
+         *
+         * In the early installer this value can be NULL.
+         */
+        protected $install_profile
+    )
     {
         parent::__construct($directory, $collection);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection): static
+    public function create_collection($collection): static
     {
-        return new static(
-            $this->configStorage,
-            $this->directory,
-            $collection,
-            $this->includeProfile,
-            $this->installProfile
-        );
+        return new static($this->config_storage, $this->directory, $collection, $this->include_profile, $this->install_profile);
     }
-
     /**
      * Returns a map of all config object names and their folders.
      *
@@ -69,21 +65,20 @@ class ExtensionInstallStorage extends InstallStorage
      * @return array
      *   An array mapping config object names with directories.
      */
-    protected function getAllFolders()
+    protected function get_all_folders()
     {
         if (!isset($this->folders)) {
             $this->folders = [];
-            $this->folders += $this->getCoreNames();
-
-            $extensions = $this->configStorage->read('core.extension');
+            $this->folders += $this->get_core_names();
+            $extensions = $this->config_storage->read('core.extension');
             // @todo Remove this scan as part of https://www.drupal.org/node/2186491
-            $listing = new ExtensionDiscovery(\Drupal::root());
+            $listing = new Extension_Discovery(\Drupal::root());
             if (!empty($extensions['module'])) {
                 $modules = $extensions['module'];
                 // Remove the install profile as this is handled later.
-                unset($modules[$this->installProfile]);
+                unset($modules[$this->install_profile]);
                 $profile_list = $listing->scan('profile');
-                if ($this->installProfile && isset($profile_list[$this->installProfile])) {
+                if ($this->install_profile && isset($profile_list[$this->install_profile])) {
                     // Prime the \Drupal\Core\Extension\ExtensionList::getPathname()
                     // static cache with the profile info file location so we can use
                     // ExtensionList::getPath() on the active profile during the module
@@ -91,7 +86,7 @@ class ExtensionInstallStorage extends InstallStorage
                     // @todo Remove as part of https://www.drupal.org/node/2186491
                     /** @var \Drupal\Core\Extension\ProfileExtensionList $profile_extension_list */
                     $profile_extension_list = \Drupal::service('extension.list.profile');
-                    $profile_extension_list->setPathname($this->installProfile, $profile_list[$this->installProfile]->getPathname());
+                    $profile_extension_list->set_pathname($this->install_profile, $profile_list[$this->install_profile]->get_pathname());
                 }
                 $module_list_scan = $listing->scan('module');
                 $module_list = [];
@@ -100,7 +95,7 @@ class ExtensionInstallStorage extends InstallStorage
                         $module_list[$module] = $module_list_scan[$module];
                     }
                 }
-                $this->folders += $this->getComponentNames($module_list);
+                $this->folders += $this->get_component_names($module_list);
             }
             if (!empty($extensions['theme'])) {
                 $theme_list_scan = $listing->scan('theme');
@@ -109,19 +104,18 @@ class ExtensionInstallStorage extends InstallStorage
                         $theme_list[$theme] = $theme_list_scan[$theme];
                     }
                 }
-                $this->folders += $this->getComponentNames($theme_list);
+                $this->folders += $this->get_component_names($theme_list);
             }
-
-            if ($this->includeProfile) {
+            if ($this->include_profile) {
                 // The install profile can override module default configuration. We do
                 // this by replacing the config file path from the module/theme with the
                 // install profile version if there are any duplicates.
-                if ($this->installProfile) {
+                if ($this->install_profile) {
                     if (!isset($profile_list)) {
                         $profile_list = $listing->scan('profile');
                     }
-                    if (isset($profile_list[$this->installProfile])) {
-                        $profile_folders = $this->getComponentNames([$profile_list[$this->installProfile]]);
+                    if (isset($profile_list[$this->install_profile])) {
+                        $profile_folders = $this->get_component_names([$profile_list[$this->install_profile]]);
                         $this->folders = $profile_folders + $this->folders;
                     }
                 }
@@ -129,5 +123,4 @@ class ExtensionInstallStorage extends InstallStorage
         }
         return $this->folders;
     }
-
 }

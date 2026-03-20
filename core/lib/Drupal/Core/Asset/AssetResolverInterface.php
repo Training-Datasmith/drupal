@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
-use Drupal\Core\Language\LanguageInterface;
-
+use Drupal\Core\Language\Language_Interface;
 /**
  * Resolves asset libraries into concrete CSS and JavaScript assets.
  *
@@ -19,7 +17,7 @@ use Drupal\Core\Language\LanguageInterface;
  * @see \Drupal\Core\Asset\AttachedAssetsInterface
  * @see \Drupal\Core\Asset\LibraryDependencyResolverInterface
  */
-interface AssetResolverInterface
+interface Asset_Resolver_Interface
 {
     /**
      * Returns the CSS assets for the current response's libraries.
@@ -55,8 +53,7 @@ interface AssetResolverInterface
      *
      * @see https://www.drupal.org/node/1887918#separate-concerns
      */
-    public function getCssAssets(AttachedAssetsInterface $assets, $optimize, ?LanguageInterface $language = null);
-
+    public function get_css_assets(Attached_Assets_Interface $assets, $optimize, ?Language_Interface $language = null);
     /**
      * Returns the JavaScript assets for the current response's libraries.
      *
@@ -87,6 +84,5 @@ interface AssetResolverInterface
      *   - at index one: the (possibly optimized) collection of JavaScript assets
      *     for the bottom of the page
      */
-    public function getJsAssets(AttachedAssetsInterface $assets, $optimize, ?LanguageInterface $language = null);
-
+    public function get_js_assets(Attached_Assets_Interface $assets, $optimize, ?Language_Interface $language = null);
 }

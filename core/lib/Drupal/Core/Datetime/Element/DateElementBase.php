@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime\Element;
 
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Datetime\DrupalDateTime;
-use Drupal\Core\Render\Element\FormElementBase;
-
+use Drupal\Component\Utility\Nested_Array;
+use Drupal\Core\Datetime\Drupal_Date_Time;
+use Drupal\Core\Render\Element\Form_Element_Base;
 /**
  * Provides a base class for date elements.
  */
-abstract class DateElementBase extends FormElementBase
+abstract class Date_Element_Base extends Form_Element_Base
 {
     /**
      * Specifies the start and end year to use as a date range.
@@ -32,12 +30,11 @@ abstract class DateElementBase extends FormElementBase
      *   A numerically indexed array, containing the minimum and maximum year
      *   described by this pattern.
      */
-    protected static function datetimeRangeYears($string, $date = null)
+    protected static function datetime_range_years($string, $date = null)
     {
-        $datetime = new DrupalDateTime();
+        $datetime = new Drupal_Date_Time();
         $this_year = $datetime->format('Y');
         [$min_year, $max_year] = explode(':', $string);
-
         // Valid patterns would be -5:+5, 0:+1, 2008:2010.
         $plus_pattern = '@[\+|\-][0-9]{1,4}@';
         $year_pattern = '@^[0-9]{4}@';
@@ -63,14 +60,13 @@ abstract class DateElementBase extends FormElementBase
             $min_year = $temp;
         }
         // If there is a current value, stretch the range to include it.
-        $value_year = $date instanceof DrupalDateTime ? $date->format('Y') : '';
+        $value_year = $date instanceof Drupal_Date_Time ? $date->format('Y') : '';
         if (!empty($value_year)) {
             $min_year = min($value_year, $min_year);
             $max_year = max($value_year, $max_year);
         }
         return [$min_year, $max_year];
     }
-
     /**
      * Returns the most relevant title of a datetime element.
      *
@@ -86,7 +82,7 @@ abstract class DateElementBase extends FormElementBase
      * @return string
      *   The title.
      */
-    protected static function getElementTitle(array $element, array $complete_form)
+    protected static function get_element_title(array $element, array $complete_form)
     {
         $title = '';
         if (!empty($element['#title'])) {
@@ -94,13 +90,11 @@ abstract class DateElementBase extends FormElementBase
         } else {
             $parents = $element['#array_parents'];
             array_pop($parents);
-            $parent_element = NestedArray::getValue($complete_form, $parents);
+            $parent_element = Nested_Array::get_value($complete_form, $parents);
             if (!empty($parent_element['#title'])) {
                 $title = $parent_element['#title'];
             }
         }
-
         return $title;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Config;
  *
  * @ingroup config_api
  */
-interface ConfigFactoryInterface
+interface Config_Factory_Interface
 {
     /**
      * Returns an immutable configuration object for a given name.
@@ -21,7 +20,6 @@ interface ConfigFactoryInterface
      *   A configuration object.
      */
     public function get($name);
-
     /**
      * Returns a mutable configuration object for a given name.
      *
@@ -34,8 +32,7 @@ interface ConfigFactoryInterface
      * @return \Drupal\Core\Config\Config
      *   A configuration object.
      */
-    public function getEditable($name);
-
+    public function get_editable($name);
     /**
      * Returns a list of configuration objects for the given names.
      *
@@ -50,8 +47,7 @@ interface ConfigFactoryInterface
      * @return \Drupal\Core\Config\ImmutableConfig[]
      *   List of successfully loaded configuration objects, keyed by name.
      */
-    public function loadMultiple(array $names);
-
+    public function load_multiple(array $names);
     /**
      * Resets and re-initializes configuration objects. Internal use only.
      *
@@ -62,7 +58,6 @@ interface ConfigFactoryInterface
      * @return $this
      */
     public function reset($name = null);
-
     /**
      * Renames a configuration object using the storage.
      *
@@ -74,7 +69,6 @@ interface ConfigFactoryInterface
      * @return $this
      */
     public function rename($old_name, $new_name);
-
     /**
      * The cache keys associated with the state of the config factory.
      *
@@ -87,15 +81,13 @@ interface ConfigFactoryInterface
      * @return array
      *   An array of strings, used to generate a cache ID.
      */
-    public function getCacheKeys();
-
+    public function get_cache_keys();
     /**
      * Clears the config factory static cache.
      *
      * @return $this
      */
-    public function clearStaticCache();
-
+    public function clear_static_cache();
     /**
      * Gets configuration object names starting with a given prefix.
      *
@@ -108,8 +100,7 @@ interface ConfigFactoryInterface
      *
      * @see \Drupal\Core\Config\StorageInterface::listAll()
      */
-    public function listAll($prefix = '');
-
+    public function list_all($prefix = '');
     /**
      * Adds config factory override services.
      *
@@ -117,6 +108,5 @@ interface ConfigFactoryInterface
      *   The config factory override service to add. It is added at the end of the
      *   priority list (lower priority relative to existing ones).
      */
-    public function addOverride(ConfigFactoryOverrideInterface $config_factory_override);
-
+    public function add_override(Config_Factory_Override_Interface $config_factory_override);
 }

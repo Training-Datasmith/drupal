@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
-use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Interface for authentication providers.
  */
-interface AuthenticationProviderInterface
+interface Authentication_Provider_Interface
 {
     /**
      * Checks whether suitable authentication credentials are on the request.
@@ -22,7 +20,6 @@ interface AuthenticationProviderInterface
      *   request, FALSE otherwise.
      */
     public function applies(Request $request);
-
     /**
      * Authenticates the user.
      *
@@ -34,5 +31,4 @@ interface AuthenticationProviderInterface
      *   NULL - in case where authentication failed.
      */
     public function authenticate(Request $request);
-
 }

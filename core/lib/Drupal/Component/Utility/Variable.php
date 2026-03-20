@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -20,7 +19,7 @@ class Variable
      * @return string
      *   A human-readable name for the callable.
      */
-    public static function callableToString($callable): string
+    public static function callable_to_string($callable): string
     {
         if ($callable instanceof \Closure) {
             return '[closure]';
@@ -36,7 +35,6 @@ class Variable
         }
         return '[unknown]';
     }
-
     /**
      * Drupal-friendly var_export().
      *
@@ -86,12 +84,9 @@ class Variable
             // https://www.drupal.org/project/drupal/issues/3476894
             $output = var_export($var, true);
         }
-
         if ($prefix) {
-            return str_replace("\n", "\n$prefix", $output);
+            return str_replace("\n", "\n{$prefix}", $output);
         }
-
         return $output;
     }
-
 }

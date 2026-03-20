@@ -1,21 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Component\Php_Storage;
 
-namespace Drupal\Component\PhpStorage;
-
-use Drupal\Component\FileSecurity\FileSecurity;
-
+use Drupal\Component\File_Security\File_Security;
 /**
  * Stores the code as regular PHP files.
  */
-class FileStorage implements PhpStorageInterface
+class File_Storage implements Php_Storage_Interface
 {
     /**
      * The directory where the files should be stored.
      */
     protected string $directory;
-
     /**
      * Constructs this FileStorage object.
      *
@@ -29,15 +26,13 @@ class FileStorage implements PhpStorageInterface
     {
         $this->directory = $configuration['directory'] . '/' . $configuration['bin'];
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name): bool
     {
-        return file_exists($this->getFullPath($name));
+        return file_exists($this->get_full_path($name));
     }
-
     /**
      * {@inheritdoc}
      */
@@ -45,20 +40,18 @@ class FileStorage implements PhpStorageInterface
     {
         // The FALSE returned on failure is enough for the caller to handle this,
         // we do not want a warning too.
-        return (@include_once $this->getFullPath($name)) !== false;
+        return @(include_once $this->get_full_path($name)) !== false;
     }
-
     /**
      * {@inheritdoc}
      */
     public function save($name, $code): bool
     {
-        $path = $this->getFullPath($name);
+        $path = $this->get_full_path($name);
         $directory = dirname($path);
-        $this->ensureDirectory($directory);
+        $this->ensure_directory($directory);
         return (bool) file_put_contents($path, $code);
     }
-
     /**
      * Ensures the directory exists, has the right permissions, and a .htaccess.
      *
@@ -73,13 +66,12 @@ class FileStorage implements PhpStorageInterface
      * @param int $mode
      *   The mode, permissions, the directory should have.
      */
-    protected function ensureDirectory($directory, $mode = 0777)
+    protected function ensure_directory($directory, $mode = 0777)
     {
-        if ($this->createDirectory($directory, $mode)) {
-            FileSecurity::writeHtaccess($directory);
+        if ($this->create_directory($directory, $mode)) {
+            File_Security::write_htaccess($directory);
         }
     }
-
     /**
      * Ensures the requested directory exists and has the right permissions.
      *
@@ -97,19 +89,17 @@ class FileStorage implements PhpStorageInterface
      * @return bool
      *   TRUE if the directory exists or has been created, FALSE otherwise.
      */
-    protected function createDirectory($directory, $mode = 0777)
+    protected function create_directory($directory, $mode = 0777)
     {
         // If the directory exists already, there's nothing to do.
         if (is_dir($directory)) {
             return true;
         }
-
         // If the parent directory doesn't exist, try to create it.
         $parent_exists = is_dir($parent = dirname($directory));
         if (!$parent_exists) {
-            $parent_exists = $this->createDirectory($parent, $mode);
+            $parent_exists = $this->create_directory($parent, $mode);
         }
-
         // If parent exists, try to create the directory and ensure to set its
         // permissions, because mkdir() obeys the umask of the current process.
         if ($parent_exists) {
@@ -131,38 +121,34 @@ class FileStorage implements PhpStorageInterface
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($name)
     {
-        $path = $this->getFullPath($name);
+        $path = $this->get_full_path($name);
         if (file_exists($path)) {
             return $this->unlink($path);
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getFullPath($name): string
+    public function get_full_path($name): string
     {
         if (str_contains($name, '..')) {
             throw new \InvalidArgumentException('The name must not contain "..".');
         }
         return $this->directory . '/' . $name;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll()
+    public function delete_all()
     {
         return $this->unlink($this->directory);
     }
-
     /**
      * Deletes files and/or directories in the specified path.
      *
@@ -183,9 +169,9 @@ class FileStorage implements PhpStorageInterface
             if (is_dir($path)) {
                 // Ensure the folder is writable.
                 @chmod($path, 0777);
-                foreach (new \DirectoryIterator($path) as $fileinfo) {
-                    if (!$fileinfo->isDot()) {
-                        $this->unlink($fileinfo->getPathName());
+                foreach (new \Directory_Iterator($path) as $fileinfo) {
+                    if (!$fileinfo->is_dot()) {
+                        $this->unlink($fileinfo->get_path_name());
                     }
                 }
                 return @rmdir($path);
@@ -197,18 +183,17 @@ class FileStorage implements PhpStorageInterface
         // If there's nothing to delete return TRUE anyway.
         return true;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function listAll(): array
+    public function list_all(): array
     {
         $names = [];
         if (file_exists($this->directory)) {
-            foreach (new \DirectoryIterator($this->directory) as $fileinfo) {
-                if (!$fileinfo->isDot()) {
-                    $name = $fileinfo->getFilename();
+            foreach (new \Directory_Iterator($this->directory) as $fileinfo) {
+                if (!$fileinfo->is_dot()) {
+                    $name = $fileinfo->get_filename();
                     if ($name != '.htaccess') {
                         $names[] = $name;
                     }
@@ -217,12 +202,10 @@ class FileStorage implements PhpStorageInterface
         }
         return $names;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection()
+    public function garbage_collection()
     {
     }
-
 }

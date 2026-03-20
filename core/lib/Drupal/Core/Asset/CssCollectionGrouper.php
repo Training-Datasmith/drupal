@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Groups CSS assets.
  */
-class CssCollectionGrouper implements AssetCollectionGrouperInterface
+class Css_Collection_Grouper implements Asset_Collection_Grouper_Interface
 {
     /**
      * {@inheritdoc}
@@ -37,7 +36,6 @@ class CssCollectionGrouper implements AssetCollectionGrouperInterface
         // -1, the first group will have index 0.
         $i = -1;
         foreach ($css_assets as $item) {
-
             // If the item can be grouped with other items, set $group_keys to an
             // array of information that must be the same for all items in its group.
             // If the item can't be grouped with other items, set $group_keys to
@@ -58,13 +56,11 @@ class CssCollectionGrouper implements AssetCollectionGrouperInterface
                     // only vary groups based on that.
                     $group_keys = $item['preprocess'] ? [$item['type'], $item['group'], $item['media'] === 'print'] : false;
                     break;
-
                 case 'external':
                     // Do not group external items.
                     $group_keys = false;
                     break;
             }
-
             // If the group keys don't match the most recent group we're working with,
             // then a new group must be made.
             if ($group_keys !== $current_group_keys) {
@@ -81,12 +77,9 @@ class CssCollectionGrouper implements AssetCollectionGrouperInterface
                 $groups[$i]['items'] = [];
                 $current_group_keys = $group_keys ?: null;
             }
-
             // Add the item to the current group.
             $groups[$i]['items'][] = $item;
         }
-
         return $groups;
     }
-
 }

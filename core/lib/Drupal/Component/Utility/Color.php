@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -19,14 +18,13 @@ class Color
      * @return bool
      *   TRUE if $hex is valid or FALSE if it is not.
      */
-    public static function validateHex($hex)
+    public static function validate_hex($hex)
     {
         if (!is_string($hex)) {
             return false;
         }
         return preg_match('/^[#]?([0-9a-fA-F]{3}){1,2}$/', $hex) === 1;
     }
-
     /**
      * Parses a hexadecimal color string like '#abc' or '#aabbcc'.
      *
@@ -38,29 +36,20 @@ class Color
      *
      * @throws \InvalidArgumentException
      */
-    public static function hexToRgb($hex): array
+    public static function hex_to_rgb($hex): array
     {
-        if (!self::validateHex($hex)) {
-            throw new \InvalidArgumentException("'$hex' is not a valid hex value.");
+        if (!self::validate_hex($hex)) {
+            throw new \InvalidArgumentException("'{$hex}' is not a valid hex value.");
         }
-
         // Ignore '#' prefixes.
         $hex = ltrim($hex, '#');
-
         // Convert shorthands like '#abc' to '#aabbcc'.
         if (strlen($hex) == 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
         }
-
         $c = hexdec($hex);
-
-        return [
-          'red' => $c >> 16 & 0xFF,
-          'green' => $c >> 8 & 0xFF,
-          'blue' => $c & 0xFF,
-        ];
+        return ['red' => $c >> 16 & 0xff, 'green' => $c >> 8 & 0xff, 'blue' => $c & 0xff];
     }
-
     /**
      * Converts RGB color arrays or strings to lowercase CSS notation.
      *
@@ -72,26 +61,21 @@ class Color
      * @return string
      *   The lowercase simple color representation of the given color.
      */
-    public static function rgbToHex($input): string
+    public static function rgb_to_hex($input): string
     {
         // Remove named array keys if input comes from Color::hex2rgb().
         if (is_array($input)) {
             $rgb = array_values($input);
-        }
-        // Parse string input in CSS notation ('10, 20, 30').
-        elseif (is_string($input)) {
+        } elseif (is_string($input)) {
             preg_match('/(\d+), ?(\d+), ?(\d+)/', $input, $rgb);
             array_shift($rgb);
         }
-
         $out = 0;
         foreach ($rgb as $k => $v) {
-            $out |= $v << (16 - $k * 8);
+            $out |= $v << 16 - $k * 8;
         }
-
         return '#' . str_pad(dechex($out), 6, '0', STR_PAD_LEFT);
     }
-
     /**
      * Normalize the hex color length to 6 characters for comparison.
      *
@@ -101,11 +85,10 @@ class Color
      * @return string
      *   The 6 character hex color.
      */
-    public static function normalizeHexLength($hex): string
+    public static function normalize_hex_length($hex): string
     {
         // Ignore '#' prefixes.
         $hex = ltrim($hex, '#');
-
         if (strlen($hex) === 3) {
             $hex[5] = $hex[2];
             $hex[4] = $hex[2];
@@ -113,8 +96,6 @@ class Color
             $hex[2] = $hex[1];
             $hex[1] = $hex[0];
         }
-
         return '#' . $hex;
     }
-
 }

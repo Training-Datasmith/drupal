@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * Configuration event fired when renaming a configuration object.
  */
-class ConfigRenameEvent extends ConfigCrudEvent
+class Config_Rename_Event extends Config_Crud_Event
 {
     /**
      * Constructs the config rename event.
@@ -17,23 +16,24 @@ class ConfigRenameEvent extends ConfigCrudEvent
      * @param string $oldName
      *   The old configuration object name.
      */
-    public function __construct(StorableConfigBase $config, /**
-   * The old configuration object name.
-   */
-        protected $oldName)
+    public function __construct(
+        Storable_Config_Base $config,
+        /**
+         * The old configuration object name.
+         */
+        protected $old_name
+    )
     {
         $this->config = $config;
     }
-
     /**
      * Gets the old configuration object name.
      *
      * @return string
      *   The old configuration object name.
      */
-    public function getOldName()
+    public function get_old_name()
     {
-        return $this->oldName;
+        return $this->old_name;
     }
-
 }

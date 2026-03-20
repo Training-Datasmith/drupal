@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Utility;
  *
  * @ingroup utility
  */
-class SortArray
+class Sort_Array
 {
     /**
      * Sorts a structured array by the 'weight' element.
@@ -29,11 +28,10 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByWeightElement(array $a, array $b)
+    public static function sort_by_weight_element(array $a, array $b)
     {
-        return static::sortByKeyInt($a, $b, 'weight');
+        return static::sort_by_key_int($a, $b, 'weight');
     }
-
     /**
      * Sorts a structured array by '#weight' property.
      *
@@ -48,11 +46,10 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByWeightProperty($a, $b)
+    public static function sort_by_weight_property($a, $b)
     {
-        return static::sortByKeyInt($a, $b, '#weight');
+        return static::sort_by_key_int($a, $b, '#weight');
     }
-
     /**
      * Sorts a structured array by 'title' key (no # prefix).
      *
@@ -67,11 +64,10 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByTitleElement($a, $b)
+    public static function sort_by_title_element($a, $b)
     {
-        return static::sortByKeyString($a, $b, 'title');
+        return static::sort_by_key_string($a, $b, 'title');
     }
-
     /**
      * Sorts a structured array by '#title' property.
      *
@@ -86,11 +82,10 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByTitleProperty($a, $b)
+    public static function sort_by_title_property($a, $b)
     {
-        return static::sortByKeyString($a, $b, '#title');
+        return static::sort_by_key_string($a, $b, '#title');
     }
-
     /**
      * Sorts a string array item by an arbitrary key.
      *
@@ -104,14 +99,12 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByKeyString($a, $b, $key): int
+    public static function sort_by_key_string($a, $b, $key): int
     {
-        $a_title = (is_array($a) && isset($a[$key])) ? $a[$key] : '';
-        $b_title = (is_array($b) && isset($b[$key])) ? $b[$key] : '';
-
+        $a_title = is_array($a) && isset($a[$key]) ? $a[$key] : '';
+        $b_title = is_array($b) && isset($b[$key]) ? $b[$key] : '';
         return strnatcasecmp((string) $a_title, (string) $b_title);
     }
-
     /**
      * Sorts an integer array item by an arbitrary key.
      *
@@ -125,21 +118,19 @@ class SortArray
      * @return int
      *   The comparison result for uasort().
      */
-    public static function sortByKeyInt($a, $b, $key): int
+    public static function sort_by_key_int($a, $b, $key): int
     {
-        $a_weight = (is_array($a) && isset($a[$key])) ? $a[$key] : 0;
-        $b_weight = (is_array($b) && isset($b[$key])) ? $b[$key] : 0;
-
+        $a_weight = is_array($a) && isset($a[$key]) ? $a[$key] : 0;
+        $b_weight = is_array($b) && isset($b[$key]) ? $b[$key] : 0;
         return $a_weight <=> $b_weight;
     }
-
     /**
      * Sorts an array recursively, by key, alphabetically.
      *
      * @param array $data
      *   The array to sort, passed by reference.
      */
-    public static function sortByKeyRecursive(array &$data): void
+    public static function sort_by_key_recursive(array &$data): void
     {
         // If the array is a list, it is by definition already sorted.
         if (!array_is_list($data)) {
@@ -147,9 +138,8 @@ class SortArray
         }
         foreach ($data as &$value) {
             if (is_array($value)) {
-                self::sortByKeyRecursive($value);
+                self::sort_by_key_recursive($value);
             }
         }
     }
-
 }

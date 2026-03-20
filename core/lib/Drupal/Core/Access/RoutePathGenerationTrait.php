@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 use Symfony\Component\Routing\Route;
-
 /**
  * Provides a method for generating route paths.
  */
-trait RoutePathGenerationTrait
+trait Route_Path_Generation_Trait
 {
     /**
      * Generates a route path by replacing placeholders with their values.
@@ -36,10 +34,9 @@ trait RoutePathGenerationTrait
      *   The generated path with all placeholders either replaced by their
      *   corresponding values or removed if no matching parameter exists.
      */
-    public function generateRoutePath(Route $route, array $parameters): string
+    public function generate_route_path(Route $route, array $parameters): string
     {
-        $path = ltrim($route->getPath(), '/');
-
+        $path = ltrim($route->get_path(), '/');
         // Replace path parameters with their corresponding values from the
         // parameters array.
         foreach ($parameters as $param => $value) {
@@ -47,15 +44,11 @@ trait RoutePathGenerationTrait
                 $path = str_replace("{{$param}}", $value, $path);
             }
         }
-
         // Remove placeholders that were not replaced.
         $path = preg_replace('/\/{[^}]+}/', '', $path);
-
         // Remove trailing slashes (multiple slashes may result from the removal of
         // unreplaced placeholders).
         $path = rtrim((string) $path, '/');
-
         return $path;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Utility;
  *
  * @ingroup utility
  */
-class FilterArray
+class Filter_Array
 {
     /**
      * Removes empty strings from an array.
@@ -24,9 +23,8 @@ class FilterArray
      * @return array
      *   The filtered array.
      */
-    public static function removeEmptyStrings(array $value): array
+    public static function remove_empty_strings(array $value): array
     {
-        return array_filter($value, static fn ($item): bool => (string) $item !== '');
+        return array_filter($value, static fn($item): bool => (string) $item !== '');
     }
-
 }

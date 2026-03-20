@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Context;
 
-use Drupal\Component\Plugin\Exception\ContextException;
+use Drupal\Component\Plugin\Exception\Context_Exception;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
-
 /**
  * A generic context class for wrapping data a plugin needs to operate.
  */
-class Context implements ContextInterface
+class Context implements Context_Interface
 {
     /**
      * Create a context object.
@@ -22,70 +20,63 @@ class Context implements ContextInterface
      *   The value of the context.
      */
     public function __construct(
-        protected \Drupal\Component\Plugin\Context\ContextDefinitionInterface $contextDefinition,
+        protected \Drupal\Component\Plugin\Context\Context_Definition_Interface $context_definition,
         /**
          * The value of the context.
          */
-        protected $contextValue = null
-    ) {
+        protected $context_value = null
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContextValue()
+    public function get_context_value()
     {
         // Support optional contexts.
-        if (!isset($this->contextValue)) {
-            $definition = $this->getContextDefinition();
-            $default_value = $definition->getDefaultValue();
-
-            if (!isset($default_value) && $definition->isRequired()) {
-                $type = $definition->getDataType();
-                throw new ContextException(sprintf('The %s context is required and not present.', $type));
+        if (!isset($this->context_value)) {
+            $definition = $this->get_context_definition();
+            $default_value = $definition->get_default_value();
+            if (!isset($default_value) && $definition->is_required()) {
+                $type = $definition->get_data_type();
+                throw new Context_Exception(sprintf('The %s context is required and not present.', $type));
             }
             // Keep the default value here so that subsequent calls don't have to look
             // it up again.
-            $this->contextValue = $default_value;
+            $this->context_value = $default_value;
         }
-        return $this->contextValue;
+        return $this->context_value;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function hasContextValue(): bool
+    public function has_context_value(): bool
     {
-        return $this->contextValue !== null || $this->getContextDefinition()->getDefaultValue() !== null;
+        return $this->context_value !== null || $this->get_context_definition()->get_default_value() !== null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContextDefinition()
+    public function get_context_definition()
     {
-        return $this->contextDefinition;
+        return $this->context_definition;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConstraints(): array
+    public function get_constraints(): array
     {
-        if (empty($this->contextDefinition['class'])) {
-            throw new ContextException('An error was encountered while trying to validate the context.');
+        if (empty($this->context_definition['class'])) {
+            throw new Context_Exception('An error was encountered while trying to validate the context.');
         }
-        return [new Type($this->contextDefinition['class'])];
+        return [new Type($this->context_definition['class'])];
     }
-
     /**
      * {@inheritdoc}
      */
     public function validate()
     {
-        $validator = Validation::createValidatorBuilder()
-          ->getValidator();
-        return $validator->validateValue($this->getContextValue(), $this->getConstraints());
+        $validator = Validation::create_validator_builder()->get_validator();
+        return $validator->validate_value($this->get_context_value(), $this->get_constraints());
     }
-
 }

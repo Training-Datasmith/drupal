@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
 // cspell:ignore optimizerplus
-
 /**
  * @file
  *
@@ -25,71 +24,57 @@ declare(strict_types=1);
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 namespace Drupal\Component\Annotation\Doctrine;
 
 use Exception;
-
 use function gettype;
-
 use function implode;
 use function is_object;
 use function sprintf;
-
 use Throwable;
-
 /**
  * Description of AnnotationException
  */
-class AnnotationException extends Exception
+class Annotation_Exception extends Exception
 {
     /**
      * Creates a new AnnotationException describing a Syntax error.
      */
-    public static function syntaxError(string $message): self
+    public static function syntax_error(string $message): self
     {
         return new self('[Syntax Error] ' . $message);
     }
-
     /**
      * Creates a new AnnotationException describing a Semantical error.
      */
-    public static function semanticalError(string $message): self
+    public static function semantical_error(string $message): self
     {
         return new self('[Semantical Error] ' . $message);
     }
-
     /**
      * Creates a new AnnotationException describing an error which occurred during
      * the creation of the annotation.
      */
-    public static function creationError(string $message, ?Throwable $previous = null): self
+    public static function creation_error(string $message, ?Throwable $previous = null): self
     {
         return new self('[Creation Error] ' . $message, 0, $previous);
     }
-
     /**
      * Creates a new AnnotationException describing a type error.
      */
-    public static function typeError(string $message): self
+    public static function type_error(string $message): self
     {
         return new self('[Type Error] ' . $message);
     }
-
     /**
      * Creates a new AnnotationException describing a constant semantical error.
      *
      * @return AnnotationException
      */
-    public static function semanticalErrorConstants(string $identifier, ?string $context = null)
+    public static function semantical_error_constants(string $identifier, ?string $context = null)
     {
-        return self::semanticalError(sprintf(
-            "Couldn't find constant %s%s.",
-            $identifier,
-            $context ? ', ' . $context : ''
-        ));
+        return self::semantical_error(sprintf("Couldn't find constant %s%s.", $identifier, $context ? ', ' . $context : ''));
     }
-
     /**
      * Creates a new AnnotationException describing an type error of an attribute.
      *
@@ -97,77 +82,35 @@ class AnnotationException extends Exception
      *
      * @return AnnotationException
      */
-    public static function attributeTypeError(
-        string $attributeName,
-        string $annotationName,
-        string $context,
-        string $expected,
-        $actual
-    ) {
-        return self::typeError(sprintf(
-            'Attribute "%s" of @%s declared on %s expects %s, but got %s.',
-            $attributeName,
-            $annotationName,
-            $context,
-            $expected,
-            is_object($actual) ? 'an instance of ' . $actual::class : gettype($actual)
-        ));
+    public static function attribute_type_error(string $attribute_name, string $annotation_name, string $context, string $expected, $actual)
+    {
+        return self::type_error(sprintf('Attribute "%s" of @%s declared on %s expects %s, but got %s.', $attribute_name, $annotation_name, $context, $expected, is_object($actual) ? 'an instance of ' . $actual::class : gettype($actual)));
     }
-
     /**
      * Creates a new AnnotationException describing an required error of an attribute.
      *
      * @return AnnotationException
      */
-    public static function requiredError(
-        string $attributeName,
-        string $annotationName,
-        string $context,
-        string $expected
-    ) {
-        return self::typeError(sprintf(
-            'Attribute "%s" of @%s declared on %s expects %s. This value should not be null.',
-            $attributeName,
-            $annotationName,
-            $context,
-            $expected
-        ));
+    public static function required_error(string $attribute_name, string $annotation_name, string $context, string $expected)
+    {
+        return self::type_error(sprintf('Attribute "%s" of @%s declared on %s expects %s. This value should not be null.', $attribute_name, $annotation_name, $context, $expected));
     }
-
     /**
      * Creates a new AnnotationException describing a invalid enumerator.
      *
      * @param mixed $given
      * @phpstan-param list<string> $available
      */
-    public static function enumeratorError(
-        string $attributeName,
-        string $annotationName,
-        string $context,
-        array $available,
-        $given
-    ): self {
-        return new self(sprintf(
-            '[Enum Error] Attribute "%s" of @%s declared on %s accepts only [%s], but got %s.',
-            $attributeName,
-            $annotationName,
-            $context,
-            implode(', ', $available),
-            is_object($given) ? $given::class : $given
-        ));
-    }
-
-    public static function optimizerPlusSaveComments(): self
+    public static function enumerator_error(string $attribute_name, string $annotation_name, string $context, array $available, $given): self
     {
-        return new self(
-            'You have to enable opcache.save_comments=1 or zend_optimizerplus.save_comments=1.'
-        );
+        return new self(sprintf('[Enum Error] Attribute "%s" of @%s declared on %s accepts only [%s], but got %s.', $attribute_name, $annotation_name, $context, implode(', ', $available), is_object($given) ? $given::class : $given));
     }
-
-    public static function optimizerPlusLoadComments(): self
+    public static function optimizer_plus_save_comments(): self
     {
-        return new self(
-            'You have to enable opcache.load_comments=1 or zend_optimizerplus.load_comments=1.'
-        );
+        return new self('You have to enable opcache.save_comments=1 or zend_optimizerplus.save_comments=1.');
+    }
+    public static function optimizer_plus_load_comments(): self
+    {
+        return new self('You have to enable opcache.load_comments=1 or zend_optimizerplus.load_comments=1.');
     }
 }

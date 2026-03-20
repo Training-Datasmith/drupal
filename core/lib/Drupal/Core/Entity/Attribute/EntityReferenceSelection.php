@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines an EntityReferenceSelection attribute for plugin discovery.
  *
@@ -20,7 +18,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class EntityReferenceSelection extends Plugin
+class Entity_Reference_Selection extends Plugin
 {
     /**
      * Constructs an EntityReferenceSelection attribute.
@@ -55,14 +53,7 @@ class EntityReferenceSelection extends Plugin
      * @param class-string|null $deriver
      *   (optional) The deriver class.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly TranslatableMarkup $label,
-        public readonly string $group,
-        public readonly int $weight,
-        public readonly array $entity_types = [],
-        public readonly ?string $deriver = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly Translatable_Markup $label, public readonly string $group, public readonly int $weight, public readonly array $entity_types = [], public readonly ?string $deriver = null)
+    {
     }
-
 }

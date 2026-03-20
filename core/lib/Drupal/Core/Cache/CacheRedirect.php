@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -13,10 +12,9 @@ namespace Drupal\Core\Cache;
  * @ingroup cache
  * @internal
  */
-class CacheRedirect implements CacheableDependencyInterface
+class Cache_Redirect implements Cacheable_Dependency_Interface
 {
-    use CacheableDependencyTrait;
-
+    use Cacheable_Dependency_Trait;
     /**
      * Constructs a CacheRedirect object.
      *
@@ -25,10 +23,9 @@ class CacheRedirect implements CacheableDependencyInterface
      *
      * @see \Drupal\Core\Cache\VariationCache::createCacheIdFast()
      */
-    public function __construct(CacheableDependencyInterface $cacheability)
+    public function __construct(Cacheable_Dependency_Interface $cacheability)
     {
         // Cache redirects only care about cache contexts.
-        $this->cacheContexts = $cacheability->getCacheContexts();
+        $this->cache_contexts = $cacheability->get_cache_contexts();
     }
-
 }

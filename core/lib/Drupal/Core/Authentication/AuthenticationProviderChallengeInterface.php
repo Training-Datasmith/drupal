@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
-use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Generate a challenge when access is denied for unauthenticated users.
  *
@@ -13,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
  * authentication methods (e.g. basic auth) require that a challenge is sent to
  * the client.
  */
-interface AuthenticationProviderChallengeInterface
+interface Authentication_Provider_Challenge_Interface
 {
     /**
      * Constructs an exception which is used to generate the challenge.
@@ -26,6 +24,5 @@ interface AuthenticationProviderChallengeInterface
      * @return \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface|null
      *   An exception to be used in order to generate an authentication challenge.
      */
-    public function challengeException(Request $request, \Exception $previous);
-
+    public function challenge_exception(Request $request, \Exception $previous);
 }

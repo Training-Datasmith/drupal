@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Checkpoint;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Core\Config\Checkpoint;
  *
  * @phpstan-extends \IteratorAggregate<string, \Drupal\Core\Config\Checkpoint\Checkpoint>
  */
-interface CheckpointListInterface extends \IteratorAggregate, \Countable
+interface Checkpoint_List_Interface extends \IteratorAggregate, \Countable
 {
     /**
      * Gets the active checkpoint.
@@ -22,8 +21,7 @@ interface CheckpointListInterface extends \IteratorAggregate, \Countable
      * @return \Drupal\Core\Config\Checkpoint\Checkpoint|null
      *   The active checkpoint or NULL if there are no checkpoints.
      */
-    public function getActiveCheckpoint(): ?Checkpoint;
-
+    public function get_active_checkpoint(): ?Checkpoint;
     /**
      * Gets a checkpoint.
      *
@@ -37,7 +35,6 @@ interface CheckpointListInterface extends \IteratorAggregate, \Countable
      *   Thrown when the provided checkpoint does not exist.
      */
     public function get(string $id): Checkpoint;
-
     /**
      * Gets a checkpoint's parents.
      *
@@ -47,8 +44,7 @@ interface CheckpointListInterface extends \IteratorAggregate, \Countable
      * @return iterable<string, \Drupal\Core\Config\Checkpoint\Checkpoint>
      *   The parents for the given checkpoint.
      */
-    public function getParents(string $id): iterable;
-
+    public function get_parents(string $id): iterable;
     /**
      * Adds a new checkpoint.
      *
@@ -64,7 +60,6 @@ interface CheckpointListInterface extends \IteratorAggregate, \Countable
      *   Thrown when the ID already exists.
      */
     public function add(string $id, string|\Stringable $label): Checkpoint;
-
     /**
      * Deletes a checkpoint.
      *
@@ -78,12 +73,10 @@ interface CheckpointListInterface extends \IteratorAggregate, \Countable
      *   Thrown when provided checkpoint ID does not exist.
      */
     public function delete(string $id): static;
-
     /**
      * Deletes all checkpoints.
      *
      * @return $this
      */
-    public function deleteAll(): static;
-
+    public function delete_all(): static;
 }

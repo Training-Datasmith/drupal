@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\HttpFoundation\Request;
-
+use Drupal\Core\Routing\Route_Match_Interface;
+use Drupal\Core\Session\Account_Interface;
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Constructs the arguments resolver instance to use when running access checks.
  */
-interface AccessArgumentsResolverFactoryInterface
+interface Access_Arguments_Resolver_Factory_Interface
 {
     /**
      * Returns the arguments resolver to use when running access checks.
@@ -26,6 +24,5 @@ interface AccessArgumentsResolverFactoryInterface
      * @return \Drupal\Component\Utility\ArgumentsResolverInterface
      *   The parametrized arguments resolver instance.
      */
-    public function getArgumentsResolver(RouteMatchInterface $route_match, AccountInterface $account, ?Request $request = null);
-
+    public function get_arguments_resolver(Route_Match_Interface $route_match, Account_Interface $account, ?Request $request = null);
 }

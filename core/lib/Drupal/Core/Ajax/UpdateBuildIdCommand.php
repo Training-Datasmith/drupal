@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -21,7 +20,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class UpdateBuildIdCommand implements CommandInterface
+class Update_Build_Id_Command implements Command_Interface
 {
     /**
      * Constructs an UpdateBuildIdCommand object.
@@ -40,19 +39,14 @@ class UpdateBuildIdCommand implements CommandInterface
          * New build id.
          */
         protected $new
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'update_build_id',
-          'old' => $this->old,
-          'new' => $this->new,
-        ];
+        return ['command' => 'update_build_id', 'old' => $this->old, 'new' => $this->new];
     }
-
 }

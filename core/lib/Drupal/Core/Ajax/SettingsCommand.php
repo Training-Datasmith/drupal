@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Component\Utility\UrlHelper;
-
+use Drupal\Component\Utility\Url_Helper;
 /**
  * AJAX command for adjusting Drupal's JavaScript settings.
  *
@@ -18,7 +16,7 @@ use Drupal\Component\Utility\UrlHelper;
  *
  * @ingroup ajax
  */
-class SettingsCommand implements CommandInterface
+class Settings_Command implements Command_Interface
 {
     /**
      * Constructs a SettingsCommand object.
@@ -37,23 +35,17 @@ class SettingsCommand implements CommandInterface
          * will not include the global drupalSettings.
          */
         protected $merge = false
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
         if (isset($this->settings['ajax_page_state']['libraries'])) {
-            $this->settings['ajax_page_state']['libraries'] = UrlHelper::compressQueryParameter($this->settings['ajax_page_state']['libraries']);
+            $this->settings['ajax_page_state']['libraries'] = Url_Helper::compress_query_parameter($this->settings['ajax_page_state']['libraries']);
         }
-
-        return [
-          'command' => 'settings',
-          'settings' => $this->settings,
-          'merge' => $this->merge,
-        ];
+        return ['command' => 'settings', 'settings' => $this->settings, 'merge' => $this->merge];
     }
-
 }

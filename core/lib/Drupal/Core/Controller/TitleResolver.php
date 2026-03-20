@@ -1,30 +1,26 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\StringTranslation\TranslationInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface;
+use Drupal\Core\String_Translation\String_Translation_Trait;
+use Drupal\Core\String_Translation\Translatable_Markup;
+use Drupal\Core\String_Translation\Translation_Interface;
+use Symfony\Component\Http_Foundation\Request;
+use Symfony\Component\Http_Kernel\Controller\Argument_Resolver_Interface;
 use Symfony\Component\Routing\Route;
-
 /**
  * Provides the default implementation of the title resolver interface.
  */
-class TitleResolver implements TitleResolverInterface
+class Title_Resolver implements Title_Resolver_Interface
 {
-    use StringTranslationTrait;
-
+    use String_Translation_Trait;
     /**
      * The argument resolver.
      *
      * @var \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface
      */
-    protected $argumentResolver;
-
+    protected $argument_resolver;
     /**
      * Constructs a TitleResolver instance.
      *
@@ -35,36 +31,35 @@ class TitleResolver implements TitleResolverInterface
      * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
      *   The argument resolver.
      */
-    public function __construct(protected \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver, TranslationInterface $string_translation, ArgumentResolverInterface $argument_resolver)
+    public function __construct(protected \Drupal\Core\Controller\Controller_Resolver_Interface $controller_resolver, Translation_Interface $string_translation, Argument_Resolver_Interface $argument_resolver)
     {
-        $this->stringTranslation = $string_translation;
-        $this->argumentResolver = $argument_resolver;
+        $this->string_translation = $string_translation;
+        $this->argument_resolver = $argument_resolver;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getTitle(Request $request, Route $route)
+    public function get_title(Request $request, Route $route)
     {
         $route_title = null;
         // A dynamic title takes priority. Route::getDefault() returns NULL if the
         // named default is not set.  By testing the value directly, we also avoid
         // trying to use empty values.
-        if ($callback = $route->getDefault('_title_callback')) {
-            $callable = $this->controllerResolver->getControllerFromDefinition($callback);
-            $arguments = $this->argumentResolver->getArguments($request, $callable);
+        if ($callback = $route->get_default('_title_callback')) {
+            $callable = $this->controller_resolver->get_controller_from_definition($callback);
+            $arguments = $this->argument_resolver->get_arguments($request, $callable);
             $route_title = call_user_func_array($callable, $arguments);
-        } elseif ($route->hasDefault('_title') && strlen($route->getDefault('_title')) > 0) {
-            $title = $route->getDefault('_title');
+        } elseif ($route->has_default('_title') && strlen($route->get_default('_title')) > 0) {
+            $title = $route->get_default('_title');
             $options = [];
-            if ($route->hasDefault('_title_context')) {
-                $options['context'] = $route->getDefault('_title_context');
+            if ($route->has_default('_title_context')) {
+                $options['context'] = $route->get_default('_title_context');
             }
             $args = [];
-            if ($route->hasDefault('_title_arguments')) {
-                $args = (array) $route->getDefault('_title_arguments');
+            if ($route->has_default('_title_arguments')) {
+                $args = (array) $route->get_default('_title_arguments');
             }
-            if (($raw_parameters = $request->attributes->get('_raw_variables'))) {
+            if ($raw_parameters = $request->attributes->get('_raw_variables')) {
                 foreach ($raw_parameters->all() as $key => $value) {
                     if (is_scalar($value)) {
                         $args['@' . $key] = $value;
@@ -72,19 +67,15 @@ class TitleResolver implements TitleResolverInterface
                     }
                 }
             }
-
             // Fall back to a static string from the route.
             // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
             $route_title = $this->t($title, $args, $options);
         }
-
         // Empty titles should return a NULL value as this is same result as title
         // not being set.
-        if ($route_title === '' || ($route_title instanceof TranslatableMarkup && $route_title->getUntranslatedString() === '')) {
+        if ($route_title === '' || $route_title instanceof Translatable_Markup && $route_title->get_untranslated_string() === '') {
             return null;
         }
-
         return $route_title;
     }
-
 }

@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the RouteCacheContext service, for "per route" caching.
  *
  * Cache context ID: 'route'.
  */
-class RouteCacheContext implements CacheContextInterface
+class Route_Cache_Context implements Cache_Context_Interface
 {
     /**
      * Constructs a new RouteCacheContext class.
@@ -19,32 +17,28 @@ class RouteCacheContext implements CacheContextInterface
      * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
      *   The route match.
      */
-    public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+    public function __construct(protected \Drupal\Core\Routing\Route_Match_Interface $route_match)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Route');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext(): string
+    public function get_context(): string
     {
-        return $this->routeMatch->getRouteName() . hash('sha256', serialize($this->routeMatch->getRawParameters()->all()));
+        return $this->route_match->get_route_name() . hash('sha256', serialize($this->route_match->get_raw_parameters()->all()));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

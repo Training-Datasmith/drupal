@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
 /**
  * An interface implemented by plugin managers with fallback plugin behaviors.
  */
-interface FallbackPluginManagerInterface
+interface Fallback_Plugin_Manager_Interface
 {
     /**
      * Gets a fallback id for a missing plugin.
@@ -20,6 +19,5 @@ interface FallbackPluginManagerInterface
      * @return string
      *   The id of an existing plugin to use when the plugin does not exist.
      */
-    public function getFallbackPluginId($plugin_id, array $configuration = []);
-
+    public function get_fallback_plugin_id($plugin_id, array $configuration = []);
 }

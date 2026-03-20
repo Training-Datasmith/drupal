@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Core\Database;
  * This is thrown when a rollBack() resulted in other active transactions being
  * rolled-back.
  */
-class TransactionOutOfOrderException extends TransactionException implements DatabaseException
+class Transaction_Out_Of_Order_Exception extends Transaction_Exception implements Database_Exception
 {
 }

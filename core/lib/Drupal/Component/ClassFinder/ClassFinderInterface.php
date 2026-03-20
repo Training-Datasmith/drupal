@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\ClassFinder;
+declare (strict_types=1);
+namespace Drupal\Component\Class_Finder;
 
 /**
  * Finds a class in a PSR-0 structure.
  */
-interface ClassFinderInterface
+interface Class_Finder_Interface
 {
     /**
      * Finds a class.
@@ -18,6 +17,5 @@ interface ClassFinderInterface
      * @return string|null
      *   The name of the class or NULL if not found.
      */
-    public function findFile($class);
-
+    public function find_file($class);
 }

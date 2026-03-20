@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core;
  *
  * @see https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks
  */
-interface CronInterface
+interface Cron_Interface
 {
     /**
      * Executes a cron run.
@@ -20,5 +19,4 @@ interface CronInterface
      *   TRUE upon success, FALSE otherwise.
      */
     public function run();
-
 }

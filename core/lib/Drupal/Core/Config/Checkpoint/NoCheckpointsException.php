@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Checkpoint;
 
 /**
@@ -10,11 +9,10 @@ namespace Drupal\Core\Config\Checkpoint;
  * @internal
  *   This API is experimental.
  */
-final class NoCheckpointsException extends \RuntimeException
+final class No_Checkpoints_Exception extends \RuntimeException
 {
     /**
      * {@inheritdoc}
      */
     protected $message = 'This storage cannot be read because there are no checkpoints';
-
 }

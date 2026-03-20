@@ -1,45 +1,38 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ConfigurableTrait;
-use Drupal\Core\Plugin\PluginFormInterface;
-
+use Drupal\Component\Plugin\Configurable_Interface;
+use Drupal\Component\Plugin\Dependent_Plugin_Interface;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Plugin\Configurable_Trait;
+use Drupal\Core\Plugin\Plugin_Form_Interface;
 /**
  * Provides a base implementation for a configurable Action plugin.
  */
-abstract class ConfigurableActionBase extends ActionBase implements ConfigurableInterface, DependentPluginInterface, PluginFormInterface
+abstract class Configurable_Action_Base extends Action_Base implements Configurable_Interface, Dependent_Plugin_Interface, Plugin_Form_Interface
 {
-    use ConfigurableTrait;
-
+    use Configurable_Trait;
     /**
      * {@inheritdoc}
      */
     public function __construct(array $configuration, $plugin_id, $plugin_definition)
     {
         parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-        $this->setConfiguration($configuration);
+        $this->set_configuration($configuration);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    public function validate_configuration_form(array &$form, Form_State_Interface $form_state)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function calculateDependencies()
+    public function calculate_dependencies()
     {
         return [];
     }
-
 }

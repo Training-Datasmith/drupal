@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -22,7 +21,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterface
+class Backend_Chain implements Cache_Backend_Interface, Cache_Tags_Invalidator_Interface
 {
     /**
      * Ordered list of CacheBackendInterface instances.
@@ -30,7 +29,6 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
      * @var array
      */
     protected $backends = [];
-
     /**
      * Appends a cache backend to the cache chain.
      *
@@ -40,13 +38,11 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
      * @return $this
      *   The called object.
      */
-    public function appendBackend(CacheBackendInterface $backend): static
+    public function append_backend(Cache_Backend_Interface $backend): static
     {
         $this->backends[] = $backend;
-
         return $this;
     }
-
     /**
      * Prepends a cache backend to the cache chain.
      *
@@ -56,13 +52,11 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
      * @return $this
      *   The called object.
      */
-    public function prependBackend(CacheBackendInterface $backend): static
+    public function prepend_backend(Cache_Backend_Interface $backend): static
     {
         array_unshift($this->backends, $backend);
-
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -72,51 +66,42 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
             if (($return = $backend->get($cid, $allow_invalid)) !== false) {
                 // We found a result, propagate it to all missed backends.
                 if ($index > 0) {
-                    for ($i = ($index - 1); 0 <= $i; --$i) {
+                    for ($i = $index - 1; 0 <= $i; --$i) {
                         $this->backends[$i]->set($cid, $return->data, $return->expire, $return->tags);
                     }
                 }
-
                 return $return;
             }
         }
-
         return false;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function getMultiple(&$cids, $allow_invalid = false): array
+    public function get_multiple(&$cids, $allow_invalid = false): array
     {
         $return = [];
-
         foreach ($this->backends as $index => $backend) {
-            $items = $backend->getMultiple($cids, $allow_invalid);
-
+            $items = $backend->get_multiple($cids, $allow_invalid);
             // Propagate the values that could be retrieved from the current cache
             // backend to all missed backends.
             if ($index > 0 && !empty($items)) {
-                for ($i = ($index - 1); 0 <= $i; --$i) {
+                for ($i = $index - 1; 0 <= $i; --$i) {
                     foreach ($items as $cached) {
                         $this->backends[$i]->set($cached->cid, $cached->data, $cached->expire, $cached->tags);
                     }
                 }
             }
-
             // Append the values to the previously retrieved ones.
             $return += $items;
-
             if (empty($cids)) {
                 // No need to go further if we don't have any cid to fetch left.
                 break;
             }
         }
-
         return $return;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -126,17 +111,15 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
             $backend->set($cid, $data, $expire, $tags);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setMultiple(array $items): void
+    public function set_multiple(array $items): void
     {
         foreach ($this->backends as $backend) {
-            $backend->setMultiple($items);
+            $backend->set_multiple($items);
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -146,27 +129,24 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
             $backend->delete($cid);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteMultiple(array $cids): void
+    public function delete_multiple(array $cids): void
     {
         foreach ($this->backends as $backend) {
-            $backend->deleteMultiple($cids);
+            $backend->delete_multiple($cids);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll(): void
+    public function delete_all(): void
     {
         foreach ($this->backends as $backend) {
-            $backend->deleteAll();
+            $backend->delete_all();
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -176,47 +156,42 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
             $backend->invalidate($cid);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateMultiple(array $cids): void
+    public function invalidate_multiple(array $cids): void
     {
         foreach ($this->backends as $backend) {
-            $backend->invalidateMultiple($cids);
+            $backend->invalidate_multiple($cids);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateTags(array $tags): void
+    public function invalidate_tags(array $tags): void
     {
         foreach ($this->backends as $backend) {
-            if ($backend instanceof CacheTagsInvalidatorInterface) {
-                $backend->invalidateTags($tags);
+            if ($backend instanceof Cache_Tags_Invalidator_Interface) {
+                $backend->invalidate_tags($tags);
             }
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection(): void
+    public function garbage_collection(): void
     {
         foreach ($this->backends as $backend) {
-            $backend->garbageCollection();
+            $backend->garbage_collection();
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function removeBin(): void
+    public function remove_bin(): void
     {
         foreach ($this->backends as $backend) {
-            $backend->removeBin();
+            $backend->remove_bin();
         }
     }
-
 }

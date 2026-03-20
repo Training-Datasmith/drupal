@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action;
 
-use Drupal\Core\Plugin\DefaultSingleLazyPluginCollection;
-
+use Drupal\Core\Plugin\Default_Single_Lazy_Plugin_Collection;
 /**
  * Provides a container for lazily loading Action plugins.
  */
-class ActionPluginCollection extends DefaultSingleLazyPluginCollection
+class Action_Plugin_Collection extends Default_Single_Lazy_Plugin_Collection
 {
     /**
      * {@inheritdoc}
@@ -21,5 +19,4 @@ class ActionPluginCollection extends DefaultSingleLazyPluginCollection
     {
         return parent::get($instance_id);
     }
-
 }

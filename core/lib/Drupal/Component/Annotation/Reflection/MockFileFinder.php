@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation\Reflection;
 
-use Drupal\Component\ClassFinder\ClassFinderInterface;
-
+use Drupal\Component\Class_Finder\Class_Finder_Interface;
 /**
  * Defines a mock file finder that only returns a single filename.
  *
@@ -14,7 +12,7 @@ use Drupal\Component\ClassFinder\ClassFinderInterface;
  * is known and inheritance is not a concern (for example, if only the class
  * annotation is needed).
  */
-class MockFileFinder implements ClassFinderInterface
+class Mock_File_Finder implements Class_Finder_Interface
 {
     /**
      * The only filename this finder ever returns.
@@ -22,15 +20,13 @@ class MockFileFinder implements ClassFinderInterface
      * @var string
      */
     protected $filename;
-
     /**
      * {@inheritdoc}
      */
-    public function findFile($class)
+    public function find_file($class)
     {
         return $this->filename;
     }
-
     /**
      * Creates new mock file finder objects.
      */
@@ -40,5 +36,4 @@ class MockFileFinder implements ClassFinderInterface
         $object->filename = $filename;
         return $object;
     }
-
 }

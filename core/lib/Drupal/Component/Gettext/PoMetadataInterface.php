@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Gettext;
 
 /**
@@ -10,7 +9,7 @@ namespace Drupal\Component\Gettext;
  * @see \Drupal\Component\Gettext\PoReaderInterface
  * @see \Drupal\Component\Gettext\PoWriterInterface
  */
-interface PoMetadataInterface
+interface Po_Metadata_Interface
 {
     /**
      * Set language code.
@@ -18,30 +17,26 @@ interface PoMetadataInterface
      * @param string $langcode
      *   Language code string.
      */
-    public function setLangcode($langcode);
-
+    public function set_langcode($langcode);
     /**
      * Get language code.
      *
      * @return string
      *   Language code string.
      */
-    public function getLangcode();
-
+    public function get_langcode();
     /**
      * Set header metadata.
      *
      * @param \Drupal\Component\Gettext\PoHeader $header
      *   Header object representing metadata in a PO header.
      */
-    public function setHeader(PoHeader $header);
-
+    public function set_header(Po_Header $header);
     /**
      * Get header metadata.
      *
      * @return \Drupal\Component\Gettext\PoHeader
      *   Header instance representing metadata in a PO header.
      */
-    public function getHeader();
-
+    public function get_header();
 }

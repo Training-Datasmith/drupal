@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -20,7 +19,7 @@ namespace Drupal\Core\Database;
  *
  * @ingroup database
  */
-interface StatementInterface extends \Traversable
+interface Statement_Interface extends \Traversable
 {
     /**
      * Executes a prepared statement.
@@ -35,23 +34,20 @@ interface StatementInterface extends \Traversable
      *   TRUE on success, or FALSE on failure.
      */
     public function execute($args = [], $options = []);
-
     /**
      * Gets the query string of this statement.
      *
      * @return string
      *   The query string, in its form with placeholders.
      */
-    public function getQueryString();
-
+    public function get_query_string();
     /**
      * Returns the target connection this statement is associated with.
      *
      * @return string
      *   The target connection string of this statement.
      */
-    public function getConnectionTarget(): string;
-
+    public function get_connection_target(): string;
     /**
      * Returns the number of rows matched by the last SQL statement.
      *
@@ -62,8 +58,7 @@ interface StatementInterface extends \Traversable
      *
      * @throws \Drupal\Core\Database\RowCountException
      */
-    public function rowCount();
-
+    public function row_count();
     /**
      * Sets the default fetch mode for this statement.
      *
@@ -80,8 +75,7 @@ interface StatementInterface extends \Traversable
      * @return bool
      *   TRUE if successful, FALSE if not.
      */
-    public function setFetchMode($mode, $a1 = null, $a2 = []);
-
+    public function set_fetch_mode($mode, $a1 = null, $a2 = []);
     /**
      * Fetches the next row from a result set.
      *
@@ -97,7 +91,6 @@ interface StatementInterface extends \Traversable
      *   A result, formatted according to $mode, or FALSE on failure.
      */
     public function fetch($mode = null, $cursor_orientation = null, $cursor_offset = null);
-
     /**
      * Returns a single field from the next record of a result set.
      *
@@ -110,8 +103,7 @@ interface StatementInterface extends \Traversable
      * @throws \ValueError
      *   If there is a record and the column index is not defined.
      */
-    public function fetchField($index = 0);
-
+    public function fetch_field($index = 0);
     /**
      * Fetches the next row and returns it as an object.
      *
@@ -127,8 +119,7 @@ interface StatementInterface extends \Traversable
      *   The object of specified class or \stdClass if not specified. Returns
      *   FALSE or NULL if there is no next row.
      */
-    public function fetchObject(?string $class_name = null, array $constructor_arguments = []);
-
+    public function fetch_object(?string $class_name = null, array $constructor_arguments = []);
     /**
      * Fetches the next row and returns it as an associative array.
      *
@@ -139,8 +130,7 @@ interface StatementInterface extends \Traversable
      * @return array|false
      *   An associative array, or FALSE if there is no next row.
      */
-    public function fetchAssoc();
-
+    public function fetch_assoc();
     /**
      * Returns an array containing all of the result set rows.
      *
@@ -156,8 +146,7 @@ interface StatementInterface extends \Traversable
      * @return array
      *   An array of results.
      */
-    public function fetchAll($mode = null, $column_index = null, $constructor_arguments = null);
-
+    public function fetch_all($mode = null, $column_index = null, $constructor_arguments = null);
     /**
      * Returns an entire single column of a result set as an indexed array.
      *
@@ -172,8 +161,7 @@ interface StatementInterface extends \Traversable
      * @throws \ValueError
      *   If there is at least one record but the column index is not defined.
      */
-    public function fetchCol($index = 0);
-
+    public function fetch_col($index = 0);
     /**
      * Returns the entire result set as a single associative array.
      *
@@ -192,8 +180,7 @@ interface StatementInterface extends \Traversable
      * @return array
      *   An associative array, or an empty array if there is no result set.
      */
-    public function fetchAllKeyed($key_index = 0, $value_index = 1);
-
+    public function fetch_all_keyed($key_index = 0, $value_index = 1);
     /**
      * Returns the result set as an associative array keyed by the given field.
      *
@@ -212,6 +199,5 @@ interface StatementInterface extends \Traversable
      * @return array
      *   An associative array, or an empty array if there is no result set.
      */
-    public function fetchAllAssoc($key, $fetch = null);
-
+    public function fetch_all_assoc($key, $fetch = null);
 }

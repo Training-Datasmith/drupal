@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Default_Content;
 
-namespace Drupal\Core\DefaultContent;
-
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Symfony\Contracts\EventDispatcher\Event;
-
+use Drupal\Core\Entity\Content_Entity_Interface;
+use Drupal\Core\Entity\Content_Entity_Type_Interface;
+use Symfony\Contracts\Event_Dispatcher\Event;
 /**
  * Event dispatched before an entity is exported as default content.
  *
@@ -24,7 +22,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  * exported, but a subscriber could flag a computed field as exportable if
  * circumstances require it.
  */
-final class PreExportEvent extends Event
+final class Pre_Export_Event extends Event
 {
     /**
      * An array of export callbacks, keyed by field type.
@@ -32,20 +30,15 @@ final class PreExportEvent extends Event
      * @var array<string, callable>
      */
     private array $callbacks = [];
-
     /**
      * Whether specific fields (keyed by name) should be exported or not.
      *
      * @var array<string, bool>
      */
-    private array $allowList = [];
-
-    public function __construct(
-        public readonly ContentEntityInterface $entity,
-        public readonly ExportMetadata $metadata,
-    ) {
+    private array $allow_list = [];
+    public function __construct(public readonly Content_Entity_Interface $entity, public readonly Export_Metadata $metadata)
+    {
     }
-
     /**
      * Toggles whether a specific entity key should be exported.
      *
@@ -55,18 +48,16 @@ final class PreExportEvent extends Event
      * @param bool $export
      *   Whether to export the entity key, even if it is computed.
      */
-    public function setEntityKeyExportable(string $key, bool $export = true): void
+    public function set_entity_key_exportable(string $key, bool $export = true): void
     {
-        $entity_type = $this->entity->getEntityType();
-        assert($entity_type instanceof ContentEntityTypeInterface);
-
-        if ($entity_type->hasKey($key)) {
-            $this->setExportable($entity_type->getKey($key), $export);
-        } elseif ($entity_type->hasRevisionMetadataKey($key)) {
-            $this->setExportable($entity_type->getRevisionMetadataKey($key), $export);
+        $entity_type = $this->entity->get_entity_type();
+        assert($entity_type instanceof Content_Entity_Type_Interface);
+        if ($entity_type->has_key($key)) {
+            $this->set_exportable($entity_type->get_key($key), $export);
+        } elseif ($entity_type->has_revision_metadata_key($key)) {
+            $this->set_exportable($entity_type->get_revision_metadata_key($key), $export);
         }
     }
-
     /**
      * Toggles whether a specific field should be exported.
      *
@@ -75,11 +66,10 @@ final class PreExportEvent extends Event
      * @param bool $export
      *   Whether to export the field, even if it is computed.
      */
-    public function setExportable(string $name, bool $export = true): void
+    public function set_exportable(string $name, bool $export = true): void
     {
-        $this->allowList[$name] = $export;
+        $this->allow_list[$name] = $export;
     }
-
     /**
      * Returns a map of which fields should be exported.
      *
@@ -87,11 +77,10 @@ final class PreExportEvent extends Event
      *   An array whose keys are field names, and the values are booleans
      *   indicating whether the field should be exported, even if it is computed.
      */
-    public function getAllowList(): array
+    public function get_allow_list(): array
     {
-        return $this->allowList;
+        return $this->allow_list;
     }
-
     /**
      * Sets the export callback for a specific field name or data type.
      *
@@ -104,20 +93,18 @@ final class PreExportEvent extends Event
      *   The callback which should export items of the specified field type. See
      *   the class documentation for details.
      */
-    public function setCallback(string $name_or_data_type, callable $callback): void
+    public function set_callback(string $name_or_data_type, callable $callback): void
     {
         $this->callbacks[$name_or_data_type] = $callback;
     }
-
     /**
      * Returns the field export callbacks collected by this event.
      *
      * @return callable[]
      *   The export callbacks, keyed by field type.
      */
-    public function getCallbacks(): array
+    public function get_callbacks(): array
     {
         return $this->callbacks;
     }
-
 }

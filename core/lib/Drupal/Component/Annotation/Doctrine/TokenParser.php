@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
-
 /**
  * @file
  *
@@ -24,17 +23,13 @@ declare(strict_types=1);
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 namespace Drupal\Component\Annotation\Doctrine;
 
 use function array_merge;
 use function count;
 use function explode;
-
 use const PHP_VERSION_ID;
-
 use function strtolower;
-
 use const T_AS;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
@@ -45,13 +40,11 @@ use const T_NS_SEPARATOR;
 use const T_STRING;
 use const T_USE;
 use const T_WHITESPACE;
-
 use function token_get_all;
-
 /**
  * Parses a file for namespaces/use/class declarations.
  */
-class TokenParser
+class Token_Parser
 {
     /**
      * The token list.
@@ -59,21 +52,17 @@ class TokenParser
      * @phpstan-var list<mixed[]>
      */
     private array $tokens;
-
     /**
      * The number of tokens.
      */
-    private readonly int $numTokens;
-
+    private readonly int $num_tokens;
     /**
      * The current array pointer.
      */
     private int $pointer = 0;
-
     public function __construct(string $contents)
     {
         $this->tokens = token_get_all($contents);
-
         // The PHP parser sets internal compiler globals for certain things. Annoyingly, the last docblock comment it
         // saw gets stored in doc_comment. When it comes to compile the next thing to be include()d this stored
         // doc_comment becomes owned by the first thing the compiler sees in the file that it considers might have a
@@ -82,10 +71,8 @@ class TokenParser
         // To workaround, cause the parser to parse an empty docblock. Sure getDocBlock() will return this, but at least
         // it's harmless to us.
         token_get_all("<?php\n/**\n *\n */");
-
-        $this->numTokens = count($this->tokens);
+        $this->num_tokens = count($this->tokens);
     }
-
     /**
      * Gets the next non whitespace and non comment token.
      *
@@ -94,9 +81,9 @@ class TokenParser
      *
      * @return mixed[]|string|null The token if exists, null otherwise.
      */
-    public function next(bool $docCommentIsComment = true)
+    public function next(bool $doc_comment_is_comment = true)
     {
-        for ($i = $this->pointer; $i < $this->numTokens; $i++) {
+        for ($i = $this->pointer; $i < $this->num_tokens; $i++) {
             $this->pointer++;
             if ($this->tokens[$i][0] === T_WHITESPACE) {
                 continue;
@@ -104,69 +91,60 @@ class TokenParser
             if ($this->tokens[$i][0] === T_COMMENT) {
                 continue;
             }
-            if ($docCommentIsComment && $this->tokens[$i][0] === T_DOC_COMMENT) {
+            if ($doc_comment_is_comment && $this->tokens[$i][0] === T_DOC_COMMENT) {
                 continue;
             }
-
             return $this->tokens[$i];
         }
-
         return null;
     }
-
     /**
      * Parses a single use statement.
      *
      * @return array<string, string> A list with all found class names for a use statement.
      */
-    public function parseUseStatement(): array
+    public function parse_use_statement(): array
     {
-        $groupRoot     = '';
-        $class         = '';
-        $alias         = '';
-        $statements    = [];
-        $explicitAlias = false;
-        while (($token = $this->next())) {
-            if (! $explicitAlias && $token[0] === T_STRING) {
+        $group_root = '';
+        $class = '';
+        $alias = '';
+        $statements = [];
+        $explicit_alias = false;
+        while ($token = $this->next()) {
+            if (!$explicit_alias && $token[0] === T_STRING) {
                 $class .= $token[1];
-                $alias  = $token[1];
-            } elseif ($explicitAlias && $token[0] === T_STRING) {
                 $alias = $token[1];
-            } elseif (
-                PHP_VERSION_ID >= 80000 &&
-                ($token[0] === T_NAME_QUALIFIED || $token[0] === T_NAME_FULLY_QUALIFIED)
-            ) {
+            } elseif ($explicit_alias && $token[0] === T_STRING) {
+                $alias = $token[1];
+            } elseif (PHP_VERSION_ID >= 80000 && ($token[0] === T_NAME_QUALIFIED || $token[0] === T_NAME_FULLY_QUALIFIED)) {
                 $class .= $token[1];
-
-                $classSplit = explode('\\', (string) $token[1]);
-                $alias      = $classSplit[count($classSplit) - 1];
+                $class_split = explode('\\', (string) $token[1]);
+                $alias = $class_split[count($class_split) - 1];
             } elseif ($token[0] === T_NS_SEPARATOR) {
                 $class .= '\\';
-                $alias  = '';
+                $alias = '';
             } elseif ($token[0] === T_AS) {
-                $explicitAlias = true;
-                $alias         = '';
+                $explicit_alias = true;
+                $alias = '';
             } elseif ($token === ',') {
-                $statements[strtolower($alias)] = $groupRoot . $class;
-                $class                          = '';
-                $alias                          = '';
-                $explicitAlias                  = false;
+                $statements[strtolower($alias)] = $group_root . $class;
+                $class = '';
+                $alias = '';
+                $explicit_alias = false;
             } elseif ($token === ';') {
-                $statements[strtolower($alias)] = $groupRoot . $class;
+                $statements[strtolower($alias)] = $group_root . $class;
                 break;
             } elseif ($token === '{') {
-                $groupRoot = $class;
-                $class     = '';
+                $group_root = $class;
+                $class = '';
             } elseif ($token === '}') {
                 continue;
             } else {
                 break;
             }
         }
-
         return $statements;
     }
-
     /**
      * Gets all use statements.
      *
@@ -174,60 +152,50 @@ class TokenParser
      *
      * @return array<string, string> A list with all found use statements.
      */
-    public function parseUseStatements(string $namespaceName): array
+    public function parse_use_statements(string $namespace_name): array
     {
         $statements = [];
-        while (($token = $this->next())) {
+        while ($token = $this->next()) {
             if ($token[0] === T_USE) {
-                $statements = array_merge($statements, $this->parseUseStatement());
+                $statements = array_merge($statements, $this->parse_use_statement());
                 continue;
             }
             if ($token[0] !== T_NAMESPACE) {
                 continue;
             }
-            if ($this->parseNamespace() !== $namespaceName) {
+            if ($this->parse_namespace() !== $namespace_name) {
                 continue;
             }
-
             // Get fresh array for new namespace. This is to prevent the parser to collect the use statements
             // for a previous namespace with the same name. This is the case if a namespace is defined twice
             // or if a namespace with the same name is commented out.
             $statements = [];
         }
-
         return $statements;
     }
-
     /**
      * Gets the namespace.
      *
      * @return string The found namespace.
      */
-    public function parseNamespace(): string
+    public function parse_namespace(): string
     {
         $name = '';
-        while (
-            ($token = $this->next()) && ($token[0] === T_STRING || $token[0] === T_NS_SEPARATOR || (
-                PHP_VERSION_ID >= 80000 &&
-            ($token[0] === T_NAME_QUALIFIED || $token[0] === T_NAME_FULLY_QUALIFIED)
-            ))
-        ) {
+        while (($token = $this->next()) && ($token[0] === T_STRING || $token[0] === T_NS_SEPARATOR || PHP_VERSION_ID >= 80000 && ($token[0] === T_NAME_QUALIFIED || $token[0] === T_NAME_FULLY_QUALIFIED))) {
             $name .= $token[1];
         }
-
         return $name;
     }
-
     /**
      * Gets the class name.
      *
      * @return string The found class name.
      */
-    public function parseClass()
+    public function parse_class()
     {
         // Namespaces and class names are tokenized the same: T_STRINGs
         // separated by T_NS_SEPARATOR so we can use one function to provide
         // both.
-        return $this->parseNamespace();
+        return $this->parse_namespace();
     }
 }

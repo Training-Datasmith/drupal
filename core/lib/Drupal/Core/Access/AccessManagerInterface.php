@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\HttpFoundation\Request;
-
+use Drupal\Core\Routing\Route_Match_Interface;
+use Drupal\Core\Session\Account_Interface;
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Provides an interface for attaching and running access check services.
  */
-interface AccessManagerInterface
+interface Access_Manager_Interface
 {
     /**
      * Checks a named route with parameters against access check services.
@@ -35,8 +33,7 @@ interface AccessManagerInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function checkNamedRoute($route_name, array $parameters = [], ?AccountInterface $account = null, $return_as_object = false);
-
+    public function check_named_route($route_name, array $parameters = [], ?Account_Interface $account = null, $return_as_object = false);
     /**
      * Execute access checks against the incoming request.
      *
@@ -55,8 +52,7 @@ interface AccessManagerInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function checkRequest(Request $request, ?AccountInterface $account = null, $return_as_object = false);
-
+    public function check_request(Request $request, ?Account_Interface $account = null, $return_as_object = false);
     /**
      * Checks a route against applicable access check services.
      *
@@ -80,6 +76,5 @@ interface AccessManagerInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function check(RouteMatchInterface $route_match, ?AccountInterface $account = null, ?Request $request = null, $return_as_object = false);
-
+    public function check(Route_Match_Interface $route_match, ?Account_Interface $account = null, ?Request $request = null, $return_as_object = false);
 }

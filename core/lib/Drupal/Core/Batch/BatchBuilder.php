@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Batch;
 
-use Drupal\Core\Queue\QueueInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\Queue\Queue_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Builds an array for a batch process.
  *
@@ -39,7 +37,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * }
  * @endcode
  */
-class BatchBuilder
+class Batch_Builder
 {
     /**
      * The set of operations to be processed.
@@ -50,42 +48,36 @@ class BatchBuilder
      * @var array
      */
     protected $operations = [];
-
     /**
      * The title for the batch.
      *
      * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
      */
-    protected \Drupal\Core\StringTranslation\TranslatableMarkup $title;
-
+    protected \Drupal\Core\String_Translation\Translatable_Markup $title;
     /**
      * The initializing message for the batch.
      *
      * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
      */
-    protected \Drupal\Core\StringTranslation\TranslatableMarkup $initMessage;
-
+    protected \Drupal\Core\String_Translation\Translatable_Markup $init_message;
     /**
      * The message to be shown while the batch is in progress.
      *
      * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
      */
-    protected \Drupal\Core\StringTranslation\TranslatableMarkup $progressMessage;
-
+    protected \Drupal\Core\String_Translation\Translatable_Markup $progress_message;
     /**
      * The message to be shown if a problem occurs.
      *
      * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
      */
-    protected \Drupal\Core\StringTranslation\TranslatableMarkup $errorMessage;
-
+    protected \Drupal\Core\String_Translation\Translatable_Markup $error_message;
     /**
      * The name of a function / method to be called when the batch finishes.
      *
      * @var string
      */
     protected $finished;
-
     /**
      * The file containing the operation and finished callbacks.
      *
@@ -95,21 +87,18 @@ class BatchBuilder
      * @var string
      */
     protected $file;
-
     /**
      * An array of libraries to be included when processing the batch.
      *
      * @var string[]
      */
     protected $libraries = [];
-
     /**
      * An array of options to be used with the redirect URL.
      *
      * @var array
      */
-    protected $urlOptions = [];
-
+    protected $url_options = [];
     /**
      * Specifies if the batch is progressive.
      *
@@ -119,7 +108,6 @@ class BatchBuilder
      * @var bool
      */
     protected $progressive = true;
-
     /**
      * The details of the queue to use.
      *
@@ -128,25 +116,22 @@ class BatchBuilder
      * @var array
      */
     protected $queue;
-
     /**
      * A static array of custom batch ids.
      *
      * @var string[]
      */
-    protected static array $registeredSetIds = [];
-
+    protected static array $registered_set_ids = [];
     /**
      * Sets the default values for the batch builder.
      */
     public function __construct()
     {
-        $this->title = new TranslatableMarkup('Processing');
-        $this->initMessage = new TranslatableMarkup('Initializing.');
-        $this->progressMessage = new TranslatableMarkup('Completed @current of @total.');
-        $this->errorMessage = new TranslatableMarkup('An error has occurred.');
+        $this->title = new Translatable_Markup('Processing');
+        $this->init_message = new Translatable_Markup('Initializing.');
+        $this->progress_message = new Translatable_Markup('Completed @current of @total.');
+        $this->error_message = new Translatable_Markup('An error has occurred.');
     }
-
     /**
      * Sets the title.
      *
@@ -155,12 +140,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setTitle($title): static
+    public function set_title($title): static
     {
         $this->title = $title;
         return $this;
     }
-
     /**
      * Sets the finished callback.
      *
@@ -171,12 +155,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setFinishCallback(callable $callback): static
+    public function set_finish_callback(callable $callback): static
     {
         $this->finished = $callback;
         return $this;
     }
-
     /**
      * Sets the displayed message while processing is initialized.
      *
@@ -187,12 +170,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setInitMessage($message): static
+    public function set_init_message($message): static
     {
-        $this->initMessage = $message;
+        $this->init_message = $message;
         return $this;
     }
-
     /**
      * Sets the message to display when the batch is being processed.
      *
@@ -209,12 +191,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setProgressMessage($message): static
+    public function set_progress_message($message): static
     {
-        $this->progressMessage = $message;
+        $this->progress_message = $message;
         return $this;
     }
-
     /**
      * Sets the message to display if an error occurs while processing.
      *
@@ -225,12 +206,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setErrorMessage($message): static
+    public function set_error_message($message): static
     {
-        $this->errorMessage = $message;
+        $this->error_message = $message;
         return $this;
     }
-
     /**
      * Sets the file that contains the callback functions.
      *
@@ -247,14 +227,12 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setFile($filename): static
+    public function set_file($filename): static
     {
         include_once $filename;
-
         $this->file = $filename;
         return $this;
     }
-
     /**
      * Sets the libraries to use when processing the batch.
      *
@@ -266,12 +244,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setLibraries(array $libraries): static
+    public function set_libraries(array $libraries): static
     {
         $this->libraries = $libraries;
         return $this;
     }
-
     /**
      * Sets the options for redirect URLs.
      *
@@ -282,12 +259,11 @@ class BatchBuilder
      *
      * @see \Drupal\Core\Url
      */
-    public function setUrlOptions(array $options): static
+    public function set_url_options(array $options): static
     {
-        $this->urlOptions = $options;
+        $this->url_options = $options;
         return $this;
     }
-
     /**
      * Sets the batch to run progressively.
      *
@@ -299,12 +275,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setProgressive($is_progressive = true): static
+    public function set_progressive($is_progressive = true): static
     {
         $this->progressive = $is_progressive;
         return $this;
     }
-
     /**
      * Sets an override for the default queue.
      *
@@ -320,25 +295,17 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function setQueue($name, $class): static
+    public function set_queue($name, $class): static
     {
         if (!class_exists($class)) {
             throw new \InvalidArgumentException('Class ' . $class . ' does not exist.');
         }
-
-        if (!in_array(QueueInterface::class, class_implements($class))) {
-            throw new \InvalidArgumentException(
-                'Class ' . $class . ' does not implement \Drupal\Core\Queue\QueueInterface.'
-            );
+        if (!in_array(Queue_Interface::class, class_implements($class))) {
+            throw new \InvalidArgumentException('Class ' . $class . ' does not implement \Drupal\Core\Queue\QueueInterface.');
         }
-
-        $this->queue = [
-          'name' => $name,
-          'class' => $class,
-        ];
+        $this->queue = ['name' => $name, 'class' => $class];
         return $this;
     }
-
     /**
      * Adds a batch operation.
      *
@@ -349,12 +316,11 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function addOperation(callable $callback, array $arguments = []): static
+    public function add_operation(callable $callback, array $arguments = []): static
     {
         $this->operations[] = [$callback, $arguments];
         return $this;
     }
-
     /**
      * Checks if a set ID has been registered during this request.
      *
@@ -364,11 +330,10 @@ class BatchBuilder
      * @return bool
      *   True if this set ID has been registered.
      */
-    public static function isSetIdRegistered(string $setId): bool
+    public static function is_set_id_registered(string $set_id): bool
     {
-        return isset(static::$registeredSetIds[$setId]);
+        return isset(static::$registered_set_ids[$set_id]);
     }
-
     /**
      * Registers a set ID for this batch.
      *
@@ -377,38 +342,23 @@ class BatchBuilder
      *
      * @return $this
      */
-    public function registerSetId(string $setId): self
+    public function register_set_id(string $set_id): self
     {
-        static::$registeredSetIds[$setId] = true;
+        static::$registered_set_ids[$set_id] = true;
         return $this;
     }
-
     /**
      * Converts a \Drupal\Core\Batch\Batch object into an array.
      *
      * @return array
      *   The array representation of the object.
      */
-    public function toArray(): array
+    public function to_array(): array
     {
-        $array = [
-          'operations' => $this->operations ?: [],
-          'title' => $this->title ?: '',
-          'init_message' => $this->initMessage ?: '',
-          'progress_message' => $this->progressMessage ?: '',
-          'error_message' => $this->errorMessage ?: '',
-          'finished' => $this->finished,
-          'file' => $this->file,
-          'library' => $this->libraries ?: [],
-          'url_options' => $this->urlOptions ?: [],
-          'progressive' => $this->progressive,
-        ];
-
+        $array = ['operations' => $this->operations ?: [], 'title' => $this->title ?: '', 'init_message' => $this->init_message ?: '', 'progress_message' => $this->progress_message ?: '', 'error_message' => $this->error_message ?: '', 'finished' => $this->finished, 'file' => $this->file, 'library' => $this->libraries ?: [], 'url_options' => $this->url_options ?: [], 'progressive' => $this->progressive];
         if ($this->queue) {
             $array['queue'] = $this->queue;
         }
-
         return $array;
     }
-
 }

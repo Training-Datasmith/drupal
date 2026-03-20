@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the ProtocolVersionCacheContext service, for "per protocol" caching.
  *
@@ -14,30 +12,27 @@ use Drupal\Core\Cache\CacheableMetadata;
  *
  * Cache context ID: 'protocol_version'.
  */
-class ProtocolVersionCacheContext extends RequestStackCacheContextBase implements CacheContextInterface
+class Protocol_Version_Cache_Context extends Request_Stack_Cache_Context_Base implements Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Protocol version');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext()
+    public function get_context()
     {
-        return $this->requestStack->getCurrentRequest()->getProtocolVersion();
+        return $this->request_stack->get_current_request()->get_protocol_version();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

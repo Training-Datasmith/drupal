@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * General class for an abstracted "Upsert" (UPDATE or INSERT) query operation.
  *
@@ -16,15 +14,13 @@ use Drupal\Core\Database\Connection;
  */
 abstract class Upsert extends Query implements \Countable
 {
-    use InsertTrait;
-
+    use Insert_Trait;
     /**
      * The unique or primary key of the table.
      *
      * @var string
      */
     protected $key;
-
     /**
      * Constructs an Upsert object.
      *
@@ -40,7 +36,6 @@ abstract class Upsert extends Query implements \Countable
         parent::__construct($connection, $options);
         $this->table = $table;
     }
-
     /**
      * Sets the unique / primary key field to be used as condition for this query.
      *
@@ -52,10 +47,8 @@ abstract class Upsert extends Query implements \Countable
     public function key($field)
     {
         $this->key = $field;
-
         return $this;
     }
-
     /**
      * Preprocesses and validates the query.
      *
@@ -66,30 +59,26 @@ abstract class Upsert extends Query implements \Countable
      * @throws \Drupal\Core\Database\Query\FieldsOverlapException
      * @throws \Drupal\Core\Database\Query\NoFieldsException
      */
-    protected function preExecute()
+    protected function pre_execute()
     {
         // Confirm that the user set the unique/primary key of the table.
         if (!$this->key) {
-            throw new NoUniqueFieldException('There is no unique field specified.');
+            throw new No_Unique_Field_Exception('There is no unique field specified.');
         }
-
         // Confirm that the user did not try to specify an identical
         // field and default field.
-        if (array_intersect($this->insertFields, $this->defaultFields)) {
-            throw new FieldsOverlapException('You may not specify the same field to have a value and a schema-default value.');
+        if (array_intersect($this->insert_fields, $this->default_fields)) {
+            throw new Fields_Overlap_Exception('You may not specify the same field to have a value and a schema-default value.');
         }
-
         // Don't execute query without fields.
-        if (count($this->insertFields) + count($this->defaultFields) == 0) {
-            throw new NoFieldsException('There are no fields available to insert with.');
+        if (count($this->insert_fields) + count($this->default_fields) == 0) {
+            throw new No_Fields_Exception('There are no fields available to insert with.');
         }
-
         // If no values have been added, silently ignore this query. This can happen
         // if values are added conditionally, so we don't want to throw an
         // exception.
-        return isset($this->insertValues[0]) || $this->insertFields;
+        return isset($this->insert_values[0]) || $this->insert_fields;
     }
-
     /**
      * Executes the UPSERT operation.
      *
@@ -100,30 +89,25 @@ abstract class Upsert extends Query implements \Countable
      */
     public function execute()
     {
-        if (!$this->preExecute()) {
+        if (!$this->pre_execute()) {
             return null;
         }
-
         $max_placeholder = 0;
         $values = [];
-        foreach ($this->insertValues as $insert_values) {
+        foreach ($this->insert_values as $insert_values) {
             foreach ($insert_values as $value) {
                 $values[':db_insert_placeholder_' . $max_placeholder++] = $value;
             }
         }
-
-        $stmt = $this->connection->prepareStatement((string) $this, $this->queryOptions, true);
+        $stmt = $this->connection->prepare_statement((string) $this, $this->query_options, true);
         try {
-            $stmt->execute($values, $this->queryOptions);
-            $affected_rows = $stmt->rowCount();
+            $stmt->execute($values, $this->query_options);
+            $affected_rows = $stmt->row_count();
         } catch (\Exception $e) {
-            $this->connection->exceptionHandler()->handleExecutionException($e, $stmt, $values, $this->queryOptions);
+            $this->connection->exception_handler()->handle_execution_exception($e, $stmt, $values, $this->query_options);
         }
-
         // Re-initialize the values array so that we can re-use this query.
-        $this->insertValues = [];
-
+        $this->insert_values = [];
         return $affected_rows;
     }
-
 }

@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
-use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
-use Drupal\Core\Form\FormStateInterface;
-
+use Drupal\Core\Entity\Display\Entity_Form_Display_Interface;
+use Drupal\Core\Form\Form_State_Interface;
 /**
  * Defines a common interface for content entity form classes.
  */
-interface ContentEntityFormInterface extends EntityFormInterface
+interface Content_Entity_Form_Interface extends Entity_Form_Interface
 {
     /**
      * Gets the form display.
@@ -21,8 +19,7 @@ interface ContentEntityFormInterface extends EntityFormInterface
      * @return \Drupal\Core\Entity\Display\EntityFormDisplayInterface
      *   The current form display.
      */
-    public function getFormDisplay(FormStateInterface $form_state);
-
+    public function get_form_display(Form_State_Interface $form_state);
     /**
      * Sets the form display.
      *
@@ -36,8 +33,7 @@ interface ContentEntityFormInterface extends EntityFormInterface
      *
      * @return $this
      */
-    public function setFormDisplay(EntityFormDisplayInterface $form_display, FormStateInterface $form_state);
-
+    public function set_form_display(Entity_Form_Display_Interface $form_display, Form_State_Interface $form_state);
     /**
      * Gets the code identifying the active form language.
      *
@@ -47,8 +43,7 @@ interface ContentEntityFormInterface extends EntityFormInterface
      * @return string
      *   The form language code.
      */
-    public function getFormLangcode(FormStateInterface $form_state);
-
+    public function get_form_langcode(Form_State_Interface $form_state);
     /**
      * Checks whether the current form language matches the entity one.
      *
@@ -58,8 +53,7 @@ interface ContentEntityFormInterface extends EntityFormInterface
      * @return bool
      *   Returns TRUE if the entity form language matches the entity one.
      */
-    public function isDefaultFormLangcode(FormStateInterface $form_state);
-
+    public function is_default_form_langcode(Form_State_Interface $form_state);
     /**
      * {@inheritdoc}
      *
@@ -75,6 +69,5 @@ interface ContentEntityFormInterface extends EntityFormInterface
      * @return \Drupal\Core\Entity\ContentEntityInterface
      *   The built entity.
      */
-    public function validateForm(array &$form, FormStateInterface $form_state);
-
+    public function validate_form(array &$form, Form_State_Interface $form_state);
 }

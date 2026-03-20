@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Render\Markup_Interface;
 use Drupal\Component\Utility\Xss;
-use Drupal\Core\Asset\AttachedAssets;
-
+use Drupal\Core\Asset\Attached_Assets;
 /**
  * AJAX command for a JavaScript Drupal.message() call.
  *
@@ -69,7 +67,7 @@ use Drupal\Core\Asset\AttachedAssets;
  *
  * @ingroup ajax
  */
-class MessageCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+class Message_Command implements Command_Interface, Command_With_Attached_Assets_Interface
 {
     /**
      * Constructs a MessageCommand object.
@@ -93,39 +91,29 @@ class MessageCommand implements CommandInterface, CommandWithAttachedAssetsInter
         /**
          * The query selector for the element the message will appear in.
          */
-        protected $wrapperQuerySelector = null,
+        protected $wrapper_query_selector = null,
         protected array $options = [],
         /**
          * Whether to clear previous messages.
          */
-        protected $clearPrevious = true
-    ) {
+        protected $clear_previous = true
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'message',
-          'message' => $this->message instanceof MarkupInterface
-            ? (string) $this->message
-            : Xss::filterAdmin($this->message),
-          'messageWrapperQuerySelector' => $this->wrapperQuerySelector,
-          'messageOptions' => $this->options,
-          'clearPrevious' => $this->clearPrevious,
-        ];
+        return ['command' => 'message', 'message' => $this->message instanceof Markup_Interface ? (string) $this->message : Xss::filter_admin($this->message), 'messageWrapperQuerySelector' => $this->wrapper_query_selector, 'messageOptions' => $this->options, 'clearPrevious' => $this->clear_previous];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets
+    public function get_attached_assets(): \Drupal\Core\Asset\Attached_Assets
     {
-        $assets = new AttachedAssets();
-        $assets->setLibraries(['core/drupal.message']);
+        $assets = new Attached_Assets();
+        $assets->set_libraries(['core/drupal.message']);
         return $assets;
     }
-
 }

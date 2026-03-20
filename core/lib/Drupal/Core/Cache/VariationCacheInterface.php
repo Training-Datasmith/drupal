@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -13,7 +12,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface VariationCacheInterface
+interface Variation_Cache_Interface
 {
     /**
      * Gets a cache entry based on cache keys.
@@ -29,8 +28,7 @@ interface VariationCacheInterface
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::get()
      */
-    public function get(array $keys, CacheableDependencyInterface $initial_cacheability);
-
+    public function get(array $keys, Cacheable_Dependency_Interface $initial_cacheability);
     /**
      * Gets multiple cache entries based on a set of cache keys.
      *
@@ -50,8 +48,7 @@ interface VariationCacheInterface
      *
      * @see \Drupal\Core\Cache\VariationCacheInterface::get()
      */
-    public function getMultiple(array $items): array;
-
+    public function get_multiple(array $items): array;
     /**
      * Stores data in the cache.
      *
@@ -71,8 +68,7 @@ interface VariationCacheInterface
      *   Thrown when cacheability is provided that does not contain a cache
      *   context or does not completely contain the initial cacheability.
      */
-    public function set(array $keys, $data, CacheableDependencyInterface $cacheability, CacheableDependencyInterface $initial_cacheability): void;
-
+    public function set(array $keys, $data, Cacheable_Dependency_Interface $cacheability, Cacheable_Dependency_Interface $initial_cacheability): void;
     /**
      * Deletes an item from the cache.
      *
@@ -87,8 +83,7 @@ interface VariationCacheInterface
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::delete()
      */
-    public function delete(array $keys, CacheableDependencyInterface $initial_cacheability): void;
-
+    public function delete(array $keys, Cacheable_Dependency_Interface $initial_cacheability): void;
     /**
      * Marks a cache item as invalid.
      *
@@ -103,6 +98,5 @@ interface VariationCacheInterface
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::invalidate()
      */
-    public function invalidate(array $keys, CacheableDependencyInterface $initial_cacheability): void;
-
+    public function invalidate(array $keys, Cacheable_Dependency_Interface $initial_cacheability): void;
 }

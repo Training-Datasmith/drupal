@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Cache\Memory_Cache;
 
-namespace Drupal\Core\Cache\MemoryCache;
-
-use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Datetime\Time_Interface;
 use Drupal\Core\Cache\Cache;
-
 /**
  * Defines a least recently used (LRU) static cache implementation.
  *
@@ -16,7 +14,7 @@ use Drupal\Core\Cache\Cache;
  *
  * @ingroup cache
  */
-class LruMemoryCache extends MemoryCache
+class Lru_Memory_Cache extends Memory_Cache
 {
     /**
      * Constructs an LruMemoryCache object.
@@ -26,41 +24,36 @@ class LruMemoryCache extends MemoryCache
      * @param int $allowedSlots
      *   The number of slots to allocate for items in the cache.
      */
-    public function __construct(
-        TimeInterface $time,
-        protected readonly int $allowedSlots,
-    ) {
+    public function __construct(Time_Interface $time, protected readonly int $allowed_slots)
+    {
         parent::__construct($time);
     }
-
     /**
      * {@inheritdoc}
      */
     public function get($cid, $allow_invalid = false)
     {
         if ($cached = parent::get($cid, $allow_invalid)) {
-            $this->handleCacheHits([$cid => $cached]);
+            $this->handle_cache_hits([$cid => $cached]);
         }
         return $cached;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getMultiple(&$cids, $allow_invalid = false)
+    public function get_multiple(&$cids, $allow_invalid = false)
     {
-        $ret = parent::getMultiple($cids, $allow_invalid);
-        $this->handleCacheHits($ret);
+        $ret = parent::get_multiple($cids, $allow_invalid);
+        $this->handle_cache_hits($ret);
         return $ret;
     }
-
     /**
      * Moves an array of cache items to the most recently used positions.
      *
      * @param array $items
      *   An array of cache items keyed by cid.
      */
-    private function handleCacheHits(array $items): void
+    private function handle_cache_hits(array $items): void
     {
         $last_key = array_key_last($this->cache);
         foreach ($items as $cid => $cached) {
@@ -73,7 +66,6 @@ class LruMemoryCache extends MemoryCache
             }
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -82,29 +74,26 @@ class LruMemoryCache extends MemoryCache
         if (isset($this->cache[$cid])) {
             // If the item is already in the cache, move it to end of the array.
             unset($this->cache[$cid]);
-        } elseif (count($this->cache) > $this->allowedSlots - 1) {
+        } elseif (count($this->cache) > $this->allowed_slots - 1) {
             // Remove one item from the cache to ensure we remain within the allowed
             // number of slots. Avoid using array_slice() because it makes a copy of
             // the array, and avoid using array_splice() or array_shift() because they
             // re-index numeric keys.
             unset($this->cache[array_key_first($this->cache)]);
         }
-
         parent::set($cid, $data, $expire, $tags);
     }
-
     /**
      * {@inheritdoc}
      */
     public function invalidate($cid): void
     {
-        $this->invalidateMultiple([$cid]);
+        $this->invalidate_multiple([$cid]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateMultiple(array $cids): void
+    public function invalidate_multiple(array $cids): void
     {
         $items = [];
         foreach ($cids as $cid) {
@@ -113,13 +102,12 @@ class LruMemoryCache extends MemoryCache
                 parent::invalidate($cid);
             }
         }
-        $this->moveItemsToLeastRecentlyUsed($items);
+        $this->move_items_to_least_recently_used($items);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateTags(array $tags): void
+    public function invalidate_tags(array $tags): void
     {
         $items = [];
         foreach ($this->cache as $cid => $item) {
@@ -128,16 +116,15 @@ class LruMemoryCache extends MemoryCache
                 $items[$cid] = $this->cache[$cid];
             }
         }
-        $this->moveItemsToLeastRecentlyUsed($items);
+        $this->move_items_to_least_recently_used($items);
     }
-
     /**
      * Moves items to the least recently used positions.
      *
      * @param array $items
      *   An array of items to move to the least recently used positions.
      */
-    private function moveItemsToLeastRecentlyUsed(array $items): void
+    private function move_items_to_least_recently_used(array $items): void
     {
         // This cannot use array_unshift() because it would reindex an array with
         // numeric cache IDs.
@@ -145,5 +132,4 @@ class LruMemoryCache extends MemoryCache
             $this->cache = $items + $this->cache;
         }
     }
-
 }

@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\TypedData\DataDefinitionInterface;
-use Drupal\Core\TypedData\MapDataDefinition;
-use Drupal\Core\TypedData\TypedDataInterface;
-
+use Drupal\Component\Utility\Nested_Array;
+use Drupal\Core\Typed_Data\Data_Definition_Interface;
+use Drupal\Core\Typed_Data\Map_Data_Definition;
+use Drupal\Core\Typed_Data\Typed_Data_Interface;
 /**
  * Defines a mapping configuration element.
  *
@@ -22,14 +20,14 @@ use Drupal\Core\TypedData\TypedDataInterface;
  * Read https://www.drupal.org/node/1905070 for more details about configuration
  * schema, types and type resolution.
  */
-class Mapping extends ArrayElement
+class Mapping extends Array_Element
 {
     /**
      * {@inheritdoc}
      */
-    public function __construct(DataDefinitionInterface $definition, $name = null, ?TypedDataInterface $parent = null)
+    public function __construct(Data_Definition_Interface $definition, $name = null, ?Typed_Data_Interface $parent = null)
     {
-        assert($definition instanceof MapDataDefinition);
+        assert($definition instanceof Map_Data_Definition);
         // Validate basic structure.
         foreach ($definition['mapping'] as $key => $key_definition) {
             // Guide developers when a config schema definition is wrong.
@@ -37,51 +35,44 @@ class Mapping extends ArrayElement
                 if (!$parent) {
                     throw new \LogicException(sprintf('The mapping definition at `%s` is invalid: its `%s` key contains a %s. It must be an array.', $name, $key, gettype($key_definition)));
                 }
-                throw new \LogicException(sprintf('The mapping definition at `%s:%s` is invalid: its `%s` key contains a %s. It must be an array.', $parent->getPropertyPath(), $name, $key, gettype($key_definition)));
+                throw new \LogicException(sprintf('The mapping definition at `%s:%s` is invalid: its `%s` key contains a %s. It must be an array.', $parent->get_property_path(), $name, $key, gettype($key_definition)));
             }
         }
-        $this->processRequiredKeyFlags($definition);
+        $this->process_required_key_flags($definition);
         parent::__construct($definition, $name, $parent);
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getElementDefinition($key)
+    protected function get_element_definition($key)
     {
         $value = $this->value[$key] ?? null;
         $definition = $this->definition['mapping'][$key] ?? [];
-        return $this->buildDataDefinition($definition, $value, $key);
+        return $this->build_data_definition($definition, $value, $key);
     }
-
     /**
      * Gets all keys allowed in this mapping.
      *
      * @return string[]
      *   A list of keys allowed in this mapping.
      */
-    public function getValidKeys(): array
+    public function get_valid_keys(): array
     {
-        $all_keys = $this->getDefinedKeys();
+        $all_keys = $this->get_defined_keys();
         return array_keys($all_keys);
     }
-
     /**
      * Gets all required keys in this mapping.
      *
      * @return string[]
      *   A list of keys required in this mapping.
      */
-    public function getRequiredKeys(): array
+    public function get_required_keys(): array
     {
-        $all_keys = $this->getDefinedKeys();
-        $required_keys = array_filter(
-            $all_keys,
-            fn (array $schema_definition): bool => $schema_definition['requiredKey']
-        );
+        $all_keys = $this->get_defined_keys();
+        $required_keys = array_filter($all_keys, fn(array $schema_definition): bool => $schema_definition['requiredKey']);
         return array_keys($required_keys);
     }
-
     /**
      * Gets the keys defined for this mapping (locally defined + inherited).
      *
@@ -89,12 +80,11 @@ class Mapping extends ArrayElement
      *   Raw schema definitions: keys are mapping keys, values are their
      *   definitions.
      */
-    protected function getDefinedKeys(): array
+    protected function get_defined_keys(): array
     {
-        $definition = $this->getDataDefinition();
-        return $definition->toArray()['mapping'];
+        $definition = $this->get_data_definition();
+        return $definition->to_array()['mapping'];
     }
-
     /**
      * Gets all dynamically valid keys.
      *
@@ -128,47 +118,42 @@ class Mapping extends ArrayElement
      * @see \Drupal\Core\Config\TypedConfigManager::resolveExpression()
      * @see https://www.drupal.org/files/ConfigSchemaCheatSheet2.0.pdf
      */
-    public function getDynamicallyValidKeys(): array
+    public function get_dynamically_valid_keys(): array
     {
-        $parent_data_def = $this->getParent()?->getDataDefinition();
+        $parent_data_def = $this->get_parent()?->get_data_definition();
         if ($parent_data_def === null) {
             return [];
         }
-
         // Use the parent data definition to determine the type of this mapping
         // (including the dynamic placeholders). For example:
         // - `editor.settings.[%parent.editor]`
         // - `editor.image_upload_settings.[status]`.
         $original_mapping_type = match (true) {
-            $parent_data_def instanceof MapDataDefinition => $parent_data_def->toArray()['mapping'][$this->getName()]['type'],
-            $parent_data_def instanceof SequenceDataDefinition => $parent_data_def->toArray()['sequence']['type'],
+            $parent_data_def instanceof Map_Data_Definition => $parent_data_def->to_array()['mapping'][$this->get_name()]['type'],
+            $parent_data_def instanceof Sequence_Data_Definition => $parent_data_def->to_array()['sequence']['type'],
             default => throw new \LogicException('Invalid config schema detected.'),
         };
         // If this mapping's type isn't dynamic, there's nothing to do.
         if (!str_contains((string) $original_mapping_type, ']')) {
             return [];
         }
-
         // If this mapping's type isn't dynamic, there's nothing to do.
         if (str_starts_with((string) $original_mapping_type, '[')) {
             return [];
         }
-
         // Expand the dynamic placeholders to find all mapping types derived from
         // the original mapping type. To continue the previous example:
         // - `editor.settings.unicorn`
         // - `editor.image_upload_settings.*`
         // - `editor.image_upload_settings.1`
-        $possible_types = $this->getPossibleTypes($original_mapping_type);
-
+        $possible_types = $this->get_possible_types($original_mapping_type);
         // TRICKY: it is tempting to not consider this a dynamic type if only one
         // concrete type exists. But that would lead to different validation errors
         // when modules are installed or uninstalled.
         assert(!empty($possible_types));
-
         // Determine all valid keys, across all possible types.
-        $typed_data_manager = $this->getTypedDataManager();
-        $all_type_definitions = $typed_data_manager->getDefinitions();
+        $typed_data_manager = $this->get_typed_data_manager();
+        $all_type_definitions = $typed_data_manager->get_definitions();
         $possible_type_definitions = array_intersect_key($all_type_definitions, array_fill_keys($possible_types, true));
         // TRICKY: \Drupal\Core\Config\TypedConfigManager::getDefinition() does the
         // necessary resolving, but TypedConfigManager::getDefinitions() does not
@@ -177,42 +162,34 @@ class Mapping extends ArrayElement
         // @see ::getValidKeys()
         $valid_keys_per_type = [];
         foreach (array_keys($possible_type_definitions) as $possible_type_name) {
-            $valid_keys_per_type[$possible_type_name] = array_keys($typed_data_manager->getDefinition($possible_type_name)['mapping'] ?? []);
+            $valid_keys_per_type[$possible_type_name] = array_keys($typed_data_manager->get_definition($possible_type_name)['mapping'] ?? []);
         }
-
         // From all valid keys across all types, get the ones for the fallback type:
         // its keys are inherited by all type definitions and are therefore always
         // ("statically") valid. Not all types have a fallback type.
         // @see \Drupal\Core\Config\TypedConfigManager::getDefinitionWithReplacements()
-        $fallback_type = $typed_data_manager->findFallback($original_mapping_type);
+        $fallback_type = $typed_data_manager->find_fallback($original_mapping_type);
         if ($fallback_type !== null && isset($valid_keys_per_type[$fallback_type])) {
             $valid_keys_everywhere = [$fallback_type => $valid_keys_per_type[$fallback_type]];
-            $statically_required_keys = NestedArray::mergeDeepArray($valid_keys_everywhere);
-
+            $statically_required_keys = Nested_Array::merge_deep_array($valid_keys_everywhere);
             // Now that statically valid keys are known, determine which valid keys
             // are only valid in *some* cases: remove the statically valid keys from
             // every per-type array of valid keys.
             unset($valid_keys_per_type[$fallback_type]);
-            $valid_keys_per_type = array_map(
-                fn (array $keys): array => array_values(array_filter($keys, fn (string $key): bool => !in_array($key, $statically_required_keys, true))),
-                $valid_keys_per_type
-            );
+            $valid_keys_per_type = array_map(fn(array $keys): array => array_values(array_filter($keys, fn(string $key): bool => !in_array($key, $statically_required_keys, true))), $valid_keys_per_type);
         }
-
         return $valid_keys_per_type;
     }
-
     /**
      * Gets all optional keys in this mapping.
      *
      * @return string[]
      *   A list of optional keys given the values in this mapping.
      */
-    public function getOptionalKeys(): array
+    public function get_optional_keys(): array
     {
-        return array_values(array_diff($this->getValidKeys(), $this->getRequiredKeys()));
+        return array_values(array_diff($this->get_valid_keys(), $this->get_required_keys()));
     }
-
     /**
      * Validates optional `requiredKey` flags, guarantees one will be set.
      *
@@ -230,7 +207,7 @@ class Mapping extends ArrayElement
      * @throws \LogicException
      *   Thrown when `requiredKey: true` is specified.
      */
-    protected function processRequiredKeyFlags(MapDataDefinition $definition): void
+    protected function process_required_key_flags(Map_Data_Definition $definition): void
     {
         foreach ($definition['mapping'] as $key => $key_definition) {
             // Validates `requiredKey` flag in mapping definitions.
@@ -245,7 +222,6 @@ class Mapping extends ArrayElement
             }
         }
     }
-
     /**
      * Returns all possible types for the type with the given name.
      *
@@ -260,7 +236,7 @@ class Mapping extends ArrayElement
      *   If a fallback name is available, that will be returned too. In this
      *   example, that would be `core_date_format_pattern.*`.
      */
-    protected function getPossibleTypes(string $name): array
+    protected function get_possible_types(string $name): array
     {
         // First, parse from e.g.
         // `module.something.foo_[%parent.locked]`
@@ -284,17 +260,13 @@ class Mapping extends ArrayElement
         $regex = str_replace(['.', '[]'], ['\.', '.*'], $name);
         // Now find all possible types:
         // 1. `module.something.foo_foo`, `module.something.foo_bar`, etc.
-        $possible_types = array_filter(
-            array_keys($this->getTypedDataManager()->getDefinitions()),
-            fn (string $type): bool => preg_match("/^$regex$/", $type) === 1
-        );
+        $possible_types = array_filter(array_keys($this->get_typed_data_manager()->get_definitions()), fn(string $type): bool => preg_match("/^{$regex}\$/", $type) === 1);
         // 2. The fallback: `module.something.*` — if no concrete definition for it
         // exists.
-        $fallback_type = $this->getTypedDataManager()->findFallback($name);
+        $fallback_type = $this->get_typed_data_manager()->find_fallback($name);
         if ($fallback_type && !in_array($fallback_type, $possible_types, true)) {
             $possible_types[] = $fallback_type;
         }
         return $possible_types;
     }
-
 }

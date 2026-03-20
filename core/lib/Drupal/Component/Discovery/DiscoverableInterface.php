@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Discovery;
 
 /**
  * Interface for classes providing a type of discovery.
  */
-interface DiscoverableInterface
+interface Discoverable_Interface
 {
     /**
      * Returns an array of discoverable items.
@@ -18,6 +17,5 @@ interface DiscoverableInterface
      * @throws \Drupal\Component\Discovery\DiscoveryException
      *   Exception thrown if there is a problem during discovery.
      */
-    public function findAll();
-
+    public function find_all();
 }

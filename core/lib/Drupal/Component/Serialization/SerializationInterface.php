@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Serialization;
 
 /**
  * Defines an interface for serialization formats.
  */
-interface SerializationInterface
+interface Serialization_Interface
 {
     /**
      * Encodes data into the serialization format.
@@ -21,7 +20,6 @@ interface SerializationInterface
      * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
      */
     public static function encode($data);
-
     /**
      * Decodes data from the serialization format.
      *
@@ -34,13 +32,11 @@ interface SerializationInterface
      * @throws \Drupal\Component\Serialization\Exception\InvalidDataTypeException
      */
     public static function decode($raw);
-
     /**
      * Gets the file extension for this serialization format.
      *
      * @return string
      *   The file extension, without leading dot.
      */
-    public static function getFileExtension();
-
+    public static function get_file_extension();
 }

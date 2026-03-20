@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Transaction;
 
 use Drupal\Core\Database\Transaction;
-
 /**
  * Interface for the database transaction manager classes.
  */
-interface TransactionManagerInterface
+interface Transaction_Manager_Interface
 {
     /**
      * Determines if there is an active transaction open.
@@ -17,8 +15,7 @@ interface TransactionManagerInterface
      * @return bool
      *   TRUE if we're currently in a transaction, FALSE otherwise.
      */
-    public function inTransaction(): bool;
-
+    public function in_transaction(): bool;
     /**
      * Checks if a named Drupal transaction is active.
      *
@@ -29,7 +26,6 @@ interface TransactionManagerInterface
      *   TRUE if the transaction is active, FALSE otherwise.
      */
     public function has(string $name): bool;
-
     /**
      * Pushes a new Drupal transaction on the stack.
      *
@@ -48,7 +44,6 @@ interface TransactionManagerInterface
      *   If a Drupal Transaction with the specified name exists already.
      */
     public function push(string $name = ''): Transaction;
-
     /**
      * Purges a Drupal transaction from the manager.
      *
@@ -68,7 +63,6 @@ interface TransactionManagerInterface
      * @internal
      */
     public function purge(string $name, string $id): void;
-
     /**
      * Removes a Drupal transaction from the stack.
      *
@@ -91,7 +85,6 @@ interface TransactionManagerInterface
      * @see \Drupal\Core\Database\Transaction::__destruct()
      */
     public function unpile(string $name, string $id): void;
-
     /**
      * Rolls back a Drupal transaction.
      *
@@ -118,7 +111,6 @@ interface TransactionManagerInterface
      * @see \Drupal\Core\Database\Transaction::rollback()
      */
     public function rollback(string $name, string $id): void;
-
     /**
      * Voids the client connection.
      *
@@ -130,8 +122,7 @@ interface TransactionManagerInterface
      *
      * This method should only be called internally by a database driver.
      */
-    public function voidClientTransaction(): void;
-
+    public function void_client_transaction(): void;
     /**
      * Adds a root transaction end callback.
      *
@@ -166,6 +157,5 @@ interface TransactionManagerInterface
      * @throws \LogicException
      *   When a callback addition is attempted but no transaction is active.
      */
-    public function addPostTransactionCallback(callable $callback): void;
-
+    public function add_post_transaction_callback(callable $callback): void;
 }

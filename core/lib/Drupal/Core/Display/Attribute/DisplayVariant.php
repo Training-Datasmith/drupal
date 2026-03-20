@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a display variant attribute object.
  *
@@ -31,7 +29,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class DisplayVariant extends Plugin
+class Display_Variant extends Plugin
 {
     /**
      * Constructs a DisplayVariant plugin attribute object.
@@ -43,11 +41,7 @@ class DisplayVariant extends Plugin
      * @param class-string|null $deriver
      *   (optional) The deriver class.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly TranslatableMarkup $admin_label,
-        public readonly ?string $deriver = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly Translatable_Markup $admin_label, public readonly ?string $deriver = null)
+    {
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
  * Value object indicating a neutral access result, with cacheability metadata.
  */
-class AccessResultNeutral extends AccessResult implements AccessResultReasonInterface
+class Access_Result_Neutral extends Access_Result implements Access_Result_Reason_Interface
 {
     /**
      * Constructs a new AccessResultNeutral instance.
@@ -20,32 +19,29 @@ class AccessResultNeutral extends AccessResult implements AccessResultReasonInte
          * The reason why access is neutral. For use in messages.
          */
         protected $reason = null
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isNeutral(): bool
+    public function is_neutral(): bool
     {
         return true;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getReason(): string
+    public function get_reason(): string
     {
         return (string) $this->reason;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setReason($reason): static
+    public function set_reason($reason): static
     {
         $this->reason = $reason;
         return $this;
     }
-
 }

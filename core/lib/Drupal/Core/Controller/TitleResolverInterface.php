@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Http_Foundation\Request;
 use Symfony\Component\Routing\Route;
-
 /**
  * Defines a class which knows how to generate the title from a given route.
  */
-interface TitleResolverInterface
+interface Title_Resolver_Interface
 {
     /**
      * Returns a static or dynamic title for the route.
@@ -33,6 +31,5 @@ interface TitleResolverInterface
      *   The title for the route. NULL should be returned if the method can
      *   determine that the title will evaluate to an empty string.
      */
-    public function getTitle(Request $request, Route $route);
-
+    public function get_title(Request $request, Route $route);
 }

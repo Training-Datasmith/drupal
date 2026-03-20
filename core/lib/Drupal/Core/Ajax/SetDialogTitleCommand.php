@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class SetDialogTitleCommand extends SetDialogOptionCommand
+class Set_Dialog_Title_Command extends Set_Dialog_Option_Command
 {
     /**
      * Constructs a SetDialogTitleCommand object.
@@ -23,8 +22,7 @@ class SetDialogTitleCommand extends SetDialogOptionCommand
     public function __construct($selector, $title)
     {
         $this->selector = $selector ?: '#drupal-modal';
-        $this->optionName = 'title';
-        $this->optionValue = $title;
+        $this->option_name = 'title';
+        $this->option_value = $title;
     }
-
 }

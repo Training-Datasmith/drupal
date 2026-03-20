@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Utility;
  *
  * @ingroup utility
  */
-class NestedArray
+class Nested_Array
 {
     /**
      * Retrieves a value from a nested array with variable depth.
@@ -68,12 +67,12 @@ class NestedArray
      * @see NestedArray::setValue()
      * @see NestedArray::unsetValue()
      */
-    public static function &getValue(array &$array, array $parents, &$key_exists = null)
+    public static function &get_value(array &$array, array $parents, &$key_exists = null)
     {
-        $ref = &$array;
+        $ref =& $array;
         foreach ($parents as $parent) {
             if (is_array($ref) && \array_key_exists($parent, $ref)) {
-                $ref = &$ref[$parent];
+                $ref =& $ref[$parent];
             } else {
                 $key_exists = false;
                 $null = null;
@@ -83,7 +82,6 @@ class NestedArray
         $key_exists = true;
         return $ref;
     }
-
     /**
      * Sets a value in a nested array with variable depth.
      *
@@ -146,9 +144,9 @@ class NestedArray
      * @see NestedArray::unsetValue()
      * @see NestedArray::getValue()
      */
-    public static function setValue(array &$array, array $parents, $value, $force = false): void
+    public static function set_value(array &$array, array $parents, $value, $force = false): void
     {
-        $ref = &$array;
+        $ref =& $array;
         foreach ($parents as $parent) {
             // PHP auto-creates container arrays and NULL entries without error if
             // $ref is NULL, but throws an error if $ref is set, but not an array.
@@ -158,11 +156,10 @@ class NestedArray
                 }
                 $ref = [];
             }
-            $ref = &$ref[$parent];
+            $ref =& $ref[$parent];
         }
         $ref = $value;
     }
-
     /**
      * Unsets a value in a nested array with variable depth.
      *
@@ -222,10 +219,10 @@ class NestedArray
      * @see NestedArray::setValue()
      * @see NestedArray::getValue()
      */
-    public static function unsetValue(array &$array, array $parents, &$key_existed = null): void
+    public static function unset_value(array &$array, array $parents, &$key_existed = null): void
     {
         $unset_key = array_pop($parents);
-        $ref = &self::getValue($array, $parents, $key_existed);
+        $ref =& self::get_value($array, $parents, $key_existed);
         if ($key_existed && is_array($ref) && \array_key_exists($unset_key, $ref)) {
             $key_existed = true;
             unset($ref[$unset_key]);
@@ -233,7 +230,6 @@ class NestedArray
             $key_existed = false;
         }
     }
-
     /**
      * Determines whether a nested array contains the requested keys.
      *
@@ -262,15 +258,14 @@ class NestedArray
      *
      * @see NestedArray::getValue()
      */
-    public static function keyExists(array $array, array $parents): ?bool
+    public static function key_exists(array $array, array $parents): ?bool
     {
         // Although this function is similar to PHP's array_key_exists(), its
         // arguments should be consistent with getValue().
         $key_exists = null;
-        self::getValue($array, $parents, $key_exists);
+        self::get_value($array, $parents, $key_exists);
         return $key_exists;
     }
-
     /**
      * Merges multiple arrays, recursively, and returns the merged array.
      *
@@ -298,11 +293,10 @@ class NestedArray
      *
      * @see NestedArray::mergeDeepArray()
      */
-    public static function mergeDeep(...$arrays)
+    public static function merge_deep(...$arrays)
     {
-        return self::mergeDeepArray($arrays);
+        return self::merge_deep_array($arrays);
     }
-
     /**
      * Merges multiple arrays, recursively, and returns the merged array.
      *
@@ -329,7 +323,7 @@ class NestedArray
      *
      * @see NestedArray::mergeDeep()
      */
-    public static function mergeDeepArray(array $arrays, $preserve_integer_keys = false): array
+    public static function merge_deep_array(array $arrays, $preserve_integer_keys = false): array
     {
         $result = [];
         foreach ($arrays as $array) {
@@ -339,20 +333,15 @@ class NestedArray
                 // converts array keys that are integer strings (e.g., '1') to integers.
                 if (is_int($key) && !$preserve_integer_keys) {
                     $result[] = $value;
-                }
-                // Recurse when both values are arrays.
-                elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
-                    $result[$key] = self::mergeDeepArray([$result[$key], $value], $preserve_integer_keys);
-                }
-                // Otherwise, use the latter value, overriding any previous value.
-                else {
+                } elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
+                    $result[$key] = self::merge_deep_array([$result[$key], $value], $preserve_integer_keys);
+                } else {
                     $result[$key] = $value;
                 }
             }
         }
         return $result;
     }
-
     /**
      * Filters a nested array recursively.
      *
@@ -372,8 +361,6 @@ class NestedArray
                 $element = static::filter($element, $callable);
             }
         }
-
         return $array;
     }
-
 }

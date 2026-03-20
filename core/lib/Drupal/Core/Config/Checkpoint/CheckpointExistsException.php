@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Checkpoint;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Core\Config\Checkpoint;
  * @internal
  *   This API is experimental.
  */
-final class CheckpointExistsException extends \RuntimeException
+final class Checkpoint_Exists_Exception extends \RuntimeException
 {
 }

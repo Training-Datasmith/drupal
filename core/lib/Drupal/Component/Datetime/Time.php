@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Datetime;
 
-use Symfony\Component\HttpFoundation\RequestStack;
-
+use Symfony\Component\Http_Foundation\Request_Stack;
 /**
  * Provides a class for obtaining system time.
  *
@@ -15,93 +13,85 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * the class will access global variables or set a proxy request time in order
  * to return the request time.
  */
-class Time implements TimeInterface
+class Time implements Time_Interface
 {
     /**
      * A proxied request time if the request time is not available.
      */
-    protected float $proxyRequestTime;
-
+    protected float $proxy_request_time;
     /**
      * Constructs a Time object.
      *
      * @param \Symfony\Component\HttpFoundation\RequestStack|null $requestStack
      *   (Optional) The request stack.
      */
-    public function __construct(protected ?RequestStack $requestStack = null)
+    public function __construct(protected ?Request_Stack $request_stack = null)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRequestTime()
+    public function get_request_time()
     {
-        $request = $this->requestStack ? $this->requestStack->getCurrentRequest() : null;
+        $request = $this->request_stack ? $this->request_stack->get_current_request() : null;
         if ($request) {
             return $request->server->get('REQUEST_TIME');
         }
         // If this is called prior to the request being pushed to the stack fallback
         // to built-in globals (if available) or the system time.
-        return $_SERVER['REQUEST_TIME'] ?? $this->getProxyRequestTime();
+        return $_SERVER['REQUEST_TIME'] ?? $this->get_proxy_request_time();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getRequestMicroTime()
+    public function get_request_micro_time()
     {
-        $request = $this->requestStack ? $this->requestStack->getCurrentRequest() : null;
+        $request = $this->request_stack ? $this->request_stack->get_current_request() : null;
         if ($request) {
             return $request->server->get('REQUEST_TIME_FLOAT');
         }
         // If this is called prior to the request being pushed to the stack fallback
         // to built-in globals (if available) or the system time.
-        return $_SERVER['REQUEST_TIME_FLOAT'] ?? $this->getProxyRequestMicroTime();
+        return $_SERVER['REQUEST_TIME_FLOAT'] ?? $this->get_proxy_request_micro_time();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCurrentTime(): int
+    public function get_current_time(): int
     {
         return time();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCurrentMicroTime(): float
+    public function get_current_micro_time(): float
     {
         return microtime(true);
     }
-
     /**
      * Returns a mimic of the timestamp of the current request.
      *
      * @return int
      *   A value returned by time().
      */
-    protected function getProxyRequestTime(): int
+    protected function get_proxy_request_time(): int
     {
-        if (!isset($this->proxyRequestTime)) {
-            $this->proxyRequestTime = $this->getCurrentMicroTime();
+        if (!isset($this->proxy_request_time)) {
+            $this->proxy_request_time = $this->get_current_micro_time();
         }
-        return (int) $this->proxyRequestTime;
+        return (int) $this->proxy_request_time;
     }
-
     /**
      * Returns a mimic of the timestamp of the current request.
      *
      * @return float
      *   A value returned by microtime().
      */
-    protected function getProxyRequestMicroTime(): float
+    protected function get_proxy_request_micro_time(): float
     {
-        if (!isset($this->proxyRequestTime)) {
-            $this->proxyRequestTime = $this->getCurrentMicroTime();
+        if (!isset($this->proxy_request_time)) {
+            $this->proxy_request_time = $this->get_current_micro_time();
         }
-        return $this->proxyRequestTime;
+        return $this->proxy_request_time;
     }
-
 }

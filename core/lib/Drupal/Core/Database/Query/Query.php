@@ -1,53 +1,46 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-
 /**
  * Base class for query builders.
  *
  * Note that query builders use PHP's magic __toString() method to compile the
  * query object into a prepared statement.
  */
-abstract class Query implements PlaceholderInterface, \Stringable
+abstract class Query implements Placeholder_Interface, \Stringable
 {
     /**
      * The target of the connection object.
      *
      * @var string
      */
-    protected $connectionTarget;
-
+    protected $connection_target;
     /**
      * The key of the connection object.
      *
      * @var string
      */
-    protected $connectionKey;
-
+    protected $connection_key;
     /**
      * A unique identifier for this query object.
      */
-    protected string $uniqueIdentifier;
-
+    protected string $unique_identifier;
     /**
      * The placeholder counter.
      *
      * @var int
      */
-    protected $nextPlaceholder = 0;
-
+    protected $next_placeholder = 0;
     /**
      * An array of comments that can be prepended to a query.
      *
      * @var array
      */
     protected $comments = [];
-
     /**
      * Constructs a Query object.
      *
@@ -56,16 +49,18 @@ abstract class Query implements PlaceholderInterface, \Stringable
      * @param array $queryOptions
      *   Array of query options.
      */
-    public function __construct(protected \Drupal\Core\Database\Connection $connection, /**
-   * The query options to pass on to the connection object.
-   */
-        protected $queryOptions)
+    public function __construct(
+        protected \Drupal\Core\Database\Connection $connection,
+        /**
+         * The query options to pass on to the connection object.
+         */
+        protected $query_options
+    )
     {
-        $this->uniqueIdentifier = uniqid('', true);
-        $this->connectionKey = $this->connection->getKey();
-        $this->connectionTarget = $this->connection->getTarget();
+        $this->unique_identifier = uniqid('', true);
+        $this->connection_key = $this->connection->get_key();
+        $this->connection_target = $this->connection->get_target();
     }
-
     /**
      * Implements the magic __sleep function to disconnect from the database.
      */
@@ -75,23 +70,20 @@ abstract class Query implements PlaceholderInterface, \Stringable
         unset($keys['connection']);
         return array_keys($keys);
     }
-
     /**
      * Implements the magic __wakeup function to reconnect to the database.
      */
     public function __wakeup(): void
     {
-        $this->connection = Database::getConnection($this->connectionTarget, $this->connectionKey);
+        $this->connection = Database::get_connection($this->connection_target, $this->connection_key);
     }
-
     /**
      * Implements the magic __clone function.
      */
     public function __clone()
     {
-        $this->uniqueIdentifier = uniqid('', true);
+        $this->unique_identifier = uniqid('', true);
     }
-
     /**
      * Runs the query against the database.
      *
@@ -99,7 +91,6 @@ abstract class Query implements PlaceholderInterface, \Stringable
      *   A prepared statement, or NULL if the query is not valid.
      */
     abstract protected function execute();
-
     /**
      * Implements PHP magic __toString method to convert the query to a string.
      *
@@ -114,26 +105,23 @@ abstract class Query implements PlaceholderInterface, \Stringable
      *   as in test.
      */
     abstract public function __toString(): string;
-
     /**
      * Returns a unique identifier for this object.
      */
-    public function uniqueIdentifier()
+    public function unique_identifier()
     {
-        return $this->uniqueIdentifier;
+        return $this->unique_identifier;
     }
-
     /**
      * Gets the next placeholder value for this query object.
      *
      * @return int
      *   The next placeholder value.
      */
-    public function nextPlaceholder()
+    public function next_placeholder()
     {
-        return $this->nextPlaceholder++;
+        return $this->next_placeholder++;
     }
-
     /**
      * Adds a comment to the query.
      *
@@ -155,7 +143,6 @@ abstract class Query implements PlaceholderInterface, \Stringable
         $this->comments[] = $comment;
         return $this;
     }
-
     /**
      * Returns a reference to the comments array for the query.
      *
@@ -171,20 +158,18 @@ abstract class Query implements PlaceholderInterface, \Stringable
      * @return array
      *   A reference to the comments array structure.
      */
-    public function &getComments()
+    public function &get_comments()
     {
         return $this->comments;
     }
-
     /**
      * Gets the database connection to be used for the query.
      *
      * @return \Drupal\Core\Database\Connection
      *   The database connection to be used for the query.
      */
-    public function getConnection()
+    public function get_connection()
     {
         return $this->connection;
     }
-
 }

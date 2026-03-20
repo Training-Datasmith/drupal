@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -49,22 +48,19 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorInterface
+class Chained_Fast_Backend implements Cache_Backend_Interface, Cache_Tags_Invalidator_Interface
 {
     /**
      * Cache key prefix for the bin-specific entry to track the last write.
      */
     public const LAST_WRITE_TIMESTAMP_PREFIX = 'last_write_timestamp_';
-
     protected string $bin;
-
     /**
      * The time at which the last write to this cache bin happened.
      *
      * @var float
      */
-    protected $lastWriteTimestamp;
-
+    protected $last_write_timestamp;
     /**
      * Constructs a ChainedFastBackend object.
      *
@@ -75,39 +71,35 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
      * @param string $bin
      *   The cache bin for which the object is created.
      */
-    public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $consistentBackend, protected \Drupal\Core\Cache\CacheBackendInterface $fastBackend, string $bin)
+    public function __construct(protected \Drupal\Core\Cache\Cache_Backend_Interface $consistent_backend, protected \Drupal\Core\Cache\Cache_Backend_Interface $fast_backend, string $bin)
     {
         $this->bin = 'cache_' . $bin;
-        $this->lastWriteTimestamp = null;
+        $this->last_write_timestamp = null;
     }
-
     /**
      * {@inheritdoc}
      */
     public function get($cid, $allow_invalid = false): mixed
     {
         $cids = [$cid];
-        $cache = $this->getMultiple($cids, $allow_invalid);
+        $cache = $this->get_multiple($cids, $allow_invalid);
         return reset($cache);
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function getMultiple(&$cids, $allow_invalid = false): array
+    public function get_multiple(&$cids, $allow_invalid = false): array
     {
         $cids_copy = $cids;
         $cache = [];
-
         // If we can determine the time at which the last write to the consistent
         // backend occurred (we might not be able to if it has been recently
         // flushed/restarted), then we can use that to validate items from the fast
         // backend, so try to get those first. Otherwise, we can't assume that
         // anything in the fast backend is valid, so don't even bother fetching
         // from there.
-        $last_write_timestamp = $this->getLastWriteTimestamp();
-
+        $last_write_timestamp = $this->get_last_write_timestamp();
         // Don't bother to either read from or write to the fast backend if the last
         // write timestamp is in the future - it is always set with an additional
         // grace period for this reason. This reduces the likelihood of a cache
@@ -118,7 +110,6 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
         // build it won't be requested. Once the grace period has passed, the fast
         // backend will begin to take over from the consistent backend again.
         $compare = round(microtime(true), 3);
-
         if ($last_write_timestamp && $compare > $last_write_timestamp) {
             // Items in the fast backend might be invalid based on their timestamp,
             // but we can't check the timestamp prior to getting the item, which
@@ -139,12 +130,11 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
             // exceptions, we proceed to check the consistent (authoritative) backend
             // and allow exceptions from that to bubble up.
             try {
-                $items = $this->fastBackend->getMultiple($cids, $allow_invalid);
+                $items = $this->fast_backend->get_multiple($cids, $allow_invalid);
             } catch (\Exception) {
                 $cids = $cids_copy;
                 $items = [];
             }
-
             // Even if items were successfully fetched from the fast backend, they
             // are potentially invalid if older than the last time the bin was
             // written to in the consistent backend, so only keep ones that aren't.
@@ -156,25 +146,22 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
                 }
             }
         }
-
         // If there were any cache entries that were not available in the fast
         // backend, retrieve them from the consistent backend and store them in the
         // fast one.
         if ($cids) {
-            foreach ($this->consistentBackend->getMultiple($cids, $allow_invalid) as $item) {
+            foreach ($this->consistent_backend->get_multiple($cids, $allow_invalid) as $item) {
                 $cache[$item->cid] = $item;
                 // Only write back to the fast backend if the created time will be later
                 // than $last_write_timestamp the next time it is retrieved, to
                 // avoid wasted writes.
                 if ((!$allow_invalid || $item->valid) && $compare > $last_write_timestamp) {
-                    $this->fastBackend->set($item->cid, $item->data, $item->expire, $item->tags);
+                    $this->fast_backend->set($item->cid, $item->data, $item->expire, $item->tags);
                 }
             }
         }
-
         return $cache;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -189,118 +176,106 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
         // e.g. when higher level caches are warmed at the same time. The fast
         // backend will be populated via the logic in ::get() instead when cache
         // items are actually requested.
-        $this->consistentBackend->set($cid, $data, $expire, $tags);
-        $this->markAsOutdated();
+        $this->consistent_backend->set($cid, $data, $expire, $tags);
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setMultiple(array $items): void
+    public function set_multiple(array $items): void
     {
-        $this->consistentBackend->setMultiple($items);
-        $this->markAsOutdated();
+        $this->consistent_backend->set_multiple($items);
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($cid): void
     {
-        $this->consistentBackend->deleteMultiple([$cid]);
-        $this->markAsOutdated();
+        $this->consistent_backend->delete_multiple([$cid]);
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteMultiple(array $cids): void
+    public function delete_multiple(array $cids): void
     {
-        $this->consistentBackend->deleteMultiple($cids);
-        $this->markAsOutdated();
+        $this->consistent_backend->delete_multiple($cids);
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll(): void
+    public function delete_all(): void
     {
-        $this->consistentBackend->deleteAll();
-        $this->markAsOutdated();
+        $this->consistent_backend->delete_all();
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
     public function invalidate($cid): void
     {
-        $this->invalidateMultiple([$cid]);
+        $this->invalidate_multiple([$cid]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateMultiple(array $cids): void
+    public function invalidate_multiple(array $cids): void
     {
-        $this->consistentBackend->invalidateMultiple($cids);
-        $this->markAsOutdated();
+        $this->consistent_backend->invalidate_multiple($cids);
+        $this->mark_as_outdated();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateTags(array $tags): void
+    public function invalidate_tags(array $tags): void
     {
-        if ($this->consistentBackend instanceof CacheTagsInvalidatorInterface) {
-            $this->consistentBackend->invalidateTags($tags);
+        if ($this->consistent_backend instanceof Cache_Tags_Invalidator_Interface) {
+            $this->consistent_backend->invalidate_tags($tags);
         }
-        if ($this->fastBackend instanceof CacheTagsInvalidatorInterface) {
-            $this->fastBackend->invalidateTags($tags);
+        if ($this->fast_backend instanceof Cache_Tags_Invalidator_Interface) {
+            $this->fast_backend->invalidate_tags($tags);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection(): void
+    public function garbage_collection(): void
     {
-        $this->consistentBackend->garbageCollection();
-        $this->fastBackend->garbageCollection();
+        $this->consistent_backend->garbage_collection();
+        $this->fast_backend->garbage_collection();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function removeBin(): void
+    public function remove_bin(): void
     {
-        $this->consistentBackend->removeBin();
-        $this->fastBackend->removeBin();
+        $this->consistent_backend->remove_bin();
+        $this->fast_backend->remove_bin();
     }
-
     /**
      * @todo Document in https://www.drupal.org/node/2311945.
      */
     public function reset(): void
     {
-        $this->lastWriteTimestamp = null;
+        $this->last_write_timestamp = null;
     }
-
     /**
      * Gets the last write timestamp.
      */
-    protected function getLastWriteTimestamp()
+    protected function get_last_write_timestamp()
     {
-        if ($this->lastWriteTimestamp === null) {
-            $cache = $this->consistentBackend->get(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin);
-            $this->lastWriteTimestamp = $cache ? $cache->data : 0;
+        if ($this->last_write_timestamp === null) {
+            $cache = $this->consistent_backend->get(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin);
+            $this->last_write_timestamp = $cache ? $cache->data : 0;
         }
-        return $this->lastWriteTimestamp;
+        return $this->last_write_timestamp;
     }
-
     /**
      * Marks the fast cache bin as outdated because of a write.
      */
-    protected function markAsOutdated()
+    protected function mark_as_outdated()
     {
         // Clocks on a single server can drift. Multiple servers may have slightly
         // differing opinions about the current time. Given that, do not assume
@@ -312,12 +287,11 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
         // multiple times during a request. Reads and writes from the fast cache
         // are skipped when this timestamp is in the future, which also helps to
         // avoid write contention on the fast cache.
-        $compare = round(microtime(true) + .001, 3);
-        if ($compare > $this->getLastWriteTimestamp()) {
+        $compare = round(microtime(true) + 0.001, 3);
+        if ($compare > $this->get_last_write_timestamp()) {
             $now = round(microtime(true) + 1, 3);
-            $this->lastWriteTimestamp = $now;
-            $this->consistentBackend->set(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin, $this->lastWriteTimestamp);
+            $this->last_write_timestamp = $now;
+            $this->consistent_backend->set(self::LAST_WRITE_TIMESTAMP_PREFIX . $this->bin, $this->last_write_timestamp);
         }
     }
-
 }

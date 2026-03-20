@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Utility;
  *
  * @ingroup utility
  */
-class UserAgent
+class User_Agent
 {
     /**
      * Identifies user agent language from the Accept-language HTTP header.
@@ -38,7 +37,7 @@ class UserAgent
      *   The selected language code or FALSE if no valid language can be
      *   identified.
      */
-    public static function getBestMatchingLangcode($http_accept_language, $langcodes, $mappings = [])
+    public static function get_best_matching_langcode($http_accept_language, $langcodes, $mappings = [])
     {
         // The Accept-Language header contains information about the language
         // preferences configured in the user's user agent / operating system.
@@ -69,13 +68,9 @@ class UserAgent
                 // Take the highest qvalue for this langcode. Although the request
                 // supposedly contains unique langcodes, our mapping possibly resolves
                 // to the same langcode for different qvalues. Keep the highest.
-                $ua_langcodes[$langcode] = max(
-                    (int) ($qvalue * 1000),
-                    ($ua_langcodes[$langcode] ?? 0)
-                );
+                $ua_langcodes[$langcode] = max((int) ($qvalue * 1000), $ua_langcodes[$langcode] ?? 0);
             }
         }
-
         // We should take pristine values from the HTTP headers, but Internet
         // Explorer from version 7 sends only specific language tags (eg. fr-CA)
         // without the corresponding generic tag (fr) unless explicitly configured.
@@ -103,7 +98,6 @@ class UserAgent
                 $ua_langcodes[$generic_tag] = $qvalue - 0.1;
             }
         }
-
         // Find the added language with the greatest qvalue, following the rules
         // of RFC 2616 (section 14.4). If several languages have the same qvalue,
         // prefer the one with the greatest weight.
@@ -112,11 +106,9 @@ class UserAgent
         foreach ($langcodes as $langcode_case_sensitive) {
             // Language tags are case insensitive (RFC2616, sec 3.10).
             $langcode = strtolower((string) $langcode_case_sensitive);
-
             // If nothing matches below, the default qvalue is the one of the wildcard
             // language, if set, or is 0 (which will never match).
             $qvalue = $ua_langcodes['*'] ?? 0;
-
             // Find the longest possible prefix of the user agent supplied language
             // ('the language-range') that matches this site language ('the language
             // tag').
@@ -127,15 +119,12 @@ class UserAgent
                     break;
                 }
             } while ($prefix = substr($prefix, 0, strrpos($prefix, '-')));
-
             // Find the best match.
             if ($qvalue > $max_qvalue) {
                 $best_match_langcode = $langcode_case_sensitive;
                 $max_qvalue = $qvalue;
             }
         }
-
         return $best_match_langcode;
     }
-
 }

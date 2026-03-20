@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Component\Plugin\Exception\Invalid_Plugin_Definition_Exception;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a ConfigAction attribute object.
  *
@@ -23,7 +21,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class ConfigAction extends Plugin
+final class Config_Action extends Plugin
 {
     /**
      * Constructs a ConfigAction attribute.
@@ -43,15 +41,10 @@ final class ConfigAction extends Plugin
      *
      * @see \Drupal\Core\Config\Action\ConfigActionManager::convertActionToPluginId()
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly ?TranslatableMarkup $admin_label = null,
-        public readonly array $entity_types = [],
-        public readonly ?string $deriver = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly ?Translatable_Markup $admin_label = null, public readonly array $entity_types = [], public readonly ?string $deriver = null)
+    {
         if ($this->admin_label === null && $this->deriver === null) {
-            throw new InvalidPluginDefinitionException($id, sprintf("The '%s' config action plugin must have either an admin label or a deriver", $id));
+            throw new Invalid_Plugin_Definition_Exception($id, sprintf("The '%s' config action plugin must have either an admin label or a deriver", $id));
         }
     }
-
 }

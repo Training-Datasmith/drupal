@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff\Engine;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Diff\Engine;
  * @private
  * @subpackage DifferenceEngine
  */
-class DiffOp
+class Diff_Op
 {
     public $type;
     public $orig;

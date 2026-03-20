@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -15,13 +14,12 @@ namespace Drupal\Core\Config;
  * directly to the storage does not trigger configuration events. Use the
  * 'config.factory' service and the configuration objects it provides.
  */
-interface StorageInterface
+interface Storage_Interface
 {
     /**
      * The default collection name.
      */
     public const DEFAULT_COLLECTION = '';
-
     /**
      * Returns whether a configuration object exists.
      *
@@ -32,7 +30,6 @@ interface StorageInterface
      *   TRUE if the configuration object exists, FALSE otherwise.
      */
     public function exists($name);
-
     /**
      * Reads configuration data from the storage.
      *
@@ -44,7 +41,6 @@ interface StorageInterface
      *   configuration data exists for the given name, FALSE is returned.
      */
     public function read($name);
-
     /**
      * Reads configuration data from the storage.
      *
@@ -55,8 +51,7 @@ interface StorageInterface
      *   A list of the configuration data stored for the configuration object name
      *   that could be loaded for the passed list of names.
      */
-    public function readMultiple(array $names);
-
+    public function read_multiple(array $names);
     /**
      * Writes configuration data to the storage.
      *
@@ -72,7 +67,6 @@ interface StorageInterface
      *   If the back-end storage does not exist and cannot be created.
      */
     public function write($name, array $data);
-
     /**
      * Deletes a configuration object from the storage.
      *
@@ -83,7 +77,6 @@ interface StorageInterface
      *   TRUE on success, FALSE otherwise.
      */
     public function delete($name);
-
     /**
      * Renames a configuration object in the storage.
      *
@@ -96,7 +89,6 @@ interface StorageInterface
      *   TRUE on success, FALSE otherwise.
      */
     public function rename($name, $new_name);
-
     /**
      * Encodes configuration data into the storage-specific format.
      *
@@ -110,7 +102,6 @@ interface StorageInterface
      *   The encoded configuration data.
      */
     public function encode($data);
-
     /**
      * Decodes configuration data from the storage-specific format.
      *
@@ -124,7 +115,6 @@ interface StorageInterface
      *   The decoded configuration data as an associative array.
      */
     public function decode($raw);
-
     /**
      * Gets configuration object names starting with a given prefix.
      *
@@ -142,8 +132,7 @@ interface StorageInterface
      * @return array
      *   An array containing matching configuration object names.
      */
-    public function listAll($prefix = '');
-
+    public function list_all($prefix = '');
     /**
      * Deletes configuration objects whose names start with a given prefix.
      *
@@ -161,8 +150,7 @@ interface StorageInterface
      * @return bool
      *   TRUE on success, FALSE otherwise.
      */
-    public function deleteAll($prefix = '');
-
+    public function delete_all($prefix = '');
     /**
      * Creates a collection on the storage.
      *
@@ -183,8 +171,7 @@ interface StorageInterface
      * @return $this
      *   A new instance of the storage backend with the collection set.
      */
-    public function createCollection($collection);
-
+    public function create_collection($collection);
     /**
      * Gets the existing collections.
      *
@@ -195,14 +182,12 @@ interface StorageInterface
      * @return array
      *   An array of existing collection names.
      */
-    public function getAllCollectionNames();
-
+    public function get_all_collection_names();
     /**
      * Gets the name of the current collection the storage is using.
      *
      * @return string
      *   The current collection name.
      */
-    public function getCollectionName();
-
+    public function get_collection_name();
 }

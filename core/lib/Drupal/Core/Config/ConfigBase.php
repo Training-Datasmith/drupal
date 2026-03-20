@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\Render\MarkupInterface;
-use Drupal\Component\Utility\NestedArray;
+use Drupal\Component\Render\Markup_Interface;
+use Drupal\Component\Utility\Nested_Array;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
-use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Interface;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Trait;
+use Drupal\Core\Dependency_Injection\Dependency_Serialization_Trait;
 /**
  * Provides a base class for configuration objects with get/set support.
  *
@@ -26,25 +24,22 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
  * @see \Drupal\Core\Config\Config
  * @see \Drupal\Core\Theme\ThemeSettings
  */
-abstract class ConfigBase implements RefinableCacheableDependencyInterface
+abstract class Config_Base implements Refinable_Cacheable_Dependency_Interface
 {
-    use DependencySerializationTrait;
-    use RefinableCacheableDependencyTrait;
-
+    use Dependency_Serialization_Trait;
+    use Refinable_Cacheable_Dependency_Trait;
     /**
      * The name of the configuration object.
      *
      * @var string
      */
     protected $name;
-
     /**
      * The data of the configuration object.
      *
      * @var array
      */
     protected $data = [];
-
     /**
      * The maximum length of a configuration object name.
      *
@@ -59,18 +54,16 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      * restricted in name length so name can be used as a cache key.
      */
     public const MAX_NAME_LENGTH = 250;
-
     /**
      * Returns the name of this configuration object.
      *
      * @return string
      *   The name of the configuration object.
      */
-    public function getName()
+    public function get_name()
     {
         return $this->name;
     }
-
     /**
      * Sets the name of this configuration object.
      *
@@ -80,12 +73,11 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      * @return $this
      *   The configuration object.
      */
-    public function setName($name)
+    public function set_name($name)
     {
         $this->name = $name;
         return $this;
     }
-
     /**
      * Validates the configuration object name.
      *
@@ -96,24 +88,22 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      *
      * @see Config::MAX_NAME_LENGTH
      */
-    public static function validateName($name): void
+    public static function validate_name($name): void
     {
         // The name must be namespaced by owner.
         if (!str_contains($name, '.')) {
-            throw new ConfigNameException("Missing namespace in Config object name $name.");
+            throw new Config_Name_Exception("Missing namespace in Config object name {$name}.");
         }
         // The name must be shorter than Config::MAX_NAME_LENGTH characters.
         if (strlen($name) > self::MAX_NAME_LENGTH) {
-            throw new ConfigNameException("Config object name $name exceeds maximum allowed length of " . static::MAX_NAME_LENGTH . ' characters.');
+            throw new Config_Name_Exception("Config object name {$name} exceeds maximum allowed length of " . static::MAX_NAME_LENGTH . ' characters.');
         }
-
         // The name must not contain any of the following characters:
         // : ? * < > ' " / \
         if (preg_match('/[:?*<>"\'\/\\\\]/', $name)) {
-            throw new ConfigNameException("Invalid character in Config object name $name.");
+            throw new Config_Name_Exception("Invalid character in Config object name {$name}.");
         }
     }
-
     /**
      * Gets data from this configuration object.
      *
@@ -143,10 +133,9 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
         if (count($parts) == 1) {
             return $this->data[$key] ?? null;
         }
-        $value = NestedArray::getValue($this->data, $parts, $key_exists);
+        $value = Nested_Array::get_value($this->data, $parts, $key_exists);
         return $key_exists ? $value : null;
     }
-
     /**
      * Replaces the data of this configuration object.
      *
@@ -159,14 +148,13 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      * @throws \Drupal\Core\Config\ConfigValueException
      *   If any key in $data in any depth contains a dot.
      */
-    public function setData(array $data)
+    public function set_data(array $data)
     {
-        $data = $this->castSafeStrings($data);
-        $this->validateKeys($data);
+        $data = $this->cast_safe_strings($data);
+        $this->validate_keys($data);
         $this->data = $data;
         return $this;
     }
-
     /**
      * Sets a value in this configuration object.
      *
@@ -183,21 +171,20 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      */
     public function set($key, $value)
     {
-        $value = $this->castSafeStrings($value);
+        $value = $this->cast_safe_strings($value);
         // The dot/period is a reserved character; it may appear between keys, but
         // not within keys.
         if (is_array($value)) {
-            $this->validateKeys($value);
+            $this->validate_keys($value);
         }
         $parts = explode('.', $key);
         if (count($parts) == 1) {
             $this->data[$key] = $value;
         } else {
-            NestedArray::setValue($this->data, $parts, $value);
+            Nested_Array::set_value($this->data, $parts, $value);
         }
         return $this;
     }
-
     /**
      * Validates all keys in a passed in config array structure.
      *
@@ -207,18 +194,17 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      * @throws \Drupal\Core\Config\ConfigValueException
      *   If any key in $data in any depth contains a dot.
      */
-    protected function validateKeys(array $data)
+    protected function validate_keys(array $data)
     {
         foreach ($data as $key => $value) {
             if (str_contains((string) $key, '.')) {
-                throw new ConfigValueException("$key key contains a dot which is not supported.");
+                throw new Config_Value_Exception("{$key} key contains a dot which is not supported.");
             }
             if (is_array($value)) {
-                $this->validateKeys($value);
+                $this->validate_keys($value);
             }
         }
     }
-
     /**
      * Unsets a value in this configuration object.
      *
@@ -234,11 +220,10 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
         if (count($parts) == 1) {
             unset($this->data[$key]);
         } else {
-            NestedArray::unsetValue($this->data, $parts);
+            Nested_Array::unset_value($this->data, $parts);
         }
         return $this;
     }
-
     /**
      * Merges data into a configuration object.
      *
@@ -251,34 +236,30 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
     public function merge(array $data_to_merge)
     {
         // Preserve integer keys so that configuration keys are not changed.
-        $this->setData(NestedArray::mergeDeepArray([$this->data, $data_to_merge], true));
+        $this->set_data(Nested_Array::merge_deep_array([$this->data, $data_to_merge], true));
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheContexts()
+    public function get_cache_contexts()
     {
-        return $this->cacheContexts;
+        return $this->cache_contexts;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheTags()
+    public function get_cache_tags()
     {
-        return Cache::mergeTags(['config:' . $this->name], $this->cacheTags);
+        return Cache::merge_tags(['config:' . $this->name], $this->cache_tags);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheMaxAge()
+    public function get_cache_max_age()
     {
-        return $this->cacheMaxAge;
+        return $this->cache_max_age;
     }
-
     /**
      * Casts any objects that implement MarkupInterface to string.
      *
@@ -288,18 +269,17 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface
      * @return mixed
      *   The data with any safe strings cast to string.
      */
-    protected function castSafeStrings($data)
+    protected function cast_safe_strings($data)
     {
-        if ($data instanceof MarkupInterface) {
+        if ($data instanceof Markup_Interface) {
             $data = (string) $data;
         } elseif (is_array($data)) {
             array_walk_recursive($data, function (&$value): void {
-                if ($value instanceof MarkupInterface) {
+                if ($value instanceof Markup_Interface) {
                     $value = (string) $value;
                 }
             });
         }
         return $data;
     }
-
 }

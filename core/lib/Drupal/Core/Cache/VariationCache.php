@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Core\Cache\Context\CacheContextsManager;
-use Symfony\Component\HttpFoundation\RequestStack;
-
+use Drupal\Core\Cache\Context\Cache_Contexts_Manager;
+use Symfony\Component\Http_Foundation\Request_Stack;
 /**
  * Wraps a regular cache backend to make it support cache contexts.
  *
  * @ingroup cache
  */
-class VariationCache implements VariationCacheInterface
+class Variation_Cache implements Variation_Cache_Interface
 {
     /**
      * Stores redirect chain lookups until the next set, invalidate or delete.
@@ -29,8 +27,7 @@ class VariationCache implements VariationCacheInterface
      * last CacheRedirect that led to the hit, we can at least avoid having to
      * retrieve the entire chain again to get to the actual cached data.
      */
-    protected array $redirectChainCache = [];
-
+    protected array $redirect_chain_cache = [];
     /**
      * Constructs a new VariationCache object.
      *
@@ -41,26 +38,21 @@ class VariationCache implements VariationCacheInterface
      * @param \Drupal\Core\Cache\Context\CacheContextsManager $cacheContextsManager
      *   The cache contexts manager.
      */
-    public function __construct(
-        protected RequestStack $requestStack,
-        protected CacheBackendInterface $cacheBackend,
-        protected CacheContextsManager $cacheContextsManager,
-    ) {
+    public function __construct(protected Request_Stack $request_stack, protected Cache_Backend_Interface $cache_backend, protected Cache_Contexts_Manager $cache_contexts_manager)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function get(array $keys, CacheableDependencyInterface $initial_cacheability): mixed
+    public function get(array $keys, Cacheable_Dependency_Interface $initial_cacheability): mixed
     {
-        $chain = $this->getRedirectChain($keys, $initial_cacheability);
+        $chain = $this->get_redirect_chain($keys, $initial_cacheability);
         return end($chain);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getMultiple(array $items): array
+    public function get_multiple(array $items): array
     {
         // This method does not use ::getRedirectChain() like ::get() does, because
         // we are looking for multiple cache entries and can therefore optimize the
@@ -77,91 +69,68 @@ class VariationCache implements VariationCacheInterface
         $cid_map = [];
         foreach ($items as $index => [$keys, $cacheability]) {
             // Try to optimize based on the cached redirect chain.
-            if ($chain = $this->getValidatedCachedRedirectChain($keys, $cacheability)) {
+            if ($chain = $this->get_validated_cached_redirect_chain($keys, $cacheability)) {
                 $last_item = end($chain);
-
                 // Immediately skip processing the CID for cache misses.
                 if ($last_item === false) {
                     continue;
                 }
-
                 // We do not need to calculate the initial CID as its part of the chain.
                 $initial_cid = array_key_first($chain);
-
                 // Prime the CID map with the last known redirect for the initial CID.
-                assert($last_item->data instanceof CacheRedirect);
-                $cid = $this->createCacheIdFast($keys, $last_item->data);
+                assert($last_item->data instanceof Cache_Redirect);
+                $cid = $this->create_cache_id_fast($keys, $last_item->data);
             } else {
-                $cid = $initial_cid = $this->createCacheIdFast($keys, $cacheability);
+                $cid = $initial_cid = $this->create_cache_id_fast($keys, $cacheability);
             }
-
-            $cid_map[$cid] = [
-              'index' => $index,
-              'keys' => $keys,
-              'initial' => $initial_cid,
-            ];
+            $cid_map[$cid] = ['index' => $index, 'keys' => $keys, 'initial' => $initial_cid];
         }
-
         // Go over all CIDs and update the map according to found redirects. If the
         // map is empty, it means we've followed all CIDs to their final result or
         // lack thereof.
         $results = [];
         while (!empty($cid_map)) {
             $new_cid_map = [];
-
             $fetch_cids = array_keys($cid_map);
-            foreach ($this->cacheBackend->getMultiple($fetch_cids) as $cid => $result) {
+            foreach ($this->cache_backend->get_multiple($fetch_cids) as $cid => $result) {
                 $info = $cid_map[$cid];
-
                 // Add redirects to the next CID map, so the next iteration can look
                 // them all up in one ::getMultiple() call to the cache backend.
-                if ($result->data instanceof CacheRedirect) {
-                    $redirect_cid = $this->createCacheIdFast($info['keys'], $result->data);
+                if ($result->data instanceof Cache_Redirect) {
+                    $redirect_cid = $this->create_cache_id_fast($info['keys'], $result->data);
                     $new_cid_map[$redirect_cid] = $info;
-                    $this->redirectChainCache[$info['initial']][$cid] = $result;
+                    $this->redirect_chain_cache[$info['initial']][$cid] = $result;
                     continue;
                 }
-
                 $results[$info['index']] = $result;
             }
-
             // Any CID that did not get a cache hit is still in $fetch_cids. Add them
             // to the internal redirect chain cache as a miss.
             foreach ($fetch_cids as $fetch_cid) {
                 $info = $cid_map[$fetch_cid];
-                $this->redirectChainCache[$info['initial']][$fetch_cid] = false;
+                $this->redirect_chain_cache[$info['initial']][$fetch_cid] = false;
             }
-
             $cid_map = $new_cid_map;
         }
-
         return $results;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function set(array $keys, $data, CacheableDependencyInterface $cacheability, CacheableDependencyInterface $initial_cacheability): void
+    public function set(array $keys, $data, Cacheable_Dependency_Interface $cacheability, Cacheable_Dependency_Interface $initial_cacheability): void
     {
-        $initial_contexts = $initial_cacheability->getCacheContexts();
-        $contexts = $cacheability->getCacheContexts();
-
+        $initial_contexts = $initial_cacheability->get_cache_contexts();
+        $contexts = $cacheability->get_cache_contexts();
         if ($missing_contexts = array_diff($initial_contexts, $contexts)) {
-            throw new \LogicException(sprintf(
-                'The complete set of cache contexts for a variation cache item must contain all of the initial cache contexts, missing: %s.',
-                implode(', ', $missing_contexts)
-            ));
+            throw new \LogicException(sprintf('The complete set of cache contexts for a variation cache item must contain all of the initial cache contexts, missing: %s.', implode(', ', $missing_contexts)));
         }
-
         // Don't store uncacheable items.
-        if ($cacheability->getCacheMaxAge() === 0) {
+        if ($cacheability->get_cache_max_age() === 0) {
             return;
         }
-
         // Track the potential effect of cache context optimization on cache tags.
-        $optimized_cacheability = CacheableMetadata::createFromObject($cacheability);
-        $cid = $this->createCacheId($keys, $optimized_cacheability);
-
+        $optimized_cacheability = Cacheable_Metadata::create_from_object($cacheability);
+        $cid = $this->create_cache_id($keys, $optimized_cacheability);
         // Check whether we had any cache redirects leading to the cache ID already.
         // If there are none, we know that there is no proper redirect path to the
         // cache ID we're trying to store the data at. This may be because there is
@@ -169,7 +138,7 @@ class VariationCache implements VariationCacheInterface
         // a given step of the way. In case of the former, we simply need to store a
         // redirect. In case of the latter, we need to replace the overly specific
         // step with a simpler one.
-        $chain = $this->getRedirectChain($keys, $initial_cacheability);
+        $chain = $this->get_redirect_chain($keys, $initial_cacheability);
         if (!array_key_exists($cid, $chain)) {
             // We can easily find overly specific redirects by comparing their cache
             // contexts to the ones we have here. If a redirect has more or different
@@ -202,13 +171,12 @@ class VariationCache implements VariationCacheInterface
             // redirect step after A.
             $previous_step_contexts = $initial_contexts;
             foreach ($chain as $chain_cid => $result) {
-                if ($result && $result->data instanceof CacheRedirect) {
-                    $result_contexts = $result->data->getCacheContexts();
+                if ($result && $result->data instanceof Cache_Redirect) {
+                    $result_contexts = $result->data->get_cache_contexts();
                     if (array_diff($result_contexts, $contexts)) {
                         // Check whether we have an overlap scenario as we need to manually
                         // create an extra redirect in that case.
                         $common_contexts = array_intersect($result_contexts, $contexts);
-
                         // If the only common contexts are those we've seen before, it means
                         // we are trying to set a redirect at an address that is completely
                         // different from the one that was already there. This cannot be
@@ -238,36 +206,27 @@ class VariationCache implements VariationCacheInterface
                         // adding the cacheability from previous access checks that did not
                         // lead to a value being returned.
                         if (!array_diff($common_contexts, $previous_step_contexts)) {
-                            trigger_error(sprintf(
-                                'Trying to overwrite a cache redirect for "%s" with one that has nothing in common, old one at address "%s" was pointing to "%s", new one points to "%s".',
-                                $chain_cid,
-                                implode(', ', $previous_step_contexts),
-                                implode(', ', array_diff($result_contexts, $previous_step_contexts)),
-                                implode(', ', array_diff($contexts, $previous_step_contexts)),
-                            ), E_USER_WARNING);
+                            trigger_error(sprintf('Trying to overwrite a cache redirect for "%s" with one that has nothing in common, old one at address "%s" was pointing to "%s", new one points to "%s".', $chain_cid, implode(', ', $previous_step_contexts), implode(', ', array_diff($result_contexts, $previous_step_contexts)), implode(', ', array_diff($contexts, $previous_step_contexts))), E_USER_WARNING);
                         }
-
                         // != is the most appropriate comparison operator here, since we
                         // only want to know if any keys or values don't match.
                         if ($common_contexts != $contexts) {
                             // Set the redirect to the common contexts at the current address.
                             // In the above example this is essentially overwriting the
                             // redirect to AB with a redirect to A.
-                            $common_cacheability = (new CacheableMetadata())->setCacheContexts($common_contexts);
-                            $this->cacheBackend->set($chain_cid, new CacheRedirect($common_cacheability));
-
+                            $common_cacheability = (new Cacheable_Metadata())->set_cache_contexts($common_contexts);
+                            $this->cache_backend->set($chain_cid, new Cache_Redirect($common_cacheability));
                             // Before breaking the loop, set the current address to the next
                             // one in line so that we can store the full redirect as well. In
                             // the above example, this is the part where we immediately also
                             // store a redirect to AC at the CID that A pointed to.
-                            $chain_cid = $this->createCacheIdFast($keys, $common_cacheability);
+                            $chain_cid = $this->create_cache_id_fast($keys, $common_cacheability);
                         }
                         break;
                     }
                     $previous_step_contexts = $result_contexts;
                 }
             }
-
             // The loop above either broke at an overly specific step or completed
             // without any problem. In both cases, $chain_cid ended up with the value
             // that we should store the new redirect at.
@@ -277,45 +236,37 @@ class VariationCache implements VariationCacheInterface
             // that now uses different contexts then said item will either follow an
             // existing path of redirects or carve its own over the old one.
             // @phpstan-ignore variable.undefined
-            $this->cacheBackend->set($chain_cid, new CacheRedirect($cacheability));
+            $this->cache_backend->set($chain_cid, new Cache_Redirect($cacheability));
         }
-
-        unset($this->redirectChainCache[$this->createCacheIdFast($keys, $initial_cacheability)]);
-        $this->cacheBackend->set($cid, $data, $this->maxAgeToExpire($cacheability->getCacheMaxAge()), $optimized_cacheability->getCacheTags());
+        unset($this->redirect_chain_cache[$this->create_cache_id_fast($keys, $initial_cacheability)]);
+        $this->cache_backend->set($cid, $data, $this->max_age_to_expire($cacheability->get_cache_max_age()), $optimized_cacheability->get_cache_tags());
     }
-
     /**
      * {@inheritdoc}
      */
-    public function delete(array $keys, CacheableDependencyInterface $initial_cacheability): void
+    public function delete(array $keys, Cacheable_Dependency_Interface $initial_cacheability): void
     {
-        $chain = $this->getRedirectChain($keys, $initial_cacheability);
-
+        $chain = $this->get_redirect_chain($keys, $initial_cacheability);
         // Don't need to delete what could not be found.
         if (end($chain) === false) {
             return;
         }
-
-        unset($this->redirectChainCache[$this->createCacheIdFast($keys, $initial_cacheability)]);
-        $this->cacheBackend->delete(array_key_last($chain));
+        unset($this->redirect_chain_cache[$this->create_cache_id_fast($keys, $initial_cacheability)]);
+        $this->cache_backend->delete(array_key_last($chain));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidate(array $keys, CacheableDependencyInterface $initial_cacheability): void
+    public function invalidate(array $keys, Cacheable_Dependency_Interface $initial_cacheability): void
     {
-        $chain = $this->getRedirectChain($keys, $initial_cacheability);
-
+        $chain = $this->get_redirect_chain($keys, $initial_cacheability);
         // Don't need to invalidate what could not be found.
         if (end($chain) === false) {
             return;
         }
-
-        unset($this->redirectChainCache[$this->createCacheIdFast($keys, $initial_cacheability)]);
-        $this->cacheBackend->invalidate(array_key_last($chain));
+        unset($this->redirect_chain_cache[$this->create_cache_id_fast($keys, $initial_cacheability)]);
+        $this->cache_backend->invalidate(array_key_last($chain));
     }
-
     /**
      * Performs a full get, returning every step of the way.
      *
@@ -333,28 +284,21 @@ class VariationCache implements VariationCacheInterface
      *   Every cache get that lead to the final result, keyed by the cache ID used
      *   to query the cache for that result.
      */
-    protected function getRedirectChain(array $keys, CacheableDependencyInterface $initial_cacheability): array
+    protected function get_redirect_chain(array $keys, Cacheable_Dependency_Interface $initial_cacheability): array
     {
-        $chain = $this->getValidatedCachedRedirectChain($keys, $initial_cacheability);
-
+        $chain = $this->get_validated_cached_redirect_chain($keys, $initial_cacheability);
         // Initiate the chain if we couldn't retrieve (a partial) one from memory.
         if (empty($chain)) {
-            $cid = $initial_cid = $this->createCacheIdFast($keys, $initial_cacheability);
-            $chain[$cid] = $result = $this->cacheBackend->get($cid);
-        }
-        // If we did find one, we continue our search from the last valid redirect
-        // in the chain or bypass the while loop below in case the chain ends in
-        // FALSE, indicating a previous cache miss.
-        else {
+            $cid = $initial_cid = $this->create_cache_id_fast($keys, $initial_cacheability);
+            $chain[$cid] = $result = $this->cache_backend->get($cid);
+        } else {
             $initial_cid = array_key_first($chain);
             $result = end($chain);
         }
-
-        while ($result && $result->data instanceof CacheRedirect) {
-            $cid = $this->createCacheIdFast($keys, $result->data);
-            $chain[$cid] = $result = $this->cacheBackend->get($cid);
+        while ($result && $result->data instanceof Cache_Redirect) {
+            $cid = $this->create_cache_id_fast($keys, $result->data);
+            $chain[$cid] = $result = $this->cache_backend->get($cid);
         }
-
         // When storing the redirect chain in memory we must take care to not store
         // a cache hit as they can be invalidated, unlike CacheRedirect objects. We
         // do store the rest of the chain because redirects can be reused safely.
@@ -362,11 +306,9 @@ class VariationCache implements VariationCacheInterface
         if ($result !== false) {
             array_pop($chain_to_cache);
         }
-        $this->redirectChainCache[$initial_cid] = $chain_to_cache;
-
+        $this->redirect_chain_cache[$initial_cid] = $chain_to_cache;
         return $chain;
     }
-
     /**
      * Retrieved the redirect chain from cache, validating each part.
      *
@@ -378,14 +320,13 @@ class VariationCache implements VariationCacheInterface
      * @return array
      *   The part of the cached redirect chain, if any, that is still valid.
      */
-    protected function getValidatedCachedRedirectChain(array $keys, CacheableDependencyInterface $initial_cacheability): array
+    protected function get_validated_cached_redirect_chain(array $keys, Cacheable_Dependency_Interface $initial_cacheability): array
     {
-        $cid = $this->createCacheIdFast($keys, $initial_cacheability);
-        if (!isset($this->redirectChainCache[$cid])) {
+        $cid = $this->create_cache_id_fast($keys, $initial_cacheability);
+        if (!isset($this->redirect_chain_cache[$cid])) {
             return [];
         }
-        $chain = $this->redirectChainCache[$cid];
-
+        $chain = $this->redirect_chain_cache[$cid];
         // Only use that part of the redirect chain that is still valid. Even though
         // we do not store cache hits in the internal redirect chain cache, we can
         // still reuse the whole chain up until what would have been a cache hit.
@@ -401,8 +342,8 @@ class VariationCache implements VariationCacheInterface
         $valid_parts = [];
         $last_key = array_key_last($chain);
         foreach ($chain as $key => $result) {
-            if ($result && $result->data instanceof CacheRedirect) {
-                $cid = $this->createCacheIdFast($keys, $result->data);
+            if ($result && $result->data instanceof Cache_Redirect) {
+                $cid = $this->create_cache_id_fast($keys, $result->data);
                 if (!isset($chain[$cid]) && $last_key !== $key) {
                     break;
                 }
@@ -411,7 +352,6 @@ class VariationCache implements VariationCacheInterface
         }
         return $valid_parts;
     }
-
     /**
      * Maps a max-age value to an "expire" value for the Cache API.
      *
@@ -423,14 +363,13 @@ class VariationCache implements VariationCacheInterface
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::set()
      */
-    protected function maxAgeToExpire($max_age): int|float
+    protected function max_age_to_expire($max_age): int|float
     {
         if ($max_age !== Cache::PERMANENT) {
-            return (int) $this->requestStack->getMainRequest()->server->get('REQUEST_TIME') + $max_age;
+            return (int) $this->request_stack->get_main_request()->server->get('REQUEST_TIME') + $max_age;
         }
         return $max_age;
     }
-
     /**
      * Creates a cache ID based on cache keys and cacheable metadata.
      *
@@ -446,16 +385,15 @@ class VariationCache implements VariationCacheInterface
      * @return string
      *   The cache ID.
      */
-    protected function createCacheId(array $keys, CacheableMetadata &$cacheable_metadata): string
+    protected function create_cache_id(array $keys, Cacheable_Metadata &$cacheable_metadata): string
     {
-        if ($contexts = $cacheable_metadata->getCacheContexts()) {
-            $context_cache_keys = $this->cacheContextsManager->convertTokensToKeys($contexts);
-            $keys = array_merge($keys, $context_cache_keys->getKeys());
+        if ($contexts = $cacheable_metadata->get_cache_contexts()) {
+            $context_cache_keys = $this->cache_contexts_manager->convert_tokens_to_keys($contexts);
+            $keys = array_merge($keys, $context_cache_keys->get_keys());
             $cacheable_metadata = $cacheable_metadata->merge($context_cache_keys);
         }
         return implode(':', $keys);
     }
-
     /**
      * Creates a cache ID based on cache keys and cacheable metadata.
      *
@@ -470,15 +408,14 @@ class VariationCache implements VariationCacheInterface
      * @return string
      *   The cache ID for the redirect.
      */
-    protected function createCacheIdFast(array $keys, CacheableDependencyInterface $cacheability): string
+    protected function create_cache_id_fast(array $keys, Cacheable_Dependency_Interface $cacheability): string
     {
-        if ($contexts = $cacheability->getCacheContexts()) {
-            $context_cache_keys = $this->cacheContextsManager->convertTokensToKeys($contexts);
-            $keys = array_merge($keys, $context_cache_keys->getKeys());
+        if ($contexts = $cacheability->get_cache_contexts()) {
+            $context_cache_keys = $this->cache_contexts_manager->convert_tokens_to_keys($contexts);
+            $keys = array_merge($keys, $context_cache_keys->get_keys());
         }
         return implode(':', $keys);
     }
-
     /**
      * Reset statically cached variables.
      *
@@ -488,7 +425,6 @@ class VariationCache implements VariationCacheInterface
      */
     public function reset(): void
     {
-        $this->redirectChainCache = [];
+        $this->redirect_chain_cache = [];
     }
-
 }

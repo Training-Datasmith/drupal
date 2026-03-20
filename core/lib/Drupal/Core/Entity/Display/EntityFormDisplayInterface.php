@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Display;
 
-use Drupal\Core\Entity\EntityConstraintViolationListInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Form\FormStateInterface;
-
+use Drupal\Core\Entity\Entity_Constraint_Violation_List_Interface;
+use Drupal\Core\Entity\Fieldable_Entity_Interface;
+use Drupal\Core\Form\Form_State_Interface;
 /**
  * Provides a common interface for entity form displays.
  */
-interface EntityFormDisplayInterface extends EntityDisplayInterface
+interface Entity_Form_Display_Interface extends Entity_Display_Interface
 {
     /**
      * Adds field widgets to an entity form.
@@ -96,8 +94,7 @@ interface EntityFormDisplayInterface extends EntityDisplayInterface
      * @param \Drupal\Core\Form\FormStateInterface $form_state
      *   The form state.
      */
-    public function buildForm(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state);
-
+    public function build_form(Fieldable_Entity_Interface $entity, array &$form, Form_State_Interface $form_state);
     /**
      * Extracts field values from the submitted widget values into the entity.
      *
@@ -118,8 +115,7 @@ interface EntityFormDisplayInterface extends EntityDisplayInterface
      *   if any, do not correspond to widgets and should be extracted manually by
      *   the caller if needed.
      */
-    public function extractFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state);
-
+    public function extract_form_values(Fieldable_Entity_Interface $entity, array &$form, Form_State_Interface $form_state);
     /**
      * Validates submitted widget values and sets the corresponding form errors.
      *
@@ -153,8 +149,7 @@ interface EntityFormDisplayInterface extends EntityDisplayInterface
      * @param \Drupal\Core\Form\FormStateInterface $form_state
      *   The form state.
      */
-    public function validateFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state);
-
+    public function validate_form_values(Fieldable_Entity_Interface $entity, array &$form, Form_State_Interface $form_state);
     /**
      * Flags entity validation violations as form errors.
      *
@@ -176,6 +171,5 @@ interface EntityFormDisplayInterface extends EntityDisplayInterface
      * @param \Drupal\Core\Form\FormStateInterface $form_state
      *   The form state.
      */
-    public function flagWidgetsErrorsFromViolations(EntityConstraintViolationListInterface $violations, array &$form, FormStateInterface $form_state);
-
+    public function flag_widgets_errors_from_violations(Entity_Constraint_Violation_List_Interface $violations, array &$form, Form_State_Interface $form_state);
 }

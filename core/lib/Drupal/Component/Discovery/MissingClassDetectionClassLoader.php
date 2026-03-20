@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Discovery;
 
 /**
@@ -19,18 +18,16 @@ namespace Drupal\Component\Discovery;
  * @see https://github.com/php/php-src/issues/17959
  * @internal
  */
-final class MissingClassDetectionClassLoader
+final class Missing_Class_Detection_Class_Loader
 {
     /**
      * An array of detected missing traits.
      */
-    protected array $missingTraits = [];
-
+    protected array $missing_traits = [];
     /**
      * Flag indicating whether there was an attempt to load a missing class.
      */
-    protected bool $missingClass = false;
-
+    protected bool $missing_class = false;
     /**
      * Records missing classes and aliases missing traits.
      *
@@ -42,44 +39,40 @@ final class MissingClassDetectionClassLoader
      * @param string $class
      *   The class name to load.
      */
-    public function loadClass(string $class): void
+    public function load_class(string $class): void
     {
-        $this->missingClass = true;
+        $this->missing_class = true;
         if (str_ends_with($class, 'Trait')) {
-            $this->missingTraits[] = $class;
-            class_alias(StubTrait::class, $class);
+            $this->missing_traits[] = $class;
+            class_alias(Stub_Trait::class, $class);
         }
     }
-
     /**
      * Returns whether there was an attempt to load a missing class.
      *
      * @return bool
      *   TRUE if there was an attempt to load a missing class, otherwise FALSE.
      */
-    public function hasMissingClass(): bool
+    public function has_missing_class(): bool
     {
-        return $this->missingClass;
+        return $this->missing_class;
     }
-
     /**
      * Returns all recorded missing traits since the last reset.
      *
      * @return string[]
      *   An array of traits recorded as missing.
      */
-    public function getMissingTraits(): array
+    public function get_missing_traits(): array
     {
-        return $this->missingTraits;
+        return $this->missing_traits;
     }
-
     /**
      * Resets class variables.
      */
     public function reset(): void
     {
-        $this->missingClass = false;
-        $this->missingTraits = [];
+        $this->missing_class = false;
+        $this->missing_traits = [];
     }
-
 }

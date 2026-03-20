@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
-
 namespace Drupal\Core\Database;
 
 /**
@@ -12,6 +11,6 @@ namespace Drupal\Core\Database;
  * throw exceptions that implement this interface to allow database
  * abstraction in Drupal.
  */
-interface DatabaseException extends \Throwable
+interface Database_Exception extends \Throwable
 {
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Attribute;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Component\Plugin\Attribute;
  * @ingroup plugin_api
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class Plugin extends AttributeBase
+class Plugin extends Attribute_Base
 {
     /**
      * Constructs a plugin attribute object.
@@ -24,10 +23,7 @@ class Plugin extends AttributeBase
      * @param class-string|null $deriver
      *   (optional) The deriver class.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly ?string $deriver = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly ?string $deriver = null)
+    {
     }
-
 }

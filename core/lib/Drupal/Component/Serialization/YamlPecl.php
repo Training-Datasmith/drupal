@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Serialization;
 
-use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
-
+use Drupal\Component\Serialization\Exception\Invalid_Data_Type_Exception;
 /**
  * Provides default serialization for YAML using the PECL extension.
  */
-class YamlPecl implements SerializationInterface
+class Yaml_Pecl implements Serialization_Interface
 {
     /**
      * {@inheritdoc}
@@ -25,7 +23,6 @@ class YamlPecl implements SerializationInterface
         }
         return yaml_emit($data, YAML_UTF8_ENCODING, YAML_LN_BREAK);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -52,15 +49,12 @@ class YamlPecl implements SerializationInterface
         // parsing errors into a throwable exception.
         // @see Drupal\Component\Serialization\Exception\InvalidDataTypeException
         // @see http://php.net/manual/class.errorexception.php
-        set_error_handler(self::errorHandler(...));
+        set_error_handler(self::error_handler(...));
         $ndocs = 0;
-        $data = yaml_parse($raw, 0, $ndocs, [
-          YAML_BOOL_TAG => '\Drupal\Component\Serialization\YamlPecl::applyBooleanCallbacks',
-        ]);
+        $data = yaml_parse($raw, 0, $ndocs, [YAML_BOOL_TAG => '\Drupal\Component\Serialization\YamlPecl::applyBooleanCallbacks']);
         restore_error_handler();
         return $data;
     }
-
     /**
      * Handles errors for \Drupal\Component\Serialization\YamlPecl::decode().
      *
@@ -71,20 +65,18 @@ class YamlPecl implements SerializationInterface
      *
      * @see \Drupal\Component\Serialization\YamlPecl::decode()
      */
-    public static function errorHandler($severity, $message): never
+    public static function error_handler($severity, $message): never
     {
         restore_error_handler();
-        throw new InvalidDataTypeException($message, $severity);
+        throw new Invalid_Data_Type_Exception($message, $severity);
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getFileExtension(): string
+    public static function get_file_extension(): string
     {
         return 'yml';
     }
-
     /**
      * Applies callbacks after parsing to ignore 1.1 style booleans.
      *
@@ -99,7 +91,7 @@ class YamlPecl implements SerializationInterface
      *   FALSE, false, TRUE and true are returned as booleans, everything else is
      *   returned as a string.
      */
-    public static function applyBooleanCallbacks($value, $tag, $flags)
+    public static function apply_boolean_callbacks($value, $tag, $flags)
     {
         // YAML 1.1 spec dictates that 'Y', 'N', 'y' and 'n' are booleans. But, we
         // want the 1.2 behavior, so we only consider 'false', 'FALSE', 'true' and
@@ -107,11 +99,7 @@ class YamlPecl implements SerializationInterface
         if (!in_array(strtolower((string) $value), ['false', 'true'], true)) {
             return $value;
         }
-        $map = [
-          'false' => false,
-          'true' => true,
-        ];
+        $map = ['false' => false, 'true' => true];
         return $map[strtolower((string) $value)];
     }
-
 }

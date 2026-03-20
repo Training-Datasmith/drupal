@@ -1,31 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Command;
 
-use Drupal\Core\Database\ConnectionNotDefinedException;
-use Drupal\Core\DrupalKernel;
-use Drupal\Core\DrupalKernelInterface;
+use Drupal\Core\Database\Connection_Not_Defined_Exception;
+use Drupal\Core\Drupal_Kernel;
+use Drupal\Core\Drupal_Kernel_Interface;
 use Drupal\Core\Site\Settings;
 use Drupal\user\Entity\User;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Process\PhpProcess;
+use Symfony\Component\Console\Input\Input_Interface;
+use Symfony\Component\Console\Input\Input_Option;
+use Symfony\Component\Console\Output\Output_Interface;
+use Symfony\Component\Console\Style\Symfony_Style;
+use Symfony\Component\Http_Foundation\Request;
+use Symfony\Component\Process\Php_Executable_Finder;
+use Symfony\Component\Process\Php_Process;
 use Symfony\Component\Process\Process;
-
 /**
  * Runs the PHP webserver for a Drupal site for local testing/development.
  *
  * @internal
  *   This command makes no guarantee of an API for Drupal extensions.
  */
-class ServerCommand extends Command
+class Server_Command extends Command
 {
     /**
      * Constructs a new ServerCommand command.
@@ -33,52 +31,44 @@ class ServerCommand extends Command
      * @param object $classLoader
      *   The class loader.
      */
-    public function __construct(/**
-   * The class loader.
-   */
-        protected $classLoader
-    ) {
+    public function __construct(
+        /**
+         * The class loader.
+         */
+        protected $class_loader
+    )
+    {
         parent::__construct('server');
     }
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setDescription('Starts up a webserver for a site.')
-          ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'Provide a host for the server to run on.', '127.0.0.1')
-          ->addOption('port', null, InputOption::VALUE_OPTIONAL, 'Provide a port for the server to run on. Will be determined automatically if none supplied.')
-          ->addOption('suppress-login', 's', InputOption::VALUE_NONE, 'Disable opening a login URL in a browser.')
-          ->addUsage('--host localhost --port 8080')
-          ->addUsage('--host my-site.com --port 80');
+        $this->set_description('Starts up a webserver for a site.')->add_option('host', null, Input_Option::VALUE_OPTIONAL, 'Provide a host for the server to run on.', '127.0.0.1')->add_option('port', null, Input_Option::VALUE_OPTIONAL, 'Provide a port for the server to run on. Will be determined automatically if none supplied.')->add_option('suppress-login', 's', Input_Option::VALUE_NONE, 'Disable opening a login URL in a browser.')->add_usage('--host localhost --port 8080')->add_usage('--host my-site.com --port 80');
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(Input_Interface $input, Output_Interface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-
-        $host = $input->getOption('host');
-        $port = $input->getOption('port');
+        $io = new Symfony_Style($input, $output);
+        $host = $input->get_option('host');
+        $port = $input->get_option('port');
         if (!$port) {
-            $port = $this->findAvailablePort($host);
+            $port = $this->find_available_port($host);
         }
         if (!$port) {
-            $io->getErrorStyle()->error('Unable to automatically determine a port. Use the --port to hardcode an available port.');
+            $io->get_error_style()->error('Unable to automatically determine a port. Use the --port to hardcode an available port.');
         }
-
         try {
             $kernel = $this->boot();
-        } catch (ConnectionNotDefinedException) {
-            $io->getErrorStyle()->error("No installation found. Use the 'install' command.");
+        } catch (Connection_Not_Defined_Exception) {
+            $io->get_error_style()->error("No installation found. Use the 'install' command.");
             return 1;
         }
         return $this->start($host, $port, $kernel, $input, $io);
     }
-
     /**
      * Boots up a Drupal environment.
      *
@@ -88,22 +78,18 @@ class ServerCommand extends Command
      * @throws \Exception
      *   Exception thrown if kernel does not boot.
      */
-    protected function boot(): \Drupal\Core\DrupalKernel
+    protected function boot(): \Drupal\Core\Drupal_Kernel
     {
-        $kernel = new DrupalKernel('prod', $this->classLoader, false);
-        $kernel::bootEnvironment();
-        $kernel->setSitePath($this->getSitePath());
-        Settings::initialize($kernel->getAppRoot(), $kernel->getSitePath(), $this->classLoader);
+        $kernel = new Drupal_Kernel('prod', $this->class_loader, false);
+        $kernel::boot_environment();
+        $kernel->set_site_path($this->get_site_path());
+        Settings::initialize($kernel->get_app_root(), $kernel->get_site_path(), $this->class_loader);
         $kernel->boot();
         // Some services require a request to work. For example, CommentManager.
         // This is needed as generating the URL fires up entity load hooks.
-        $kernel->getContainer()
-          ->get('request_stack')
-          ->push(Request::createFromGlobals());
-
+        $kernel->get_container()->get('request_stack')->push(Request::create_from_globals());
         return $kernel;
     }
-
     /**
      * Finds an available port.
      *
@@ -113,7 +99,7 @@ class ServerCommand extends Command
      * @return int|false
      *   The available port or FALSE, if no available port found,
      */
-    protected function findAvailablePort($host): int|false
+    protected function find_available_port($host): int|false
     {
         $port = 8888;
         while ($port >= 8888 && $port <= 9999) {
@@ -129,7 +115,6 @@ class ServerCommand extends Command
         }
         return false;
     }
-
     /**
      * Opens a URL in your system default browser.
      *
@@ -138,7 +123,7 @@ class ServerCommand extends Command
      * @param \Symfony\Component\Console\Style\SymfonyStyle $io
      *   The IO.
      */
-    protected function openBrowser($url, SymfonyStyle $io)
+    protected function open_browser($url, Symfony_Style $io)
     {
         $is_windows = defined('PHP_WINDOWS_VERSION_BUILD');
         if ($is_windows) {
@@ -147,49 +132,42 @@ class ServerCommand extends Command
         } else {
             $url = escapeshellarg($url);
         }
-
-        $is_linux = Process::fromShellCommandline('which xdg-open')->run();
-        $is_osx = Process::fromShellCommandline('which open')->run();
+        $is_linux = Process::from_shell_commandline('which xdg-open')->run();
+        $is_osx = Process::from_shell_commandline('which open')->run();
         if ($is_linux === 0) {
             $cmd = 'xdg-open ' . $url;
         } elseif ($is_osx === 0) {
             $cmd = 'open ' . $url;
         }
-
         if (empty($cmd)) {
-            $io->getErrorStyle()
-              ->error('No suitable browser opening command found, open yourself: ' . $url);
+            $io->get_error_style()->error('No suitable browser opening command found, open yourself: ' . $url);
             return;
         }
-
-        if ($io->isVerbose()) {
-            $io->writeln("<info>Browser command:</info> $cmd");
+        if ($io->is_verbose()) {
+            $io->writeln("<info>Browser command:</info> {$cmd}");
         }
-
         // Need to escape double quotes in the command so the PHP will work.
         $cmd = str_replace('"', '\"', $cmd);
         // Sleep for 2 seconds before opening the browser. This allows the command
         // to start up the PHP built-in webserver in the meantime. We use a
         // PhpProcess so that Windows powershell users also get a browser opened
         // for them.
-        $php = "<?php sleep(2); passthru(\"$cmd\"); ?>";
-        $process = new PhpProcess($php);
+        $php = "<?php sleep(2); passthru(\"{$cmd}\"); ?>";
+        $process = new Php_Process($php);
         $process->start();
     }
-
     /**
      * Gets a one time login URL for user 1.
      *
      * @return string
      *   The one time login URL for user 1.
      */
-    protected function getOneTimeLoginUrl()
+    protected function get_one_time_login_url()
     {
         $user = User::load(1);
-        \Drupal::moduleHandler()->load('user');
+        \Drupal::module_handler()->load('user');
         return user_pass_reset_url($user);
     }
-
     /**
      * Starts up a webserver with a running Drupal.
      *
@@ -207,52 +185,43 @@ class ServerCommand extends Command
      * @return int
      *   The exit status of the PHP in-built webserver command.
      */
-    protected function start(string $host, $port, DrupalKernelInterface $kernel, InputInterface $input, SymfonyStyle $io): int
+    protected function start(string $host, $port, Drupal_Kernel_Interface $kernel, Input_Interface $input, Symfony_Style $io): int
     {
-        $finder = new PhpExecutableFinder();
+        $finder = new Php_Executable_Finder();
         $binary = $finder->find();
         if ($binary === false) {
             throw new \RuntimeException('Unable to find the PHP binary.');
         }
-
         $io->writeln("<info>Drupal development server started:</info> <http://{$host}:{$port}>");
         $io->writeln('<info>This server is not meant for production use.</info>');
-        $one_time_login = "http://$host:$port{$this->getOneTimeLoginUrl()}/login";
-        $io->writeln("<info>One time login url:</info> <$one_time_login>");
+        $one_time_login = "http://{$host}:{$port}{$this->get_one_time_login_url()}/login";
+        $io->writeln("<info>One time login url:</info> <{$one_time_login}>");
         $io->writeln('Press Ctrl-C to quit the Drupal development server.');
-
-        if (!$input->getOption('suppress-login')) {
-            if ($this->openBrowser("$one_time_login?destination=" . urlencode('/'), $io) === 1) {
+        if (!$input->get_option('suppress-login')) {
+            if ($this->open_browser("{$one_time_login}?destination=" . urlencode('/'), $io) === 1) {
                 $io->error('Error while opening up a one time login URL');
             }
         }
-
         // Use the Process object to construct an escaped command line.
-        $process = new Process([
-          $binary,
-          '-S',
-          $host . ':' . $port,
-          '.ht.router.php',
-        ], $kernel->getAppRoot(), [], null, null);
-        if ($io->isVerbose()) {
-            $io->writeln("<info>Server command:</info> {$process->getCommandLine()}");
+        $process = new Process([$binary, '-S', $host . ':' . $port, '.ht.router.php'], $kernel->get_app_root(), [], null, null);
+        if ($io->is_verbose()) {
+            $io->writeln("<info>Server command:</info> {$process->get_command_line()}");
         }
-
         // Carefully manage output so we can display output only in verbose mode.
         $descriptors = [];
         $descriptors[0] = STDIN;
         $descriptors[1] = ['pipe', 'w'];
         $descriptors[2] = ['pipe', 'w'];
-        $server = proc_open($process->getCommandLine(), $descriptors, $pipes, $kernel->getAppRoot());
+        $server = proc_open($process->get_command_line(), $descriptors, $pipes, $kernel->get_app_root());
         if (is_resource($server)) {
-            if ($io->isVerbose()) {
+            if ($io->is_verbose()) {
                 // Write a blank line so that server output and the useful information
                 // are visually separated.
                 $io->writeln('');
             }
             $server_status = proc_get_status($server);
             while ($server_status['running']) {
-                if ($io->isVerbose()) {
+                if ($io->is_verbose()) {
                     fpassthru($pipes[2]);
                 }
                 sleep(1);
@@ -261,7 +230,6 @@ class ServerCommand extends Command
         }
         return proc_close($server);
     }
-
     /**
      * Gets the site path.
      *
@@ -271,9 +239,8 @@ class ServerCommand extends Command
      * @return string
      *   The site path to use.
      */
-    protected function getSitePath()
+    protected function get_site_path()
     {
         return getenv('DRUPAL_DEV_SITE_PATH') ?: 'sites/default';
     }
-
 }

@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Drupal\Core\StackMiddleware\StackedHttpKernel;
-use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
-use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
-use Symfony\Component\DependencyInjection\Compiler\AbstractRecursivePass;
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\Compiler\PriorityTaggedServiceTrait;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
-
+use Drupal\Core\Stack_Middleware\Stacked_Http_Kernel;
+use Symfony\Component\Dependency_Injection\Argument\Iterator_Argument;
+use Symfony\Component\Dependency_Injection\Argument\Service_Closure_Argument;
+use Symfony\Component\Dependency_Injection\Compiler\Abstract_Recursive_Pass;
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Compiler\Priority_Tagged_Service_Trait;
+use Symfony\Component\Dependency_Injection\Container_Builder;
+use Symfony\Component\Dependency_Injection\Definition;
+use Symfony\Component\Dependency_Injection\Reference;
 /**
  * Provides a compiler pass for stacked HTTP kernels.
  *
@@ -45,73 +43,57 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @see \Drupal\Core\StackMiddleware\StackedHttpKernel
  */
-class StackedKernelPass extends AbstractRecursivePass implements CompilerPassInterface
+class Stacked_Kernel_Pass extends Abstract_Recursive_Pass implements Compiler_Pass_Interface
 {
-    use PriorityTaggedServiceTrait;
-
+    use Priority_Tagged_Service_Trait;
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
-
-        if (!$container->hasDefinition('http_kernel')) {
+        if (!$container->has_definition('http_kernel')) {
             return;
         }
-
-        $stacked_kernel = $container->getDefinition('http_kernel');
-
+        $stacked_kernel = $container->get_definition('http_kernel');
         // Return now if this is not a stacked kernel.
-        if ($stacked_kernel->getClass() !== StackedHttpKernel::class) {
+        if ($stacked_kernel->get_class() !== Stacked_Http_Kernel::class) {
             return;
         }
-
         $decorated_id = 'http_kernel.basic';
         $middlewares_param = [new Reference($decorated_id)];
-
-        foreach (array_reverse($this->findAndSortTaggedServices('http_middleware', $container)) as $ref) {
+        foreach (array_reverse($this->find_and_sort_tagged_services('http_middleware', $container)) as $ref) {
             // Prepend a reference to the middlewares container parameter.
             array_unshift($middlewares_param, $ref);
-
             // Setup an alias on the outer middleware pointing to the inner one.
             $decorator_id = (string) $ref;
-            $container->setAlias($decorator_id . '.http_middleware_inner', $decorated_id);
+            $container->set_alias($decorator_id . '.http_middleware_inner', $decorated_id);
             $decorated_id = $decorator_id;
         }
-
-        $arguments = [new Reference($decorated_id), new IteratorArgument($middlewares_param)];
-        $stacked_kernel->setArguments($arguments);
-
+        $arguments = [new Reference($decorated_id), new Iterator_Argument($middlewares_param)];
+        $stacked_kernel->set_arguments($arguments);
         parent::process($container);
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function processValue(mixed $value, bool $isRoot = false): mixed
+    protected function process_value(mixed $value, bool $is_root = false): mixed
     {
-        $value = parent::processValue($value, $isRoot);
-
-        if (!$value instanceof Definition || !$value->hasTag('http_middleware')) {
+        $value = parent::process_value($value, $is_root);
+        if (!$value instanceof Definition || !$value->has_tag('http_middleware')) {
             return $value;
         }
-
-        $constructor = $this->getConstructor($value, true);
-        $params = $constructor->getParameters();
-        $innerType = $params[0]->getType();
-        $innerParamTypes = ($innerType instanceof \ReflectionUnionType || $innerType instanceof \ReflectionIntersectionType) ? $innerType->getTypes() : [$innerType];
-        $paramTypeNames = array_map(fn ($param): string => (string) $param, $innerParamTypes);
-
-        $inner = new Reference($this->currentId . '.http_middleware_inner');
-        if (in_array(\Closure::class, $paramTypeNames, true)) {
-            $inner = new ServiceClosureArgument($inner);
+        $constructor = $this->get_constructor($value, true);
+        $params = $constructor->get_parameters();
+        $inner_type = $params[0]->get_type();
+        $inner_param_types = $inner_type instanceof \ReflectionUnionType || $inner_type instanceof \ReflectionIntersectionType ? $inner_type->get_types() : [$inner_type];
+        $param_type_names = array_map(fn($param): string => (string) $param, $inner_param_types);
+        $inner = new Reference($this->current_id . '.http_middleware_inner');
+        if (in_array(\Closure::class, $param_type_names, true)) {
+            $inner = new Service_Closure_Argument($inner);
         }
-
-        $arguments = $value->getArguments();
+        $arguments = $value->get_arguments();
         array_unshift($arguments, $inner);
-        $value->setArguments($arguments);
-
+        $value->set_arguments($arguments);
         return $value;
     }
-
 }

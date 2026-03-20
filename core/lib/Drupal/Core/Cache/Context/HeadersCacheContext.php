@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the HeadersCacheContext service, for "per header" caching.
  *
@@ -13,23 +11,22 @@ use Drupal\Core\Cache\CacheableMetadata;
  * Calculated cache context ID: 'headers:%name', e.g. 'headers:X-Something' (to
  * vary by the 'X-Something' header).
  */
-class HeadersCacheContext extends RequestStackCacheContextBase implements CalculatedCacheContextInterface
+class Headers_Cache_Context extends Request_Stack_Cache_Context_Base implements Calculated_Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('HTTP headers');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext($header = null)
+    public function get_context($header = null)
     {
         if ($header === null) {
-            $headers = $this->requestStack->getCurrentRequest()->headers->all();
+            $headers = $this->request_stack->get_current_request()->headers->all();
             // Order headers by name to have less cache variations.
             ksort($headers);
             $result = '';
@@ -43,8 +40,8 @@ class HeadersCacheContext extends RequestStackCacheContextBase implements Calcul
             }
             return $result;
         }
-        if ($this->requestStack->getCurrentRequest()->headers->has($header)) {
-            $value = $this->requestStack->getCurrentRequest()->headers->get($header);
+        if ($this->request_stack->get_current_request()->headers->has($header)) {
+            $value = $this->request_stack->get_current_request()->headers->get($header);
             if ($value !== '') {
                 return $value;
             }
@@ -52,13 +49,11 @@ class HeadersCacheContext extends RequestStackCacheContextBase implements Calcul
         }
         return '';
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata($header = null): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata($header = null): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

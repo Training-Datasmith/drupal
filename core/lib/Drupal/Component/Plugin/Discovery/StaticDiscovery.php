@@ -1,41 +1,36 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Discovery;
 
 /**
  * Allows plugin definitions to be manually registered.
  */
-class StaticDiscovery implements DiscoveryInterface
+class Static_Discovery implements Discovery_Interface
 {
-    use DiscoveryCachedTrait;
-
+    use Discovery_Cached_Trait;
     /**
      * {@inheritdoc}
      */
-    public function getDefinitions()
+    public function get_definitions()
     {
         if (!$this->definitions) {
             $this->definitions = [];
         }
         return $this->definitions;
     }
-
     /**
      * Sets a plugin definition.
      */
-    public function setDefinition($plugin, $definition): void
+    public function set_definition($plugin, $definition): void
     {
         $this->definitions[$plugin] = $definition;
     }
-
     /**
      * Deletes a plugin definition.
      */
-    public function deleteDefinition($plugin): void
+    public function delete_definition($plugin): void
     {
         unset($this->definitions[$plugin]);
     }
-
 }

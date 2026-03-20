@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Datetime;
 
 /**
  * Defines an interface for obtaining system time.
  */
-interface TimeInterface
+interface Time_Interface
 {
     /**
      * Returns the timestamp for the current request.
@@ -45,8 +44,7 @@ interface TimeInterface
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentTime()
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentMicroTime()
      */
-    public function getRequestTime();
-
+    public function get_request_time();
     /**
      * Returns the timestamp for the current request with microsecond precision.
      *
@@ -84,8 +82,7 @@ interface TimeInterface
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentTime()
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentMicroTime()
      */
-    public function getRequestMicroTime();
-
+    public function get_request_micro_time();
     /**
      * Returns the current system time as an integer.
      *
@@ -117,8 +114,7 @@ interface TimeInterface
      * @see \Drupal\Component\Datetime\TimeInterface::getRequestMicroTime()
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentMicroTime()
      */
-    public function getCurrentTime();
-
+    public function get_current_time();
     /**
      * Returns the current system time with microsecond precision.
      *
@@ -151,6 +147,5 @@ interface TimeInterface
      * @see \Drupal\Component\Datetime\TimeInterface::getRequestMicroTime()
      * @see \Drupal\Component\Datetime\TimeInterface::getCurrentTime()
      */
-    public function getCurrentMicroTime();
-
+    public function get_current_micro_time();
 }

@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileSecurity;
+declare (strict_types=1);
+namespace Drupal\Component\File_Security;
 
 /**
  * Provides file security functions.
@@ -11,7 +10,7 @@ namespace Drupal\Component\FileSecurity;
  * If any change is made here, the same change should be made in the duplicate.
  * See https://www.drupal.org/project/drupal/issues/3079481
  */
-class FileSecurity
+class File_Security
 {
     /**
      * Writes an .htaccess file in the given directory, if it doesn't exist.
@@ -27,11 +26,10 @@ class FileSecurity
      * @return bool
      *   TRUE if the file already exists or was created. FALSE otherwise.
      */
-    public static function writeHtaccess($directory, $deny_public_access = true, $force = false)
+    public static function write_htaccess($directory, $deny_public_access = true, $force = false)
     {
-        return self::writeFile($directory, '.htaccess', self::htaccessLines($deny_public_access), $force);
+        return self::write_file($directory, '.htaccess', self::htaccess_lines($deny_public_access), $force);
     }
-
     /**
      * Returns the standard .htaccess lines that Drupal writes.
      *
@@ -46,64 +44,59 @@ class FileSecurity
      *
      * @see \Drupal\Component\FileSecurity\FileSecurity::writeHtaccess()
      */
-    public static function htaccessLines($deny_public_access = true)
+    public static function htaccess_lines($deny_public_access = true)
     {
-        $lines = static::htaccessPreventExecution();
-
+        $lines = static::htaccess_prevent_execution();
         if ($deny_public_access) {
-            return static::denyPublicAccess() . "\n\n$lines";
+            return static::deny_public_access() . "\n\n{$lines}";
         }
-
         return $lines;
     }
-
     /**
      * Returns htaccess directives to deny execution in a given directory.
      *
      * @return string
      *   Apache htaccess directives to prevent execution of files in a location.
      */
-    protected static function htaccessPreventExecution(): string
+    protected static function htaccess_prevent_execution(): string
     {
         return <<<EOF
-# Turn off all options we don't need.
-Options -Indexes -ExecCGI -Includes -MultiViews
-
-# Set the catch-all handler to prevent scripts from being executed.
-SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006
-<Files *>
-  # Override the handler again if we're run later in the evaluation list.
-  SetHandler Drupal_Security_Do_Not_Remove_See_SA_2013_003
-</Files>
-
-# If we know how to do it safely, disable the PHP engine entirely.
-<IfModule mod_php.c>
-  php_flag engine off
-</IfModule>
-EOF;
+        # Turn off all options we don't need.
+        Options -Indexes -ExecCGI -Includes -MultiViews
+        
+        # Set the catch-all handler to prevent scripts from being executed.
+        SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006
+        <Files *>
+          # Override the handler again if we're run later in the evaluation list.
+          SetHandler Drupal_Security_Do_Not_Remove_See_SA_2013_003
+        </Files>
+        
+        # If we know how to do it safely, disable the PHP engine entirely.
+        <IfModule mod_php.c>
+          php_flag engine off
+        </IfModule>
+        EOF;
     }
-
     /**
      * Returns htaccess directives to block all access to a given directory.
      *
      * @return string
      *   Apache htaccess directives to block access to a location.
      */
-    protected static function denyPublicAccess(): string
+    protected static function deny_public_access(): string
     {
         return <<<EOF
-# Deny all requests from Apache 2.4+.
-<IfModule mod_authz_core.c>
-  Require all denied
-</IfModule>
-
-# Deny all requests from Apache 2.0-2.2.
-<IfModule !mod_authz_core.c>
-  Deny from all
-</IfModule>
-EOF;
+        # Deny all requests from Apache 2.4+.
+        <IfModule mod_authz_core.c>
+          Require all denied
+        </IfModule>
+        
+        # Deny all requests from Apache 2.0-2.2.
+        <IfModule !mod_authz_core.c>
+          Deny from all
+        </IfModule>
+        EOF;
     }
-
     /**
      * Writes the contents to the file in the given directory.
      *
@@ -119,7 +112,7 @@ EOF;
      * @return bool
      *   TRUE if writing the file was successful.
      */
-    protected static function writeFile(string $directory, string $filename, $contents, $force)
+    protected static function write_file(string $directory, string $filename, $contents, $force)
     {
         $file_path = $directory . DIRECTORY_SEPARATOR . $filename;
         // Don't overwrite if the file exists unless forced.
@@ -136,5 +129,4 @@ EOF;
         }
         return false;
     }
-
 }

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * Query extender for pager queries.
  *
@@ -16,7 +14,7 @@ use Drupal\Core\Database\Connection;
  * PagerSelectExtender last, so that its range and count are based on the full
  * query.
  */
-class PagerSelectExtender extends SelectExtender
+class Pager_Select_Extender extends Select_Extender
 {
     /**
      * The number of elements per page to allow.
@@ -24,21 +22,18 @@ class PagerSelectExtender extends SelectExtender
      * @var int
      */
     protected $limit = 10;
-
     /**
      * The unique ID of this pager on this page.
      *
      * @var int
      */
     protected $element;
-
     /**
      * The count query that will be used for this pager.
      *
      * @var \Drupal\Core\Database\Query\SelectInterface
      */
-    protected $customCountQuery = false;
-
+    protected $custom_count_query = false;
     /**
      * Constructs a PagerSelectExtender object.
      *
@@ -47,15 +42,13 @@ class PagerSelectExtender extends SelectExtender
      * @param \Drupal\Core\Database\Connection $connection
      *   Database connection object.
      */
-    public function __construct(SelectInterface $query, Connection $connection)
+    public function __construct(Select_Interface $query, Connection $connection)
     {
         parent::__construct($query, $connection);
-
         // Add pager tag. Do this here to ensure that it is always added before
         // preExecute() is called.
-        $this->addTag('pager');
+        $this->add_tag('pager');
     }
-
     /**
      * Override the execute method.
      *
@@ -67,38 +60,33 @@ class PagerSelectExtender extends SelectExtender
         // By calling preExecute() here, we force it to preprocess the extender
         // object rather than just the base query object. That means
         // hook_query_alter() gets access to the extended object.
-        if (!$this->preExecute($this)) {
+        if (!$this->pre_execute($this)) {
             return null;
         }
-
         // A NULL limit is the "kill switch" for pager queries.
         if (empty($this->limit)) {
             return;
         }
-        $this->ensureElement();
-
-        $total_items = $this->getCountQuery()->execute()->fetchField();
-        $pager = $this->connection->getPagerManager()->createPager($total_items, $this->limit, $this->element);
-        $this->range($pager->getCurrentPage() * $this->limit, $this->limit);
-
+        $this->ensure_element();
+        $total_items = $this->get_count_query()->execute()->fetch_field();
+        $pager = $this->connection->get_pager_manager()->create_pager($total_items, $this->limit, $this->element);
+        $this->range($pager->get_current_page() * $this->limit, $this->limit);
         // Now that we've added our pager-based range instructions, run the query
         // normally.
         return $this->query->execute();
     }
-
     /**
      * Ensure that there is an element associated with this query.
      *
      * After running this method, access $this->element to get the element for
      * this query.
      */
-    protected function ensureElement()
+    protected function ensure_element()
     {
         if (!isset($this->element)) {
-            $this->element($this->connection->getPagerManager()->getMaxPagerElementId() + 1);
+            $this->element($this->connection->get_pager_manager()->get_max_pager_element_id() + 1);
         }
     }
-
     /**
      * Specify the count query object to use for this pager.
      *
@@ -109,11 +97,10 @@ class PagerSelectExtender extends SelectExtender
      *   The count query object. It must return a single row with a single column,
      *   which is the total number of records.
      */
-    public function setCountQuery(SelectInterface $query): void
+    public function set_count_query(Select_Interface $query): void
     {
-        $this->customCountQuery = $query;
+        $this->custom_count_query = $query;
     }
-
     /**
      * Retrieve the count query for this pager.
      *
@@ -123,14 +110,13 @@ class PagerSelectExtender extends SelectExtender
      * @return \Drupal\Core\Database\Query\SelectInterface
      *   A count query object.
      */
-    public function getCountQuery()
+    public function get_count_query()
     {
-        if ($this->customCountQuery) {
-            return $this->customCountQuery;
+        if ($this->custom_count_query) {
+            return $this->custom_count_query;
         }
-        return $this->query->countQuery();
+        return $this->query->count_query();
     }
-
     /**
      * Specify the maximum number of elements per page for this query.
      *
@@ -145,7 +131,6 @@ class PagerSelectExtender extends SelectExtender
         $this->limit = $limit;
         return $this;
     }
-
     /**
      * Specify the element ID for this pager query.
      *
@@ -165,10 +150,9 @@ class PagerSelectExtender extends SelectExtender
     public function element($element): static
     {
         $this->element = $element;
-        $this->connection->getPagerManager()->reservePagerElementId($this->element);
+        $this->connection->get_pager_manager()->reserve_pager_element_id($this->element);
         return $this;
     }
-
     /**
      * Gets the element ID for this pager query.
      *
@@ -179,10 +163,9 @@ class PagerSelectExtender extends SelectExtender
      *   Element ID that is used to differentiate between different pager
      *   queries.
      */
-    public function getElement(): int
+    public function get_element(): int
     {
-        $this->ensureElement();
+        $this->ensure_element();
         return $this->element;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Graph;
 
 /**
@@ -43,9 +42,9 @@ class Graph
          * Holds the directed acyclic graph.
          */
         protected $graph
-    ) {
+    )
+    {
     }
-
     /**
      * Performs a depth-first search and sort on the directed acyclic graph.
      *
@@ -60,25 +59,23 @@ class Graph
      *   - 'component': Vertices in the same component have the same component
      *     identifier.
      */
-    public function searchAndSort()
+    public function search_and_sort()
     {
         $state = [
-          // The order of last visit of the depth first search. This is the reverse
-          // of the topological order if the graph is acyclic.
-          'last_visit_order' => [],
-          // The components of the graph.
-          'components' => [],
+            // The order of last visit of the depth first search. This is the reverse
+            // of the topological order if the graph is acyclic.
+            'last_visit_order' => [],
+            // The components of the graph.
+            'components' => [],
         ];
         // Perform the actual search.
         foreach ($this->graph as $start => $data) {
-            $this->depthFirstSearch($state, $start);
+            $this->depth_first_search($state, $start);
         }
-
         // We do such a numbering that every component starts with 0. This is useful
         // for module installs as we can install every 0 weighted module in one
         // request, and then every 1 weighted etc.
         $component_weights = [];
-
         foreach ($state['last_visit_order'] as $vertex) {
             $component = $this->graph[$vertex]['component'];
             if (!isset($component_weights[$component])) {
@@ -86,10 +83,8 @@ class Graph
             }
             $this->graph[$vertex]['weight'] = $component_weights[$component]--;
         }
-
         return $this->graph;
     }
-
     /**
      * Performs a depth-first search on a graph.
      *
@@ -104,7 +99,7 @@ class Graph
      *
      * @see \Drupal\Component\Graph\Graph::searchAndSort()
      */
-    protected function depthFirstSearch(array &$state, $start, &$component = null)
+    protected function depth_first_search(array &$state, $start, &$component = null)
     {
         // Assign new component for each new vertex, i.e. when not called
         // recursively.
@@ -117,17 +112,14 @@ class Graph
         }
         // Mark $start as visited.
         $this->graph[$start]['paths'] = [];
-
         // Assign $start to the current component.
         $this->graph[$start]['component'] = $component;
         $state['components'][$component][] = $start;
-
         // Visit edges of $start.
         if (isset($this->graph[$start]['edges'])) {
             foreach ($this->graph[$start]['edges'] as $end => $v) {
                 // Mark that $start can reach $end.
                 $this->graph[$start]['paths'][$end] = $v;
-
                 if (isset($this->graph[$end]['component']) && $component != $this->graph[$end]['component']) {
                     // This vertex already has a component, use that from now on and
                     // reassign all the previously explored vertices.
@@ -142,14 +134,12 @@ class Graph
                 // Only visit existing vertices.
                 if (isset($this->graph[$end])) {
                     // Visit the connected vertex.
-                    $this->depthFirstSearch($state, $end, $component);
-
+                    $this->depth_first_search($state, $end, $component);
                     // All vertices reachable by $end are also reachable by $start.
                     $this->graph[$start]['paths'] += $this->graph[$end]['paths'];
                 }
             }
         }
-
         // Now that any other subgraph has been explored, add $start to all reverse
         // paths.
         foreach ($this->graph[$start]['paths'] as $end => $v) {
@@ -157,10 +147,8 @@ class Graph
                 $this->graph[$end]['reverse_paths'][$start] = $v;
             }
         }
-
         // Record the order of the last visit. This is the reverse of the
         // topological order if the graph is acyclic.
         $state['last_visit_order'][] = $start;
     }
-
 }

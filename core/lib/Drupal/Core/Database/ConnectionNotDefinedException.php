@@ -1,12 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
  * Exception thrown if an undefined database connection is requested.
  */
-class ConnectionNotDefinedException extends \RuntimeException
+class Connection_Not_Defined_Exception extends \RuntimeException
 {
 }

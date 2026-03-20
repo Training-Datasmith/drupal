@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Database\Query;
  *
  * @ingroup database
  */
-trait InsertTrait
+trait Insert_Trait
 {
     /**
      * The table on which to insert.
@@ -17,21 +16,18 @@ trait InsertTrait
      * @var string
      */
     protected $table;
-
     /**
      * An array of fields on which to insert.
      *
      * @var array
      */
-    protected $insertFields = [];
-
+    protected $insert_fields = [];
     /**
      * An array of fields that should be set to their database-defined defaults.
      *
      * @var array
      */
-    protected $defaultFields = [];
-
+    protected $default_fields = [];
     /**
      * A nested array of values to insert.
      *
@@ -47,8 +43,7 @@ trait InsertTrait
      *
      * @var array
      */
-    protected $insertValues = [];
-
+    protected $insert_values = [];
     /**
      * Adds a set of field->value pairs to be inserted.
      *
@@ -71,22 +66,20 @@ trait InsertTrait
      */
     public function fields(array $fields, array $values = [])
     {
-        if (empty($this->insertFields)) {
+        if (empty($this->insert_fields)) {
             if (empty($values)) {
                 if (!is_numeric(key($fields))) {
                     $values = array_values($fields);
                     $fields = array_keys($fields);
                 }
             }
-            $this->insertFields = $fields;
+            $this->insert_fields = $fields;
             if (!empty($values)) {
-                $this->insertValues[] = $values;
+                $this->insert_values[] = $values;
             }
         }
-
         return $this;
     }
-
     /**
      * Adds another set of values to the query to be inserted.
      *
@@ -104,18 +97,17 @@ trait InsertTrait
     public function values(array $values)
     {
         if (is_numeric(key($values))) {
-            $this->insertValues[] = $values;
-        } elseif ($this->insertFields) {
+            $this->insert_values[] = $values;
+        } elseif ($this->insert_fields) {
             // Reorder the submitted values to match the fields array.
-            foreach ($this->insertFields as $key) {
+            foreach ($this->insert_fields as $key) {
                 $insert_values[$key] = $values[$key];
             }
             // For consistency, the values array is always numerically indexed.
-            $this->insertValues[] = array_values($insert_values);
+            $this->insert_values[] = array_values($insert_values);
         }
         return $this;
     }
-
     /**
      * Specifies fields for which the database defaults should be used.
      *
@@ -135,12 +127,11 @@ trait InsertTrait
      * @return $this
      *   The called object.
      */
-    public function useDefaults(array $fields)
+    public function use_defaults(array $fields)
     {
-        $this->defaultFields = $fields;
+        $this->default_fields = $fields;
         return $this;
     }
-
     /**
      * Returns the query placeholders for values that will be inserted.
      *
@@ -152,18 +143,16 @@ trait InsertTrait
      * @return array
      *   An array of insert placeholders.
      */
-    protected function getInsertPlaceholderFragment(array $nested_insert_values, array $default_fields): array
+    protected function get_insert_placeholder_fragment(array $nested_insert_values, array $default_fields): array
     {
         $max_placeholder = 0;
         $values = [];
         if ($nested_insert_values) {
             foreach ($nested_insert_values as $insert_values) {
                 $placeholders = [];
-
                 // Default fields aren't really placeholders, but this is the most
                 // convenient way to handle them.
                 $placeholders = array_pad($placeholders, count($default_fields), 'default');
-
                 $new_placeholder = $max_placeholder + count($insert_values);
                 for ($i = $max_placeholder; $i < $new_placeholder; ++$i) {
                     $placeholders[] = ':db_insert_placeholder_' . $i;
@@ -177,16 +166,13 @@ trait InsertTrait
             $placeholders = array_fill(0, count($default_fields), 'default');
             $values[] = '(' . implode(', ', $placeholders) . ')';
         }
-
         return $values;
     }
-
     /**
      * {@inheritdoc}
      */
     public function count(): int
     {
-        return count($this->insertValues);
+        return count($this->insert_values);
     }
-
 }

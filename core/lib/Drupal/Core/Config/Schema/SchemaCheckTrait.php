@@ -1,36 +1,32 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\Core\Config\Entity\ConfigEntityType;
-use Drupal\Core\Config\TypedConfigManagerInterface;
-use Drupal\Core\Entity\Plugin\DataType\ConfigEntityAdapter;
-use Drupal\Core\TypedData\PrimitiveInterface;
-use Drupal\Core\TypedData\TraversableTypedDataInterface;
-use Drupal\Core\TypedData\Type\BooleanInterface;
-use Drupal\Core\TypedData\Type\FloatInterface;
-use Drupal\Core\TypedData\Type\IntegerInterface;
-use Drupal\Core\TypedData\Type\StringInterface;
-use Symfony\Component\Validator\ConstraintViolationInterface;
-
+use Drupal\Core\Config\Entity\Config_Entity_Interface;
+use Drupal\Core\Config\Entity\Config_Entity_Type;
+use Drupal\Core\Config\Typed_Config_Manager_Interface;
+use Drupal\Core\Entity\Plugin\Data_Type\Config_Entity_Adapter;
+use Drupal\Core\Typed_Data\Primitive_Interface;
+use Drupal\Core\Typed_Data\Traversable_Typed_Data_Interface;
+use Drupal\Core\Typed_Data\Type\Boolean_Interface;
+use Drupal\Core\Typed_Data\Type\Float_Interface;
+use Drupal\Core\Typed_Data\Type\Integer_Interface;
+use Drupal\Core\Typed_Data\Type\String_Interface;
+use Symfony\Component\Validator\Constraint_Violation_Interface;
 /**
  * Provides a trait for checking configuration schema.
  */
-trait SchemaCheckTrait
+trait Schema_Check_Trait
 {
     /**
      * The config schema wrapper object for the configuration object under test.
      */
-    protected TraversableTypedDataInterface $schema;
-
+    protected Traversable_Typed_Data_Interface $schema;
     /**
      * The configuration object name under test.
      */
-    protected string $configName;
-
+    protected string $config_name;
     /**
      * The ignored property paths.
      *
@@ -45,38 +41,24 @@ trait SchemaCheckTrait
      *
      * @var array<string, array<string, array<int, string>>>
      */
-    protected static array $ignoredPropertyPaths = [
-      'search.page.*' => [
+    protected static array $ignored_property_paths = ['search.page.*' => [
         // @todo Fix config or tweak schema of `type: search.page.*` in
         //   https://drupal.org/i/3380475.
         // @see search.schema.yml
-        'label' => [
-          'This value should not be blank.',
-        ],
-      ],
-      'contact.settings' => [
+        'label' => ['This value should not be blank.'],
+    ], 'contact.settings' => [
         // @todo Simple config cannot have dependencies on any other config.
         //   Remove this in https://www.drupal.org/project/drupal/issues/3425992.
-        'default_form' => [
-          "The 'contact.form.feedback' config does not exist.",
-        ],
-      ],
-      'editor.editor.*' => [
+        'default_form' => ["The 'contact.form.feedback' config does not exist."],
+    ], 'editor.editor.*' => [
         // @todo Fix stream wrappers not being available early enough in
         //   https://www.drupal.org/project/drupal/issues/3416735
-        'image_upload.scheme' => [
-          '^The file storage you selected is not a visible, readable and writable stream wrapper\. Possible choices: <em class="placeholder"><\/em>\.$',
-        ],
-      ],
-      'search.settings' => [
+        'image_upload.scheme' => ['^The file storage you selected is not a visible, readable and writable stream wrapper\. Possible choices: <em class="placeholder"><\/em>\.$'],
+    ], 'search.settings' => [
         // @todo Simple config cannot have dependencies on any other config.
         //   Remove this in https://www.drupal.org/project/drupal/issues/3425992.
-        'default_page' => [
-          "The 'search.page.node_search' config does not exist.",
-        ],
-      ],
-    ];
-
+        'default_page' => ["The 'search.page.node_search' config does not exist."],
+    ]];
     /**
      * Checks the TypedConfigManager has a valid schema for the configuration.
      *
@@ -94,40 +76,32 @@ trait SchemaCheckTrait
      *   FALSE if no schema found. List of errors if any found. TRUE if fully
      *   valid.
      */
-    public function checkConfigSchema(TypedConfigManagerInterface $typed_config, $config_name, array $config_data, bool $validate_constraints = false): bool|array
+    public function check_config_schema(Typed_Config_Manager_Interface $typed_config, $config_name, array $config_data, bool $validate_constraints = false): bool|array
     {
-        $this->configName = $config_name;
-        if (!$typed_config->hasConfigSchema($config_name)) {
+        $this->config_name = $config_name;
+        if (!$typed_config->has_config_schema($config_name)) {
             return false;
         }
-        $this->schema = $typed_config->createFromNameAndData($config_name, $config_data);
+        $this->schema = $typed_config->create_from_name_and_data($config_name, $config_data);
         $errors = [];
         foreach ($config_data as $key => $value) {
-            $errors[] = $this->checkValue($key, $value);
+            $errors[] = $this->check_value($key, $value);
         }
         $errors = array_merge(...$errors);
         if ($validate_constraints) {
             // Also perform explicit validation. Note this does NOT require every node
             // in the config schema tree to have validation constraints defined.
             $violations = $this->schema->validate();
-            $filtered_violations = array_filter(
-                iterator_to_array($violations),
-                fn (ConstraintViolationInterface $v): bool => !static::isViolationForIgnoredPropertyPath($v),
-            );
-            $validation_errors = array_map(
-                fn (ConstraintViolationInterface $v): string => sprintf('[%s] %s', $v->getPropertyPath(), (string) $v->getMessage()),
-                $filtered_violations
-            );
+            $filtered_violations = array_filter(iterator_to_array($violations), fn(Constraint_Violation_Interface $v): bool => !static::is_violation_for_ignored_property_path($v));
+            $validation_errors = array_map(fn(Constraint_Violation_Interface $v): string => sprintf('[%s] %s', $v->get_property_path(), (string) $v->get_message()), $filtered_violations);
             // @todo Decide in https://www.drupal.org/project/drupal/issues/3395099 when/how to trigger deprecation errors or even failures for contrib modules.
             $errors = array_merge($errors, $validation_errors);
         }
-
         if (empty($errors)) {
             return true;
         }
         return $errors;
     }
-
     /**
      * Determines whether this violation is for an ignored Config property path.
      *
@@ -138,17 +112,17 @@ trait SchemaCheckTrait
      *   TRUE when the violation is for an ignored configuration property path,
      *   FALSE otherwise.
      */
-    protected static function isViolationForIgnoredPropertyPath(ConstraintViolationInterface $v): bool
+    protected static function is_violation_for_ignored_property_path(Constraint_Violation_Interface $v): bool
     {
         // When the validated object is a config entity wrapped in a
         // ConfigEntityAdapter, some work is necessary to map from e.g.
         // `entity:comment_type` to the corresponding `comment.type.*`.
-        if ($v->getRoot() instanceof ConfigEntityAdapter) {
-            $config_entity = $v->getRoot()->getEntity();
-            assert($config_entity instanceof ConfigEntityInterface);
-            $config_entity_type = $config_entity->getEntityType();
-            assert($config_entity_type instanceof ConfigEntityType);
-            $config_prefix = $config_entity_type->getConfigPrefix();
+        if ($v->get_root() instanceof Config_Entity_Adapter) {
+            $config_entity = $v->get_root()->get_entity();
+            assert($config_entity instanceof Config_Entity_Interface);
+            $config_entity_type = $config_entity->get_entity_type();
+            assert($config_entity_type instanceof Config_Entity_Type);
+            $config_prefix = $config_entity_type->get_config_prefix();
             // Compute the data type of the config object being validated:
             // - the config entity type's config prefix
             // - with as many `.*`-suffixes appended as there are parts in the ID (for
@@ -162,17 +136,14 @@ trait SchemaCheckTrait
             do {
                 $config_object_data_type = $config_prefix . str_repeat('.*', $suffix_count);
                 $suffix_count++;
-            } while ($suffix_count <= 3 && !array_key_exists($config_object_data_type, static::$ignoredPropertyPaths));
+            } while ($suffix_count <= 3 && !array_key_exists($config_object_data_type, static::$ignored_property_paths));
         } else {
-            $config_object_data_type = $v->getRoot()
-              ->getDataDefinition()
-              ->getDataType();
+            $config_object_data_type = $v->get_root()->get_data_definition()->get_data_type();
         }
-        if (!array_key_exists($config_object_data_type, static::$ignoredPropertyPaths)) {
+        if (!array_key_exists($config_object_data_type, static::$ignored_property_paths)) {
             return false;
         }
-
-        foreach (static::$ignoredPropertyPaths[$config_object_data_type] as $ignored_property_path_expression => $ignored_validation_constraint_messages) {
+        foreach (static::$ignored_property_paths[$config_object_data_type] as $ignored_property_path_expression => $ignored_validation_constraint_messages) {
             // Convert the wildcard-based expression to a regex: treat `*` nor in the
             // regex sense nor as something to be escaped: treat it as the wildcard
             // for a segment in a property path (property path segments are separated
@@ -181,17 +152,15 @@ trait SchemaCheckTrait
             // then replacing it with an appropriate regular expression: `[^\.]+`,
             // which means: ">=1 characters that are anything except a period".
             $ignored_property_path_regex = str_replace(' ', '[^\.]+', preg_quote(str_replace('*', ' ', $ignored_property_path_expression)));
-
             // To ignore this violation constraint, require a match on both the
             // property path and the message.
-            $property_path_match = preg_match('/^' . $ignored_property_path_regex . '$/', $v->getPropertyPath(), $matches) === 1;
+            $property_path_match = preg_match('/^' . $ignored_property_path_regex . '$/', $v->get_property_path(), $matches) === 1;
             if ($property_path_match) {
-                return preg_match(sprintf('/^(%s)$/', implode('|', $ignored_validation_constraint_messages)), (string) $v->getMessage()) === 1;
+                return preg_match(sprintf('/^(%s)$/', implode('|', $ignored_validation_constraint_messages)), (string) $v->get_message()) === 1;
             }
         }
         return false;
     }
-
     /**
      * Helper method to check data type.
      *
@@ -203,54 +172,40 @@ trait SchemaCheckTrait
      * @return array
      *   List of errors found while checking with the corresponding schema.
      */
-    protected function checkValue(string $key, $value): array
+    protected function check_value(string $key, $value): array
     {
-        $error_key = $this->configName . ':' . $key;
+        $error_key = $this->config_name . ':' . $key;
         /** @var \Drupal\Core\TypedData\TypedDataInterface $element */
         $element = $this->schema->get($key);
-
         // Check if this type has been deprecated.
-        $data_definition = $element->getDataDefinition();
+        $data_definition = $element->get_data_definition();
         if (!empty($data_definition['deprecated'])) {
             @trigger_error($data_definition['deprecated'], E_USER_DEPRECATED);
         }
-
         if ($element instanceof Undefined) {
             return [$error_key => 'missing schema'];
         }
-
         // Do not check value if it is defined to be ignored.
         if ($element && $element instanceof Ignore) {
             return [];
         }
-
         if ($element && is_scalar($value) || $value === null) {
             $success = false;
             $type = gettype($value);
-            if ($element instanceof PrimitiveInterface) {
-                $success =
-                  ($type == 'integer' && $element instanceof IntegerInterface) ||
-                  // Allow integer values in a float field.
-                  (($type == 'double' || $type == 'integer') && $element instanceof FloatInterface) ||
-                  ($type == 'boolean' && $element instanceof BooleanInterface) ||
-                  ($type == 'string' && $element instanceof StringInterface) ||
-                  // Null values are allowed for all primitive types.
-                  ($value === null);
-            }
-            // Array elements can also opt-in for allowing a NULL value.
-            elseif ($element instanceof ArrayElement && $element->isNullable() && $value === null) {
+            if ($element instanceof Primitive_Interface) {
+                $success = $type == 'integer' && $element instanceof Integer_Interface || ($type == 'double' || $type == 'integer') && $element instanceof Float_Interface || $type == 'boolean' && $element instanceof Boolean_Interface || $type == 'string' && $element instanceof String_Interface || $value === null;
+            } elseif ($element instanceof Array_Element && $element->is_nullable() && $value === null) {
                 $success = true;
             }
             $class = $element::class;
             if (!$success) {
-                return [$error_key => "variable type is $type but applied schema class is $class"];
+                return [$error_key => "variable type is {$type} but applied schema class is {$class}"];
             }
         } else {
             $errors = [];
-            if (!$element instanceof TraversableTypedDataInterface) {
+            if (!$element instanceof Traversable_Typed_Data_Interface) {
                 $errors[$error_key] = 'non-scalar value but not defined as an array (such as mapping or sequence)';
             }
-
             // Go on processing so we can get errors on all levels. Any non-scalar
             // value must be an array so cast to an array.
             if (!is_array($value)) {
@@ -259,12 +214,11 @@ trait SchemaCheckTrait
             $nested_errors = [];
             // Recurse into any nested keys.
             foreach ($value as $nested_value_key => $nested_value) {
-                $nested_errors[] = $this->checkValue($key . '.' . $nested_value_key, $nested_value);
+                $nested_errors[] = $this->check_value($key . '.' . $nested_value_key, $nested_value);
             }
             return array_merge($errors, ...$nested_errors);
         }
         // No errors found.
         return [];
     }
-
 }

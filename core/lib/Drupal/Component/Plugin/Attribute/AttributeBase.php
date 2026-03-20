@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Attribute;
 
 /**
  * Provides a base class for classed attributes.
  */
-abstract class AttributeBase implements AttributeInterface
+abstract class Attribute_Base implements Attribute_Interface
 {
     /**
      * The class used for this attribute class.
@@ -15,12 +14,10 @@ abstract class AttributeBase implements AttributeInterface
      * @var class-string
      */
     protected string $class;
-
     /**
      * The provider of the attribute class.
      */
     protected string|null $provider = null;
-
     /**
      * The dependencies for the attribute class.
      *
@@ -31,81 +28,67 @@ abstract class AttributeBase implements AttributeInterface
      * @var array{"class"?: list<class-string>, "interface"?: list<class-string>, "trait"?: list<class-string>, "provider"?: list<string>}|null
      */
     protected array|null $dependencies = null;
-
     /**
      * @param string $id
      *   The attribute class ID.
      */
-    public function __construct(
-        protected readonly string $id,
-    ) {
+    public function __construct(protected readonly string $id)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getProvider(): ?string
+    public function get_provider(): ?string
     {
         return $this->provider;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setProvider(string $provider): void
+    public function set_provider(string $provider): void
     {
         $this->provider = $provider;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getId(): string
+    public function get_id(): string
     {
         return $this->id;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getClass(): string
+    public function get_class(): string
     {
         return $this->class;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setClass(string $class): void
+    public function set_class(string $class): void
     {
         $this->class = $class;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDependencies(): ?array
+    public function get_dependencies(): ?array
     {
         return $this->dependencies;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setDependencies(?array $dependencies): void
+    public function set_dependencies(?array $dependencies): void
     {
         $this->dependencies = $dependencies;
     }
-
     /**
      * {@inheritdoc}
      */
     public function get(): array|object
     {
-        return array_filter(get_object_vars($this) + [
-          'class' => $this->getClass(),
-          'provider' => $this->getProvider(),
-        ], fn ($value, $key) => !($value === null && (in_array($key, ['deriver', 'provider', 'dependencies']))), ARRAY_FILTER_USE_BOTH);
+        return array_filter(get_object_vars($this) + ['class' => $this->get_class(), 'provider' => $this->get_provider()], fn($value, $key) => !($value === null && in_array($key, ['deriver', 'provider', 'dependencies'])), ARRAY_FILTER_USE_BOTH);
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Version;
 
 /**
@@ -18,8 +17,7 @@ class Constraint implements \Stringable
      *
      * @var array[]
      */
-    protected $constraintArray = [];
-
+    protected $constraint_array = [];
     /**
      * Constraint constructor.
      *
@@ -29,15 +27,16 @@ class Constraint implements \Stringable
      *   Core compatibility declared for the current version of Drupal core.
      *   Normally this is set to \Drupal::CORE_COMPATIBILITY by the caller.
      */
-    public function __construct(/**
-   * The constraint represented as a string. For example '>=8.x-5.x'.
-   */
+    public function __construct(
+        /**
+         * The constraint represented as a string. For example '>=8.x-5.x'.
+         */
         protected $constraint,
         $core_compatibility
-    ) {
-        $this->parseConstraint($this->constraint, $core_compatibility);
+    )
+    {
+        $this->parse_constraint($this->constraint, $core_compatibility);
     }
-
     /**
      * Gets the constraint as a string.
      *
@@ -50,7 +49,6 @@ class Constraint implements \Stringable
     {
         return $this->constraint;
     }
-
     /**
      * Determines if the provided version is satisfied by this constraint.
      *
@@ -61,16 +59,15 @@ class Constraint implements \Stringable
      *   TRUE if the provided version is satisfied by this constraint, FALSE if
      *   not.
      */
-    public function isCompatible($version): bool
+    public function is_compatible($version): bool
     {
-        foreach ($this->constraintArray as $constraint) {
+        foreach ($this->constraint_array as $constraint) {
             if (!version_compare($version, $constraint['version'], $constraint['op'])) {
                 return false;
             }
         }
         return true;
     }
-
     /**
      * Parses a constraint string.
      *
@@ -80,7 +77,7 @@ class Constraint implements \Stringable
      *   Core compatibility declared for the current version of Drupal core.
      *   Normally this is set to \Drupal::CORE_COMPATIBILITY by the caller.
      */
-    private function parseConstraint($constraint_string, $core_compatibility): void
+    private function parse_constraint($constraint_string, $core_compatibility): void
     {
         // We use named sub-patterns and support every op that version_compare
         // supports. Also, op is optional and defaults to equals.
@@ -91,7 +88,7 @@ class Constraint implements \Stringable
         // By setting the minor version to x, branches can be matched.
         $p_minor = '(?<minor>(?:\d+|x)(?:-[A-Za-z]+\d+)?)';
         foreach (explode(',', $constraint_string) as $constraint) {
-            if (preg_match("/^\s*$p_op\s*$p_core$p_major\.$p_minor/", $constraint, $matches)) {
+            if (preg_match("/^\\s*{$p_op}\\s*{$p_core}{$p_major}\\.{$p_minor}/", $constraint, $matches)) {
                 $op = !empty($matches['operation']) ? $matches['operation'] : '=';
                 if ($matches['minor'] == 'x') {
                     // Drupal considers "2.x" to mean any version that begins with
@@ -105,13 +102,12 @@ class Constraint implements \Stringable
                     }
                     // Equivalence can be checked by adding two restrictions.
                     if ($op == '=' || $op == '==') {
-                        $this->constraintArray[] = ['op' => '<', 'version' => ($matches['major'] + 1) . '.x'];
+                        $this->constraint_array[] = ['op' => '<', 'version' => $matches['major'] + 1 . '.x'];
                         $op = '>=';
                     }
                 }
-                $this->constraintArray[] = ['op' => $op, 'version' => $matches['major'] . '.' . $matches['minor']];
+                $this->constraint_array[] = ['op' => $op, 'version' => $matches['major'] . '.' . $matches['minor']];
             }
         }
     }
-
 }

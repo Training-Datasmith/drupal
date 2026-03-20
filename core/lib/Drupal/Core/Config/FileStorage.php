@@ -1,27 +1,24 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\FileCache\FileCacheFactory;
-use Drupal\Component\FileSecurity\FileSecurity;
-use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
-use Drupal\Core\File\FileSystemInterface;
+use Drupal\Component\File_Cache\File_Cache_Factory;
+use Drupal\Component\File_Security\File_Security;
+use Drupal\Component\Serialization\Exception\Invalid_Data_Type_Exception;
+use Drupal\Core\File\File_System_Interface;
 use Drupal\Core\Serialization\Yaml;
-
 /**
  * Defines the file storage.
  */
-class FileStorage implements StorageInterface
+class File_Storage implements Storage_Interface
 {
     /**
      * The file cache object.
      *
      * @var \Drupal\Component\FileCache\FileCacheInterface
      */
-    protected $fileCache;
-
+    protected $file_cache;
     /**
      * Constructs a new FileStorage.
      *
@@ -31,67 +28,65 @@ class FileStorage implements StorageInterface
      *   (optional) The collection to store configuration in. Defaults to the
      *   default collection.
      */
-    public function __construct(/**
-   * The filesystem path for configuration objects.
-   */
-        protected $directory, /**
-   * The storage collection.
-   */
-        protected $collection = StorageInterface::DEFAULT_COLLECTION
-    ) {
+    public function __construct(
+        /**
+         * The filesystem path for configuration objects.
+         */
+        protected $directory,
+        /**
+         * The storage collection.
+         */
+        protected $collection = Storage_Interface::DEFAULT_COLLECTION
+    )
+    {
         // Use a NULL File Cache backend by default. This will ensure only the
         // internal static caching of FileCache is used and thus avoids blowing up
         // the APCu cache.
-        $this->fileCache = FileCacheFactory::get('config', ['cache_backend_class' => null]);
+        $this->file_cache = File_Cache_Factory::get('config', ['cache_backend_class' => null]);
     }
-
     /**
      * Returns the path to the configuration file.
      *
      * @return string
      *   The path to the configuration file.
      */
-    public function getFilePath(string $name): string
+    public function get_file_path(string $name): string
     {
-        return $this->getCollectionDirectory() . '/' . $name . '.' . static::getFileExtension();
+        return $this->get_collection_directory() . '/' . $name . '.' . static::get_file_extension();
     }
-
     /**
      * Gets the extension used by the file storage for all configuration files.
      *
      * @return string
      *   The file extension.
      */
-    public static function getFileExtension(): string
+    public static function get_file_extension(): string
     {
         return 'yml';
     }
-
     /**
      * Check if the directory exists and create it if not.
      */
-    protected function ensureStorage(): static
+    protected function ensure_storage(): static
     {
-        $dir = $this->getCollectionDirectory();
-        $success = $this->getFileSystem()->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+        $dir = $this->get_collection_directory();
+        $success = $this->get_file_system()->prepare_directory($dir, File_System_Interface::CREATE_DIRECTORY | File_System_Interface::MODIFY_PERMISSIONS);
         // Only create .htaccess file in root directory.
         if ($dir == $this->directory) {
-            $success = $success && FileSecurity::writeHtaccess($this->directory);
+            $success = $success && File_Security::write_htaccess($this->directory);
         }
         if (!$success) {
-            throw new StorageException('Failed to create config directory ' . $dir);
+            throw new Storage_Exception('Failed to create config directory ' . $dir);
         }
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name): bool
     {
-        return file_exists($this->getFilePath($name));
+        return file_exists($this->get_file_path($name));
     }
-
     /**
      * Implements Drupal\Core\Config\StorageInterface::read().
      *
@@ -102,28 +97,24 @@ class FileStorage implements StorageInterface
         if (!$this->exists($name)) {
             return false;
         }
-
-        $filepath = $this->getFilePath($name);
-        if ($data = $this->fileCache->get($filepath)) {
+        $filepath = $this->get_file_path($name);
+        if ($data = $this->file_cache->get($filepath)) {
             return $data;
         }
-
         $data = file_get_contents($filepath);
         try {
             $data = $this->decode($data);
-        } catch (InvalidDataTypeException $e) {
-            throw new UnsupportedDataTypeConfigException('Invalid data type in config ' . $name . ', found in file ' . $filepath . ': ' . $e->getMessage());
+        } catch (Invalid_Data_Type_Exception $e) {
+            throw new Unsupported_Data_Type_Config_Exception('Invalid data type in config ' . $name . ', found in file ' . $filepath . ': ' . $e->get_message());
         }
-        $this->fileCache->set($filepath, $data);
-
+        $this->file_cache->set($filepath, $data);
         return $data;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function readMultiple(array $names): array
+    public function read_multiple(array $names): array
     {
         $list = [];
         foreach ($names as $name) {
@@ -133,7 +124,6 @@ class FileStorage implements StorageInterface
         }
         return $list;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -141,26 +131,22 @@ class FileStorage implements StorageInterface
     {
         try {
             $encoded_data = $this->encode($data);
-        } catch (InvalidDataTypeException $e) {
-            throw new StorageException("Invalid data type in config $name: {$e->getMessage()}");
+        } catch (Invalid_Data_Type_Exception $e) {
+            throw new Storage_Exception("Invalid data type in config {$name}: {$e->get_message()}");
         }
-
-        $target = $this->getFilePath($name);
+        $target = $this->get_file_path($name);
         $status = @file_put_contents($target, $encoded_data);
         if ($status === false) {
             // Try to make sure the directory exists and try writing again.
-            $this->ensureStorage();
+            $this->ensure_storage();
             $status = @file_put_contents($target, $encoded_data);
         }
         if ($status === false) {
-            throw new StorageException('Failed to write configuration file: ' . $target);
+            throw new Storage_Exception('Failed to write configuration file: ' . $target);
         }
-
-        $this->fileCache->set($target, $data);
-
+        $this->file_cache->set($target, $data);
         return true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -169,24 +155,22 @@ class FileStorage implements StorageInterface
         if (!$this->exists($name)) {
             return false;
         }
-        $this->fileCache->delete($this->getFilePath($name));
-        return $this->getFileSystem()->unlink($this->getFilePath($name));
+        $this->file_cache->delete($this->get_file_path($name));
+        return $this->get_file_system()->unlink($this->get_file_path($name));
     }
-
     /**
      * {@inheritdoc}
      */
     public function rename($name, $new_name): bool
     {
-        $status = @rename($this->getFilePath($name), $this->getFilePath($new_name));
+        $status = @rename($this->get_file_path($name), $this->get_file_path($new_name));
         if ($status === false) {
             return false;
         }
-        $this->fileCache->delete($this->getFilePath($name));
-        $this->fileCache->delete($this->getFilePath($new_name));
+        $this->file_cache->delete($this->get_file_path($name));
+        $this->file_cache->delete($this->get_file_path($new_name));
         return true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -194,7 +178,6 @@ class FileStorage implements StorageInterface
     {
         return Yaml::encode($data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -207,25 +190,22 @@ class FileStorage implements StorageInterface
         }
         return $data;
     }
-
     /**
      * {@inheritdoc}
      * @return string[]
      */
-    public function listAll($prefix = ''): array
+    public function list_all($prefix = ''): array
     {
-        $dir = $this->getCollectionDirectory();
+        $dir = $this->get_collection_directory();
         if (!is_dir($dir)) {
             return [];
         }
-        $extension = '.' . static::getFileExtension();
-
+        $extension = '.' . static::get_file_extension();
         // glob() directly calls into libc glob(), which is not aware of PHP stream
         // wrappers. Same for \GlobIterator (which additionally requires an absolute
         // realpath() on Windows).
         // @see https://github.com/mikey179/vfsStream/issues/2
         $files = scandir($dir);
-
         $names = [];
         $pattern = '/^' . preg_quote($prefix, '/') . '.*' . preg_quote($extension, '/') . '$/';
         foreach ($files as $file) {
@@ -233,63 +213,54 @@ class FileStorage implements StorageInterface
                 $names[] = basename($file, $extension);
             }
         }
-
         return $names;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll($prefix = '')
+    public function delete_all($prefix = '')
     {
-        $files = $this->listAll($prefix);
+        $files = $this->list_all($prefix);
         $success = !empty($files);
         foreach ($files as $name) {
             if (!$this->delete($name) && $success) {
                 $success = false;
             }
         }
-        if ($success && $this->collection != StorageInterface::DEFAULT_COLLECTION) {
+        if ($success && $this->collection != Storage_Interface::DEFAULT_COLLECTION) {
             // Remove empty directories.
-            if (!(new \FilesystemIterator($this->getCollectionDirectory()))->valid()) {
-                $this->getFileSystem()->rmdir($this->getCollectionDirectory());
+            if (!(new \Filesystem_Iterator($this->get_collection_directory()))->valid()) {
+                $this->get_file_system()->rmdir($this->get_collection_directory());
             }
         }
         return $success;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection): static
+    public function create_collection($collection): static
     {
-        return new static(
-            $this->directory,
-            $collection
-        );
+        return new static($this->directory, $collection);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCollectionName()
+    public function get_collection_name()
     {
         return $this->collection;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAllCollectionNames()
+    public function get_all_collection_names()
     {
         if (!is_dir($this->directory)) {
             return [];
         }
-        $collections = $this->getAllCollectionNamesHelper($this->directory);
+        $collections = $this->get_all_collection_names_helper($this->directory);
         sort($collections);
         return $collections;
     }
-
     /**
      * Helper function for getAllCollectionNames().
      *
@@ -317,17 +288,17 @@ class FileStorage implements StorageInterface
      * @return array
      *   A list of collection names contained within the provided directory.
      */
-    protected function getAllCollectionNamesHelper(string $directory): array
+    protected function get_all_collection_names_helper(string $directory): array
     {
         $collections = [];
-        $pattern = '/\.' . preg_quote(static::getFileExtension(), '/') . '$/';
-        foreach (new \DirectoryIterator($directory) as $fileinfo) {
-            if ($fileinfo->isDir() && !$fileinfo->isDot()) {
-                $collection = $fileinfo->getFilename();
+        $pattern = '/\.' . preg_quote(static::get_file_extension(), '/') . '$/';
+        foreach (new \Directory_Iterator($directory) as $fileinfo) {
+            if ($fileinfo->is_dir() && !$fileinfo->is_dot()) {
+                $collection = $fileinfo->get_filename();
                 // Recursively call getAllCollectionNamesHelper() to discover if there
                 // are subdirectories. Subdirectories represent a dotted collection
                 // name.
-                $sub_collections = $this->getAllCollectionNamesHelper($directory . '/' . $collection);
+                $sub_collections = $this->get_all_collection_names_helper($directory . '/' . $collection);
                 if (!empty($sub_collections)) {
                     // Build up the collection name by concatenating the subdirectory
                     // names with the current directory name.
@@ -349,30 +320,27 @@ class FileStorage implements StorageInterface
         }
         return $collections;
     }
-
     /**
      * Gets the directory for the collection.
      *
      * @return string
      *   The directory for the collection.
      */
-    protected function getCollectionDirectory()
+    protected function get_collection_directory()
     {
-        if ($this->collection == StorageInterface::DEFAULT_COLLECTION) {
+        if ($this->collection == Storage_Interface::DEFAULT_COLLECTION) {
             return $this->directory;
         }
         return $this->directory . '/' . str_replace('.', '/', $this->collection);
     }
-
     /**
      * Returns file system service.
      *
      * @return \Drupal\Core\File\FileSystemInterface
      *   The file system service.
      */
-    private function getFileSystem(): object
+    private function get_file_system(): object
     {
         return \Drupal::service('file_system');
     }
-
 }

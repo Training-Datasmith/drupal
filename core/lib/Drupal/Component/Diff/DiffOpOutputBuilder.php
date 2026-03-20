@@ -1,35 +1,31 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff;
 
-use Drupal\Component\Diff\Engine\DiffOp;
-use Drupal\Component\Diff\Engine\DiffOpAdd;
-use Drupal\Component\Diff\Engine\DiffOpChange;
-use Drupal\Component\Diff\Engine\DiffOpCopy;
-use Drupal\Component\Diff\Engine\DiffOpDelete;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
-
+use Drupal\Component\Diff\Engine\Diff_Op;
+use Drupal\Component\Diff\Engine\Diff_Op_Add;
+use Drupal\Component\Diff\Engine\Diff_Op_Change;
+use Drupal\Component\Diff\Engine\Diff_Op_Copy;
+use Drupal\Component\Diff\Engine\Diff_Op_Delete;
+use Sebastian_Bergmann\Diff\Differ;
+use Sebastian_Bergmann\Diff\Output\Diff_Output_Builder_Interface;
 /**
  * Returns a diff as an array of DiffOp operations.
  */
-final class DiffOpOutputBuilder implements DiffOutputBuilderInterface
+final class Diff_Op_Output_Builder implements Diff_Output_Builder_Interface
 {
     /**
      * A constant to manage removal+addition as a single operation.
      */
     private const CHANGED = 999;
-
     /**
      * {@inheritdoc}
      */
-    public function getDiff(array $diff): string
+    public function get_diff(array $diff): string
     {
-        return serialize($this->toOpsArray($diff));
+        return serialize($this->to_ops_array($diff));
     }
-
     /**
      * Converts the output of Differ to an array of DiffOp* value objects.
      *
@@ -39,62 +35,55 @@ final class DiffOpOutputBuilder implements DiffOutputBuilderInterface
      * @return \Drupal\Component\Diff\Engine\DiffOp[]
      *   An array of DiffOp* value objects.
      */
-    public function toOpsArray(array $diff): array
+    public function to_ops_array(array $diff): array
     {
         $ops = [];
-        $hunkMode = null;
-        $hunkSource = [];
-        $hunkTarget = [];
-
+        $hunk_mode = null;
+        $hunk_source = [];
+        $hunk_target = [];
         for ($i = 0; $i < count($diff); $i++) {
-
             // Handle a sequence of removals + additions as a sequence of changes, and
             // manages the tail if required.
             if ($diff[$i][1] === Differ::REMOVED) {
-                if ($hunkMode !== null) {
-                    $ops[] = $this->hunkOp($hunkMode, $hunkSource, $hunkTarget);
-                    $hunkSource = [];
-                    $hunkTarget = [];
+                if ($hunk_mode !== null) {
+                    $ops[] = $this->hunk_op($hunk_mode, $hunk_source, $hunk_target);
+                    $hunk_source = [];
+                    $hunk_target = [];
                 }
                 for ($n = $i; $n < count($diff) && $diff[$n][1] === Differ::REMOVED; $n++) {
-                    $hunkSource[] = $diff[$n][0];
+                    $hunk_source[] = $diff[$n][0];
                 }
                 for (; $n < count($diff) && $diff[$n][1] === Differ::ADDED; $n++) {
-                    $hunkTarget[] = $diff[$n][0];
+                    $hunk_target[] = $diff[$n][0];
                 }
-                if (count($hunkTarget) === 0) {
-                    $ops[] = $this->hunkOp(Differ::REMOVED, $hunkSource, $hunkTarget);
+                if (count($hunk_target) === 0) {
+                    $ops[] = $this->hunk_op(Differ::REMOVED, $hunk_source, $hunk_target);
                 } else {
-                    $ops[] = $this->hunkOp(self::CHANGED, $hunkSource, $hunkTarget);
+                    $ops[] = $this->hunk_op(self::CHANGED, $hunk_source, $hunk_target);
                 }
-                $hunkMode = null;
-                $hunkSource = [];
-                $hunkTarget = [];
+                $hunk_mode = null;
+                $hunk_source = [];
+                $hunk_target = [];
                 $i = $n - 1;
                 continue;
             }
-
             // When here, we are adding or copying the item. Removing or changing is
             // managed above.
-            if ($hunkMode === null) {
-                $hunkMode = $diff[$i][1];
-            } elseif ($hunkMode !== $diff[$i][1]) {
-                $ops[] = $this->hunkOp($hunkMode, $hunkSource, $hunkTarget);
-                $hunkMode = $diff[$i][1];
-                $hunkSource = [];
-                $hunkTarget = [];
+            if ($hunk_mode === null) {
+                $hunk_mode = $diff[$i][1];
+            } elseif ($hunk_mode !== $diff[$i][1]) {
+                $ops[] = $this->hunk_op($hunk_mode, $hunk_source, $hunk_target);
+                $hunk_mode = $diff[$i][1];
+                $hunk_source = [];
+                $hunk_target = [];
             }
-
-            $hunkSource[] = $diff[$i][0];
+            $hunk_source[] = $diff[$i][0];
         }
-
-        if ($hunkMode !== null) {
-            $ops[] = $this->hunkOp($hunkMode, $hunkSource, $hunkTarget);
+        if ($hunk_mode !== null) {
+            $ops[] = $this->hunk_op($hunk_mode, $hunk_source, $hunk_target);
         }
-
         return $ops;
     }
-
     /**
      * Returns the proper DiffOp object based on the hunk mode.
      *
@@ -111,15 +100,14 @@ final class DiffOpOutputBuilder implements DiffOutputBuilderInterface
      * @throw \InvalidArgumentException
      *   When $mode is not valid.
      */
-    private function hunkOp(int $mode, array $source, array $target): DiffOp
+    private function hunk_op(int $mode, array $source, array $target): Diff_Op
     {
         return match ($mode) {
-            Differ::OLD => new DiffOpCopy($source),
-            self::CHANGED => new DiffOpChange($source, $target),
-            Differ::ADDED => new DiffOpAdd($source),
-            Differ::REMOVED => new DiffOpDelete($source),
+            Differ::OLD => new Diff_Op_Copy($source),
+            self::CHANGED => new Diff_Op_Change($source, $target),
+            Differ::ADDED => new Diff_Op_Add($source),
+            Differ::REMOVED => new Diff_Op_Delete($source),
             default => throw new \InvalidArgumentException("Invalid \$mode {$mode} specified"),
         };
     }
-
 }

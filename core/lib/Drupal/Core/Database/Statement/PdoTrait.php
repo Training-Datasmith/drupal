@@ -1,37 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Statement;
 
 /**
  * A trait for calling \PDOStatement methods.
  */
-trait PdoTrait
+trait Pdo_Trait
 {
     /**
      * Map FETCH_* modes to their literal for inclusion in messages.
      *
      * @see https://github.com/php/php-src/blob/master/ext/pdo/php_pdo_driver.h#L65-L80
      */
-    protected array $fetchModeLiterals = [
-      \PDO::FETCH_DEFAULT => 'FETCH_DEFAULT',
-      \PDO::FETCH_LAZY => 'FETCH_LAZY',
-      \PDO::FETCH_ASSOC => 'FETCH_ASSOC',
-      \PDO::FETCH_NUM => 'FETCH_NUM',
-      \PDO::FETCH_BOTH => 'FETCH_BOTH',
-      \PDO::FETCH_OBJ => 'FETCH_OBJ',
-      \PDO::FETCH_BOUND => 'FETCH_BOUND',
-      \PDO::FETCH_COLUMN => 'FETCH_COLUMN',
-      \PDO::FETCH_CLASS => 'FETCH_CLASS',
-      \PDO::FETCH_INTO => 'FETCH_INTO',
-      \PDO::FETCH_FUNC => 'FETCH_FUNC',
-      \PDO::FETCH_NAMED => 'FETCH_NAMED',
-      \PDO::FETCH_KEY_PAIR => 'FETCH_KEY_PAIR',
-      \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE => 'FETCH_CLASS | FETCH_CLASSTYPE',
-      \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE => 'FETCH_CLASS | FETCH_PROPS_LATE',
-    ];
-
+    protected array $fetch_mode_literals = [\PDO::FETCH_DEFAULT => 'FETCH_DEFAULT', \PDO::FETCH_LAZY => 'FETCH_LAZY', \PDO::FETCH_ASSOC => 'FETCH_ASSOC', \PDO::FETCH_NUM => 'FETCH_NUM', \PDO::FETCH_BOTH => 'FETCH_BOTH', \PDO::FETCH_OBJ => 'FETCH_OBJ', \PDO::FETCH_BOUND => 'FETCH_BOUND', \PDO::FETCH_COLUMN => 'FETCH_COLUMN', \PDO::FETCH_CLASS => 'FETCH_CLASS', \PDO::FETCH_INTO => 'FETCH_INTO', \PDO::FETCH_FUNC => 'FETCH_FUNC', \PDO::FETCH_NAMED => 'FETCH_NAMED', \PDO::FETCH_KEY_PAIR => 'FETCH_KEY_PAIR', \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE => 'FETCH_CLASS | FETCH_CLASSTYPE', \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE => 'FETCH_CLASS | FETCH_PROPS_LATE'];
     /**
      * Converts a FetchAs mode to a \PDO::FETCH_* constant value.
      *
@@ -41,17 +23,16 @@ trait PdoTrait
      * @return int
      *   A \PDO::FETCH_* constant value.
      */
-    protected function fetchAsToPdo(FetchAs $mode): int
+    protected function fetch_as_to_pdo(Fetch_As $mode): int
     {
         return match ($mode) {
-            FetchAs::Associative => \PDO::FETCH_ASSOC,
-            FetchAs::ClassObject => \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE,
-            FetchAs::Column => \PDO::FETCH_COLUMN,
-            FetchAs::List => \PDO::FETCH_NUM,
-            FetchAs::Object => \PDO::FETCH_OBJ,
+            Fetch_As::Associative => \PDO::FETCH_ASSOC,
+            Fetch_As::ClassObject => \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE,
+            Fetch_As::Column => \PDO::FETCH_COLUMN,
+            Fetch_As::List => \PDO::FETCH_NUM,
+            Fetch_As::Object => \PDO::FETCH_OBJ,
         };
     }
-
     /**
      * Converts a \PDO::FETCH_* constant value to a FetchAs mode.
      *
@@ -61,18 +42,17 @@ trait PdoTrait
      * @return \Drupal\Core\Database\Statement\FetchAs
      *   A FetchAs mode.
      */
-    protected function pdoToFetchAs(int $mode): FetchAs
+    protected function pdo_to_fetch_as(int $mode): Fetch_As
     {
         return match ($mode) {
-            \PDO::FETCH_ASSOC => FetchAs::Associative,
-            \PDO::FETCH_CLASS, \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE => FetchAs::ClassObject,
-            \PDO::FETCH_COLUMN => FetchAs::Column,
-            \PDO::FETCH_NUM => FetchAs::List,
-            \PDO::FETCH_OBJ => FetchAs::Object,
-            default => throw new \RuntimeException('Fetch mode ' . ($this->fetchModeLiterals[$mode] ?? $mode) . ' is not supported. Use supported modes only.'),
+            \PDO::FETCH_ASSOC => Fetch_As::Associative,
+            \PDO::FETCH_CLASS, \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE => Fetch_As::ClassObject,
+            \PDO::FETCH_COLUMN => Fetch_As::Column,
+            \PDO::FETCH_NUM => Fetch_As::List,
+            \PDO::FETCH_OBJ => Fetch_As::Object,
+            default => throw new \RuntimeException('Fetch mode ' . ($this->fetch_mode_literals[$mode] ?? $mode) . ' is not supported. Use supported modes only.'),
         };
     }
-
     /**
      * Returns the client-level database statement object.
      *
@@ -84,8 +64,7 @@ trait PdoTrait
      * @throws \RuntimeException
      *   If the client-level statement is not set.
      */
-    abstract public function getClientStatement(): object;
-
+    abstract public function get_client_statement(): object;
     /**
      * Sets the default fetch mode for the PDO statement.
      *
@@ -101,24 +80,14 @@ trait PdoTrait
      * @return bool
      *   Returns true on success or false on failure.
      */
-    protected function clientSetFetchMode(FetchAs $mode, int|string|null $columnOrClass = null, array|null $constructorArguments = null): bool
+    protected function client_set_fetch_mode(Fetch_As $mode, int|string|null $column_or_class = null, array|null $constructor_arguments = null): bool
     {
         return match ($mode) {
-            FetchAs::Column => $this->getClientStatement()->setFetchMode(
-                \PDO::FETCH_COLUMN,
-                $columnOrClass ?? $this->fetchOptions['column'],
-            ),
-            FetchAs::ClassObject => $this->getClientStatement()->setFetchMode(
-                \PDO::FETCH_CLASS,
-                $columnOrClass ?? $this->fetchOptions['class'],
-                $constructorArguments ?? $this->fetchOptions['constructor_args'],
-            ),
-            default => $this->getClientStatement()->setFetchMode(
-                $this->fetchAsToPdo($mode),
-            ),
+            Fetch_As::Column => $this->get_client_statement()->set_fetch_mode(\PDO::FETCH_COLUMN, $column_or_class ?? $this->fetch_options['column']),
+            Fetch_As::ClassObject => $this->get_client_statement()->set_fetch_mode(\PDO::FETCH_CLASS, $column_or_class ?? $this->fetch_options['class'], $constructor_arguments ?? $this->fetch_options['constructor_args']),
+            default => $this->get_client_statement()->set_fetch_mode($this->fetch_as_to_pdo($mode)),
         };
     }
-
     /**
      * Executes the prepared PDO statement.
      *
@@ -131,11 +100,10 @@ trait PdoTrait
      * @return bool
      *   TRUE on success, or FALSE on failure.
      */
-    protected function clientExecute(?array $arguments = [], array $options = []): bool
+    protected function client_execute(?array $arguments = [], array $options = []): bool
     {
-        return $this->getClientStatement()->execute($arguments);
+        return $this->get_client_statement()->execute($arguments);
     }
-
     /**
      * Fetches the next row from the PDO statement.
      *
@@ -150,16 +118,15 @@ trait PdoTrait
      * @return array<scalar|null>|object|scalar|null|false
      *   A result, formatted according to $mode, or FALSE on failure.
      */
-    protected function clientFetch(?FetchAs $mode = null, ?int $cursorOrientation = null, ?int $cursorOffset = null): array|object|int|float|string|bool|null
+    protected function client_fetch(?Fetch_As $mode = null, ?int $cursor_orientation = null, ?int $cursor_offset = null): array|object|int|float|string|bool|null
     {
-        return match(func_num_args()) {
-            0 => $this->getClientStatement()->fetch(),
-            1 => $this->getClientStatement()->fetch($this->fetchAsToPdo($mode)),
-            2 => $this->getClientStatement()->fetch($this->fetchAsToPdo($mode), $cursorOrientation),
-            default => $this->getClientStatement()->fetch($this->fetchAsToPdo($mode), $cursorOrientation, $cursorOffset),
+        return match (func_num_args()) {
+            0 => $this->get_client_statement()->fetch(),
+            1 => $this->get_client_statement()->fetch($this->fetch_as_to_pdo($mode)),
+            2 => $this->get_client_statement()->fetch($this->fetch_as_to_pdo($mode), $cursor_orientation),
+            default => $this->get_client_statement()->fetch($this->fetch_as_to_pdo($mode), $cursor_orientation, $cursor_offset),
         };
     }
-
     /**
      * Returns a single column from the next row of a result set.
      *
@@ -171,11 +138,10 @@ trait PdoTrait
      *   A single column from the next row of a result set or false if there are
      *   no more rows.
      */
-    protected function clientFetchColumn(int $column = 0): int|float|string|bool|null
+    protected function client_fetch_column(int $column = 0): int|float|string|bool|null
     {
-        return $this->getClientStatement()->fetchColumn($column);
+        return $this->get_client_statement()->fetch_column($column);
     }
-
     /**
      * Fetches the next row and returns it as an object.
      *
@@ -188,14 +154,13 @@ trait PdoTrait
      *   An instance of the required class with property names that correspond
      *   to the column names, or FALSE on failure.
      */
-    protected function clientFetchObject(?string $class = null, array $constructorArguments = []): object|false
+    protected function client_fetch_object(?string $class = null, array $constructor_arguments = []): object|false
     {
         if ($class) {
-            return $this->getClientStatement()->fetchObject($class, $constructorArguments);
+            return $this->get_client_statement()->fetch_object($class, $constructor_arguments);
         }
-        return $this->getClientStatement()->fetchObject();
+        return $this->get_client_statement()->fetch_object();
     }
-
     /**
      * Returns an array containing all of the result set rows.
      *
@@ -212,44 +177,32 @@ trait PdoTrait
      * @return array<array<scalar|null>|object|scalar|null>
      *   An array of results.
      */
-    protected function clientFetchAll(?FetchAs $mode = null, int|string|null $columnOrClass = null, array|null $constructorArguments = null): array
+    protected function client_fetch_all(?Fetch_As $mode = null, int|string|null $column_or_class = null, array|null $constructor_arguments = null): array
     {
         return match ($mode) {
-            FetchAs::Column => $this->getClientStatement()->fetchAll(
-                \PDO::FETCH_COLUMN,
-                $columnOrClass ?? $this->fetchOptions['column'],
-            ),
-            FetchAs::ClassObject => $this->getClientStatement()->fetchAll(
-                \PDO::FETCH_CLASS,
-                $columnOrClass ?? $this->fetchOptions['class'],
-                $constructorArguments ?? $this->fetchOptions['constructor_args'],
-            ),
-            default => $this->getClientStatement()->fetchAll(
-                $this->fetchAsToPdo($mode ?? $this->fetchMode),
-            ),
+            Fetch_As::Column => $this->get_client_statement()->fetch_all(\PDO::FETCH_COLUMN, $column_or_class ?? $this->fetch_options['column']),
+            Fetch_As::ClassObject => $this->get_client_statement()->fetch_all(\PDO::FETCH_CLASS, $column_or_class ?? $this->fetch_options['class'], $constructor_arguments ?? $this->fetch_options['constructor_args']),
+            default => $this->get_client_statement()->fetch_all($this->fetch_as_to_pdo($mode ?? $this->fetch_mode)),
         };
     }
-
     /**
      * Returns the number of rows affected by the last SQL statement.
      *
      * @return int
      *   The number of rows.
      */
-    protected function clientRowCount(): int
+    protected function client_row_count(): int
     {
-        return $this->getClientStatement()->rowCount();
+        return $this->get_client_statement()->row_count();
     }
-
     /**
      * Returns the query string used to prepare the statement.
      *
      * @return string
      *   The query string.
      */
-    protected function clientQueryString(): string
+    protected function client_query_string(): string
     {
-        return $this->getClientStatement()->queryString;
+        return $this->get_client_statement()->query_string;
     }
-
 }

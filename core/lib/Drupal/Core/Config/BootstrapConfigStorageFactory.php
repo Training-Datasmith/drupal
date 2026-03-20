@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Site\Settings;
-
 /**
  * Defines a factory for retrieving the config storage used pre-kernel.
  */
-class BootstrapConfigStorageFactory
+class Bootstrap_Config_Storage_Factory
 {
     /**
      * Returns a configuration storage implementation.
@@ -30,18 +28,16 @@ class BootstrapConfigStorageFactory
             $storage_backend = call_user_func($bootstrap_config_storage, $class_loader);
         }
         // Fallback to the DatabaseStorage.
-        return $storage_backend ?: self::getDatabaseStorage();
+        return $storage_backend ?: self::get_database_storage();
     }
-
     /**
      * Returns a Database configuration storage implementation.
      *
      * @return \Drupal\Core\Config\DatabaseStorage
      *   The database storage object.
      */
-    public static function getDatabaseStorage(): \Drupal\Core\Config\DatabaseStorage
+    public static function get_database_storage(): \Drupal\Core\Config\Database_Storage
     {
-        return new DatabaseStorage(Database::getConnection(), 'config');
+        return new Database_Storage(Database::get_connection(), 'config');
     }
-
 }

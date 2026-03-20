@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Archiver;
 
 /**
  * Extends Pear's Archive_Tar to use exceptions.
  */
-class ArchiveTar extends \Archive_Tar
+class Archive_Tar extends \Archive_Tar
 {
     /**
      * {@inheritdoc}
@@ -16,7 +15,6 @@ class ArchiveTar extends \Archive_Tar
     {
         throw new \Exception($p_message);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -24,5 +22,4 @@ class ArchiveTar extends \Archive_Tar
     {
         throw new \Exception($p_message);
     }
-
 }

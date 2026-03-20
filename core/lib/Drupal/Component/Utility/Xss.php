@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 // cspell:ignore ckers kses harnhammar
-
 /**
  * Provides helper to filter for cross-site scripting.
  *
@@ -20,87 +18,7 @@ class Xss
      *
      * @see \Drupal\Component\Utility\Xss::filterAdmin()
      */
-    protected static $adminTags = [
-      'a',
-      'abbr',
-      'acronym',
-      'address',
-      'article',
-      'aside',
-      'b',
-      'bdi',
-      'bdo',
-      'big',
-      'blockquote',
-      'br',
-      'caption',
-      'cite',
-      'code',
-      'col',
-      'colgroup',
-      'command',
-      'dd',
-      'del',
-      'details',
-      'dfn',
-      'div',
-      'dl',
-      'dt',
-      'em',
-      'figcaption',
-      'figure',
-      'footer',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'header',
-      'hgroup',
-      'hr',
-      'i',
-      'img',
-      'ins',
-      'kbd',
-      'li',
-      'mark',
-      'menu',
-      'meter',
-      'nav',
-      'ol',
-      'output',
-      'p',
-      'pre',
-      'progress',
-      'q',
-      'rp',
-      'rt',
-      'ruby',
-      's',
-      'samp',
-      'section',
-      'small',
-      'span',
-      'strong',
-      'sub',
-      'summary',
-      'sup',
-      'table',
-      'tbody',
-      'td',
-      'tfoot',
-      'th',
-      'thead',
-      'time',
-      'tr',
-      'tt',
-      'u',
-      'ul',
-      'var',
-      'wbr',
-    ];
-
+    protected static $admin_tags = ['a', 'abbr', 'acronym', 'address', 'article', 'aside', 'b', 'bdi', 'bdo', 'big', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'i', 'img', 'ins', 'kbd', 'li', 'mark', 'menu', 'meter', 'nav', 'ol', 'output', 'p', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'tt', 'u', 'ul', 'var', 'wbr'];
     /**
      * The default list of HTML tags allowed by filter().
      *
@@ -108,8 +26,7 @@ class Xss
      *
      * @see \Drupal\Component\Utility\Xss::filter()
      */
-    protected static $htmlTags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd'];
-
+    protected static $html_tags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd'];
     /**
      * Filters HTML to prevent cross-site-scripting (XSS) vulnerabilities.
      *
@@ -140,18 +57,17 @@ class Xss
     public static function filter($string, ?array $allowed_html_tags = null): ?string
     {
         if (is_null($allowed_html_tags)) {
-            $allowed_html_tags = static::$htmlTags;
+            $allowed_html_tags = static::$html_tags;
         }
         // Only operate on valid UTF-8 strings. This is necessary to prevent cross
         // site scripting issues on Internet Explorer 6.
-        if (!Unicode::validateUtf8($string)) {
+        if (!Unicode::validate_utf8($string)) {
             return '';
         }
         // Remove NULL characters (ignored by some browsers).
         $string = str_replace(chr(0), '', $string);
         // Remove Netscape 4 JS entities.
         $string = preg_replace('%&\s*\{[^}]*(\}\s*;?|$)%', '', $string);
-
         // Defuse all HTML entities.
         $string = str_replace('&', '&amp;', $string);
         // Change back only well-formed entities in our list of allowed html tags:
@@ -164,7 +80,7 @@ class Xss
         $allowed_html_tags = array_flip($allowed_html_tags);
         // Late static binding does not work inside anonymous functions.
         $class = static::class;
-        $splitter = (fn ($matches) => $class::split($matches[1], $allowed_html_tags, $class));
+        $splitter = fn($matches) => $class::split($matches[1], $allowed_html_tags, $class);
         // Strip any tags that are not in the list of allowed html tags.
         return preg_replace_callback('%
       (
@@ -177,7 +93,6 @@ class Xss
       >                 # just a >
       )%x', $splitter, (string) $string);
     }
-
     /**
      * Applies a very permissive XSS/HTML filter for admin-only use.
      *
@@ -199,11 +114,10 @@ class Xss
      *
      * @see \Drupal\Component\Utility\Xss::getAdminTagList()
      */
-    public static function filterAdmin($string)
+    public static function filter_admin($string)
     {
-        return static::filter($string, static::$adminTags);
+        return static::filter($string, static::$admin_tags);
     }
-
     /**
      * Processes an HTML tag.
      *
@@ -231,47 +145,38 @@ class Xss
             // We matched a lone "<" character.
             return '&lt;';
         }
-
         if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9\-]+)\s*([^>]*)>?|(<!--.*?-->)$%', $string, $matches)) {
             // Seriously malformed.
             return '';
         }
         $slash = trim($matches[1]);
-        $elem = &$matches[2];
-        $attributes = &$matches[3];
-        $comment = &$matches[4];
-
+        $elem =& $matches[2];
+        $attributes =& $matches[3];
+        $comment =& $matches[4];
         if ($comment) {
             $elem = '!--';
         }
-
         // Defer to the ::needsRemoval() method to decide if the element is to be
         // removed. This allows the list of tags to be treated as either a list of
         // allowed tags or a list of denied tags.
-        if ($class::needsRemoval($html_tags, $elem)) {
+        if ($class::needs_removal($html_tags, $elem)) {
             return '';
         }
-
         if ($comment) {
             return $comment;
         }
-
         if ($slash != '') {
-            return "</$elem>";
+            return "</{$elem}>";
         }
-
         // Is there a closing XHTML slash at the end of the attributes?
         $attributes = preg_replace('%(\s?)/\s*$%', '\1', $attributes, -1, $count);
         $xhtml_slash = $count ? ' /' : '';
-
         // Clean up attributes.
         $attr2 = implode(' ', $class::attributes($attributes));
         $attr2 = preg_replace('/[<>]/', '', $attr2);
         $attr2 = strlen((string) $attr2) ? ' ' . $attr2 : '';
-
-        return "<$elem$attr2$xhtml_slash>";
+        return "<{$elem}{$attr2}{$xhtml_slash}>";
     }
-
     /**
      * Processes a string of HTML attributes.
      *
@@ -288,25 +193,15 @@ class Xss
         $attribute_name = '';
         $skip = false;
         $skip_protocol_filtering = false;
-
         while (strlen((string) $attributes) != 0) {
             // Was the last operation successful?
             $working = 0;
-
             switch ($mode) {
                 case 0:
                     // Attribute name, href for instance.
                     if (preg_match('/^([-a-zA-Z][-a-zA-Z0-9]*)/', (string) $attributes, $match)) {
                         $attribute_name = strtolower($match[1]);
-                        $skip = (
-                            in_array($attribute_name, ['style', 'srcdoc']) ||
-              str_starts_with($attribute_name, 'on') ||
-              str_starts_with($attribute_name, '-') ||
-              // Ignore long attributes to avoid unnecessary processing
-              // overhead.
-              strlen($attribute_name) > 96
-                        );
-
+                        $skip = in_array($attribute_name, ['style', 'srcdoc']) || str_starts_with($attribute_name, 'on') || str_starts_with($attribute_name, '-') || strlen($attribute_name) > 96;
                         // Values for attributes of type URI should be filtered for
                         // potentially malicious protocols (for example, an href-attribute
                         // starting with "javascript:"). However, for some non-URI
@@ -315,20 +210,11 @@ class Xss
                         // such attributes.
                         // @see \Drupal\Component\Utility\UrlHelper::filterBadProtocol()
                         // @see https://www.w3.org/TR/html4/index/attributes.html
-                        $skip_protocol_filtering = str_starts_with($attribute_name, 'data-') || in_array($attribute_name, [
-                          'title',
-                          'alt',
-                          'rel',
-                          'property',
-                          'class',
-                          'datetime',
-                        ]);
-
+                        $skip_protocol_filtering = str_starts_with($attribute_name, 'data-') || in_array($attribute_name, ['title', 'alt', 'rel', 'property', 'class', 'datetime']);
                         $working = $mode = 1;
                         $attributes = preg_replace('/^[-a-zA-Z][-a-zA-Z0-9]*/', '', (string) $attributes);
                     }
                     break;
-
                 case 1:
                     // Equals sign or valueless ("selected").
                     if (preg_match('/^\s*=\s*/', (string) $attributes)) {
@@ -337,7 +223,6 @@ class Xss
                         $attributes = preg_replace('/^\s*=\s*/', '', (string) $attributes);
                         break;
                     }
-
                     if (preg_match('/^\s+/', (string) $attributes)) {
                         $working = 1;
                         $mode = 0;
@@ -347,7 +232,6 @@ class Xss
                         $attributes = preg_replace('/^\s+/', '', (string) $attributes);
                     }
                     break;
-
                 case 2:
                     // Once we've finished processing the attribute value continue to look
                     // for attributes.
@@ -355,36 +239,30 @@ class Xss
                     $working = 1;
                     // Attribute value, a URL after href= for instance.
                     if (preg_match('/^"([^"]*)"(\s+|$)/', (string) $attributes, $match)) {
-                        $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
-
+                        $value = $skip_protocol_filtering ? $match[1] : Url_Helper::filter_bad_protocol($match[1]);
                         if (!$skip) {
-                            $attributes_array[] = "$attribute_name=\"$value\"";
+                            $attributes_array[] = "{$attribute_name}=\"{$value}\"";
                         }
                         $attributes = preg_replace('/^"[^"]*"(\s+|$)/', '', (string) $attributes);
                         break;
                     }
-
-                    if (preg_match("/^'([^']*)'(\s+|$)/", (string) $attributes, $match)) {
-                        $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
-
+                    if (preg_match("/^'([^']*)'(\\s+|\$)/", (string) $attributes, $match)) {
+                        $value = $skip_protocol_filtering ? $match[1] : Url_Helper::filter_bad_protocol($match[1]);
                         if (!$skip) {
-                            $attributes_array[] = "$attribute_name='$value'";
+                            $attributes_array[] = "{$attribute_name}='{$value}'";
                         }
-                        $attributes = preg_replace("/^'[^']*'(\s+|$)/", '', (string) $attributes);
+                        $attributes = preg_replace("/^'[^']*'(\\s+|\$)/", '', (string) $attributes);
                         break;
                     }
-
-                    if (preg_match("%^([^\s\"']+)(\s+|$)%", (string) $attributes, $match)) {
-                        $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
-
+                    if (preg_match("%^([^\\s\"']+)(\\s+|\$)%", (string) $attributes, $match)) {
+                        $value = $skip_protocol_filtering ? $match[1] : Url_Helper::filter_bad_protocol($match[1]);
                         if (!$skip) {
-                            $attributes_array[] = "$attribute_name=\"$value\"";
+                            $attributes_array[] = "{$attribute_name}=\"{$value}\"";
                         }
-                        $attributes = preg_replace("%^[^\s\"']+(\s+|$)%", '', (string) $attributes);
+                        $attributes = preg_replace("%^[^\\s\"']+(\\s+|\$)%", '', (string) $attributes);
                     }
                     break;
             }
-
             if ($working == 0) {
                 // Not well-formed; remove and try again.
                 $attributes = preg_replace('/
@@ -401,14 +279,12 @@ class Xss
                 $mode = 0;
             }
         }
-
         // The attribute list ends with a valueless attribute like "selected".
         if ($mode == 1 && !$skip) {
             $attributes_array[] = $attribute_name;
         }
         return $attributes_array;
     }
-
     /**
      * Whether this element needs to be removed altogether.
      *
@@ -420,31 +296,28 @@ class Xss
      * @return bool
      *   TRUE if this element needs to be removed.
      */
-    protected static function needsRemoval(array $html_tags, $elem): bool
+    protected static function needs_removal(array $html_tags, $elem): bool
     {
         return !isset($html_tags[strtolower($elem)]);
     }
-
     /**
      * Gets the list of HTML tags allowed by Xss::filterAdmin().
      *
      * @return array
      *   The list of HTML tags allowed by filterAdmin().
      */
-    public static function getAdminTagList()
+    public static function get_admin_tag_list()
     {
-        return static::$adminTags;
+        return static::$admin_tags;
     }
-
     /**
      * Gets the standard list of HTML tags allowed by Xss::filter().
      *
      * @return array
      *   The list of HTML tags allowed by Xss::filter().
      */
-    public static function getHtmlTagList()
+    public static function get_html_tag_list()
     {
-        return static::$htmlTags;
+        return static::$html_tags;
     }
-
 }

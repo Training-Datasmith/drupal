@@ -1,26 +1,23 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Removes the super user access policy when toggled off.
  */
-class SuperUserAccessPolicyPass implements CompilerPassInterface
+class Super_User_Access_Policy_Pass implements Compiler_Pass_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
-        if ($container->getParameter('security.enable_super_user') === false) {
-            $container->removeDefinition('access_policy.super_user');
-            $container->removeAlias(\Drupal\Core\Session\SuperUserAccessPolicy::class);
+        if ($container->get_parameter('security.enable_super_user') === false) {
+            $container->remove_definition('access_policy.super_user');
+            $container->remove_alias(\Drupal\Core\Session\Super_User_Access_Policy::class);
         }
     }
-
 }

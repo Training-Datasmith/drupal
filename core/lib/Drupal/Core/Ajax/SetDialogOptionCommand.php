@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class SetDialogOptionCommand implements CommandInterface
+class Set_Dialog_Option_Command implements Command_Interface
 {
     /**
      * A CSS selector string.
@@ -17,7 +16,6 @@ class SetDialogOptionCommand implements CommandInterface
      * @var string
      */
     protected $selector;
-
     /**
      * Constructs a SetDialogOptionCommand object.
      *
@@ -30,28 +28,25 @@ class SetDialogOptionCommand implements CommandInterface
      * @param mixed $optionValue
      *   The value of the option to be passed to the dialog.
      */
-    public function __construct($selector, /**
-   * A jQuery UI dialog option name.
-   */
-        protected $optionName, /**
-   * A jQuery UI dialog option value.
-   */
-        protected $optionValue)
+    public function __construct(
+        $selector,
+        /**
+         * A jQuery UI dialog option name.
+         */
+        protected $option_name,
+        /**
+         * A jQuery UI dialog option value.
+         */
+        protected $option_value
+    )
     {
         $this->selector = $selector ?: '#drupal-modal';
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'setDialogOption',
-          'selector' => $this->selector,
-          'optionName' => $this->optionName,
-          'optionValue' => $this->optionValue,
-        ];
+        return ['command' => 'setDialogOption', 'selector' => $this->selector, 'optionName' => $this->option_name, 'optionValue' => $this->option_value];
     }
-
 }

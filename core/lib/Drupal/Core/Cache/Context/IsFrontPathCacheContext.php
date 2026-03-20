@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines a cache context for whether the URL is the front page of the site.
  *
  * Cache context ID: 'url.path.is_front'.
  */
-class IsFrontPathCacheContext implements CacheContextInterface
+class Is_Front_Path_Cache_Context implements Cache_Context_Interface
 {
     /**
      * Constructs an IsFrontPathCacheContext object.
@@ -19,34 +17,30 @@ class IsFrontPathCacheContext implements CacheContextInterface
      * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
      *   The path matcher.
      */
-    public function __construct(protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher)
+    public function __construct(protected \Drupal\Core\Path\Path_Matcher_Interface $path_matcher)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Is front page');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext(): string
+    public function get_context(): string
     {
-        return 'is_front.' . (int) $this->pathMatcher->isFrontPage();
+        return 'is_front.' . (int) $this->path_matcher->is_front_page();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        $metadata = new CacheableMetadata();
-        $metadata->addCacheTags(['config:system.site']);
+        $metadata = new Cacheable_Metadata();
+        $metadata->add_cache_tags(['config:system.site']);
         return $metadata;
     }
-
 }

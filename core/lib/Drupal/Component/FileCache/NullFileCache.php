@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileCache;
+declare (strict_types=1);
+namespace Drupal\Component\File_Cache;
 
 /**
  * Null implementation for the file cache.
  */
-class NullFileCache implements FileCacheInterface
+class Null_File_Cache implements File_Cache_Interface
 {
     /**
      * {@inheritdoc}
@@ -16,27 +15,23 @@ class NullFileCache implements FileCacheInterface
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getMultiple(array $filepaths): array
+    public function get_multiple(array $filepaths): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
     public function set($filepath, $data)
     {
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($filepath)
     {
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -18,17 +17,13 @@ namespace Drupal\Core\Database;
  */
 class Transaction
 {
-    public function __construct(
-        protected readonly Connection $connection,
-        protected readonly string $name,
-        protected readonly string $id,
-    ) {
+    public function __construct(protected readonly Connection $connection, protected readonly string $name, protected readonly string $id)
+    {
         // Transactions rely on objects being destroyed in order to be committed.
         // PHP makes no guarantee about the order in which objects are destroyed so
         // ensure all transactions are committed on shutdown.
-        Database::commitAllOnShutdown();
+        Database::commit_all_on_shutdown();
     }
-
     /**
      * Destructs the object.
      *
@@ -38,9 +33,8 @@ class Transaction
      */
     public function __destruct()
     {
-        $this->connection->transactionManager()->purge($this->name, $this->id);
+        $this->connection->transaction_manager()->purge($this->name, $this->id);
     }
-
     /**
      * Prevent transactions from being unserialized.
      */
@@ -48,7 +42,6 @@ class Transaction
     {
         throw new \BadMethodCallException('Cannot unserialize ' . static::class);
     }
-
     /**
      * Retrieves the name of the transaction or savepoint.
      */
@@ -56,7 +49,6 @@ class Transaction
     {
         return $this->name;
     }
-
     /**
      * Returns the transaction to the parent nesting level.
      *
@@ -64,11 +56,10 @@ class Transaction
      * operation (for a root item), or to a RELEASE SAVEPOINT operation (for a
      * savepoint item) executed on the database.
      */
-    public function commitOrRelease(): void
+    public function commit_or_release(): void
     {
-        $this->connection->transactionManager()->unpile($this->name, $this->id);
+        $this->connection->transaction_manager()->unpile($this->name, $this->id);
     }
-
     /**
      * Rolls back the transaction.
      *
@@ -76,9 +67,8 @@ class Transaction
      * operation (for a root item), or to a ROLLBACK TO SAVEPOINT + a RELEASE
      * SAVEPOINT operations (for a savepoint item) executed on the database.
      */
-    public function rollBack(): void
+    public function roll_back(): void
     {
-        $this->connection->transactionManager()->rollback($this->name, $this->id);
+        $this->connection->transaction_manager()->rollback($this->name, $this->id);
     }
-
 }

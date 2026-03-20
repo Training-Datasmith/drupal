@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Discovery;
 
-use Drupal\Component\FileCache\FileCacheFactory;
-use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
+use Drupal\Component\File_Cache\File_Cache_Factory;
+use Drupal\Component\Serialization\Exception\Invalid_Data_Type_Exception;
 use Drupal\Component\Serialization\Yaml;
-
 /**
  * Provides discovery for YAML files within a given set of directories.
  */
-class YamlDiscovery implements DiscoverableInterface
+class Yaml_Discovery implements Discoverable_Interface
 {
     /**
      * Constructs a YamlDiscovery object.
@@ -28,28 +26,24 @@ class YamlDiscovery implements DiscoverableInterface
          */
         protected $name,
         protected array $directories
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function findAll(): array
+    public function find_all(): array
     {
         $all = [];
-
-        $files = $this->findFiles();
+        $files = $this->find_files();
         $provider_by_files = array_flip($files);
-
-        $file_cache = FileCacheFactory::get('yaml_discovery:' . $this->name);
-
+        $file_cache = File_Cache_Factory::get('yaml_discovery:' . $this->name);
         // Try to load from the file cache first.
-        foreach ($file_cache->getMultiple($files) as $file => $data) {
+        foreach ($file_cache->get_multiple($files) as $file => $data) {
             $all[$provider_by_files[$file]] = $data;
             unset($provider_by_files[$file]);
         }
-
         // If there are files left that were not returned from the cache, load and
         // parse them now. This list was flipped above and is keyed by filename.
         foreach ($provider_by_files as $file => $provider) {
@@ -58,10 +52,8 @@ class YamlDiscovery implements DiscoverableInterface
             $all[$provider] = $this->decode($file);
             $file_cache->set($file, $all[$provider]);
         }
-
         return $all;
     }
-
     /**
      * Decode a YAML file.
      *
@@ -75,18 +67,17 @@ class YamlDiscovery implements DiscoverableInterface
     {
         try {
             return Yaml::decode(file_get_contents($file)) ?: [];
-        } catch (InvalidDataTypeException $e) {
-            throw new InvalidDataTypeException($file . ': ' . $e->getMessage(), $e->getCode(), $e);
+        } catch (Invalid_Data_Type_Exception $e) {
+            throw new Invalid_Data_Type_Exception($file . ': ' . $e->get_message(), $e->get_code(), $e);
         }
     }
-
     /**
      * Returns an array of file paths, keyed by provider.
      *
      * @return array
      *   An array of file paths.
      */
-    protected function findFiles(): array
+    protected function find_files(): array
     {
         $files = [];
         foreach ($this->directories as $provider => $directory) {
@@ -97,5 +88,4 @@ class YamlDiscovery implements DiscoverableInterface
         }
         return $files;
     }
-
 }

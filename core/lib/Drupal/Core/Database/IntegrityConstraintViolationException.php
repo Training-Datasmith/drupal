@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Core\Database;
  * This exception is thrown e.g. when trying to insert a row that would violate
  * a unique key constraint.
  */
-class IntegrityConstraintViolationException extends \RuntimeException implements DatabaseException
+class Integrity_Constraint_Violation_Exception extends \RuntimeException implements Database_Exception
 {
 }

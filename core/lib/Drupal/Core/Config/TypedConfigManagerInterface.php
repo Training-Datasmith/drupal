@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Core\TypedData\TypedDataManagerInterface;
-
+use Drupal\Core\Typed_Data\Typed_Data_Manager_Interface;
 /**
  * Defines an interface for managing config schema type plugins.
  *
@@ -14,7 +12,7 @@ use Drupal\Core\TypedData\TypedDataManagerInterface;
  * @see hook_config_schema_info_alter()
  * @see https://www.drupal.org/node/1905070
  */
-interface TypedConfigManagerInterface extends TypedDataManagerInterface
+interface Typed_Config_Manager_Interface extends Typed_Data_Manager_Interface
 {
     /**
      * Gets typed configuration data.
@@ -26,7 +24,6 @@ interface TypedConfigManagerInterface extends TypedDataManagerInterface
      *   Typed configuration element.
      */
     public function get($name);
-
     /**
      * Creates a new data definition object.
      *
@@ -46,8 +43,7 @@ interface TypedConfigManagerInterface extends TypedDataManagerInterface
      * @return \Drupal\Core\TypedData\DataDefinitionInterface
      *   A data definition for the given data type.
      */
-    public function buildDataDefinition(array $definition, $value, $name = null, $parent = null);
-
+    public function build_data_definition(array $definition, $value, $name = null, $parent = null);
     /**
      * Checks if the configuration schema with the given config name exists.
      *
@@ -57,8 +53,7 @@ interface TypedConfigManagerInterface extends TypedDataManagerInterface
      * @return bool
      *   TRUE if configuration schema exists, FALSE otherwise.
      */
-    public function hasConfigSchema($name);
-
+    public function has_config_schema($name);
     /**
      * Gets a specific plugin definition.
      *
@@ -73,8 +68,7 @@ interface TypedConfigManagerInterface extends TypedDataManagerInterface
      *   configuration definition assigned, the definition of an undefined
      *   element type is returned.
      */
-    public function getDefinition($plugin_id, $exception_on_invalid = true);
-
+    public function get_definition($plugin_id, $exception_on_invalid = true);
     /**
      * Gets typed data for a given configuration name and its values.
      *
@@ -87,6 +81,5 @@ interface TypedConfigManagerInterface extends TypedDataManagerInterface
      * @return \Drupal\Core\TypedData\TraversableTypedDataInterface
      *   The typed configuration element.
      */
-    public function createFromNameAndData($config_name, array $config_data);
-
+    public function create_from_name_and_data($config_name, array $config_data);
 }

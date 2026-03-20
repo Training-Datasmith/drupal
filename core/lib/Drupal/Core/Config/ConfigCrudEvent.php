@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\EventDispatcher\Event;
-
+use Drupal\Component\Event_Dispatcher\Event;
 /**
  * Wraps a configuration event for event listeners.
  */
-class ConfigCrudEvent extends Event
+class Config_Crud_Event extends Event
 {
     /**
      * Constructs a configuration event object.
@@ -21,21 +19,20 @@ class ConfigCrudEvent extends Event
         /**
          * Configuration object.
          */
-        protected \Drupal\Core\Config\StorableConfigBase $config
-    ) {
+        protected \Drupal\Core\Config\Storable_Config_Base $config
+    )
+    {
     }
-
     /**
      * Gets configuration object.
      *
      * @return \Drupal\Core\Config\StorableConfigBase
      *   The configuration object that caused the event to fire.
      */
-    public function getConfig()
+    public function get_config()
     {
         return $this->config;
     }
-
     /**
      * Checks to see if the provided configuration key's value has changed.
      *
@@ -45,9 +42,8 @@ class ConfigCrudEvent extends Event
      * @return bool
      *   TRUE if the value of the given key has changed, FALSE otherwise.
      */
-    public function isChanged($key): bool
+    public function is_changed($key): bool
     {
-        return $this->config->get($key) !== $this->config->getOriginal($key);
+        return $this->config->get($key) !== $this->config->get_original($key);
     }
-
 }

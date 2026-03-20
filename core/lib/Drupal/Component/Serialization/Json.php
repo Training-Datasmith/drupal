@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Serialization;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Serialization;
  *
  * @ingroup third_party
  */
-class Json implements SerializationInterface
+class Json implements Serialization_Interface
 {
     /**
      * {@inheritdoc}
@@ -21,7 +20,6 @@ class Json implements SerializationInterface
         // Encode <, >, ', &, and ".
         return json_encode($variable, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -29,13 +27,11 @@ class Json implements SerializationInterface
     {
         return json_decode($string, true);
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getFileExtension(): string
+    public static function get_file_extension(): string
     {
         return 'json';
     }
-
 }

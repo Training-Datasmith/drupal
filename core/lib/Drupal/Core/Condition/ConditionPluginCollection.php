@@ -1,24 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Condition;
 
-use Drupal\Component\Plugin\Context\ContextInterface;
-use Drupal\Core\Plugin\DefaultLazyPluginCollection;
-
+use Drupal\Component\Plugin\Context\Context_Interface;
+use Drupal\Core\Plugin\Default_Lazy_Plugin_Collection;
 /**
  * Provides a collection of condition plugins.
  */
-class ConditionPluginCollection extends DefaultLazyPluginCollection
+class Condition_Plugin_Collection extends Default_Lazy_Plugin_Collection
 {
     /**
      * An array of collected contexts for conditions.
      *
      * @var \Drupal\Component\Plugin\Context\ContextInterface[]
      */
-    protected $conditionContexts = [];
-
+    protected $condition_contexts = [];
     /**
      * {@inheritdoc}
      *
@@ -29,18 +26,17 @@ class ConditionPluginCollection extends DefaultLazyPluginCollection
     {
         return parent::get($instance_id);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfiguration()
+    public function get_configuration()
     {
-        $configuration = parent::getConfiguration();
+        $configuration = parent::get_configuration();
         // Remove configuration if it matches the defaults.
         foreach ($configuration as $instance_id => $instance_config) {
             $default_config = [];
             $default_config['id'] = $instance_id;
-            $default_config += $this->get($instance_id)->defaultConfiguration();
+            $default_config += $this->get($instance_id)->default_configuration();
             // In order to determine if a plugin is configured, we must compare it to
             // its default configuration. The default configuration of a plugin does
             // not contain context_mapping and it is not used when the plugin is not
@@ -60,7 +56,6 @@ class ConditionPluginCollection extends DefaultLazyPluginCollection
         }
         return $configuration;
     }
-
     /**
      * Sets the condition context for a given name.
      *
@@ -71,21 +66,19 @@ class ConditionPluginCollection extends DefaultLazyPluginCollection
      *
      * @return $this
      */
-    public function addContext($name, ContextInterface $context): static
+    public function add_context($name, Context_Interface $context): static
     {
-        $this->conditionContexts[$name] = $context;
+        $this->condition_contexts[$name] = $context;
         return $this;
     }
-
     /**
      * Gets the values for all defined contexts.
      *
      * @return \Drupal\Component\Plugin\Context\ContextInterface[]
      *   An array of set contexts, keyed by context name.
      */
-    public function getConditionContexts()
+    public function get_condition_contexts()
     {
-        return $this->conditionContexts;
+        return $this->condition_contexts;
     }
-
 }

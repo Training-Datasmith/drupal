@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -18,7 +17,7 @@ namespace Drupal\Core\Config;
  *
  * @see \Drupal\Core\Config\ConfigCrudEvent
  */
-final class ConfigCollectionEvents
+final class Config_Collection_Events
 {
     /**
      * Event dispatched when saving configuration not in the default collection.
@@ -42,7 +41,6 @@ final class ConfigCollectionEvents
      * @see \Drupal\Core\Config\ConfigEvents::SAVE
      */
     public const SAVE_IN_COLLECTION = 'config.save.collection';
-
     /**
      * Event dispatched when deleting configuration not in the default collection.
      *
@@ -64,7 +62,6 @@ final class ConfigCollectionEvents
      * @var string
      */
     public const DELETE_IN_COLLECTION = 'config.delete.collection';
-
     /**
      * Event dispatched when renaming configuration not in the default collection.
      *
@@ -85,7 +82,6 @@ final class ConfigCollectionEvents
      * @var string
      */
     public const RENAME_IN_COLLECTION = 'config.rename.collection';
-
     /**
      * Event dispatched to collect information on all config collections.
      *
@@ -103,5 +99,4 @@ final class ConfigCollectionEvents
      * @var string
      */
     public const COLLECTION_INFO = 'config.collection_info';
-
 }

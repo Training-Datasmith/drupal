@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -9,43 +8,37 @@ namespace Drupal\Core\Cache;
  *
  * @see \Drupal\Core\Cache\CacheableResponseInterface
  */
-trait CacheableResponseTrait
+trait Cacheable_Response_Trait
 {
     /**
      * The cacheability metadata.
      *
      * @var \Drupal\Core\Cache\CacheableMetadata
      */
-    protected $cacheabilityMetadata;
-
+    protected $cacheability_metadata;
     /**
      * {@inheritdoc}
      */
-    public function addCacheableDependency($dependency)
+    public function add_cacheable_dependency($dependency)
     {
         // A trait doesn't have a constructor, so initialize the cacheability
         // metadata if that hasn't happened yet.
-        if (!isset($this->cacheabilityMetadata)) {
-            $this->cacheabilityMetadata = new CacheableMetadata();
+        if (!isset($this->cacheability_metadata)) {
+            $this->cacheability_metadata = new Cacheable_Metadata();
         }
-
-        $this->cacheabilityMetadata = $this->cacheabilityMetadata->merge(CacheableMetadata::createFromObject($dependency));
-
+        $this->cacheability_metadata = $this->cacheability_metadata->merge(Cacheable_Metadata::create_from_object($dependency));
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata()
+    public function get_cacheable_metadata()
     {
         // A trait doesn't have a constructor, so initialize the cacheability
         // metadata if that hasn't happened yet.
-        if (!isset($this->cacheabilityMetadata)) {
-            $this->cacheabilityMetadata = new CacheableMetadata();
+        if (!isset($this->cacheability_metadata)) {
+            $this->cacheability_metadata = new Cacheable_Metadata();
         }
-
-        return $this->cacheabilityMetadata;
+        return $this->cacheability_metadata;
     }
-
 }

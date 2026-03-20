@@ -1,35 +1,31 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
  * Trait for \Drupal\Core\Cache\CacheableDependencyInterface.
  */
-trait CacheableDependencyTrait
+trait Cacheable_Dependency_Trait
 {
     /**
      * Cache contexts.
      *
      * @var string[]
      */
-    protected $cacheContexts = [];
-
+    protected $cache_contexts = [];
     /**
      * Cache tags.
      *
      * @var list<string>
      */
-    protected $cacheTags = [];
-
+    protected $cache_tags = [];
     /**
      * Cache max-age.
      *
      * @var int
      */
-    protected $cacheMaxAge = Cache::PERMANENT;
-
+    protected $cache_max_age = Cache::PERMANENT;
     /**
      * Sets cacheability; useful for value object constructors.
      *
@@ -38,36 +34,32 @@ trait CacheableDependencyTrait
      *
      * @return $this
      */
-    protected function setCacheability(CacheableDependencyInterface $cacheability)
+    protected function set_cacheability(Cacheable_Dependency_Interface $cacheability)
     {
-        $this->cacheContexts = $cacheability->getCacheContexts();
-        $this->cacheTags = $cacheability->getCacheTags();
-        $this->cacheMaxAge = $cacheability->getCacheMaxAge();
+        $this->cache_contexts = $cacheability->get_cache_contexts();
+        $this->cache_tags = $cacheability->get_cache_tags();
+        $this->cache_max_age = $cacheability->get_cache_max_age();
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheTags()
+    public function get_cache_tags()
     {
-        return $this->cacheTags;
+        return $this->cache_tags;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheContexts()
+    public function get_cache_contexts()
     {
-        return $this->cacheContexts;
+        return $this->cache_contexts;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheMaxAge()
+    public function get_cache_max_age()
     {
-        return $this->cacheMaxAge;
+        return $this->cache_max_age;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Config;
  *
  * @see \Drupal\Core\Config\ConfigCrudEvent
  */
-final class ConfigEvents
+final class Config_Events
 {
     /**
      * Name of the event fired when saving a configuration object.
@@ -32,7 +31,6 @@ final class ConfigEvents
      * @var string
      */
     public const SAVE = 'config.save';
-
     /**
      * Name of the event fired when deleting a configuration object.
      *
@@ -54,7 +52,6 @@ final class ConfigEvents
      * @var string
      */
     public const DELETE = 'config.delete';
-
     /**
      * Name of the event fired when renaming a configuration object.
      *
@@ -75,7 +72,6 @@ final class ConfigEvents
      * @var string
      */
     public const RENAME = 'config.rename';
-
     /**
      * Name of the event fired when validating imported configuration.
      *
@@ -92,7 +88,6 @@ final class ConfigEvents
      * @var string
      */
     public const IMPORT_VALIDATE = 'config.importer.validate';
-
     /**
      * Name of the event fired when importing configuration to target storage.
      *
@@ -109,7 +104,6 @@ final class ConfigEvents
      * @var string
      */
     public const IMPORT = 'config.importer.import';
-
     /**
      * Name of event fired when missing content dependencies are detected.
      *
@@ -126,7 +120,6 @@ final class ConfigEvents
      * @see \Drupal\Core\Config\Importer\MissingContentEvent
      */
     public const IMPORT_MISSING_CONTENT = 'config.importer.missing_content';
-
     /**
      * Name of the event fired just before importing configuration.
      *
@@ -159,7 +152,6 @@ final class ConfigEvents
      * @var string
      */
     public const STORAGE_TRANSFORM_IMPORT = 'config.transform.import';
-
     /**
      * Name of the event fired when the export storage is used.
      *
@@ -186,5 +178,4 @@ final class ConfigEvents
      * @var string
      */
     public const STORAGE_TRANSFORM_EXPORT = 'config.transform.export';
-
 }

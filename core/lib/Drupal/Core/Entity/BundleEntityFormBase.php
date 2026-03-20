@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Class BundleEntityFormBase is a base form for bundle config entities.
  */
-class BundleEntityFormBase extends EntityForm
+class Bundle_Entity_Form_Base extends Entity_Form
 {
     /**
      * Protects the bundle entity's ID property's form element against changes.
@@ -21,19 +20,17 @@ class BundleEntityFormBase extends EntityForm
      * @return array
      *   The updated entity bundle form array.
      */
-    protected function protectBundleIdElement(array $form): array
+    protected function protect_bundle_id_element(array $form): array
     {
-        $entity = $this->getEntity();
-        $id_key = $entity->getEntityType()->getKey('id');
+        $entity = $this->get_entity();
+        $id_key = $entity->get_entity_type()->get_key('id');
         assert(isset($form[$id_key]));
-        $element = &$form[$id_key];
-
+        $element =& $form[$id_key];
         // Make sure the element is not accidentally re-enabled if it has already
         // been disabled.
         if (empty($element['#disabled'])) {
-            $element['#disabled'] = !$entity->isNew();
+            $element['#disabled'] = !$entity->is_new();
         }
         return $form;
     }
-
 }

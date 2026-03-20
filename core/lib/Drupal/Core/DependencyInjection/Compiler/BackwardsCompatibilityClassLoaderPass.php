@@ -1,36 +1,33 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Compiler pass to merge moved classes into a single container parameter.
  */
-class BackwardsCompatibilityClassLoaderPass implements CompilerPassInterface
+class Backwards_Compatibility_Class_Loader_Pass implements Compiler_Pass_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
-        $moved_classes = $container->hasParameter('core.moved_classes') ? $container->getParameter('core.moved_classes') : [];
-        $modules = array_keys($container->getParameter('container.modules'));
+        $moved_classes = $container->has_parameter('core.moved_classes') ? $container->get_parameter('core.moved_classes') : [];
+        $modules = array_keys($container->get_parameter('container.modules'));
         foreach ($modules as $module) {
             $parameter_name = $module . '.moved_classes';
-            if ($container->hasParameter($parameter_name)) {
-                $module_moved = $container->getParameter($parameter_name);
+            if ($container->has_parameter($parameter_name)) {
+                $module_moved = $container->get_parameter($parameter_name);
                 \assert(is_array($module_moved));
                 \assert(count($module_moved) === count(array_column($module_moved, 'class')), 'Missing class key for moved classes in ' . $module);
                 $moved_classes = $moved_classes + $module_moved;
             }
         }
         if (!empty($moved_classes)) {
-            $container->setParameter('moved_classes', $moved_classes);
+            $container->set_parameter('moved_classes', $moved_classes);
         }
     }
-
 }

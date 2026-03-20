@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
 /**
@@ -12,7 +11,7 @@ namespace Drupal\Core\Config\Entity;
  * form can use this to store its configuration so that it will be deployed
  * with the node type.
  */
-interface ThirdPartySettingsInterface
+interface Third_Party_Settings_Interface
 {
     /**
      * Sets the value of a third-party setting.
@@ -26,8 +25,7 @@ interface ThirdPartySettingsInterface
      *
      * @return $this
      */
-    public function setThirdPartySetting($module, $key, $value);
-
+    public function set_third_party_setting($module, $key, $value);
     /**
      * Gets the value of a third-party setting.
      *
@@ -41,8 +39,7 @@ interface ThirdPartySettingsInterface
      * @return mixed
      *   The value.
      */
-    public function getThirdPartySetting($module, $key, $default = null);
-
+    public function get_third_party_setting($module, $key, $default = null);
     /**
      * Gets all third-party settings of a given module.
      *
@@ -52,8 +49,7 @@ interface ThirdPartySettingsInterface
      * @return array
      *   An array of key-value pairs.
      */
-    public function getThirdPartySettings($module);
-
+    public function get_third_party_settings($module);
     /**
      * Unsets a third-party setting.
      *
@@ -65,14 +61,12 @@ interface ThirdPartySettingsInterface
      * @return mixed
      *   The value.
      */
-    public function unsetThirdPartySetting($module, $key);
-
+    public function unset_third_party_setting($module, $key);
     /**
      * Gets the list of third parties that store information.
      *
      * @return array
      *   The list of third parties.
      */
-    public function getThirdPartyProviders();
-
+    public function get_third_party_providers();
 }

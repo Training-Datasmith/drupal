@@ -1,33 +1,26 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action\Plugin\Action;
 
 use Drupal\Core\Action\Attribute\Action;
-use Drupal\Core\Action\Plugin\Action\Derivative\EntityDeleteActionDeriver;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
-
+use Drupal\Core\Action\Plugin\Action\Derivative\Entity_Delete_Action_Deriver;
+use Drupal\Core\Entity\Entity_Type_Manager_Interface;
+use Drupal\Core\Session\Account_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
+use Drupal\Core\Temp_Store\Private_Temp_Store_Factory;
 /**
  * Redirects to an entity deletion form.
  */
-#[Action(
-    id: 'entity:delete_action',
-    action_label: new TranslatableMarkup('Delete'),
-    deriver: EntityDeleteActionDeriver::class
-)]
-class DeleteAction extends EntityActionBase
+#[Action(id: 'entity:delete_action', action_label: new Translatable_Markup('Delete'), deriver: Entity_Delete_Action_Deriver::class)]
+class Delete_Action extends Entity_Action_Base
 {
     /**
      * The tempstore object.
      *
      * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
      */
-    protected $tempStore;
-
+    protected $temp_store;
     /**
      * Constructs a new DeleteAction object.
      *
@@ -44,41 +37,36 @@ class DeleteAction extends EntityActionBase
      * @param \Drupal\Core\Session\AccountInterface $currentUser
      *   Current user.
      */
-    public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PrivateTempStoreFactory $temp_store_factory, protected \Drupal\Core\Session\AccountInterface $currentUser)
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, Entity_Type_Manager_Interface $entity_type_manager, Private_Temp_Store_Factory $temp_store_factory, protected \Drupal\Core\Session\Account_Interface $current_user)
     {
-        $this->tempStore = $temp_store_factory->get('entity_delete_multiple_confirm');
-
+        $this->temp_store = $temp_store_factory->get('entity_delete_multiple_confirm');
         parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function executeMultiple(array $entities): void
+    public function execute_multiple(array $entities): void
     {
         /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
         $selection = [];
         foreach ($entities as $entity) {
-            $langcode = $entity->language()->getId();
+            $langcode = $entity->language()->get_id();
             $selection[$entity->id()][$langcode] = $langcode;
         }
-        $this->tempStore->set($this->currentUser->id() . ':' . $this->getPluginDefinition()['type'], $selection);
+        $this->temp_store->set($this->current_user->id() . ':' . $this->get_plugin_definition()['type'], $selection);
     }
-
     /**
      * {@inheritdoc}
      */
     public function execute($object = null): void
     {
-        $this->executeMultiple([$object]);
+        $this->execute_multiple([$object]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
+    public function access($object, ?Account_Interface $account = null, $return_as_object = false)
     {
         return $object->access('delete', $account, $return_as_object);
     }
-
 }

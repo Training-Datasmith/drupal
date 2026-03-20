@@ -1,28 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\Database\EventSubscriber;
+declare (strict_types=1);
+namespace Drupal\Core\Database\Event_Subscriber;
 
 use Drupal\Core\Database\Database;
-use Drupal\Core\Database\Event\StatementExecutionEndEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-
+use Drupal\Core\Database\Event\Statement_Execution_End_Event;
+use Symfony\Component\Event_Dispatcher\Event_Subscriber_Interface;
 /**
  * Response subscriber to statement executions.
  */
-class StatementExecutionSubscriber implements EventSubscriberInterface
+class Statement_Execution_Subscriber implements Event_Subscriber_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents(): array
+    public static function get_subscribed_events(): array
     {
-        return [
-          StatementExecutionEndEvent::class => 'onStatementExecutionEnd',
-        ];
+        return [Statement_Execution_End_Event::class => 'onStatementExecutionEnd'];
     }
-
     /**
      * Subscribes to a statement execution finished event.
      *
@@ -31,12 +26,11 @@ class StatementExecutionSubscriber implements EventSubscriberInterface
      * @param \Drupal\Core\Database\Event\StatementExecutionEndEvent $event
      *   The database event.
      */
-    public function onStatementExecutionEnd(StatementExecutionEndEvent $event): void
+    public function on_statement_execution_end(Statement_Execution_End_Event $event): void
     {
-        $logger = Database::getConnection($event->target, $event->key)->getLogger();
+        $logger = Database::get_connection($event->target, $event->key)->get_logger();
         if ($logger) {
-            $logger->logFromEvent($event);
+            $logger->log_from_event($event);
         }
     }
-
 }

@@ -1,34 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * General class for an abstracted UPDATE operation.
  *
  * @ingroup database
  */
-class Update extends Query implements ConditionInterface
+class Update extends Query implements Condition_Interface
 {
-    use QueryConditionTrait;
-
+    use Query_Condition_Trait;
     /**
      * An array of fields that will be updated.
      *
      * @var array
      */
     protected $fields = [];
-
     /**
      * An array of values to update to.
      *
      * @var array
      */
     protected $arguments = [];
-
     /**
      * Array of fields to update to an expression in case of a duplicate record.
      *
@@ -42,8 +37,7 @@ class Update extends Query implements ConditionInterface
      * ];
      * @endcode
      */
-    protected $expressionFields = [];
-
+    protected $expression_fields = [];
     /**
      * Constructs an Update query object.
      *
@@ -54,16 +48,18 @@ class Update extends Query implements ConditionInterface
      * @param array $options
      *   Array of database options.
      */
-    public function __construct(Connection $connection, /**
-   * The table to update.
-   */
-        protected $table, array $options = [])
+    public function __construct(
+        Connection $connection,
+        /**
+         * The table to update.
+         */
+        protected $table,
+        array $options = []
+    )
     {
         parent::__construct($connection, $options);
-
         $this->condition = $this->connection->condition('AND');
     }
-
     /**
      * Adds a set of field->value pairs to be updated.
      *
@@ -79,7 +75,6 @@ class Update extends Query implements ConditionInterface
         $this->fields = $fields;
         return $this;
     }
-
     /**
      * Specifies fields to be updated as an expression.
      *
@@ -100,14 +95,9 @@ class Update extends Query implements ConditionInterface
      */
     public function expression($field, $expression, ?array $arguments = null): static
     {
-        $this->expressionFields[$field] = [
-          'expression' => $expression,
-          'arguments' => $arguments,
-        ];
-
+        $this->expression_fields[$field] = ['expression' => $expression, 'arguments' => $arguments];
         return $this;
     }
-
     /**
      * Executes the UPDATE query.
      *
@@ -117,24 +107,20 @@ class Update extends Query implements ConditionInterface
      */
     public function execute()
     {
-
-        [$args, $update_values] = $this->getQueryArguments();
+        [$args, $update_values] = $this->get_query_arguments();
         $update_values += $args;
-
         if (count($this->condition)) {
             $this->condition->compile($this->connection, $this);
             $update_values = array_merge($update_values, $this->condition->arguments());
         }
-
-        $stmt = $this->connection->prepareStatement((string) $this, $this->queryOptions, true);
+        $stmt = $this->connection->prepare_statement((string) $this, $this->query_options, true);
         try {
-            $stmt->execute($update_values, $this->queryOptions);
-            return $stmt->rowCount();
+            $stmt->execute($update_values, $this->query_options);
+            return $stmt->row_count();
         } catch (\Exception $e) {
-            $this->connection->exceptionHandler()->handleExecutionException($e, $stmt, $update_values, $this->queryOptions);
+            $this->connection->exception_handler()->handle_execution_exception($e, $stmt, $update_values, $this->query_options);
         }
     }
-
     /**
      * Implements PHP magic __toString method to convert the query to a string.
      *
@@ -144,49 +130,42 @@ class Update extends Query implements ConditionInterface
     public function __toString(): string
     {
         // Create a sanitized comment string to prepend to the query.
-        $comments = $this->connection->makeComment($this->comments);
-
+        $comments = $this->connection->make_comment($this->comments);
         // Expressions take priority over literal fields, so we process those first
         // and remove any literal fields that conflict.
         $fields = $this->fields;
         $update_fields = [];
-        foreach ($this->expressionFields as $field => $data) {
-            if ($data['expression'] instanceof SelectInterface) {
+        foreach ($this->expression_fields as $field => $data) {
+            if ($data['expression'] instanceof Select_Interface) {
                 // Compile and cast expression subquery to a string.
                 $data['expression']->compile($this->connection, $this);
                 $data['expression'] = ' (' . $data['expression'] . ')';
             }
-            $update_fields[] = $this->connection->escapeField($field) . '=' . $data['expression'];
+            $update_fields[] = $this->connection->escape_field($field) . '=' . $data['expression'];
             unset($fields[$field]);
         }
-
         $max_placeholder = 0;
-        [$args] = $this->getQueryArguments();
+        [$args] = $this->get_query_arguments();
         $placeholders = array_keys($args);
         foreach ($fields as $field => $value) {
-            $update_fields[] = $this->connection->escapeField($field) . '=' . $placeholders[$max_placeholder++];
+            $update_fields[] = $this->connection->escape_field($field) . '=' . $placeholders[$max_placeholder++];
         }
-
-        $query = $comments . 'UPDATE {' . $this->connection->escapeTable($this->table) . '} SET ' . implode(', ', $update_fields);
-
+        $query = $comments . 'UPDATE {' . $this->connection->escape_table($this->table) . '} SET ' . implode(', ', $update_fields);
         if (count($this->condition)) {
             $this->condition->compile($this->connection, $this);
             // There is an implicit string cast on $this->condition.
             $query .= "\nWHERE " . $this->condition;
         }
-
         return $query;
     }
-
     /**
      * {@inheritdoc}
      */
     public function arguments(): float|int|array
     {
-        [$args] = $this->getQueryArguments();
+        [$args] = $this->get_query_arguments();
         return $this->condition->arguments() + $args;
     }
-
     /**
      * Returns the query arguments with placeholders mapped to their values.
      *
@@ -195,31 +174,29 @@ class Update extends Query implements ConditionInterface
      *   Both arguments and update values are associative array where the keys
      *   are the placeholder names and the values are the placeholder values.
      */
-    protected function getQueryArguments(): array
+    protected function get_query_arguments(): array
     {
         // Expressions take priority over literal fields, so we process those first
         // and remove any literal fields that conflict.
         $fields = $this->fields;
         $update_values = [];
-        foreach ($this->expressionFields as $field => $data) {
+        foreach ($this->expression_fields as $field => $data) {
             if (!empty($data['arguments'])) {
                 $update_values += $data['arguments'];
             }
-            if ($data['expression'] instanceof SelectInterface) {
+            if ($data['expression'] instanceof Select_Interface) {
                 $data['expression']->compile($this->connection, $this);
                 $update_values += $data['expression']->arguments();
             }
             unset($fields[$field]);
         }
-
         // Because we filter $fields the same way here and in __toString(), the
         // placeholders will all match up properly.
         $max_placeholder = 0;
         $args = [];
         foreach ($fields as $value) {
-            $args[':db_update_placeholder_' . ($max_placeholder++)] = $value;
+            $args[':db_update_placeholder_' . $max_placeholder++] = $value;
         }
         return [$args, $update_values];
     }
-
 }

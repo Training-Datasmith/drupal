@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Component\Dependency_Injection;
 
-namespace Drupal\Component\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
-use Symfony\Component\DependencyInjection\Exception\RuntimeException;
-
+use Symfony\Component\Dependency_Injection\Argument\Rewindable_Generator;
+use Symfony\Component\Dependency_Injection\Container_Interface;
+use Symfony\Component\Dependency_Injection\Exception\InvalidArgumentException;
+use Symfony\Component\Dependency_Injection\Exception\RuntimeException;
 /**
  * Provides a container optimized for Drupal's needs.
  *
@@ -25,7 +23,7 @@ use Symfony\Component\DependencyInjection\Exception\RuntimeException;
  *
  * @ingroup container
  */
-class PhpArrayContainer extends Container
+class Php_Array_Container extends Container
 {
     /**
      * {@inheritdoc}
@@ -35,19 +33,17 @@ class PhpArrayContainer extends Container
         if (isset($container_definition['machine_format']) && $container_definition['machine_format'] === true) {
             throw new InvalidArgumentException('The machine-optimized format is not supported by this class. Use a human-readable format instead, e.g. as produced by \Drupal\Component\DependencyInjection\Dumper\PhpArrayDumper.');
         }
-
         // Do not call the parent's constructor as it would bail on the
         // machine-optimized format.
         $this->aliases = $container_definition['aliases'] ?? [];
         $this->parameters = $container_definition['parameters'] ?? [];
-        $this->serviceDefinitions = $container_definition['services'] ?? [];
+        $this->service_definitions = $container_definition['services'] ?? [];
         $this->frozen = $container_definition['frozen'] ?? false;
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function createService(array $definition, $id)
+    protected function create_service(array $definition, $id)
     {
         // This method is a verbatim copy of
         // \Drupal\Component\DependencyInjection\Container::createService
@@ -58,74 +54,62 @@ class PhpArrayContainer extends Container
         if (isset($definition['synthetic']) && $definition['synthetic'] === true) {
             throw new RuntimeException(sprintf('You have requested a synthetic service ("%s"). The service container does not know how to construct this service. The service will need to be set before it is first used.', $id));
         }
-
         $arguments = [];
         if (isset($definition['arguments'])) {
-            $arguments = $this->resolveServicesAndParameters($definition['arguments']);
+            $arguments = $this->resolve_services_and_parameters($definition['arguments']);
         }
-
         if (isset($definition['file'])) {
-            $file = $this->frozen ? $definition['file'] : current($this->resolveServicesAndParameters([$definition['file']]));
+            $file = $this->frozen ? $definition['file'] : current($this->resolve_services_and_parameters([$definition['file']]));
             require_once $file;
         }
-
         if (isset($definition['factory'])) {
             $factory = $definition['factory'];
             if (is_array($factory)) {
-                $factory = $this->resolveServicesAndParameters([$factory[0], $factory[1]]);
+                $factory = $this->resolve_services_and_parameters([$factory[0], $factory[1]]);
             } elseif (!is_string($factory)) {
                 throw new RuntimeException(sprintf('Cannot create service "%s" because of invalid factory', $id));
             }
-
             $service = call_user_func_array($factory, $arguments);
         } else {
-            $class = $this->frozen ? $definition['class'] : current($this->resolveServicesAndParameters([$definition['class']]));
+            $class = $this->frozen ? $definition['class'] : current($this->resolve_services_and_parameters([$definition['class']]));
             $service = new $class(...$arguments);
         }
-
         if (!isset($definition['shared']) || $definition['shared'] !== false) {
             $this->services[$id] = $service;
         }
-
         if (isset($definition['calls'])) {
             foreach ($definition['calls'] as $call) {
                 $method = $call[0];
                 $arguments = [];
                 if (!empty($call[1])) {
                     $arguments = $call[1];
-                    $arguments = $this->resolveServicesAndParameters($arguments);
+                    $arguments = $this->resolve_services_and_parameters($arguments);
                 }
                 call_user_func_array([$service, $method], $arguments);
             }
         }
-
         if (isset($definition['properties'])) {
-            $definition['properties'] = $this->resolveServicesAndParameters($definition['properties']);
+            $definition['properties'] = $this->resolve_services_and_parameters($definition['properties']);
             foreach ($definition['properties'] as $key => $value) {
                 $service->{$key} = $value;
             }
         }
-
         if (isset($definition['configurator'])) {
             $callable = $definition['configurator'];
             if (is_array($callable)) {
-                $callable = $this->resolveServicesAndParameters($callable);
+                $callable = $this->resolve_services_and_parameters($callable);
             }
-
             if (!is_callable($callable)) {
                 throw new InvalidArgumentException(sprintf('The configurator for class "%s" is not a callable.', $service::class));
             }
-
             call_user_func($callable, $service);
         }
-
         return $service;
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function resolveServicesAndParameters($arguments)
+    protected function resolve_services_and_parameters($arguments)
     {
         // This method is different from the parent method only for the following
         // cases:
@@ -151,69 +135,63 @@ class PhpArrayContainer extends Container
                 if ($type == 'private_service') {
                     $id = $argument->id;
                     // Check if the private service already exists - in case it is shared.
-                    if (!empty($argument->shared) && isset($this->privateServices[$id])) {
-                        $arguments[$key] = $this->privateServices[$id];
+                    if (!empty($argument->shared) && isset($this->private_services[$id])) {
+                        $arguments[$key] = $this->private_services[$id];
                         continue;
                     }
                     // Create a private service from a service definition.
-                    $arguments[$key] = $this->createService($argument->value, $id);
+                    $arguments[$key] = $this->create_service($argument->value, $id);
                     if (!empty($argument->shared)) {
-                        $this->privateServices[$id] = $arguments[$key];
+                        $this->private_services[$id] = $arguments[$key];
                     }
                     continue;
                 }
                 if ($type == 'service_closure') {
-                    $arguments[$key] = (fn () => $this->get($argument->id, $argument->invalidBehavior));
+                    $arguments[$key] = fn() => $this->get($argument->id, $argument->invalid_behavior);
                     continue;
                 }
                 if ($type == 'raw') {
                     $arguments[$key] = $argument->value;
                     continue;
                 }
-
                 if ($type == 'iterator') {
                     $services = $argument->value;
-                    $arguments[$key] = new RewindableGenerator(function () use ($services) {
+                    $arguments[$key] = new Rewindable_Generator(function () use ($services) {
                         foreach ($services as $key => $service) {
-                            yield $key => $this->resolveServicesAndParameters([$service])[0];
+                            yield $key => $this->resolve_services_and_parameters([$service])[0];
                         }
                     }, count($services));
                     continue;
                 }
-
                 if ($type !== null) {
-                    throw new InvalidArgumentException("Undefined type '$type' while resolving parameters and services.");
+                    throw new InvalidArgumentException("Undefined type '{$type}' while resolving parameters and services.");
                 }
             }
-
             if (is_array($argument)) {
-                $arguments[$key] = $this->resolveServicesAndParameters($argument);
+                $arguments[$key] = $this->resolve_services_and_parameters($argument);
                 continue;
             }
-
             if (!is_string($argument)) {
                 continue;
             }
-
             // Resolve parameters.
             if ($argument[0] === '%') {
                 $name = substr($argument, 1, -1);
                 if (!isset($this->parameters[$name])) {
-                    $arguments[$key] = $this->getParameter($name);
+                    $arguments[$key] = $this->get_parameter($name);
                     // This can never be reached as getParameter() throws an Exception,
                     // because we already checked that the parameter is not set above.
                 }
                 $argument = $this->parameters[$name];
                 $arguments[$key] = $argument;
             }
-
             // Resolve services.
             if ($argument[0] === '@') {
                 $id = substr((string) $argument, 1);
-                $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE;
+                $invalid_behavior = Container_Interface::EXCEPTION_ON_INVALID_REFERENCE;
                 if ($id[0] === '?') {
                     $id = substr($id, 1);
-                    $invalid_behavior = ContainerInterface::NULL_ON_INVALID_REFERENCE;
+                    $invalid_behavior = Container_Interface::NULL_ON_INVALID_REFERENCE;
                 }
                 if (isset($this->services[$id])) {
                     $arguments[$key] = $this->services[$id];
@@ -222,8 +200,6 @@ class PhpArrayContainer extends Container
                 }
             }
         }
-
         return $arguments;
     }
-
 }

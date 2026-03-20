@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -32,28 +31,24 @@ class Rectangle
      * @var int
      */
     protected $width;
-
     /**
      * The height of the rectangle.
      *
      * @var int
      */
     protected $height;
-
     /**
      * The width of the rotated rectangle.
      *
      * @var int
      */
-    protected $boundingWidth;
-
+    protected $bounding_width;
     /**
      * The height of the rotated rectangle.
      *
      * @var int
      */
-    protected $boundingHeight;
-
+    protected $bounding_height;
     /**
      * Constructs a new Rectangle object.
      *
@@ -67,13 +62,12 @@ class Rectangle
         if ($width > 0 && $height > 0) {
             $this->width = $width;
             $this->height = $height;
-            $this->boundingWidth = $width;
-            $this->boundingHeight = $height;
+            $this->bounding_width = $width;
+            $this->bounding_height = $height;
         } else {
             throw new \InvalidArgumentException("Invalid dimensions ({$width}x{$height}) specified for a Rectangle object");
         }
     }
-
     /**
      * Rotates the rectangle.
      *
@@ -88,7 +82,6 @@ class Rectangle
         // behavior on negative multiples of 30 degrees we convert any negative
         // angle to a positive one between 0 and 360 degrees.
         $angle -= floor($angle / 360) * 360;
-
         // For some rotations that are multiple of 30 degrees, we need to correct
         // an imprecision between GD that uses C floats internally, and PHP that
         // uses C doubles. Also, for rotations that are not multiple of 90 degrees,
@@ -99,10 +92,9 @@ class Rectangle
             $imprecision = 0;
             $correction = 0;
         } else {
-            $imprecision = -0.00001;
+            $imprecision = -1.0E-5;
             $correction = 0.5;
         }
-
         // Do the trigonometry, applying imprecision fixes where needed.
         $rad = deg2rad($angle);
         $cos = cos($rad);
@@ -112,19 +104,16 @@ class Rectangle
         $c = $this->width * $sin;
         $d = $this->height * $cos + $correction;
         if ((int) $angle == $angle && in_array($angle, [60, 150, 300])) {
-            $a = $this->fixImprecision($a, $imprecision);
-            $b = $this->fixImprecision($b, $imprecision);
-            $c = $this->fixImprecision($c, $imprecision);
-            $d = $this->fixImprecision($d, $imprecision);
+            $a = $this->fix_imprecision($a, $imprecision);
+            $b = $this->fix_imprecision($b, $imprecision);
+            $c = $this->fix_imprecision($c, $imprecision);
+            $d = $this->fix_imprecision($d, $imprecision);
         }
-
         // This is how GD on PHP5.5 calculates the new dimensions.
-        $this->boundingWidth = abs((int) $a) + abs((int) $b);
-        $this->boundingHeight = abs((int) $c) + abs((int) $d);
-
+        $this->bounding_width = abs((int) $a) + abs((int) $b);
+        $this->bounding_height = abs((int) $c) + abs((int) $d);
         return $this;
     }
-
     /**
      * Performs an imprecision check on the input value and fixes it if needed.
      *
@@ -140,14 +129,13 @@ class Rectangle
      *   A value, where imprecision is added to input if the delta part of the
      *   input is lower than the absolute imprecision.
      */
-    protected function fixImprecision($input, $imprecision)
+    protected function fix_imprecision($input, $imprecision)
     {
         if ($this->delta($input) < abs($imprecision)) {
             return $input + $imprecision;
         }
         return $input;
     }
-
     /**
      * Returns the fractional part of a float number, unsigned.
      *
@@ -161,7 +149,6 @@ class Rectangle
     {
         return abs((int) $input - $input);
     }
-
     /**
      * Returns the difference of a fraction from the closest between 0 and 1.
      *
@@ -174,29 +161,26 @@ class Rectangle
     protected function delta($input)
     {
         $fraction = $this->fraction($input);
-        return $fraction > 0.5 ? (1 - $fraction) : $fraction;
+        return $fraction > 0.5 ? 1 - $fraction : $fraction;
     }
-
     /**
      * Gets the bounding width of the rectangle.
      *
      * @return int
      *   The bounding width of the rotated rectangle.
      */
-    public function getBoundingWidth()
+    public function get_bounding_width()
     {
-        return $this->boundingWidth;
+        return $this->bounding_width;
     }
-
     /**
      * Gets the bounding height of the rectangle.
      *
      * @return int
      *   The bounding height of the rotated rectangle.
      */
-    public function getBoundingHeight()
+    public function get_bounding_height()
     {
-        return $this->boundingHeight;
+        return $this->bounding_height;
     }
-
 }

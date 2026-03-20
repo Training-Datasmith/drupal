@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Exception;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Component\Plugin\Exception;
  * Extended interface for exceptions thrown specifically by the Mapper subsystem
  * within the Plugin component.
  */
-interface MapperExceptionInterface extends ExceptionInterface
+interface Mapper_Exception_Interface extends Exception_Interface
 {
 }

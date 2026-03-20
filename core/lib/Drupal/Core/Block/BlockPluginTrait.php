@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Block;
 
-use Drupal\Component\Transliteration\TransliterationInterface;
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Messenger\MessengerTrait;
-use Drupal\Core\Plugin\PluginWithFormsTrait;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
+use Drupal\Component\Transliteration\Transliteration_Interface;
+use Drupal\Component\Utility\Nested_Array;
+use Drupal\Core\Access\Access_Result;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Language\Language_Interface;
+use Drupal\Core\Messenger\Messenger_Trait;
+use Drupal\Core\Plugin\Plugin_With_Forms_Trait;
+use Drupal\Core\Session\Account_Interface;
+use Drupal\Core\String_Translation\String_Translation_Trait;
 /**
  * Provides the base implementation of a block plugin.
  *
@@ -26,26 +24,23 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * @ingroup block_api
  */
-trait BlockPluginTrait
+trait Block_Plugin_Trait
 {
-    use StringTranslationTrait;
-    use MessengerTrait;
-    use PluginWithFormsTrait;
-
+    use String_Translation_Trait;
+    use Messenger_Trait;
+    use Plugin_With_Forms_Trait;
     /**
      * Whether the plugin is being rendered in preview mode.
      *
      * @var bool
      */
-    protected $inPreview = false;
-
+    protected $in_preview = false;
     /**
      * The transliteration service.
      *
      * @var \Drupal\Component\Transliteration\TransliterationInterface
      */
     protected $transliteration;
-
     /**
      * {@inheritdoc}
      */
@@ -54,91 +49,72 @@ trait BlockPluginTrait
         if (!empty($this->configuration['label'])) {
             return $this->configuration['label'];
         }
-
-        $definition = $this->getPluginDefinition();
+        $definition = $this->get_plugin_definition();
         // Cast the admin label to a string since it is an object.
         // @see \Drupal\Core\StringTranslation\TranslatableMarkup
         return (string) $definition['admin_label'];
     }
-
     /**
      * {@inheritdoc}
      */
     public function __construct(array $configuration, $plugin_id, $plugin_definition)
     {
         parent::__construct($configuration, $plugin_id, $plugin_definition);
-        $this->setConfiguration($configuration);
+        $this->set_configuration($configuration);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfiguration()
+    public function get_configuration()
     {
         return $this->configuration;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setConfiguration(array $configuration): void
+    public function set_configuration(array $configuration): void
     {
-        $this->configuration = NestedArray::mergeDeep(
-            $this->baseConfigurationDefaults(),
-            $this->defaultConfiguration(),
-            $configuration
-        );
+        $this->configuration = Nested_Array::merge_deep($this->base_configuration_defaults(), $this->default_configuration(), $configuration);
     }
-
     /**
      * Returns generic default configuration for block plugins.
      *
      * @return array
      *   An associative array with the default configuration.
      */
-    protected function baseConfigurationDefaults(): array
+    protected function base_configuration_defaults(): array
     {
-        return [
-          'id' => $this->getPluginId(),
-          'label' => '',
-          'label_display' => BlockPluginInterface::BLOCK_LABEL_VISIBLE,
-          'provider' => $this->pluginDefinition['provider'],
-        ];
+        return ['id' => $this->get_plugin_id(), 'label' => '', 'label_display' => Block_Plugin_Interface::BLOCK_LABEL_VISIBLE, 'provider' => $this->plugin_definition['provider']];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration(): array
+    public function default_configuration(): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setConfigurationValue($key, $value): void
+    public function set_configuration_value($key, $value): void
     {
         $this->configuration[$key] = $value;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function calculateDependencies(): array
+    public function calculate_dependencies(): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function access(AccountInterface $account, $return_as_object = false)
+    public function access(Account_Interface $account, $return_as_object = false)
     {
-        $access = $this->blockAccess($account);
-        return $return_as_object ? $access : $access->isAllowed();
+        $access = $this->block_access($account);
+        return $return_as_object ? $access : $access->is_allowed();
     }
-
     /**
      * Indicates whether the block should be shown.
      *
@@ -154,12 +130,11 @@ trait BlockPluginTrait
      *
      * @see self::access()
      */
-    protected function blockAccess(AccountInterface $account)
+    protected function block_access(Account_Interface $account)
     {
         // By default, the block is visible.
-        return AccessResult::allowed();
+        return Access_Result::allowed();
     }
-
     /**
      * {@inheritdoc}
      *
@@ -170,46 +145,24 @@ trait BlockPluginTrait
      *
      * @see \Drupal\Core\Block\BlockBase::blockForm()
      */
-    public function buildConfigurationForm(array $form, FormStateInterface $form_state): array
+    public function build_configuration_form(array $form, Form_State_Interface $form_state): array
     {
-        $definition = $this->getPluginDefinition();
-        $form['provider'] = [
-          '#type' => 'value',
-          '#value' => $definition['provider'],
-        ];
-
-        $form['admin_label'] = [
-          '#type' => 'item',
-          '#title' => $this->t('Block description'),
-          '#plain_text' => $definition['admin_label'],
-        ];
-        $form['label'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Title'),
-          '#maxlength' => 255,
-          '#default_value' => $this->label(),
-          '#required' => true,
-        ];
-        $form['label_display'] = [
-          '#type' => 'checkbox',
-          '#title' => $this->t('Display title'),
-          '#default_value' => ($this->configuration['label_display'] === BlockPluginInterface::BLOCK_LABEL_VISIBLE),
-          '#return_value' => BlockPluginInterface::BLOCK_LABEL_VISIBLE,
-        ];
-
+        $definition = $this->get_plugin_definition();
+        $form['provider'] = ['#type' => 'value', '#value' => $definition['provider']];
+        $form['admin_label'] = ['#type' => 'item', '#title' => $this->t('Block description'), '#plain_text' => $definition['admin_label']];
+        $form['label'] = ['#type' => 'textfield', '#title' => $this->t('Title'), '#maxlength' => 255, '#default_value' => $this->label(), '#required' => true];
+        $form['label_display'] = ['#type' => 'checkbox', '#title' => $this->t('Display title'), '#default_value' => $this->configuration['label_display'] === Block_Plugin_Interface::BLOCK_LABEL_VISIBLE, '#return_value' => Block_Plugin_Interface::BLOCK_LABEL_VISIBLE];
         // Add plugin-specific settings for this block type.
-        $form += $this->blockForm($form, $form_state);
+        $form += $this->block_form($form, $form_state);
         return $form;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function blockForm($form, FormStateInterface $form_state): array
+    public function block_form($form, Form_State_Interface $form_state): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      *
@@ -218,21 +171,18 @@ trait BlockPluginTrait
      *
      * @see \Drupal\Core\Block\BlockBase::blockValidate()
      */
-    public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void
+    public function validate_configuration_form(array &$form, Form_State_Interface $form_state): void
     {
         // Remove the admin_label form item element value so it will not persist.
-        $form_state->unsetValue('admin_label');
-
-        $this->blockValidate($form, $form_state);
+        $form_state->unset_value('admin_label');
+        $this->block_validate($form, $form_state);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function blockValidate($form, FormStateInterface $form_state)
+    public function block_validate($form, Form_State_Interface $form_state)
     {
     }
-
     /**
      * {@inheritdoc}
      *
@@ -241,51 +191,44 @@ trait BlockPluginTrait
      *
      * @see \Drupal\Core\Block\BlockBase::blockSubmit()
      */
-    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    public function submit_configuration_form(array &$form, Form_State_Interface $form_state): void
     {
         // Process the block's submission handling if no errors occurred only.
-        if (!$form_state->getErrors()) {
-            $this->configuration['label'] = $form_state->getValue('label');
-            $this->configuration['label_display'] = $form_state->getValue('label_display');
-            $this->configuration['provider'] = $form_state->getValue('provider');
-            $this->blockSubmit($form, $form_state);
+        if (!$form_state->get_errors()) {
+            $this->configuration['label'] = $form_state->get_value('label');
+            $this->configuration['label_display'] = $form_state->get_value('label_display');
+            $this->configuration['provider'] = $form_state->get_value('provider');
+            $this->block_submit($form, $form_state);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function blockSubmit($form, FormStateInterface $form_state)
+    public function block_submit($form, Form_State_Interface $form_state)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getMachineNameSuggestion(): string|array|null
+    public function get_machine_name_suggestion(): string|array|null
     {
-        $definition = $this->getPluginDefinition();
+        $definition = $this->get_plugin_definition();
         $admin_label = $definition['admin_label'];
-
-        $transliterated = $this->transliteration()->transliterate($admin_label, LanguageInterface::LANGCODE_DEFAULT, '_');
+        $transliterated = $this->transliteration()->transliterate($admin_label, Language_Interface::LANGCODE_DEFAULT, '_');
         $transliterated = mb_strtolower((string) $transliterated);
-
         $transliterated = preg_replace('@[^a-z0-9_.]+@', '', $transliterated);
         // Furthermore remove any characters that are not alphanumerical from the
         // beginning and end of the transliterated string.
         $transliterated = preg_replace('@^([^a-z0-9]+)|([^a-z0-9]+)$@', '', (string) $transliterated);
-
         return $transliterated;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getPreviewFallbackString()
+    public function get_preview_fallback_string()
     {
         return $this->t('"@block" block', ['@block' => $this->label()]);
     }
-
     /**
      * Wraps the transliteration service.
      *
@@ -299,32 +242,28 @@ trait BlockPluginTrait
         }
         return $this->transliteration;
     }
-
     /**
      * Sets the transliteration service.
      *
      * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
      *   The transliteration service.
      */
-    public function setTransliteration(TransliterationInterface $transliteration): void
+    public function set_transliteration(Transliteration_Interface $transliteration): void
     {
         $this->transliteration = $transliteration;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setInPreview(bool $in_preview): void
+    public function set_in_preview(bool $in_preview): void
     {
-        $this->inPreview = $in_preview;
+        $this->in_preview = $in_preview;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createPlaceholder(): bool
+    public function create_placeholder(): bool
     {
         return false;
     }
-
 }

@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\PhpStorage;
+declare (strict_types=1);
+namespace Drupal\Component\Php_Storage;
 
 /**
  * Reads code as regular PHP files, but won't write them.
  */
-class FileReadOnlyStorage implements PhpStorageInterface
+class File_Read_Only_Storage implements Php_Storage_Interface
 {
     /**
      * The directory where the files should be stored.
      */
     protected string $directory;
-
     /**
      * Constructs this FileStorage object.
      *
@@ -26,18 +24,15 @@ class FileReadOnlyStorage implements PhpStorageInterface
      */
     public function __construct(array $configuration)
     {
-
         $this->directory = $configuration['directory'] . '/' . $configuration['bin'];
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name): bool
     {
-        return file_exists($this->getFullPath($name));
+        return file_exists($this->get_full_path($name));
     }
-
     /**
      * {@inheritdoc}
      */
@@ -45,9 +40,8 @@ class FileReadOnlyStorage implements PhpStorageInterface
     {
         // The FALSE returned on failure is enough for the caller to handle this,
         // we do not want a warning too.
-        return (@include_once $this->getFullPath($name)) !== false;
+        return @(include_once $this->get_full_path($name)) !== false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -55,7 +49,6 @@ class FileReadOnlyStorage implements PhpStorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -63,34 +56,31 @@ class FileReadOnlyStorage implements PhpStorageInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getFullPath($name): string
+    public function get_full_path($name): string
     {
         return $this->directory . '/' . $name;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll(): bool
+    public function delete_all(): bool
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function listAll(): array
+    public function list_all(): array
     {
         $names = [];
         if (file_exists($this->directory)) {
-            foreach (new \DirectoryIterator($this->directory) as $fileinfo) {
-                if (!$fileinfo->isDot()) {
-                    $name = $fileinfo->getFilename();
+            foreach (new \Directory_Iterator($this->directory) as $fileinfo) {
+                if (!$fileinfo->is_dot()) {
+                    $name = $fileinfo->get_filename();
                     if ($name != '.htaccess') {
                         $names[] = $name;
                     }
@@ -99,12 +89,10 @@ class FileReadOnlyStorage implements PhpStorageInterface
         }
         return $names;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection()
+    public function garbage_collection()
     {
     }
-
 }

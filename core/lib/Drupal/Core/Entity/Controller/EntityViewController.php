@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Controller;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Security\TrustedCallbackInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drupal\Core\Dependency_Injection\Container_Injection_Interface;
+use Drupal\Core\Entity\Entity_Interface;
+use Drupal\Core\Entity\Fieldable_Entity_Interface;
+use Drupal\Core\Security\Trusted_Callback_Interface;
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Defines a generic controller to render a single entity.
  */
-class EntityViewController implements ContainerInjectionInterface, TrustedCallbackInterface
+class Entity_View_Controller implements Container_Injection_Interface, Trusted_Callback_Interface
 {
     /**
      * Creates an EntityViewController object.
@@ -23,21 +21,16 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
      * @param \Drupal\Core\Render\RendererInterface $renderer
      *   The renderer service.
      */
-    public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Render\RendererInterface $renderer)
+    public function __construct(protected \Drupal\Core\Entity\Entity_Type_Manager_Interface $entity_type_manager, protected \Drupal\Core\Render\Renderer_Interface $renderer)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container): static
+    public static function create(Container_Interface $container): static
     {
-        return new static(
-            $container->get('entity_type.manager'),
-            $container->get('renderer')
-        );
+        return new static($container->get('entity_type.manager'), $container->get('renderer'));
     }
-
     /**
      * Pre-render callback to build the page title.
      *
@@ -60,30 +53,22 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
      * @return array
      *   The changed page render array.
      */
-    public function buildTitle(array $page): array
+    public function build_title(array $page): array
     {
         $entity_type = $page['#entity_type'];
         $entity = $page['#' . $entity_type];
-
         // If the entity has a label field, build the page title based on it.
-        if ($entity instanceof FieldableEntityInterface) {
-            $label_field = $entity->getEntityType()->getKey('label');
-            $template_enabled = $entity->getEntityType()->get('enable_page_title_template');
+        if ($entity instanceof Fieldable_Entity_Interface) {
+            $label_field = $entity->get_entity_type()->get_key('label');
+            $template_enabled = $entity->get_entity_type()->get('enable_page_title_template');
             if ($label_field && $template_enabled) {
                 // Set page title to the output from the entity_page_title template.
-                $page_title = [
-                  '#theme' => 'entity_page_title',
-                  '#title' => $entity->label(),
-                  '#entity' => $entity,
-                  '#view_mode' => $page['#view_mode'],
-                ];
+                $page_title = ['#theme' => 'entity_page_title', '#title' => $entity->label(), '#entity' => $entity, '#view_mode' => $page['#view_mode']];
                 $page['#title'] = $this->renderer->render($page_title);
-
                 // Prevent output of the label field in the main content.
                 $page[$label_field]['#access'] = false;
                 return $page;
             }
-
             // Set page title to the rendered title field formatter instead of
             // the default plain text title.
             //
@@ -99,7 +84,6 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
         }
         return $page;
     }
-
     /**
      * Provides a page to render a single entity.
      *
@@ -115,49 +99,29 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
      *   A render array as expected by
      *   \Drupal\Core\Render\RendererInterface::render().
      */
-    public function view(EntityInterface $_entity, $view_mode = 'full')
+    public function view(Entity_Interface $_entity, $view_mode = 'full')
     {
-        $page = $this->entityTypeManager
-          ->getViewBuilder($_entity->getEntityTypeId())
-          ->view($_entity, $view_mode);
-
-        $page['#pre_render'][] = $this->buildTitle(...);
-        $page['#entity_type'] = $_entity->getEntityTypeId();
+        $page = $this->entity_type_manager->get_view_builder($_entity->get_entity_type_id())->view($_entity, $view_mode);
+        $page['#pre_render'][] = $this->build_title(...);
+        $page['#entity_type'] = $_entity->get_entity_type_id();
         $page['#' . $page['#entity_type']] = $_entity;
-
         // Add canonical and shortlink links if the entity has a canonical
         // link template and is not new.
-        if ($_entity->hasLinkTemplate('canonical') && !$_entity->isNew()) {
-
-            $url = $_entity->toUrl('canonical')->setAbsolute(true);
-            $page['#attached']['html_head_link'][] = [
-              [
-                'rel' => 'canonical',
-                'href' => $url->toString(),
-              ],
-            ];
-
+        if ($_entity->has_link_template('canonical') && !$_entity->is_new()) {
+            $url = $_entity->to_url('canonical')->set_absolute(true);
+            $page['#attached']['html_head_link'][] = [['rel' => 'canonical', 'href' => $url->to_string()]];
             // Set the non-aliased canonical path as a default shortlink.
-            $page['#attached']['html_head_link'][] = [
-              [
-                'rel' => 'shortlink',
-                'href' => $url->setOption('alias', true)->toString(),
-              ],
-            ];
-
+            $page['#attached']['html_head_link'][] = [['rel' => 'shortlink', 'href' => $url->set_option('alias', true)->to_string()]];
             // Since this generates absolute URLs, it can only be cached "per site".
             $page['#cache']['contexts'][] = 'url.site';
         }
-
         return $page;
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function trustedCallbacks(): array
+    public static function trusted_callbacks(): array
     {
         return ['buildTitle'];
     }
-
 }

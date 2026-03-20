@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Serialization;
 
 // cspell:ignore serializers igbinary
-
 /**
  * Ensures that a serializer is usable for serializing PHP objects.
  *
@@ -16,6 +14,6 @@ namespace Drupal\Component\Serialization;
  * suitable for PHP objects, for example using the PHP string serialization
  * format or the igbinary format.
  */
-interface ObjectAwareSerializationInterface extends SerializationInterface
+interface Object_Aware_Serialization_Interface extends Serialization_Interface
 {
 }

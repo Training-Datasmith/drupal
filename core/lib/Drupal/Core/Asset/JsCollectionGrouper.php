@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Groups JavaScript assets.
  */
-class JsCollectionGrouper implements AssetCollectionGrouperInterface
+class Js_Collection_Grouper implements Asset_Collection_Grouper_Interface
 {
     /**
      * {@inheritdoc}
@@ -38,13 +37,11 @@ class JsCollectionGrouper implements AssetCollectionGrouperInterface
                     // together items that share the same 'group' value.
                     $group_keys = $item['preprocess'] ? [$item['type'], $item['group']] : false;
                     break;
-
                 case 'external':
                     // Do not group external items.
                     $group_keys = false;
                     break;
             }
-
             // If the group keys don't match the most recent group we're working with,
             // then a new group must be made.
             if ($group_keys !== $current_group_keys) {
@@ -57,12 +54,9 @@ class JsCollectionGrouper implements AssetCollectionGrouperInterface
                 $groups[$index]['items'] = [];
                 $current_group_keys = $group_keys ?: null;
             }
-
             // Add the item to the current group.
             $groups[$index]['items'][] = $item;
         }
-
         return $groups;
     }
-
 }

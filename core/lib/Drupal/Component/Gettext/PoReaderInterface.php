@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Gettext;
 
 /**
  * Shared interface definition for all Gettext PO Readers.
  */
-interface PoReaderInterface extends PoMetadataInterface
+interface Po_Reader_Interface extends Po_Metadata_Interface
 {
     /**
      * Reads and returns a PoItem (source/translation pair).
@@ -15,6 +14,5 @@ interface PoReaderInterface extends PoMetadataInterface
      * @return \Drupal\Component\Gettext\PoItem
      *   Wrapper for item data instance.
      */
-    public function readItem();
-
+    public function read_item();
 }

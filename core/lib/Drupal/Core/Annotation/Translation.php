@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Annotation;
 
-use Drupal\Component\Annotation\AnnotationBase;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Component\Annotation\Annotation_Base;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * @defgroup plugin_translatable Annotation for translatable text
  * @{
@@ -39,7 +37,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see annotation
  * @}
  */
-
 /**
  * Defines a translatable annotation object.
  *
@@ -52,13 +49,12 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @Annotation
  */
-class Translation extends AnnotationBase
+class Translation extends Annotation_Base
 {
     /**
      * The string translation object.
      */
-    protected \Drupal\Core\StringTranslation\TranslatableMarkup $translation;
-
+    protected \Drupal\Core\String_Translation\Translatable_Markup $translation;
     /**
      * Constructs a new class instance.
      *
@@ -78,14 +74,11 @@ class Translation extends AnnotationBase
         $arguments = $values['arguments'] ?? [];
         $options = [];
         if (!empty($values['context'])) {
-            $options = [
-              'context' => $values['context'],
-            ];
+            $options = ['context' => $values['context']];
         }
         // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        $this->translation = new TranslatableMarkup($string, $arguments, $options);
+        $this->translation = new Translatable_Markup($string, $arguments, $options);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -93,5 +86,4 @@ class Translation extends AnnotationBase
     {
         return $this->translation;
     }
-
 }

@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Condition\Attribute;
 
 use Drupal\Component\Plugin\Attribute\Plugin;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a condition plugin attribute.
  *
@@ -45,14 +43,7 @@ class Condition extends Plugin
      * @param class-string|null $deriver
      *   (optional) The deriver class.
      */
-    public function __construct(
-        public readonly string $id,
-        public readonly ?TranslatableMarkup $label = null,
-        public readonly ?string $module = null,
-        public readonly ?TranslatableMarkup $category = null,
-        public readonly array $context_definitions = [],
-        public readonly ?string $deriver = null,
-    ) {
+    public function __construct(public readonly string $id, public readonly ?Translatable_Markup $label = null, public readonly ?string $module = null, public readonly ?Translatable_Markup $category = null, public readonly array $context_definitions = [], public readonly ?string $deriver = null)
+    {
     }
-
 }

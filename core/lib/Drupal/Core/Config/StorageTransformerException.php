@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -10,6 +9,6 @@ namespace Drupal\Core\Config;
  * @see \Drupal\Core\Config\ImportStorageTransformer
  * @see \Drupal\Core\Config\ExportStorageManager
  */
-class StorageTransformerException extends \Exception
+class Storage_Transformer_Exception extends \Exception
 {
 }

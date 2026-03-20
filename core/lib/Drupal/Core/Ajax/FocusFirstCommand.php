@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -21,7 +20,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class FocusFirstCommand implements CommandInterface
+class Focus_First_Command implements Command_Interface
 {
     /**
      * Constructs an FocusFirstCommand object.
@@ -34,18 +33,14 @@ class FocusFirstCommand implements CommandInterface
          * The selector of the container with tabbable elements.
          */
         protected $selector
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'focusFirst',
-          'selector' => $this->selector,
-        ];
+        return ['command' => 'focusFirst', 'selector' => $this->selector];
     }
-
 }

@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Routing\Access\AccessInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\Access_Result;
+use Drupal\Core\Routing\Access\Access_Interface;
+use Drupal\Core\Routing\Route_Match_Interface;
+use Drupal\Core\Session\Account_Interface;
 use Symfony\Component\Routing\Route;
-
 /**
  * Provides a generic access checker for entities.
  */
-class EntityAccessCheck implements AccessInterface
+class Entity_Access_Check implements Access_Interface
 {
     /**
      * Checks access to the entity operation on the given route.
@@ -62,22 +60,21 @@ class EntityAccessCheck implements AccessInterface
      *
      * @link https://www.drupal.org/docs/8/api/routing-system/parameters-in-routes
      */
-    public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account)
+    public function access(Route $route, Route_Match_Interface $route_match, Account_Interface $account)
     {
         // Split the entity type and the operation.
-        $requirement = $route->getRequirement('_entity_access');
+        $requirement = $route->get_requirement('_entity_access');
         [$entity_type, $operation] = explode('.', $requirement);
         // If $entity_type parameter is a valid entity, call its own access check.
-        $parameters = $route_match->getParameters();
+        $parameters = $route_match->get_parameters();
         if ($parameters->has($entity_type)) {
             $entity = $parameters->get($entity_type);
-            if ($entity instanceof EntityInterface) {
+            if ($entity instanceof Entity_Interface) {
                 return $entity->access($operation, $account, true);
             }
         }
         // No opinion, so other access checks should decide if access should be
         // allowed or not.
-        return AccessResult::neutral();
+        return Access_Result::neutral();
     }
-
 }

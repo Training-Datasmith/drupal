@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 use Masterminds\HTML5;
 use Masterminds\HTML5\Serializer\Traverser;
-
 /**
  * Provides DOMDocument helpers for parsing and serializing HTML strings.
  *
@@ -20,28 +18,24 @@ class Html
      * @var array
      */
     protected static $classes = [];
-
     /**
      * An array of the initial IDs used in one request.
      *
      * @var array
      */
-    protected static $seenIdsInit;
-
+    protected static $seen_ids_init;
     /**
      * An array of IDs, including incremented versions when an ID is duplicated.
      *
      * @var array
      */
-    protected static $seenIds;
-
+    protected static $seen_ids;
     /**
      * Stores whether the current request was sent via AJAX.
      *
      * @var bool
      */
-    protected static $isAjax = false;
-
+    protected static $is_ajax = false;
     /**
      * All attributes that may contain URIs.
      *
@@ -59,8 +53,7 @@ class Html
      * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes
      * @see https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value
      */
-    protected static $uriAttributes = ['href', 'poster', 'src', 'cite', 'data', 'action', 'formaction', 'srcset', 'about'];
-
+    protected static $uri_attributes = ['href', 'poster', 'src', 'cite', 'data', 'action', 'formaction', 'srcset', 'about'];
     /**
      * Prepares a string for use as a valid class name.
      *
@@ -74,15 +67,14 @@ class Html
      * @return string
      *   The cleaned class name.
      */
-    public static function getClass($class)
+    public static function get_class($class)
     {
         $class = (string) $class;
         if (!isset(static::$classes[$class])) {
-            static::$classes[$class] = static::cleanCssIdentifier(mb_strtolower($class));
+            static::$classes[$class] = static::clean_css_identifier(mb_strtolower($class));
         }
         return static::$classes[$class];
     }
-
     /**
      * Prepares a string for use as a CSS identifier (element, class, or ID name).
      *
@@ -99,16 +91,8 @@ class Html
      *
      * @see https://www.w3.org/TR/CSS21/syndata.html#characters
      */
-    public static function cleanCssIdentifier(
-        $identifier,
-        array $filter = [
-        ' ' => '-',
-        '_' => '-',
-        '/' => '-',
-        '[' => '-',
-        ']' => '',
-    ],
-    ): string|array|null {
+    public static function clean_css_identifier($identifier, array $filter = [' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '']): string|array|null
+    {
         // We could also use strtr() here but its much slower than str_replace(). In
         // order to keep '__' to stay '__' we first replace it with a different
         // placeholder after checking that it is not defined as a filter.
@@ -122,7 +106,6 @@ class Html
         if ($double_underscore_replacements > 0) {
             $identifier = str_replace('##', '__', $identifier);
         }
-
         // Valid characters in a CSS identifier are:
         // - the hyphen (U+002D)
         // - a-z (U+0030 - U+0039)
@@ -134,24 +117,19 @@ class Html
         $identifier = preg_replace('/[^\x{002D}\x{0030}-\x{0039}\x{0041}-\x{005A}\x{005F}\x{0061}-\x{007A}\x{00A1}-\x{FFFF}]/u', '', (string) $identifier);
         // Identifiers cannot start with a digit, two hyphens, or a hyphen followed
         // by a digit.
-        $identifier = preg_replace([
-          '/^[0-9]/',
-          '/^(-[0-9])|^(--)/',
-        ], ['_', '__'], (string) $identifier);
+        $identifier = preg_replace(['/^[0-9]/', '/^(-[0-9])|^(--)/'], ['_', '__'], (string) $identifier);
         return $identifier;
     }
-
     /**
      * Sets if this request is an Ajax request.
      *
      * @param bool $is_ajax
      *   TRUE if this request is an Ajax request, FALSE otherwise.
      */
-    public static function setIsAjax($is_ajax): void
+    public static function set_is_ajax($is_ajax): void
     {
-        static::$isAjax = $is_ajax;
+        static::$is_ajax = $is_ajax;
     }
-
     /**
      * Prepares a string for use as a valid HTML ID and guarantees uniqueness.
      *
@@ -180,39 +158,35 @@ class Html
      * @return string
      *   The cleaned ID.
      */
-    public static function getUniqueId($id)
+    public static function get_unique_id($id)
     {
         // If this is an Ajax request, then content returned by this page request
         // will be merged with content already on the base page. The HTML IDs must
         // be unique for the fully merged content. Therefore use unique IDs.
-        if (static::$isAjax) {
-            return static::getId($id) . '--' . Crypt::randomBytesBase64(8);
+        if (static::$is_ajax) {
+            return static::get_id($id) . '--' . Crypt::random_bytes_base64(8);
         }
-
         // @todo Remove all that code once we switch over to random IDs only,
         // see https://www.drupal.org/node/1090592.
-        if (!isset(static::$seenIdsInit)) {
-            static::$seenIdsInit = [];
+        if (!isset(static::$seen_ids_init)) {
+            static::$seen_ids_init = [];
         }
-        if (!isset(static::$seenIds)) {
-            static::$seenIds = static::$seenIdsInit;
+        if (!isset(static::$seen_ids)) {
+            static::$seen_ids = static::$seen_ids_init;
         }
-
-        $id = static::getId($id);
-
+        $id = static::get_id($id);
         // Ensure IDs are unique by appending a counter after the first occurrence.
         // The counter needs to be appended with a delimiter that does not exist in
         // the base ID. Requiring a unique delimiter helps ensure that we really do
         // return unique IDs and also helps us re-create the $seen_ids array during
         // Ajax requests.
-        if (isset(static::$seenIds[$id])) {
-            $id = $id . '--' . ++static::$seenIds[$id];
+        if (isset(static::$seen_ids[$id])) {
+            $id = $id . '--' . ++static::$seen_ids[$id];
         } else {
-            static::$seenIds[$id] = 1;
+            static::$seen_ids[$id] = 1;
         }
         return $id;
     }
-
     /**
      * Prepares a string for use as a valid HTML ID.
      *
@@ -227,10 +201,9 @@ class Html
      *
      * @see self::getUniqueId()
      */
-    public static function getId($id): string|array|null
+    public static function get_id($id): string|array|null
     {
         $id = str_replace([' ', '_', '[', ']'], ['-', '-', '-', ''], mb_strtolower($id));
-
         // As defined in https://www.w3.org/TR/html4/types.html#type-name, HTML IDs
         // can only contain letters, digits ([0-9]), hyphens ("-"), underscores
         // ("_"), colons (":"), and periods ("."). We strip out any character not in
@@ -238,20 +211,17 @@ class Html
         // identifiers (https://www.w3.org/TR/CSS21/syndata.html#characters), so we
         // strip those two characters as well.
         $id = preg_replace('/[^A-Za-z0-9\-_]/', '', $id);
-
         // Removing multiple consecutive hyphens.
         $id = preg_replace('/\-+/', '-', (string) $id);
         return $id;
     }
-
     /**
      * Resets the list of seen IDs.
      */
-    public static function resetSeenIds(): void
+    public static function reset_seen_ids(): void
     {
-        static::$seenIds = null;
+        static::$seen_ids = null;
     }
-
     /**
      * Normalizes an HTML snippet.
      *
@@ -269,7 +239,6 @@ class Html
         $document = static::load($html);
         return static::serialize($document);
     }
-
     /**
      * Parses an HTML snippet and returns it as a DOM object.
      *
@@ -291,12 +260,10 @@ class Html
         // Instantiate the HTML5 parser, but without the HTML5 namespace being
         // added to the DOM document.
         $html5 = new HTML5(['disable_html_ns' => true, 'encoding' => 'UTF-8']);
-
         // Attach the provided HTML inside the body. Rely on the HTML5 parser to
         // close the body tag.
-        return $html5->loadHTML('<body>' . $html);
+        return $html5->load_html('<body>' . $html);
     }
-
     /**
      * Converts the body of a \DOMDocument back to an HTML snippet.
      *
@@ -311,38 +278,33 @@ class Html
      * @return string
      *   A valid HTML snippet, as a string.
      */
-    public static function serialize(\DOMDocument $document): string|array
+    public static function serialize(\Dom_Document $document): string|array
     {
-        $body_node = $document->getElementsByTagName('body')->item(0);
+        $body_node = $document->get_elements_by_tag_name('body')->item(0);
         $html = '';
-
         if ($body_node !== null) {
-            foreach ($body_node->getElementsByTagName('script') as $node) {
-                static::escapeCdataElement($node);
+            foreach ($body_node->get_elements_by_tag_name('script') as $node) {
+                static::escape_cdata_element($node);
             }
-            foreach ($body_node->getElementsByTagName('style') as $node) {
-                static::escapeCdataElement($node, '/*', '*/');
+            foreach ($body_node->get_elements_by_tag_name('style') as $node) {
+                static::escape_cdata_element($node, '/*', '*/');
             }
-
             // Serialize the body using our custom set of rules.
             // @see \Masterminds\HTML5::saveHTML()
             $stream = fopen('php://temp', 'wb');
-            $rules = new HtmlSerializerRules($stream);
-            foreach ($body_node->childNodes as $node) {
+            $rules = new Html_Serializer_Rules($stream);
+            foreach ($body_node->child_nodes as $node) {
                 $traverser = new Traverser($node, $stream, $rules);
                 $traverser->walk();
             }
-            $rules->unsetTraverser();
+            $rules->unset_traverser();
             $html = stream_get_contents($stream, -1, 0);
             fclose($stream);
         }
-
         // Normalize all newlines.
         $html = str_replace(["\r\n", "\r"], "\n", $html);
-
         return $html;
     }
-
     /**
      * Adds comments around a <!CDATA section in a \DOMNode.
      *
@@ -362,26 +324,23 @@ class Html
      *   (optional) A string to use as a comment end marker to escape the CDATA
      *   declaration. Defaults to an empty string.
      */
-    public static function escapeCdataElement(\DOMNode $node, $comment_start = '//', $comment_end = ''): void
+    public static function escape_cdata_element(\Dom_Node $node, $comment_start = '//', $comment_end = ''): void
     {
-        foreach ($node->childNodes as $child_node) {
-            if ($child_node instanceof \DOMCdataSection) {
+        foreach ($node->child_nodes as $child_node) {
+            if ($child_node instanceof \Dom_Cdata_Section) {
                 $data = $child_node->data;
                 if (!str_contains($child_node->data, 'CDATA')) {
                     $embed_prefix = "\n{$comment_start}<![CDATA[{$comment_end}\n";
                     $embed_suffix = "\n{$comment_start}]]>{$comment_end}\n";
-
                     $data = $embed_prefix . $data . $embed_suffix;
                 }
-
-                $fragment = $node->ownerDocument->createDocumentFragment();
-                $fragment->appendXML($data);
-                $node->appendChild($fragment);
-                $node->removeChild($child_node);
+                $fragment = $node->owner_document->create_document_fragment();
+                $fragment->append_xml($data);
+                $node->append_child($fragment);
+                $node->remove_child($child_node);
             }
         }
     }
-
     /**
      * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
      *
@@ -402,11 +361,10 @@ class Html
      * @see html_entity_decode()
      * @see \Drupal\Component\Utility\Html::escape()
      */
-    public static function decodeEntities(string $text): string
+    public static function decode_entities(string $text): string
     {
         return html_entity_decode($text, ENT_QUOTES, 'UTF-8');
     }
-
     /**
      * Escapes text by converting special characters to HTML entities.
      *
@@ -445,7 +403,6 @@ class Html
     {
         return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
-
     /**
      * Converts all root-relative URLs to absolute URLs.
      *
@@ -473,36 +430,33 @@ class Html
      * @return string
      *   The updated HTML snippet.
      */
-    public static function transformRootRelativeUrlsToAbsolute($html, string $scheme_and_host)
+    public static function transform_root_relative_urls_to_absolute($html, string $scheme_and_host)
     {
         assert(empty(array_diff(array_keys(parse_url($scheme_and_host)), ['scheme', 'host', 'port'])), '$scheme_and_host contains scheme, host and port at most.');
         assert(isset(parse_url($scheme_and_host)['scheme']), '$scheme_and_host is absolute and hence has a scheme.');
         assert(isset(parse_url($scheme_and_host)['host']), '$base_url is absolute and hence has a host.');
-
         $html_dom = Html::load($html);
-        $xpath = new \DOMXPath($html_dom);
-
+        $xpath = new \Domx_Path($html_dom);
         // Update all root-relative URLs to absolute URLs in the given HTML.
         // Perform on attributes that may contain a single URI.
-        foreach (static::$uriAttributes as $attr) {
-            foreach ($xpath->query("//*[starts-with(@$attr, '/') and not(starts-with(@$attr, '//'))]") as $node) {
-                $node->setAttribute($attr, $scheme_and_host . $node->getAttribute($attr));
+        foreach (static::$uri_attributes as $attr) {
+            foreach ($xpath->query("//*[starts-with(@{$attr}, '/') and not(starts-with(@{$attr}, '//'))]") as $node) {
+                $node->set_attribute($attr, $scheme_and_host . $node->get_attribute($attr));
             }
         }
         // Perform on each URI within "srcset" attributes.
         foreach ($xpath->query('//*[@srcset]') as $node) {
             // @see https://html.spec.whatwg.org/multipage/embedded-content.html#attr-img-srcset
             // @see https://html.spec.whatwg.org/multipage/embedded-content.html#image-candidate-string
-            $image_candidate_strings = explode(',', (string) $node->getAttribute('srcset'));
+            $image_candidate_strings = explode(',', (string) $node->get_attribute('srcset'));
             $image_candidate_strings = array_filter(array_map(trim(...), $image_candidate_strings));
             foreach ($image_candidate_strings as $key => $image_candidate_string) {
                 if ($image_candidate_string[0] === '/' && $image_candidate_string[1] !== '/') {
                     $image_candidate_strings[$key] = $scheme_and_host . $image_candidate_string;
                 }
             }
-            $node->setAttribute('srcset', implode(', ', $image_candidate_strings));
+            $node->set_attribute('srcset', implode(', ', $image_candidate_strings));
         }
         return Html::serialize($html_dom);
     }
-
 }

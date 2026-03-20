@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Serialization;
 
 /**
  * Default serialization for serialized PHP.
  */
-class PhpSerialize implements ObjectAwareSerializationInterface
+class Php_Serialize implements Object_Aware_Serialization_Interface
 {
     /**
      * {@inheritdoc}
@@ -16,7 +15,6 @@ class PhpSerialize implements ObjectAwareSerializationInterface
     {
         return serialize($data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -24,13 +22,11 @@ class PhpSerialize implements ObjectAwareSerializationInterface
     {
         return unserialize($raw);
     }
-
     /**
      * {@inheritdoc}
      */
-    public static function getFileExtension(): string
+    public static function get_file_extension(): string
     {
         return 'serialized';
     }
-
 }

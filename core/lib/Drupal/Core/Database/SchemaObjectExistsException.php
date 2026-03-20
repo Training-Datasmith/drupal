@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -11,6 +10,6 @@ namespace Drupal\Core\Database;
  * create a new database table, field, or index that already exists in the
  * database schema.
  */
-class SchemaObjectExistsException extends SchemaException implements DatabaseException
+class Schema_Object_Exists_Exception extends Schema_Exception implements Database_Exception
 {
 }

@@ -1,21 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action\Attribute;
 
 // cspell:ignore inflector
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\Invalid_Plugin_Definition_Exception;
 use Drupal\Core\Config\Action\Exists;
-use Drupal\Core\Extension\ExtensionDiscovery;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\Extension\Extension_Discovery;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * @internal
  *   This API is experimental.
  */
 #[\Attribute(\Attribute::TARGET_METHOD)]
-final readonly class ActionMethod
+final readonly class Action_Method
 {
     /**
      * @param \Drupal\Core\Config\Action\Exists $exists
@@ -40,15 +38,10 @@ final readonly class ActionMethod
      *
      * @see https://www.php.net/manual/en/functions.user-defined.php
      */
-    public function __construct(
-        public Exists $exists = Exists::ErrorIfNotExists,
-        public TranslatableMarkup|string $adminLabel = '',
-        public bool|string $pluralize = true,
-        public ?string $name = null,
-    ) {
-        if ($name && !preg_match(ExtensionDiscovery::PHP_FUNCTION_PATTERN, $name)) {
-            throw new InvalidPluginDefinitionException('entity_method', sprintf("'%s' is not a valid PHP function name.", $name));
+    public function __construct(public Exists $exists = Exists::ErrorIfNotExists, public Translatable_Markup|string $admin_label = '', public bool|string $pluralize = true, public ?string $name = null)
+    {
+        if ($name && !preg_match(Extension_Discovery::PHP_FUNCTION_PATTERN, $name)) {
+            throw new Invalid_Plugin_Definition_Exception('entity_method', sprintf("'%s' is not a valid PHP function name.", $name));
         }
     }
-
 }

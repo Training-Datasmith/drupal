@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Default_Content;
 
-namespace Drupal\Core\DefaultContent;
-
-use Symfony\Contracts\EventDispatcher\Event;
-
+use Symfony\Contracts\Event_Dispatcher\Event;
 /**
  * Event dispatched before default content is imported.
  *
@@ -14,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  * notifications, logging, or updating a value in state. It can also be used
  * to skip importing certain entities, identified by their UUID.
  */
-final class PreImportEvent extends Event
+final class Pre_Import_Event extends Event
 {
     /**
      * Entity UUIDs that should not be imported.
@@ -22,7 +20,6 @@ final class PreImportEvent extends Event
      * @var string[]
      */
     private array $skip = [];
-
     /**
      * Constructs a PreImportEvent object.
      *
@@ -32,12 +29,9 @@ final class PreImportEvent extends Event
      * @param \Drupal\Core\DefaultContent\Existing $existing
      *   What the importer will do when importing an entity that already exists.
      */
-    public function __construct(
-        public readonly Finder $finder,
-        public readonly Existing $existing,
-    ) {
+    public function __construct(public readonly Finder $finder, public readonly Existing $existing)
+    {
     }
-
     /**
      * Adds an entity UUID to the skip list.
      *
@@ -54,10 +48,9 @@ final class PreImportEvent extends Event
         if (array_key_exists($uuid, $this->finder->data)) {
             $this->skip[$uuid] = $reason;
         } else {
-            throw new \InvalidArgumentException("Content entity '$uuid' cannot be skipped, because it is not one of the entities being imported.");
+            throw new \InvalidArgumentException("Content entity '{$uuid}' cannot be skipped, because it is not one of the entities being imported.");
         }
     }
-
     /**
      * Returns the list of entity UUIDs that should not be imported.
      *
@@ -66,9 +59,8 @@ final class PreImportEvent extends Event
      *   imported, and the values are either a short explanation of why that
      *   entity was skipped, or NULL if no explanation was given.
      */
-    public function getSkipList(): array
+    public function get_skip_list(): array
     {
         return $this->skip;
     }
-
 }

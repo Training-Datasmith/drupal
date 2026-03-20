@@ -1,20 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * General class for an abstracted DELETE operation.
  *
  * @ingroup database
  */
-class Delete extends Query implements ConditionInterface
+class Delete extends Query implements Condition_Interface
 {
-    use QueryConditionTrait;
-
+    use Query_Condition_Trait;
     /**
      * Constructs a Delete object.
      *
@@ -25,16 +22,18 @@ class Delete extends Query implements ConditionInterface
      * @param array $options
      *   Array of database options.
      */
-    public function __construct(Connection $connection, /**
-   * The table from which to delete.
-   */
-        protected $table, array $options = [])
+    public function __construct(
+        Connection $connection,
+        /**
+         * The table from which to delete.
+         */
+        protected $table,
+        array $options = []
+    )
     {
         parent::__construct($connection, $options);
-
         $this->condition = $this->connection->condition('AND');
     }
-
     /**
      * Executes the DELETE query.
      *
@@ -48,16 +47,14 @@ class Delete extends Query implements ConditionInterface
             $this->condition->compile($this->connection, $this);
             $values = $this->condition->arguments();
         }
-
-        $stmt = $this->connection->prepareStatement((string) $this, $this->queryOptions, true);
+        $stmt = $this->connection->prepare_statement((string) $this, $this->query_options, true);
         try {
-            $stmt->execute($values, $this->queryOptions);
-            return $stmt->rowCount();
+            $stmt->execute($values, $this->query_options);
+            return $stmt->row_count();
         } catch (\Exception $e) {
-            $this->connection->exceptionHandler()->handleExecutionException($e, $stmt, $values, $this->queryOptions);
+            $this->connection->exception_handler()->handle_execution_exception($e, $stmt, $values, $this->query_options);
         }
     }
-
     /**
      * Implements PHP magic __toString method to convert the query to a string.
      *
@@ -67,17 +64,12 @@ class Delete extends Query implements ConditionInterface
     public function __toString(): string
     {
         // Create a sanitized comment string to prepend to the query.
-        $comments = $this->connection->makeComment($this->comments);
-
-        $query = $comments . 'DELETE FROM {' . $this->connection->escapeTable($this->table) . '} ';
-
+        $comments = $this->connection->make_comment($this->comments);
+        $query = $comments . 'DELETE FROM {' . $this->connection->escape_table($this->table) . '} ';
         if (count($this->condition)) {
-
             $this->condition->compile($this->connection, $this);
             $query .= "\nWHERE " . $this->condition;
         }
-
         return $query;
     }
-
 }

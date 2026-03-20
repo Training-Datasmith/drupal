@@ -1,23 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action;
 
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Component\Plugin\PluginBase;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Config\Action\Attribute\ConfigAction;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ConfigManagerInterface;
+use Drupal\Component\Plugin\Exception\Plugin_Not_Found_Exception;
+use Drupal\Component\Plugin\Plugin_Base;
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Config\Action\Attribute\Config_Action;
+use Drupal\Core\Config\Config_Factory_Interface;
+use Drupal\Core\Config\Config_Manager_Interface;
 use Drupal\Core\Config\Schema\Mapping;
-use Drupal\Core\Config\StorageInterface;
-use Drupal\Core\Config\TypedConfigManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Recipe\InvalidConfigException;
-use Drupal\Core\Validation\Plugin\Validation\Constraint\FullyValidatableConstraint;
-
+use Drupal\Core\Config\Storage_Interface;
+use Drupal\Core\Config\Typed_Config_Manager_Interface;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Plugin\Default_Plugin_Manager;
+use Drupal\Core\Recipe\Invalid_Config_Exception;
+use Drupal\Core\Validation\Plugin\Validation\Constraint\Fully_Validatable_Constraint;
 /**
  * @defgroup config_action_api Config Action API
  * @{
@@ -52,15 +50,14 @@ use Drupal\Core\Validation\Plugin\Validation\Constraint\FullyValidatableConstrai
  * @internal
  *   This API is experimental.
  */
-class ConfigActionManager extends DefaultPluginManager
+class Config_Action_Manager extends Default_Plugin_Manager
 {
     /**
      * Information about all deprecated plugin IDs.
      *
      * @var string[]
      */
-    private static array $deprecatedPluginIds = [];
-
+    private static array $deprecated_plugin_ids = [];
     /**
      * Constructs a new \Drupal\Core\Config\Action\ConfigActionManager object.
      *
@@ -80,25 +77,15 @@ class ConfigActionManager extends DefaultPluginManager
      * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
      *   The config factory service.
      */
-    public function __construct(
-        \Traversable $namespaces,
-        CacheBackendInterface $cache_backend,
-        ModuleHandlerInterface $module_handler,
-        protected readonly ConfigManagerInterface $configManager,
-        protected readonly StorageInterface $configStorage,
-        protected readonly TypedConfigManagerInterface $typedConfig,
-        protected readonly ConfigFactoryInterface $configFactory,
-    ) {
+    public function __construct(\Traversable $namespaces, Cache_Backend_Interface $cache_backend, Module_Handler_Interface $module_handler, protected readonly Config_Manager_Interface $config_manager, protected readonly Storage_Interface $config_storage, protected readonly Typed_Config_Manager_Interface $typed_config, protected readonly Config_Factory_Interface $config_factory)
+    {
         assert($namespaces instanceof \ArrayAccess, '$namespaces can be accessed like an array');
         // Enable this namespace to be searched for plugins.
         $namespaces[__NAMESPACE__] = 'core/lib/Drupal/Core/Config/Action';
-
-        parent::__construct('Plugin/ConfigAction', $namespaces, $module_handler, ConfigActionPluginInterface::class, ConfigAction::class);
-
-        $this->alterInfo('config_action');
-        $this->setCacheBackend($cache_backend, 'config_action');
+        parent::__construct('Plugin/ConfigAction', $namespaces, $module_handler, Config_Action_Plugin_Interface::class, Config_Action::class);
+        $this->alter_info('config_action');
+        $this->set_cache_backend($cache_backend, 'config_action');
     }
-
     /**
      * Applies a config action.
      *
@@ -121,60 +108,57 @@ class ConfigActionManager extends DefaultPluginManager
      *
      * @see \Drupal\Core\Config\Action\ConfigActionManager::getConfigNamesMatchingExpression()
      */
-    public function applyAction(string $action_id, string $configName, mixed $data): void
+    public function apply_action(string $action_id, string $config_name, mixed $data): void
     {
-        if (str_starts_with($configName, '?')) {
-            if (str_contains($configName, '*')) {
-                throw new ConfigActionException("The '$configName' configuration name is optional because it starts with a question mark, and therefore cannot contain wildcards.");
+        if (str_starts_with($config_name, '?')) {
+            if (str_contains($config_name, '*')) {
+                throw new Config_Action_Exception("The '{$config_name}' configuration name is optional because it starts with a question mark, and therefore cannot contain wildcards.");
             }
-            $configName = trim($configName, '?');
-            if (!$this->configStorage->exists($configName)) {
+            $config_name = trim($config_name, '?');
+            if (!$this->config_storage->exists($config_name)) {
                 // The config action is optional and the config doesn't exist.
                 // So there is nothing to do.
                 return;
             }
         }
-
-        if (!$this->hasDefinition($action_id)) {
+        if (!$this->has_definition($action_id)) {
             // Get the full plugin ID from the shorthand map, if it is available.
-            $entity_type = $this->configManager->getEntityTypeIdByName($configName);
+            $entity_type = $this->config_manager->get_entity_type_id_by_name($config_name);
             if ($entity_type) {
-                $action_id = $this->getShorthandActionIdsForEntityType($entity_type)[$action_id] ?? $action_id;
+                $action_id = $this->get_shorthand_action_ids_for_entity_type($entity_type)[$action_id] ?? $action_id;
             }
         }
         try {
             /** @var \Drupal\Core\Config\Action\ConfigActionPluginInterface $action */
-            $action = $this->createInstance($action_id);
-        } catch (PluginNotFoundException $e) {
-            $entity_type = $this->configManager->getEntityTypeIdByName($configName);
+            $action = $this->create_instance($action_id);
+        } catch (Plugin_Not_Found_Exception $e) {
+            $entity_type = $this->config_manager->get_entity_type_id_by_name($config_name);
             if ($entity_type) {
-                $action_ids = $this->getShorthandActionIdsForEntityType($entity_type);
+                $action_ids = $this->get_shorthand_action_ids_for_entity_type($entity_type);
                 $valid_ids = implode(', ', array_keys($action_ids));
-                throw new PluginNotFoundException($action_id, sprintf('The "%s" entity does not support the "%s" config action. Valid config actions for %s are: %s', $entity_type, $action_id, $entity_type, $valid_ids));
+                throw new Plugin_Not_Found_Exception($action_id, sprintf('The "%s" entity does not support the "%s" config action. Valid config actions for %s are: %s', $entity_type, $action_id, $entity_type, $valid_ids));
             }
             throw $e;
         }
-
-        foreach ($this->getConfigNamesMatchingExpression($configName) as $name) {
+        foreach ($this->get_config_names_matching_expression($config_name) as $name) {
             $action->apply($name, $data);
-            $typed_config = $this->typedConfig->createFromNameAndData($name, $this->configFactory->get($name)->getRawData());
+            $typed_config = $this->typed_config->create_from_name_and_data($name, $this->config_factory->get($name)->get_raw_data());
             // All config objects are mappings.
             assert($typed_config instanceof Mapping);
-            foreach ($typed_config->getConstraints() as $constraint) {
+            foreach ($typed_config->get_constraints() as $constraint) {
                 // Only validate the config if it has explicitly been marked as being
                 // validatable.
-                if ($constraint instanceof FullyValidatableConstraint) {
+                if ($constraint instanceof Fully_Validatable_Constraint) {
                     /** @var \Symfony\Component\Validator\ConstraintViolationList $violations */
                     $violations = $typed_config->validate();
                     if (count($violations) > 0) {
-                        throw new InvalidConfigException($violations, $typed_config);
+                        throw new Invalid_Config_Exception($violations, $typed_config);
                     }
                     break;
                 }
             }
         }
     }
-
     /**
      * Gets the names of all active config objects that match an expression.
      *
@@ -199,33 +183,29 @@ class ConfigActionManager extends DefaultPluginManager
      *   Thrown if the expression does not match any known config entity type's
      *   prefix, or if the expression cannot be parsed.
      */
-    private function getConfigNamesMatchingExpression(string $expression): array
+    private function get_config_names_matching_expression(string $expression): array
     {
         // If there are no wildcards, we can return the config name as-is.
         if (!str_contains($expression, '.*')) {
             return [$expression];
         }
-
-        $entity_type = $this->configManager->getEntityTypeIdByName($expression);
+        $entity_type = $this->config_manager->get_entity_type_id_by_name($expression);
         if (empty($entity_type)) {
-            throw new ConfigActionException("No installed config entity type uses the prefix in the expression '$expression'. Either there is a typo in the expression or this recipe should install an additional module or depend on another recipe.");
+            throw new Config_Action_Exception("No installed config entity type uses the prefix in the expression '{$expression}'. Either there is a typo in the expression or this recipe should install an additional module or depend on another recipe.");
         }
         /** @var \Drupal\Core\Config\Entity\ConfigEntityTypeInterface $entity_type */
-        $entity_type = $this->configManager->getEntityTypeManager()
-          ->getDefinition($entity_type);
-        $prefix = $entity_type->getConfigPrefix();
-
+        $entity_type = $this->config_manager->get_entity_type_manager()->get_definition($entity_type);
+        $prefix = $entity_type->get_config_prefix();
         // Convert the expression to a regular expression. We assume that * should
         // match the characters allowed by
         // \Drupal\Core\Config\ConfigBase::validateName(), which is permissive.
-        $expression = str_replace('\\*', '[^.:?*<>"\'\/\\\\]+', preg_quote($expression));
-        $matches = @preg_grep("/^$expression$/", $this->configStorage->listAll("$prefix."));
+        $expression = str_replace('\*', '[^.:?*<>"\'\/\\\\]+', preg_quote($expression));
+        $matches = @preg_grep("/^{$expression}\$/", $this->config_storage->list_all("{$prefix}."));
         if ($matches === false) {
-            throw new ConfigActionException("The expression '$expression' could not be parsed.");
+            throw new Config_Action_Exception("The expression '{$expression}' could not be parsed.");
         }
         return $matches;
     }
-
     /**
      * Gets a map of shorthand action IDs to plugin IDs for an entity type.
      *
@@ -236,46 +216,43 @@ class ConfigActionManager extends DefaultPluginManager
      *   An array of plugin IDs keyed by shorthand action ID for the provided
      *   entity type.
      */
-    protected function getShorthandActionIdsForEntityType(string $entityType): array
+    protected function get_shorthand_action_ids_for_entity_type(string $entity_type): array
     {
         $map = [];
-        foreach ($this->getDefinitions() as $plugin_id => $definition) {
-            if (in_array($entityType, $definition['entity_types'], true) || in_array('*', $definition['entity_types'], true)) {
-                $regex = '/' . PluginBase::DERIVATIVE_SEPARATOR . '([^' . PluginBase::DERIVATIVE_SEPARATOR . ']*)$/';
+        foreach ($this->get_definitions() as $plugin_id => $definition) {
+            if (in_array($entity_type, $definition['entity_types'], true) || in_array('*', $definition['entity_types'], true)) {
+                $regex = '/' . Plugin_Base::DERIVATIVE_SEPARATOR . '([^' . Plugin_Base::DERIVATIVE_SEPARATOR . ']*)$/';
                 $action_id = preg_match($regex, (string) $plugin_id, $matches) ? $matches[1] : $plugin_id;
                 if (isset($map[$action_id])) {
-                    throw new DuplicateConfigActionIdException(sprintf('The plugins \'%s\' and \'%s\' both resolve to the same shorthand action ID for the \'%s\' entity type', $plugin_id, $map[$action_id], $entityType));
+                    throw new Duplicate_Config_Action_Id_Exception(sprintf('The plugins \'%s\' and \'%s\' both resolve to the same shorthand action ID for the \'%s\' entity type', $plugin_id, $map[$action_id], $entity_type));
                 }
                 $map[$action_id] = $plugin_id;
             }
         }
         return $map;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function alterDefinitions(&$definitions): void
+    public function alter_definitions(&$definitions): void
     {
         // Adds backwards compatibility for plugins that have been renamed.
-        foreach (self::$deprecatedPluginIds as $legacy => $new_plugin_id) {
+        foreach (self::$deprecated_plugin_ids as $legacy => $new_plugin_id) {
             $definitions[$legacy] = $definitions[$new_plugin_id['replacement']];
         }
-        parent::alterDefinitions($definitions);
+        parent::alter_definitions($definitions);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createInstance($plugin_id, array $configuration = [])
+    public function create_instance($plugin_id, array $configuration = [])
     {
-        $instance = parent::createInstance($plugin_id, $configuration);
+        $instance = parent::create_instance($plugin_id, $configuration);
         // Trigger deprecation notices for renamed plugins.
-        if (array_key_exists($plugin_id, self::$deprecatedPluginIds)) {
+        if (array_key_exists($plugin_id, self::$deprecated_plugin_ids)) {
             // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-            @trigger_error(self::$deprecatedPluginIds[$plugin_id]['message'], E_USER_DEPRECATED);
+            @trigger_error(self::$deprecated_plugin_ids[$plugin_id]['message'], E_USER_DEPRECATED);
         }
         return $instance;
     }
-
 }

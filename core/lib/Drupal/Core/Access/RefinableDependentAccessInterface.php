@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Access;
  *
  * @internal
  */
-interface RefinableDependentAccessInterface extends DependentAccessInterface
+interface Refinable_Dependent_Access_Interface extends Dependent_Access_Interface
 {
     /**
      * Sets the access dependency.
@@ -22,8 +21,7 @@ interface RefinableDependentAccessInterface extends DependentAccessInterface
      *
      * @return $this
      */
-    public function setAccessDependency(AccessibleInterface $access_dependency);
-
+    public function set_access_dependency(Accessible_Interface $access_dependency);
     /**
      * Adds an access dependency into the existing access dependency.
      *
@@ -43,6 +41,5 @@ interface RefinableDependentAccessInterface extends DependentAccessInterface
      *
      * @return $this
      */
-    public function addAccessDependency(AccessibleInterface $access_dependency);
-
+    public function add_access_dependency(Accessible_Interface $access_dependency);
 }

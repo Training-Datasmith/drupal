@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Site\Settings;
-
 /**
  * Provides a method to generate a normalized hash of a given asset group set.
  */
-trait AssetGroupSetHashTrait
+trait Asset_Group_Set_Hash_Trait
 {
     /**
      * Generates a hash for an array of asset groups.
@@ -21,22 +19,14 @@ trait AssetGroupSetHashTrait
      * @return string
      *   A hash to uniquely identify the groups.
      */
-    protected function generateHash(array $group): string
+    protected function generate_hash(array $group): string
     {
         $normalized = [];
-        $group_keys = [
-          'type' => null,
-          'group' => null,
-          'media' => null,
-          'browsers' => null,
-        ];
-
+        $group_keys = ['type' => null, 'group' => null, 'media' => null, 'browsers' => null];
         $normalized['asset_group'] = array_intersect_key($group, $group_keys);
         $normalized['asset_group']['items'] = [];
         // Remove some keys to make the hash more stable.
-        $omit_keys = [
-          'weight' => null,
-        ];
+        $omit_keys = ['weight' => null];
         foreach ($group['items'] as $key => $asset) {
             $normalized['asset_group']['items'][$key] = array_diff_key($asset, $group_keys, $omit_keys);
             // If the version is set to -1, this means there is no version in the
@@ -49,7 +39,6 @@ trait AssetGroupSetHashTrait
         // The asset array ensures that a valid hash can only be generated via the
         // same code base. Additionally use the hash salt to ensure that hashes are
         // not re-usable between different installations.
-        return Crypt::hmacBase64(serialize($normalized), Settings::getHashSalt());
+        return Crypt::hmac_base64(serialize($normalized), Settings::get_hash_salt());
     }
-
 }

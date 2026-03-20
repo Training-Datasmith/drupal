@@ -1,18 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\ClassFinder;
+declare (strict_types=1);
+namespace Drupal\Component\Class_Finder;
 
 /**
  * A Utility class that uses active autoloaders to find a file for a class.
  */
-class ClassFinder implements ClassFinderInterface
+class Class_Finder implements Class_Finder_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function findFile($class)
+    public function find_file($class)
     {
         $loaders = spl_autoload_functions();
         foreach ($loaders as $loader) {
@@ -29,5 +28,4 @@ class ClassFinder implements ClassFinderInterface
         }
         return null;
     }
-
 }

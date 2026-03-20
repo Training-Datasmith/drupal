@@ -1,14 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action;
 
 /**
  * @internal
  *   This API is experimental.
  */
-interface ConfigActionPluginInterface
+interface Config_Action_Plugin_Interface
 {
     /**
      * Applies the config action.
@@ -20,6 +19,5 @@ interface ConfigActionPluginInterface
      *
      * @throws ConfigActionException
      */
-    public function apply(string $configName, mixed $value): void;
-
+    public function apply(string $config_name, mixed $value): void;
 }

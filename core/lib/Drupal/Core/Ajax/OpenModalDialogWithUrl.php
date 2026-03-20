@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Component\Utility\UrlHelper;
-
+use Drupal\Component\Utility\Url_Helper;
 /**
  * Provides an AJAX command for opening a modal with URL.
  *
@@ -15,7 +13,7 @@ use Drupal\Component\Utility\UrlHelper;
  *
  * @see \Drupal\Core\Ajax\OpenDialogCommand
  */
-class OpenModalDialogWithUrl implements CommandInterface
+class Open_Modal_Dialog_With_Url implements Command_Interface
 {
     /**
      * Constructs a OpenModalDialogWithUrl object.
@@ -26,35 +24,26 @@ class OpenModalDialogWithUrl implements CommandInterface
      * @param array $settings
      *   The dialog settings.
      */
-    public function __construct(
-        protected string $url,
-        protected array $settings,
-    ) {
+    public function __construct(protected string $url, protected array $settings)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
         // @see \Drupal\Core\Routing\LocalAwareRedirectResponseTrait::isLocal()
-        if (!UrlHelper::isExternal($this->url) || UrlHelper::externalIsLocal($this->url, $this->getBaseURL())) {
-            return [
-              'command' => 'openModalDialogWithUrl',
-              'url' => $this->url,
-              'dialogOptions' => $this->settings,
-            ];
+        if (!Url_Helper::is_external($this->url) || Url_Helper::external_is_local($this->url, $this->get_base_url())) {
+            return ['command' => 'openModalDialogWithUrl', 'url' => $this->url, 'dialogOptions' => $this->settings];
         }
         throw new \LogicException('External URLs are not allowed.');
     }
-
     /**
      * Gets the complete base URL.
      */
-    private function getBaseUrl()
+    private function get_base_url()
     {
-        $requestContext = \Drupal::service('router.request_context');
-        return $requestContext->getCompleteBaseUrl();
+        $request_context = \Drupal::service('router.request_context');
+        return $request_context->get_complete_base_url();
     }
-
 }

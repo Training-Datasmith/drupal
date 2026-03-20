@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -18,7 +17,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheTagsChecksumInterface
+interface Cache_Tags_Checksum_Interface
 {
     /**
      * The invalid checksum returned if a database transaction is in progress.
@@ -36,7 +35,6 @@ interface CacheTagsChecksumInterface
      *   race conditions.
      */
     public const INVALID_CHECKSUM_WHILE_IN_TRANSACTION = -1;
-
     /**
      * Returns the sum total of validations for a given set of tags.
      *
@@ -48,8 +46,7 @@ interface CacheTagsChecksumInterface
      * @return string
      *   Cache tag invalidations checksum.
      */
-    public function getCurrentChecksum(array $tags);
-
+    public function get_current_checksum(array $tags);
     /**
      * Returns whether the checksum is valid for the given cache tags.
      *
@@ -65,13 +62,11 @@ interface CacheTagsChecksumInterface
      *   FALSE if cache tag invalidations happened for the passed in tags since
      *   the cache item was stored, TRUE otherwise.
      */
-    public function isValid($checksum, array $tags);
-
+    public function is_valid($checksum, array $tags);
     /**
      * Reset statically cached tags.
      *
      * This is only used by tests.
      */
     public function reset();
-
 }

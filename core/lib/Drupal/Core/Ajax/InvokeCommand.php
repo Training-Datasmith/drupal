@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -17,7 +16,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class InvokeCommand implements CommandInterface
+class Invoke_Command implements Command_Interface
 {
     /**
      * Constructs an InvokeCommand object.
@@ -42,21 +41,14 @@ class InvokeCommand implements CommandInterface
          */
         protected $method,
         protected array $arguments = []
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'invoke',
-          'selector' => $this->selector,
-          'method' => $this->method,
-          'args' => $this->arguments,
-        ];
+        return ['command' => 'invoke', 'selector' => $this->selector, 'method' => $this->method, 'args' => $this->arguments];
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Gettext;
 
 /**
@@ -10,32 +9,28 @@ namespace Drupal\Component\Gettext;
  * @see PoReaderInterface
  * @see PoWriterInterface
  */
-interface PoStreamInterface
+interface Po_Stream_Interface
 {
     /**
      * Open the stream. Set the URI for the stream earlier with setURI().
      */
     public function open();
-
     /**
      * Close the stream.
      */
     public function close();
-
     /**
      * Gets the URI of the PO stream that is being read or written.
      *
      * @return string
      *   URI string for this stream.
      */
-    public function getURI();
-
+    public function get_uri();
     /**
      * Set the URI of the PO stream that is going to be read or written.
      *
      * @param string $uri
      *   URI string to set for this stream.
      */
-    public function setURI($uri);
-
+    public function set_uri($uri);
 }

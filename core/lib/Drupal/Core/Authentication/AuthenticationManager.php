@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
-use Drupal\Core\Routing\RouteMatch;
-use Symfony\Component\HttpFoundation\Request;
-
+use Drupal\Core\Routing\Route_Match;
+use Symfony\Component\Http_Foundation\Request;
 /**
  * Manager for authentication.
  *
@@ -17,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * If no provider sets an active user then the user remains anonymous.
  */
-class AuthenticationManager implements AuthenticationProviderInterface, AuthenticationProviderFilterInterface, AuthenticationProviderChallengeInterface
+class Authentication_Manager implements Authentication_Provider_Interface, Authentication_Provider_Filter_Interface, Authentication_Provider_Challenge_Interface
 {
     /**
      * Creates a new authentication manager instance.
@@ -25,70 +23,60 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
      * @param \Drupal\Core\Authentication\AuthenticationCollectorInterface $authCollector
      *   The authentication provider collector.
      */
-    public function __construct(protected \Drupal\Core\Authentication\AuthenticationCollectorInterface $authCollector)
+    public function __construct(protected \Drupal\Core\Authentication\Authentication_Collector_Interface $auth_collector)
     {
     }
-
     /**
      * {@inheritdoc}
      */
     public function applies(Request $request): bool
     {
-        return (bool) $this->getProvider($request);
+        return (bool) $this->get_provider($request);
     }
-
     /**
      * {@inheritdoc}
      */
     public function authenticate(Request $request)
     {
-        $provider_id = $this->getProvider($request);
+        $provider_id = $this->get_provider($request);
         if ($provider_id === null) {
             return null;
         }
-
-        $provider = $this->authCollector->getProvider($provider_id);
+        $provider = $this->auth_collector->get_provider($provider_id);
         if ($provider === null) {
             return null;
         }
-
         return $provider->authenticate($request);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function appliesToRoutedRequest(Request $request, $authenticated)
+    public function applies_to_routed_request(Request $request, $authenticated)
     {
         $result = false;
-
         if ($authenticated) {
-            $result = $this->applyFilter($request, $authenticated, $this->getProvider($request));
+            $result = $this->apply_filter($request, $authenticated, $this->get_provider($request));
         } else {
-            foreach ($this->authCollector->getSortedProviders() as $provider_id => $provider) {
-                if ($this->applyFilter($request, $authenticated, $provider_id)) {
+            foreach ($this->auth_collector->get_sorted_providers() as $provider_id => $provider) {
+                if ($this->apply_filter($request, $authenticated, $provider_id)) {
                     $result = true;
                     break;
                 }
             }
         }
-
         return $result;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function challengeException(Request $request, \Exception $previous)
+    public function challenge_exception(Request $request, \Exception $previous)
     {
-        $provider_id = $this->getChallenger($request);
-
+        $provider_id = $this->get_challenger($request);
         if ($provider_id) {
-            $provider = $this->authCollector->getProvider($provider_id);
-            return $provider->challengeException($request, $previous);
+            $provider = $this->auth_collector->get_provider($provider_id);
+            return $provider->challenge_exception($request, $previous);
         }
     }
-
     /**
      * Returns the id of the authentication provider for a request.
      *
@@ -99,15 +87,14 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
      *   The id of the first authentication provider which applies to the request.
      *   If no application detects appropriate credentials, then NULL is returned.
      */
-    protected function getProvider(Request $request)
+    protected function get_provider(Request $request)
     {
-        foreach ($this->authCollector->getSortedProviders() as $provider_id => $provider) {
+        foreach ($this->auth_collector->get_sorted_providers() as $provider_id => $provider) {
             if ($provider->applies($request)) {
                 return $provider_id;
             }
         }
     }
-
     /**
      * Returns the ID of the challenge provider for a request.
      *
@@ -118,15 +105,14 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
      *   The ID of the first authentication provider which applies to the request.
      *   If no application detects appropriate credentials, then NULL is returned.
      */
-    protected function getChallenger(Request $request)
+    protected function get_challenger(Request $request)
     {
-        foreach ($this->authCollector->getSortedProviders() as $provider_id => $provider) {
-            if (($provider instanceof AuthenticationProviderChallengeInterface) && !$provider->applies($request) && $this->applyFilter($request, false, $provider_id)) {
+        foreach ($this->auth_collector->get_sorted_providers() as $provider_id => $provider) {
+            if ($provider instanceof Authentication_Provider_Challenge_Interface && !$provider->applies($request) && $this->apply_filter($request, false, $provider_id)) {
                 return $provider_id;
             }
         }
     }
-
     /**
      * Checks whether a provider is allowed on the given request.
      *
@@ -143,17 +129,14 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
      * @return bool
      *   TRUE if provider is allowed, FALSE otherwise.
      */
-    protected function applyFilter(Request $request, $authenticated, $provider_id)
+    protected function apply_filter(Request $request, $authenticated, $provider_id)
     {
-        $provider = $this->authCollector->getProvider($provider_id);
-
-        if ($provider && ($provider instanceof AuthenticationProviderFilterInterface)) {
-            return $provider->appliesToRoutedRequest($request, $authenticated);
+        $provider = $this->auth_collector->get_provider($provider_id);
+        if ($provider && $provider instanceof Authentication_Provider_Filter_Interface) {
+            return $provider->applies_to_routed_request($request, $authenticated);
         }
-
-        return $this->defaultFilter($request, $provider_id);
+        return $this->default_filter($request, $provider_id);
     }
-
     /**
      * Default implementation of the provider filter.
      *
@@ -172,15 +155,13 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
      * @return bool
      *   TRUE if provider is allowed, FALSE otherwise.
      */
-    protected function defaultFilter(Request $request, $provider_id)
+    protected function default_filter(Request $request, $provider_id)
     {
-        $route = RouteMatch::createFromRequest($request)->getRouteObject();
-        $has_auth_option = isset($route) && $route->hasOption('_auth');
-
+        $route = Route_Match::create_from_request($request)->get_route_object();
+        $has_auth_option = isset($route) && $route->has_option('_auth');
         if ($has_auth_option) {
-            return in_array($provider_id, $route->getOption('_auth'));
+            return in_array($provider_id, $route->get_option('_auth'));
         }
-        return $this->authCollector->isGlobal($provider_id);
+        return $this->auth_collector->is_global($provider_id);
     }
-
 }

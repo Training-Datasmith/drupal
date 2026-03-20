@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Config;
  * This class is not meant to be extended and is final to make sure the
  * assumptions that the storage is retrieved only once are upheld.
  */
-final class ManagedStorage implements StorageInterface
+final class Managed_Storage implements Storage_Interface
 {
     /**
      * The decorated storage.
@@ -23,7 +22,6 @@ final class ManagedStorage implements StorageInterface
      * @var \Drupal\Core\Config\StorageInterface
      */
     protected $storage;
-
     /**
      * ManagedStorage constructor.
      *
@@ -34,132 +32,117 @@ final class ManagedStorage implements StorageInterface
         /**
          * The storage manager to get the storage to decorate.
          */
-        protected StorageManagerInterface $manager
-    ) {
+        protected Storage_Manager_Interface $manager
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name)
     {
-        return $this->getStorage()->exists($name);
+        return $this->get_storage()->exists($name);
     }
-
     /**
      * {@inheritdoc}
      */
     public function read($name)
     {
-        return $this->getStorage()->read($name);
+        return $this->get_storage()->read($name);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function readMultiple(array $names)
+    public function read_multiple(array $names)
     {
-        return $this->getStorage()->readMultiple($names);
+        return $this->get_storage()->read_multiple($names);
     }
-
     /**
      * {@inheritdoc}
      */
     public function write($name, array $data)
     {
-        return $this->getStorage()->write($name, $data);
+        return $this->get_storage()->write($name, $data);
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($name)
     {
-        return $this->getStorage()->delete($name);
+        return $this->get_storage()->delete($name);
     }
-
     /**
      * {@inheritdoc}
      */
     public function rename($name, $new_name)
     {
-        return $this->getStorage()->rename($name, $new_name);
+        return $this->get_storage()->rename($name, $new_name);
     }
-
     /**
      * {@inheritdoc}
      */
     public function encode($data)
     {
-        return $this->getStorage()->encode($data);
+        return $this->get_storage()->encode($data);
     }
-
     /**
      * {@inheritdoc}
      */
     public function decode($raw)
     {
-        return $this->getStorage()->decode($raw);
+        return $this->get_storage()->decode($raw);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function listAll($prefix = '')
+    public function list_all($prefix = '')
     {
-        return $this->getStorage()->listAll($prefix);
+        return $this->get_storage()->list_all($prefix);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll($prefix = '')
+    public function delete_all($prefix = '')
     {
-        return $this->getStorage()->deleteAll($prefix);
+        return $this->get_storage()->delete_all($prefix);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createCollection($collection)
+    public function create_collection($collection)
     {
         // We return the collection directly.
         // This means that the collection will not be an instance of ManagedStorage
         // But this doesn't matter because the storage is retrieved from the
         // manager only the first time it is accessed.
-        return $this->getStorage()->createCollection($collection);
+        return $this->get_storage()->create_collection($collection);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAllCollectionNames()
+    public function get_all_collection_names()
     {
-        return $this->getStorage()->getAllCollectionNames();
+        return $this->get_storage()->get_all_collection_names();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCollectionName()
+    public function get_collection_name()
     {
-        return $this->getStorage()->getCollectionName();
+        return $this->get_storage()->get_collection_name();
     }
-
     /**
      * Get the decorated storage from the manager if necessary.
      *
      * @return \Drupal\Core\Config\StorageInterface
      *   The config storage.
      */
-    protected function getStorage()
+    protected function get_storage()
     {
         // Get the storage from the manager the first time it is needed.
         if (!isset($this->storage)) {
-            $this->storage = $this->manager->getStorage();
+            $this->storage = $this->manager->get_storage();
         }
-
         return $this->storage;
     }
-
 }

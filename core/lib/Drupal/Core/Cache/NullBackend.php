@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -17,7 +16,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-class NullBackend implements CacheBackendInterface
+class Null_Backend implements Cache_Backend_Interface
 {
     /**
      * {@inheritdoc}
@@ -26,76 +25,65 @@ class NullBackend implements CacheBackendInterface
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getMultiple(&$cids, $allow_invalid = false): array
+    public function get_multiple(&$cids, $allow_invalid = false): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
     public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = [])
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setMultiple(array $items = [])
+    public function set_multiple(array $items = [])
     {
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($cid)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteMultiple(array $cids)
+    public function delete_multiple(array $cids)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll()
+    public function delete_all()
     {
     }
-
     /**
      * {@inheritdoc}
      */
     public function invalidate($cid)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateMultiple(array $cids)
+    public function invalidate_multiple(array $cids)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection()
+    public function garbage_collection()
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function removeBin()
+    public function remove_bin()
     {
     }
-
 }

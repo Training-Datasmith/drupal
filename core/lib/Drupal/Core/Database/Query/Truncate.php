@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * General class for an abstracted TRUNCATE operation.
  */
@@ -21,14 +19,17 @@ class Truncate extends Query
      * @param array $options
      *   Array of database options.
      */
-    public function __construct(Connection $connection, /**
-   * The table to truncate.
-   */
-        protected $table, array $options = [])
+    public function __construct(
+        Connection $connection,
+        /**
+         * The table to truncate.
+         */
+        protected $table,
+        array $options = []
+    )
     {
         parent::__construct($connection, $options);
     }
-
     /**
      * Executes the TRUNCATE query.
      *
@@ -49,17 +50,15 @@ class Truncate extends Query
      */
     public function execute()
     {
-        $stmt = $this->connection->prepareStatement((string) $this, $this->queryOptions, true);
+        $stmt = $this->connection->prepare_statement((string) $this, $this->query_options, true);
         try {
-            $stmt->execute([], $this->queryOptions);
-            return $stmt->rowCount();
+            $stmt->execute([], $this->query_options);
+            return $stmt->row_count();
         } catch (\Exception $e) {
-            $this->connection->exceptionHandler()->handleExecutionException($e, $stmt, [], $this->queryOptions);
+            $this->connection->exception_handler()->handle_execution_exception($e, $stmt, [], $this->query_options);
         }
-
         return null;
     }
-
     /**
      * Implements PHP magic __toString method to convert the query to a string.
      *
@@ -69,14 +68,12 @@ class Truncate extends Query
     public function __toString(): string
     {
         // Create a sanitized comment string to prepend to the query.
-        $comments = $this->connection->makeComment($this->comments);
-
+        $comments = $this->connection->make_comment($this->comments);
         // The statement actually built depends on whether a transaction is active.
         // @see ::execute()
-        if ($this->connection->inTransaction()) {
-            return $comments . 'DELETE FROM {' . $this->connection->escapeTable($this->table) . '}';
+        if ($this->connection->in_transaction()) {
+            return $comments . 'DELETE FROM {' . $this->connection->escape_table($this->table) . '}';
         }
-        return $comments . 'TRUNCATE {' . $this->connection->escapeTable($this->table) . '} ';
+        return $comments . 'TRUNCATE {' . $this->connection->escape_table($this->table) . '} ';
     }
-
 }

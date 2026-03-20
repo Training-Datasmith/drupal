@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
+use Drupal\Core\Routing\Access\Access_Interface as RoutingAccessInterface;
 use Symfony\Component\Routing\Route;
-
 /**
  * Allows access to routes to be controlled by an '_access' boolean parameter.
  */
-class DefaultAccessCheck implements RoutingAccessInterface
+class Default_Access_Check implements Routing_Access_Interface
 {
     /**
      * Checks access to the route based on the _access parameter.
@@ -23,13 +21,12 @@ class DefaultAccessCheck implements RoutingAccessInterface
      */
     public function access(Route $route)
     {
-        if ($route->getRequirement('_access') === 'TRUE') {
-            return AccessResult::allowed();
+        if ($route->get_requirement('_access') === 'TRUE') {
+            return Access_Result::allowed();
         }
-        if ($route->getRequirement('_access') === 'FALSE') {
-            return AccessResult::forbidden();
+        if ($route->get_requirement('_access') === 'FALSE') {
+            return Access_Result::forbidden();
         }
-        return AccessResult::neutral();
+        return Access_Result::neutral();
     }
-
 }

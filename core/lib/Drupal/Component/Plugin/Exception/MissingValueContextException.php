@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Exception;
 
 /**
  * An exception class thrown when contexts exist but are missing a value.
  */
-class MissingValueContextException extends ContextException
+class Missing_Value_Context_Exception extends Context_Exception
 {
     /**
      * MissingValueContextException constructor.
@@ -20,5 +19,4 @@ class MissingValueContextException extends ContextException
         $message = 'Required contexts without a value: ' . implode(', ', $contexts_without_value);
         parent::__construct($message);
     }
-
 }

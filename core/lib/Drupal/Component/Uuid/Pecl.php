@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Uuid;
 
 /**
  * Generates a UUID using the PECL extension.
  */
-class Pecl implements UuidInterface
+class Pecl implements Uuid_Interface
 {
     /**
      * {@inheritdoc}
@@ -16,5 +15,4 @@ class Pecl implements UuidInterface
     {
         return strtolower(uuid_create(UUID_TYPE_DEFAULT));
     }
-
 }

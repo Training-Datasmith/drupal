@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Annotation;
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a content entity type annotation object.
  *
@@ -19,27 +17,23 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @Annotation
  */
-class ContentEntityType extends EntityType
+class Content_Entity_Type extends Entity_Type
 {
     /**
      * {@inheritdoc}
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-    public $entity_type_class = \Drupal\Core\Entity\ContentEntityType::class;
-
+    public $entity_type_class = \Drupal\Core\Entity\Content_Entity_Type::class;
     /**
      * {@inheritdoc}
      */
     public $group = 'content';
-
     /**
      * {@inheritdoc}
      */
     public function get()
     {
-        $this->definition['group_label'] = new TranslatableMarkup('Content', [], ['context' => 'Entity type group']);
-
+        $this->definition['group_label'] = new Translatable_Markup('Content', [], ['context' => 'Entity type group']);
         return parent::get();
     }
-
 }

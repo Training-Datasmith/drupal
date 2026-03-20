@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Discovery;
 
 /**
  * Ensures that all definitions are run through the attribute process.
  */
-class AttributeBridgeDecorator implements DiscoveryInterface
+class Attribute_Bridge_Decorator implements Discovery_Interface
 {
-    use DiscoveryTrait;
-
+    use Discovery_Trait;
     /**
      * AttributeBridgeDecorator constructor.
      *
@@ -21,18 +19,15 @@ class AttributeBridgeDecorator implements DiscoveryInterface
      *   corresponding to this name must implement
      *   \Drupal\Component\Plugin\Attribute\AttributeInterface.
      */
-    public function __construct(
-        protected readonly DiscoveryInterface $decorated,
-        protected readonly string $pluginDefinitionAttributeName,
-    ) {
+    public function __construct(protected readonly Discovery_Interface $decorated, protected readonly string $plugin_definition_attribute_name)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDefinitions()
+    public function get_definitions()
     {
-        $definitions = $this->decorated->getDefinitions();
+        $definitions = $this->decorated->get_definitions();
         foreach ($definitions as $id => $definition) {
             // Attribute constructors expect an array of values. If the definition is
             // not an array, it usually means it has been processed already and can be
@@ -42,19 +37,18 @@ class AttributeBridgeDecorator implements DiscoveryInterface
                 $provider = $definition['provider'] ?? null;
                 unset($definition['class'], $definition['provider']);
                 /** @var \Drupal\Component\Plugin\Attribute\AttributeInterface $attribute */
-                $attribute = new $this->pluginDefinitionAttributeName(...$definition);
+                $attribute = new $this->plugin_definition_attribute_name(...$definition);
                 if (isset($class)) {
-                    $attribute->setClass($class);
+                    $attribute->set_class($class);
                 }
                 if (isset($provider)) {
-                    $attribute->setProvider($provider);
+                    $attribute->set_provider($provider);
                 }
                 $definitions[$id] = $attribute->get();
             }
         }
         return $definitions;
     }
-
     /**
      * Passes through all unknown calls onto the decorated object.
      *
@@ -70,5 +64,4 @@ class AttributeBridgeDecorator implements DiscoveryInterface
     {
         return $this->decorated->{$method}(...$args);
     }
-
 }

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
-
+use Symfony\Component\Http_Foundation\Json_Response;
 /**
  * A JsonResponse that contains and can expose cacheability metadata.
  *
@@ -16,8 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  * @see \Drupal\Core\Cache\CacheableMetadata
  * @see \Drupal\Core\Cache\CacheableResponseTrait
  */
-class CacheableJsonResponse extends JsonResponse implements CacheableResponseInterface
+class Cacheable_Json_Response extends Json_Response implements Cacheable_Response_Interface
 {
-    use CacheableResponseTrait;
-
+    use Cacheable_Response_Trait;
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff;
 
 /**
@@ -10,7 +9,7 @@ namespace Drupal\Component\Diff;
  * @private
  * @subpackage DifferenceEngine
  */
-class MappedDiff extends Diff
+class Mapped_Diff extends Diff
 {
     /**
      * Constructor.
@@ -35,26 +34,21 @@ class MappedDiff extends Diff
      */
     public function __construct($from_lines, $to_lines, array|string $mapped_from_lines, array|string $mapped_to_lines)
     {
-
         assert(sizeof($from_lines) == sizeof($mapped_from_lines));
         assert(sizeof($to_lines) == sizeof($mapped_to_lines));
-
         parent::__construct($mapped_from_lines, $mapped_to_lines);
-
         $xi = $yi = 0;
         for ($i = 0; $i < sizeof($this->edits); $i++) {
-            $orig = &$this->edits[$i]->orig;
+            $orig =& $this->edits[$i]->orig;
             if (is_array($orig)) {
                 $orig = array_slice($from_lines, $xi, sizeof($orig));
                 $xi += sizeof($orig);
             }
-
-            $closing = &$this->edits[$i]->closing;
+            $closing =& $this->edits[$i]->closing;
             if (is_array($closing)) {
                 $closing = array_slice($to_lines, $yi, sizeof($closing));
                 $yi += sizeof($closing);
             }
         }
     }
-
 }

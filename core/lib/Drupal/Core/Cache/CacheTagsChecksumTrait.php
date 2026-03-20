@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Cache;
  *
  * Handles delayed cache tag invalidations.
  */
-trait CacheTagsChecksumTrait
+trait Cache_Tags_Checksum_Trait
 {
     /**
      * A list of tags that have already been invalidated in this request.
@@ -18,27 +17,23 @@ trait CacheTagsChecksumTrait
      *
      * @var bool[]
      */
-    protected $invalidatedTags = [];
-
+    protected $invalidated_tags = [];
     /**
      * The set of cache tags whose invalidation is delayed.
      *
      * @var string[]
      */
-    protected $delayedTags = [];
-
+    protected $delayed_tags = [];
     /**
      * Contains already loaded tag invalidation counts from the storage.
      *
      * @var int[]
      */
-    protected $tagCache = [];
-
+    protected $tag_cache = [];
     /**
      * Registered cache tags to preload.
      */
-    protected array $preloadTags = [];
-
+    protected array $preload_tags = [];
     /**
      * Callback to be invoked just after a database transaction gets committed.
      *
@@ -47,71 +42,64 @@ trait CacheTagsChecksumTrait
      * @param bool $success
      *   Whether or not the transaction was successful.
      */
-    public function rootTransactionEndCallback($success): void
+    public function root_transaction_end_callback($success): void
     {
         if ($success) {
-            $this->doInvalidateTags($this->delayedTags);
+            $this->do_invalidate_tags($this->delayed_tags);
         }
-        $this->delayedTags = [];
+        $this->delayed_tags = [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateTags(array $tags): void
+    public function invalidate_tags(array $tags): void
     {
         foreach ($tags as $key => $tag) {
-            if (isset($this->invalidatedTags[$tag])) {
+            if (isset($this->invalidated_tags[$tag])) {
                 unset($tags[$key]);
             } else {
-                $this->invalidatedTags[$tag] = true;
-                unset($this->tagCache[$tag]);
+                $this->invalidated_tags[$tag] = true;
+                unset($this->tag_cache[$tag]);
             }
         }
         if (!$tags) {
             return;
         }
-
-        $in_transaction = $this->getDatabaseConnection()->inTransaction();
+        $in_transaction = $this->get_database_connection()->in_transaction();
         if ($in_transaction) {
-            if (empty($this->delayedTags)) {
-                $this->getDatabaseConnection()
-                  ->transactionManager()
-                  ->addPostTransactionCallback([$this, 'rootTransactionEndCallback']);
+            if (empty($this->delayed_tags)) {
+                $this->get_database_connection()->transaction_manager()->add_post_transaction_callback([$this, 'rootTransactionEndCallback']);
             }
-            $this->delayedTags = Cache::mergeTags($this->delayedTags, $tags);
+            $this->delayed_tags = Cache::merge_tags($this->delayed_tags, $tags);
         } else {
-            $this->doInvalidateTags($tags);
+            $this->do_invalidate_tags($tags);
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCurrentChecksum(array $tags)
+    public function get_current_checksum(array $tags)
     {
         // Any cache writes in this request containing cache tags whose invalidation
         // has been delayed due to an in-progress transaction must not be read by
         // any other request, so use a nonsensical checksum which will cause any
         // written cache items to be ignored.
-        if (!empty(array_intersect($tags, $this->delayedTags))) {
-            return CacheTagsChecksumInterface::INVALID_CHECKSUM_WHILE_IN_TRANSACTION;
+        if (!empty(array_intersect($tags, $this->delayed_tags))) {
+            return Cache_Tags_Checksum_Interface::INVALID_CHECKSUM_WHILE_IN_TRANSACTION;
         }
-
         // Remove tags that were already invalidated during this request from the
         // static caches so that another invalidation can occur later in the same
         // request. Without that, written cache items would not be invalidated
         // correctly.
         foreach ($tags as $tag) {
-            unset($this->invalidatedTags[$tag]);
+            unset($this->invalidated_tags[$tag]);
         }
-        return $this->calculateChecksum($tags);
+        return $this->calculate_checksum($tags);
     }
-
     /**
      * Implements \Drupal\Core\Cache\CacheTagsChecksumInterface::isValid()
      */
-    public function isValid($checksum, array $tags)
+    public function is_valid($checksum, array $tags)
     {
         // If there are no cache tags, then there is no cache tag to validate,
         // hence it's always valid.
@@ -124,13 +112,11 @@ trait CacheTagsChecksumTrait
         // results to be computed instead. Together with the logic in
         // ::getCurrentChecksum(), it also prevents that computed data from being
         // written to the cache.
-        if (!empty(array_intersect($tags, $this->delayedTags))) {
+        if (!empty(array_intersect($tags, $this->delayed_tags))) {
             return false;
         }
-
-        return $checksum == $this->calculateChecksum($tags);
+        return $checksum == $this->calculate_checksum($tags);
     }
-
     /**
      * Calculates the current checksum for a given set of tags.
      *
@@ -140,65 +126,57 @@ trait CacheTagsChecksumTrait
      * @return int
      *   The calculated checksum.
      */
-    protected function calculateChecksum(array $tags): int|float
+    protected function calculate_checksum(array $tags): int|float
     {
         $checksum = 0;
-
         // If there are no cache tags, then there is no cache tag to checksum,
         // so return early.
         if (empty($tags)) {
             return $checksum;
         }
-
         // If there are registered preload tags, add them to the tags list then
         // reset the list. This needs to make sure that it only returns the
         // requested cache tags, so store the combination of requested and
         // preload cache tags in a separate variable.
         $tags_with_preload = $tags;
-        if ($this->preloadTags) {
-            $tags_with_preload = array_unique(array_merge($tags, $this->preloadTags));
-            $this->preloadTags = [];
+        if ($this->preload_tags) {
+            $tags_with_preload = array_unique(array_merge($tags, $this->preload_tags));
+            $this->preload_tags = [];
         }
-
-        $query_tags = array_diff($tags_with_preload, array_keys($this->tagCache));
+        $query_tags = array_diff($tags_with_preload, array_keys($this->tag_cache));
         if ($query_tags) {
-            $tag_invalidations = $this->getTagInvalidationCounts($query_tags);
-            $this->tagCache += $tag_invalidations;
+            $tag_invalidations = $this->get_tag_invalidation_counts($query_tags);
+            $this->tag_cache += $tag_invalidations;
             // Fill static cache with empty objects for tags not found in the storage.
-            $this->tagCache += array_fill_keys(array_diff($query_tags, array_keys($tag_invalidations)), 0);
+            $this->tag_cache += array_fill_keys(array_diff($query_tags, array_keys($tag_invalidations)), 0);
         }
-
         foreach ($tags as $tag) {
-            $checksum += $this->tagCache[$tag];
+            $checksum += $this->tag_cache[$tag];
         }
-
         return $checksum;
     }
-
     /**
      * Implements \Drupal\Core\Cache\CacheTagsChecksumInterface::reset()
      */
     public function reset(): void
     {
-        $this->tagCache = [];
-        $this->invalidatedTags = [];
+        $this->tag_cache = [];
+        $this->invalidated_tags = [];
     }
-
     /**
      * Implements \Drupal\Core\Cache\CacheTagsChecksumPreloadInterface::registerCacheTagsForPreload()
      */
-    public function registerCacheTagsForPreload(array $cache_tags): void
+    public function register_cache_tags_for_preload(array $cache_tags): void
     {
         if (empty($cache_tags)) {
             return;
         }
         // Don't preload delayed tags that are awaiting invalidation.
-        $preloadable_tags = array_diff($cache_tags, $this->delayedTags);
+        $preloadable_tags = array_diff($cache_tags, $this->delayed_tags);
         if ($preloadable_tags) {
-            $this->preloadTags = array_merge($this->preloadTags, $preloadable_tags);
+            $this->preload_tags = array_merge($this->preload_tags, $preloadable_tags);
         }
     }
-
     /**
      * Fetches invalidation counts for cache tags.
      *
@@ -212,16 +190,14 @@ trait CacheTagsChecksumTrait
      *   Thrown if the table could not be created or the database connection
      *   failed.
      */
-    abstract protected function getTagInvalidationCounts(array $tags);
-
+    abstract protected function get_tag_invalidation_counts(array $tags);
     /**
      * Returns the database connection.
      *
      * @return \Drupal\Core\Database\Connection
      *   The database connection.
      */
-    abstract protected function getDatabaseConnection();
-
+    abstract protected function get_database_connection();
     /**
      * Marks cache items with any of the specified tags as invalid.
      *
@@ -232,6 +208,5 @@ trait CacheTagsChecksumTrait
      *   Thrown if the table could not be created or the database connection
      *   failed.
      */
-    abstract protected function doInvalidateTags(array $tags);
-
+    abstract protected function do_invalidate_tags(array $tags);
 }

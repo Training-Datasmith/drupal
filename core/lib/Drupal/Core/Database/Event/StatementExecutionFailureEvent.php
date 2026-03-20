@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Event;
 
 /**
  * Represents the failure of a statement execution as an event.
  */
-class StatementExecutionFailureEvent extends StatementExecutionEndEvent
+class Statement_Execution_Failure_Event extends Statement_Execution_End_Event
 {
     /**
      * Constructor.
@@ -37,19 +36,8 @@ class StatementExecutionFailureEvent extends StatementExecutionEndEvent
      * @param string $exceptionMessage
      *   The message of the exception that was thrown.
      */
-    public function __construct(
-        int $statementObjectId,
-        string $key,
-        string $target,
-        string $queryString,
-        array $args,
-        array $caller,
-        float $startTime,
-        public readonly string $exceptionClass,
-        public readonly int|string $exceptionCode,
-        public readonly string $exceptionMessage,
-    ) {
-        parent::__construct($statementObjectId, $key, $target, $queryString, $args, $caller, $startTime);
+    public function __construct(int $statement_object_id, string $key, string $target, string $query_string, array $args, array $caller, float $start_time, public readonly string $exception_class, public readonly int|string $exception_code, public readonly string $exception_message)
+    {
+        parent::__construct($statement_object_id, $key, $target, $query_string, $args, $caller, $start_time);
     }
-
 }

@@ -1,20 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime;
 
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Cache\UnchangingCacheableDependencyTrait;
-use Drupal\Core\Render\RenderableInterface;
-
+use Drupal\Core\Cache\Cacheable_Dependency_Interface;
+use Drupal\Core\Cache\Unchanging_Cacheable_Dependency_Trait;
+use Drupal\Core\Render\Renderable_Interface;
 /**
  * Contains a formatted time difference.
  */
-class FormattedDateDiff implements RenderableInterface, CacheableDependencyInterface
+class Formatted_Date_Diff implements Renderable_Interface, Cacheable_Dependency_Interface
 {
-    use UnchangingCacheableDependencyTrait;
-
+    use Unchanging_Cacheable_Dependency_Trait;
     /**
      * Creates a new FormattedDateDiff instance.
      *
@@ -34,38 +31,30 @@ class FormattedDateDiff implements RenderableInterface, CacheableDependencyInter
          * Let's say the time difference is 1 day 1 hour. In this case, we can cache
          * it until now + 1 hour, so maxAge is 3600 seconds.
          */
-        protected $maxAge
-    ) {
+        protected $max_age
+    )
+    {
     }
-
     /**
      * @return string
      *   The actual formatted time difference.
      */
-    public function getString()
+    public function get_string()
     {
         return $this->string;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheMaxAge()
+    public function get_cache_max_age()
     {
-        return $this->maxAge;
+        return $this->max_age;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function toRenderable(): array
+    public function to_renderable(): array
     {
-        return [
-          '#markup' => $this->string,
-          '#cache' => [
-            'max-age' => $this->maxAge,
-          ],
-        ];
+        return ['#markup' => $this->string, '#cache' => ['max-age' => $this->max_age]];
     }
-
 }

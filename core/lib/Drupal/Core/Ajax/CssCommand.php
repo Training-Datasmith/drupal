@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -17,7 +16,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class CssCommand implements CommandInterface
+class Css_Command implements Command_Interface
 {
     /**
      * Constructs a CssCommand object.
@@ -36,9 +35,9 @@ class CssCommand implements CommandInterface
          */
         protected $selector,
         protected array $css = []
-    ) {
+    )
+    {
     }
-
     /**
      * Adds a property/value pair to the CSS to be added to this element.
      *
@@ -49,23 +48,16 @@ class CssCommand implements CommandInterface
      *
      * @return $this
      */
-    public function setProperty($property, $value): static
+    public function set_property($property, $value): static
     {
         $this->css[$property] = $value;
         return $this;
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'css',
-          'selector' => $this->selector,
-          'argument' => $this->css,
-        ];
+        return ['command' => 'css', 'selector' => $this->selector, 'argument' => $this->css];
     }
-
 }

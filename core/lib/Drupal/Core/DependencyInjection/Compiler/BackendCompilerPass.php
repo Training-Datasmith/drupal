@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Alias;
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Alias;
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Defines a compiler pass to allow automatic override per backend.
  *
@@ -33,15 +31,15 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *   class: ...
  * @endcode
  */
-class BackendCompilerPass implements CompilerPassInterface
+class Backend_Compiler_Pass implements Compiler_Pass_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
-        if ($container->hasParameter('default_backend')) {
-            $default_backend = $container->getParameter('default_backend');
+        if ($container->has_parameter('default_backend')) {
+            $default_backend = $container->get_parameter('default_backend');
             // Opt out from the default backend.
             if (!$default_backend) {
                 return;
@@ -49,7 +47,7 @@ class BackendCompilerPass implements CompilerPassInterface
         } else {
             try {
                 $driver_backend = $container->get('database')->driver();
-                $default_backend = $container->get('database')->databaseType();
+                $default_backend = $container->get('database')->database_type();
                 $container->set('database', null);
             } catch (\Exception) {
                 // If Drupal is not installed or a test doesn't define database there
@@ -57,19 +55,17 @@ class BackendCompilerPass implements CompilerPassInterface
                 return;
             }
         }
-
-        foreach ($container->findTaggedServiceIds('backend_overridable') as $id => $attributes) {
+        foreach ($container->find_tagged_service_ids('backend_overridable') as $id => $attributes) {
             // If the service is already an alias it is not the original backend, so
             // we don't want to fallback to other storages any longer.
-            if ($container->hasAlias($id)) {
+            if ($container->has_alias($id)) {
                 continue;
             }
-            if (isset($driver_backend) && ($container->hasDefinition("$driver_backend.$id") || $container->hasAlias("$driver_backend.$id"))) {
-                $container->setAlias($id, new Alias("$driver_backend.$id"));
-            } elseif (!empty($default_backend) && ($container->hasDefinition("$default_backend.$id") || $container->hasAlias("$default_backend.$id"))) {
-                $container->setAlias($id, new Alias("$default_backend.$id"));
+            if (isset($driver_backend) && ($container->has_definition("{$driver_backend}.{$id}") || $container->has_alias("{$driver_backend}.{$id}"))) {
+                $container->set_alias($id, new Alias("{$driver_backend}.{$id}"));
+            } elseif (!empty($default_backend) && ($container->has_definition("{$default_backend}.{$id}") || $container->has_alias("{$default_backend}.{$id}"))) {
+                $container->set_alias($id, new Alias("{$default_backend}.{$id}"));
             }
         }
     }
-
 }

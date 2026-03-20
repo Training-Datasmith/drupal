@@ -1,32 +1,28 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
-namespace Drupal\Core\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Implements the class resolver interface supporting class names and services.
  */
-class ClassResolver implements ClassResolverInterface
+class Class_Resolver implements Class_Resolver_Interface
 {
-    use DependencySerializationTrait;
-
+    use Dependency_Serialization_Trait;
     /**
      * Constructs a new ClassResolver object.
      *
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      *   The service container.
      */
-    public function __construct(protected ContainerInterface $container)
+    public function __construct(protected Container_Interface $container)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getInstanceFromDefinition($definition)
+    public function get_instance_from_definition($definition)
     {
         if ($this->container->has($definition)) {
             $instance = $this->container->get($definition);
@@ -34,15 +30,12 @@ class ClassResolver implements ClassResolverInterface
             if (!class_exists($definition)) {
                 throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $definition));
             }
-
-            if (is_subclass_of($definition, \Drupal\Core\DependencyInjection\ContainerInjectionInterface::class)) {
+            if (is_subclass_of($definition, \Drupal\Core\Dependency_Injection\Container_Injection_Interface::class)) {
                 $instance = $definition::create($this->container);
             } else {
                 $instance = new $definition();
             }
         }
-
         return $instance;
     }
-
 }

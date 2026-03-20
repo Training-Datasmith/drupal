@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\SynchronizableInterface;
-
+use Drupal\Core\Entity\Entity_Interface;
+use Drupal\Core\Entity\Synchronizable_Interface;
 /**
  * Defines a common interface for configuration entities.
  *
  * @ingroup config_api
  * @ingroup entity_api
  */
-interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInterface, SynchronizableInterface
+interface Config_Entity_Interface extends Entity_Interface, Third_Party_Settings_Interface, Synchronizable_Interface
 {
     /**
      * Enables the configuration entity.
@@ -21,14 +19,12 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      * @return $this
      */
     public function enable();
-
     /**
      * Disables the configuration entity.
      *
      * @return $this
      */
     public function disable();
-
     /**
      * Sets the status of the configuration entity.
      *
@@ -37,8 +33,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *
      * @return $this
      */
-    public function setStatus($status);
-
+    public function set_status($status);
     /**
      * Returns whether the configuration entity is enabled.
      *
@@ -55,7 +50,6 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *   Whether the entity is enabled or not.
      */
     public function status();
-
     /**
      * Returns whether this entity is being changed during the uninstall process.
      *
@@ -76,8 +70,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *   TRUE if the configuration entity is being changed during the uninstall
      *   process, FALSE otherwise.
      */
-    public function isUninstalling();
-
+    public function is_uninstalling();
     /**
      * Returns the value of a property.
      *
@@ -88,7 +81,6 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *   The property if it exists, or NULL otherwise.
      */
     public function get($property_name);
-
     /**
      * Sets the value of a property.
      *
@@ -100,7 +92,6 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      * @return $this
      */
     public function set($property_name, $value);
-
     /**
      * Calculates dependencies and stores them in the dependency property.
      *
@@ -108,8 +99,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *
      * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
      */
-    public function calculateDependencies();
-
+    public function calculate_dependencies();
     /**
      * Informs the entity that entities it depends on will be deleted.
      *
@@ -136,8 +126,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      * @see \Drupal\Core\Config\ConfigManager::uninstall()
      * @see \Drupal\Core\Entity\EntityDisplayBase::onDependencyRemoval()
      */
-    public function onDependencyRemoval(array $dependencies);
-
+    public function on_dependency_removal(array $dependencies);
     /**
      * Gets the configuration dependencies.
      *
@@ -146,8 +135,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *
      * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
      */
-    public function getDependencies();
-
+    public function get_dependencies();
     /**
      * Checks whether this entity is installable.
      *
@@ -157,8 +145,7 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      * @return bool
      *   TRUE if the entity is installable, FALSE otherwise.
      */
-    public function isInstallable();
-
+    public function is_installable();
     /**
      * Sets that the data should be trusted.
      *
@@ -172,14 +159,12 @@ interface ConfigEntityInterface extends EntityInterface, ThirdPartySettingsInter
      *
      * @see \Drupal\Core\Config\ConfigInstaller::createConfiguration()
      */
-    public function trustData();
-
+    public function trust_data();
     /**
      * Gets whether on not the data is trusted.
      *
      * @return bool
      *   TRUE if the configuration data is trusted, FALSE if not.
      */
-    public function hasTrustedData();
-
+    public function has_trusted_data();
 }

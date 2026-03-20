@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Drupal\Component\EventDispatcher\Event;
-use Drupal\Component\Utility\NestedArray;
-
+use Drupal\Component\Event_Dispatcher\Event;
+use Drupal\Component\Utility\Nested_Array;
 /**
  * Event object to allow configuration to be overridden by modules.
  */
-class ConfigModuleOverridesEvent extends Event
+class Config_Module_Overrides_Event extends Event
 {
     /**
      * Configuration overrides.
@@ -18,7 +16,6 @@ class ConfigModuleOverridesEvent extends Event
      * @var array
      */
     protected $overrides;
-
     /**
      * Constructs a configuration overrides event object.
      *
@@ -27,44 +24,40 @@ class ConfigModuleOverridesEvent extends Event
      * @param \Drupal\Core\Language\LanguageInterface $language
      *   (optional) The language for this configuration.
      */
-    public function __construct(protected array $names, protected ?\Drupal\Core\Language\LanguageInterface $language = null)
+    public function __construct(protected array $names, protected ?\Drupal\Core\Language\Language_Interface $language = null)
     {
         $this->overrides = [];
     }
-
     /**
      * Gets configuration names.
      *
      * @return array
      *   The list of configuration names that can be overridden.
      */
-    public function getNames()
+    public function get_names()
     {
         return $this->names;
     }
-
     /**
      * Gets configuration language.
      *
      * @return \Drupal\Core\Language\LanguageInterface
      *   The configuration language object.
      */
-    public function getLanguage()
+    public function get_language()
     {
         return $this->language;
     }
-
     /**
      * Get configuration overrides.
      *
      * @return array
      *   The array of configuration overrides.
      */
-    public function getOverrides()
+    public function get_overrides()
     {
         return $this->overrides;
     }
-
     /**
      * Sets a configuration override for the given name.
      *
@@ -75,18 +68,17 @@ class ConfigModuleOverridesEvent extends Event
      *
      * @return $this
      */
-    public function setOverride($name, array $values): static
+    public function set_override($name, array $values): static
     {
         if (in_array($name, $this->names)) {
             if (isset($this->overrides[$name])) {
                 // Existing overrides take precedence since these will have been added
                 // by events with a higher priority.
-                $this->overrides[$name] = NestedArray::mergeDeepArray([$values, $this->overrides[$name]], true);
+                $this->overrides[$name] = Nested_Array::merge_deep_array([$values, $this->overrides[$name]], true);
             } else {
                 $this->overrides[$name] = $values;
             }
         }
         return $this;
     }
-
 }

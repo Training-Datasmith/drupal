@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Factory;
 
 /**
@@ -10,27 +9,24 @@ namespace Drupal\Component\Plugin\Factory;
  * Provides logic for any basic plugin type that needs to provide individual
  * plugins based upon some basic logic.
  */
-class ReflectionFactory extends DefaultFactory
+class Reflection_Factory extends Default_Factory
 {
     /**
      * {@inheritdoc}
      */
-    public function createInstance($plugin_id, array $configuration = [])
+    public function create_instance($plugin_id, array $configuration = [])
     {
-        $plugin_definition = $this->discovery->getDefinition($plugin_id);
-        $plugin_class = static::getPluginClass($plugin_id, $plugin_definition, $this->interface);
-
+        $plugin_definition = $this->discovery->get_definition($plugin_id);
+        $plugin_class = static::get_plugin_class($plugin_id, $plugin_definition, $this->interface);
         // Lets figure out of there's a constructor for this class and pull
         // arguments from the $options array if so to populate it.
         $reflector = new \ReflectionClass($plugin_class);
-        if ($reflector->hasMethod('__construct')) {
-            $arguments = $this->getInstanceArguments($reflector, $plugin_id, $plugin_definition, $configuration);
-            return $reflector->newInstanceArgs($arguments);
+        if ($reflector->has_method('__construct')) {
+            $arguments = $this->get_instance_arguments($reflector, $plugin_id, $plugin_definition, $configuration);
+            return $reflector->new_instance_args($arguments);
         }
-
         return new $plugin_class();
     }
-
     /**
      * Inspects the plugin class and builds a list of constructor arguments.
      *
@@ -49,13 +45,11 @@ class ReflectionFactory extends DefaultFactory
      * @return array
      *   An array of arguments to be passed to the constructor.
      */
-    protected function getInstanceArguments(\ReflectionClass $reflector, $plugin_id, $plugin_definition, array $configuration): array
+    protected function get_instance_arguments(\ReflectionClass $reflector, $plugin_id, $plugin_definition, array $configuration): array
     {
-
         $arguments = [];
-        foreach ($reflector->getMethod('__construct')->getParameters() as $param) {
-            $param_name = $param->getName();
-
+        foreach ($reflector->get_method('__construct')->get_parameters() as $param) {
+            $param_name = $param->get_name();
             if ($param_name == 'plugin_id') {
                 $arguments[] = $plugin_id;
             } elseif ($param_name == 'plugin_definition') {
@@ -64,13 +58,12 @@ class ReflectionFactory extends DefaultFactory
                 $arguments[] = $configuration;
             } elseif (\array_key_exists($param_name, $configuration)) {
                 $arguments[] = $configuration[$param_name];
-            } elseif ($param->isDefaultValueAvailable()) {
-                $arguments[] = $param->getDefaultValue();
+            } elseif ($param->is_default_value_available()) {
+                $arguments[] = $param->get_default_value();
             } else {
                 $arguments[] = null;
             }
         }
         return $arguments;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
 /**
@@ -19,19 +18,18 @@ namespace Drupal\Core\Config\Schema;
  * data API perspective sequences are handled as ordered mappings without
  * metadata about existing properties.
  */
-class Sequence extends ArrayElement
+class Sequence extends Array_Element
 {
     /**
      * {@inheritdoc}
      */
-    protected function getElementDefinition($key)
+    protected function get_element_definition($key)
     {
         $value = $this->value[$key] ?? null;
         $definition = [];
         if ($this->definition['sequence']) {
             $definition = $this->definition['sequence'];
         }
-        return $this->buildDataDefinition($definition, $value, $key);
+        return $this->build_data_definition($definition, $value, $key);
     }
-
 }

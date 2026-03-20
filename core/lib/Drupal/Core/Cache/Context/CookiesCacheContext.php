@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the CookiesCacheContext service, for "per cookie" caching.
  *
@@ -13,38 +11,35 @@ use Drupal\Core\Cache\CacheableMetadata;
  * Calculated cache context ID: 'cookies:%name', e.g. 'cookies:device_type' (to
  * vary by the 'device_type' cookie).
  */
-class CookiesCacheContext extends RequestStackCacheContextBase implements CalculatedCacheContextInterface
+class Cookies_Cache_Context extends Request_Stack_Cache_Context_Base implements Calculated_Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('HTTP cookies');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext($cookie = null)
+    public function get_context($cookie = null)
     {
         if ($cookie === null) {
-            $cookies = $this->requestStack->getCurrentRequest()->cookies->all();
+            $cookies = $this->request_stack->get_current_request()->cookies->all();
             // Sort the cookies by names, to always set the same context if the
             // cookies are the same but in a different order.
             ksort($cookies);
             // Use http_build_query() to get a short string from the cookies array.
             return http_build_query($cookies);
         }
-        return $this->requestStack->getCurrentRequest()->cookies->get($cookie);
+        return $this->request_stack->get_current_request()->cookies->get($cookie);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata($cookie = null): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata($cookie = null): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

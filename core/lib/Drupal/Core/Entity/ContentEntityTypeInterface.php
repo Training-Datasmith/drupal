@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Provides an interface for a content entity type and its metadata.
  */
-interface ContentEntityTypeInterface extends EntityTypeInterface
+interface Content_Entity_Type_Interface extends Entity_Type_Interface
 {
     /**
      * Gets an array of entity revision metadata keys.
@@ -22,8 +21,7 @@ interface ContentEntityTypeInterface extends EntityTypeInterface
      *   - revision_created: The name of the property that contains the timestamp
      *     of the current revision.
      */
-    public function getRevisionMetadataKeys();
-
+    public function get_revision_metadata_keys();
     /**
      * Gets a specific entity revision metadata key.
      *
@@ -35,8 +33,7 @@ interface ContentEntityTypeInterface extends EntityTypeInterface
      *
      * @see self::getRevisionMetadataKeys()
      */
-    public function getRevisionMetadataKey($key);
-
+    public function get_revision_metadata_key($key);
     /**
      * Indicates if a given entity revision metadata key exists.
      *
@@ -46,8 +43,7 @@ interface ContentEntityTypeInterface extends EntityTypeInterface
      * @return bool
      *   TRUE if a given entity revision metadata key exists, FALSE otherwise.
      */
-    public function hasRevisionMetadataKey($key);
-
+    public function has_revision_metadata_key($key);
     /**
      * Sets a revision metadata key.
      *
@@ -59,6 +55,5 @@ interface ContentEntityTypeInterface extends EntityTypeInterface
      *
      * @return $this
      */
-    public function setRevisionMetadataKey($key, $field_name);
-
+    public function set_revision_metadata_key($key, $field_name);
 }

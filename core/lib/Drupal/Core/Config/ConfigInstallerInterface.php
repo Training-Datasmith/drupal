@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * Interface for classes that install config.
  */
-interface ConfigInstallerInterface
+interface Config_Installer_Interface
 {
     /**
      * Installs the default configuration of a given extension.
@@ -36,8 +35,7 @@ interface ConfigInstallerInterface
      *
      * @see \Drupal\Core\Config\ExtensionInstallStorage
      */
-    public function installDefaultConfig($type, $name, DefaultConfigMode $mode = DefaultConfigMode::All);
-
+    public function install_default_config($type, $name, Default_Config_Mode $mode = Default_Config_Mode::All);
     /**
      * Installs optional configuration.
      *
@@ -57,8 +55,7 @@ interface ConfigInstallerInterface
      *   'theme', or 'config') and the dependency name as the value
      *   ('node', 'olivero', 'views.view.frontpage').
      */
-    public function installOptionalConfig(?StorageInterface $storage = null, $dependency = []);
-
+    public function install_optional_config(?Storage_Interface $storage = null, $dependency = []);
     /**
      * Installs all default configuration in the specified collection.
      *
@@ -70,8 +67,7 @@ interface ConfigInstallerInterface
      * @param string $collection
      *   The configuration collection.
      */
-    public function installCollectionDefaultConfig($collection);
-
+    public function install_collection_default_config($collection);
     /**
      * Sets the configuration storage that provides the default configuration.
      *
@@ -80,8 +76,7 @@ interface ConfigInstallerInterface
      *
      * @return $this
      */
-    public function setSourceStorage(StorageInterface $storage);
-
+    public function set_source_storage(Storage_Interface $storage);
     /**
      * Gets the configuration storage that provides the default configuration.
      *
@@ -89,8 +84,7 @@ interface ConfigInstallerInterface
      *   The configuration storage that provides the default configuration.
      *   Returns null if the source storage has not been set.
      */
-    public function getSourceStorage();
-
+    public function get_source_storage();
     /**
      * Sets the status of the isSyncing flag.
      *
@@ -99,16 +93,14 @@ interface ConfigInstallerInterface
      *
      * @return $this
      */
-    public function setSyncing($status);
-
+    public function set_syncing($status);
     /**
      * Gets the syncing state.
      *
      * @return bool
      *   Returns TRUE is syncing flag set.
      */
-    public function isSyncing();
-
+    public function is_syncing();
     /**
      * Checks the configuration that will be installed for an extension.
      *
@@ -120,6 +112,5 @@ interface ConfigInstallerInterface
      * @throws \Drupal\Core\Config\UnmetDependenciesException
      * @throws \Drupal\Core\Config\PreExistingConfigException
      */
-    public function checkConfigurationToInstall($type, $name);
-
+    public function check_configuration_to_install($type, $name);
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
  * Base command that only exists to simplify AJAX commands.
  */
-class BaseCommand implements CommandInterface
+class Base_Command implements Command_Interface
 {
     /**
      * Constructs a BaseCommand object.
@@ -26,18 +25,14 @@ class BaseCommand implements CommandInterface
          * The data to pass on to the client side.
          */
         protected $data
-    ) {
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => $this->command,
-          'data' => $this->data,
-        ];
+        return ['command' => $this->command, 'data' => $this->data];
     }
-
 }

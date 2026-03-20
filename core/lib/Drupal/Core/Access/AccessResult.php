@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Core\Cache\Cacheable_Dependency_Interface;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Interface;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Trait;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Value object for passing an access result with cacheability metadata.
  *
@@ -24,10 +22,9 @@ use Drupal\Core\Session\AccountInterface;
  * When using ::orIf() and ::andIf(), cacheability metadata will be merged
  * accordingly as well.
  */
-abstract class AccessResult implements AccessResultInterface, RefinableCacheableDependencyInterface
+abstract class Access_Result implements Access_Result_Interface, Refinable_Cacheable_Dependency_Interface
 {
-    use RefinableCacheableDependencyTrait;
-
+    use Refinable_Cacheable_Dependency_Trait;
     /**
      * Creates an AccessResultInterface object with isNeutral() === TRUE.
      *
@@ -41,9 +38,8 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
     public static function neutral($reason = null)
     {
         assert(is_string($reason) || is_null($reason));
-        return new AccessResultNeutral($reason);
+        return new Access_Result_Neutral($reason);
     }
-
     /**
      * Creates an AccessResultInterface object with isAllowed() === TRUE.
      *
@@ -52,9 +48,8 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      */
     public static function allowed()
     {
-        return new AccessResultAllowed();
+        return new Access_Result_Allowed();
     }
-
     /**
      * Creates an AccessResultInterface object with isForbidden() === TRUE.
      *
@@ -68,9 +63,8 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
     public static function forbidden($reason = null)
     {
         assert(is_string($reason) || is_null($reason));
-        return new AccessResultForbidden($reason);
+        return new Access_Result_Forbidden($reason);
     }
-
     /**
      * Creates an allowed or neutral access result.
      *
@@ -81,11 +75,10 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *   If $condition is TRUE, isAllowed() will be TRUE, otherwise isNeutral()
      *   will be TRUE.
      */
-    public static function allowedIf($condition)
+    public static function allowed_if($condition)
     {
         return $condition ? static::allowed() : static::neutral();
     }
-
     /**
      * Creates a forbidden or neutral access result.
      *
@@ -99,11 +92,10 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *   If $condition is TRUE, isForbidden() will be TRUE, otherwise isNeutral()
      *   will be TRUE.
      */
-    public static function forbiddenIf($condition, $reason = null)
+    public static function forbidden_if($condition, $reason = null)
     {
         return $condition ? static::forbidden($reason) : static::neutral();
     }
-
     /**
      * Creates an access result if the permission is present, neutral otherwise.
      *
@@ -118,16 +110,14 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *   If the account has the permission, isAllowed() will be TRUE, otherwise
      *   isNeutral() will be TRUE.
      */
-    public static function allowedIfHasPermission(AccountInterface $account, string $permission)
+    public static function allowed_if_has_permission(Account_Interface $account, string $permission)
     {
-        $access_result = static::allowedIf($account->hasPermission($permission))->addCacheContexts(['user.permissions']);
-
-        if ($access_result instanceof AccessResultReasonInterface) {
-            $access_result->setReason("The '$permission' permission is required.");
+        $access_result = static::allowed_if($account->has_permission($permission))->add_cache_contexts(['user.permissions']);
+        if ($access_result instanceof Access_Result_Reason_Interface) {
+            $access_result->set_reason("The '{$permission}' permission is required.");
         }
         return $access_result;
     }
-
     /**
      * Creates an access result if the permissions are present, neutral otherwise.
      *
@@ -145,117 +135,104 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *   If the account has the permissions, isAllowed() will be TRUE, otherwise
      *   isNeutral() will be TRUE.
      */
-    public static function allowedIfHasPermissions(AccountInterface $account, array $permissions, $conjunction = 'AND')
+    public static function allowed_if_has_permissions(Account_Interface $account, array $permissions, $conjunction = 'AND')
     {
         $access = false;
-
         if ($conjunction == 'AND' && !empty($permissions)) {
             $access = true;
             foreach ($permissions as $permission) {
-                if (!$account->hasPermission($permission)) {
+                if (!$account->has_permission($permission)) {
                     $access = false;
                     break;
                 }
             }
         } else {
             foreach ($permissions as $permission) {
-                if ($account->hasPermission($permission)) {
+                if ($account->has_permission($permission)) {
                     $access = true;
                     break;
                 }
             }
         }
-
-        $access_result = static::allowedIf($access)->addCacheContexts(empty($permissions) ? [] : ['user.permissions']);
-
-        if ($access_result instanceof AccessResultReasonInterface) {
+        $access_result = static::allowed_if($access)->add_cache_contexts(empty($permissions) ? [] : ['user.permissions']);
+        if ($access_result instanceof Access_Result_Reason_Interface) {
             if (count($permissions) === 1) {
-                $access_result->setReason("The '$permission' permission is required.");
+                $access_result->set_reason("The '{$permission}' permission is required.");
             } elseif (count($permissions) > 1) {
-                $quote = (fn ($s) => "'$s'");
-                $access_result->setReason(sprintf('The following permissions are required: %s.', implode(" $conjunction ", array_map($quote, $permissions))));
+                $quote = fn($s) => "'{$s}'";
+                $access_result->set_reason(sprintf('The following permissions are required: %s.', implode(" {$conjunction} ", array_map($quote, $permissions))));
             }
         }
-
         return $access_result;
     }
-
     /**
      * {@inheritdoc}
      *
      * @see \Drupal\Core\Access\AccessResultAllowed
      */
-    public function isAllowed()
+    public function is_allowed()
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      *
      * @see \Drupal\Core\Access\AccessResultForbidden
      */
-    public function isForbidden()
+    public function is_forbidden()
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      *
      * @see \Drupal\Core\Access\AccessResultNeutral
      */
-    public function isNeutral()
+    public function is_neutral()
     {
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheContexts()
+    public function get_cache_contexts()
     {
-        return $this->cacheContexts;
+        return $this->cache_contexts;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheTags()
+    public function get_cache_tags()
     {
-        return $this->cacheTags;
+        return $this->cache_tags;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheMaxAge()
+    public function get_cache_max_age()
     {
-        return $this->cacheMaxAge;
+        return $this->cache_max_age;
     }
-
     /**
      * Resets cache contexts (to the empty array).
      *
      * @return $this
      */
-    public function resetCacheContexts()
+    public function reset_cache_contexts()
     {
-        $this->cacheContexts = [];
+        $this->cache_contexts = [];
         return $this;
     }
-
     /**
      * Resets cache tags (to the empty array).
      *
      * @return $this
      */
-    public function resetCacheTags()
+    public function reset_cache_tags()
     {
-        $this->cacheTags = [];
+        $this->cache_tags = [];
         return $this;
     }
-
     /**
      * Sets the maximum age for which this access result may be cached.
      *
@@ -264,38 +241,35 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *
      * @return $this
      */
-    public function setCacheMaxAge($max_age)
+    public function set_cache_max_age($max_age)
     {
-        $this->cacheMaxAge = $max_age;
+        $this->cache_max_age = $max_age;
         return $this;
     }
-
     /**
      * Convenience method, adds the "user.permissions" cache context.
      *
      * @return $this
      */
-    public function cachePerPermissions()
+    public function cache_per_permissions()
     {
-        $this->addCacheContexts(['user.permissions']);
+        $this->add_cache_contexts(['user.permissions']);
         return $this;
     }
-
     /**
      * Convenience method, adds the "user" cache context.
      *
      * @return $this
      */
-    public function cachePerUser()
+    public function cache_per_user()
     {
-        $this->addCacheContexts(['user']);
+        $this->add_cache_contexts(['user']);
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function orIf(AccessResultInterface $other)
+    public function or_if(Access_Result_Interface $other)
     {
         $merge_other = false;
         // $other's cacheability metadata is merged if $merge_other gets set to TRUE
@@ -315,92 +289,84 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
         //    which means that even if a user of a different role logs in, the
         //    cached access result will be used, even though for that other role, B
         //    is forbidden!
-        if ($this->isForbidden() || $other->isForbidden()) {
+        if ($this->is_forbidden() || $other->is_forbidden()) {
             $result = static::forbidden();
-            if (!$this->isForbidden() || ($this->getCacheMaxAge() === 0 && $other->isForbidden())) {
+            if (!$this->is_forbidden() || $this->get_cache_max_age() === 0 && $other->is_forbidden()) {
                 $merge_other = true;
             }
-
-            if ($this->isForbidden() && $this instanceof AccessResultReasonInterface && $this->getReason() !== '') {
-                $result->setReason($this->getReason());
-            } elseif ($other->isForbidden() && $other instanceof AccessResultReasonInterface && $other->getReason() !== '') {
-                $result->setReason($other->getReason());
+            if ($this->is_forbidden() && $this instanceof Access_Result_Reason_Interface && $this->get_reason() !== '') {
+                $result->set_reason($this->get_reason());
+            } elseif ($other->is_forbidden() && $other instanceof Access_Result_Reason_Interface && $other->get_reason() !== '') {
+                $result->set_reason($other->get_reason());
             }
-        } elseif ($this->isAllowed() || $other->isAllowed()) {
+        } elseif ($this->is_allowed() || $other->is_allowed()) {
             $result = static::allowed();
-            if (!$this->isAllowed() || ($this->getCacheMaxAge() === 0 && $other->isAllowed()) || ($this->getCacheMaxAge() !== 0 && $other instanceof CacheableDependencyInterface && $other->getCacheMaxAge() !== 0)) {
+            if (!$this->is_allowed() || $this->get_cache_max_age() === 0 && $other->is_allowed() || $this->get_cache_max_age() !== 0 && $other instanceof Cacheable_Dependency_Interface && $other->get_cache_max_age() !== 0) {
                 $merge_other = true;
             }
         } else {
             $result = static::neutral();
-            if ($this->getCacheMaxAge() === 0  || ($other instanceof CacheableDependencyInterface && $other->getCacheMaxAge() !== 0)) {
+            if ($this->get_cache_max_age() === 0 || $other instanceof Cacheable_Dependency_Interface && $other->get_cache_max_age() !== 0) {
                 $merge_other = true;
             }
-
-            if ($this instanceof AccessResultReasonInterface && $this->getReason() !== '') {
-                $result->setReason($this->getReason());
-            } elseif ($other instanceof AccessResultReasonInterface && $other->getReason() !== '') {
-                $result->setReason($other->getReason());
+            if ($this instanceof Access_Result_Reason_Interface && $this->get_reason() !== '') {
+                $result->set_reason($this->get_reason());
+            } elseif ($other instanceof Access_Result_Reason_Interface && $other->get_reason() !== '') {
+                $result->set_reason($other->get_reason());
             }
         }
-        $result->inheritCacheability($this);
+        $result->inherit_cacheability($this);
         if ($merge_other) {
-            $result->inheritCacheability($other);
+            $result->inherit_cacheability($other);
         }
         return $result;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function andIf(AccessResultInterface $other)
+    public function and_if(Access_Result_Interface $other)
     {
         // The other access result's cacheability metadata is merged if $merge_other
         // gets set to TRUE. It gets set to TRUE in one case: if the other access
         // result is used.
         $merge_other = false;
-        if ($this->isForbidden() || $other->isForbidden()) {
+        if ($this->is_forbidden() || $other->is_forbidden()) {
             $result = static::forbidden();
-            if (!$this->isForbidden()) {
-                if ($other instanceof AccessResultReasonInterface) {
-                    $result->setReason($other->getReason());
+            if (!$this->is_forbidden()) {
+                if ($other instanceof Access_Result_Reason_Interface) {
+                    $result->set_reason($other->get_reason());
                 }
                 $merge_other = true;
-            } else {
-                if ($this instanceof AccessResultReasonInterface) {
-                    $result->setReason($this->getReason());
-                }
+            } else if ($this instanceof Access_Result_Reason_Interface) {
+                $result->set_reason($this->get_reason());
             }
-        } elseif ($this->isAllowed() && $other->isAllowed()) {
+        } elseif ($this->is_allowed() && $other->is_allowed()) {
             $result = static::allowed();
             $merge_other = true;
         } else {
             $result = static::neutral();
-            if (!$this->isNeutral()) {
+            if (!$this->is_neutral()) {
                 $merge_other = true;
-                if ($other instanceof AccessResultReasonInterface) {
-                    $result->setReason($other->getReason());
+                if ($other instanceof Access_Result_Reason_Interface) {
+                    $result->set_reason($other->get_reason());
                 }
-            } else {
-                if ($this instanceof AccessResultReasonInterface) {
-                    $result->setReason($this->getReason());
-                }
+            } else if ($this instanceof Access_Result_Reason_Interface) {
+                $result->set_reason($this->get_reason());
             }
         }
-        $result->inheritCacheability($this);
+        $result->inherit_cacheability($this);
         if ($merge_other) {
-            $result->inheritCacheability($other);
+            $result->inherit_cacheability($other);
             // If this access result is not cacheable, then an AND with another access
             // result must also not be cacheable, except if the other access result
             // has isForbidden() === TRUE. isForbidden() access results are contagious
             // in that they propagate regardless of the other value.
-            if ($this->getCacheMaxAge() === 0 && !$result->isForbidden()) {
-                $result->setCacheMaxAge(0);
+            if ($this->get_cache_max_age() === 0 && !$result->is_forbidden()) {
+                $result->set_cache_max_age(0);
             }
         }
         return $result;
     }
-
     /**
      * Inherits the cacheability of the other access result, if any.
      *
@@ -415,19 +381,18 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
      *
      * @return $this
      */
-    public function inheritCacheability(AccessResultInterface $other)
+    public function inherit_cacheability(Access_Result_Interface $other)
     {
-        if ($other instanceof CacheableDependencyInterface) {
-            $this->addCacheableDependency($other);
-            if ($this->getCacheMaxAge() !== 0 && $other->getCacheMaxAge() !== 0) {
-                $this->setCacheMaxAge(Cache::mergeMaxAges($this->getCacheMaxAge(), $other->getCacheMaxAge()));
+        if ($other instanceof Cacheable_Dependency_Interface) {
+            $this->add_cacheable_dependency($other);
+            if ($this->get_cache_max_age() !== 0 && $other->get_cache_max_age() !== 0) {
+                $this->set_cache_max_age(Cache::merge_max_ages($this->get_cache_max_age(), $other->get_cache_max_age()));
             } else {
-                $this->setCacheMaxAge($other->getCacheMaxAge());
+                $this->set_cache_max_age($other->get_cache_max_age());
             }
         } else {
-            $this->setCacheMaxAge(0);
+            $this->set_cache_max_age(0);
         }
         return $this;
     }
-
 }

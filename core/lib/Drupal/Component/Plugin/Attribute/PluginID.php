@@ -1,25 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Attribute;
 
 /**
  * Defines a Plugin attribute object that just contains an ID.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class PluginID extends AttributeBase
+class Plugin_Id extends Attribute_Base
 {
     /**
      * {@inheritdoc}
      */
     public function get(): array
     {
-        return [
-          'id' => $this->getId(),
-          'class' => $this->getClass(),
-          'provider' => $this->getProvider(),
-        ];
+        return ['id' => $this->get_id(), 'class' => $this->get_class(), 'provider' => $this->get_provider()];
     }
-
 }

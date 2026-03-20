@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -15,13 +14,12 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheBackendInterface
+interface Cache_Backend_Interface
 {
     /**
      * Indicates that the item should never be removed unless explicitly deleted.
      */
     public const CACHE_PERMANENT = -1;
-
     /**
      * Returns data from the persistent cache.
      *
@@ -41,7 +39,6 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::getMultiple()
      */
     public function get($cid, $allow_invalid = false);
-
     /**
      * Returns data from the persistent cache when given an array of cache IDs.
      *
@@ -62,8 +59,7 @@ interface CacheBackendInterface
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::get()
      */
-    public function getMultiple(&$cids, $allow_invalid = false);
-
+    public function get_multiple(&$cids, $allow_invalid = false);
     /**
      * Stores data in the persistent cache.
      *
@@ -99,7 +95,6 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::getMultiple()
      */
     public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []);
-
     /**
      * Store multiple items in the persistent cache.
      *
@@ -118,8 +113,7 @@ interface CacheBackendInterface
      *   ];
      *   @endcode
      */
-    public function setMultiple(array $items);
-
+    public function set_multiple(array $items);
     /**
      * Deletes an item from the cache.
      *
@@ -137,7 +131,6 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::deleteAll()
      */
     public function delete($cid);
-
     /**
      * Deletes multiple items from the cache.
      *
@@ -154,16 +147,14 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::delete()
      * @see \Drupal\Core\Cache\CacheBackendInterface::deleteAll()
      */
-    public function deleteMultiple(array $cids);
-
+    public function delete_multiple(array $cids);
     /**
      * Deletes all cache items in a bin.
      *
      * @see \Drupal\Core\Cache\CacheBackendInterface::delete()
      * @see \Drupal\Core\Cache\CacheBackendInterface::deleteMultiple()
      */
-    public function deleteAll();
-
+    public function delete_all();
     /**
      * Marks a cache item as invalid.
      *
@@ -177,7 +168,6 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::invalidateMultiple()
      */
     public function invalidate($cid);
-
     /**
      * Marks cache items as invalid.
      *
@@ -190,18 +180,15 @@ interface CacheBackendInterface
      * @see \Drupal\Core\Cache\CacheBackendInterface::deleteMultiple()
      * @see \Drupal\Core\Cache\CacheBackendInterface::invalidate()
      */
-    public function invalidateMultiple(array $cids);
-
+    public function invalidate_multiple(array $cids);
     /**
      * Performs garbage collection on a cache bin.
      *
      * The backend may choose to delete expired or invalidated items.
      */
-    public function garbageCollection();
-
+    public function garbage_collection();
     /**
      * Remove a cache bin.
      */
-    public function removeBin();
-
+    public function remove_bin();
 }

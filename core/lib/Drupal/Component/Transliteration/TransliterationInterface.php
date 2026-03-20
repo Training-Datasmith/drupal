@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Transliteration;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Transliteration;
  *
  * @ingroup transliteration
  */
-interface TransliterationInterface
+interface Transliteration_Interface
 {
     /**
      * Removes diacritics (accents) from certain letters.
@@ -25,8 +24,7 @@ interface TransliterationInterface
      * @return string
      *   $string with accented letters replaced by their unaccented equivalents.
      */
-    public function removeDiacritics($string);
-
+    public function remove_diacritics($string);
     /**
      * Transliterates text from Unicode to US-ASCII.
      *
@@ -48,5 +46,4 @@ interface TransliterationInterface
      *   characters, and unknown characters replaced with $unknown_character.
      */
     public function transliterate($string, $langcode = 'en', $unknown_character = '?', $max_length = null);
-
 }

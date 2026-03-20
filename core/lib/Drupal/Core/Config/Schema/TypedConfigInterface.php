@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\TypedData\TraversableTypedDataInterface;
-
+use Drupal\Core\Typed_Data\Traversable_Typed_Data_Interface;
 /**
  * Interface for a typed configuration object that contains multiple elements.
  *
@@ -16,7 +14,7 @@ use Drupal\Core\TypedData\TraversableTypedDataInterface;
  * When implementing this interface which extends Traversable, make sure to list
  * IteratorAggregate or Iterator before this interface in the implements clause.
  */
-interface TypedConfigInterface extends TraversableTypedDataInterface
+interface Typed_Config_Interface extends Traversable_Typed_Data_Interface
 {
     /**
      * Determines whether the data structure is empty.
@@ -24,16 +22,14 @@ interface TypedConfigInterface extends TraversableTypedDataInterface
      * @return bool
      *   TRUE if the data structure is empty, FALSE otherwise.
      */
-    public function isEmpty();
-
+    public function is_empty();
     /**
      * Gets an array of contained elements.
      *
      * @return array
      *   Array of \Drupal\Core\TypedData\TypedDataInterface objects.
      */
-    public function getElements();
-
+    public function get_elements();
     /**
      * Gets a contained typed configuration element.
      *
@@ -49,13 +45,11 @@ interface TypedConfigInterface extends TraversableTypedDataInterface
      *   If an invalid property name is given.
      */
     public function get($name);
-
     /**
      * Returns an array of all property values.
      *
      * @return array
      *   An array of property values, keyed by property name.
      */
-    public function toArray();
-
+    public function to_array();
 }

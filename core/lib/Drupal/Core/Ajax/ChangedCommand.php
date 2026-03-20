@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class ChangedCommand implements CommandInterface
+class Changed_Command implements Command_Interface
 {
     /**
      * Constructs a ChangedCommand object.
@@ -37,20 +36,14 @@ class ChangedCommand implements CommandInterface
          * An optional CSS selector for elements to which asterisks will be appended.
          */
         protected $asterisk = ''
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'changed',
-          'selector' => $this->selector,
-          'asterisk' => $this->asterisk,
-        ];
+        return ['command' => 'changed', 'selector' => $this->selector, 'asterisk' => $this->asterisk];
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * Defines the interface for a configuration factory override object.
  */
-interface ConfigFactoryOverrideInterface
+interface Config_Factory_Override_Interface
 {
     /**
      * Returns config overrides.
@@ -19,16 +18,14 @@ interface ConfigFactoryOverrideInterface
      *   An array keyed by configuration name of override data. Override data
      *   contains a nested array structure of overrides.
      */
-    public function loadOverrides($names);
-
+    public function load_overrides($names);
     /**
      * The string to append to the configuration static cache name.
      *
      * @return string
      *   A string to append to the configuration static cache name.
      */
-    public function getCacheSuffix();
-
+    public function get_cache_suffix();
     /**
      * Creates a configuration object for use during install and synchronization.
      *
@@ -63,8 +60,7 @@ interface ConfigFactoryOverrideInterface
      * @see \Drupal\Core\Config\ConfigCollectionEvents::DELETE_IN_COLLECTION
      * @see \Drupal\Core\Config\ConfigCollectionEvents::RENAME_IN_COLLECTION
      */
-    public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function create_config_object($name, $collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Gets the cacheability metadata associated with the config factory override.
      *
@@ -74,6 +70,5 @@ interface ConfigFactoryOverrideInterface
      * @return \Drupal\Core\Cache\CacheableMetadata
      *   A cacheable metadata object.
      */
-    public function getCacheableMetadata($name);
-
+    public function get_cacheable_metadata($name);
 }

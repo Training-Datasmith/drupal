@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\File\Exception\FileException;
-use Drupal\Core\File\FileExists;
-use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\Core\File\Exception\File_Exception;
+use Drupal\Core\File\File_Exists;
+use Drupal\Core\File\File_System_Interface;
 /**
  * Dumps a CSS or JavaScript asset.
  */
-class AssetDumper implements AssetDumperUriInterface
+class Asset_Dumper implements Asset_Dumper_Uri_Interface
 {
     /**
      * AssetDumper constructor.
@@ -20,10 +18,9 @@ class AssetDumper implements AssetDumperUriInterface
      * @param \Drupal\Core\File\FileSystemInterface $fileSystem
      *   The file handler.
      */
-    public function __construct(protected \Drupal\Core\File\FileSystemInterface $fileSystem)
+    public function __construct(protected \Drupal\Core\File\File_System_Interface $file_system)
     {
     }
-
     /**
      * {@inheritdoc}
      *
@@ -36,24 +33,23 @@ class AssetDumper implements AssetDumperUriInterface
         $path = 'assets://' . $file_extension;
         // Prefix filename to prevent blocking by firewalls which reject files
         // starting with "ad*".
-        $filename = $file_extension . '_' . Crypt::hashBase64($data) . '.' . $file_extension;
+        $filename = $file_extension . '_' . Crypt::hash_base64($data) . '.' . $file_extension;
         $uri = $path . '/' . $filename;
-        return $this->dumpToUri($data, $file_extension, $uri);
+        return $this->dump_to_uri($data, $file_extension, $uri);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function dumpToUri(string $data, string $file_extension, string $uri): string
+    public function dump_to_uri(string $data, string $file_extension, string $uri): string
     {
         $path = 'assets://' . $file_extension;
         // Create the CSS or JS file.
-        $this->fileSystem->prepareDirectory($path, FileSystemInterface::CREATE_DIRECTORY);
+        $this->file_system->prepare_directory($path, File_System_Interface::CREATE_DIRECTORY);
         try {
-            if (!file_exists($uri) && !$this->fileSystem->saveData($data, $uri, FileExists::Replace)) {
+            if (!file_exists($uri) && !$this->file_system->save_data($data, $uri, File_Exists::Replace)) {
                 return false;
             }
-        } catch (FileException) {
+        } catch (File_Exception) {
             return false;
         }
         // If CSS/JS gzip compression is enabled then create a gzipped version of
@@ -65,14 +61,13 @@ class AssetDumper implements AssetDumperUriInterface
         // order to skip generating a file that won't be used.
         if (\Drupal::config('system.performance')->get($file_extension . '.gzip')) {
             try {
-                if (!file_exists($uri . '.gz') && !$this->fileSystem->saveData(gzencode($data, 9, FORCE_GZIP), $uri . '.gz', FileExists::Replace)) {
+                if (!file_exists($uri . '.gz') && !$this->file_system->save_data(gzencode($data, 9, FORCE_GZIP), $uri . '.gz', File_Exists::Replace)) {
                     return false;
                 }
-            } catch (FileException) {
+            } catch (File_Exception) {
                 return false;
             }
         }
         return $uri;
     }
-
 }

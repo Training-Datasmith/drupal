@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
  * Resolves the arguments to pass to a callable.
  */
-interface ArgumentsResolverInterface
+interface Arguments_Resolver_Interface
 {
     /**
      * Gets arguments suitable for passing to the given callable.
@@ -18,6 +17,5 @@ interface ArgumentsResolverInterface
      * @throws \RuntimeException
      *   When a value for an argument given cannot be resolved.
      */
-    public function getArguments(callable $callable);
-
+    public function get_arguments(callable $callable);
 }

@@ -1,28 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\DependencyInjection;
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
 /**
  * Base service provider implementation.
  *
  * @ingroup container
  */
-abstract class ServiceProviderBase implements ServiceProviderInterface, ServiceModifierInterface
+abstract class Service_Provider_Base implements Service_Provider_Interface, Service_Modifier_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function register(ContainerBuilder $container)
+    public function register(Container_Builder $container)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function alter(ContainerBuilder $container)
+    public function alter(Container_Builder $container)
     {
     }
-
 }

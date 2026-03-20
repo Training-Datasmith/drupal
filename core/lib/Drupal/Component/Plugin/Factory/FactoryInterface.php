@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Factory;
 
 /**
  * Factory interface implemented by all plugin factories.
  */
-interface FactoryInterface
+interface Factory_Interface
 {
     /**
      * Creates a plugin instance based on the provided ID and configuration.
@@ -23,6 +22,5 @@ interface FactoryInterface
      * @throws \Drupal\Component\Plugin\Exception\PluginException
      *   If the instance cannot be created, such as if the ID is invalid.
      */
-    public function createInstance($plugin_id, array $configuration = []);
-
+    public function create_instance($plugin_id, array $configuration = []);
 }

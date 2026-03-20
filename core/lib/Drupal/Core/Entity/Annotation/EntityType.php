@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
+use Drupal\Core\String_Translation\String_Translation_Trait;
 /**
  * Defines an Entity type annotation object.
  *
@@ -20,10 +18,9 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * @Annotation
  */
-class EntityType extends Plugin
+class Entity_Type extends Plugin
 {
-    use StringTranslationTrait;
-
+    use String_Translation_Trait;
     /**
      * The class used to represent the entity type.
      *
@@ -31,15 +28,13 @@ class EntityType extends Plugin
      *
      * @var string
      */
-    public $entity_type_class = \Drupal\Core\Entity\EntityType::class;
-
+    public $entity_type_class = \Drupal\Core\Entity\Entity_Type::class;
     /**
      * The group machine name.
      *
      * @var string
      */
     public $group = 'default';
-
     /**
      * The group label.
      *
@@ -48,19 +43,15 @@ class EntityType extends Plugin
      * @ingroup plugin_translatable
      */
     public $group_label = '';
-
     /**
      * {@inheritdoc}
      */
     public function get()
     {
         $values = $this->definition;
-
         // Use the specified entity type class, and remove it before instantiating.
         $class = $values['entity_type_class'];
         unset($values['entity_type_class']);
-
         return new $class($values);
     }
-
 }

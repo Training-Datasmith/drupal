@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Statement;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Event\StatementExecutionEndEvent;
-use Drupal\Core\Database\Event\StatementExecutionFailureEvent;
-use Drupal\Core\Database\Event\StatementExecutionStartEvent;
-use Drupal\Core\Database\FetchModeTrait;
-use Drupal\Core\Database\RowCountException;
-use Drupal\Core\Database\StatementInterface;
-use Drupal\Core\Database\StatementIteratorTrait;
-
+use Drupal\Core\Database\Event\Statement_Execution_End_Event;
+use Drupal\Core\Database\Event\Statement_Execution_Failure_Event;
+use Drupal\Core\Database\Event\Statement_Execution_Start_Event;
+use Drupal\Core\Database\Fetch_Mode_Trait;
+use Drupal\Core\Database\Row_Count_Exception;
+use Drupal\Core\Database\Statement_Interface;
+use Drupal\Core\Database\Statement_Iterator_Trait;
 /**
  * StatementInterface base implementation.
  *
@@ -31,39 +29,30 @@ use Drupal\Core\Database\StatementIteratorTrait;
  * PHP memory (that an \IteratorAggregate implementation would force) and
  * therefore optimize memory usage while iterating the resultset.
  */
-abstract class StatementBase implements \Iterator, StatementInterface
+abstract class Statement_Base implements \Iterator, Statement_Interface
 {
-    use FetchModeTrait;
-    use StatementIteratorTrait;
-
+    use Fetch_Mode_Trait;
+    use Statement_Iterator_Trait;
     /**
      * The client database Statement object.
      *
      * For a \PDO client connection, this will be a \PDOStatement object.
      */
-    protected ?object $clientStatement = null;
-
+    protected ?object $client_statement = null;
     /**
      * The results of a data query language (DQL) statement.
      */
-    protected ?ResultBase $result = null;
-
+    protected ?Result_Base $result = null;
     /**
      * Holds the default fetch mode.
      */
-    protected FetchAs $fetchMode = FetchAs::Object;
-
+    protected Fetch_As $fetch_mode = Fetch_As::Object;
     /**
      * Holds fetch options.
      *
      * @var array{'class': class-string, 'constructor_args': list<mixed>, 'column': int}
      */
-    protected array $fetchOptions = [
-      'class' => 'stdClass',
-      'constructor_args' => [],
-      'column' => 0,
-    ];
-
+    protected array $fetch_options = ['class' => 'stdClass', 'constructor_args' => [], 'column' => 0];
     /**
      * Constructor.
      *
@@ -76,14 +65,9 @@ abstract class StatementBase implements \Iterator, StatementInterface
      * @param bool $rowCountEnabled
      *   (optional) Enables counting the rows matched. Defaults to FALSE.
      */
-    public function __construct(
-        protected readonly Connection $connection,
-        protected readonly object $clientConnection,
-        protected readonly string $queryString,
-        protected readonly bool $rowCountEnabled = false,
-    ) {
+    public function __construct(protected readonly Connection $connection, protected readonly object $client_connection, protected readonly string $query_string, protected readonly bool $row_count_enabled = false)
+    {
     }
-
     /**
      * Determines if the client-level database statement object exists.
      *
@@ -92,11 +76,10 @@ abstract class StatementBase implements \Iterator, StatementInterface
      * @return bool
      *   TRUE if the client statement exists, FALSE otherwise.
      */
-    public function hasClientStatement(): bool
+    public function has_client_statement(): bool
     {
-        return isset($this->clientStatement);
+        return isset($this->client_statement);
     }
-
     /**
      * Returns the client-level database statement object.
      *
@@ -108,27 +91,24 @@ abstract class StatementBase implements \Iterator, StatementInterface
      * @throws \RuntimeException
      *   If the client-level statement is not set.
      */
-    public function getClientStatement(): object
+    public function get_client_statement(): object
     {
-        if ($this->hasClientStatement()) {
-            return $this->clientStatement;
+        if ($this->has_client_statement()) {
+            return $this->client_statement;
         }
         throw new \LogicException('Client statement not initialized');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConnectionTarget(): string
+    public function get_connection_target(): string
     {
-        return $this->connection->getTarget();
+        return $this->connection->get_target();
     }
-
     /**
      * {@inheritdoc}
      */
     abstract public function execute($args = [], $options = []);
-
     /**
      * Dispatches an event informing that the statement execution begins.
      *
@@ -139,44 +119,27 @@ abstract class StatementBase implements \Iterator, StatementInterface
      * @return \Drupal\Core\Database\Event\StatementExecutionStartEvent|null
      *   The dispatched event or NULL if event dispatching is not enabled.
      */
-    protected function dispatchStatementExecutionStartEvent(array $args): ?StatementExecutionStartEvent
+    protected function dispatch_statement_execution_start_event(array $args): ?Statement_Execution_Start_Event
     {
-        if ($this->connection->isEventEnabled(StatementExecutionStartEvent::class)) {
-            $startEvent = new StatementExecutionStartEvent(
-                spl_object_id($this),
-                $this->connection->getKey(),
-                $this->connection->getTarget(),
-                $this->getQueryString(),
-                $args,
-                $this->connection->findCallerFromDebugBacktrace()
-            );
-            $this->connection->dispatchEvent($startEvent);
-            return $startEvent;
+        if ($this->connection->is_event_enabled(Statement_Execution_Start_Event::class)) {
+            $start_event = new Statement_Execution_Start_Event(spl_object_id($this), $this->connection->get_key(), $this->connection->get_target(), $this->get_query_string(), $args, $this->connection->find_caller_from_debug_backtrace());
+            $this->connection->dispatch_event($start_event);
+            return $start_event;
         }
         return null;
     }
-
     /**
      * Dispatches an event informing that the statement execution succeeded.
      *
      * @param \Drupal\Core\Database\Event\StatementExecutionStartEvent|null $startEvent
      *   The start event or NULL if event dispatching is not enabled.
      */
-    protected function dispatchStatementExecutionEndEvent(?StatementExecutionStartEvent $startEvent): void
+    protected function dispatch_statement_execution_end_event(?Statement_Execution_Start_Event $start_event): void
     {
-        if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionEndEvent::class)) {
-            $this->connection->dispatchEvent(new StatementExecutionEndEvent(
-                $startEvent->statementObjectId,
-                $startEvent->key,
-                $startEvent->target,
-                $startEvent->queryString,
-                $startEvent->args,
-                $startEvent->caller,
-                $startEvent->time
-            ));
+        if (isset($start_event) && $this->connection->is_event_enabled(Statement_Execution_End_Event::class)) {
+            $this->connection->dispatch_event(new Statement_Execution_End_Event($start_event->statement_object_id, $start_event->key, $start_event->target, $start_event->query_string, $start_event->args, $start_event->caller, $start_event->time));
         }
     }
-
     /**
      * Dispatches an event informing of the statement execution failure.
      *
@@ -185,202 +148,152 @@ abstract class StatementBase implements \Iterator, StatementInterface
      * @param \Exception $e
      *   The statement exception thrown.
      */
-    protected function dispatchStatementExecutionFailureEvent(?StatementExecutionStartEvent $startEvent, \Exception $e): void
+    protected function dispatch_statement_execution_failure_event(?Statement_Execution_Start_Event $start_event, \Exception $e): void
     {
-        if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionFailureEvent::class)) {
-            $this->connection->dispatchEvent(new StatementExecutionFailureEvent(
-                $startEvent->statementObjectId,
-                $startEvent->key,
-                $startEvent->target,
-                $startEvent->queryString,
-                $startEvent->args,
-                $startEvent->caller,
-                $startEvent->time,
-                $e::class,
-                $e->getCode(),
-                $e->getMessage(),
-            ));
+        if (isset($start_event) && $this->connection->is_event_enabled(Statement_Execution_Failure_Event::class)) {
+            $this->connection->dispatch_event(new Statement_Execution_Failure_Event($start_event->statement_object_id, $start_event->key, $start_event->target, $start_event->query_string, $start_event->args, $start_event->caller, $start_event->time, $e::class, $e->get_code(), $e->get_message()));
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getQueryString()
+    public function get_query_string()
     {
-        return $this->queryString;
+        return $this->query_string;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setFetchMode($mode, $a1 = null, $a2 = [])
+    public function set_fetch_mode($mode, $a1 = null, $a2 = [])
     {
-        assert($mode instanceof FetchAs);
-
-        $this->fetchMode = $mode;
+        assert($mode instanceof Fetch_As);
+        $this->fetch_mode = $mode;
         switch ($mode) {
-            case FetchAs::ClassObject:
-                $this->fetchOptions['class'] = $a1;
+            case Fetch_As::ClassObject:
+                $this->fetch_options['class'] = $a1;
                 if ($a2) {
-                    $this->fetchOptions['constructor_args'] = $a2;
+                    $this->fetch_options['constructor_args'] = $a2;
                 }
                 break;
-
-            case FetchAs::Column:
-                $this->fetchOptions['column'] = $a1;
+            case Fetch_As::Column:
+                $this->fetch_options['column'] = $a1;
                 break;
-
         }
-
         // If the result object is missing, just do with the properties setting.
         try {
             if ($this->result) {
-                return $this->result->setFetchMode($mode, $this->fetchOptions);
+                return $this->result->set_fetch_mode($mode, $this->fetch_options);
             }
             return true;
         } catch (\LogicException) {
             return true;
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetch($mode = null, $cursorOrientation = null, $cursorOffset = null)
+    public function fetch($mode = null, $cursor_orientation = null, $cursor_offset = null)
     {
-        assert($mode === null || $mode instanceof FetchAs);
-
-        $fetchOptions = match(func_num_args()) {
-            0 => $this->fetchOptions,
-            1 => $this->fetchOptions,
-            2 => $this->fetchOptions + [
-              'cursor_orientation' => $cursorOrientation,
-            ],
-            default => $this->fetchOptions + [
-              'cursor_orientation' => $cursorOrientation,
-              'cursor_offset' => $cursorOffset,
-            ],
+        assert($mode === null || $mode instanceof Fetch_As);
+        $fetch_options = match (func_num_args()) {
+            0 => $this->fetch_options,
+            1 => $this->fetch_options,
+            2 => $this->fetch_options + ['cursor_orientation' => $cursor_orientation],
+            default => $this->fetch_options + ['cursor_orientation' => $cursor_orientation, 'cursor_offset' => $cursor_offset],
         };
-
-        $row = $this->result->fetch($mode ?? $this->fetchMode, $fetchOptions);
-
+        $row = $this->result->fetch($mode ?? $this->fetch_mode, $fetch_options);
         if ($row === false) {
-            $this->markResultsetFetchingComplete();
+            $this->mark_resultset_fetching_complete();
             return false;
         }
-
-        $this->setResultsetCurrentRow($row);
+        $this->set_resultset_current_row($row);
         return $row;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchObject(?string $className = null, array $constructorArguments = [])
+    public function fetch_object(?string $class_name = null, array $constructor_arguments = [])
     {
-        $row = $className === null ?
-          $this->result->fetch(FetchAs::Object, []) :
-          $this->result->fetch(FetchAs::ClassObject, [
-            'class' => $className,
-            'constructor_args' => $constructorArguments,
-          ]);
-
+        $row = $class_name === null ? $this->result->fetch(Fetch_As::Object, []) : $this->result->fetch(Fetch_As::ClassObject, ['class' => $class_name, 'constructor_args' => $constructor_arguments]);
         if ($row === false) {
-            $this->markResultsetFetchingComplete();
+            $this->mark_resultset_fetching_complete();
             return false;
         }
-
-        $this->setResultsetCurrentRow($row);
+        $this->set_resultset_current_row($row);
         return $row;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAssoc()
+    public function fetch_assoc()
     {
-        return $this->fetch(FetchAs::Associative);
+        return $this->fetch(Fetch_As::Associative);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchField($index = 0)
+    public function fetch_field($index = 0)
     {
-        $column = $this->result->fetch(FetchAs::Column, ['column' => $index]);
-
+        $column = $this->result->fetch(Fetch_As::Column, ['column' => $index]);
         if ($column === false) {
-            $this->markResultsetFetchingComplete();
+            $this->mark_resultset_fetching_complete();
             return false;
         }
-
-        $this->setResultsetCurrentRow($column);
+        $this->set_resultset_current_row($column);
         return $column;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAll($mode = null, $columnIndex = null, $constructorArguments = null)
+    public function fetch_all($mode = null, $column_index = null, $constructor_arguments = null)
     {
-        assert($mode === null || $mode instanceof FetchAs);
-
-        $fetchMode = $mode ?? $this->fetchMode;
-        if (isset($columnIndex)) {
-            $this->fetchOptions['column'] = $columnIndex;
+        assert($mode === null || $mode instanceof Fetch_As);
+        $fetch_mode = $mode ?? $this->fetch_mode;
+        if (isset($column_index)) {
+            $this->fetch_options['column'] = $column_index;
         }
-        if (isset($constructorArguments)) {
-            $this->fetchOptions['constructor_args'] = $constructorArguments;
+        if (isset($constructor_arguments)) {
+            $this->fetch_options['constructor_args'] = $constructor_arguments;
         }
-
-        $return = $this->result->fetchAll($fetchMode, $this->fetchOptions);
-
-        $this->markResultsetFetchingComplete();
-
+        $return = $this->result->fetch_all($fetch_mode, $this->fetch_options);
+        $this->mark_resultset_fetching_complete();
         return $return;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchCol($index = 0)
+    public function fetch_col($index = 0)
     {
-        return $this->fetchAll(FetchAs::Column, $index);
+        return $this->fetch_all(Fetch_As::Column, $index);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAllAssoc($key, $fetch = null)
+    public function fetch_all_assoc($key, $fetch = null)
     {
-        assert($fetch === null || $fetch instanceof FetchAs);
-
-        $result = $this->result->fetchAllAssoc($key, $fetch ?? $this->fetchMode, $this->fetchOptions);
-        $this->markResultsetFetchingComplete();
+        assert($fetch === null || $fetch instanceof Fetch_As);
+        $result = $this->result->fetch_all_assoc($key, $fetch ?? $this->fetch_mode, $this->fetch_options);
+        $this->mark_resultset_fetching_complete();
         return $result;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function fetchAllKeyed($keyIndex = 0, $valueIndex = 1)
+    public function fetch_all_keyed($key_index = 0, $value_index = 1)
     {
-        $result = $this->result->fetchAllKeyed($keyIndex, $valueIndex);
-        $this->markResultsetFetchingComplete();
+        $result = $this->result->fetch_all_keyed($key_index, $value_index);
+        $this->mark_resultset_fetching_complete();
         return $result;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function rowCount()
+    public function row_count()
     {
         // SELECT query should not use the method.
-        if ($this->rowCountEnabled) {
-            return $this->result->rowCount();
+        if ($this->row_count_enabled) {
+            return $this->result->row_count();
         }
-        throw new RowCountException();
+        throw new Row_Count_Exception();
     }
-
 }

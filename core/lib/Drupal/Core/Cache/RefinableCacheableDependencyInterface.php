@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -12,7 +11,7 @@ namespace Drupal\Core\Cache;
  * based on the current content language then a cache context for that must be
  * added.
  */
-interface RefinableCacheableDependencyInterface extends CacheableDependencyInterface
+interface Refinable_Cacheable_Dependency_Interface extends Cacheable_Dependency_Interface
 {
     /**
      * Adds cache contexts.
@@ -22,8 +21,7 @@ interface RefinableCacheableDependencyInterface extends CacheableDependencyInter
      *
      * @return $this
      */
-    public function addCacheContexts(array $cache_contexts);
-
+    public function add_cache_contexts(array $cache_contexts);
     /**
      * Adds cache tags.
      *
@@ -32,8 +30,7 @@ interface RefinableCacheableDependencyInterface extends CacheableDependencyInter
      *
      * @return $this
      */
-    public function addCacheTags(array $cache_tags);
-
+    public function add_cache_tags(array $cache_tags);
     /**
      * Merges the maximum age (in seconds) with the existing maximum age.
      *
@@ -48,8 +45,7 @@ interface RefinableCacheableDependencyInterface extends CacheableDependencyInter
      * @throws \InvalidArgumentException
      *   Thrown if a non-integer value is supplied.
      */
-    public function mergeCacheMaxAge($max_age);
-
+    public function merge_cache_max_age($max_age);
     /**
      * Adds a dependency on an object: merges its cacheability metadata.
      *
@@ -62,6 +58,5 @@ interface RefinableCacheableDependencyInterface extends CacheableDependencyInter
      *
      * @see \Drupal\Core\Cache\CacheableMetadata::createFromObject()
      */
-    public function addCacheableDependency($other_object);
-
+    public function add_cacheable_dependency($other_object);
 }

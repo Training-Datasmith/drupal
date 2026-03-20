@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the TimeZoneCacheContext service, for "per time zone" caching.
  *
@@ -13,32 +11,29 @@ use Drupal\Core\Cache\CacheableMetadata;
  *
  * @see \Drupal\Core\Session\AccountProxy::setAccount()
  */
-class TimeZoneCacheContext implements CacheContextInterface
+class Time_Zone_Cache_Context implements Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Time zone');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext(): string
+    public function get_context(): string
     {
         // date_default_timezone_set() is called in AccountProxy::setAccount(), so
         // we can safely retrieve the timezone.
         return date_default_timezone_get();
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata(): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

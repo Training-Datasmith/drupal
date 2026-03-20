@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Cache\Memory_Cache;
 
-namespace Drupal\Core\Cache\MemoryCache;
-
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Cache\Cache_Tags_Invalidator_Interface;
 /**
  * Defines an interface for memory cache implementations.
  *
@@ -17,6 +15,6 @@ use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
  *
  * @ingroup cache
  */
-interface MemoryCacheInterface extends CacheBackendInterface, CacheTagsInvalidatorInterface
+interface Memory_Cache_Interface extends Cache_Backend_Interface, Cache_Tags_Invalidator_Interface
 {
 }

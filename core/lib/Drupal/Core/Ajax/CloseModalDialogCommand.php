@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class CloseModalDialogCommand extends CloseDialogCommand
+class Close_Modal_Dialog_Command extends Close_Dialog_Command
 {
     /**
      * Constructs a CloseModalDialogCommand object.
@@ -22,5 +21,4 @@ class CloseModalDialogCommand extends CloseDialogCommand
         $this->selector = '#drupal-modal';
         $this->persist = $persist;
     }
-
 }

@@ -1,20 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Asset\Exception\InvalidLibrariesExtendSpecificationException;
-use Drupal\Core\Asset\Exception\InvalidLibrariesOverrideSpecificationException;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Cache\CacheCollector;
-use Drupal\Core\Lock\LockBackendInterface;
-
+use Drupal\Component\Utility\Nested_Array;
+use Drupal\Core\Asset\Exception\Invalid_Libraries_Extend_Specification_Exception;
+use Drupal\Core\Asset\Exception\Invalid_Libraries_Override_Specification_Exception;
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Cache\Cache_Collector;
+use Drupal\Core\Lock\Lock_Backend_Interface;
 /**
  * A CacheCollector implementation for building library extension info.
  */
-class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscoveryInterface
+class Library_Discovery_Collector extends Cache_Collector implements Library_Discovery_Interface
 {
     /**
      * Constructs a CacheCollector object.
@@ -28,34 +26,29 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
      * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
      *   The theme manager.
      */
-    public function __construct(CacheBackendInterface $cache, LockBackendInterface $lock, protected \Drupal\Core\Asset\LibraryDiscoveryParser $discoveryParser, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager)
+    public function __construct(Cache_Backend_Interface $cache, Lock_Backend_Interface $lock, protected \Drupal\Core\Asset\Library_Discovery_Parser $discovery_parser, protected \Drupal\Core\Theme\Theme_Manager_Interface $theme_manager)
     {
         parent::__construct(null, $cache, $lock, ['library_info']);
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getCid()
+    protected function get_cid()
     {
         if (!isset($this->cid)) {
-            $this->cid = 'library_info:' . $this->themeManager->getActiveTheme()->getName();
+            $this->cid = 'library_info:' . $this->theme_manager->get_active_theme()->get_name();
         }
-
         return $this->cid;
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function resolveCacheMiss($key)
+    protected function resolve_cache_miss($key)
     {
-        $this->storage[$key] = $this->getLibraryDefinitions($key);
+        $this->storage[$key] = $this->get_library_definitions($key);
         $this->persist($key);
-
         return $this->storage[$key];
     }
-
     /**
      * Returns the library definitions for a given extension.
      *
@@ -70,9 +63,9 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
      *
      * @throws \Drupal\Core\Asset\Exception\InvalidLibrariesOverrideSpecificationException
      */
-    protected function getLibraryDefinitions($extension)
+    protected function get_library_definitions($extension)
     {
-        $libraries = $this->discoveryParser->buildByExtension($extension);
+        $libraries = $this->discovery_parser->build_by_extension($extension);
         foreach ($libraries as $name => $definition) {
             // Handle libraries that are marked for override or removal.
             // @see \Drupal\Core\Asset\LibraryDiscoveryParser::applyLibrariesOverride()
@@ -88,17 +81,16 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
                     if (isset($replacement_definition[$replacement_name])) {
                         $libraries[$name] = $replacement_definition[$replacement_name];
                     } else {
-                        throw new InvalidLibrariesOverrideSpecificationException(sprintf('The specified library %s does not exist.', $definition['override']));
+                        throw new Invalid_Libraries_Override_Specification_Exception(sprintf('The specified library %s does not exist.', $definition['override']));
                     }
                 }
             } else {
                 // If libraries are not overridden, then apply libraries-extend.
-                $libraries[$name] = $this->applyLibrariesExtend($extension, $name, $definition);
+                $libraries[$name] = $this->apply_libraries_extend($extension, $name, $definition);
             }
         }
         return $libraries;
     }
-
     /**
      * Applies the libraries-extend specified by the active theme.
      *
@@ -117,57 +109,54 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
      *
      * @throws \Drupal\Core\Asset\Exception\InvalidLibrariesExtendSpecificationException
      */
-    protected function applyLibrariesExtend($extension, $library_name, $library_definition)
+    protected function apply_libraries_extend($extension, $library_name, $library_definition)
     {
-        $libraries_extend = $this->themeManager->getActiveTheme()->getLibrariesExtend();
-        if (!empty($libraries_extend["$extension/$library_name"])) {
-            foreach ($libraries_extend["$extension/$library_name"] as $library_extend_name) {
+        $libraries_extend = $this->theme_manager->get_active_theme()->get_libraries_extend();
+        if (!empty($libraries_extend["{$extension}/{$library_name}"])) {
+            foreach ($libraries_extend["{$extension}/{$library_name}"] as $library_extend_name) {
                 if (isset($library_definition['deprecated'])) {
                     $extend_message = sprintf('Theme "%s" is extending a deprecated library.', $extension);
-                    $library_deprecation = str_replace('%library_id%', "$extension/$library_name", $library_definition['deprecated']);
+                    $library_deprecation = str_replace('%library_id%', "{$extension}/{$library_name}", $library_definition['deprecated']);
                     // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-                    @trigger_error("$extend_message $library_deprecation", E_USER_DEPRECATED);
+                    @trigger_error("{$extend_message} {$library_deprecation}", E_USER_DEPRECATED);
                 }
                 if (!is_string($library_extend_name)) {
                     // Only string library names are allowed.
-                    throw new InvalidLibrariesExtendSpecificationException('The libraries-extend specification for each library must be a list of strings.');
+                    throw new Invalid_Libraries_Extend_Specification_Exception('The libraries-extend specification for each library must be a list of strings.');
                 }
                 [$new_extension, $new_library_name] = explode('/', $library_extend_name, 2);
                 $new_libraries = $this->get($new_extension);
                 if (isset($new_libraries[$new_library_name])) {
-                    $library_definition = NestedArray::mergeDeep($library_definition, $new_libraries[$new_library_name]);
+                    $library_definition = Nested_Array::merge_deep($library_definition, $new_libraries[$new_library_name]);
                 } else {
-                    throw new InvalidLibrariesExtendSpecificationException(sprintf('The specified library "%s" does not exist.', $library_extend_name));
+                    throw new Invalid_Libraries_Extend_Specification_Exception(sprintf('The specified library "%s" does not exist.', $library_extend_name));
                 }
             }
         }
         return $library_definition;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getLibrariesByExtension($extension)
+    public function get_libraries_by_extension($extension)
     {
         return $this->get($extension);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getLibraryByName($extension, $name)
+    public function get_library_by_name($extension, $name)
     {
-        $libraries = $this->getLibrariesByExtension($extension);
+        $libraries = $this->get_libraries_by_extension($extension);
         if (!isset($libraries[$name])) {
             return false;
         }
         if (isset($libraries[$name]['deprecated'])) {
             // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-            @trigger_error(str_replace('%library_id%', "$extension/$name", $libraries[$name]['deprecated']), E_USER_DEPRECATED);
+            @trigger_error(str_replace('%library_id%', "{$extension}/{$name}", $libraries[$name]['deprecated']), E_USER_DEPRECATED);
         }
         return $libraries[$name];
     }
-
     /**
      * {@inheritdoc}
      */
@@ -176,5 +165,4 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
         parent::reset();
         $this->cid = null;
     }
-
 }

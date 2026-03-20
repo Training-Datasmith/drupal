@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Site\Settings;
-
 /**
  * Generates and validates CSRF tokens.
  *
  * @see \Drupal\Tests\Core\Access\CsrfTokenGeneratorTest
  */
-class CsrfTokenGenerator
+class Csrf_Token_Generator
 {
     /**
      * Constructs the token generator.
@@ -22,10 +20,9 @@ class CsrfTokenGenerator
      * @param \Drupal\Core\Session\MetadataBag $sessionMetadata
      *   The session metadata bag.
      */
-    public function __construct(protected \Drupal\Core\PrivateKey $privateKey, protected \Drupal\Core\Session\MetadataBag $sessionMetadata)
+    public function __construct(protected \Drupal\Core\Private_Key $private_key, protected \Drupal\Core\Session\Metadata_Bag $session_metadata)
     {
     }
-
     /**
      * Generates a token based on $value, the user session, and the private key.
      *
@@ -47,15 +44,13 @@ class CsrfTokenGenerator
      */
     public function get($value = '')
     {
-        $seed = $this->sessionMetadata->getCsrfTokenSeed();
+        $seed = $this->session_metadata->get_csrf_token_seed();
         if (empty($seed)) {
-            $seed = Crypt::randomBytesBase64();
-            $this->sessionMetadata->setCsrfTokenSeed($seed);
+            $seed = Crypt::random_bytes_base64();
+            $this->session_metadata->set_csrf_token_seed($seed);
         }
-
-        return $this->computeToken($seed, $value);
+        return $this->compute_token($seed, $value);
     }
-
     /**
      * Validates a token based on $value, the user session, and the private key.
      *
@@ -69,20 +64,18 @@ class CsrfTokenGenerator
      */
     public function validate($token, $value = '')
     {
-        $seed = $this->sessionMetadata->getCsrfTokenSeed();
+        $seed = $this->session_metadata->get_csrf_token_seed();
         if (empty($seed)) {
             return false;
         }
-        $value = $this->computeToken($seed, $value);
+        $value = $this->compute_token($seed, $value);
         // PHP 8.0 strictly type hints for hash_equals. Maintain BC until we can
         // enforce scalar type hints on this method.
         if (!is_string($token)) {
             return false;
         }
-
         return hash_equals($value, $token);
     }
-
     /**
      * Generates a token based on $value, the token seed, and the private key.
      *
@@ -98,9 +91,8 @@ class CsrfTokenGenerator
      *
      * @see \Drupal\Core\Site\Settings::getHashSalt()
      */
-    protected function computeToken(string $seed, $value = ''): string
+    protected function compute_token(string $seed, $value = ''): string
     {
-        return Crypt::hmacBase64($value, $seed . $this->privateKey->get() . Settings::getHashSalt());
+        return Crypt::hmac_base64($value, $seed . $this->private_key->get() . Settings::get_hash_salt());
     }
-
 }

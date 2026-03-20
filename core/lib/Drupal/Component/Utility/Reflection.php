@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -18,22 +17,20 @@ final class Reflection
      * @return string|null
      *   The parameter's class name or NULL if the parameter is not a class.
      */
-    public static function getParameterClassName(\ReflectionParameter $parameter): ?string
+    public static function get_parameter_class_name(\ReflectionParameter $parameter): ?string
     {
         $name = null;
-        $parameterType = $parameter->getType();
-        if ($parameterType instanceof \ReflectionNamedType && !$parameterType->isBuiltin()) {
-            $name = $parameterType->getName();
+        $parameter_type = $parameter->get_type();
+        if ($parameter_type instanceof \ReflectionNamedType && !$parameter_type->is_builtin()) {
+            $name = $parameter_type->get_name();
             $lc_name = strtolower($name);
             switch ($lc_name) {
                 case 'self':
-                    return $parameter->getDeclaringClass()->getName();
-
+                    return $parameter->get_declaring_class()->get_name();
                 case 'parent':
-                    return ($parent = $parameter->getDeclaringClass()->getParentClass()) ? $parent->name : null;
+                    return ($parent = $parameter->get_declaring_class()->get_parent_class()) ? $parent->name : null;
             }
         }
         return $name;
     }
-
 }

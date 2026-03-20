@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
  * An array that triggers a deprecation warning when accessed.
  */
-class DeprecatedArray extends \ArrayObject
+class Deprecated_Array extends \ArrayObject
 {
     /**
      * DeprecatedArray constructor.
@@ -17,14 +16,16 @@ class DeprecatedArray extends \ArrayObject
      * @param string $message
      *   The deprecation message.
      */
-    public function __construct(array $values, /**
-   * The deprecation message.
-   */
-        protected $message)
+    public function __construct(
+        array $values,
+        /**
+         * The deprecation message.
+         */
+        protected $message
+    )
     {
         parent::__construct($values);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -33,7 +34,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         return parent::offsetExists($offset);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -42,7 +42,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         return parent::offsetGet($offset);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -51,7 +50,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         parent::offsetSet($offset, $value);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -60,7 +58,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         parent::offsetUnset($offset);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -69,7 +66,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         return parent::getIterator();
     }
-
     /**
      * {@inheritdoc}
      */
@@ -78,7 +74,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         parent::unserialize($serialized);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -87,7 +82,6 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         return parent::serialize();
     }
-
     /**
      * {@inheritdoc}
      */
@@ -96,5 +90,4 @@ class DeprecatedArray extends \ArrayObject
         @trigger_error($this->message, E_USER_DEPRECATED);
         return parent::count();
     }
-
 }

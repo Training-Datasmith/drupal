@@ -1,24 +1,21 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Default_Content;
 
-namespace Drupal\Core\DefaultContent;
-
-use Drupal\Core\Entity\ContentEntityInterface;
-
+use Drupal\Core\Entity\Content_Entity_Interface;
 /**
  * Collects metadata about an entity being exported.
  *
  * @internal
  *   This API is experimental.
  */
-final class ExportMetadata
+final class Export_Metadata
 {
     /**
      * The collected export metadata.
      */
     private array $metadata = ['version' => '1.0'];
-
     /**
      * Files that should accompany the exported entity.
      *
@@ -27,21 +24,18 @@ final class ExportMetadata
      * @see ::getAttachments()
      */
     private array $attachments = [];
-
-    public function __construct(ContentEntityInterface $entity)
+    public function __construct(Content_Entity_Interface $entity)
     {
-        $this->metadata['entity_type'] = $entity->getEntityTypeId();
+        $this->metadata['entity_type'] = $entity->get_entity_type_id();
         $this->metadata['uuid'] = $entity->uuid();
-
-        $entity_type = $entity->getEntityType();
-        if ($entity_type->hasKey('bundle')) {
+        $entity_type = $entity->get_entity_type();
+        if ($entity_type->has_key('bundle')) {
             $this->metadata['bundle'] = $entity->bundle();
         }
-        if ($entity_type->hasKey('langcode')) {
-            $this->metadata['default_langcode'] = $entity->language()->getId();
+        if ($entity_type->has_key('langcode')) {
+            $this->metadata['default_langcode'] = $entity->language()->get_id();
         }
     }
-
     /**
      * Returns the collected metadata as an array.
      *
@@ -52,22 +46,20 @@ final class ExportMetadata
     {
         return $this->metadata;
     }
-
     /**
      * Adds a dependency on another content entity.
      *
      * @param \Drupal\Core\Entity\ContentEntityInterface $entity
      *   The entity we depend upon.
      */
-    public function addDependency(ContentEntityInterface $entity): void
+    public function add_dependency(Content_Entity_Interface $entity): void
     {
         $uuid = $entity->uuid();
         if ($uuid === $this->metadata['uuid']) {
             throw new \LogicException('An entity cannot depend on itself.');
         }
-        $this->metadata['depends'][$uuid] = $entity->getEntityTypeId();
+        $this->metadata['depends'][$uuid] = $entity->get_entity_type_id();
     }
-
     /**
      * Returns the dependencies of the exported entity.
      *
@@ -75,7 +67,7 @@ final class ExportMetadata
      *   An array of dependencies, where each dependency is a tuple with two
      *   elements: an entity type ID, and a UUID.
      */
-    public function getDependencies(): array
+    public function get_dependencies(): array
     {
         $dependencies = [];
         foreach ($this->metadata['depends'] ?? [] as $uuid => $entity_type_id) {
@@ -83,7 +75,6 @@ final class ExportMetadata
         }
         return $dependencies;
     }
-
     /**
      * Attaches a file to the exported entity.
      *
@@ -92,11 +83,10 @@ final class ExportMetadata
      * @param string $name
      *   The name of the exported file.
      */
-    public function addAttachment(string $uri, string $name): void
+    public function add_attachment(string $uri, string $name): void
     {
         $this->attachments[$uri] = $name;
     }
-
     /**
      * Returns the files attached to this entity.
      *
@@ -104,9 +94,8 @@ final class ExportMetadata
      *   The keys are the files' current URIs, and the values are the names of the
      *   files when they are exported.
      */
-    public function getAttachments(): array
+    public function get_attachments(): array
     {
         return $this->attachments;
     }
-
 }

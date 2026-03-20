@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Render;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\UrlHelper;
-
+use Drupal\Component\Utility\Url_Helper;
 /**
  * Formats a string for HTML display by replacing variable placeholders.
  *
@@ -39,13 +37,12 @@ use Drupal\Component\Utility\UrlHelper;
  * @see \Drupal\Core\StringTranslation\PluralTranslatableMarkup
  * @see \Drupal\Component\Render\FormattableMarkup::placeholderFormat()
  */
-class FormattableMarkup implements MarkupInterface, \Countable
+class Formattable_Markup implements Markup_Interface, \Countable
 {
     /**
      * The string containing placeholders.
      */
     protected string $string;
-
     /**
      * Constructs a new class instance.
      *
@@ -63,15 +60,13 @@ class FormattableMarkup implements MarkupInterface, \Countable
     {
         $this->string = (string) $string;
     }
-
     /**
      * {@inheritdoc}
      */
     public function __toString(): string
     {
-        return static::placeholderFormat($this->string, $this->arguments);
+        return static::placeholder_format($this->string, $this->arguments);
     }
-
     /**
      * Returns the string length.
      *
@@ -82,7 +77,6 @@ class FormattableMarkup implements MarkupInterface, \Countable
     {
         return mb_strlen($this->string);
     }
-
     /**
      * Returns a representation of the object for use in JSON serialization.
      *
@@ -93,7 +87,6 @@ class FormattableMarkup implements MarkupInterface, \Countable
     {
         return $this->__toString();
     }
-
     /**
      * Replaces placeholders in a string with values.
      *
@@ -168,7 +161,7 @@ class FormattableMarkup implements MarkupInterface, \Countable
      * @see \Drupal\Component\Utility\UrlHelper::stripDangerousProtocols()
      * @see \Drupal\Core\Url::fromUri()
      */
-    protected static function placeholderFormat($string, array $args): string
+    protected static function placeholder_format($string, array $args): string
     {
         // Transform arguments before inserting them.
         foreach ($args as $key => $value) {
@@ -181,12 +174,11 @@ class FormattableMarkup implements MarkupInterface, \Countable
                     // contexts, may still be an instance of
                     // \Drupal\Component\Render\MarkupInterface, so this placeholder type
                     // must not be used within HTML attributes, JavaScript, or CSS.
-                    $args[$key] = static::placeholderEscape($value);
+                    $args[$key] = static::placeholder_escape($value);
                     break;
-
                 case ':':
                     // Strip URL protocols that can be XSS vectors.
-                    $value = UrlHelper::stripDangerousProtocols($value);
+                    $value = Url_Helper::strip_dangerous_protocols($value);
                     // Escape unconditionally, without checking whether the value is an
                     // instance of \Drupal\Component\Render\MarkupInterface. This forces
                     // characters that are unsafe for use in an "href" HTML attribute to
@@ -198,16 +190,14 @@ class FormattableMarkup implements MarkupInterface, \Countable
                     //   https://www.drupal.org/node/2569041.
                     $args[$key] = Html::escape($value);
                     break;
-
                 case '%':
                     // Similarly to @, escape non-safe values. Also, add wrapping markup
                     // in order to render as a placeholder. Not for use within attributes,
                     // per the warning above about
                     // \Drupal\Component\Render\MarkupInterface and also due to the
                     // wrapping markup.
-                    $args[$key] = '<em class="placeholder">' . static::placeholderEscape($value) . '</em>';
+                    $args[$key] = '<em class="placeholder">' . static::placeholder_escape($value) . '</em>';
                     break;
-
                 default:
                     if (!ctype_alnum($key[0])) {
                         // Warn for random placeholders that won't be replaced.
@@ -218,10 +208,8 @@ class FormattableMarkup implements MarkupInterface, \Countable
                     break;
             }
         }
-
         return strtr($string, $args);
     }
-
     /**
      * Escapes a placeholder replacement value if needed.
      *
@@ -231,9 +219,8 @@ class FormattableMarkup implements MarkupInterface, \Countable
      * @return string
      *   The properly escaped replacement value.
      */
-    protected static function placeholderEscape($value): string
+    protected static function placeholder_escape($value): string
     {
-        return $value instanceof MarkupInterface ? (string) $value : Html::escape($value);
+        return $value instanceof Markup_Interface ? (string) $value : Html::escape($value);
     }
-
 }

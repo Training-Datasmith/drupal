@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Extension\Extension;
-use Drupal\Core\Extension\ExtensionDiscovery;
-
+use Drupal\Core\Extension\Extension_Discovery;
 /**
  * Storage used by the Drupal installer.
  *
@@ -18,37 +16,32 @@ use Drupal\Core\Extension\ExtensionDiscovery;
  *
  * @see \Drupal\Core\DependencyInjection\InstallServiceProvider
  */
-class InstallStorage extends FileStorage
+class Install_Storage extends File_Storage
 {
     /**
      * Extension sub-directory containing default configuration for installation.
      */
     public const CONFIG_INSTALL_DIRECTORY = 'config/install';
-
     /**
      * Extension sub-directory containing optional configuration for installation.
      */
     public const CONFIG_OPTIONAL_DIRECTORY = 'config/optional';
-
     /**
      * Extension sub-directory containing configuration schema.
      */
     public const CONFIG_SCHEMA_DIRECTORY = 'config/schema';
-
     /**
      * Folder map indexed by configuration name.
      *
      * @var array
      */
     protected $folders;
-
     /**
      * The directory to scan in each extension to scan for files.
      *
      * @var string
      */
     protected $directory;
-
     /**
      * Constructs an InstallStorage object.
      *
@@ -59,11 +52,10 @@ class InstallStorage extends FileStorage
      *   (optional) The collection to store configuration in. Defaults to the
      *   default collection.
      */
-    public function __construct($directory = self::CONFIG_INSTALL_DIRECTORY, $collection = StorageInterface::DEFAULT_COLLECTION)
+    public function __construct($directory = self::CONFIG_INSTALL_DIRECTORY, $collection = Storage_Interface::DEFAULT_COLLECTION)
     {
         parent::__construct($directory, $collection);
     }
-
     /**
      * Overrides Drupal\Core\Config\FileStorage::getFilePath().
      *
@@ -81,25 +73,23 @@ class InstallStorage extends FileStorage
      *   searched in the profile first (whereas the profile is never the owner);
      *   only afterwards check for a corresponding module or theme.
      */
-    public function getFilePath($name): string
+    public function get_file_path($name): string
     {
-        $folders = $this->getAllFolders();
+        $folders = $this->get_all_folders();
         if (isset($folders[$name])) {
-            return $folders[$name] . '/' . $name . '.' . $this->getFileExtension();
+            return $folders[$name] . '/' . $name . '.' . $this->get_file_extension();
         }
         // If any code in the early installer requests a configuration object that
         // does not exist anywhere as default config, then that must be mistake.
-        throw new StorageException("Missing configuration file: $name");
+        throw new Storage_Exception("Missing configuration file: {$name}");
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name): bool
     {
-        return array_key_exists($name, $this->getAllFolders());
+        return array_key_exists($name, $this->get_all_folders());
     }
-
     /**
      * Overrides Drupal\Core\Config\FileStorage::write().
      *
@@ -107,9 +97,8 @@ class InstallStorage extends FileStorage
      */
     public function write($name, array $data): never
     {
-        throw new StorageException('Write operation is not allowed.');
+        throw new Storage_Exception('Write operation is not allowed.');
     }
-
     /**
      * Overrides Drupal\Core\Config\FileStorage::delete().
      *
@@ -117,9 +106,8 @@ class InstallStorage extends FileStorage
      */
     public function delete($name): never
     {
-        throw new StorageException('Delete operation is not allowed.');
+        throw new Storage_Exception('Delete operation is not allowed.');
     }
-
     /**
      * Overrides Drupal\Core\Config\FileStorage::rename().
      *
@@ -127,16 +115,15 @@ class InstallStorage extends FileStorage
      */
     public function rename($name, $new_name): never
     {
-        throw new StorageException('Rename operation is not allowed.');
+        throw new Storage_Exception('Rename operation is not allowed.');
     }
-
     /**
      * {@inheritdoc}
      * @return int[]|string[]
      */
-    public function listAll($prefix = ''): array
+    public function list_all($prefix = ''): array
     {
-        $names = array_keys($this->getAllFolders());
+        $names = array_keys($this->get_all_folders());
         if (!$prefix) {
             return $names;
         }
@@ -148,24 +135,23 @@ class InstallStorage extends FileStorage
         }
         return $return;
     }
-
     /**
      * Returns a map of all config object names and their folders.
      *
      * @return array
      *   An array mapping config object names with directories.
      */
-    protected function getAllFolders()
+    protected function get_all_folders()
     {
         if (!isset($this->folders)) {
             $this->folders = [];
-            $this->folders += $this->getCoreNames();
+            $this->folders += $this->get_core_names();
             // Perform an ExtensionDiscovery scan as we cannot use
             // \Drupal\Core\Extension\ExtensionList::getPath() yet because the system
             // module may not yet be enabled during install.
             // @todo Remove as part of https://www.drupal.org/node/2186491
-            $listing = new ExtensionDiscovery(\Drupal::root());
-            if ($profile = \Drupal::installProfile()) {
+            $listing = new Extension_Discovery(\Drupal::root());
+            if ($profile = \Drupal::install_profile()) {
                 $profile_list = $listing->scan('profile');
                 if (isset($profile_list[$profile])) {
                     // Prime the \Drupal\Core\Extension\ExtensionList::getPathname static
@@ -175,17 +161,16 @@ class InstallStorage extends FileStorage
                     // @todo Remove as part of https://www.drupal.org/node/2186491
                     /** @var \Drupal\Core\Extension\ProfileExtensionList $profile_extension_list */
                     $profile_extension_list = \Drupal::service('extension.list.profile');
-                    $profile_extension_list->setPathname($profile, $profile_list[$profile]->getPathname());
-                    $this->folders += $this->getComponentNames([$profile_list[$profile]]);
+                    $profile_extension_list->set_pathname($profile, $profile_list[$profile]->get_pathname());
+                    $this->folders += $this->get_component_names([$profile_list[$profile]]);
                 }
             }
             // @todo Remove as part of https://www.drupal.org/node/2186491
-            $this->folders += $this->getComponentNames($listing->scan('module'));
-            $this->folders += $this->getComponentNames($listing->scan('theme'));
+            $this->folders += $this->get_component_names($listing->scan('module'));
+            $this->folders += $this->get_component_names($listing->scan('theme'));
         }
         return $this->folders;
     }
-
     /**
      * Get all configuration names and folders for a list of modules or themes.
      *
@@ -195,22 +180,21 @@ class InstallStorage extends FileStorage
      * @return array
      *   Folders indexed by configuration name.
      */
-    public function getComponentNames(array $list): array
+    public function get_component_names(array $list): array
     {
-        $extension = '.' . $this->getFileExtension();
+        $extension = '.' . $this->get_file_extension();
         $pattern = '/' . preg_quote($extension, '/') . '$/';
         $folders = [];
         foreach ($list as $extension_object) {
             // We don't have to use ExtensionDiscovery here because our list of
             // extensions was already obtained through an ExtensionDiscovery scan.
-            $directory = $this->getComponentFolder($extension_object);
+            $directory = $this->get_component_folder($extension_object);
             if (is_dir($directory)) {
                 // glob() directly calls into libc glob(), which is not aware of PHP
                 // stream wrappers. Same for \GlobIterator (which additionally requires
                 // an absolute realpath() on Windows).
                 // @see https://github.com/mikey179/vfsStream/issues/2
                 $files = scandir($directory);
-
                 foreach ($files as $file) {
                     if ($file[0] !== '.' && preg_match($pattern, $file)) {
                         $folders[basename($file, $extension)] = $directory;
@@ -220,26 +204,24 @@ class InstallStorage extends FileStorage
         }
         return $folders;
     }
-
     /**
      * Get all configuration names and folders for Drupal core.
      *
      * @return array
      *   Folders indexed by configuration name.
      */
-    public function getCoreNames(): array
+    public function get_core_names(): array
     {
-        $extension = '.' . $this->getFileExtension();
+        $extension = '.' . $this->get_file_extension();
         $pattern = '/' . preg_quote($extension, '/') . '$/';
         $folders = [];
-        $directory = $this->getCoreFolder();
+        $directory = $this->get_core_folder();
         if (is_dir($directory)) {
             // glob() directly calls into libc glob(), which is not aware of PHP
             // stream wrappers. Same for \GlobIterator (which additionally requires an
             // absolute realpath() on Windows).
             // @see https://github.com/mikey179/vfsStream/issues/2
             $files = scandir($directory);
-
             foreach ($files as $file) {
                 if ($file[0] !== '.' && preg_match($pattern, $file)) {
                     $folders[basename($file, $extension)] = $directory;
@@ -248,7 +230,6 @@ class InstallStorage extends FileStorage
         }
         return $folders;
     }
-
     /**
      * Get folder inside each component that contains the files.
      *
@@ -258,32 +239,29 @@ class InstallStorage extends FileStorage
      * @return string
      *   The configuration folder name for this component.
      */
-    protected function getComponentFolder(Extension $extension): string
+    protected function get_component_folder(Extension $extension): string
     {
-        return $extension->getPath() . '/' . $this->getCollectionDirectory();
+        return $extension->get_path() . '/' . $this->get_collection_directory();
     }
-
     /**
      * Get folder inside Drupal core that contains the files.
      *
      * @return string
      *   The configuration folder name for core.
      */
-    protected function getCoreFolder(): string
+    protected function get_core_folder(): string
     {
-        return 'core/' . $this->getCollectionDirectory();
+        return 'core/' . $this->get_collection_directory();
     }
-
     /**
      * Overrides Drupal\Core\Config\FileStorage::deleteAll().
      *
      * @throws \Drupal\Core\Config\StorageException
      */
-    public function deleteAll($prefix = ''): never
+    public function delete_all($prefix = ''): never
     {
-        throw new StorageException('Delete operation is not allowed.');
+        throw new Storage_Exception('Delete operation is not allowed.');
     }
-
     /**
      * Resets the static cache.
      */
@@ -291,5 +269,4 @@ class InstallStorage extends FileStorage
     {
         $this->folders = null;
     }
-
 }

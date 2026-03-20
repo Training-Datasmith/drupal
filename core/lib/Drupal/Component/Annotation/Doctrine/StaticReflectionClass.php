@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
-
 /**
  * @file
  *
@@ -25,421 +24,370 @@ declare(strict_types=1);
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 namespace Drupal\Component\Annotation\Doctrine;
 
 use ReflectionClass;
-use ReflectionException;
-
-class StaticReflectionClass extends ReflectionClass
+use Reflection_Exception;
+class Static_Reflection_Class extends ReflectionClass
 {
     public function __construct(
         /**
          * The static reflection parser object.
          */
-        private readonly StaticReflectionParser $staticReflectionParser
-    ) {
+        private readonly Static_Reflection_Parser $static_reflection_parser
+    )
+    {
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getName(): string
+    public function get_name(): string
     {
-        return $this->staticReflectionParser->getClassName();
+        return $this->static_reflection_parser->get_class_name();
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getDocComment(): string|false
+    public function get_doc_comment(): string|false
     {
-        return $this->staticReflectionParser->getDocComment();
+        return $this->static_reflection_parser->get_doc_comment();
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getNamespaceName(): string
+    public function get_namespace_name(): string
     {
-        return $this->staticReflectionParser->getNamespaceName();
+        return $this->static_reflection_parser->get_namespace_name();
     }
-
     /**
      * @return string[]
      */
-    public function getUseStatements()
+    public function get_use_statements()
     {
-        return $this->staticReflectionParser->getUseStatements();
+        return $this->static_reflection_parser->get_use_statements();
     }
-
     /**
      * Determines if the class has the provided class attribute.
      *
      * @param string $attribute The attribute to check for.
      */
-    public function hasClassAttribute(string $attribute): bool
+    public function has_class_attribute(string $attribute): bool
     {
-        return $this->staticReflectionParser->hasClassAttribute($attribute);
+        return $this->static_reflection_parser->has_class_attribute($attribute);
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getMethod($name): \ReflectionMethod
+    public function get_method($name): \ReflectionMethod
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getProperty($name): \ReflectionProperty
+    public function get_property($name): \ReflectionProperty
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
     public static function export($argument, $return = false): never
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getConstant($name): mixed
+    public function get_constant($name): mixed
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getConstructor(): ?\ReflectionMethod
+    public function get_constructor(): ?\ReflectionMethod
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getDefaultProperties(): array
+    public function get_default_properties(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getEndLine(): int|false
+    public function get_end_line(): int|false
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getExtension(): ?\ReflectionExtension
+    public function get_extension(): ?\ReflectionExtension
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getExtensionName(): string|false
+    public function get_extension_name(): string|false
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getFileName(): string|false
+    public function get_file_name(): string|false
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getInterfaceNames(): array
+    public function get_interface_names(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getInterfaces(): array
+    public function get_interfaces(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getMethods($filter = null): array
+    public function get_methods($filter = null): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getModifiers(): int
+    public function get_modifiers(): int
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getParentClass(): \ReflectionClass|false
+    public function get_parent_class(): \ReflectionClass|false
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getProperties($filter = null): array
+    public function get_properties($filter = null): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getShortName(): string
+    public function get_short_name(): string
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getStartLine(): int|false
+    public function get_start_line(): int|false
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getStaticProperties(): array
+    public function get_static_properties(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getStaticPropertyValue($name, $default = ''): mixed
+    public function get_static_property_value($name, $default = ''): mixed
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getTraitAliases(): array
+    public function get_trait_aliases(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getTraitNames(): array
+    public function get_trait_names(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getTraits(): array
+    public function get_traits(): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function hasConstant($name): bool
+    public function has_constant($name): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function hasMethod($name): bool
+    public function has_method($name): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function hasProperty($name): bool
+    public function has_property($name): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function implementsInterface($interface): bool
+    public function implements_interface($interface): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function inNamespace(): bool
+    public function in_namespace(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isAbstract(): bool
+    public function is_abstract(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isCloneable(): bool
+    public function is_cloneable(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isFinal(): bool
+    public function is_final(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isInstance($object): bool
+    public function is_instance($object): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isInstantiable(): bool
+    public function is_instantiable(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isInterface(): bool
+    public function is_interface(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isInternal(): bool
+    public function is_internal(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isIterateable(): bool
+    public function is_iterateable(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isSubclassOf($class): bool
+    public function is_subclass_of($class): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isTrait(): bool
+    public function is_trait(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isUserDefined(): bool
+    public function is_user_defined(): bool
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function newInstanceArgs(array $args = []): ?object
+    public function new_instance_args(array $args = []): ?object
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function newInstanceWithoutConstructor(): object
+    public function new_instance_without_constructor(): object
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function setStaticPropertyValue($name, $value): void
+    public function set_static_property_value($name, $value): void
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function getConstants(?int $filter = null): array
+    public function get_constants(?int $filter = null): array
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
-    public function newInstance(mixed ...$args): object
+    public function new_instance(mixed ...$args): object
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
-
     /**
      * {@inheritDoc}
      */
     public function __toString(): string
     {
-        throw new ReflectionException('Method not implemented');
+        throw new Reflection_Exception('Method not implemented');
     }
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\TypedData\ListDataDefinition;
-
+use Drupal\Core\Typed_Data\List_Data_Definition;
 /**
  * A typed data definition class for defining sequences in configuration.
  */
-class SequenceDataDefinition extends ListDataDefinition
+class Sequence_Data_Definition extends List_Data_Definition
 {
     /**
      * Gets the description of how the sequence should be sorted.
@@ -23,15 +21,14 @@ class SequenceDataDefinition extends ListDataDefinition
      *   keys), or NULL (if the schema does not describe how the sequence should
      *   be sorted).
      */
-    public function getOrderBy()
+    public function get_order_by()
     {
         return $this->definition['orderby'] ?? null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDataType()
+    public function get_data_type()
     {
         // TRICKY: this class extends ListDataDefinition, which always returns a
         // hardcoded "list". But this is a typed data type used in config schemas,
@@ -43,5 +40,4 @@ class SequenceDataDefinition extends ListDataDefinition
         // @see \Drupal\Core\TypedData\ListDataDefinition::getDataType()
         return $this->definition['type'];
     }
-
 }

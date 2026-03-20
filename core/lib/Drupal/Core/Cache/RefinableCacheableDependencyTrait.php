@@ -1,56 +1,50 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
  * Trait for \Drupal\Core\Cache\RefinableCacheableDependencyInterface.
  */
-trait RefinableCacheableDependencyTrait
+trait Refinable_Cacheable_Dependency_Trait
 {
-    use CacheableDependencyTrait;
-
+    use Cacheable_Dependency_Trait;
     /**
      * {@inheritdoc}
      */
-    public function addCacheableDependency($other_object)
+    public function add_cacheable_dependency($other_object)
     {
-        $this->addCacheContexts($other_object->getCacheContexts());
-        $this->addCacheTags($other_object->getCacheTags());
-        $this->mergeCacheMaxAge($other_object->getCacheMaxAge());
+        $this->add_cache_contexts($other_object->get_cache_contexts());
+        $this->add_cache_tags($other_object->get_cache_tags());
+        $this->merge_cache_max_age($other_object->get_cache_max_age());
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function addCacheContexts(array $cache_contexts)
+    public function add_cache_contexts(array $cache_contexts)
     {
         if ($cache_contexts) {
-            $this->cacheContexts = Cache::mergeContexts($this->cacheContexts, $cache_contexts);
+            $this->cache_contexts = Cache::merge_contexts($this->cache_contexts, $cache_contexts);
         }
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function addCacheTags(array $cache_tags)
+    public function add_cache_tags(array $cache_tags)
     {
         if ($cache_tags) {
-            $this->cacheTags = Cache::mergeTags($this->cacheTags, $cache_tags);
+            $this->cache_tags = Cache::merge_tags($this->cache_tags, $cache_tags);
         }
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function mergeCacheMaxAge($max_age)
+    public function merge_cache_max_age($max_age)
     {
-        $this->cacheMaxAge = Cache::mergeMaxAges($this->cacheMaxAge, $max_age);
+        $this->cache_max_age = Cache::merge_max_ages($this->cache_max_age, $max_age);
         return $this;
     }
-
 }

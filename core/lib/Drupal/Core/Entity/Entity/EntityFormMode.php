@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Entity;
 
-use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\Entity\EntityDisplayModeBase;
-use Drupal\Core\Entity\EntityFormModeInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\Entity\Attribute\Config_Entity_Type;
+use Drupal\Core\Entity\Entity_Display_Mode_Base;
+use Drupal\Core\Entity\Entity_Form_Mode_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines the entity form mode configuration entity class.
  *
@@ -26,30 +24,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getAllFormModes()
  * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getFormModes()
  */
-#[ConfigEntityType(
-    id: 'entity_form_mode',
-    label: new TranslatableMarkup('Form mode'),
-    entity_keys: [
-    'id' => 'id',
-    'label' => 'label',
-    'description' => 'description',
-  ],
-    constraints: [
-    'ImmutableProperties' => [
-      'properties' => [
-        'id',
-        'targetEntityType',
-      ],
-    ],
-  ],
-    config_export: [
-    'id',
-    'label',
-    'description',
-    'targetEntityType',
-    'cache',
-  ],
-)]
-class EntityFormMode extends EntityDisplayModeBase implements EntityFormModeInterface
+#[Config_Entity_Type(id: 'entity_form_mode', label: new Translatable_Markup('Form mode'), entity_keys: ['id' => 'id', 'label' => 'label', 'description' => 'description'], constraints: ['ImmutableProperties' => ['properties' => ['id', 'targetEntityType']]], config_export: ['id', 'label', 'description', 'targetEntityType', 'cache'])]
+class Entity_Form_Mode extends Entity_Display_Mode_Base implements Entity_Form_Mode_Interface
 {
 }

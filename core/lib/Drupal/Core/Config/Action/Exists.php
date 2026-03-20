@@ -1,13 +1,10 @@
 <?php
 
 // phpcs:ignoreFile
-
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Action;
 
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
-
+use Drupal\Core\Config\Entity\Config_Entity_Interface;
 /**
  * @internal
  *   This API is experimental.
@@ -18,7 +15,6 @@ enum Exists
     case ErrorIfNotExists;
     case ReturnEarlyIfExists;
     case ReturnEarlyIfNotExists;
-
     /**
      * Determines if an action should return early depending on $entity.
      *
@@ -33,15 +29,13 @@ enum Exists
      * @throws \Drupal\Core\Config\Action\ConfigActionException
      *   Thrown depending on $entity and the value of $this.
      */
-    public function returnEarly(string $configName, ?ConfigEntityInterface $entity): bool
+    public function return_early(string $config_name, ?Config_Entity_Interface $entity): bool
     {
         return match (true) {
-            $this === self::ReturnEarlyIfExists && $entity !== null,
-            $this === self::ReturnEarlyIfNotExists && $entity === null => true,
-            $this === self::ErrorIfExists && $entity !== null => throw new ConfigActionException(sprintf('Entity %s exists', $configName)),
-            $this === self::ErrorIfNotExists && $entity === null => throw new ConfigActionException(sprintf('Entity %s does not exist', $configName)),
-            default => false
+            $this === self::ReturnEarlyIfExists && $entity !== null, $this === self::ReturnEarlyIfNotExists && $entity === null => true,
+            $this === self::ErrorIfExists && $entity !== null => throw new Config_Action_Exception(sprintf('Entity %s exists', $config_name)),
+            $this === self::ErrorIfNotExists && $entity === null => throw new Config_Action_Exception(sprintf('Entity %s does not exist', $config_name)),
+            default => false,
         };
     }
-
 }

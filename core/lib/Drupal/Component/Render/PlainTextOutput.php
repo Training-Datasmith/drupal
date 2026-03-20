@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Render;
 
 use Drupal\Component\Utility\Html;
-
 /**
  * Provides an output strategy for transforming HTML into simple plain text.
  *
@@ -15,14 +13,13 @@ use Drupal\Component\Utility\Html;
  * Returns a string with HTML tags stripped and HTML entities decoded suitable
  * for email or other non-HTML contexts.
  */
-class PlainTextOutput implements OutputStrategyInterface
+class Plain_Text_Output implements Output_Strategy_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function renderFromHtml($string): string
+    public static function render_from_html($string): string
     {
-        return Html::decodeEntities(strip_tags((string) $string));
+        return Html::decode_entities(strip_tags((string) $string));
     }
-
 }

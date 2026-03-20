@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Statement;
 
-use Drupal\Core\Database\FetchModeTrait;
-
+use Drupal\Core\Database\Fetch_Mode_Trait;
 /**
  * Base class for results of a data query language (DQL) statement.
  */
-abstract class ResultBase
+abstract class Result_Base
 {
-    use FetchModeTrait;
-
+    use Fetch_Mode_Trait;
     /**
      * Constructor.
      *
@@ -21,12 +18,9 @@ abstract class ResultBase
      * @param array{class: class-string, constructor_args: list<mixed>, column: int, cursor_orientation?: int, cursor_offset?: int} $fetchOptions
      *   The fetch options.
      */
-    public function __construct(
-        protected FetchAs $fetchMode,
-        protected array $fetchOptions,
-    ) {
+    public function __construct(protected Fetch_As $fetch_mode, protected array $fetch_options)
+    {
     }
-
     /**
      * Returns the number of rows matched by the last SQL statement.
      *
@@ -37,8 +31,7 @@ abstract class ResultBase
      *
      * @throws \Drupal\Core\Database\RowCountException
      */
-    abstract public function rowCount(): ?int;
-
+    abstract public function row_count(): ?int;
     /**
      * Sets the default fetch mode for this result set.
      *
@@ -50,8 +43,7 @@ abstract class ResultBase
      * @return bool
      *   TRUE if successful, FALSE if not.
      */
-    abstract public function setFetchMode(FetchAs $mode, array $fetchOptions): bool;
-
+    abstract public function set_fetch_mode(Fetch_As $mode, array $fetch_options): bool;
     /**
      * Fetches the next row.
      *
@@ -63,8 +55,7 @@ abstract class ResultBase
      * @return array|object|int|float|string|bool|null
      *   A result, formatted according to $mode, or FALSE on failure.
      */
-    abstract public function fetch(FetchAs $mode, array $fetchOptions): array|object|int|float|string|bool|null;
-
+    abstract public function fetch(Fetch_As $mode, array $fetch_options): array|object|int|float|string|bool|null;
     /**
      * Returns an array containing all of the result set rows.
      *
@@ -76,15 +67,14 @@ abstract class ResultBase
      * @return array
      *   An array of results.
      */
-    public function fetchAll(FetchAs $mode, array $fetchOptions): array
+    public function fetch_all(Fetch_As $mode, array $fetch_options): array
     {
         $result = [];
-        while ($rowAssoc = $this->fetch(FetchAs::Associative, $fetchOptions)) {
-            $result[] = $this->assocToFetchMode($rowAssoc, $mode, $fetchOptions);
+        while ($row_assoc = $this->fetch(Fetch_As::Associative, $fetch_options)) {
+            $result[] = $this->assoc_to_fetch_mode($row_assoc, $mode, $fetch_options);
         }
         return $result;
     }
-
     /**
      * Returns the entire result set as a single associative array.
      *
@@ -105,15 +95,14 @@ abstract class ResultBase
      * @return array
      *   An associative array, or an empty array if there is no result set.
      */
-    public function fetchAllKeyed(int $keyIndex = 0, int $valueIndex = 1): array
+    public function fetch_all_keyed(int $key_index = 0, int $value_index = 1): array
     {
         $result = [];
-        while ($record = $this->fetch(FetchAs::List, [])) {
-            $result[$record[$keyIndex]] = $record[$valueIndex];
+        while ($record = $this->fetch(Fetch_As::List, [])) {
+            $result[$record[$key_index]] = $record[$value_index];
         }
         return $result;
     }
-
     /**
      * Returns the result set as an associative array keyed by the given column.
      *
@@ -133,13 +122,12 @@ abstract class ResultBase
      * @return array
      *   An associative array, or an empty array if there is no result set.
      */
-    public function fetchAllAssoc(string $column, FetchAs $mode, array $fetchOptions): array
+    public function fetch_all_assoc(string $column, Fetch_As $mode, array $fetch_options): array
     {
         $result = [];
-        while ($rowAssoc = $this->fetch(FetchAs::Associative, [])) {
-            $result[$rowAssoc[$column]] = $this->assocToFetchMode($rowAssoc, $mode, $fetchOptions);
+        while ($row_assoc = $this->fetch(Fetch_As::Associative, [])) {
+            $result[$row_assoc[$column]] = $this->assoc_to_fetch_mode($row_assoc, $mode, $fetch_options);
         }
         return $result;
     }
-
 }

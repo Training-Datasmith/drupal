@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Importer;
 
-use Drupal\Core\Config\ConfigImporter;
-use Drupal\Core\Installer\InstallerKernel;
-
+use Drupal\Core\Config\Config_Importer;
+use Drupal\Core\Installer\Installer_Kernel;
 /**
  * Methods for running the ConfigImporter in a batch.
  *
  * @see \Drupal\Core\Config\ConfigImporter
  */
-class ConfigImporterBatch
+class Config_Importer_Batch
 {
     /**
      * Processes the config import batch and persists the importer.
@@ -24,22 +22,20 @@ class ConfigImporterBatch
      * @param array $context
      *   The batch context.
      */
-    public static function process(ConfigImporter $config_importer, $sync_step, array &$context): void
+    public static function process(Config_Importer $config_importer, $sync_step, array &$context): void
     {
         if (!isset($context['sandbox']['config_importer'])) {
             $context['sandbox']['config_importer'] = $config_importer;
         }
-
         $config_importer = $context['sandbox']['config_importer'];
-        $config_importer->doSyncStep($sync_step, $context);
-        if ($errors = $config_importer->getErrors()) {
+        $config_importer->do_sync_step($sync_step, $context);
+        if ($errors = $config_importer->get_errors()) {
             if (!isset($context['results']['errors'])) {
                 $context['results']['errors'] = [];
             }
             $context['results']['errors'] = array_merge($errors, $context['results']['errors']);
         }
     }
-
     /**
      * Finish batch.
      *
@@ -60,24 +56,20 @@ class ConfigImporterBatch
             if (!empty($results['errors'])) {
                 $logger = \Drupal::logger('config_sync');
                 foreach ($results['errors'] as $error) {
-                    $messenger->addError($error);
+                    $messenger->add_error($error);
                     $logger->error($error);
                 }
-                $messenger->addWarning(t('The configuration was imported with errors.'));
-            } elseif (!InstallerKernel::installationAttempted()) {
+                $messenger->add_warning(t('The configuration was imported with errors.'));
+            } elseif (!Installer_Kernel::installation_attempted()) {
                 // Display a success message when not installing Drupal.
-                $messenger->addStatus(t('The configuration was imported successfully.'));
+                $messenger->add_status(t('The configuration was imported successfully.'));
             }
         } else {
             // An error occurred.
             // $operations contains the operations that remained unprocessed.
             $error_operation = reset($operations);
-            $message = t('An error occurred while processing %error_operation with arguments: @arguments', [
-              '%error_operation' => $error_operation[0],
-              '@arguments' => print_r($error_operation[1], true),
-            ]);
-            $messenger->addError($message);
+            $message = t('An error occurred while processing %error_operation with arguments: @arguments', ['%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], true)]);
+            $messenger->add_error($message);
         }
     }
-
 }

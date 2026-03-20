@@ -1,46 +1,44 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core;
 
-use Drupal\Core\Cache\Context\CacheContextsPass;
-use Drupal\Core\Cache\ListCacheBinsPass;
-use Drupal\Core\DependencyInjection\Compiler\AuthenticationProviderPass;
-use Drupal\Core\DependencyInjection\Compiler\BackendCompilerPass;
-use Drupal\Core\DependencyInjection\Compiler\BackwardsCompatibilityClassLoaderPass;
-use Drupal\Core\DependencyInjection\Compiler\CorsCompilerPass;
-use Drupal\Core\DependencyInjection\Compiler\DeprecatedServicePass;
-use Drupal\Core\DependencyInjection\Compiler\DevelopmentSettingsPass;
-use Drupal\Core\DependencyInjection\Compiler\LoggerAwarePass;
-use Drupal\Core\DependencyInjection\Compiler\ModifyServiceDefinitionsPass;
-use Drupal\Core\DependencyInjection\Compiler\ProxyServicesPass;
-use Drupal\Core\DependencyInjection\Compiler\RegisterAccessChecksPass;
-use Drupal\Core\DependencyInjection\Compiler\RegisterEventSubscribersPass;
-use Drupal\Core\DependencyInjection\Compiler\RegisterServicesForDestructionPass;
-use Drupal\Core\DependencyInjection\Compiler\RegisterStreamWrappersPass;
-use Drupal\Core\DependencyInjection\Compiler\StackedKernelPass;
-use Drupal\Core\DependencyInjection\Compiler\StackedSessionHandlerPass;
-use Drupal\Core\DependencyInjection\Compiler\SuperUserAccessPolicyPass;
-use Drupal\Core\DependencyInjection\Compiler\TaggedHandlersPass;
-use Drupal\Core\DependencyInjection\Compiler\TwigExtensionPass;
-use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\DependencyInjection\ServiceModifierInterface;
-use Drupal\Core\DependencyInjection\ServiceProviderInterface;
-use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
-use Drupal\Core\Hook\HookCollectorKeyValueWritePass;
-use Drupal\Core\Hook\HookCollectorPass;
-use Drupal\Core\Hook\ThemeHookCollectorPass;
-use Drupal\Core\Plugin\PluginManagerPass;
-use Drupal\Core\PreWarm\PreWarmableInterface;
-use Drupal\Core\Queue\QueueFactoryInterface;
-use Drupal\Core\Render\MainContent\MainContentRenderersPass;
+use Drupal\Core\Cache\Context\Cache_Contexts_Pass;
+use Drupal\Core\Cache\List_Cache_Bins_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Authentication_Provider_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Backend_Compiler_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Backwards_Compatibility_Class_Loader_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Cors_Compiler_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Deprecated_Service_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Development_Settings_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Logger_Aware_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Modify_Service_Definitions_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Proxy_Services_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Register_Access_Checks_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Register_Event_Subscribers_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Register_Services_For_Destruction_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Register_Stream_Wrappers_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Stacked_Kernel_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Stacked_Session_Handler_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Super_User_Access_Policy_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Tagged_Handlers_Pass;
+use Drupal\Core\Dependency_Injection\Compiler\Twig_Extension_Pass;
+use Drupal\Core\Dependency_Injection\Container_Builder;
+use Drupal\Core\Dependency_Injection\Service_Modifier_Interface;
+use Drupal\Core\Dependency_Injection\Service_Provider_Interface;
+use Drupal\Core\Extension\Module_Uninstall_Validator_Interface;
+use Drupal\Core\Hook\Hook_Collector_Key_Value_Write_Pass;
+use Drupal\Core\Hook\Hook_Collector_Pass;
+use Drupal\Core\Hook\Theme_Hook_Collector_Pass;
+use Drupal\Core\Plugin\Plugin_Manager_Pass;
+use Drupal\Core\Pre_Warm\Pre_Warmable_Interface;
+use Drupal\Core\Queue\Queue_Factory_Interface;
+use Drupal\Core\Render\Main_Content\Main_Content_Renderers_Pass;
 use Drupal\Core\Site\Settings;
-use Psr\Log\LoggerAwareInterface;
-use Symfony\Component\DependencyInjection\Compiler\PassConfig;
-use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-
+use Psr\Log\Logger_Aware_Interface;
+use Symfony\Component\Dependency_Injection\Compiler\Pass_Config;
+use Symfony\Component\Event_Dispatcher\Dependency_Injection\Register_Listeners_Pass;
+use Symfony\Component\Event_Dispatcher\Event_Subscriber_Interface;
 /**
  * ServiceProvider class for mandatory core services.
  *
@@ -53,107 +51,75 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * @ingroup container
  */
-class CoreServiceProvider implements ServiceProviderInterface, ServiceModifierInterface
+class Core_Service_Provider implements Service_Provider_Interface, Service_Modifier_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function register(ContainerBuilder $container): void
+    public function register(Container_Builder $container): void
     {
         // Only register the private file stream wrapper if a file path has been
         // set.
         if (Settings::get('file_private_path')) {
-            $container->register('stream_wrapper.private', \Drupal\Core\StreamWrapper\PrivateStream::class)
-              ->addTag('stream_wrapper', ['scheme' => 'private']);
+            $container->register('stream_wrapper.private', \Drupal\Core\Stream_Wrapper\Private_Stream::class)->add_tag('stream_wrapper', ['scheme' => 'private']);
         }
-
-        $container->addCompilerPass(new HookCollectorPass());
-        $container->addCompilerPass(new ThemeHookCollectorPass());
-        $container->addCompilerPass(new HookCollectorKeyValueWritePass(), PassConfig::TYPE_OPTIMIZE);
+        $container->add_compiler_pass(new Hook_Collector_Pass());
+        $container->add_compiler_pass(new Theme_Hook_Collector_Pass());
+        $container->add_compiler_pass(new Hook_Collector_Key_Value_Write_Pass(), Pass_Config::TYPE_OPTIMIZE);
         // Add the compiler pass that lets service providers modify existing
         // service definitions. This pass must come before all passes operating on
         // services so that later list-building passes are operating on the
         // post-alter services list.
-        $container->addCompilerPass(new ModifyServiceDefinitionsPass());
-
-        $container->addCompilerPass(new DevelopmentSettingsPass());
-
-        $container->addCompilerPass(new SuperUserAccessPolicyPass());
-
-        $container->addCompilerPass(new ProxyServicesPass());
-
-        $container->addCompilerPass(new BackendCompilerPass());
-
-        $container->addCompilerPass(new CorsCompilerPass());
-
-        $container->addCompilerPass(new StackedKernelPass());
-
-        $container->addCompilerPass(new StackedSessionHandlerPass());
-
-        $container->addCompilerPass(new MainContentRenderersPass());
-
+        $container->add_compiler_pass(new Modify_Service_Definitions_Pass());
+        $container->add_compiler_pass(new Development_Settings_Pass());
+        $container->add_compiler_pass(new Super_User_Access_Policy_Pass());
+        $container->add_compiler_pass(new Proxy_Services_Pass());
+        $container->add_compiler_pass(new Backend_Compiler_Pass());
+        $container->add_compiler_pass(new Cors_Compiler_Pass());
+        $container->add_compiler_pass(new Stacked_Kernel_Pass());
+        $container->add_compiler_pass(new Stacked_Session_Handler_Pass());
+        $container->add_compiler_pass(new Main_Content_Renderers_Pass());
         // Collect tagged handler services as method calls on consumer services.
-        $container->addCompilerPass(new TaggedHandlersPass());
-        $container->addCompilerPass(new RegisterStreamWrappersPass());
-        $container->addCompilerPass(new TwigExtensionPass());
-
+        $container->add_compiler_pass(new Tagged_Handlers_Pass());
+        $container->add_compiler_pass(new Register_Stream_Wrappers_Pass());
+        $container->add_compiler_pass(new Twig_Extension_Pass());
         // Add a compiler pass for registering event subscribers.
-        $container->addCompilerPass(new RegisterEventSubscribersPass(new RegisterListenersPass()), PassConfig::TYPE_AFTER_REMOVING);
-        $container->addCompilerPass(new LoggerAwarePass(), PassConfig::TYPE_AFTER_REMOVING);
-
-        $container->addCompilerPass(new RegisterAccessChecksPass());
-
+        $container->add_compiler_pass(new Register_Event_Subscribers_Pass(new Register_Listeners_Pass()), Pass_Config::TYPE_AFTER_REMOVING);
+        $container->add_compiler_pass(new Logger_Aware_Pass(), Pass_Config::TYPE_AFTER_REMOVING);
+        $container->add_compiler_pass(new Register_Access_Checks_Pass());
         // Add a compiler pass for registering services needing destruction.
-        $container->addCompilerPass(new RegisterServicesForDestructionPass());
-
+        $container->add_compiler_pass(new Register_Services_For_Destruction_Pass());
         // Add the compiler pass that will process the tagged services.
-        $container->addCompilerPass(new ListCacheBinsPass());
-        $container->addCompilerPass(new CacheContextsPass());
-        $container->addCompilerPass(new AuthenticationProviderPass());
-
+        $container->add_compiler_pass(new List_Cache_Bins_Pass());
+        $container->add_compiler_pass(new Cache_Contexts_Pass());
+        $container->add_compiler_pass(new Authentication_Provider_Pass());
         // Register plugin managers.
-        $container->addCompilerPass(new PluginManagerPass());
-
-        $container->addCompilerPass(new DeprecatedServicePass());
-
+        $container->add_compiler_pass(new Plugin_Manager_Pass());
+        $container->add_compiler_pass(new Deprecated_Service_Pass());
         // Collect moved classes for the backwards compatibility class loader.
-        $container->addCompilerPass(new BackwardsCompatibilityClassLoaderPass());
-
-        $container->registerForAutoconfiguration(EventSubscriberInterface::class)
-          ->addTag('event_subscriber');
-
-        $container->registerForAutoconfiguration(LoggerAwareInterface::class)
-          ->addTag('logger_aware');
-
-        $container->registerForAutoconfiguration(QueueFactoryInterface::class)
-          ->addTag('queue_factory');
-
-        $container->registerForAutoconfiguration(PreWarmableInterface::class)
-          ->addTag('cache_prewarmable');
-
-        $container->registerForAutoconfiguration(ModuleUninstallValidatorInterface::class)
-          ->addTag('module_install.uninstall_validator');
+        $container->add_compiler_pass(new Backwards_Compatibility_Class_Loader_Pass());
+        $container->register_for_autoconfiguration(Event_Subscriber_Interface::class)->add_tag('event_subscriber');
+        $container->register_for_autoconfiguration(Logger_Aware_Interface::class)->add_tag('logger_aware');
+        $container->register_for_autoconfiguration(Queue_Factory_Interface::class)->add_tag('queue_factory');
+        $container->register_for_autoconfiguration(Pre_Warmable_Interface::class)->add_tag('cache_prewarmable');
+        $container->register_for_autoconfiguration(Module_Uninstall_Validator_Interface::class)->add_tag('module_install.uninstall_validator');
     }
-
     /**
      * Alters the UUID service to use the most efficient method available.
      *
      * @param \Drupal\Core\DependencyInjection\ContainerBuilder $container
      *   The container builder.
      */
-    public function alter(ContainerBuilder $container): void
+    public function alter(Container_Builder $container): void
     {
-        $uuid_service = $container->getDefinition('uuid');
+        $uuid_service = $container->get_definition('uuid');
         // Debian/Ubuntu uses the (broken) OSSP extension as their UUID
         // implementation. The OSSP implementation is not compatible with the
         // PECL functions.
         if (function_exists('uuid_create') && !function_exists('uuid_make')) {
-            $uuid_service->setClass(\Drupal\Component\Uuid\Pecl::class);
-        }
-        // Try to use the COM implementation for Windows users.
-        elseif (function_exists('com_create_guid')) {
-            $uuid_service->setClass(\Drupal\Component\Uuid\Com::class);
+            $uuid_service->set_class(\Drupal\Component\Uuid\Pecl::class);
+        } elseif (function_exists('com_create_guid')) {
+            $uuid_service->set_class(\Drupal\Component\Uuid\Com::class);
         }
     }
-
 }

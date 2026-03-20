@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Interface defining a service that logically groups a collection of assets.
  */
-interface AssetCollectionGrouperInterface
+interface Asset_Collection_Grouper_Interface
 {
     /**
      * Groups a collection of assets into logical groups of asset collections.
@@ -19,5 +18,4 @@ interface AssetCollectionGrouperInterface
      *   A sorted array of asset groups.
      */
     public function group(array $assets);
-
 }

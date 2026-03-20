@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Entity;
 
-use Drupal\Core\Entity\Attribute\ConfigEntityType;
-use Drupal\Core\Entity\EntityDisplayModeBase;
-use Drupal\Core\Entity\EntityViewModeInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\Entity\Attribute\Config_Entity_Type;
+use Drupal\Core\Entity\Entity_Display_Mode_Base;
+use Drupal\Core\Entity\Entity_View_Mode_Interface;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines the entity view mode configuration entity class.
  *
@@ -28,30 +26,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getViewModes()
  * @see hook_entity_view_mode_info_alter()
  */
-#[ConfigEntityType(
-    id: 'entity_view_mode',
-    label: new TranslatableMarkup('View mode'),
-    entity_keys: [
-    'id' => 'id',
-    'label' => 'label',
-    'description' => 'description',
-  ],
-    constraints: [
-    'ImmutableProperties' => [
-      'properties' => [
-        'id',
-        'targetEntityType',
-      ],
-    ],
-  ],
-    config_export: [
-    'id',
-    'label',
-    'description',
-    'targetEntityType',
-    'cache',
-  ],
-)]
-class EntityViewMode extends EntityDisplayModeBase implements EntityViewModeInterface
+#[Config_Entity_Type(id: 'entity_view_mode', label: new Translatable_Markup('View mode'), entity_keys: ['id' => 'id', 'label' => 'label', 'description' => 'description'], constraints: ['ImmutableProperties' => ['properties' => ['id', 'targetEntityType']]], config_export: ['id', 'label', 'description', 'targetEntityType', 'cache'])]
+class Entity_View_Mode extends Entity_Display_Mode_Base implements Entity_View_Mode_Interface
 {
 }

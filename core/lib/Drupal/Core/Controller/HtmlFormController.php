@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface;
-
+use Drupal\Core\Form\Form_Builder_Interface;
+use Drupal\Core\Routing\Route_Match_Interface;
+use Symfony\Component\Http_Kernel\Controller\Argument_Resolver_Interface;
 /**
  * Wrapping controller for forms that serve as the main page body.
  */
-class HtmlFormController extends FormController
+class Html_Form_Controller extends Form_Controller
 {
     /**
      * Constructs a new \Drupal\Core\Controller\HtmlFormController object.
@@ -23,25 +21,22 @@ class HtmlFormController extends FormController
      * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
      *   The class resolver.
      */
-    public function __construct(ArgumentResolverInterface $argument_resolver, FormBuilderInterface $form_builder, protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+    public function __construct(Argument_Resolver_Interface $argument_resolver, Form_Builder_Interface $form_builder, protected \Drupal\Core\Dependency_Injection\Class_Resolver_Interface $class_resolver)
     {
         parent::__construct($argument_resolver, $form_builder);
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getFormArgument(RouteMatchInterface $route_match)
+    protected function get_form_argument(Route_Match_Interface $route_match)
     {
-        return $route_match->getRouteObject()->getDefault('_form');
+        return $route_match->get_route_object()->get_default('_form');
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getFormObject(RouteMatchInterface $route_match, $form_arg)
+    protected function get_form_object(Route_Match_Interface $route_match, $form_arg)
     {
-        return $this->classResolver->getInstanceFromDefinition($form_arg);
+        return $this->class_resolver->get_instance_from_definition($form_arg);
     }
-
 }

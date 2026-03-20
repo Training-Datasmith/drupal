@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime;
 
 /**
  * Provides an interface defining a date formatter.
  */
-interface DateFormatterInterface
+interface Date_Formatter_Interface
 {
     /**
      * Formats a date, using a date type or a custom date format string.
@@ -40,7 +39,6 @@ interface DateFormatterInterface
      *   contain user input, this value should be escaped when output.
      */
     public function format($timestamp, $type = 'medium', $format = '', $timezone = null, $langcode = null);
-
     /**
      * Formats a time interval with the requested granularity.
      *
@@ -65,8 +63,7 @@ interface DateFormatterInterface
      *
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatDiff()
      */
-    public function formatInterval($interval, $granularity = 2, $langcode = null);
-
+    public function format_interval($interval, $granularity = 2, $langcode = null);
     /**
      * Provides values for all date formatting characters for a given timestamp.
      *
@@ -84,8 +81,7 @@ interface DateFormatterInterface
      *
      * @see date()
      */
-    public function getSampleDateFormats($langcode = null, $timestamp = null, $timezone = null);
-
+    public function get_sample_date_formats($langcode = null, $timestamp = null, $timezone = null);
     /**
      * Formats the time difference from the current request time to a timestamp.
      *
@@ -114,8 +110,7 @@ interface DateFormatterInterface
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatDiff()
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatTimeDiffSince()
      */
-    public function formatTimeDiffUntil($timestamp, $options = []);
-
+    public function format_time_diff_until($timestamp, $options = []);
     /**
      * Formats the time difference from a timestamp to the current request time.
      *
@@ -144,8 +139,7 @@ interface DateFormatterInterface
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatDiff()
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatTimeDiffUntil()
      */
-    public function formatTimeDiffSince($timestamp, $options = []);
-
+    public function format_time_diff_since($timestamp, $options = []);
     /**
      * Formats a time interval between two timestamps.
      *
@@ -176,6 +170,5 @@ interface DateFormatterInterface
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatTimeDiffSince()
      * @see \Drupal\Core\Datetime\DateFormatterInterface::formatTimeDiffUntil()
      */
-    public function formatDiff($from, $to, $options = []);
-
+    public function format_diff($from, $to, $options = []);
 }

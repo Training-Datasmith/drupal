@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Field\Field_Definition_Interface;
+use Drupal\Core\Field\Field_Item_List_Interface;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Defines an interface for entity access control handlers.
  */
-interface EntityAccessControlHandlerInterface
+interface Entity_Access_Control_Handler_Interface
 {
     /**
      * Checks access to an operation on a given entity or entity translation.
@@ -38,8 +36,7 @@ interface EntityAccessControlHandlerInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function access(EntityInterface $entity, $operation, ?AccountInterface $account = null, $return_as_object = false);
-
+    public function access(Entity_Interface $entity, $operation, ?Account_Interface $account = null, $return_as_object = false);
     /**
      * Checks access to create an entity.
      *
@@ -62,13 +59,11 @@ interface EntityAccessControlHandlerInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function createAccess($entity_bundle = null, ?AccountInterface $account = null, array $context = [], $return_as_object = false);
-
+    public function create_access($entity_bundle = null, ?Account_Interface $account = null, array $context = [], $return_as_object = false);
     /**
      * Clears all cached access checks.
      */
-    public function resetCache();
-
+    public function reset_cache();
     /**
      * Sets the module handler for this access control handler.
      *
@@ -77,8 +72,7 @@ interface EntityAccessControlHandlerInterface
      *
      * @return $this
      */
-    public function setModuleHandler(ModuleHandlerInterface $module_handler);
-
+    public function set_module_handler(Module_Handler_Interface $module_handler);
     /**
      * Checks access to an operation on a given entity field.
      *
@@ -112,6 +106,5 @@ interface EntityAccessControlHandlerInterface
      *
      * @see \Drupal\Core\Entity\EntityAccessControlHandlerInterface::access()
      */
-    public function fieldAccess($operation, FieldDefinitionInterface $field_definition, ?AccountInterface $account = null, ?FieldItemListInterface $items = null, $return_as_object = false);
-
+    public function field_access($operation, Field_Definition_Interface $field_definition, ?Account_Interface $account = null, ?Field_Item_List_Interface $items = null, $return_as_object = false);
 }

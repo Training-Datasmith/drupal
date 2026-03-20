@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
-use Drupal\Core\Cache\Context\CacheContextsManager;
-use Symfony\Component\HttpFoundation\RequestStack;
-
+use Drupal\Core\Cache\Context\Cache_Contexts_Manager;
+use Symfony\Component\Http_Foundation\Request_Stack;
 /**
  * Defines the variation cache factory.
  *
  * @ingroup cache
  */
-class VariationCacheFactory implements VariationCacheFactoryInterface
+class Variation_Cache_Factory implements Variation_Cache_Factory_Interface
 {
     /**
      * Instantiated variation cache bins.
@@ -20,7 +18,6 @@ class VariationCacheFactory implements VariationCacheFactoryInterface
      * @var \Drupal\Core\Cache\VariationCacheInterface[]
      */
     protected $bins = [];
-
     /**
      * Constructs a new VariationCacheFactory object.
      *
@@ -31,22 +28,17 @@ class VariationCacheFactory implements VariationCacheFactoryInterface
      * @param \Drupal\Core\Cache\Context\CacheContextsManager $cacheContextsManager
      *   The cache contexts manager.
      */
-    public function __construct(
-        protected RequestStack $requestStack,
-        protected CacheFactoryInterface $cacheFactory,
-        protected CacheContextsManager $cacheContextsManager,
-    ) {
+    public function __construct(protected Request_Stack $request_stack, protected Cache_Factory_Interface $cache_factory, protected Cache_Contexts_Manager $cache_contexts_manager)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function get($bin)
     {
         if (!isset($this->bins[$bin])) {
-            $this->bins[$bin] = new VariationCache($this->requestStack, $this->cacheFactory->get($bin), $this->cacheContextsManager);
+            $this->bins[$bin] = new Variation_Cache($this->request_stack, $this->cache_factory->get($bin), $this->cache_contexts_manager);
         }
         return $this->bins[$bin];
     }
-
 }

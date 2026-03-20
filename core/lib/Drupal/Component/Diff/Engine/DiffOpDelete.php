@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff\Engine;
 
 /**
@@ -9,14 +8,12 @@ namespace Drupal\Component\Diff\Engine;
  * @private
  * @subpackage DifferenceEngine
  */
-class DiffOpDelete extends DiffOp
+class Diff_Op_Delete extends Diff_Op
 {
     public $type = 'delete';
-
     public function __construct($lines)
     {
         $this->orig = $lines;
         $this->closing = false;
     }
-
 }

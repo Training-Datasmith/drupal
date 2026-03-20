@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Core\Session\Account_Interface;
 /**
  * Interface for checking access.
  *
  * @ingroup entity_api
  */
-interface AccessibleInterface
+interface Accessible_Interface
 {
     /**
      * Checks data value access.
@@ -31,6 +29,5 @@ interface AccessibleInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function access($operation, ?AccountInterface $account = null, $return_as_object = false);
-
+    public function access($operation, ?Account_Interface $account = null, $return_as_object = false);
 }

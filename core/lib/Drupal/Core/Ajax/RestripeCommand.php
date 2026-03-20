@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -15,7 +14,7 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class RestripeCommand implements CommandInterface
+class Restripe_Command implements Command_Interface
 {
     /**
      * Constructs a RestripeCommand object.
@@ -31,19 +30,14 @@ class RestripeCommand implements CommandInterface
          * this value can be NULL.
          */
         protected $selector
-    ) {
+    )
+    {
     }
-
     /**
      * Implements Drupal\Core\Ajax\CommandInterface:render().
      */
     public function render(): array
     {
-
-        return [
-          'command' => 'restripe',
-          'selector' => $this->selector,
-        ];
+        return ['command' => 'restripe', 'selector' => $this->selector];
     }
-
 }

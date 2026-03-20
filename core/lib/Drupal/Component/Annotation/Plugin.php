@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation;
 
-use Drupal\Component\Utility\NestedArray;
-
+use Drupal\Component\Utility\Nested_Array;
 /**
  * Defines a Plugin annotation object.
  *
@@ -19,7 +17,7 @@ use Drupal\Component\Utility\NestedArray;
  *
  * @Annotation
  */
-class Plugin implements AnnotationInterface
+class Plugin implements Annotation_Interface
 {
     /**
      * The plugin definition read from the class annotation.
@@ -27,7 +25,6 @@ class Plugin implements AnnotationInterface
      * @var array
      */
     protected $definition;
-
     /**
      * Constructs a Plugin object.
      *
@@ -38,11 +35,10 @@ class Plugin implements AnnotationInterface
     {
         $reflection = new \ReflectionClass($this);
         // Only keep actual default values by ignoring NULL values.
-        $defaults = array_filter($reflection->getDefaultProperties(), fn ($value) => $value !== null);
+        $defaults = array_filter($reflection->get_default_properties(), fn($value) => $value !== null);
         $parsed_values = $this->parse($values);
-        $this->definition = NestedArray::mergeDeepArray([$defaults, $parsed_values], true);
+        $this->definition = Nested_Array::merge_deep_array([$defaults, $parsed_values], true);
     }
-
     /**
      * Parses an annotation into its definition.
      *
@@ -56,7 +52,7 @@ class Plugin implements AnnotationInterface
     {
         $definitions = [];
         foreach ($values as $key => $value) {
-            if ($value instanceof AnnotationInterface) {
+            if ($value instanceof Annotation_Interface) {
                 $definitions[$key] = $value->get();
             } elseif (is_array($value)) {
                 $definitions[$key] = $this->parse($value);
@@ -66,7 +62,6 @@ class Plugin implements AnnotationInterface
         }
         return $definitions;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -74,45 +69,39 @@ class Plugin implements AnnotationInterface
     {
         return $this->definition;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getProvider()
+    public function get_provider()
     {
         return $this->definition['provider'] ?? false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setProvider($provider): void
+    public function set_provider($provider): void
     {
         $this->definition['provider'] = $provider;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function get_id()
     {
         return $this->definition['id'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getClass()
+    public function get_class()
     {
         return $this->definition['class'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setClass($class): void
+    public function set_class($class): void
     {
         $this->definition['class'] = $class;
     }
-
 }

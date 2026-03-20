@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime;
 
 /**
@@ -18,7 +17,7 @@ namespace Drupal\Core\Datetime;
  * translation should be hard-coded and wrapped in t() so the translation system
  * will be able to process them.
  */
-class DateHelper
+class Date_Helper
 {
     /**
      * Constructs an untranslated array of month names.
@@ -26,52 +25,24 @@ class DateHelper
      * @return array
      *   An array of month names.
      */
-    public static function monthNamesUntranslated(): array
+    public static function month_names_untranslated(): array
     {
         // Force the key to use the correct month value, rather than
         // starting with zero.
-        return [
-          1  => 'January',
-          2  => 'February',
-          3  => 'March',
-          4  => 'April',
-          5  => 'May',
-          6  => 'June',
-          7  => 'July',
-          8  => 'August',
-          9  => 'September',
-          10 => 'October',
-          11 => 'November',
-          12 => 'December',
-        ];
+        return [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
     }
-
     /**
      * Constructs an untranslated array of abbreviated month names.
      *
      * @return array
      *   An array of month names.
      */
-    public static function monthNamesAbbrUntranslated(): array
+    public static function month_names_abbr_untranslated(): array
     {
         // Force the key to use the correct month value, rather than
         // starting with zero.
-        return [
-          1  => 'Jan',
-          2  => 'Feb',
-          3  => 'Mar',
-          4  => 'Apr',
-          5  => 'May',
-          6  => 'Jun',
-          7  => 'Jul',
-          8  => 'Aug',
-          9  => 'Sep',
-          10 => 'Oct',
-          11 => 'Nov',
-          12 => 'Dec',
-        ];
+        return [1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'];
     }
-
     /**
      * Returns a translated array of month names.
      *
@@ -82,28 +53,14 @@ class DateHelper
      * @return array
      *   An array of month names.
      */
-    public static function monthNames($required = false): array
+    public static function month_names($required = false): array
     {
         // Force the key to use the correct month value, rather than
         // starting with zero.
-        $month_names = [
-          1  => t('January', [], ['context' => 'Long month name']),
-          2  => t('February', [], ['context' => 'Long month name']),
-          3  => t('March', [], ['context' => 'Long month name']),
-          4  => t('April', [], ['context' => 'Long month name']),
-          5  => t('May', [], ['context' => 'Long month name']),
-          6  => t('June', [], ['context' => 'Long month name']),
-          7  => t('July', [], ['context' => 'Long month name']),
-          8  => t('August', [], ['context' => 'Long month name']),
-          9  => t('September', [], ['context' => 'Long month name']),
-          10 => t('October', [], ['context' => 'Long month name']),
-          11 => t('November', [], ['context' => 'Long month name']),
-          12 => t('December', [], ['context' => 'Long month name']),
-        ];
+        $month_names = [1 => t('January', [], ['context' => 'Long month name']), 2 => t('February', [], ['context' => 'Long month name']), 3 => t('March', [], ['context' => 'Long month name']), 4 => t('April', [], ['context' => 'Long month name']), 5 => t('May', [], ['context' => 'Long month name']), 6 => t('June', [], ['context' => 'Long month name']), 7 => t('July', [], ['context' => 'Long month name']), 8 => t('August', [], ['context' => 'Long month name']), 9 => t('September', [], ['context' => 'Long month name']), 10 => t('October', [], ['context' => 'Long month name']), 11 => t('November', [], ['context' => 'Long month name']), 12 => t('December', [], ['context' => 'Long month name'])];
         $none = ['' => ''];
         return !$required ? $none + $month_names : $month_names;
     }
-
     /**
      * Constructs a translated array of month name abbreviations.
      *
@@ -114,47 +71,24 @@ class DateHelper
      * @return array
      *   An array of month abbreviations.
      */
-    public static function monthNamesAbbr($required = false): array
+    public static function month_names_abbr($required = false): array
     {
         // Force the key to use the correct month value, rather than
         // starting with zero.
-        $month_names = [
-          1  => t('Jan', [], ['context' => 'Abbreviated month name']),
-          2  => t('Feb', [], ['context' => 'Abbreviated month name']),
-          3  => t('Mar', [], ['context' => 'Abbreviated month name']),
-          4  => t('Apr', [], ['context' => 'Abbreviated month name']),
-          5  => t('May', [], ['context' => 'Abbreviated month name']),
-          6  => t('Jun', [], ['context' => 'Abbreviated month name']),
-          7  => t('Jul', [], ['context' => 'Abbreviated month name']),
-          8  => t('Aug', [], ['context' => 'Abbreviated month name']),
-          9  => t('Sep', [], ['context' => 'Abbreviated month name']),
-          10 => t('Oct', [], ['context' => 'Abbreviated month name']),
-          11 => t('Nov', [], ['context' => 'Abbreviated month name']),
-          12 => t('Dec', [], ['context' => 'Abbreviated month name']),
-        ];
+        $month_names = [1 => t('Jan', [], ['context' => 'Abbreviated month name']), 2 => t('Feb', [], ['context' => 'Abbreviated month name']), 3 => t('Mar', [], ['context' => 'Abbreviated month name']), 4 => t('Apr', [], ['context' => 'Abbreviated month name']), 5 => t('May', [], ['context' => 'Abbreviated month name']), 6 => t('Jun', [], ['context' => 'Abbreviated month name']), 7 => t('Jul', [], ['context' => 'Abbreviated month name']), 8 => t('Aug', [], ['context' => 'Abbreviated month name']), 9 => t('Sep', [], ['context' => 'Abbreviated month name']), 10 => t('Oct', [], ['context' => 'Abbreviated month name']), 11 => t('Nov', [], ['context' => 'Abbreviated month name']), 12 => t('Dec', [], ['context' => 'Abbreviated month name'])];
         $none = ['' => ''];
         return !$required ? $none + $month_names : $month_names;
     }
-
     /**
      * Constructs an untranslated array of week days.
      *
      * @return array
      *   An array of week day names
      */
-    public static function weekDaysUntranslated(): array
+    public static function week_days_untranslated(): array
     {
-        return [
-          'Sunday',
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-        ];
+        return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     }
-
     /**
      * Returns a translated array of week names.
      *
@@ -165,21 +99,12 @@ class DateHelper
      * @return array
      *   An array of week day names
      */
-    public static function weekDays($required = false): array
+    public static function week_days($required = false): array
     {
-        $weekdays = [
-          t('Sunday'),
-          t('Monday'),
-          t('Tuesday'),
-          t('Wednesday'),
-          t('Thursday'),
-          t('Friday'),
-          t('Saturday'),
-        ];
+        $weekdays = [t('Sunday'), t('Monday'), t('Tuesday'), t('Wednesday'), t('Thursday'), t('Friday'), t('Saturday')];
         $none = ['' => ''];
         return !$required ? $none + $weekdays : $weekdays;
     }
-
     /**
      * Constructs a translated array of week day abbreviations.
      *
@@ -190,21 +115,12 @@ class DateHelper
      * @return array
      *   An array of week day abbreviations
      */
-    public static function weekDaysAbbr($required = false): array
+    public static function week_days_abbr($required = false): array
     {
-        $weekdays = [
-          t('Sun', [], ['context' => 'Abbreviated weekday']),
-          t('Mon', [], ['context' => 'Abbreviated weekday']),
-          t('Tue', [], ['context' => 'Abbreviated weekday']),
-          t('Wed', [], ['context' => 'Abbreviated weekday']),
-          t('Thu', [], ['context' => 'Abbreviated weekday']),
-          t('Fri', [], ['context' => 'Abbreviated weekday']),
-          t('Sat', [], ['context' => 'Abbreviated weekday']),
-        ];
+        $weekdays = [t('Sun', [], ['context' => 'Abbreviated weekday']), t('Mon', [], ['context' => 'Abbreviated weekday']), t('Tue', [], ['context' => 'Abbreviated weekday']), t('Wed', [], ['context' => 'Abbreviated weekday']), t('Thu', [], ['context' => 'Abbreviated weekday']), t('Fri', [], ['context' => 'Abbreviated weekday']), t('Sat', [], ['context' => 'Abbreviated weekday'])];
         $none = ['' => ''];
         return !$required ? $none + $weekdays : $weekdays;
     }
-
     /**
      * Constructs a translated array of 2-letter week day abbreviations.
      *
@@ -215,21 +131,12 @@ class DateHelper
      * @return array
      *   An array of week day 2 letter abbreviations
      */
-    public static function weekDaysAbbr2($required = false): array
+    public static function week_days_abbr2($required = false): array
     {
-        $weekdays = [
-          t('Su', [], ['context' => 'Abbreviated weekday']),
-          t('Mo', [], ['context' => 'Abbreviated weekday']),
-          t('Tu', [], ['context' => 'Abbreviated weekday']),
-          t('We', [], ['context' => 'Abbreviated weekday']),
-          t('Th', [], ['context' => 'Abbreviated weekday']),
-          t('Fr', [], ['context' => 'Abbreviated weekday']),
-          t('Sa', [], ['context' => 'Abbreviated weekday']),
-        ];
+        $weekdays = [t('Su', [], ['context' => 'Abbreviated weekday']), t('Mo', [], ['context' => 'Abbreviated weekday']), t('Tu', [], ['context' => 'Abbreviated weekday']), t('We', [], ['context' => 'Abbreviated weekday']), t('Th', [], ['context' => 'Abbreviated weekday']), t('Fr', [], ['context' => 'Abbreviated weekday']), t('Sa', [], ['context' => 'Abbreviated weekday'])];
         $none = ['' => ''];
         return !$required ? $none + $weekdays : $weekdays;
     }
-
     /**
      * Constructs a translated array of 1-letter week day abbreviations.
      *
@@ -240,21 +147,12 @@ class DateHelper
      * @return array
      *   An array of week day 1 letter abbreviations
      */
-    public static function weekDaysAbbr1($required = false): array
+    public static function week_days_abbr1($required = false): array
     {
-        $weekdays = [
-          t('S', [], ['context' => 'Abbreviated 1 letter weekday Sunday']),
-          t('M', [], ['context' => 'Abbreviated 1 letter weekday Monday']),
-          t('T', [], ['context' => 'Abbreviated 1 letter weekday Tuesday']),
-          t('W', [], ['context' => 'Abbreviated 1 letter weekday Wednesday']),
-          t('T', [], ['context' => 'Abbreviated 1 letter weekday Thursday']),
-          t('F', [], ['context' => 'Abbreviated 1 letter weekday Friday']),
-          t('S', [], ['context' => 'Abbreviated 1 letter weekday Saturday']),
-        ];
+        $weekdays = [t('S', [], ['context' => 'Abbreviated 1 letter weekday Sunday']), t('M', [], ['context' => 'Abbreviated 1 letter weekday Monday']), t('T', [], ['context' => 'Abbreviated 1 letter weekday Tuesday']), t('W', [], ['context' => 'Abbreviated 1 letter weekday Wednesday']), t('T', [], ['context' => 'Abbreviated 1 letter weekday Thursday']), t('F', [], ['context' => 'Abbreviated 1 letter weekday Friday']), t('S', [], ['context' => 'Abbreviated 1 letter weekday Saturday'])];
         $none = ['' => ''];
         return !$required ? $none + $weekdays : $weekdays;
     }
-
     /**
      * Reorders weekdays to match the first day of the week.
      *
@@ -266,7 +164,7 @@ class DateHelper
      *   keys will remain unchanged. For example, if the first day of the week is
      *   set to be Monday, the array keys will be [1, 2, 3, 4, 5, 6, 0].
      */
-    public static function weekDaysOrdered(array $weekdays): array
+    public static function week_days_ordered(array $weekdays): array
     {
         $first_day = \Drupal::config('system.date')->get('first_day');
         if ($first_day > 0) {
@@ -285,7 +183,6 @@ class DateHelper
         }
         return $weekdays;
     }
-
     /**
      * Constructs an array of years in a specified range.
      *
@@ -303,19 +200,18 @@ class DateHelper
     public static function years($min = 0, $max = 0, $required = false)
     {
         // Ensure $min and $max are valid values.
-        $requestTime = \Drupal::time()->getRequestTime();
+        $request_time = \Drupal::time()->get_request_time();
         if (empty($min)) {
-            $min = intval(date('Y', $requestTime) - 3);
+            $min = intval(date('Y', $request_time) - 3);
         }
         if (empty($max)) {
-            $max = intval(date('Y', $requestTime) + 3);
+            $max = intval(date('Y', $request_time) + 3);
         }
         $none = ['' => ''];
         $range = range($min, $max);
         $range = array_combine($range, $range);
         return !$required ? $none + $range : $range;
     }
-
     /**
      * Constructs an array of days in a month.
      *
@@ -336,7 +232,7 @@ class DateHelper
     {
         // If we have a month and year, find the right last day of the month.
         if (!empty($month) && !empty($year)) {
-            $date = new DrupalDateTime($year . '-' . $month . '-01 00:00:00', 'UTC');
+            $date = new Drupal_Date_Time($year . '-' . $month . '-01 00:00:00', 'UTC');
             $max = $date->format('t');
         }
         // If there is no month and year given, default to 31.
@@ -348,7 +244,6 @@ class DateHelper
         $range = array_combine($range, $range);
         return !$required ? $none + $range : $range;
     }
-
     /**
      * Constructs an array of hours.
      *
@@ -373,13 +268,12 @@ class DateHelper
             $max = 23;
         }
         for ($i = $min; $i <= $max; $i++) {
-            $formatted = ($format == 'H' || $format == 'h') ? DrupalDateTime::datePad($i) : $i;
+            $formatted = $format == 'H' || $format == 'h' ? Drupal_Date_Time::date_pad($i) : $i;
             $hours[$i] = $formatted;
         }
         $none = ['' => ''];
         return !$required ? $none + $hours : $hours;
     }
-
     /**
      * Constructs an array of minutes.
      *
@@ -403,13 +297,12 @@ class DateHelper
             $increment = 1;
         }
         for ($i = 0; $i < 60; $i += $increment) {
-            $formatted = $format == 'i' ? DrupalDateTime::datePad($i) : $i;
+            $formatted = $format == 'i' ? Drupal_Date_Time::date_pad($i) : $i;
             $minutes[$i] = $formatted;
         }
         $none = ['' => ''];
         return !$required ? $none + $minutes : $minutes;
     }
-
     /**
      * Constructs an array of seconds.
      *
@@ -433,13 +326,12 @@ class DateHelper
             $increment = 1;
         }
         for ($i = 0; $i < 60; $i += $increment) {
-            $formatted = $format == 's' ? DrupalDateTime::datePad($i) : $i;
+            $formatted = $format == 's' ? Drupal_Date_Time::date_pad($i) : $i;
             $seconds[$i] = $formatted;
         }
         $none = ['' => ''];
         return !$required ? $none + $seconds : $seconds;
     }
-
     /**
      * Constructs an array of AM and PM options.
      *
@@ -453,13 +345,9 @@ class DateHelper
     public static function ampm($required = false): array
     {
         $none = ['' => ''];
-        $ampm = [
-          'am' => t('am', [], ['context' => 'ampm']),
-          'pm' => t('pm', [], ['context' => 'ampm']),
-        ];
+        $ampm = ['am' => t('am', [], ['context' => 'ampm']), 'pm' => t('pm', [], ['context' => 'ampm'])];
         return !$required ? $none + $ampm : $ampm;
     }
-
     /**
      * Identifies the number of days in a month for a date.
      *
@@ -470,18 +358,17 @@ class DateHelper
      * @return int
      *   The number of days in the month, or null if the $date has errors.
      */
-    public static function daysInMonth($date = null)
+    public static function days_in_month($date = null)
     {
         $date ??= 'now';
-        if (!$date instanceof DrupalDateTime) {
-            $date = new DrupalDateTime($date);
+        if (!$date instanceof Drupal_Date_Time) {
+            $date = new Drupal_Date_Time($date);
         }
-        if (!$date->hasErrors()) {
+        if (!$date->has_errors()) {
             return $date->format('t');
         }
         return null;
     }
-
     /**
      * Identifies the number of days in a year for a date.
      *
@@ -492,13 +379,13 @@ class DateHelper
      * @return int|null
      *   The number of days in the year, or null if the $date has errors.
      */
-    public static function daysInYear($date = null): ?int
+    public static function days_in_year($date = null): ?int
     {
         $date ??= 'now';
-        if (!$date instanceof DrupalDateTime) {
-            $date = new DrupalDateTime($date);
+        if (!$date instanceof Drupal_Date_Time) {
+            $date = new Drupal_Date_Time($date);
         }
-        if (!$date->hasErrors()) {
+        if (!$date->has_errors()) {
             if ($date->format('L')) {
                 return 366;
             }
@@ -506,7 +393,6 @@ class DateHelper
         }
         return null;
     }
-
     /**
      * Returns day of week for a given date (0 = Sunday).
      *
@@ -517,18 +403,17 @@ class DateHelper
      * @return int|null
      *   The number of the day in the week, or null if the $date has errors.
      */
-    public static function dayOfWeek($date = null)
+    public static function day_of_week($date = null)
     {
         $date ??= 'now';
-        if (!$date instanceof DrupalDateTime) {
-            $date = new DrupalDateTime($date);
+        if (!$date instanceof Drupal_Date_Time) {
+            $date = new Drupal_Date_Time($date);
         }
-        if (!$date->hasErrors()) {
+        if (!$date->has_errors()) {
             return $date->format('w');
         }
         return null;
     }
-
     /**
      * Returns translated name of the day of week for a given date.
      *
@@ -543,18 +428,17 @@ class DateHelper
      *   The name of the day in the week for that date, or null if the $date has
      *   errors.
      */
-    public static function dayOfWeekName($date = null, $abbr = true)
+    public static function day_of_week_name($date = null, $abbr = true)
     {
         $date ??= 'now';
-        if (!$date instanceof DrupalDateTime) {
-            $date = new DrupalDateTime($date);
+        if (!$date instanceof Drupal_Date_Time) {
+            $date = new Drupal_Date_Time($date);
         }
-        if (!$date->hasErrors()) {
-            $dow = self::dayOfWeek($date);
-            $days = $abbr ? self::weekDaysAbbr() : self::weekDays();
+        if (!$date->has_errors()) {
+            $dow = self::day_of_week($date);
+            $days = $abbr ? self::week_days_abbr() : self::week_days();
             return $days[$dow];
         }
         return null;
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Resolves the dependencies of asset (CSS/JavaScript) libraries.
  */
-interface LibraryDependencyResolverInterface
+interface Library_Dependency_Resolver_Interface
 {
     /**
      * Gets the given libraries with their dependencies.
@@ -22,8 +21,7 @@ interface LibraryDependencyResolverInterface
      *   A list of libraries, in the order they should be loaded, including their
      *   dependencies.
      */
-    public function getLibrariesWithDependencies(array $libraries);
-
+    public function get_libraries_with_dependencies(array $libraries);
     /**
      * Gets the minimal representative subset of the given libraries.
      *
@@ -43,6 +41,5 @@ interface LibraryDependencyResolverInterface
      * @return string[]
      *   A representative subset of the given set of libraries.
      */
-    public function getMinimalRepresentativeSubset(array $libraries);
-
+    public function get_minimal_representative_subset(array $libraries);
 }

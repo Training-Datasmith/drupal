@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action;
 
-use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Executable\ExecutableInterface;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Component\Plugin\Plugin_Inspection_Interface;
+use Drupal\Core\Executable\Executable_Interface;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Provides an interface for an Action plugin.
  *
@@ -30,7 +28,7 @@ use Drupal\Core\Session\AccountInterface;
  * @see \Drupal\Core\Action\ActionBase
  * @see plugin_api
  */
-interface ActionInterface extends ExecutableInterface, PluginInspectionInterface
+interface Action_Interface extends Executable_Interface, Plugin_Inspection_Interface
 {
     /**
      * Executes the plugin for an array of objects.
@@ -38,8 +36,7 @@ interface ActionInterface extends ExecutableInterface, PluginInspectionInterface
      * @param array $objects
      *   An array of entities.
      */
-    public function executeMultiple(array $objects);
-
+    public function execute_multiple(array $objects);
     /**
      * Checks object access.
      *
@@ -58,6 +55,5 @@ interface ActionInterface extends ExecutableInterface, PluginInspectionInterface
      *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
      *   access is either explicitly forbidden or "no opinion".
      */
-    public function access($object, ?AccountInterface $account = null, $return_as_object = false);
-
+    public function access($object, ?Account_Interface $account = null, $return_as_object = false);
 }

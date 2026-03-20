@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\DependencyInjection;
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
 /**
  * Provides interface to get an instance of a class with dependency injection.
  */
-interface ClassResolverInterface
+interface Class_Resolver_Interface
 {
     /**
      * Returns a class instance with a given class definition.
@@ -23,6 +22,5 @@ interface ClassResolverInterface
      * @throws \InvalidArgumentException
      *   If $class is not a valid service identifier and the class does not exist.
      */
-    public function getInstanceFromDefinition($definition);
-
+    public function get_instance_from_definition($definition);
 }

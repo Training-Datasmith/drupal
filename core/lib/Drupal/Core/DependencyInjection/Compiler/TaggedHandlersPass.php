@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\DependencyInjection\Compiler;
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
 use Drupal\Component\Utility\Reflection;
-use Symfony\Component\DependencyInjection\ChildDefinition;
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Exception\LogicException;
-use Symfony\Component\DependencyInjection\Reference;
-
+use Symfony\Component\Dependency_Injection\Child_Definition;
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
+use Symfony\Component\Dependency_Injection\Definition;
+use Symfony\Component\Dependency_Injection\Exception\LogicException;
+use Symfony\Component\Dependency_Injection\Reference;
 /**
  * Collects services to add/inject them into a consumer service.
  *
@@ -40,15 +38,14 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @see \Drupal\Core\DependencyInjection\Compiler\TaggedHandlersPass::process()
  */
-class TaggedHandlersPass implements CompilerPassInterface
+class Tagged_Handlers_Pass implements Compiler_Pass_Interface
 {
     /**
      * Service tag information keyed by tag name.
      *
      * @var array
      */
-    protected $tagCache = [];
-
+    protected $tag_cache = [];
     /**
      * {@inheritdoc}
      *
@@ -106,28 +103,26 @@ class TaggedHandlersPass implements CompilerPassInterface
      * @throws \Symfony\Component\DependencyInjection\Exception\LogicException
      *   If at least one tagged service is required but none are found.
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
         // Avoid using ContainerBuilder::findTaggedServiceIds() as that results in
         // additional iterations around all the service definitions.
-        foreach ($container->getDefinitions() as $id => $definition) {
-            foreach ($definition->getTags() as $name => $info) {
-                $this->tagCache[$name][$id] = $info;
+        foreach ($container->get_definitions() as $id => $definition) {
+            foreach ($definition->get_tags() as $name => $info) {
+                $this->tag_cache[$name][$id] = $info;
             }
         }
-
-        foreach ($this->tagCache['service_collector'] ?? [] as $consumer_id => $tags) {
+        foreach ($this->tag_cache['service_collector'] ?? [] as $consumer_id => $tags) {
             foreach ($tags as $pass) {
-                $this->processServiceCollectorPass($pass, $consumer_id, $container);
+                $this->process_service_collector_pass($pass, $consumer_id, $container);
             }
         }
-        foreach ($this->tagCache['service_id_collector'] ?? [] as $consumer_id => $tags) {
+        foreach ($this->tag_cache['service_id_collector'] ?? [] as $consumer_id => $tags) {
             foreach ($tags as $pass) {
-                $this->processServiceIdCollectorPass($pass, $consumer_id, $container);
+                $this->process_service_id_collector_pass($pass, $consumer_id, $container);
             }
         }
     }
-
     /**
      * Processes a service collector service pass.
      *
@@ -138,67 +133,56 @@ class TaggedHandlersPass implements CompilerPassInterface
      * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
      *   The service container.
      */
-    protected function processServiceCollectorPass(array $pass, $consumer_id, ContainerBuilder $container)
+    protected function process_service_collector_pass(array $pass, $consumer_id, Container_Builder $container)
     {
         $tag = $pass['tag'] ?? $consumer_id;
         $method_name = $pass['call'] ?? 'addHandler';
         $required = $pass['required'] ?? false;
-
         // Determine parameters.
-        $consumer = $container->getDefinition($consumer_id);
-        $method = new \ReflectionMethod($consumer->getClass(), $method_name);
-        $params = $method->getParameters();
-
+        $consumer = $container->get_definition($consumer_id);
+        $method = new \ReflectionMethod($consumer->get_class(), $method_name);
+        $params = $method->get_parameters();
         $interface_pos = 0;
         $id_pos = null;
         $priority_pos = null;
         $extra_params = [];
         foreach ($params as $pos => $param) {
-            $class = Reflection::getParameterClassName($param);
+            $class = Reflection::get_parameter_class_name($param);
             if ($class !== null) {
                 $interface = $class;
-            } elseif ($param->getName() === 'id') {
+            } elseif ($param->get_name() === 'id') {
                 $id_pos = $pos;
-            } elseif ($param->getName() === 'priority') {
+            } elseif ($param->get_name() === 'priority') {
                 $priority_pos = $pos;
             } else {
-                $extra_params[$param->getName()] = $pos;
+                $extra_params[$param->get_name()] = $pos;
             }
         }
         // Determine the ID.
-
         if (!isset($interface)) {
-            throw new LogicException(vsprintf("Service consumer '%s' class method %s::%s() has to type-hint an interface.", [
-              $consumer_id,
-              $consumer->getClass(),
-              $method_name,
-            ]));
+            throw new LogicException(vsprintf("Service consumer '%s' class method %s::%s() has to type-hint an interface.", [$consumer_id, $consumer->get_class(), $method_name]));
         }
-
         // Find all tagged handlers.
         $handlers = [];
         $extra_arguments = [];
-        foreach ($this->tagCache[$tag] ?? [] as $id => $attributes) {
+        foreach ($this->tag_cache[$tag] ?? [] as $id => $attributes) {
             // Validate the interface.
-            $handler = $container->getDefinition($id);
-            $class = $this->resolveDefinitionClass($handler, $container);
+            $handler = $container->get_definition($id);
+            $class = $this->resolve_definition_class($handler, $container);
             if (!is_a($class, $interface, true)) {
-                throw new LogicException("Service '$id' for consumer '$consumer_id' does not implement $interface.");
+                throw new LogicException("Service '{$id}' for consumer '{$consumer_id}' does not implement {$interface}.");
             }
             $handlers[$id] = $attributes[0]['priority'] ?? 0;
             // Keep track of other tagged handlers arguments.
             foreach ($extra_params as $name => $pos) {
-                $extra_arguments[$id][$pos] = $attributes[0][$name] ?? $params[$pos]->getDefaultValue();
+                $extra_arguments[$id][$pos] = $attributes[0][$name] ?? $params[$pos]->get_default_value();
             }
         }
-
         if ($required && empty($handlers)) {
             throw new LogicException(sprintf("At least one service tagged with '%s' is required.", $tag));
         }
-
         // Sort all handlers by priority.
         arsort($handlers, SORT_NUMERIC);
-
         // Add a method call for each handler to the consumer service
         // definition.
         foreach ($handlers as $id => $priority) {
@@ -217,10 +201,9 @@ class TaggedHandlersPass implements CompilerPassInterface
             }
             // Sort the arguments by position.
             ksort($arguments);
-            $consumer->addMethodCall($method_name, $arguments);
+            $consumer->add_method_call($method_name, $arguments);
         }
     }
-
     /**
      * Processes a service collector ID service pass.
      *
@@ -231,29 +214,23 @@ class TaggedHandlersPass implements CompilerPassInterface
      * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
      *   The service container.
      */
-    protected function processServiceIdCollectorPass(array $pass, $consumer_id, ContainerBuilder $container)
+    protected function process_service_id_collector_pass(array $pass, $consumer_id, Container_Builder $container)
     {
         $tag = $pass['tag'] ?? $consumer_id;
         $required = $pass['required'] ?? false;
-
-        $consumer = $container->getDefinition($consumer_id);
-
+        $consumer = $container->get_definition($consumer_id);
         // Find all tagged handlers.
         $handlers = [];
-        foreach ($this->tagCache[$tag] ?? [] as $id => $attributes) {
+        foreach ($this->tag_cache[$tag] ?? [] as $id => $attributes) {
             $handlers[$id] = $attributes[0]['priority'] ?? 0;
         }
-
         if ($required && empty($handlers)) {
             throw new LogicException(sprintf("At least one service tagged with '%s' is required.", $tag));
         }
-
         // Sort all handlers by priority.
         arsort($handlers, SORT_NUMERIC);
-
-        $consumer->addArgument(array_keys($handlers));
+        $consumer->add_argument(array_keys($handlers));
     }
-
     /**
      * Resolves the definition class.
      *
@@ -265,23 +242,19 @@ class TaggedHandlersPass implements CompilerPassInterface
      * @return class-string|null
      *   The resolved class-string or null if the class cannot be resolved.
      */
-    protected function resolveDefinitionClass(Definition $definition, ContainerBuilder $container): ?string
+    protected function resolve_definition_class(Definition $definition, Container_Builder $container): ?string
     {
-        $class = $definition->getClass();
+        $class = $definition->get_class();
         if ($class) {
             return $class;
         }
-
-        if (!$definition instanceof ChildDefinition) {
+        if (!$definition instanceof Child_Definition) {
             return null;
         }
-
-        if (!$container->hasDefinition($definition->getParent())) {
+        if (!$container->has_definition($definition->get_parent())) {
             return null;
         }
-
-        $parent = $container->getDefinition($definition->getParent());
-        return $this->resolveDefinitionClass($parent, $container);
+        $parent = $container->get_definition($definition->get_parent());
+        return $this->resolve_definition_class($parent, $container);
     }
-
 }

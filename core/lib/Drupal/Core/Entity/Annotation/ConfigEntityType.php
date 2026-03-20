@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Annotation;
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Defines a config entity type annotation object.
  *
@@ -17,27 +15,23 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @Annotation
  */
-class ConfigEntityType extends EntityType
+class Config_Entity_Type extends Entity_Type
 {
     /**
      * {@inheritdoc}
      */
     // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-    public $entity_type_class = \Drupal\Core\Config\Entity\ConfigEntityType::class;
-
+    public $entity_type_class = \Drupal\Core\Config\Entity\Config_Entity_Type::class;
     /**
      * {@inheritdoc}
      */
     public $group = 'configuration';
-
     /**
      * {@inheritdoc}
      */
     public function get()
     {
-        $this->definition['group_label'] = new TranslatableMarkup('Configuration', [], ['context' => 'Entity type group']);
-
+        $this->definition['group_label'] = new Translatable_Markup('Configuration', [], ['context' => 'Entity type group']);
         return parent::get();
     }
-
 }

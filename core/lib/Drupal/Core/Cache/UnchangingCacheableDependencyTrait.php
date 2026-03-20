@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -9,30 +8,27 @@ namespace Drupal\Core\Cache;
  *
  * @see \Drupal\Core\Cache\CacheableDependencyInterface
  */
-trait UnchangingCacheableDependencyTrait
+trait Unchanging_Cacheable_Dependency_Trait
 {
     /**
      * {@inheritdoc}
      */
-    public function getCacheContexts(): array
+    public function get_cache_contexts(): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheTags(): array
+    public function get_cache_tags(): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheMaxAge(): int
+    public function get_cache_max_age(): int
     {
         return Cache::PERMANENT;
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core;
 
 /**
@@ -14,11 +13,10 @@ namespace Drupal\Core;
  * Services using this interface need to be registered with the
  * "needs_destruction" tag.
  */
-interface DestructableInterface
+interface Destructable_Interface
 {
     /**
      * Performs destruct operations.
      */
     public function destruct();
-
 }

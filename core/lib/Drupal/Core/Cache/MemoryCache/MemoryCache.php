@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Core\Cache\MemoryCache;
+declare (strict_types=1);
+namespace Drupal\Core\Cache\Memory_Cache;
 
 use Drupal\Component\Assertion\Inspector;
-use Drupal\Core\Cache\MemoryBackend;
-
+use Drupal\Core\Cache\Memory_Backend;
 /**
  * Defines a memory cache implementation.
  *
@@ -14,7 +12,7 @@ use Drupal\Core\Cache\MemoryBackend;
  *
  * @ingroup cache
  */
-class MemoryCache extends MemoryBackend implements MemoryCacheInterface
+class Memory_Cache extends Memory_Backend implements Memory_Cache_Interface
 {
     /**
      * Prepares a cached item.
@@ -32,36 +30,25 @@ class MemoryCache extends MemoryBackend implements MemoryCacheInterface
      *   The item with data as appropriate or FALSE if there is no
      *   valid item to load.
      */
-    protected function prepareItem($cache, $allow_invalid = false): false|object
+    protected function prepare_item($cache, $allow_invalid = false): false|object
     {
         if (!isset($cache->data)) {
             return false;
         }
         // Check expire time.
-        $cache->valid = $cache->expire == static::CACHE_PERMANENT || $cache->expire >= $this->time->getRequestTime();
-
+        $cache->valid = $cache->expire == static::CACHE_PERMANENT || $cache->expire >= $this->time->get_request_time();
         if (!$allow_invalid && !$cache->valid) {
             return false;
         }
-
         return $cache;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function set($cid, $data, $expire = MemoryCacheInterface::CACHE_PERMANENT, array $tags = []): void
+    public function set($cid, $data, $expire = Memory_Cache_Interface::CACHE_PERMANENT, array $tags = []): void
     {
-        assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
+        assert(Inspector::assert_all_strings($tags), 'Cache tags must be strings.');
         $tags = array_unique($tags);
-
-        $this->cache[$cid] = (object) [
-          'cid' => $cid,
-          'data' => $data,
-          'created' => $this->time->getRequestTime(),
-          'expire' => $expire,
-          'tags' => $tags,
-        ];
+        $this->cache[$cid] = (object) ['cid' => $cid, 'data' => $data, 'created' => $this->time->get_request_time(), 'expire' => $expire, 'tags' => $tags];
     }
-
 }

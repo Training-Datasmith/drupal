@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\TypedData\ComplexDataInterface;
-
+use Drupal\Core\Typed_Data\Complex_Data_Interface;
 /**
  * Defines a generic configuration element that contains multiple properties.
  *
  * @implements \IteratorAggregate<string, \Drupal\Core\TypedData\TypedDataInterface>
  */
-abstract class ArrayElement extends Element implements \IteratorAggregate, TypedConfigInterface, ComplexDataInterface
+abstract class Array_Element extends Element implements \IteratorAggregate, Typed_Config_Interface, Complex_Data_Interface
 {
     /**
      * Parsed elements.
@@ -19,38 +17,35 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
      * @var array<string, \Drupal\Core\TypedData\TypedDataInterface>
      */
     protected $elements;
-
     /**
      * Determines if there is a translatable value.
      *
      * @return bool
      *   Returns true if a translatable element is found.
      */
-    public function hasTranslatableElements(): bool
+    public function has_translatable_elements(): bool
     {
         foreach ($this as $element) {
             // Early return if found.
-            if ($element->getDataDefinition()['translatable'] === true) {
+            if ($element->get_data_definition()['translatable'] === true) {
                 return true;
             }
-            if ($element instanceof ArrayElement && $element->hasTranslatableElements()) {
+            if ($element instanceof Array_Element && $element->has_translatable_elements()) {
                 return true;
             }
         }
         return false;
     }
-
     /**
      * Gets valid configuration data keys.
      *
      * @return array
      *   Array of valid configuration data keys.
      */
-    protected function getAllKeys()
+    protected function get_all_keys()
     {
         return is_array($this->value) ? array_keys($this->value) : [];
     }
-
     /**
      * Builds an array of contained elements.
      *
@@ -60,14 +55,13 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
     protected function parse()
     {
         $elements = [];
-        foreach ($this->getAllKeys() as $key) {
+        foreach ($this->get_all_keys() as $key) {
             $value = $this->value[$key] ?? null;
-            $definition = $this->getElementDefinition($key);
-            $elements[$key] = $this->createElement($definition, $value, $key);
+            $definition = $this->get_element_definition($key);
+            $elements[$key] = $this->create_element($definition, $value, $key);
         }
         return $elements;
     }
-
     /**
      * Gets data definition object for contained element.
      *
@@ -77,8 +71,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
      * @return \Drupal\Core\TypedData\DataDefinitionInterface
      *   The data definition object for the property.
      */
-    abstract protected function getElementDefinition($key);
-
+    abstract protected function get_element_definition($key);
     /**
      * {@inheritdoc}
      */
@@ -86,12 +79,12 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
     {
         $parts = explode('.', $name);
         $root_key = array_shift($parts);
-        $elements = $this->getElements();
+        $elements = $this->get_elements();
         if (isset($elements[$root_key])) {
             $element = $elements[$root_key];
             // If $property_name contained a dot recurse into the keys.
             while ($element && ($key = array_shift($parts)) !== null) {
-                if ($element instanceof TypedConfigInterface) {
+                if ($element instanceof Typed_Config_Interface) {
                     $element = $element->get($key);
                 } else {
                     $element = null;
@@ -101,47 +94,42 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
         if (isset($element)) {
             return $element;
         }
-        throw new \InvalidArgumentException("The configuration property $name doesn't exist.");
+        throw new \InvalidArgumentException("The configuration property {$name} doesn't exist.");
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getElements()
+    public function get_elements()
     {
         if (!isset($this->elements)) {
             $this->elements = $this->parse();
         }
         return $this->elements;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function is_empty()
     {
         return empty($this->value);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function toArray()
+    public function to_array()
     {
         return $this->value ?? [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function onChange($name): void
+    public function on_change($name): void
     {
         // Notify the parent of changes.
         if (isset($this->parent)) {
-            $this->parent->onChange($this->name);
+            $this->parent->on_change($this->name);
         }
     }
-
     /**
      * Retrieves the iterator for the object.
      *
@@ -150,9 +138,8 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
      */
     public function getIterator(): \ArrayIterator
     {
-        return new \ArrayIterator($this->getElements());
+        return new \ArrayIterator($this->get_elements());
     }
-
     /**
      * Creates a contained typed configuration object.
      *
@@ -167,11 +154,10 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
      * @return \Drupal\Core\TypedData\TypedDataInterface
      *   A typed data object created from the given parameters.
      */
-    protected function createElement(\Drupal\Core\TypedData\DataDefinitionInterface $definition, $value, $key)
+    protected function create_element(\Drupal\Core\Typed_Data\Data_Definition_Interface $definition, $value, $key)
     {
-        return $this->getTypedDataManager()->create($definition, $value, $key, $this);
+        return $this->get_typed_data_manager()->create($definition, $value, $key, $this);
     }
-
     /**
      * Creates a new data definition object from an array and configuration.
      *
@@ -186,22 +172,20 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
      * @return \Drupal\Core\TypedData\DataDefinitionInterface
      *   A data definition object for the given parameters.
      */
-    protected function buildDataDefinition(array $definition, $value, $key)
+    protected function build_data_definition(array $definition, $value, $key)
     {
-        return $this->getTypedDataManager()->buildDataDefinition($definition, $value, $key, $this);
+        return $this->get_typed_data_manager()->build_data_definition($definition, $value, $key, $this);
     }
-
     /**
      * Determines if this element allows NULL as a value.
      *
      * @return bool
      *   TRUE if NULL is a valid value, FALSE otherwise.
      */
-    public function isNullable()
+    public function is_nullable()
     {
         return isset($this->definition['nullable']) && $this->definition['nullable'] == true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -212,11 +196,10 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
         // notifying parents.
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getProperties($include_computed = false)
+    public function get_properties($include_computed = false)
     {
         $properties = [];
         foreach (array_keys($this->value) as $name) {
@@ -224,5 +207,4 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
         }
         return $properties;
     }
-
 }

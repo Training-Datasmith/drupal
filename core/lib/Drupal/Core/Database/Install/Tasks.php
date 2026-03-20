@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Install;
 
 use Drupal\Core\Database\Database;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
+use Drupal\Core\String_Translation\String_Translation_Trait;
+use Drupal\Core\String_Translation\Translatable_Markup;
 /**
  * Database installer structure.
  *
@@ -17,15 +15,13 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 abstract class Tasks
 {
-    use StringTranslationTrait;
-
+    use String_Translation_Trait;
     /**
      * The name of the PDO driver this database type requires.
      *
      * @var string
      */
-    protected $pdoDriver;
-
+    protected $pdo_driver;
     /**
      * Structure that describes each task to run.
      *
@@ -34,74 +30,23 @@ abstract class Tasks
      * Each value of the tasks array is an associative array defining the function
      * to call (optional) and any arguments to be passed to the function.
      */
-    protected $tasks = [
-      [
-        'function'    => 'checkEngineVersion',
-        'arguments'   => [],
-      ],
-      [
-        'arguments'   => [
-          'CREATE TABLE {drupal_install_test} (id int NOT NULL PRIMARY KEY)',
-          'Drupal can use CREATE TABLE database commands.',
-          'Failed to <strong>CREATE</strong> a test table on your database server with the command %query. The server reports the following message: %error.<p>Are you sure the configured username has the necessary permissions to create tables in the database?</p>',
-          true,
-        ],
-      ],
-      [
-        'arguments'   => [
-          'INSERT INTO {drupal_install_test} (id) VALUES (1)',
-          'Drupal can use INSERT database commands.',
-          'Failed to <strong>INSERT</strong> a value into a test table on your database server. We tried inserting a value with the command %query and the server reported the following error: %error.',
-        ],
-      ],
-      [
-        'arguments'   => [
-          'UPDATE {drupal_install_test} SET id = 2',
-          'Drupal can use UPDATE database commands.',
-          'Failed to <strong>UPDATE</strong> a value in a test table on your database server. We tried updating a value with the command %query and the server reported the following error: %error.',
-        ],
-      ],
-      [
-        'arguments'   => [
-          'DELETE FROM {drupal_install_test}',
-          'Drupal can use DELETE database commands.',
-          'Failed to <strong>DELETE</strong> a value from a test table on your database server. We tried deleting a value with the command %query and the server reported the following error: %error.',
-        ],
-      ],
-      [
-        'arguments'   => [
-          'DROP TABLE {drupal_install_test}',
-          'Drupal can use DROP TABLE database commands.',
-          'Failed to <strong>DROP</strong> a test table from your database server. We tried dropping a table with the command %query and the server reported the following error %error.',
-        ],
-      ],
-      [
-        'function'    => 'checkJsonSupport',
-        'arguments'   => [],
-      ],
-    ];
-
+    protected $tasks = [['function' => 'checkEngineVersion', 'arguments' => []], ['arguments' => ['CREATE TABLE {drupal_install_test} (id int NOT NULL PRIMARY KEY)', 'Drupal can use CREATE TABLE database commands.', 'Failed to <strong>CREATE</strong> a test table on your database server with the command %query. The server reports the following message: %error.<p>Are you sure the configured username has the necessary permissions to create tables in the database?</p>', true]], ['arguments' => ['INSERT INTO {drupal_install_test} (id) VALUES (1)', 'Drupal can use INSERT database commands.', 'Failed to <strong>INSERT</strong> a value into a test table on your database server. We tried inserting a value with the command %query and the server reported the following error: %error.']], ['arguments' => ['UPDATE {drupal_install_test} SET id = 2', 'Drupal can use UPDATE database commands.', 'Failed to <strong>UPDATE</strong> a value in a test table on your database server. We tried updating a value with the command %query and the server reported the following error: %error.']], ['arguments' => ['DELETE FROM {drupal_install_test}', 'Drupal can use DELETE database commands.', 'Failed to <strong>DELETE</strong> a value from a test table on your database server. We tried deleting a value with the command %query and the server reported the following error: %error.']], ['arguments' => ['DROP TABLE {drupal_install_test}', 'Drupal can use DROP TABLE database commands.', 'Failed to <strong>DROP</strong> a test table from your database server. We tried dropping a table with the command %query and the server reported the following error %error.']], ['function' => 'checkJsonSupport', 'arguments' => []]];
     /**
      * Results from tasks.
      *
      * @var array
      */
-    protected $results = [
-      'fail' => [],
-      'pass' => [],
-    ];
-
+    protected $results = ['fail' => [], 'pass' => []];
     /**
      * Ensure the PDO driver is supported by the version of PHP in use.
      *
      * @return bool
      *   TRUE if the PDO driver is supported, otherwise FALSE.
      */
-    protected function hasPdoDriver()
+    protected function has_pdo_driver()
     {
-        return in_array($this->pdoDriver, \PDO::getAvailableDrivers());
+        return in_array($this->pdo_driver, \PDO::get_available_drivers());
     }
-
     /**
      * Asserts test as failed.
      */
@@ -109,7 +54,6 @@ abstract class Tasks
     {
         $this->results['fail'][] = $message;
     }
-
     /**
      * Asserts test as a pass.
      */
@@ -117,7 +61,6 @@ abstract class Tasks
     {
         $this->results['pass'][] = $message;
     }
-
     /**
      * Checks whether Drupal is installable on the database.
      *
@@ -126,9 +69,8 @@ abstract class Tasks
      */
     public function installable()
     {
-        return $this->hasPdoDriver() && empty($this->error);
+        return $this->has_pdo_driver() && empty($this->error);
     }
-
     /**
      * Returns the human-readable name of the driver.
      *
@@ -136,7 +78,6 @@ abstract class Tasks
      *   The human-readable name of the driver.
      */
     abstract public function name();
-
     /**
      * Returns the minimum required version of the engine.
      *
@@ -144,18 +85,17 @@ abstract class Tasks
      *   A version string. If not NULL, it will be checked against the version
      *   reported by the Database engine using version_compare().
      */
-    public function minimumVersion()
+    public function minimum_version()
     {
         return null;
     }
-
     /**
      * Runs database tasks and tests to see if Drupal can run on the database.
      *
      * @return string[]
      *   A list of error messages.
      */
-    public function runTasks()
+    public function run_tasks()
     {
         // We need to establish a connection before we can run tests.
         if ($this->connect()) {
@@ -175,7 +115,6 @@ abstract class Tasks
         }
         return $this->results['fail'];
     }
-
     /**
      * Checks engine version requirements for the status report.
      *
@@ -184,12 +123,11 @@ abstract class Tasks
      * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
      *   A list of error messages.
      */
-    final public function engineVersionRequirementsCheck()
+    final public function engine_version_requirements_check()
     {
-        $this->checkEngineVersion();
+        $this->check_engine_version();
         return $this->results['fail'];
     }
-
     /**
      * Checks if we can connect to the database.
      *
@@ -200,37 +138,35 @@ abstract class Tasks
     {
         try {
             // This doesn't actually test the connection.
-            Database::setActiveConnection();
+            Database::set_active_connection();
             // Now actually do a check.
-            Database::getConnection();
+            Database::get_connection();
             $this->pass('Drupal can CONNECT to the database ok.');
         } catch (\Exception $e) {
-            $this->fail($this->t('Failed to connect to your database server. The server reports the following message: %error.<ul><li>Is the database server running?</li><li>Does the database exist, and have you entered the correct database name?</li><li>Have you entered the correct username and password?</li><li>Have you entered the correct database hostname and port number?</li></ul>', ['%error' => $e->getMessage()]));
+            $this->fail($this->t('Failed to connect to your database server. The server reports the following message: %error.<ul><li>Is the database server running?</li><li>Does the database exist, and have you entered the correct database name?</li><li>Have you entered the correct username and password?</li><li>Have you entered the correct database hostname and port number?</li></ul>', ['%error' => $e->get_message()]));
             return false;
         }
         return true;
     }
-
     /**
      * Ensures the database can execute commands with the current user.
      */
-    protected function runTestQuery($query, $pass, $fail, $fatal = false)
+    protected function run_test_query($query, $pass, $fail, $fatal = false)
     {
         try {
-            Database::getConnection()->query($query);
+            Database::get_connection()->query($query);
             // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
             $this->pass($this->t($pass));
         } catch (\Exception $e) {
             // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-            $this->fail($this->t($fail, ['%query' => $query, '%error' => $e->getMessage(), '%name' => $this->name()]));
+            $this->fail($this->t($fail, ['%query' => $query, '%error' => $e->get_message(), '%name' => $this->name()]));
             return !$fatal;
         }
     }
-
     /**
      * Checks the engine version.
      */
-    protected function checkEngineVersion()
+    protected function check_engine_version()
     {
         // Ensure that the database server has the right version.
         // We append '-AnyName' to the minimum version for comparison purposes, so
@@ -248,15 +184,10 @@ abstract class Tasks
         // of database servers should know what they're doing, whether Drupal warns
         // them or not.
         // @see https://www.php.net/manual/en/function.version-compare.php
-        if ($this->minimumVersion() && version_compare(Database::getConnection()->version(), $this->minimumVersion() . '-AnyName', '<')) {
-            $this->fail($this->t('The database server version %version is less than the minimum required version %minimum_version.', [
-              '%version' => Database::getConnection()
-                ->version(),
-              '%minimum_version' => $this->minimumVersion(),
-            ]));
+        if ($this->minimum_version() && version_compare(Database::get_connection()->version(), $this->minimum_version() . '-AnyName', '<')) {
+            $this->fail($this->t('The database server version %version is less than the minimum required version %minimum_version.', ['%version' => Database::get_connection()->version(), '%minimum_version' => $this->minimum_version()]));
         }
     }
-
     /**
      * Returns driver specific configuration options.
      *
@@ -266,88 +197,34 @@ abstract class Tasks
      * @return array
      *   The options form array.
      */
-    public function getFormOptions(array $database)
+    public function get_form_options(array $database)
     {
         // Use reflection to determine the driver name.
         // @todo https:///www.drupal.org/node/3123240 Provide a better way to get
         //   the driver name.
         $reflection = new \ReflectionClass($this);
-        $dir_parts = explode(DIRECTORY_SEPARATOR, dirname($reflection->getFileName(), 2));
+        $dir_parts = explode(DIRECTORY_SEPARATOR, dirname($reflection->get_file_name(), 2));
         $driver = array_pop($dir_parts);
-
-        $form['database'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Database name'),
-          '#default_value' => empty($database['database']) ? '' : $database['database'],
-          '#size' => 45,
-          '#required' => true,
-          '#states' => [
-            'required' => [
-              ':input[name=driver]' => ['value' => $driver],
-            ],
-          ],
-        ];
-
-        $form['username'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Database username'),
-          '#default_value' => empty($database['username']) ? '' : $database['username'],
-          '#size' => 45,
-          '#required' => true,
-          '#states' => [
-            'required' => [
-              ':input[name=driver]' => ['value' => $driver],
-            ],
-          ],
-        ];
-
-        $form['password'] = [
-          '#type' => 'password',
-          '#title' => $this->t('Database password'),
-          '#default_value' => empty($database['password']) ? '' : $database['password'],
-          '#required' => false,
-          '#size' => 45,
-        ];
-
-        $form['advanced_options'] = [
-          '#type' => 'details',
-          '#title' => $this->t('Advanced options'),
-          '#weight' => 10,
-        ];
-
+        $form['database'] = ['#type' => 'textfield', '#title' => $this->t('Database name'), '#default_value' => empty($database['database']) ? '' : $database['database'], '#size' => 45, '#required' => true, '#states' => ['required' => [':input[name=driver]' => ['value' => $driver]]]];
+        $form['username'] = ['#type' => 'textfield', '#title' => $this->t('Database username'), '#default_value' => empty($database['username']) ? '' : $database['username'], '#size' => 45, '#required' => true, '#states' => ['required' => [':input[name=driver]' => ['value' => $driver]]]];
+        $form['password'] = ['#type' => 'password', '#title' => $this->t('Database password'), '#default_value' => empty($database['password']) ? '' : $database['password'], '#required' => false, '#size' => 45];
+        $form['advanced_options'] = ['#type' => 'details', '#title' => $this->t('Advanced options'), '#weight' => 10];
         global $install_state;
         $profile = $install_state['parameters']['profile'] ?? null;
-        $db_prefix = ($profile == 'standard') ? 'drupal_' : $profile . '_';
-        $form['advanced_options']['prefix'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Table name prefix'),
-          '#default_value' => empty($database['prefix']) ? '' : $database['prefix'],
-          '#size' => 45,
-          '#description' => $this->t('If more than one application will be sharing this database, a unique table name prefix – such as %prefix – will prevent collisions.', ['%prefix' => $db_prefix]),
-          '#weight' => 10,
-        ];
-
+        $db_prefix = $profile == 'standard' ? 'drupal_' : $profile . '_';
+        $form['advanced_options']['prefix'] = ['#type' => 'textfield', '#title' => $this->t('Table name prefix'), '#default_value' => empty($database['prefix']) ? '' : $database['prefix'], '#size' => 45, '#description' => $this->t('If more than one application will be sharing this database, a unique table name prefix – such as %prefix – will prevent collisions.', ['%prefix' => $db_prefix]), '#weight' => 10];
         $form['advanced_options']['host'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Host'),
-          '#default_value' => empty($database['host']) ? 'localhost' : $database['host'],
-          '#size' => 45,
-          // Host names can be 255 characters long.
-          '#maxlength' => 255,
-          '#required' => true,
+            '#type' => 'textfield',
+            '#title' => $this->t('Host'),
+            '#default_value' => empty($database['host']) ? 'localhost' : $database['host'],
+            '#size' => 45,
+            // Host names can be 255 characters long.
+            '#maxlength' => 255,
+            '#required' => true,
         ];
-
-        $form['advanced_options']['port'] = [
-          '#type' => 'number',
-          '#title' => $this->t('Port number'),
-          '#default_value' => empty($database['port']) ? '' : $database['port'],
-          '#min' => 0,
-          '#max' => 65535,
-        ];
-
+        $form['advanced_options']['port'] = ['#type' => 'number', '#title' => $this->t('Port number'), '#default_value' => empty($database['port']) ? '' : $database['port'], '#min' => 0, '#max' => 65535];
         return $form;
     }
-
     /**
      * Validates driver specific configuration settings.
      *
@@ -360,18 +237,15 @@ abstract class Tasks
      * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
      *   An array of driver configuration errors, keyed by form element name.
      */
-    public function validateDatabaseSettings(array $database)
+    public function validate_database_settings(array $database)
     {
         $errors = [];
-
         // Verify the table prefix.
         if (!empty($database['prefix']) && is_string($database['prefix']) && !preg_match('/^[A-Za-z0-9_.]+$/', $database['prefix'])) {
             $errors[$database['driver'] . '][prefix'] = $this->t('The database table prefix you have entered, %prefix, is invalid. The table prefix can only contain alphanumeric characters, periods, or underscores.', ['%prefix' => $database['prefix']]);
         }
-
         return $errors;
     }
-
     /**
      * Translates a string to the current language or to a given language.
      *
@@ -390,9 +264,8 @@ abstract class Tasks
     protected function t($string, array $args = [], array $options = [])
     {
         // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        return new TranslatableMarkup($string, $args, $options);
+        return new Translatable_Markup($string, $args, $options);
     }
-
     /**
      * Determines if there is an active connection.
      *
@@ -400,32 +273,29 @@ abstract class Tasks
      *   TRUE if there is at least one database connection established, FALSE
      *   otherwise.
      */
-    protected function isConnectionActive()
+    protected function is_connection_active()
     {
-        return Database::isActiveConnection();
+        return Database::is_active_connection();
     }
-
     /**
      * Returns the database connection.
      *
      * @return \Drupal\Core\Database\Connection
      *   The database connection.
      */
-    protected function getConnection()
+    protected function get_connection()
     {
-        return Database::getConnection();
+        return Database::get_connection();
     }
-
     /**
      * Checks the database json support.
      */
-    protected function checkJsonSupport()
+    protected function check_json_support()
     {
-        if ($this->getConnection()->hasJson()) {
+        if ($this->get_connection()->has_json()) {
             $this->pass($this->t('Database connection supports the JSON type.'));
         } else {
             $this->fail($this->t('<a href="https://www.drupal.org/docs/system-requirements">Database connection does not support JSON.</a>'));
         }
     }
-
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Render;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Render;
  *
  * @see \Drupal\Component\Render\MarkupInterface
  */
-trait MarkupTrait
+trait Markup_Trait
 {
     /**
      * The safe string.
@@ -17,7 +16,6 @@ trait MarkupTrait
      * @var string
      */
     protected $string;
-
     /**
      * Creates a Markup object if necessary.
      *
@@ -31,9 +29,9 @@ trait MarkupTrait
      * @return string|\Drupal\Component\Render\MarkupInterface
      *   A safe string.
      */
-    public static function create($string): \Drupal\Component\Render\MarkupInterface|string|self
+    public static function create($string): \Drupal\Component\Render\Markup_Interface|string|self
     {
-        if ($string instanceof MarkupInterface) {
+        if ($string instanceof Markup_Interface) {
             return $string;
         }
         $string = (string) $string;
@@ -44,7 +42,6 @@ trait MarkupTrait
         $safe_string->string = $string;
         return $safe_string;
     }
-
     /**
      * Returns the string version of the Markup object.
      *
@@ -55,7 +52,6 @@ trait MarkupTrait
     {
         return $this->string;
     }
-
     /**
      * Returns the string length.
      *
@@ -66,7 +62,6 @@ trait MarkupTrait
     {
         return mb_strlen($this->string);
     }
-
     /**
      * Returns a representation of the object for use in JSON serialization.
      *
@@ -77,5 +72,4 @@ trait MarkupTrait
     {
         return $this->__toString();
     }
-
 }

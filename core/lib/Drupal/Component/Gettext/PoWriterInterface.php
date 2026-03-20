@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Gettext;
 
 /**
  * Shared interface definition for all Gettext PO Writers.
  */
-interface PoWriterInterface extends PoMetadataInterface
+interface Po_Writer_Interface extends Po_Metadata_Interface
 {
     /**
      * Writes the given item.
@@ -15,8 +14,7 @@ interface PoWriterInterface extends PoMetadataInterface
      * @param PoItem $item
      *   One specific item to write.
      */
-    public function writeItem(PoItem $item);
-
+    public function write_item(Po_Item $item);
     /**
      * Writes all or the given amount of items.
      *
@@ -26,6 +24,5 @@ interface PoWriterInterface extends PoMetadataInterface
      *   Amount of items to read from $reader to write. If -1, all items are
      *   read from $reader.
      */
-    public function writeItems(PoReaderInterface $reader, $count = -1);
-
+    public function write_items(Po_Reader_Interface $reader, $count = -1);
 }

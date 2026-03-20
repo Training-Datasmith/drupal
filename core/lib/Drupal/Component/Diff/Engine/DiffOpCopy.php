@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Diff\Engine;
 
 /**
@@ -9,10 +8,9 @@ namespace Drupal\Component\Diff\Engine;
  * @private
  * @subpackage DifferenceEngine
  */
-class DiffOpCopy extends DiffOp
+class Diff_Op_Copy extends Diff_Op
 {
     public $type = 'copy';
-
     public function __construct($orig, $closing = false)
     {
         if (!is_array($closing)) {
@@ -21,5 +19,4 @@ class DiffOpCopy extends DiffOp
         $this->orig = $orig;
         $this->closing = $closing;
     }
-
 }

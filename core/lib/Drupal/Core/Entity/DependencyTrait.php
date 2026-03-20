@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
 /**
  * Provides a trait for managing an object's dependencies.
  */
-trait DependencyTrait
+trait Dependency_Trait
 {
     /**
      * The object's dependencies.
@@ -15,7 +14,6 @@ trait DependencyTrait
      * @var array
      */
     protected $dependencies = [];
-
     /**
      * Adds a dependency.
      *
@@ -30,7 +28,7 @@ trait DependencyTrait
      *
      * @return $this
      */
-    protected function addDependency($type, $name)
+    protected function add_dependency($type, $name)
     {
         if (empty($this->dependencies[$type])) {
             $this->dependencies[$type] = [$name];
@@ -45,7 +43,6 @@ trait DependencyTrait
         }
         return $this;
     }
-
     /**
      * Adds multiple dependencies.
      *
@@ -63,13 +60,12 @@ trait DependencyTrait
      *
      * @see \Drupal\Core\Entity\DependencyTrait::addDependency
      */
-    protected function addDependencies(array $dependencies)
+    protected function add_dependencies(array $dependencies)
     {
         foreach ($dependencies as $dependency_type => $list) {
             foreach ($list as $name) {
-                $this->addDependency($dependency_type, $name);
+                $this->add_dependency($dependency_type, $name);
             }
         }
     }
-
 }

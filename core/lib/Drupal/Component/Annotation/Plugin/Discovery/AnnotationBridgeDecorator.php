@@ -1,19 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation\Plugin\Discovery;
 
-use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
-use Drupal\Component\Plugin\Discovery\DiscoveryTrait;
-
+use Drupal\Component\Plugin\Discovery\Discovery_Interface;
+use Drupal\Component\Plugin\Discovery\Discovery_Trait;
 /**
  * Ensures that all definitions are run through the annotation process.
  */
-class AnnotationBridgeDecorator implements DiscoveryInterface
+class Annotation_Bridge_Decorator implements Discovery_Interface
 {
-    use DiscoveryTrait;
-
+    use Discovery_Trait;
     /**
      * ObjectDefinitionDiscoveryDecorator constructor.
      *
@@ -25,31 +22,30 @@ class AnnotationBridgeDecorator implements DiscoveryInterface
      *   \Drupal\Component\Annotation\AnnotationInterface.
      */
     public function __construct(
-        protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated,
+        protected \Drupal\Component\Plugin\Discovery\Discovery_Interface $decorated,
         /**
          * The name of the annotation that contains the plugin definition.
          */
-        protected $pluginDefinitionAnnotationName
-    ) {
+        protected $plugin_definition_annotation_name
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getDefinitions()
+    public function get_definitions()
     {
-        $definitions = $this->decorated->getDefinitions();
+        $definitions = $this->decorated->get_definitions();
         foreach ($definitions as $id => $definition) {
             // Annotation constructors expect an array of values. If the definition is
             // not an array, it usually means it has been processed already and can be
             // ignored.
             if (is_array($definition)) {
-                $definitions[$id] = (new $this->pluginDefinitionAnnotationName($definition))->get();
+                $definitions[$id] = (new $this->plugin_definition_annotation_name($definition))->get();
             }
         }
         return $definitions;
     }
-
     /**
      * Passes through all unknown calls onto the decorated object.
      *
@@ -65,5 +61,4 @@ class AnnotationBridgeDecorator implements DiscoveryInterface
     {
         return call_user_func_array([$this->decorated, $method], $args);
     }
-
 }

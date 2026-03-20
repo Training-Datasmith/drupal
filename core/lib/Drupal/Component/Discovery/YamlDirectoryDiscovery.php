@@ -1,24 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Discovery;
 
-use Drupal\Component\FileCache\FileCacheFactory;
-use Drupal\Component\FileSystem\RegexDirectoryIterator;
-use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
+use Drupal\Component\File_Cache\File_Cache_Factory;
+use Drupal\Component\File_System\Regex_Directory_Iterator;
+use Drupal\Component\Serialization\Exception\Invalid_Data_Type_Exception;
 use Drupal\Component\Serialization\Yaml;
-
 /**
  * Discovers multiple YAML files in a set of directories.
  */
-class YamlDirectoryDiscovery implements DiscoverableInterface
+class Yaml_Directory_Discovery implements Discoverable_Interface
 {
     /**
      * Defines the key in the discovered data where the file path is stored.
      */
     public const FILE_KEY = '_discovered_file_path';
-
     /**
      * Constructs a YamlDirectoryDiscovery object.
      *
@@ -38,32 +35,28 @@ class YamlDirectoryDiscovery implements DiscoverableInterface
         /**
          * The suffix for the file cache key.
          */
-        protected $fileCacheKeySuffix,
+        protected $file_cache_key_suffix,
         /**
          * The key contained in the discovered data that identifies it.
          */
-        protected $idKey = 'id'
-    ) {
+        protected $id_key = 'id'
+    )
+    {
     }
-
     /**
      * {@inheritdoc}
      * @return non-empty-array[]
      */
-    public function findAll(): array
+    public function find_all(): array
     {
         $all = [];
-
-        $files = $this->findFiles();
-
-        $file_cache = FileCacheFactory::get('yaml_discovery:' . $this->fileCacheKeySuffix);
-
+        $files = $this->find_files();
+        $file_cache = File_Cache_Factory::get('yaml_discovery:' . $this->file_cache_key_suffix);
         // Try to load from the file cache first.
-        foreach ($file_cache->getMultiple(array_keys($files)) as $file => $data) {
-            $all[$files[$file]][$this->getIdentifier($file, $data)] = $data;
+        foreach ($file_cache->get_multiple(array_keys($files)) as $file => $data) {
+            $all[$files[$file]][$this->get_identifier($file, $data)] = $data;
             unset($files[$file]);
         }
-
         // If there are files left that were not returned from the cache, load and
         // parse them now. This list was flipped above and is keyed by filename.
         if ($files) {
@@ -72,18 +65,16 @@ class YamlDirectoryDiscovery implements DiscoverableInterface
                 // array instead of NULL for type consistency.
                 try {
                     $data = Yaml::decode(file_get_contents($file)) ?: [];
-                } catch (InvalidDataTypeException $e) {
-                    throw new DiscoveryException("The $file contains invalid YAML", 0, $e);
+                } catch (Invalid_Data_Type_Exception $e) {
+                    throw new Discovery_Exception("The {$file} contains invalid YAML", 0, $e);
                 }
                 $data[static::FILE_KEY] = $file;
-                $all[$provider][$this->getIdentifier($file, $data)] = $data;
+                $all[$provider][$this->get_identifier($file, $data)] = $data;
                 $file_cache->set($file, $data);
             }
         }
-
         return $all;
     }
-
     /**
      * Gets the identifier from the data.
      *
@@ -95,21 +86,20 @@ class YamlDirectoryDiscovery implements DiscoverableInterface
      * @return string
      *   The identifier from the data.
      */
-    protected function getIdentifier($file, array $data)
+    protected function get_identifier($file, array $data)
     {
-        if (!isset($data[$this->idKey])) {
-            throw new DiscoveryException("The $file contains no data in the identifier key '{$this->idKey}'");
+        if (!isset($data[$this->id_key])) {
+            throw new Discovery_Exception("The {$file} contains no data in the identifier key '{$this->id_key}'");
         }
-        return $data[$this->idKey];
+        return $data[$this->id_key];
     }
-
     /**
      * Returns an array of providers keyed by file path.
      *
      * @return array
      *   An array of providers keyed by file path.
      */
-    protected function findFiles(): array
+    protected function find_files(): array
     {
         $file_list = [];
         foreach ($this->directories as $provider => $directories) {
@@ -117,15 +107,14 @@ class YamlDirectoryDiscovery implements DiscoverableInterface
             foreach ($directories as $directory) {
                 if (is_dir($directory)) {
                     /** @var \SplFileInfo $fileInfo */
-                    foreach ($this->getDirectoryIterator($directory) as $fileInfo) {
-                        $file_list[$fileInfo->getPathname()] = $provider;
+                    foreach ($this->get_directory_iterator($directory) as $file_info) {
+                        $file_list[$file_info->get_pathname()] = $provider;
                     }
                 }
             }
         }
         return $file_list;
     }
-
     /**
      * Gets an iterator to loop over the files in the provided directory.
      *
@@ -140,9 +129,8 @@ class YamlDirectoryDiscovery implements DiscoverableInterface
      *   An \Traversable object or array where the values are \SplFileInfo
      *   objects.
      */
-    protected function getDirectoryIterator($directory): \Drupal\Component\FileSystem\RegexDirectoryIterator
+    protected function get_directory_iterator($directory): \Drupal\Component\File_System\Regex_Directory_Iterator
     {
-        return new RegexDirectoryIterator($directory, '/\.yml$/i');
+        return new Regex_Directory_Iterator($directory, '/\.yml$/i');
     }
-
 }

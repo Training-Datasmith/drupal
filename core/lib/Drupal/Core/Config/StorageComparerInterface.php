@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 /**
  * Defines an interface for comparison of configuration storage objects.
  */
-interface StorageComparerInterface
+interface Storage_Comparer_Interface
 {
     /**
      * Gets the configuration source storage.
@@ -19,8 +18,7 @@ interface StorageComparerInterface
      * @return \Drupal\Core\Config\StorageInterface
      *   Storage object used to read configuration.
      */
-    public function getSourceStorage($collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function get_source_storage($collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Gets the configuration target storage.
      *
@@ -31,8 +29,7 @@ interface StorageComparerInterface
      * @return \Drupal\Core\Config\StorageInterface
      *   Storage object used to write configuration.
      */
-    public function getTargetStorage($collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function get_target_storage($collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Changes the StorageComparer to write mode.
      *
@@ -42,16 +39,14 @@ interface StorageComparerInterface
      *
      * @return $this
      */
-    public function writeMode(): static;
-
+    public function write_mode(): static;
     /**
      * Gets an empty changelist.
      *
      * @return array
      *   An empty changelist array.
      */
-    public function getEmptyChangelist();
-
+    public function get_empty_changelist();
     /**
      * Gets the list of differences to import.
      *
@@ -65,16 +60,14 @@ interface StorageComparerInterface
      * @return array
      *   An array of config changes that are yet to be imported.
      */
-    public function getChangelist($op = null, $collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function get_changelist($op = null, $collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Calculates the differences.
      *
      * @return $this
      *   An object which implements the StorageComparerInterface.
      */
-    public function createChangelist();
-
+    public function create_changelist();
     /**
      * Recalculates the differences.
      *
@@ -82,7 +75,6 @@ interface StorageComparerInterface
      *   An object which implements the StorageComparerInterface.
      */
     public function reset();
-
     /**
      * Checks if there are any operations with changes to process.
      *
@@ -93,16 +85,14 @@ interface StorageComparerInterface
      *
      * @see \Drupal\Core\Config\StorageComparerInterface::createChangelist()
      */
-    public function hasChanges();
-
+    public function has_changes();
     /**
      * Validates that the system.site::uuid in the source and target match.
      *
      * @return bool
      *   TRUE if identical, FALSE if not.
      */
-    public function validateSiteUuid();
-
+    public function validate_site_uuid();
     /**
      * Moves a rename operation to an update.
      *
@@ -114,8 +104,7 @@ interface StorageComparerInterface
      *
      * @see \Drupal\Core\Config\ConfigImporter::createRenameName()
      */
-    public function moveRenameToUpdate($rename, $collection = StorageInterface::DEFAULT_COLLECTION);
-
+    public function move_rename_to_update($rename, $collection = Storage_Interface::DEFAULT_COLLECTION);
     /**
      * Extracts old and new configuration names from a configuration change name.
      *
@@ -130,8 +119,7 @@ interface StorageComparerInterface
      *
      * @see \Drupal\Core\Config\StorageComparer::createRenameNames()
      */
-    public function extractRenameNames($name);
-
+    public function extract_rename_names($name);
     /**
      * Gets the existing collections from both the target and source storage.
      *
@@ -141,6 +129,5 @@ interface StorageComparerInterface
      * @return array
      *   An array of existing collection names.
      */
-    public function getAllCollectionNames($include_default = true);
-
+    public function get_all_collection_names($include_default = true);
 }

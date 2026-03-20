@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display;
 
-use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ConfigurablePluginBase;
-use Drupal\Core\Plugin\PluginDependencyTrait;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Trait;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Plugin\Configurable_Plugin_Base;
+use Drupal\Core\Plugin\Plugin_Dependency_Trait;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Provides a base class for DisplayVariant plugins.
  *
@@ -18,11 +16,10 @@ use Drupal\Core\Session\AccountInterface;
  * @see \Drupal\Core\Display\VariantManager
  * @see plugin_api
  */
-abstract class VariantBase extends ConfigurablePluginBase implements VariantInterface
+abstract class Variant_Base extends Configurable_Plugin_Base implements Variant_Interface
 {
-    use PluginDependencyTrait;
-    use RefinableCacheableDependencyTrait;
-
+    use Plugin_Dependency_Trait;
+    use Refinable_Cacheable_Dependency_Trait;
     /**
      * {@inheritdoc}
      */
@@ -30,15 +27,13 @@ abstract class VariantBase extends ConfigurablePluginBase implements VariantInte
     {
         return $this->configuration['label'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function adminLabel()
+    public function admin_label()
     {
-        return $this->pluginDefinition['admin_label'];
+        return $this->plugin_definition['admin_label'];
     }
-
     /**
      * {@inheritdoc}
      */
@@ -46,89 +41,67 @@ abstract class VariantBase extends ConfigurablePluginBase implements VariantInte
     {
         return $this->configuration['uuid'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getWeight()
+    public function get_weight()
     {
         return (int) $this->configuration['weight'];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setWeight($weight): void
+    public function set_weight($weight): void
     {
         $this->configuration['weight'] = (int) $weight;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getConfiguration()
+    public function get_configuration()
     {
-        return [
-          'id' => $this->getPluginId(),
-        ] + $this->configuration;
+        return ['id' => $this->get_plugin_id()] + $this->configuration;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function default_configuration()
     {
-        return [
-          'label' => '',
-          'uuid' => '',
-          'weight' => 0,
-        ];
+        return ['label' => '', 'uuid' => '', 'weight' => 0];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function calculateDependencies()
+    public function calculate_dependencies()
     {
         return $this->dependencies;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function buildConfigurationForm(array $form, FormStateInterface $form_state)
+    public function build_configuration_form(array $form, Form_State_Interface $form_state)
     {
-        $form['label'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Label'),
-          '#description' => $this->t('The label for this display variant.'),
-          '#default_value' => $this->label(),
-          '#maxlength' => '255',
-        ];
+        $form['label'] = ['#type' => 'textfield', '#title' => $this->t('Label'), '#description' => $this->t('The label for this display variant.'), '#default_value' => $this->label(), '#maxlength' => '255'];
         return $form;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function validateConfigurationForm(array &$form, FormStateInterface $form_state)
+    public function validate_configuration_form(array &$form, Form_State_Interface $form_state)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void
+    public function submit_configuration_form(array &$form, Form_State_Interface $form_state): void
     {
-        $this->configuration['label'] = $form_state->getValue('label');
+        $this->configuration['label'] = $form_state->get_value('label');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function access(?AccountInterface $account = null)
+    public function access(?Account_Interface $account = null)
     {
         return true;
     }
-
 }

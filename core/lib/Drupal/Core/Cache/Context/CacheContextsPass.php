@@ -1,32 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Adds cache_contexts parameter to the container.
  */
-class CacheContextsPass implements CompilerPassInterface
+class Cache_Contexts_Pass implements Compiler_Pass_Interface
 {
     /**
      * Implements CompilerPassInterface::process().
      *
      * Collects the cache contexts into the cache_contexts parameter.
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
         $cache_contexts = [];
-        foreach (array_keys($container->findTaggedServiceIds('cache.context')) as $id) {
+        foreach (array_keys($container->find_tagged_service_ids('cache.context')) as $id) {
             if (!str_starts_with((string) $id, 'cache_context.')) {
                 throw new \InvalidArgumentException(sprintf('The service "%s" has an invalid service ID: cache context service IDs must use the "cache_context." prefix. (The suffix is the cache context ID developers may use.)', $id));
             }
             $cache_contexts[] = substr((string) $id, 14);
         }
-
         // Validate.
         sort($cache_contexts);
         foreach ($cache_contexts as $id) {
@@ -38,8 +35,6 @@ class CacheContextsPass implements CompilerPassInterface
                 }
             }
         }
-
-        $container->setParameter('cache_contexts', $cache_contexts);
+        $container->set_parameter('cache_contexts', $cache_contexts);
     }
-
 }

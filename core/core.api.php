@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @file
  * Documentation landing page and topics, plus core library hooks.
  */
-
 /**
  * @mainpage
  * Welcome to the Drupal API Documentation!
@@ -70,7 +68,6 @@ declare(strict_types=1);
  * - @link https://www.drupal.org/list-changes API change notices @endlink
  * - @link https://www.drupal.org/docs/drupal-apis Drupal API longer references @endlink
  */
-
 /**
  * @defgroup third_party REST and Application Integration
  * @{
@@ -170,7 +167,6 @@ declare(strict_types=1);
  *     http://php.net/manual/refs.xml.php
  * @}
  */
-
 /**
  * @defgroup state_api State API
  * @{
@@ -196,7 +192,6 @@ declare(strict_types=1);
  * For more on the State API, see https://www.drupal.org/developing/api/8/state
  * @}
  */
-
 /**
  * @defgroup config_api Configuration API
  * @{
@@ -402,7 +397,6 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @defgroup cache Cache API
  * @{
@@ -650,7 +644,6 @@ declare(strict_types=1);
  * @see https://www.drupal.org/node/1884796
  * @}
  */
-
 /**
  * @defgroup user_api User accounts, permissions, and roles
  * @{
@@ -741,7 +734,6 @@ declare(strict_types=1);
  *   current_user service (described above).
  * @}
  */
-
 /**
  * @defgroup container Services and Dependency Injection Container
  * @{
@@ -910,7 +902,6 @@ declare(strict_types=1);
  * @see menu
  * @}
  */
-
 /**
  * @defgroup listing_page_service Page header for Services page
  * @{
@@ -936,7 +927,6 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @defgroup typed_data Typed Data API
  * @{
@@ -1078,7 +1068,6 @@ declare(strict_types=1);
  * @see container
  * @}
  */
-
 /**
  * @defgroup testing Automated tests
  * @{
@@ -1178,7 +1167,6 @@ declare(strict_types=1);
  *   JavaScript
  * @}
  */
-
 /**
  * @defgroup php_assert PHP Runtime Assert Statements
  * @{
@@ -1214,7 +1202,6 @@ declare(strict_types=1);
  * assertions.
  * @}
  */
-
 /**
  * @defgroup info_types Information types
  * @{
@@ -1246,7 +1233,6 @@ declare(strict_types=1);
  * @see i18n
  * @}
  */
-
 /**
  * @defgroup extending Extending and altering Drupal
  * @{
@@ -1302,7 +1288,6 @@ declare(strict_types=1);
  * documentation of the format of .info.yml files.
  * @}
  */
-
 /**
  * @defgroup plugin_api Plugin API
  * @{
@@ -1492,7 +1477,6 @@ declare(strict_types=1);
  * @see annotation
  * @}
  */
-
 /**
  * @defgroup oo_conventions Objected-oriented programming conventions
  * @{
@@ -1527,7 +1511,6 @@ declare(strict_types=1);
  *   https://www.drupal.org/coding-standards/docs#classes
  * @}
  */
-
 /**
  * @defgroup listing_page_class Page header for Classes page
  * @{
@@ -1543,7 +1526,6 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @defgroup listing_page_namespace Page header for Namespaces page
  * @{
@@ -1559,7 +1541,6 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @defgroup best_practices Best practices for developers
  * @{
@@ -1582,7 +1563,6 @@ declare(strict_types=1);
  * - Automated testing: @link testing Automated tests topic @endlink
  * @}
  */
-
 /**
  * @defgroup utility Utility classes and functions
  * @{
@@ -1602,7 +1582,6 @@ declare(strict_types=1);
  * @see validation
  * @}
  */
-
 /**
  * @defgroup hooks Hooks
  * @{
@@ -1811,7 +1790,6 @@ declare(strict_types=1);
  * @see \Drupal\Core\Hook\Attribute\RemoveHook
  * @}
  */
-
 /**
  * @defgroup callbacks Callbacks
  * @{
@@ -1841,7 +1819,6 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @defgroup form_api Form generation
  * @{
@@ -1955,7 +1932,6 @@ declare(strict_types=1);
  * \Drupal\Core\Form\FormStateInterface.
  * @}
  */
-
 /**
  * @defgroup queue Queue operations
  * @{
@@ -2008,7 +1984,6 @@ declare(strict_types=1);
  * code might time out before it finishes).
  * @}
  */
-
 /**
  * @defgroup annotation Annotations
  * @{
@@ -2059,12 +2034,10 @@ declare(strict_types=1);
  *
  * @}
  */
-
 /**
  * @addtogroup hooks
  * @{
  */
-
 /**
  * Perform periodic actions.
  *
@@ -2090,36 +2063,29 @@ function hook_cron(): void
     // Short-running operation example, not using a queue:
     // Delete all expired records since the last cron run.
     $expires = \Drupal::state()->get('my_module.last_check', 0);
-    $request_time = \Drupal::time()->getRequestTime();
-    \Drupal::database()->delete('my_module_table')
-      ->condition('expires', $expires, '>=')
-      ->execute();
+    $request_time = \Drupal::time()->get_request_time();
+    \Drupal::database()->delete('my_module_table')->condition('expires', $expires, '>=')->execute();
     \Drupal::state()->set('my_module.last_check', $request_time);
-
     // Long-running operation example, leveraging a queue:
     // Queue news feeds for updates once their refresh interval has elapsed.
     $queue = \Drupal::queue('my_module.feeds');
-    $ids = \Drupal::entityTypeManager()->getStorage('my_module_feed')->getFeedIdsToRefresh();
-    foreach (Feed::loadMultiple($ids) as $feed) {
-        if ($queue->createItem($feed)) {
+    $ids = \Drupal::entity_type_manager()->get_storage('my_module_feed')->get_feed_ids_to_refresh();
+    foreach (Feed::load_multiple($ids) as $feed) {
+        if ($queue->create_item($feed)) {
             // Add timestamp to avoid queueing item more than once.
-            $feed->setQueuedTime($request_time);
+            $feed->set_queued_time($request_time);
             $feed->save();
         }
     }
-    $ids = \Drupal::entityQuery('my_module_feed')
-      ->accessCheck(false)
-      ->condition('queued', $request_time - (3600 * 6), '<')
-      ->execute();
+    $ids = \Drupal::entity_query('my_module_feed')->access_check(false)->condition('queued', $request_time - 3600 * 6, '<')->execute();
     if ($ids) {
-        $feeds = Feed::loadMultiple($ids);
+        $feeds = Feed::load_multiple($ids);
         foreach ($feeds as $feed) {
-            $feed->setQueuedTime(0);
+            $feed->set_queued_time(0);
             $feed->save();
         }
     }
 }
-
 /**
  * Alter available data types for typed data wrappers.
  *
@@ -2132,7 +2098,6 @@ function hook_data_type_info_alter(array &$data_types): void
 {
     $data_types['email']['class'] = '\Drupal\my_module\Type\Email';
 }
-
 /**
  * Alter cron queue information before cron runs.
  *
@@ -2154,7 +2119,6 @@ function hook_queue_info_alter(array &$queues): void
     // updating feeds instead of the default 60.
     $queues['my_module_feeds']['cron']['time'] = 90;
 }
-
 /**
  * Alter the information provided in ConditionManager::getDefinitions().
  *
@@ -2169,7 +2133,6 @@ function hook_condition_info_alter(array &$definitions): void
         $definitions['node_type']['class'] = 'Drupal\my_module\Plugin\Condition\NodeType';
     }
 }
-
 /**
  * Alter an email message created with MailManagerInterface->mail().
  *
@@ -2228,7 +2191,6 @@ function hook_mail_alter(array &$message): void
         $message['body'][] = "--\nMail sent out from " . \Drupal::config('system.site')->get('name');
     }
 }
-
 /**
  * Prepares a message based on parameters.
  *
@@ -2269,42 +2231,23 @@ function hook_mail($key, array &$message, array $params): void
 {
     $account = $params['account'];
     $context = $params['context'];
-    $variables = [
-      '%site_name' => \Drupal::config('system.site')->get('name'),
-      '%username' => $account->getDisplayName(),
-    ];
+    $variables = ['%site_name' => \Drupal::config('system.site')->get('name'), '%username' => $account->get_display_name()];
     if ($context['hook'] == 'taxonomy') {
         $entity = $params['entity'];
         $vocabulary = Vocabulary::load($entity->id());
-        $variables += [
-          '%term_name' => $entity->name,
-          '%term_description' => $entity->description,
-          '%term_id' => $entity->id(),
-          '%vocabulary_name' => $vocabulary->label(),
-          '%vocabulary_description' => $vocabulary->getDescription(),
-          '%vocabulary_id' => $vocabulary->id(),
-        ];
+        $variables += ['%term_name' => $entity->name, '%term_description' => $entity->description, '%term_id' => $entity->id(), '%vocabulary_name' => $vocabulary->label(), '%vocabulary_description' => $vocabulary->get_description(), '%vocabulary_id' => $vocabulary->id()];
     }
-
     // Node-based variable translation is only available if we have a node.
     if (isset($params['node'])) {
         /** @var \Drupal\node\NodeInterface $node */
         $node = $params['node'];
-        $variables += [
-          '%uid' => $node->getOwnerId(),
-          '%url' => $node->toUrl('canonical', ['absolute' => true])->toString(),
-          '%node_type' => $node->getBundleEntity()->label(),
-          '%title' => $node->getTitle(),
-          '%teaser' => $node->teaser,
-          '%body' => $node->body,
-        ];
+        $variables += ['%uid' => $node->get_owner_id(), '%url' => $node->to_url('canonical', ['absolute' => true])->to_string(), '%node_type' => $node->get_bundle_entity()->label(), '%title' => $node->get_title(), '%teaser' => $node->teaser, '%body' => $node->body];
     }
     $subject = strtr($context['subject'], $variables);
     $body = strtr($context['message'], $variables);
     $message['subject'] .= str_replace(["\r", "\n"], '', $subject);
-    $message['body'][] = MailFormatHelper::htmlToText($body);
+    $message['body'][] = Mail_Format_Helper::html_to_text($body);
 }
-
 /**
  * Alter the list of mail backend plugin definitions.
  *
@@ -2318,7 +2261,6 @@ function hook_mail_backend_info_alter(array &$info): void
 {
     unset($info['test_mail_collector']);
 }
-
 /**
  * Alter the default country list.
  *
@@ -2332,7 +2274,6 @@ function hook_countries_alter(array &$countries): void
     // Elbonia is now independent, so add it to the country list.
     $countries['EB'] = 'Elbonia';
 }
-
 /**
  * Alter display variant plugin definitions.
  *
@@ -2346,7 +2287,6 @@ function hook_display_variant_plugin_alter(array &$definitions): void
 {
     $definitions['full_page']['admin_label'] = t('Block layout');
 }
-
 /**
  * Allow modules to alter layout plugin definitions.
  *
@@ -2358,7 +2298,6 @@ function hook_layout_alter(array &$definitions): void
     // Remove a layout.
     unset($definitions['twocol']);
 }
-
 /**
  * Flush all persistent and static caches.
  *
@@ -2385,7 +2324,6 @@ function hook_cache_flush(): void
         _update_cache_clear();
     }
 }
-
 /**
  * Rebuild data based upon refreshed caches.
  *
@@ -2403,12 +2341,11 @@ function hook_cache_flush(): void
  */
 function hook_rebuild(): void
 {
-    $themes = \Drupal::service('theme_handler')->listInfo();
+    $themes = \Drupal::service('theme_handler')->list_info();
     foreach ($themes as $theme) {
-        _block_rehash($theme->getName());
+        _block_rehash($theme->get_name());
     }
 }
-
 /**
  * Alter the configuration synchronization steps.
  *
@@ -2430,14 +2367,13 @@ function hook_rebuild(): void
  * @see callback_batch_operation()
  * @see \Drupal\Core\Config\ConfigImporter::initialize()
  */
-function hook_config_import_steps_alter(&$sync_steps, \Drupal\Core\Config\ConfigImporter $config_importer): void
+function hook_config_import_steps_alter(&$sync_steps, \Drupal\Core\Config\Config_Importer $config_importer): void
 {
-    $deletes = $config_importer->getUnprocessedConfiguration('delete');
+    $deletes = $config_importer->get_unprocessed_configuration('delete');
     if (isset($deletes['field.storage.node.body'])) {
         $sync_steps[] = '_additional_configuration_step';
     }
 }
-
 /**
  * Alter config typed data definitions.
  *
@@ -2465,10 +2401,9 @@ function hook_config_schema_info_alter(array &$definitions): void
     // Enhance the text and date type definitions with classes to generate proper
     // form elements in ConfigTranslationFormBase. Other translatable types will
     // appear as a one line textfield.
-    $definitions['text']['form_element_class'] = \Drupal\config_translation\FormElement\Textarea::class;
-    $definitions['date_format']['form_element_class'] = \Drupal\config_translation\FormElement\DateFormat::class;
+    $definitions['text']['form_element_class'] = \Drupal\config_translation\Form_Element\Textarea::class;
+    $definitions['date_format']['form_element_class'] = \Drupal\config_translation\Form_Element\Date_Format::class;
 }
-
 /**
  * Alter validation constraint plugin definitions.
  *
@@ -2482,11 +2417,9 @@ function hook_validation_constraint_alter(array &$definitions): void
 {
     $definitions['Null']['class'] = '\Drupal\my_module\Plugin\Validation\Constraints\MyClass';
 }
-
 /**
  * @} End of "addtogroup hooks".
  */
-
 /**
  * @defgroup ajax Ajax API
  * @{
@@ -2662,11 +2595,9 @@ function hook_validation_constraint_alter(array &$definitions): void
  * ],
  * @endcode
  */
-
 /**
  * @} End of "defgroup ajax".
  */
-
 /**
  * @defgroup service_tag Service Tags
  * @{
@@ -2709,7 +2640,6 @@ function hook_validation_constraint_alter(array &$definitions): void
  *
  * @}
  */
-
 /**
  * @defgroup lazy_services Lazy Services
  * @{
@@ -2735,7 +2665,6 @@ function hook_validation_constraint_alter(array &$definitions): void
  *
  * @see core/scripts/generate-proxy-class.php
  */
-
 /**
  * @defgroup events Events
  * @{
@@ -2797,7 +2726,6 @@ function hook_validation_constraint_alter(array &$definitions): void
  * minor release.
  * @}
  */
-
 /**
  * @defgroup session Sessions
  * @{

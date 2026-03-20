@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * A value object to store generated cache keys with its cacheability metadata.
  */
-class ContextCacheKeys extends CacheableMetadata
+class Context_Cache_Keys extends Cacheable_Metadata
 {
     /**
      * The generated cache keys.
@@ -17,7 +15,6 @@ class ContextCacheKeys extends CacheableMetadata
      * @var string[]
      */
     protected array $keys;
-
     /**
      * Constructs a ContextCacheKeys object.
      *
@@ -33,16 +30,14 @@ class ContextCacheKeys extends CacheableMetadata
         sort($keys);
         $this->keys = $keys;
     }
-
     /**
      * Gets the generated cache keys.
      *
      * @return string[]
      *   The cache keys.
      */
-    public function getKeys()
+    public function get_keys()
     {
         return $this->keys;
     }
-
 }

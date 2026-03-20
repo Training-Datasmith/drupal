@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display\Annotation;
 
 /**
@@ -21,6 +20,6 @@ namespace Drupal\Core\Display\Annotation;
  *
  * @Annotation
  */
-class PageDisplayVariant extends DisplayVariant
+class Page_Display_Variant extends Display_Variant
 {
 }

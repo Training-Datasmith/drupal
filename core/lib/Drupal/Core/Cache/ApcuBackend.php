@@ -1,24 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 use Drupal\Component\Assertion\Inspector;
-use Drupal\Component\Datetime\TimeInterface;
-
+use Drupal\Component\Datetime\Time_Interface;
 /**
  * Stores cache items in the Alternative PHP Cache User Cache (APCu).
  */
-class ApcuBackend implements CacheBackendInterface
+class Apcu_Backend implements Cache_Backend_Interface
 {
     /**
      * Prefix for all keys in this cache bin.
      *
      * Includes the site-specific prefix in $sitePrefix.
      */
-    protected string $binPrefix;
-
+    protected string $bin_prefix;
     /**
      * Constructs a new ApcuBackend instance.
      *
@@ -39,13 +36,13 @@ class ApcuBackend implements CacheBackendInterface
         /**
          * Prefix for all keys in the storage that belong to this site.
          */
-        protected $sitePrefix,
-        protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider,
-        protected TimeInterface $time,
-    ) {
-        $this->binPrefix = $this->sitePrefix . '::' . $this->bin . '::';
+        protected $site_prefix,
+        protected \Drupal\Core\Cache\Cache_Tags_Checksum_Interface $checksum_provider,
+        protected Time_Interface $time
+    )
+    {
+        $this->bin_prefix = $this->site_prefix . '::' . $this->bin . '::';
     }
-
     /**
      * Prepends the APCu user variable prefix for this bin to a cache item ID.
      *
@@ -55,60 +52,55 @@ class ApcuBackend implements CacheBackendInterface
      * @return string
      *   The APCu key for the cache item ID.
      */
-    public function getApcuKey(string $cid): string
+    public function get_apcu_key(string $cid): string
     {
-        return $this->binPrefix . $cid;
+        return $this->bin_prefix . $cid;
     }
-
     /**
      * {@inheritdoc}
      */
     public function get($cid, $allow_invalid = false)
     {
-        $cache = apcu_fetch($this->getApcuKey($cid));
-        return $this->prepareItem($cache, $allow_invalid);
+        $cache = apcu_fetch($this->get_apcu_key($cid));
+        return $this->prepare_item($cache, $allow_invalid);
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function getMultiple(&$cids, $allow_invalid = false): array
+    public function get_multiple(&$cids, $allow_invalid = false): array
     {
         // Translate the requested cache item IDs to APCu keys.
         $map = [];
         foreach ($cids as $cid) {
-            $map[$this->getApcuKey($cid)] = $cid;
+            $map[$this->get_apcu_key($cid)] = $cid;
         }
-
         $result = apcu_fetch(array_keys($map));
         $cache = [];
         if ($result) {
             // Before checking the validity of each item individually, register the
             // cache tags for all returned cache items for preloading, this allows the
             // cache tag service to optimize cache tag lookups.
-            if ($this->checksumProvider instanceof CacheTagsChecksumPreloadInterface) {
+            if ($this->checksum_provider instanceof Cache_Tags_Checksum_Preload_Interface) {
                 $tags_for_preload = [];
                 foreach ($result as $item) {
                     if ($item->tags) {
                         $tags_for_preload[] = explode(' ', (string) $item->tags);
                     }
                 }
-                $this->checksumProvider->registerCacheTagsForPreload(array_merge(...$tags_for_preload));
+                $this->checksum_provider->register_cache_tags_for_preload(array_merge(...$tags_for_preload));
             }
             foreach ($result as $key => $item) {
-                $item = $this->prepareItem($item, $allow_invalid);
+                $item = $this->prepare_item($item, $allow_invalid);
                 if ($item) {
                     $cache[$map[$key]] = $item;
                 }
             }
         }
         unset($result);
-
         $cids = array_diff($cids, array_keys($cache));
         return $cache;
     }
-
     /**
      * Returns all cached items, optionally limited by a cache ID prefix.
      *
@@ -125,11 +117,10 @@ class ApcuBackend implements CacheBackendInterface
      * @return \APCUIterator
      *   An APCUIterator containing matched items.
      */
-    protected function getAll($prefix = '')
+    protected function get_all($prefix = '')
     {
-        return $this->getIterator('/^' . preg_quote($this->getApcuKey($prefix), '/') . '/');
+        return $this->getIterator('/^' . preg_quote($this->get_apcu_key($prefix), '/') . '/');
     }
-
     /**
      * Prepares a cached item.
      *
@@ -144,118 +135,102 @@ class ApcuBackend implements CacheBackendInterface
      * @return mixed
      *   The cache item or FALSE if the item expired.
      */
-    protected function prepareItem($cache, $allow_invalid): false|object
+    protected function prepare_item($cache, $allow_invalid): false|object
     {
         if (!isset($cache->data)) {
             return false;
         }
-
         $cache->tags = $cache->tags ? explode(' ', $cache->tags) : [];
-
         // Check expire time.
-        $cache->valid = $cache->expire == Cache::PERMANENT || $cache->expire >= $this->time->getRequestTime();
-
+        $cache->valid = $cache->expire == Cache::PERMANENT || $cache->expire >= $this->time->get_request_time();
         // Check if invalidateTags() has been called with any of the entry's tags.
-        if (!$this->checksumProvider->isValid($cache->checksum, $cache->tags)) {
+        if (!$this->checksum_provider->is_valid($cache->checksum, $cache->tags)) {
             $cache->valid = false;
         }
-
         if (!$allow_invalid && !$cache->valid) {
             return false;
         }
-
         return $cache;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function set($cid, $data, $expire = CacheBackendInterface::CACHE_PERMANENT, array $tags = []): void
+    public function set($cid, $data, $expire = Cache_Backend_Interface::CACHE_PERMANENT, array $tags = []): void
     {
-        assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
+        assert(Inspector::assert_all_strings($tags), 'Cache tags must be strings.');
         $tags = array_unique($tags);
         $cache = new \stdClass();
         $cache->cid = $cid;
         $cache->created = round(microtime(true), 3);
         $cache->expire = $expire;
         $cache->tags = implode(' ', $tags);
-        $cache->checksum = $this->checksumProvider->getCurrentChecksum($tags);
+        $cache->checksum = $this->checksum_provider->get_current_checksum($tags);
         // APCu serializes/unserializes any structure itself.
         $cache->serialized = 0;
         $cache->data = $data;
-
         // Expiration is handled by our own prepareItem(), not APCu.
-        apcu_store($this->getApcuKey($cid), $cache);
+        apcu_store($this->get_apcu_key($cid), $cache);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setMultiple(array $items = []): void
+    public function set_multiple(array $items = []): void
     {
         foreach ($items as $cid => $item) {
-            $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
+            $this->set($cid, $item['data'], $item['expire'] ?? Cache_Backend_Interface::CACHE_PERMANENT, $item['tags'] ?? []);
         }
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($cid): void
     {
-        apcu_delete($this->getApcuKey($cid));
+        apcu_delete($this->get_apcu_key($cid));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteMultiple(array $cids): void
+    public function delete_multiple(array $cids): void
     {
-        apcu_delete(array_map($this->getApcuKey(...), $cids));
+        apcu_delete(array_map($this->get_apcu_key(...), $cids));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteAll(): void
+    public function delete_all(): void
     {
-        apcu_delete($this->getIterator('/^' . preg_quote($this->binPrefix, '/') . '/'));
+        apcu_delete($this->getIterator('/^' . preg_quote($this->bin_prefix, '/') . '/'));
     }
-
     /**
      * {@inheritdoc}
      */
-    public function garbageCollection(): void
+    public function garbage_collection(): void
     {
         // APCu performs garbage collection automatically.
     }
-
     /**
      * {@inheritdoc}
      */
-    public function removeBin(): void
+    public function remove_bin(): void
     {
-        apcu_delete($this->getIterator('/^' . preg_quote($this->binPrefix, '/') . '/'));
+        apcu_delete($this->getIterator('/^' . preg_quote($this->bin_prefix, '/') . '/'));
     }
-
     /**
      * {@inheritdoc}
      */
     public function invalidate($cid): void
     {
-        $this->invalidateMultiple([$cid]);
+        $this->invalidate_multiple([$cid]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function invalidateMultiple(array $cids): void
+    public function invalidate_multiple(array $cids): void
     {
-        foreach ($this->getMultiple($cids) as $cache) {
-            $this->set($cache->cid, $cache, $this->time->getRequestTime() - 1);
+        foreach ($this->get_multiple($cids) as $cache) {
+            $this->set($cache->cid, $cache, $this->time->get_request_time() - 1);
         }
     }
-
     /**
      * Instantiates and returns the APCUIterator class.
      *
@@ -274,9 +249,8 @@ class ApcuBackend implements CacheBackendInterface
      * @return \APCUIterator
      *   An APCUIterator class.
      */
-    protected function getIterator($search = null, $format = APC_ITER_ALL, $chunk_size = 100, $list = APC_LIST_ACTIVE): \APCUIterator
+    protected function getIterator($search = null, $format = APC_ITER_ALL, $chunk_size = 100, $list = APC_LIST_ACTIVE): \Apcu_Iterator
     {
-        return new \APCUIterator($search, $format, $chunk_size, $list);
+        return new \Apcu_Iterator($search, $format, $chunk_size, $list);
     }
-
 }

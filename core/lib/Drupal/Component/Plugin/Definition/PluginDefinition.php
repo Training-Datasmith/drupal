@@ -1,14 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Definition;
 
 /**
  * Provides object-based plugin definitions.
  */
-#[\AllowDynamicProperties]
-class PluginDefinition implements PluginDefinitionInterface
+#[\Allow_Dynamic_Properties]
+class Plugin_Definition implements Plugin_Definition_Interface
 {
     /**
      * The plugin ID.
@@ -16,21 +15,18 @@ class PluginDefinition implements PluginDefinitionInterface
      * @var string
      */
     protected $id;
-
     /**
      * A fully qualified class name.
      *
      * @var string
      */
     protected $class;
-
     /**
      * The plugin provider.
      *
      * @var string
      */
     protected $provider;
-
     /**
      * {@inheritdoc}
      */
@@ -38,30 +34,26 @@ class PluginDefinition implements PluginDefinitionInterface
     {
         return $this->id;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setClass($class): static
+    public function set_class($class): static
     {
         $this->class = $class;
         return $this;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getClass()
+    public function get_class()
     {
         return $this->class;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getProvider()
+    public function get_provider()
     {
         return $this->provider;
     }
-
 }

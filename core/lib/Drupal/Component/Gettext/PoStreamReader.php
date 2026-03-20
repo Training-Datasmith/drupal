@@ -1,26 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Gettext;
 
-use Drupal\Component\Render\FormattableMarkup;
-
+use Drupal\Component\Render\Formattable_Markup;
 /**
  * Implements Gettext PO stream reader.
  *
  * The PO file format parsing is implemented according to the documentation at
  * http://www.gnu.org/software/gettext/manual/gettext.html#PO-Files
  */
-class PoStreamReader implements PoStreamInterface, PoReaderInterface
+class Po_Stream_Reader implements Po_Stream_Interface, Po_Reader_Interface
 {
     /**
      * Source line number of the stream being parsed.
      *
      * @var int
      */
-    protected $lineNumber = 0;
-
+    protected $line_number = 0;
     /**
      * Parser context for the stream reader state machine.
      *
@@ -35,119 +32,103 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
      * @var string
      */
     protected $context = 'COMMENT';
-
     /**
      * Current entry being read. Incomplete.
      *
      * @var array
      */
-    protected $currentItem = [];
-
+    protected $current_item = [];
     /**
      * Current plural index for plural translations.
      *
      * @var int
      */
-    protected $currentPluralIndex = 0;
-
+    protected $current_plural_index = 0;
     /**
      * URI of the PO stream that is being read.
      *
      * @var string
      */
     protected $uri = '';
-
     /**
      * Language code for the PO stream being read.
      *
      * @var string
      */
     protected $langcode;
-
     /**
      * File handle of the current PO stream.
      *
      * @var resource
      */
     protected $fd;
-
     /**
      * The PO stream header.
      *
      * @var \Drupal\Component\Gettext\PoHeader
      */
     protected $header;
-
     /**
      * Object wrapper for the last read source/translation pair.
      *
      * @var \Drupal\Component\Gettext\PoItem
      */
-    protected $lastItem;
-
+    protected $last_item;
     /**
      * Indicator of whether the stream reading is finished.
      *
      * @var bool
      */
     protected $finished;
-
     /**
      * Array of translated error strings recorded on reading this stream so far.
      *
      * @var array
      */
     protected $errors;
-
     /**
      * {@inheritdoc}
      */
-    public function getLangcode()
+    public function get_langcode()
     {
         return $this->langcode;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setLangcode($langcode): void
+    public function set_langcode($langcode): void
     {
         $this->langcode = $langcode;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getHeader()
+    public function get_header()
     {
         return $this->header;
     }
-
     /**
      * Implements Drupal\Component\Gettext\PoMetadataInterface::setHeader().
      *
      * Not applicable to stream reading and therefore not implemented.
      */
-    public function setHeader(PoHeader $header)
+    public function set_header(Po_Header $header)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getURI()
+    public function get_uri()
     {
         return $this->uri;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function setURI($uri): void
+    public function set_uri($uri): void
     {
         $this->uri = $uri;
     }
-
     /**
      * Implements Drupal\Component\Gettext\PoStreamInterface::open().
      *
@@ -161,12 +142,11 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
     {
         if (!empty($this->uri)) {
             $this->fd = fopen($this->uri, 'rb');
-            $this->readHeader();
+            $this->read_header();
         } else {
             throw new \Exception('Cannot open stream without URI set.');
         }
     }
-
     /**
      * Implements Drupal\Component\Gettext\PoStreamInterface::close().
      *
@@ -181,42 +161,36 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
             throw new \Exception('Cannot close stream that is not open.');
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function readItem()
+    public function read_item()
     {
         // Clear out the last item.
-        $this->lastItem = null;
-
+        $this->last_item = null;
         // Read until finished with the stream or a complete item was identified.
-        while (!$this->finished && is_null($this->lastItem)) {
-            $this->readLine();
+        while (!$this->finished && is_null($this->last_item)) {
+            $this->read_line();
         }
-
-        return $this->lastItem;
+        return $this->last_item;
     }
-
     /**
      * Sets the seek position for the current PO stream.
      *
      * @param int $seek
      *   The new seek position to set.
      */
-    public function setSeek($seek): void
+    public function set_seek($seek): void
     {
         fseek($this->fd, $seek);
     }
-
     /**
      * Gets the pointer position of the current PO stream.
      */
-    public function getSeek(): int|false
+    public function get_seek(): int|false
     {
         return ftell($this->fd);
     }
-
     /**
      * Read the header from the PO stream.
      *
@@ -224,18 +198,17 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
      * key-value pairs as translation. We just reuse the item reader logic to
      * read the header.
      */
-    private function readHeader(): void
+    private function read_header(): void
     {
-        $item = $this->readItem();
+        $item = $this->read_item();
         // Handle the case properly when the .po file is empty (0 bytes).
         if (!$item) {
             return;
         }
-        $header = new PoHeader();
-        $header->setFromString(trim($item->getTranslation()));
+        $header = new Po_Header();
+        $header->set_from_string(trim($item->get_translation()));
         $this->header = $header;
     }
-
     /**
      * Reads a line from the PO stream and stores data internally.
      *
@@ -254,31 +227,23 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
      *   non-blocking, so reading can continue, while the errors are collected
      *   for later presentation.
      */
-    private function readLine()
+    private function read_line()
     {
         // Read a line and set the stream finished indicator if it was not
         // possible anymore.
         $line = fgets($this->fd);
-        $this->finished = ($line === false);
-
+        $this->finished = $line === false;
         if (!$this->finished) {
-
-            if ($this->lineNumber == 0) {
+            if ($this->line_number == 0) {
                 // The first line might come with a UTF-8 BOM, which should be removed.
-                $line = str_replace("\xEF\xBB\xBF", '', $line);
+                $line = str_replace("﻿", '', $line);
                 // Current plurality for 'msgstr[]'.
-                $this->currentPluralIndex = 0;
+                $this->current_plural_index = 0;
             }
-
             // Track the line number for error reporting.
-            $this->lineNumber++;
-
+            $this->line_number++;
             // Initialize common values for error logging.
-            $log_vars = [
-              '%uri' => $this->getURI(),
-              '%line' => $this->lineNumber,
-            ];
-
+            $log_vars = ['%uri' => $this->get_uri(), '%line' => $this->line_number];
             // Trim away the linefeed. \\n might appear at the end of the string if
             // another line continuing the same string follows. We can remove that.
             $line = trim(strtr($line, ["\\\n" => '']));
@@ -286,20 +251,18 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
                 // Lines starting with '#' are comments.
                 if ($this->context == 'COMMENT') {
                     // Already in comment context, add to current comment.
-                    $this->currentItem['#'][] = substr($line, 1);
-                } elseif (($this->context == 'MSGSTR') || ($this->context == 'MSGSTR_ARR')) {
+                    $this->current_item['#'][] = substr($line, 1);
+                } elseif ($this->context == 'MSGSTR' || $this->context == 'MSGSTR_ARR') {
                     // We are currently in string context, save current item.
-                    $this->setItemFromArray($this->currentItem);
-
+                    $this->set_item_from_array($this->current_item);
                     // Start a new entry for the comment.
-                    $this->currentItem = [];
-                    $this->currentItem['#'][] = substr($line, 1);
-
+                    $this->current_item = [];
+                    $this->current_item['#'][] = substr($line, 1);
                     $this->context = 'COMMENT';
                     return;
                 } else {
                     // A comment following any other context is a syntax error.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgstr" was expected but not found on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgstr" was expected but not found on line %line.', $log_vars);
                     return false;
                 }
                 return;
@@ -308,213 +271,200 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
                 // A plural form for the current source string.
                 if ($this->context != 'MSGID') {
                     // A plural form can only be added to an msgid directly.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgid_plural" was expected but not found on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgid_plural" was expected but not found on line %line.', $log_vars);
                     return false;
                 }
                 // Remove 'msgid_plural' and trim away whitespace.
                 $line = trim(substr($line, 12));
                 // Only the plural source string is left, parse it.
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // The plural form must be wrapped in quotes.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains a syntax error on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains a syntax error on line %line.', $log_vars);
                     return false;
                 }
                 // Append the plural source to the current entry.
-                if (is_string($this->currentItem['msgid'])) {
+                if (is_string($this->current_item['msgid'])) {
                     // The first value was stored as string. Now we know the context is
                     // plural, it is converted to array.
-                    $this->currentItem['msgid'] = [$this->currentItem['msgid']];
+                    $this->current_item['msgid'] = [$this->current_item['msgid']];
                 }
-                $this->currentItem['msgid'][] = $quoted;
+                $this->current_item['msgid'][] = $quoted;
                 $this->context = 'MSGID_PLURAL';
                 return;
             }
             if (!strncmp('msgid', $line, 5)) {
                 // Starting a new message.
-                if (($this->context == 'MSGSTR') || ($this->context == 'MSGSTR_ARR')) {
+                if ($this->context == 'MSGSTR' || $this->context == 'MSGSTR_ARR') {
                     // We are currently in string context, save current item.
-                    $this->setItemFromArray($this->currentItem);
-
+                    $this->set_item_from_array($this->current_item);
                     // Start a new context for the msgid.
-                    $this->currentItem = [];
+                    $this->current_item = [];
                 } elseif ($this->context == 'MSGID') {
                     // We are currently already in the context, meaning we passed an id
                     // with no data.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgid" is unexpected on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgid" is unexpected on line %line.', $log_vars);
                     return false;
                 }
                 // Remove 'msgid' and trim away whitespace.
                 $line = trim(substr($line, 5));
                 // Only the message id string is left, parse it.
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // The message id must be wrapped in quotes.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: invalid format for "msgid" on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: invalid format for "msgid" on line %line.', $log_vars);
                     return false;
                 }
-                $this->currentItem['msgid'] = $quoted;
+                $this->current_item['msgid'] = $quoted;
                 $this->context = 'MSGID';
                 return;
             }
             if (!strncmp('msgctxt', $line, 7)) {
                 // Starting a new context.
-                if (($this->context == 'MSGSTR') || ($this->context == 'MSGSTR_ARR')) {
+                if ($this->context == 'MSGSTR' || $this->context == 'MSGSTR_ARR') {
                     // We are currently in string context, save current item.
-                    $this->setItemFromArray($this->currentItem);
-                    $this->currentItem = [];
-                } elseif (!empty($this->currentItem['msgctxt'])) {
+                    $this->set_item_from_array($this->current_item);
+                    $this->current_item = [];
+                } elseif (!empty($this->current_item['msgctxt'])) {
                     // A context cannot apply to another context.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgctxt" is unexpected on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgctxt" is unexpected on line %line.', $log_vars);
                     return false;
                 }
                 // Remove 'msgctxt' and trim away whitespaces.
                 $line = trim(substr($line, 7));
                 // Only the msgctxt string is left, parse it.
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // The context string must be quoted.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: invalid format for "msgctxt" on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: invalid format for "msgctxt" on line %line.', $log_vars);
                     return false;
                 }
-                $this->currentItem['msgctxt'] = $quoted;
+                $this->current_item['msgctxt'] = $quoted;
                 $this->context = 'MSGCTXT';
                 return;
             }
             if (!strncmp('msgstr[', $line, 7)) {
                 // A message string for a specific plurality.
-                if (($this->context != 'MSGID') &&
-                    ($this->context != 'MSGCTXT') &&
-                    ($this->context != 'MSGID_PLURAL') &&
-                    ($this->context != 'MSGSTR_ARR')) {
+                if ($this->context != 'MSGID' && $this->context != 'MSGCTXT' && $this->context != 'MSGID_PLURAL' && $this->context != 'MSGSTR_ARR') {
                     // Plural message strings must come after msgid, msgctxt,
                     // msgid_plural, or other msgstr[] entries.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgstr[]" is unexpected on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgstr[]" is unexpected on line %line.', $log_vars);
                     return false;
                 }
                 // Ensure the plurality is terminated.
                 if (!str_contains($line, ']')) {
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: invalid format for "msgstr[]" on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: invalid format for "msgstr[]" on line %line.', $log_vars);
                     return false;
                 }
                 // Extract the plurality.
                 $from_bracket = strstr($line, '[');
-                $this->currentPluralIndex = substr($from_bracket, 1, strpos($from_bracket, ']') - 1);
+                $this->current_plural_index = substr($from_bracket, 1, strpos($from_bracket, ']') - 1);
                 // Skip to the next whitespace and trim away any further whitespace,
                 // bringing $line to the message text only.
                 $line = trim(strstr($line, ' '));
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // The string must be quoted.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: invalid format for "msgstr[]" on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: invalid format for "msgstr[]" on line %line.', $log_vars);
                     return false;
                 }
-                if (!isset($this->currentItem['msgstr']) || !is_array($this->currentItem['msgstr'])) {
-                    $this->currentItem['msgstr'] = [];
+                if (!isset($this->current_item['msgstr']) || !is_array($this->current_item['msgstr'])) {
+                    $this->current_item['msgstr'] = [];
                 }
-                $this->currentItem['msgstr'][$this->currentPluralIndex] = $quoted;
+                $this->current_item['msgstr'][$this->current_plural_index] = $quoted;
                 $this->context = 'MSGSTR_ARR';
                 return;
             }
             if (!strncmp('msgstr', $line, 6)) {
                 // A string pair for an msgid (with optional context).
-                if (($this->context != 'MSGID') && ($this->context != 'MSGCTXT')) {
+                if ($this->context != 'MSGID' && $this->context != 'MSGCTXT') {
                     // Strings are only valid within an id or context scope.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: "msgstr" is unexpected on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: "msgstr" is unexpected on line %line.', $log_vars);
                     return false;
                 }
                 // Remove 'msgstr' and trim away whitespaces.
                 $line = trim(substr($line, 6));
                 // Only the msgstr string is left, parse it.
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // The string must be quoted.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: invalid format for "msgstr" on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: invalid format for "msgstr" on line %line.', $log_vars);
                     return false;
                 }
-                $this->currentItem['msgstr'] = $quoted;
+                $this->current_item['msgstr'] = $quoted;
                 $this->context = 'MSGSTR';
                 return;
             }
-
             if ($line != '') {
                 // Anything that is not a token may be a continuation of a previous
                 // token.
-                $quoted = $this->parseQuoted($line);
+                $quoted = $this->parse_quoted($line);
                 if ($quoted === false) {
                     // This string must be quoted.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: string continuation expected on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: string continuation expected on line %line.', $log_vars);
                     return false;
                 }
                 // Append the string to the current item.
-                if (($this->context == 'MSGID') || ($this->context == 'MSGID_PLURAL')) {
-                    if (is_array($this->currentItem['msgid'])) {
+                if ($this->context == 'MSGID' || $this->context == 'MSGID_PLURAL') {
+                    if (is_array($this->current_item['msgid'])) {
                         // Add string to last array element for plural sources.
-                        $last_index = count($this->currentItem['msgid']) - 1;
-                        $this->currentItem['msgid'][$last_index] .= $quoted;
+                        $last_index = count($this->current_item['msgid']) - 1;
+                        $this->current_item['msgid'][$last_index] .= $quoted;
                     } else {
                         // Singular source, just append the string.
-                        $this->currentItem['msgid'] .= $quoted;
+                        $this->current_item['msgid'] .= $quoted;
                     }
                 } elseif ($this->context == 'MSGCTXT') {
                     // Multiline context name.
-                    $this->currentItem['msgctxt'] .= $quoted;
+                    $this->current_item['msgctxt'] .= $quoted;
                 } elseif ($this->context == 'MSGSTR') {
                     // Multiline translation string.
-                    $this->currentItem['msgstr'] .= $quoted;
+                    $this->current_item['msgstr'] .= $quoted;
                 } elseif ($this->context == 'MSGSTR_ARR') {
                     // Multiline plural translation string.
-                    $this->currentItem['msgstr'][$this->currentPluralIndex] .= $quoted;
+                    $this->current_item['msgstr'][$this->current_plural_index] .= $quoted;
                 } else {
                     // No valid context to append to.
-                    $this->errors[] = new FormattableMarkup('The translation stream %uri contains an error: unexpected string on line %line.', $log_vars);
+                    $this->errors[] = new Formattable_Markup('The translation stream %uri contains an error: unexpected string on line %line.', $log_vars);
                     return false;
                 }
                 return;
             }
         }
-
         // Empty line read or EOF of PO stream, close out the last entry.
-        if (($this->context == 'MSGSTR') || ($this->context == 'MSGSTR_ARR')) {
-            $this->setItemFromArray($this->currentItem);
-            $this->currentItem = [];
+        if ($this->context == 'MSGSTR' || $this->context == 'MSGSTR_ARR') {
+            $this->set_item_from_array($this->current_item);
+            $this->current_item = [];
         } elseif ($this->context != 'COMMENT') {
-            $this->errors[] = new FormattableMarkup('The translation stream %uri ended unexpectedly at line %line.', $log_vars);
+            $this->errors[] = new Formattable_Markup('The translation stream %uri ended unexpectedly at line %line.', $log_vars);
             return false;
         }
     }
-
     /**
      * Store the parsed values as a PoItem object.
      */
-    public function setItemFromArray(array $value): void
+    public function set_item_from_array(array $value): void
     {
         $plural = false;
-
         $comments = '';
         if (isset($value['#'])) {
-            $comments = $this->shortenComments($value['#']);
+            $comments = $this->shorten_comments($value['#']);
         }
-
         if (is_array($value['msgstr'])) {
             // Sort plural variants by their form index.
             ksort($value['msgstr']);
             $plural = true;
         }
-
-        $item = new PoItem();
-        $item->setContext($value['msgctxt'] ?? '');
-        $item->setSource($value['msgid']);
-        $item->setTranslation($value['msgstr']);
-        $item->setPlural($plural);
-        $item->setComment($comments);
-        $item->setLangcode($this->langcode);
-
-        $this->lastItem = $item;
-
+        $item = new Po_Item();
+        $item->set_context($value['msgctxt'] ?? '');
+        $item->set_source($value['msgid']);
+        $item->set_translation($value['msgstr']);
+        $item->set_plural($plural);
+        $item->set_comment($comments);
+        $item->set_langcode($this->langcode);
+        $this->last_item = $item;
         $this->context = 'COMMENT';
     }
-
     /**
      * Parses a string in quotes.
      *
@@ -525,7 +475,7 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
      *   The string parsed from inside the quotes. False when the syntax is
      *   invalid.
      */
-    public function parseQuoted($string): false|string
+    public function parse_quoted($string): false|string
     {
         if (substr($string, 0, 1) != substr($string, -1, 1)) {
             // Start and end quotes must be the same.
@@ -544,7 +494,6 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
         // Unrecognized quote.
         return false;
     }
-
     /**
      * Generates a short, one-string version of the passed comment array.
      *
@@ -554,7 +503,7 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
      * @return string
      *   Short one-string version of the comment.
      */
-    private function shortenComments($comment): string
+    private function shorten_comments($comment): string
     {
         $comm = '';
         while (count($comment)) {
@@ -567,5 +516,4 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface
         }
         return trim(substr($comm, 0, -2));
     }
-
 }

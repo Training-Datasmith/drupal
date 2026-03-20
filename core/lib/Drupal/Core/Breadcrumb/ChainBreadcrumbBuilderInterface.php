@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Breadcrumb;
 
 /**
  * Defines an interface a chained service that builds the breadcrumb.
  */
-interface ChainBreadcrumbBuilderInterface extends BreadcrumbBuilderInterface
+interface Chain_Breadcrumb_Builder_Interface extends Breadcrumb_Builder_Interface
 {
     /**
      * Adds another breadcrumb builder.
@@ -17,6 +16,5 @@ interface ChainBreadcrumbBuilderInterface extends BreadcrumbBuilderInterface
      * @param int $priority
      *   Priority of the breadcrumb builder.
      */
-    public function addBuilder(BreadcrumbBuilderInterface $builder, $priority);
-
+    public function add_builder(Breadcrumb_Builder_Interface $builder, $priority);
 }

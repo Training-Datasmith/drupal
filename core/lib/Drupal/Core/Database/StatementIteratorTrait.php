@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database;
 
 /**
@@ -10,72 +9,65 @@ namespace Drupal\Core\Database;
  * Implements the methods required by StatementInterface objects that implement
  * the \Iterator interface.
  */
-trait StatementIteratorTrait
+trait Statement_Iterator_Trait
 {
     /**
      * Traces if rows can be fetched from the resultset.
      */
-    private bool $isResultsetIterable = false;
-
+    private bool $is_resultset_iterable = false;
     /**
      * The current row, retrieved in the current fetch format.
      */
-    private mixed $resultsetRow = null;
-
+    private mixed $resultset_row = null;
     /**
      * The key of the current row.
      *
      * This keeps the index of rows fetched from the underlying statement. It is
      * set to -1 when no rows have been fetched yet.
      */
-    private int $resultsetKey = -1;
-
+    private int $resultset_key = -1;
     /**
      * Informs the iterator whether rows can be fetched from the resultset.
      *
      * @param bool $valid
      *   The result of the execution of the client statement.
      */
-    protected function markResultsetIterable(bool $valid): void
+    protected function mark_resultset_iterable(bool $valid): void
     {
-        $this->isResultsetIterable = $valid;
-        $this->resultsetRow = null;
+        $this->is_resultset_iterable = $valid;
+        $this->resultset_row = null;
         if ($valid === true) {
-            $this->resultsetKey = -1;
+            $this->resultset_key = -1;
         }
     }
-
     /**
      * Sets the current resultset row for the iterator, and increments the key.
      *
      * @param mixed $row
      *   The last row fetched from the client statement.
      */
-    protected function setResultsetCurrentRow(mixed $row): void
+    protected function set_resultset_current_row(mixed $row): void
     {
-        $this->resultsetRow = $row;
-        $this->resultsetKey++;
+        $this->resultset_row = $row;
+        $this->resultset_key++;
     }
-
     /**
      * Returns the row index of the current element in the resultset.
      *
      * @return int
      *   The row index of the current element in the resultset.
      */
-    protected function getResultsetCurrentRowIndex(): int
+    protected function get_resultset_current_row_index(): int
     {
-        return $this->resultsetKey;
+        return $this->resultset_key;
     }
-
     /**
      * Informs the iterator that no more rows can be fetched from the resultset.
      */
-    protected function markResultsetFetchingComplete(): void
+    protected function mark_resultset_fetching_complete(): void
     {
-        $this->markResultsetIterable(false);
+        $this->mark_resultset_iterable(false);
     }
-
     /**
      * Returns the current element.
      *
@@ -85,9 +77,8 @@ trait StatementIteratorTrait
      */
     public function current(): mixed
     {
-        return $this->resultsetRow;
+        return $this->resultset_row;
     }
-
     /**
      * Returns the key of the current element.
      *
@@ -97,9 +88,8 @@ trait StatementIteratorTrait
      */
     public function key(): mixed
     {
-        return $this->resultsetKey;
+        return $this->resultset_key;
     }
-
     /**
      * Rewinds back to the first element of the Iterator.
      *
@@ -114,12 +104,11 @@ trait StatementIteratorTrait
     {
         // Nothing to do: our DatabaseStatement can't be rewound. Error out when
         // attempted.
-        if ($this->resultsetKey >= 0) {
-            $this->markResultsetIterable(false);
-            throw new DatabaseExceptionWrapper('Attempted rewinding a StatementInterface object when fetching has already started. Refactor your code to avoid rewinding statement objects.');
+        if ($this->resultset_key >= 0) {
+            $this->mark_resultset_iterable(false);
+            throw new Database_Exception_Wrapper('Attempted rewinding a StatementInterface object when fetching has already started. Refactor your code to avoid rewinding statement objects.');
         }
     }
-
     /**
      * Moves the current position to the next element.
      *
@@ -133,7 +122,6 @@ trait StatementIteratorTrait
     {
         $this->fetch();
     }
-
     /**
      * Checks if current position is valid.
      *
@@ -146,10 +134,9 @@ trait StatementIteratorTrait
      */
     public function valid(): bool
     {
-        if ($this->isResultsetIterable && $this->resultsetKey === -1) {
+        if ($this->is_resultset_iterable && $this->resultset_key === -1) {
             $this->fetch();
         }
-        return $this->isResultsetIterable;
+        return $this->is_resultset_iterable;
     }
-
 }

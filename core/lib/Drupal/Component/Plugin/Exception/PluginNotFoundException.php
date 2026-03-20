@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Exception;
 
 /**
  * Plugin exception class to be thrown when a plugin ID could not be found.
  */
-class PluginNotFoundException extends PluginException
+class Plugin_Not_Found_Exception extends Plugin_Exception
 {
     /**
      * Construct a PluginNotFoundException exception.
@@ -30,5 +29,4 @@ class PluginNotFoundException extends PluginException
         }
         parent::__construct($message, $code, $previous);
     }
-
 }

@@ -1,39 +1,34 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Breadcrumb;
 
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Interface;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Trait;
 use Drupal\Core\Link;
-use Drupal\Core\Render\RenderableInterface;
-
+use Drupal\Core\Render\Renderable_Interface;
 /**
  * Used to return generated breadcrumbs with associated cacheability metadata.
  */
-class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInterface
+class Breadcrumb implements Renderable_Interface, Refinable_Cacheable_Dependency_Interface
 {
-    use RefinableCacheableDependencyTrait;
-
+    use Refinable_Cacheable_Dependency_Trait;
     /**
      * An ordered list of links for the breadcrumb.
      *
      * @var \Drupal\Core\Link[]
      */
     protected $links = [];
-
     /**
      * Gets the breadcrumb links.
      *
      * @return \Drupal\Core\Link[]
      *   An ordered list of the links for the breadcrumb.
      */
-    public function getLinks()
+    public function get_links()
     {
         return $this->links;
     }
-
     /**
      * Sets the breadcrumb links.
      *
@@ -45,17 +40,14 @@ class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInt
      * @throws \LogicException
      *   Thrown when setting breadcrumb links after they've already been set.
      */
-    public function setLinks(array $links): static
+    public function set_links(array $links): static
     {
         if (!empty($this->links)) {
             throw new \LogicException('Once breadcrumb links are set, only additional breadcrumb links can be added.');
         }
-
         $this->links = $links;
-
         return $this;
     }
-
     /**
      * Appends a link to the end of the ordered list of breadcrumb links.
      *
@@ -64,33 +56,21 @@ class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInt
      *
      * @return $this
      */
-    public function addLink(Link $link): static
+    public function add_link(Link $link): static
     {
         $this->links[] = $link;
-
         return $this;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function toRenderable(): array
+    public function to_renderable(): array
     {
-        $build = [
-          '#cache' => [
-            'contexts' => $this->cacheContexts,
-            'tags' => $this->cacheTags,
-            'max-age' => $this->cacheMaxAge,
-          ],
-        ];
+        $build = ['#cache' => ['contexts' => $this->cache_contexts, 'tags' => $this->cache_tags, 'max-age' => $this->cache_max_age]];
         if (!empty($this->links)) {
-            $build += [
-              '#theme' => 'breadcrumb',
-              '#links' => $this->links,
-            ];
+            $build += ['#theme' => 'breadcrumb', '#links' => $this->links];
         }
         return $build;
     }
-
 }

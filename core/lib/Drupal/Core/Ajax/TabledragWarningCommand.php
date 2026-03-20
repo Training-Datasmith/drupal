@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
-use Drupal\Core\Asset\AttachedAssets;
-
+use Drupal\Core\Asset\Attached_Assets;
 /**
  * AJAX command for conveying changed tabledrag rows.
  *
@@ -18,7 +16,7 @@ use Drupal\Core\Asset\AttachedAssets;
  *
  * @ingroup ajax
  */
-class TabledragWarningCommand implements CommandInterface, CommandWithAttachedAssetsInterface
+class Tabledrag_Warning_Command implements Command_Interface, Command_With_Attached_Assets_Interface
 {
     /**
      * Constructs a TableDragWarningCommand object.
@@ -28,32 +26,23 @@ class TabledragWarningCommand implements CommandInterface, CommandWithAttachedAs
      * @param string $tabledrag_instance
      *   The identifier of the tabledrag instance.
      */
-    public function __construct(
-        protected string $id,
-        protected string $tabledrag_instance,
-    ) {
+    public function __construct(protected string $id, protected string $tabledrag_instance)
+    {
     }
-
     /**
      * {@inheritdoc}
      */
     public function render(): array
     {
-        return [
-          'command' => 'tabledragChanged',
-          'id' => $this->id,
-          'tabledrag_instance' => $this->tabledrag_instance,
-        ];
+        return ['command' => 'tabledragChanged', 'id' => $this->id, 'tabledrag_instance' => $this->tabledrag_instance];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets
+    public function get_attached_assets(): \Drupal\Core\Asset\Attached_Assets
     {
-        $assets = new AttachedAssets();
-        $assets->setLibraries(['core/drupal.tabledrag.ajax']);
+        $assets = new Attached_Assets();
+        $assets->set_libraries(['core/drupal.tabledrag.ajax']);
         return $assets;
     }
-
 }

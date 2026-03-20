@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 /**
  * Interface for a query that can be manipulated via an alter hook.
  */
-interface AlterableInterface
+interface Alterable_Interface
 {
     /**
      * Adds a tag to a query.
@@ -24,8 +23,7 @@ interface AlterableInterface
      * @return $this
      *   The called object.
      */
-    public function addTag($tag);
-
+    public function add_tag($tag);
     /**
      * Determines if a given query has a given tag.
      *
@@ -35,8 +33,7 @@ interface AlterableInterface
      * @return bool
      *   TRUE if this query has been marked with this tag, FALSE otherwise.
      */
-    public function hasTag($tag);
-
+    public function has_tag($tag);
     /**
      * Determines if a given query has all specified tags.
      *
@@ -49,8 +46,7 @@ interface AlterableInterface
      *   TRUE if this query has been marked with all specified tags, FALSE
      *   otherwise.
      */
-    public function hasAllTags(string ...$tags);
-
+    public function has_all_tags(string ...$tags);
     /**
      * Determines if a given query has any specified tag.
      *
@@ -63,8 +59,7 @@ interface AlterableInterface
      *   TRUE if this query has been marked with at least one of the specified
      *   tags, FALSE otherwise.
      */
-    public function hasAnyTag(string ...$tags);
-
+    public function has_any_tag(string ...$tags);
     /**
      * Adds additional metadata to the query.
      *
@@ -81,8 +76,7 @@ interface AlterableInterface
      * @return $this
      *   The called object.
      */
-    public function addMetaData($key, $object);
-
+    public function add_meta_data($key, $object);
     /**
      * Retrieves a given piece of metadata.
      *
@@ -92,6 +86,5 @@ interface AlterableInterface
      * @return mixed
      *   The previously attached metadata object, or NULL if one doesn't exist.
      */
-    public function getMetaData($key);
-
+    public function get_meta_data($key);
 }

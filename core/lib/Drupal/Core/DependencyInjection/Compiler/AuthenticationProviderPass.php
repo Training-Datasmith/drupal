@@ -1,30 +1,27 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection\Compiler;
 
-namespace Drupal\Core\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+use Symfony\Component\Dependency_Injection\Compiler\Compiler_Pass_Interface;
+use Symfony\Component\Dependency_Injection\Container_Builder;
 /**
  * Registers the authentication_providers container parameter.
  */
-class AuthenticationProviderPass implements CompilerPassInterface
+class Authentication_Provider_Pass implements Compiler_Pass_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container): void
+    public function process(Container_Builder $container): void
     {
         $authentication_providers = [];
-        foreach ($container->findTaggedServiceIds('authentication_provider') as $service_id => $attributes) {
+        foreach ($container->find_tagged_service_ids('authentication_provider') as $service_id => $attributes) {
             $authentication_provider = $attributes[0]['provider_id'];
-            if ($provider_tag = $container->getDefinition($service_id)->getTag('_provider')) {
+            if ($provider_tag = $container->get_definition($service_id)->get_tag('_provider')) {
                 $authentication_providers[$authentication_provider] = $provider_tag[0]['provider'];
             }
         }
-        $container->setParameter('authentication_providers', $authentication_providers);
+        $container->set_parameter('authentication_providers', $authentication_providers);
     }
-
 }

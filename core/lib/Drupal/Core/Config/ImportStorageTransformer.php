@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Lock\LockBackendInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-
+use Drupal\Core\Lock\Lock_Backend_Interface;
+use Symfony\Contracts\Event_Dispatcher\Event_Dispatcher_Interface;
 /**
  * The import storage transformer helps to use the configuration management api.
  *
@@ -16,15 +14,13 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  * Its single purpose is to transform a storage for the import step of a
  * configuration synchronization by dispatching the import transformation event.
  */
-final class ImportStorageTransformer
+final class Import_Storage_Transformer
 {
-    use StorageCopyTrait;
-
+    use Storage_Copy_Trait;
     /**
      * The name used to identify the lock.
      */
     public const LOCK_NAME = 'config_import_transformer';
-
     /**
      * ImportStorageTransformer constructor.
      *
@@ -41,7 +37,7 @@ final class ImportStorageTransformer
         /**
          * The event dispatcher to get changes to the configuration.
          */
-        protected EventDispatcherInterface $eventDispatcher,
+        protected Event_Dispatcher_Interface $event_dispatcher,
         /**
          * The drupal database connection.
          */
@@ -49,17 +45,17 @@ final class ImportStorageTransformer
         /**
          * The normal lock for the duration of the request.
          */
-        protected LockBackendInterface $requestLock,
+        protected Lock_Backend_Interface $request_lock,
         /**
          * The persistent lock which the config importer uses across requests.
          *
          *
          * @see \Drupal\Core\Config\ConfigImporter::alreadyImporting()
          */
-        protected LockBackendInterface $persistentLock
-    ) {
+        protected Lock_Backend_Interface $persistent_lock
+    )
+    {
     }
-
     /**
      * Transform the storage to be imported from.
      *
@@ -79,40 +75,34 @@ final class ImportStorageTransformer
      * @throws \Drupal\Core\Config\StorageTransformerException
      *   Thrown when the lock could not be acquired.
      */
-    public function transform(StorageInterface $storage): \Drupal\Core\Config\DatabaseStorage|\Drupal\Core\Config\StorageInterface
+    public function transform(Storage_Interface $storage): \Drupal\Core\Config\Database_Storage|\Drupal\Core\Config\Storage_Interface
     {
         // We use a database storage to reduce the memory requirement.
-        $mutable = new DatabaseStorage($this->connection, 'config_import');
-
-        if (!$this->persistentLock->lockMayBeAvailable(ConfigImporter::LOCK_NAME)) {
+        $mutable = new Database_Storage($this->connection, 'config_import');
+        if (!$this->persistent_lock->lock_may_be_available(Config_Importer::LOCK_NAME)) {
             // If the config importer is already importing, the transformation will
             // always be the one the config importer is already using. This makes sure
             // that even if the storage changes the importer continues importing the
             // same configuration.
             return $mutable;
         }
-
         // Acquire a lock to ensure that the storage is not changed when a
         // concurrent request tries to transform the storage. The lock will be
         // released at the end of the request.
-        if (!$this->requestLock->acquire(self::LOCK_NAME)) {
-            $this->requestLock->wait(self::LOCK_NAME);
-            if (!$this->requestLock->acquire(self::LOCK_NAME)) {
-                throw new StorageTransformerException('Cannot acquire config import transformer lock.');
+        if (!$this->request_lock->acquire(self::LOCK_NAME)) {
+            $this->request_lock->wait(self::LOCK_NAME);
+            if (!$this->request_lock->acquire(self::LOCK_NAME)) {
+                throw new Storage_Transformer_Exception('Cannot acquire config import transformer lock.');
             }
         }
-
         // Copy the sync configuration to the created mutable storage.
         // Wrapping the queries in a transaction for performance gain.
-        $transaction = $this->connection->startTransaction();
-        self::replaceStorageContents($storage, $mutable);
+        $transaction = $this->connection->start_transaction();
+        self::replace_storage_contents($storage, $mutable);
         unset($transaction);
-
         // Dispatch the event so that event listeners can alter the configuration.
-        $this->eventDispatcher->dispatch(new StorageTransformEvent($mutable), ConfigEvents::STORAGE_TRANSFORM_IMPORT);
-
+        $this->event_dispatcher->dispatch(new Storage_Transform_Event($mutable), Config_Events::STORAGE_TRANSFORM_IMPORT);
         // Return the storage with the altered configuration.
         return $mutable;
     }
-
 }

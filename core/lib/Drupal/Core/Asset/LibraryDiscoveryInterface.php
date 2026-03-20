@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
@@ -17,7 +16,7 @@ namespace Drupal\Core\Asset;
  * - Two (or more) extensions can still register the same library and use it
  *   without conflicts in case the libraries are loaded on certain pages only.
  */
-interface LibraryDiscoveryInterface
+interface Library_Discovery_Interface
 {
     /**
      * Gets all libraries defined by an extension.
@@ -31,8 +30,7 @@ interface LibraryDiscoveryInterface
      *
      * @see self::getLibraryByName()
      */
-    public function getLibrariesByExtension($extension);
-
+    public function get_libraries_by_extension($extension);
     /**
      * Gets a single library defined by an extension by name.
      *
@@ -45,6 +43,5 @@ interface LibraryDiscoveryInterface
      *   The definition of the requested library, if $name was passed and it
      *   exists, otherwise FALSE.
      */
-    public function getLibraryByName($extension, $name);
-
+    public function get_library_by_name($extension, $name);
 }

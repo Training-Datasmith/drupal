@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
 /**
@@ -20,7 +19,7 @@ namespace Drupal\Core\Access;
  * would never enter the else-statement and hence introduce a critical security
  * issue.
  */
-interface AccessResultInterface
+interface Access_Result_Interface
 {
     /**
      * Checks whether this access result indicates access is explicitly allowed.
@@ -31,8 +30,7 @@ interface AccessResultInterface
      * @return bool
      *   When TRUE then isForbidden() and isNeutral() are FALSE.
      */
-    public function isAllowed();
-
+    public function is_allowed();
     /**
      * Checks whether this access result indicates access is explicitly forbidden.
      *
@@ -47,8 +45,7 @@ interface AccessResultInterface
      * @return bool
      *   When TRUE then isAllowed() and isNeutral() are FALSE.
      */
-    public function isForbidden();
-
+    public function is_forbidden();
     /**
      * Checks whether this access result indicates access is not yet determined.
      *
@@ -57,8 +54,7 @@ interface AccessResultInterface
      *
      * @internal
      */
-    public function isNeutral();
-
+    public function is_neutral();
     /**
      * Combine this access result with another using OR.
      *
@@ -81,8 +77,7 @@ interface AccessResultInterface
      *
      * @return static
      */
-    public function orIf(AccessResultInterface $other);
-
+    public function or_if(Access_Result_Interface $other);
     /**
      * Combine this access result with another using AND.
      *
@@ -105,6 +100,5 @@ interface AccessResultInterface
      *
      * @return static
      */
-    public function andIf(AccessResultInterface $other);
-
+    public function and_if(Access_Result_Interface $other);
 }

@@ -1,33 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
-
+use Drupal\Core\Field\Field_Definition_Interface;
 /**
  * Defines a null entity storage.
  *
  * Used for content entity types that have no storage.
  */
-class ContentEntityNullStorage extends ContentEntityStorageBase
+class Content_Entity_Null_Storage extends Content_Entity_Storage_Base
 {
     /**
      * {@inheritdoc}
      */
-    public function loadMultiple(?array $ids = null): array
+    public function load_multiple(?array $ids = null): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doLoadMultiple(?array $ids = null)
+    protected function do_load_multiple(?array $ids = null)
     {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -35,139 +31,120 @@ class ContentEntityNullStorage extends ContentEntityStorageBase
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function loadRevision($revision_id): null
+    public function load_revision($revision_id): null
     {
         return null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function loadMultipleRevisions(array $revision_ids): array
+    public function load_multiple_revisions(array $revision_ids): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function deleteRevision($revision_id)
+    public function delete_revision($revision_id)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function loadByProperties(array $values = []): array
+    public function load_by_properties(array $values = []): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete(array $entities)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doDelete($entities)
+    protected function do_delete($entities)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function save(EntityInterface $entity)
+    public function save(Entity_Interface $entity)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getQueryServiceName(): string
+    protected function get_query_service_name(): string
     {
         return 'entity.query.null';
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doLoadMultipleRevisionsFieldItems($revision_ids): array
+    protected function do_load_multiple_revisions_field_items($revision_ids): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doSaveFieldItems(ContentEntityInterface $entity, array $names = [])
+    protected function do_save_field_items(Content_Entity_Interface $entity, array $names = [])
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doDeleteFieldItems($entities)
+    protected function do_delete_field_items($entities)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doDeleteRevisionFieldItems(ContentEntityInterface $revision)
+    protected function do_delete_revision_field_items(Content_Entity_Interface $revision)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size): array
+    protected function read_field_items_to_purge(Field_Definition_Interface $field_definition, $batch_size): array
     {
         return [];
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function purgeFieldItems(ContentEntityInterface $entity, FieldDefinitionInterface $field_definition)
+    protected function purge_field_items(Content_Entity_Interface $entity, Field_Definition_Interface $field_definition)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function doSave($id, EntityInterface $entity)
+    protected function do_save($id, Entity_Interface $entity)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function has($id, EntityInterface $entity)
+    protected function has($id, Entity_Interface $entity)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function countFieldData($storage_definition, $as_bool = false): false|int
+    public function count_field_data($storage_definition, $as_bool = false): false|int
     {
         return $as_bool ? false : 0;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function hasData(): bool
+    public function has_data(): bool
     {
         return false;
     }
-
 }

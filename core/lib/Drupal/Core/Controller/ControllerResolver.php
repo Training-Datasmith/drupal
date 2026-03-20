@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Controller;
 
-use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\Core\Utility\CallableResolver;
-use Symfony\Component\HttpFoundation\Request;
-
+use Drupal\Core\Routing\Route_Object_Interface;
+use Drupal\Core\Utility\Callable_Resolver;
+use Symfony\Component\Http_Foundation\Request;
 /**
  * ControllerResolver to enhance controllers beyond Symfony's basic handling.
  *
@@ -18,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
  *    controller by using a service:method notation (Symfony uses the same
  *    convention).
  */
-class ControllerResolver implements ControllerResolverInterface
+class Controller_Resolver implements Controller_Resolver_Interface
 {
     /**
      * Constructs a new ControllerResolver.
@@ -26,32 +24,29 @@ class ControllerResolver implements ControllerResolverInterface
      * @param \Drupal\Core\Utility\CallableResolver $callableResolver
      *   The callable resolver.
      */
-    public function __construct(protected CallableResolver $callableResolver)
+    public function __construct(protected Callable_Resolver $callable_resolver)
     {
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getControllerFromDefinition($controller, $path = '')
+    public function get_controller_from_definition($controller, $path = '')
     {
         try {
-            $callable = $this->callableResolver->getCallableFromDefinition($controller);
+            $callable = $this->callable_resolver->get_callable_from_definition($controller);
         } catch (\InvalidArgumentException $e) {
             throw new \InvalidArgumentException(sprintf('The controller for URI "%s" is not callable.', $path), 0, $e);
         }
         return $callable;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getController(Request $request): callable|false
+    public function get_controller(Request $request): callable|false
     {
-        if (!$controller = $request->attributes->get(RouteObjectInterface::CONTROLLER_NAME)) {
+        if (!$controller = $request->attributes->get(Route_Object_Interface::CONTROLLER_NAME)) {
             return false;
         }
-        return $this->getControllerFromDefinition($controller, $request->getPathInfo());
+        return $this->get_controller_from_definition($controller, $request->get_path_info());
     }
-
 }

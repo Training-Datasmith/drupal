@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Event;
 
 /**
  * Represents the end of a statement execution as an event.
  */
-class StatementExecutionEndEvent extends DatabaseEvent
+class Statement_Execution_End_Event extends Database_Event
 {
     /**
      * Constructs a StatementExecutionEndEvent object.
@@ -31,27 +30,18 @@ class StatementExecutionEndEvent extends DatabaseEvent
      * @param float $startTime
      *   The time of the statement execution start.
      */
-    public function __construct(
-        public readonly int $statementObjectId,
-        public readonly string $key,
-        public readonly string $target,
-        public readonly string $queryString,
-        public readonly array $args,
-        public readonly array $caller,
-        public readonly float $startTime,
-    ) {
+    public function __construct(public readonly int $statement_object_id, public readonly string $key, public readonly string $target, public readonly string $query_string, public readonly array $args, public readonly array $caller, public readonly float $start_time)
+    {
         parent::__construct();
     }
-
     /**
      * Gets the query execution elapsed time.
      *
      * @return float
      *   The elapsed time.
      */
-    public function getElapsedTime(): float
+    public function get_elapsed_time(): float
     {
-        return $this->time - $this->startTime;
+        return $this->time - $this->start_time;
     }
-
 }

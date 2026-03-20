@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Composer;
 
 use Composer\Script\Event;
 use Composer\Semver\Constraint\Constraint;
-
 /**
  * Provides static functions for composer script events.
  *
@@ -22,28 +20,24 @@ class Composer
      *
      * @internal
      */
-    public static function upgradePHPUnit(Event $event): void
+    public static function upgrade_php_unit(Event $event): void
     {
-        $repository = $event->getComposer()->getRepositoryManager()->getLocalRepository();
+        $repository = $event->get_composer()->get_repository_manager()->get_local_repository();
         // This is, essentially, a null constraint. We only care whether the package
         // is present in the vendor directory yet, but findPackage() requires it.
         $constraint = new Constraint('>', '');
-        $phpunit_package = $repository->findPackage('phpunit/phpunit', $constraint);
+        $phpunit_package = $repository->find_package('phpunit/phpunit', $constraint);
         if (!$phpunit_package) {
             // There is nothing to do. The user is probably installing using the
             // --no-dev flag.
             return;
         }
-
         // If the PHP version is 8.4 or above and PHPUnit is less than version 11
         // call the drupal-phpunit-upgrade script to upgrade PHPUnit.
-        if (!static::upgradePHPUnitCheck($phpunit_package->getVersion())) {
-            $event->getComposer()
-              ->getEventDispatcher()
-              ->dispatchScript('drupal-phpunit-upgrade');
+        if (!static::upgrade_php_unit_check($phpunit_package->get_version())) {
+            $event->get_composer()->get_event_dispatcher()->dispatch_script('drupal-phpunit-upgrade');
         }
     }
-
     /**
      * Determines if PHPUnit needs to be upgraded.
      *
@@ -58,9 +52,8 @@ class Composer
      *
      * @internal
      */
-    public static function upgradePHPUnitCheck($phpunit_version): bool
+    public static function upgrade_php_unit_check($phpunit_version): bool
     {
         return !(version_compare(PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION, '8.4') >= 0 && version_compare($phpunit_version, '11.0') < 0);
     }
-
 }

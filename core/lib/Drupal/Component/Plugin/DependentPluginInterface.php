@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Plugin;
  *
  * @ingroup plugin_api
  */
-interface DependentPluginInterface
+interface Dependent_Plugin_Interface
 {
     /**
      * Calculates dependencies for the configured plugin.
@@ -35,6 +34,5 @@ interface DependentPluginInterface
      * @see \Drupal\Core\Entity\EntityInterface::getConfigDependencyName()
      * @see \Drupal\Core\Plugin\RemovableDependentPluginInterface
      */
-    public function calculateDependencies();
-
+    public function calculate_dependencies();
 }

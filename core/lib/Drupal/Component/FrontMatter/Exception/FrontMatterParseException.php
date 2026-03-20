@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Component\Front_Matter\Exception;
 
-namespace Drupal\Component\FrontMatter\Exception;
-
-use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
-
+use Drupal\Component\Serialization\Exception\Invalid_Data_Type_Exception;
 /**
  * Defines a class for front matter parsing exceptions.
  */
-class FrontMatterParseException extends InvalidDataTypeException
+class Front_Matter_Parse_Exception extends Invalid_Data_Type_Exception
 {
     /**
      * The line number of where the parse error occurred.
@@ -19,35 +17,32 @@ class FrontMatterParseException extends InvalidDataTypeException
      * which is populated with the line number of where this exception was
      * thrown in PHP.
      */
-    protected int $sourceLine;
-
+    protected int $source_line;
     /**
      * Constructs a new FrontMatterParseException instance.
      *
      * @param \Drupal\Component\Serialization\Exception\InvalidDataTypeException $exception
      *   The exception thrown when attempting to parse front matter data.
      */
-    public function __construct(InvalidDataTypeException $exception)
+    public function __construct(Invalid_Data_Type_Exception $exception)
     {
-        $this->sourceLine = 1;
-
+        $this->source_line = 1;
         // Attempt to extract the line number from the serializer error. This isn't
         // a very stable way to do this, however it is the only way given that
         // \Drupal\Component\Serialization\SerializationInterface does not have
         // methods for accessing this kind of information reliably.
         $message = 'An error occurred when attempting to parse front matter data';
         if ($exception) {
-            preg_match('/line:?\s?(\d+)/i', $exception->getMessage(), $matches);
+            preg_match('/line:?\s?(\d+)/i', $exception->get_message(), $matches);
             if (!empty($matches[1])) {
                 $message .= ' on line %d';
                 // Add any matching line count to the existing source line so it
                 // increases it by 1 to account for the front matter separator (---).
-                $this->sourceLine += (int) $matches[1];
+                $this->source_line += (int) $matches[1];
             }
         }
-        parent::__construct(sprintf($message, $this->sourceLine), 0, $exception);
+        parent::__construct(sprintf($message, $this->source_line), 0, $exception);
     }
-
     /**
      * Retrieves the line number where the parse error occurred.
      *
@@ -59,9 +54,8 @@ class FrontMatterParseException extends InvalidDataTypeException
      * @return int
      *   The source line number.
      */
-    public function getSourceLine(): int
+    public function get_source_line(): int
     {
-        return $this->sourceLine;
+        return $this->source_line;
     }
-
 }

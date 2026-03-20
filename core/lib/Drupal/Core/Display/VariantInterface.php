@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Display;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Core\Session\AccountInterface;
-
+use Drupal\Component\Plugin\Configurable_Interface;
+use Drupal\Component\Plugin\Dependent_Plugin_Interface;
+use Drupal\Component\Plugin\Plugin_Inspection_Interface;
+use Drupal\Core\Cache\Refinable_Cacheable_Dependency_Interface;
+use Drupal\Core\Plugin\Plugin_Form_Interface;
+use Drupal\Core\Session\Account_Interface;
 /**
  * Provides an interface for DisplayVariant plugins.
  *
@@ -19,7 +17,7 @@ use Drupal\Core\Session\AccountInterface;
  * @see \Drupal\Core\Display\VariantManager
  * @see plugin_api
  */
-interface VariantInterface extends PluginInspectionInterface, ConfigurableInterface, DependentPluginInterface, PluginFormInterface, RefinableCacheableDependencyInterface
+interface Variant_Interface extends Plugin_Inspection_Interface, Configurable_Interface, Dependent_Plugin_Interface, Plugin_Form_Interface, Refinable_Cacheable_Dependency_Interface
 {
     /**
      * Returns the user-facing display variant label.
@@ -28,7 +26,6 @@ interface VariantInterface extends PluginInspectionInterface, ConfigurableInterf
      *   The display variant label.
      */
     public function label();
-
     /**
      * Returns the admin-facing display variant label.
      *
@@ -37,8 +34,7 @@ interface VariantInterface extends PluginInspectionInterface, ConfigurableInterf
      * @return string
      *   The display variant administrative label.
      */
-    public function adminLabel();
-
+    public function admin_label();
     /**
      * Returns the unique ID for the display variant.
      *
@@ -46,23 +42,20 @@ interface VariantInterface extends PluginInspectionInterface, ConfigurableInterf
      *   The display variant ID.
      */
     public function id();
-
     /**
      * Returns the weight of the display variant.
      *
      * @return int
      *   The display variant weight.
      */
-    public function getWeight();
-
+    public function get_weight();
     /**
      * Sets the weight of the display variant.
      *
      * @param int $weight
      *   The weight to set.
      */
-    public function setWeight($weight);
-
+    public function set_weight($weight);
     /**
      * Determines if this display variant is accessible.
      *
@@ -73,8 +66,7 @@ interface VariantInterface extends PluginInspectionInterface, ConfigurableInterf
      * @return bool
      *   TRUE if this display variant is accessible, FALSE otherwise.
      */
-    public function access(?AccountInterface $account = null);
-
+    public function access(?Account_Interface $account = null);
     /**
      * Builds and returns the renderable array for the display variant.
      *
@@ -86,5 +78,4 @@ interface VariantInterface extends PluginInspectionInterface, ConfigurableInterf
      *   A render array for the display variant.
      */
     public function build();
-
 }

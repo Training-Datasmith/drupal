@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-
+use Symfony\Component\Validator\Context\Execution_Context_Interface;
 /**
  * Provides helper methods for byte conversions.
  */
@@ -17,51 +15,12 @@ class Bytes
      * @see http://wikipedia.org/wiki/Kilobyte
      */
     public const KILOBYTE = 1024;
-
     /**
      * The allowed suffixes of a bytes string in lowercase.
      *
      * @see http://wikipedia.org/wiki/Kilobyte
      */
-    public const ALLOWED_SUFFIXES = [
-      '',
-      'b',
-      'byte',
-      'bytes',
-      'k',
-      'kb',
-      'kilobyte',
-      'kilobytes',
-      'm',
-      'mb',
-      'megabyte',
-      'megabytes',
-      'g',
-      'gb',
-      'gigabyte',
-      'gigabytes',
-      't',
-      'tb',
-      'terabyte',
-      'terabytes',
-      'p',
-      'pb',
-      'petabyte',
-      'petabytes',
-      'e',
-      'eb',
-      'exabyte',
-      'exabytes',
-      'z',
-      'zb',
-      'zettabyte',
-      'zettabytes',
-      'y',
-      'yb',
-      'yottabyte',
-      'yottabytes',
-    ];
-
+    public const ALLOWED_SUFFIXES = ['', 'b', 'byte', 'bytes', 'k', 'kb', 'kilobyte', 'kilobytes', 'm', 'mb', 'megabyte', 'megabytes', 'g', 'gb', 'gigabyte', 'gigabytes', 't', 'tb', 'terabyte', 'terabytes', 'p', 'pb', 'petabyte', 'petabytes', 'e', 'eb', 'exabyte', 'exabytes', 'z', 'zb', 'zettabyte', 'zettabytes', 'y', 'yb', 'yottabyte', 'yottabytes'];
     /**
      * Parses a given byte size.
      *
@@ -73,7 +32,7 @@ class Bytes
      * @return float
      *   The floating point value of the size in bytes.
      */
-    public static function toNumber($size): float
+    public static function to_number($size): float
     {
         // Remove the non-unit characters from the size.
         $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
@@ -87,7 +46,6 @@ class Bytes
         // Ensure size is a proper number type.
         return round((float) $size);
     }
-
     /**
      * Validate that a string is a representation of a number of bytes.
      *
@@ -103,16 +61,12 @@ class Bytes
         if (!preg_match('/^[0-9]/', $string)) {
             return false;
         }
-
         // Remove the numeric characters from the beginning of the value.
         $string = preg_replace('/^[0-9\.]+/', '', $string);
-
         // Remove remaining spaces from the value.
         $string = trim((string) $string);
-
         return in_array(strtolower($string), self::ALLOWED_SUFFIXES);
     }
-
     /**
      * Validates a string is a representation of a number of bytes.
      *
@@ -126,18 +80,14 @@ class Bytes
      * @see \Symfony\Component\Validator\Constraints\CallbackValidator
      * @see core/config/schema/core.data_types.schema.yml
      */
-    public static function validateConstraint(string|int|float|null $value, ExecutionContextInterface $context): void
+    public static function validate_constraint(string|int|float|null $value, Execution_Context_Interface $context): void
     {
         // Ignore NULL values (i.e. support `nullable: true`).
         if ($value === null) {
             return;
         }
-
         if (!self::validate((string) $value)) {
-            $context->addViolation('This value must be a number of bytes, optionally with a unit such as "MB" or "megabytes". %value does not represent a number of bytes.', [
-              '%value' => $value,
-            ]);
+            $context->add_violation('This value must be a number of bytes, optionally with a unit such as "MB" or "megabytes". %value does not represent a number of bytes.', ['%value' => $value]);
         }
     }
-
 }

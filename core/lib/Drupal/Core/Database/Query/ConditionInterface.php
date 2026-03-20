@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Query;
 
 use Drupal\Core\Database\Connection;
-
 /**
  * Interface for a conditional clause in a query.
  */
-interface ConditionInterface
+interface Condition_Interface
 {
     /**
      * Helper function: builds the most common conditional clauses.
@@ -73,7 +71,6 @@ interface ConditionInterface
      * @see \Drupal\Core\Database\Query\ConditionInterface::where()
      */
     public function condition($field, $value = null, $operator = '=');
-
     /**
      * Adds an arbitrary WHERE clause to the query.
      *
@@ -89,7 +86,6 @@ interface ConditionInterface
      *   The called object.
      */
     public function where($snippet, $args = []);
-
     /**
      * Sets a condition that the specified field be NULL.
      *
@@ -99,8 +95,7 @@ interface ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function isNull($field);
-
+    public function is_null($field);
     /**
      * Sets a condition that the specified field be NOT NULL.
      *
@@ -110,8 +105,7 @@ interface ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function isNotNull($field);
-
+    public function is_not_null($field);
     /**
      * Sets a condition that the specified subquery returns values.
      *
@@ -121,8 +115,7 @@ interface ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function exists(SelectInterface $select);
-
+    public function exists(Select_Interface $select);
     /**
      * Sets a condition that the specified subquery returns no values.
      *
@@ -132,15 +125,13 @@ interface ConditionInterface
      * @return $this
      *   The called object.
      */
-    public function notExists(SelectInterface $select);
-
+    public function not_exists(Select_Interface $select);
     /**
      * Sets a condition that is always false.
      *
      * @return $this
      */
-    public function alwaysFalse();
-
+    public function always_false();
     /**
      * Gets the, possibly nested, list of conditions in this conditional clause.
      *
@@ -168,7 +159,6 @@ interface ConditionInterface
      *   The, possibly nested, list of all conditions (by reference).
      */
     public function &conditions();
-
     /**
      * Gets a complete list of all values to insert into the prepared statement.
      *
@@ -176,7 +166,6 @@ interface ConditionInterface
      *   An associative array of placeholders and values.
      */
     public function arguments();
-
     /**
      * Compiles the saved conditions for later retrieval.
      *
@@ -189,8 +178,7 @@ interface ConditionInterface
      *   The query this condition belongs to. If not given, the current query is
      *   used.
      */
-    public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder);
-
+    public function compile(Connection $connection, Placeholder_Interface $query_placeholder);
     /**
      * Check whether a condition has been previously compiled.
      *
@@ -198,7 +186,6 @@ interface ConditionInterface
      *   TRUE if the condition has been previously compiled.
      */
     public function compiled();
-
     /**
      * Creates an object holding a group of conditions.
      *
@@ -211,22 +198,19 @@ interface ConditionInterface
      * @return \Drupal\Core\Database\Query\ConditionInterface
      *   An object holding a group of conditions.
      */
-    public function conditionGroupFactory($conjunction = 'AND');
-
+    public function condition_group_factory($conjunction = 'AND');
     /**
      * Creates a new group of conditions ANDed together.
      *
      * @return \Drupal\Core\Database\Query\ConditionInterface
      *   An object holding a group of conditions.
      */
-    public function andConditionGroup();
-
+    public function and_condition_group();
     /**
      * Creates a new group of conditions ORed together.
      *
      * @return \Drupal\Core\Database\Query\ConditionInterface
      *   An object holding a group of conditions.
      */
-    public function orConditionGroup();
-
+    public function or_condition_group();
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Entity;
 
-use Drupal\Core\Entity\EntityTypeInterface;
-
+use Drupal\Core\Entity\Entity_Type_Interface;
 /**
  * Provides an interface for a configuration entity type and its metadata.
  */
-interface ConfigEntityTypeInterface extends EntityTypeInterface
+interface Config_Entity_Type_Interface extends Entity_Type_Interface
 {
     /**
      * Length limit of the configuration entity prefix.
@@ -42,7 +40,6 @@ interface ConfigEntityTypeInterface extends EntityTypeInterface
      * @see \Drupal\Core\Entity\EntityTypeInterface::ID_MAX_LENGTH
      */
     public const PREFIX_LENGTH = 83;
-
     /**
      * Gets the config prefix used by the configuration entity type.
      *
@@ -62,8 +59,7 @@ interface ConfigEntityTypeInterface extends EntityTypeInterface
      * @throws \Drupal\Core\Config\ConfigPrefixLengthException
      *   Exception thrown when the length of the prefix exceeds PREFIX_LENGTH.
      */
-    public function getConfigPrefix();
-
+    public function get_config_prefix();
     /**
      * Gets the config entity properties to export if declared on the annotation.
      *
@@ -74,14 +70,12 @@ interface ConfigEntityTypeInterface extends EntityTypeInterface
      *   The properties to export or NULL if they can not be determine from the
      *   config entity type annotation.
      */
-    public function getPropertiesToExport($id = null);
-
+    public function get_properties_to_export($id = null);
     /**
      * Gets the keys that are available for fast lookup.
      *
      * @return string[]
      *   The list of lookup keys.
      */
-    public function getLookupKeys();
-
+    public function get_lookup_keys();
 }

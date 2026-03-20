@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache\Context;
 
-use Drupal\Core\Cache\CacheableMetadata;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
 /**
  * Defines the QueryArgsCacheContext service, for "per query args" caching.
  *
@@ -13,29 +11,28 @@ use Drupal\Core\Cache\CacheableMetadata;
  * Calculated cache context ID: 'url.query_args:%key', e.g.'url.query_args:foo'
  * (to vary by the 'foo' query argument).
  */
-class QueryArgsCacheContext extends RequestStackCacheContextBase implements CalculatedCacheContextInterface
+class Query_Args_Cache_Context extends Request_Stack_Cache_Context_Base implements Calculated_Cache_Context_Interface
 {
     /**
      * {@inheritdoc}
      */
-    public static function getLabel()
+    public static function get_label()
     {
         return t('Query arguments');
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getContext($query_arg = null)
+    public function get_context($query_arg = null)
     {
         if ($query_arg === null) {
             // All arguments requested. Use normalized query string to minimize
             // variations.
-            $value = $this->requestStack->getCurrentRequest()->getQueryString();
+            $value = $this->request_stack->get_current_request()->get_query_string();
             return $value ?? '';
         }
-        if ($this->requestStack->getCurrentRequest()->query->has($query_arg)) {
-            $value = $this->requestStack->getCurrentRequest()->query->all()[$query_arg];
+        if ($this->request_stack->get_current_request()->query->has($query_arg)) {
+            $value = $this->request_stack->get_current_request()->query->all()[$query_arg];
             if (is_array($value)) {
                 return http_build_query($value);
             }
@@ -46,13 +43,11 @@ class QueryArgsCacheContext extends RequestStackCacheContextBase implements Calc
         }
         return '';
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getCacheableMetadata($query_arg = null): \Drupal\Core\Cache\CacheableMetadata
+    public function get_cacheable_metadata($query_arg = null): \Drupal\Core\Cache\Cacheable_Metadata
     {
-        return new CacheableMetadata();
+        return new Cacheable_Metadata();
     }
-
 }

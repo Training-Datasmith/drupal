@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Action;
 
-use Drupal\Component\Plugin\CategorizingPluginManagerInterface;
+use Drupal\Component\Plugin\Categorizing_Plugin_Manager_Interface;
 use Drupal\Core\Action\Attribute\Action;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
-use Drupal\Core\Plugin\DefaultPluginManager;
-
+use Drupal\Core\Cache\Cache_Backend_Interface;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Plugin\Categorizing_Plugin_Manager_Trait;
+use Drupal\Core\Plugin\Default_Plugin_Manager;
 /**
  * Provides an Action plugin manager.
  *
@@ -19,10 +17,9 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * @see \Drupal\Core\Action\ActionBase
  * @see plugin_api
  */
-class ActionManager extends DefaultPluginManager implements CategorizingPluginManagerInterface
+class Action_Manager extends Default_Plugin_Manager implements Categorizing_Plugin_Manager_Interface
 {
-    use CategorizingPluginManagerTrait;
-
+    use Categorizing_Plugin_Manager_Trait;
     /**
      * Constructs a new class instance.
      *
@@ -34,13 +31,12 @@ class ActionManager extends DefaultPluginManager implements CategorizingPluginMa
      * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
      *   The module handler to invoke the alter hook with.
      */
-    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler)
+    public function __construct(\Traversable $namespaces, Cache_Backend_Interface $cache_backend, Module_Handler_Interface $module_handler)
     {
-        parent::__construct('Plugin/Action', $namespaces, $module_handler, ActionInterface::class, Action::class, \Drupal\Core\Annotation\Action::class);
-        $this->alterInfo('action_info');
-        $this->setCacheBackend($cache_backend, 'action_info');
+        parent::__construct('Plugin/Action', $namespaces, $module_handler, Action_Interface::class, Action::class, \Drupal\Core\Annotation\Action::class);
+        $this->alter_info('action_info');
+        $this->set_cache_backend($cache_backend, 'action_info');
     }
-
     /**
      * Gets the plugin definitions for this entity type.
      *
@@ -50,9 +46,8 @@ class ActionManager extends DefaultPluginManager implements CategorizingPluginMa
      * @return array
      *   An array of plugin definitions for this entity type.
      */
-    public function getDefinitionsByType($type): array
+    public function get_definitions_by_type($type): array
     {
-        return array_filter($this->getDefinitions(), fn (array $definition) => $definition['type'] === $type);
+        return array_filter($this->get_definitions(), fn(array $definition) => $definition['type'] === $type);
     }
-
 }

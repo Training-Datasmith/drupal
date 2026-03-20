@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Breadcrumb;
 
-use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Routing\RouteMatchInterface;
-
+use Drupal\Core\Cache\Cacheable_Metadata;
+use Drupal\Core\Routing\Route_Match_Interface;
 /**
  * Defines an interface for classes that build breadcrumbs.
  */
-interface BreadcrumbBuilderInterface
+interface Breadcrumb_Builder_Interface
 {
     /**
      * Whether this breadcrumb builder should be used to build the breadcrumb.
@@ -26,8 +24,7 @@ interface BreadcrumbBuilderInterface
      *   TRUE if this builder should be used or FALSE to let other builders
      *   decide.
      */
-    public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata);
-
+    public function applies(Route_Match_Interface $route_match, Cacheable_Metadata $cacheable_metadata);
     /**
      * Builds the breadcrumb.
      *
@@ -40,6 +37,5 @@ interface BreadcrumbBuilderInterface
      * @return \Drupal\Core\Breadcrumb\Breadcrumb
      *   A breadcrumb.
      */
-    public function build(RouteMatchInterface $route_match);
-
+    public function build(Route_Match_Interface $route_match);
 }

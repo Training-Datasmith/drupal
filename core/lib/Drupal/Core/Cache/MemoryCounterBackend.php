@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -12,7 +11,7 @@ namespace Drupal\Core\Cache;
  *
  * @todo On the longrun this backend should be replaced by phpunit mock objects.
  */
-class MemoryCounterBackend extends MemoryBackend
+class Memory_Counter_Backend extends Memory_Backend
 {
     /**
      * Stores a list of cache cid calls keyed by function name.
@@ -20,34 +19,30 @@ class MemoryCounterBackend extends MemoryBackend
      * @var array
      */
     protected $counter = [];
-
     /**
      * {@inheritdoc}
      */
     public function get($cid, $allow_invalid = false)
     {
-        $this->increaseCounter(__FUNCTION__, $cid);
+        $this->increase_counter(__FUNCTION__, $cid);
         return parent::get($cid, $allow_invalid);
     }
-
     /**
      * {@inheritdoc}
      */
     public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void
     {
-        $this->increaseCounter(__FUNCTION__, $cid);
+        $this->increase_counter(__FUNCTION__, $cid);
         parent::set($cid, $data, $expire, $tags);
     }
-
     /**
      * {@inheritdoc}
      */
     public function delete($cid): void
     {
-        $this->increaseCounter(__FUNCTION__, $cid);
+        $this->increase_counter(__FUNCTION__, $cid);
         parent::delete($cid);
     }
-
     /**
      * Increase the counter for a function with a certain cid.
      *
@@ -56,7 +51,7 @@ class MemoryCounterBackend extends MemoryBackend
      * @param string $cid
      *   The cache ID of the cache entry to increase the counter.
      */
-    protected function increaseCounter($function, $cid)
+    protected function increase_counter($function, $cid)
     {
         if (!isset($this->counter[$function][$cid])) {
             $this->counter[$function][$cid] = 1;
@@ -64,7 +59,6 @@ class MemoryCounterBackend extends MemoryBackend
             $this->counter[$function][$cid]++;
         }
     }
-
     /**
      * Returns the call counter for the get, set and delete methods.
      *
@@ -76,7 +70,7 @@ class MemoryCounterBackend extends MemoryBackend
      * @return int|array
      *   An integer if both method and cid is given, an array otherwise.
      */
-    public function getCounter($method = null, $cid = null)
+    public function get_counter($method = null, $cid = null)
     {
         if ($method && $cid) {
             return $this->counter[$method][$cid] ?? 0;
@@ -86,13 +80,11 @@ class MemoryCounterBackend extends MemoryBackend
         }
         return $this->counter;
     }
-
     /**
      * Resets the call counter.
      */
-    public function resetCounter(): void
+    public function reset_counter(): void
     {
         $this->counter = [];
     }
-
 }

@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
  * Provides a helper method for handling deprecated code paths in projects.
  */
-final class DeprecationHelper
+final class Deprecation_Helper
 {
     /**
      * Helper to run a callback based on the installed version of a project.
@@ -36,14 +35,12 @@ final class DeprecationHelper
      * @template Current
      * @template Deprecated
      */
-    public static function backwardsCompatibleCall(string $currentVersion, string $deprecatedVersion, callable $currentCallable, callable $deprecatedCallable): mixed
+    public static function backwards_compatible_call(string $current_version, string $deprecated_version, callable $current_callable, callable $deprecated_callable): mixed
     {
         // Normalize the version string when it's a dev version to the first point
         // release of that minor. E.g. "10.2.x-dev" and "10.2-dev" both translate to
         // "10.2.0".
-        $normalizedVersion = str_ends_with($currentVersion, '-dev') ? str_replace(['.x-dev', '-dev'], '.0', $currentVersion) : $currentVersion;
-
-        return version_compare($normalizedVersion, $deprecatedVersion, '>=') ? $currentCallable() : $deprecatedCallable();
+        $normalized_version = str_ends_with($current_version, '-dev') ? str_replace(['.x-dev', '-dev'], '.0', $current_version) : $current_version;
+        return version_compare($normalized_version, $deprecated_version, '>=') ? $current_callable() : $deprecated_callable();
     }
-
 }

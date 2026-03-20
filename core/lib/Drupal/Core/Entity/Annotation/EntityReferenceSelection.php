@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Entity\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-
 /**
  * Defines an EntityReferenceSelection plugin annotation object.
  *
@@ -20,7 +18,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class EntityReferenceSelection extends Plugin
+class Entity_Reference_Selection extends Plugin
 {
     /**
      * The plugin ID.
@@ -33,7 +31,6 @@ class EntityReferenceSelection extends Plugin
      * @var string
      */
     public $id;
-
     /**
      * The human-readable name of the selection plugin.
      *
@@ -42,7 +39,6 @@ class EntityReferenceSelection extends Plugin
      * @ingroup plugin_translatable
      */
     public $label;
-
     /**
      * The selection plugin group.
      *
@@ -59,7 +55,6 @@ class EntityReferenceSelection extends Plugin
      * @endcode
      */
     public $group;
-
     /**
      * An array of entity types that can be referenced by this plugin.
      *
@@ -70,7 +65,6 @@ class EntityReferenceSelection extends Plugin
      * @var array
      */
     public $entity_types = [];
-
     /**
      * The weight of the plugin in its group.
      *
@@ -79,5 +73,4 @@ class EntityReferenceSelection extends Plugin
      * @var int
      */
     public $weight;
-
 }

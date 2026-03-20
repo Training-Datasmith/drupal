@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
  * An interface defining cache factory classes.
  */
-interface CacheFactoryInterface
+interface Cache_Factory_Interface
 {
     /**
      * Gets a cache backend class for a given cache bin.
@@ -19,5 +18,4 @@ interface CacheFactoryInterface
      *   The cache backend object associated with the specified bin.
      */
     public function get($bin);
-
 }

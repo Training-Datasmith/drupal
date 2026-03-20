@@ -1,34 +1,30 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\Core\StreamWrapper\StreamWrapperManager;
-
+use Drupal\Core\Stream_Wrapper\Stream_Wrapper_Manager;
 /**
  * Optimizes a CSS asset.
  */
-class CssOptimizer implements AssetOptimizerInterface
+class Css_Optimizer implements Asset_Optimizer_Interface
 {
     /**
      * The base path used by rewriteFileURI().
      *
      * @var string
      */
-    public $rewriteFileURIBasePath;
-
+    public $rewrite_file_uri_base_path;
     /**
      * Constructs a CssOptimizer.
      *
      * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
      *   The file URL generator.
      */
-    public function __construct(protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator)
+    public function __construct(protected \Drupal\Core\File\File_Url_Generator_Interface $file_url_generator)
     {
     }
-
     /**
      * {@inheritdoc}
      */
@@ -40,10 +36,8 @@ class CssOptimizer implements AssetOptimizerInterface
         if (!$css_asset['preprocess']) {
             throw new \Exception('Only file CSS assets with preprocessing enabled can be optimized.');
         }
-
-        return $this->processFile($css_asset);
+        return $this->process_file($css_asset);
     }
-
     /**
      * Processes the contents of a CSS asset for cleanup.
      *
@@ -58,10 +52,8 @@ class CssOptimizer implements AssetOptimizerInterface
         // Remove multiple charset declarations for standards compliance (and fixing
         // Safari problems).
         $contents = preg_replace('/^@charset\s+[\'"](\S*?)\b[\'"];/i', '', $contents);
-
         return $contents;
     }
-
     /**
      * Processes CSS file and adds base URLs to any relative resource paths.
      *
@@ -74,28 +66,21 @@ class CssOptimizer implements AssetOptimizerInterface
      * @return string
      *   The asset's cleaned/optimized contents.
      */
-    protected function processFile(array $css_asset): ?string
+    protected function process_file(array $css_asset): ?string
     {
-        $contents = $this->loadFile($css_asset['data'], true);
+        $contents = $this->load_file($css_asset['data'], true);
         if ($css_asset['media'] !== 'print' && $css_asset['media'] !== 'all') {
             $contents = '@media ' . $css_asset['media'] . '{' . $contents . '}' . "\n";
         }
         $contents = $this->clean($contents);
-
         // Get the parent directory of this file, relative to the Drupal root.
         $css_base_path = substr((string) $css_asset['data'], 0, strrpos((string) $css_asset['data'], '/'));
         // Store base path.
-        $this->rewriteFileURIBasePath = $css_base_path . '/';
-
+        $this->rewrite_file_uri_base_path = $css_base_path . '/';
         // Anchor all paths in the CSS with its base URL, ignoring external and
         // absolute paths and paths starting with '#'.
-        return preg_replace_callback(
-            '/url\(\s*[\'"]?(?![a-z]+:|\/+|#|%23)([^\'")]+)[\'"]?\s*\)/i',
-            $this->rewriteFileURI(...),
-            $contents
-        );
+        return preg_replace_callback('/url\(\s*[\'"]?(?![a-z]+:|\/+|#|%23)([^\'")]+)[\'"]?\s*\)/i', $this->rewrite_file_uri(...), $contents);
     }
-
     /**
      * Loads the stylesheet and resolves all @import commands.
      *
@@ -121,7 +106,7 @@ class CssOptimizer implements AssetOptimizerInterface
      * @return string
      *   Contents of the stylesheet, including any resolved @import commands.
      */
-    public function loadFile($file, $optimize = null, $reset_base_path = true)
+    public function load_file($file, $optimize = null, $reset_base_path = true)
     {
         // These statics are not cache variables, so we don't use drupal_static().
         static $_optimize, $base_path;
@@ -132,17 +117,15 @@ class CssOptimizer implements AssetOptimizerInterface
         if (isset($optimize)) {
             $_optimize = $optimize;
         }
-
         // Stylesheets are relative one to each other. Start by adding a base path
         // prefix provided by the parent stylesheet (if necessary).
-        if ($base_path && !StreamWrapperManager::getScheme($file)) {
+        if ($base_path && !Stream_Wrapper_Manager::get_scheme($file)) {
             $file = $base_path . '/' . $file;
         }
         // Store the parent base path to restore it later.
         $parent_base_path = $base_path;
         // Set the current base path to process possible child imports.
         $base_path = dirname($file);
-
         // Load the CSS stylesheet. We suppress errors because themes may specify
         // stylesheets in their .info.yml file that don't exist in the theme's path,
         // but are merely there to disable certain module CSS files.
@@ -150,27 +133,21 @@ class CssOptimizer implements AssetOptimizerInterface
         if ($contents = @file_get_contents($file)) {
             // If a BOM is found, convert the file to UTF-8, then use substr() to
             // remove the BOM from the result.
-            if ($encoding = (Unicode::encodingFromBOM($contents))) {
-                $contents = mb_substr(Unicode::convertToUtf8($contents, $encoding), 1);
-            }
-            // If no BOM, check for fallback encoding. Per CSS spec the regex is very
-            // strict.
-            elseif (preg_match('/^@charset "([^"]+)";/', $contents, $matches)) {
+            if ($encoding = Unicode::encoding_from_bom($contents)) {
+                $contents = mb_substr(Unicode::convert_to_utf8($contents, $encoding), 1);
+            } elseif (preg_match('/^@charset "([^"]+)";/', $contents, $matches)) {
                 if ($matches[1] !== 'utf-8' && $matches[1] !== 'UTF-8') {
                     $contents = substr($contents, strlen($matches[0]));
-                    $contents = Unicode::convertToUtf8($contents, $matches[1]);
+                    $contents = Unicode::convert_to_utf8($contents, $matches[1]);
                 }
             }
-
             // Return the processed stylesheet.
-            $content = $this->processCss($contents, $_optimize);
+            $content = $this->process_css($contents, $_optimize);
         }
-
         // Restore the parent base path as the file and its children are processed.
         $base_path = $parent_base_path;
         return $content;
     }
-
     /**
      * Loads stylesheets recursively and returns contents with corrected paths.
      *
@@ -186,24 +163,21 @@ class CssOptimizer implements AssetOptimizerInterface
      *
      * @see \Drupal\Core\Asset\AssetOptimizerInterface::loadFile()
      */
-    protected function loadNestedFile(array $matches): ?string
+    protected function load_nested_file(array $matches): ?string
     {
         $filename = $matches[1];
         // Load the imported stylesheet and replace @import commands in there as
         // well.
-        $file = $this->loadFile($filename, null, false);
-
+        $file = $this->load_file($filename, null, false);
         // Determine the file's directory.
         $directory = dirname((string) $filename);
         // If the file is in the current directory, make sure '.' doesn't appear in
         // the url() path.
         $directory = $directory == '.' ? '' : $directory . '/';
-
         // Alter all internal asset paths. Leave external paths alone. We don't need
         // to normalize absolute paths here because that will be done later.
         return preg_replace('/url\(\s*([\'"]?)(?![a-z]+:|\/+)([^\'")]+)([\'"]?)\s*\)/i', 'url(\1' . $directory . '\2\3)', $file);
     }
-
     /**
      * Processes the contents of a stylesheet for aggregation.
      *
@@ -216,11 +190,10 @@ class CssOptimizer implements AssetOptimizerInterface
      * @return string
      *   Contents of the stylesheet including the imported stylesheets.
      */
-    protected function processCss($contents, $optimize = false): string|array|null
+    protected function process_css($contents, $optimize = false): string|array|null
     {
         // Remove unwanted CSS code that cause issues.
         $contents = $this->clean($contents);
-
         if ($optimize) {
             // Perform some safe CSS optimizations.
             // Regexp to match comment blocks.
@@ -230,11 +203,7 @@ class CssOptimizer implements AssetOptimizerInterface
             // Regexp to match single quoted strings.
             $single_quot = "'[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
             // Strip all comment blocks, but keep double/single quoted strings.
-            $contents = preg_replace(
-                "<($double_quot|$single_quot)|$comment>Ss",
-                '$1',
-                $contents
-            );
+            $contents = preg_replace("<({$double_quot}|{$single_quot})|{$comment}>Ss", '$1', $contents);
             // Remove certain whitespace.
             // There are different conditions for removing leading and trailing
             // whitespace.
@@ -263,20 +232,13 @@ class CssOptimizer implements AssetOptimizerInterface
             $contents = trim((string) $contents);
             $contents .= "\n";
         }
-
         // Replaces @import commands with the actual stylesheet content.
         // This happens recursively but omits external files and local files
         // with supports- or media-query qualifiers, as those are conditionally
         // loaded depending on the user agent.
-        $contents = preg_replace_callback(
-            '/@import\s*(?:url\(\s*)?[\'"]?(?![a-z]+:)(?!\/\/)([^\'"\()]+)[\'"]?\s*\)?\s*;/',
-            $this->loadNestedFile(...),
-            $contents
-        );
-
+        $contents = preg_replace_callback('/@import\s*(?:url\(\s*)?[\'"]?(?![a-z]+:)(?!\/\/)([^\'"\()]+)[\'"]?\s*\)?\s*;/', $this->load_nested_file(...), $contents);
         return $contents;
     }
-
     /**
      * Prefixes all paths within a CSS file for processFile().
      *
@@ -291,16 +253,15 @@ class CssOptimizer implements AssetOptimizerInterface
      * @return string
      *   The file path.
      */
-    public function rewriteFileURI(array $matches): string
+    public function rewrite_file_uri(array $matches): string
     {
         // Prefix with base and remove '../' segments where possible.
-        $path = $this->rewriteFileURIBasePath . $matches[1];
+        $path = $this->rewrite_file_uri_base_path . $matches[1];
         $last = '';
         while ($path != $last) {
             $last = $path;
             $path = preg_replace('`(^|/)(?!\.\./)([^/]+)/\.\./`', '$1', (string) $path);
         }
-        return 'url(' . $this->fileUrlGenerator->generateString($path) . ')';
+        return 'url(' . $this->file_url_generator->generate_string($path) . ')';
     }
-
 }

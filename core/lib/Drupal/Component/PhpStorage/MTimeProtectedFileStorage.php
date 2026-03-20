@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\PhpStorage;
+declare (strict_types=1);
+namespace Drupal\Component\Php_Storage;
 
 /**
  * Stores PHP code in files with securely hashed names.
@@ -31,28 +30,26 @@ namespace Drupal\Component\PhpStorage;
  * name (slashes replaced with hash marks) to assist with debugging, since the
  * file itself is stored with a name that's meaningless to humans.
  */
-class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage
+class M_Time_Protected_File_Storage extends M_Time_Protected_Fast_File_Storage
 {
     /**
      * {@inheritdoc}
      */
     public function load($name)
     {
-        if (($filename = $this->checkFile($name)) !== false) {
+        if (($filename = $this->check_file($name)) !== false) {
             // Inline parent::load() to avoid an expensive getFullPath() call.
-            return (@include_once $filename) !== false;
+            return @(include_once $filename) !== false;
         }
         return false;
     }
-
     /**
      * {@inheritdoc}
      */
     public function exists($name): bool
     {
-        return $this->checkFile($name) !== false;
+        return $this->check_file($name) !== false;
     }
-
     /**
      * Determines whether a protected file exists and sets the filename too.
      *
@@ -62,18 +59,16 @@ class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage
      * @return string|false
      *   The full path where the file is if it is valid, FALSE otherwise.
      */
-    protected function checkFile($name)
+    protected function check_file($name)
     {
-        $filename = $this->getFullPath($name, $directory, $directory_mtime);
+        $filename = $this->get_full_path($name, $directory, $directory_mtime);
         return file_exists($filename) && filemtime($filename) <= $directory_mtime ? $filename : false;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getPath($name)
+    public function get_path($name)
     {
-        return $this->checkFile($name);
+        return $this->check_file($name);
     }
-
 }

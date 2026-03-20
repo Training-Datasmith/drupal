@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
-namespace Drupal\Core\DependencyInjection;
-
-use Drupal\Component\DependencyInjection\Container as DrupalContainer;
-
+use Drupal\Component\Dependency_Injection\Container as DrupalContainer;
 /**
  * Extends the container to prevent serialization.
  */
-class Container extends DrupalContainer
+class Container extends Drupal_Container
 {
     /**
      * {@inheritdoc}
@@ -19,5 +17,4 @@ class Container extends DrupalContainer
         assert(false, 'The container was serialized.');
         return array_keys(get_object_vars($this));
     }
-
 }

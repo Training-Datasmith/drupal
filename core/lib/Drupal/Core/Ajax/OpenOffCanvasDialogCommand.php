@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Ajax;
 
 /**
@@ -9,13 +8,12 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class OpenOffCanvasDialogCommand extends OpenDialogCommand
+class Open_Off_Canvas_Dialog_Command extends Open_Dialog_Command
 {
     /**
      * The dialog width to use if none is provided.
      */
     public const DEFAULT_DIALOG_WIDTH = 300;
-
     /**
      * Constructs an OpenOffCanvasDialogCommand object.
      *
@@ -46,29 +44,26 @@ class OpenOffCanvasDialogCommand extends OpenDialogCommand
             $classes[] = $dialog_options['classes']['ui-dialog'];
         }
         $classes[] = 'ui-dialog-off-canvas';
-        $classes[] = "ui-dialog-position-$position";
+        $classes[] = "ui-dialog-position-{$position}";
         $dialog_options['classes']['ui-dialog'] = implode(' ', $classes);
-
         parent::__construct('#drupal-off-canvas', $title, $content, $dialog_options, $settings);
-        $this->dialogOptions['modal'] = false;
-        $this->dialogOptions['autoResize'] = false;
-        $this->dialogOptions['resizable'] = 'w';
-        $this->dialogOptions['draggable'] = false;
-        $this->dialogOptions['drupalAutoButtons'] = false;
-        $this->dialogOptions['drupalOffCanvasPosition'] = $position;
-
+        $this->dialog_options['modal'] = false;
+        $this->dialog_options['autoResize'] = false;
+        $this->dialog_options['resizable'] = 'w';
+        $this->dialog_options['draggable'] = false;
+        $this->dialog_options['drupalAutoButtons'] = false;
+        $this->dialog_options['drupalOffCanvasPosition'] = $position;
         // Add CSS class to #drupal-off-canvas element. This enables developers to
         // select previous versions of off-canvas styles by using custom selector:
         // #drupal-off-canvas:not(.drupal-off-canvas-reset).
-        $this->dialogOptions['classes']['ui-dialog-content'] = 'drupal-off-canvas-reset';
+        $this->dialog_options['classes']['ui-dialog-content'] = 'drupal-off-canvas-reset';
         // If no width option is provided then use the default width to avoid the
         // dialog staying at the width of the previous instance when opened
         // more than once, with different widths, on a single page.
-        if (!isset($this->dialogOptions['width'])) {
-            $this->dialogOptions['width'] = static::DEFAULT_DIALOG_WIDTH;
+        if (!isset($this->dialog_options['width'])) {
+            $this->dialog_options['width'] = static::DEFAULT_DIALOG_WIDTH;
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -79,5 +74,4 @@ class OpenOffCanvasDialogCommand extends OpenDialogCommand
         $build['speed'] = 1000;
         return $build;
     }
-
 }

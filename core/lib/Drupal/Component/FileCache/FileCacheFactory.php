@@ -1,33 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Drupal\Component\FileCache;
+declare (strict_types=1);
+namespace Drupal\Component\File_Cache;
 
 /**
  * Creates a FileCache object.
  */
-class FileCacheFactory
+class File_Cache_Factory
 {
     /**
      * The configuration key to disable FileCache completely.
      */
     public const DISABLE_CACHE = 'file_cache_disable';
-
     /**
      * The configuration used to create FileCache objects.
      *
      * @var array
      */
     protected static $configuration;
-
     /**
      * The cache prefix.
      *
      * @var string
      */
     protected static $prefix;
-
     /**
      * Instantiates a FileCache object for a given collection identifier.
      *
@@ -45,11 +41,9 @@ class FileCacheFactory
         // If there is a special key in the configuration, disable FileCache
         // completely.
         if (!empty(static::$configuration[static::DISABLE_CACHE])) {
-            return new NullFileCache('', '');
+            return new Null_File_Cache('', '');
         }
-
         $configuration = [];
-
         // Check for a collection specific setting first.
         if (isset(static::$configuration[$collection])) {
             $configuration += static::$configuration[$collection];
@@ -62,54 +56,42 @@ class FileCacheFactory
         if (isset(static::$configuration['default'])) {
             $configuration += static::$configuration['default'];
         }
-
         // Ensure that all properties are set.
-        $fallback_configuration = [
-          'class' => \Drupal\Component\FileCache\FileCache::class,
-          'collection' => $collection,
-          'cache_backend_class' => null,
-          'cache_backend_configuration' => [],
-        ];
-
+        $fallback_configuration = ['class' => \Drupal\Component\File_Cache\File_Cache::class, 'collection' => $collection, 'cache_backend_class' => null, 'cache_backend_configuration' => []];
         $configuration = $configuration + $fallback_configuration;
-
         $class = $configuration['class'];
-        return new $class(static::getPrefix(), $configuration['collection'], $configuration['cache_backend_class'], $configuration['cache_backend_configuration']);
+        return new $class(static::get_prefix(), $configuration['collection'], $configuration['cache_backend_class'], $configuration['cache_backend_configuration']);
     }
-
     /**
      * Gets the configuration used for constructing future file cache objects.
      *
      * @return array
      *   The configuration that is used.
      */
-    public static function getConfiguration()
+    public static function get_configuration()
     {
         return static::$configuration;
     }
-
     /**
      * Sets the configuration to use for constructing future file cache objects.
      *
      * @param array $configuration
      *   The configuration to use.
      */
-    public static function setConfiguration($configuration): void
+    public static function set_configuration($configuration): void
     {
         static::$configuration = $configuration;
     }
-
     /**
      * Returns the cache prefix.
      *
      * @return string
      *   The cache prefix.
      */
-    public static function getPrefix()
+    public static function get_prefix()
     {
         return static::$prefix;
     }
-
     /**
      * Sets the cache prefix that should be used.
      *
@@ -119,9 +101,8 @@ class FileCacheFactory
      * @param string $prefix
      *   The cache prefix.
      */
-    public static function setPrefix($prefix): void
+    public static function set_prefix($prefix): void
     {
         static::$prefix = $prefix;
     }
-
 }

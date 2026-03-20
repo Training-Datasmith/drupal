@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Access;
 
-use Drupal\Core\Routing\Access\AccessInterface as RoutingAccessInterface;
+use Drupal\Core\Routing\Access\Access_Interface as RoutingAccessInterface;
 use Symfony\Component\Routing\Route;
-
 /**
  * An access check service determines access rules for particular routes.
  */
-interface AccessCheckInterface extends RoutingAccessInterface
+interface Access_Check_Interface extends Routing_Access_Interface
 {
     /**
      * Declares whether the access check applies to a specific route or not.
@@ -22,5 +20,4 @@ interface AccessCheckInterface extends RoutingAccessInterface
      *   TRUE if this access checker applies to this route.
      */
     public function applies(Route $route);
-
 }

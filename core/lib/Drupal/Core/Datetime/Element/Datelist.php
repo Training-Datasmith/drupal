@@ -1,68 +1,48 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Datetime\Element;
 
-use Drupal\Component\Utility\FilterArray;
-use Drupal\Component\Utility\NestedArray;
+use Drupal\Component\Utility\Filter_Array;
+use Drupal\Component\Utility\Nested_Array;
 use Drupal\Component\Utility\Variable;
-use Drupal\Core\Datetime\DateHelper;
-use Drupal\Core\Datetime\DrupalDateTime;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Attribute\FormElement;
-use Drupal\Core\Security\DoTrustedCallbackTrait;
-use Drupal\Core\Security\StaticTrustedCallbackHelper;
-
+use Drupal\Core\Datetime\Date_Helper;
+use Drupal\Core\Datetime\Drupal_Date_Time;
+use Drupal\Core\Form\Form_State_Interface;
+use Drupal\Core\Render\Attribute\Form_Element;
+use Drupal\Core\Security\Do_Trusted_Callback_Trait;
+use Drupal\Core\Security\Static_Trusted_Callback_Helper;
 /**
  * Provides a datelist element.
  */
-#[FormElement('datelist')]
-class Datelist extends DateElementBase
+#[Form_Element('datelist')]
+class Datelist extends Date_Element_Base
 {
-    use DoTrustedCallbackTrait;
-
+    use Do_Trusted_Callback_Trait;
     /**
      * {@inheritdoc}
      */
-    public function getInfo(): array
+    public function get_info(): array
     {
         // Note that since this information is cached, the #date_timezone property
         // is not set here, as this needs to vary potentially by-user.
-        return [
-          '#input' => true,
-          '#element_validate' => [
-            [static::class, 'validateDatelist'],
-          ],
-          '#process' => [
-            [static::class, 'processDatelist'],
-          ],
-          '#theme' => 'datetime_form',
-          '#theme_wrappers' => ['datetime_wrapper'],
-          '#date_part_order' => ['year', 'month', 'day', 'hour', 'minute'],
-          '#date_year_range' => '1900:2050',
-          '#date_increment' => 1,
-          '#date_date_callbacks' => [],
-        ];
+        return ['#input' => true, '#element_validate' => [[static::class, 'validateDatelist']], '#process' => [[static::class, 'processDatelist']], '#theme' => 'datetime_form', '#theme_wrappers' => ['datetime_wrapper'], '#date_part_order' => ['year', 'month', 'day', 'hour', 'minute'], '#date_year_range' => '1900:2050', '#date_increment' => 1, '#date_date_callbacks' => []];
     }
-
     /**
      * {@inheritdoc}
      *
      * Validates the date type to adjust 12 hour time and prevent invalid dates.
      * If the date is valid, the date is set in the form.
      */
-    public static function valueCallback(&$element, $input, FormStateInterface $form_state)
+    public static function value_callback(&$element, $input, Form_State_Interface $form_state)
     {
         $element += ['#date_timezone' => date_default_timezone_get()];
-
         $parts = $element['#date_part_order'];
         $increment = $element['#date_increment'];
-
         $date = null;
         if ($input !== false) {
             $return = $input;
-            if (empty(static::checkEmptyInputs($input, $parts))) {
+            if (empty(static::check_empty_inputs($input, $parts))) {
                 if (isset($input['ampm'])) {
                     if ($input['ampm'] == 'pm' && $input['hour'] < 12) {
                         $input['hour'] += 12;
@@ -72,21 +52,21 @@ class Datelist extends DateElementBase
                     unset($input['ampm']);
                 }
                 try {
-                    $date = DrupalDateTime::createFromArray($input, $element['#date_timezone']);
+                    $date = Drupal_Date_Time::create_from_array($input, $element['#date_timezone']);
                 } catch (\Exception) {
-                    $form_state->setError($element, t('Selected combination of day and month is not valid.'));
+                    $form_state->set_error($element, t('Selected combination of day and month is not valid.'));
                 }
-                if ($date instanceof DrupalDateTime && !$date->hasErrors()) {
-                    static::incrementRound($date, $increment);
+                if ($date instanceof Drupal_Date_Time && !$date->has_errors()) {
+                    static::increment_round($date, $increment);
                 }
             }
         } else {
             $return = array_fill_keys($parts, '');
             if (!empty($element['#default_value'])) {
                 $date = $element['#default_value'];
-                if ($date instanceof DrupalDateTime && !$date->hasErrors()) {
-                    $date->setTimezone(new \DateTimeZone($element['#date_timezone']));
-                    static::incrementRound($date, $increment);
+                if ($date instanceof Drupal_Date_Time && !$date->has_errors()) {
+                    $date->set_timezone(new \DateTimeZone($element['#date_timezone']));
+                    static::increment_round($date, $increment);
                     foreach ($parts as $part) {
                         $format = match ($part) {
                             'day' => 'j',
@@ -106,7 +86,6 @@ class Datelist extends DateElementBase
         $return['object'] = $date;
         return $return;
     }
-
     /**
      * Expands a date element into an array of individual elements.
      *
@@ -160,20 +139,16 @@ class Datelist extends DateElementBase
      * @return array
      *   An expanded DateList element.
      */
-    public static function processDatelist(array &$element, FormStateInterface $form_state, &$complete_form): array
+    public static function process_datelist(array &$element, Form_State_Interface $form_state, &$complete_form): array
     {
         // Load translated date part labels from the appropriate calendar plugin.
-        $date_helper = new DateHelper();
-
+        $date_helper = new Date_Helper();
         // The value callback has populated the #value array.
         $date = !empty($element['#value']['object']) ? $element['#value']['object'] : null;
-
         $element['#tree'] = true;
-
         // Determine the order of the date elements.
         $order = !empty($element['#date_part_order']) ? $element['#date_part_order'] : ['year', 'month', 'day'];
         $text_parts = !empty($element['#date_text_parts']) ? $element['#date_text_parts'] : [];
-
         // Output multi-selector for date.
         foreach ($order as $part) {
             switch ($part) {
@@ -182,80 +157,59 @@ class Datelist extends DateElementBase
                     $format = 'j';
                     $title = t('Day');
                     break;
-
                 case 'month':
-                    $options = $date_helper->monthNamesAbbr($element['#required']);
+                    $options = $date_helper->month_names_abbr($element['#required']);
                     $format = 'n';
                     $title = t('Month');
                     break;
-
                 case 'year':
-                    $range = static::datetimeRangeYears($element['#date_year_range'], $date);
+                    $range = static::datetime_range_years($element['#date_year_range'], $date);
                     $options = $date_helper->years($range[0], $range[1], $element['#required']);
                     $format = 'Y';
                     $title = t('Year');
                     break;
-
                 case 'hour':
                     $format = in_array('ampm', $element['#date_part_order']) ? 'g' : 'G';
                     $options = $date_helper->hours($format, $element['#required']);
                     $title = t('Hour');
                     break;
-
                 case 'minute':
                     $format = 'i';
                     $options = $date_helper->minutes($format, $element['#required'], $element['#date_increment']);
                     $title = t('Minute');
                     break;
-
                 case 'second':
                     $format = 's';
                     $options = $date_helper->seconds($format, $element['#required'], $element['#date_increment']);
                     $title = t('Second');
                     break;
-
                 case 'ampm':
                     $format = 'a';
                     $options = $date_helper->ampm($element['#required']);
                     $title = t('AM/PM');
                     break;
-
                 default:
                     $format = '';
                     $options = [];
                     $title = '';
             }
-
             $default = isset($element['#value'][$part]) && trim($element['#value'][$part]) != '' ? $element['#value'][$part] : '';
-            $value = $date instanceof DrupalDateTime && !$date->hasErrors() ? $date->format($format) : $default;
+            $value = $date instanceof Drupal_Date_Time && !$date->has_errors() ? $date->format($format) : $default;
             if (!empty($value) && $part != 'ampm') {
                 $value = intval($value);
             }
-
             $element['#attributes']['title'] = $title;
-            $element[$part] = [
-              '#type' => in_array($part, $text_parts) ? 'textfield' : 'select',
-              '#title' => $title,
-              '#value' => $value,
-              '#attributes' => $element['#attributes'],
-              '#options' => $options,
-              '#required' => $element['#required'],
-              '#error_no_message' => false,
-              '#empty_option' => $title,
-            ];
+            $element[$part] = ['#type' => in_array($part, $text_parts) ? 'textfield' : 'select', '#title' => $title, '#value' => $value, '#attributes' => $element['#attributes'], '#options' => $options, '#required' => $element['#required'], '#error_no_message' => false, '#empty_option' => $title];
         }
-
         // Allows custom callbacks to alter the element.
         if (!empty($element['#date_date_callbacks'])) {
             foreach ($element['#date_date_callbacks'] as $callback) {
-                $message = sprintf('Datelist element #date_date_callbacks callbacks must be methods of a class that implements \Drupal\Core\Security\TrustedCallbackInterface or be an anonymous function. The callback was %s. See https://www.drupal.org/node/3217966', Variable::callableToString($callback));
-                StaticTrustedCallbackHelper::callback($callback, [&$element, $form_state, $date], $message);
+                $message = sprintf('Datelist element #date_date_callbacks callbacks must be methods of a class that implements \Drupal\Core\Security\TrustedCallbackInterface or be an anonymous function. The callback was %s. See https://www.drupal.org/node/3217966', Variable::callable_to_string($callback));
+                Static_Trusted_Callback_Helper::callback($callback, [&$element, $form_state, $date], $message);
             }
         }
-
         return $element;
     }
-
     /**
      * Validation callback for a datelist element.
      *
@@ -271,41 +225,34 @@ class Datelist extends DateElementBase
      * @param array $complete_form
      *   The complete form structure.
      */
-    public static function validateDatelist(array &$element, FormStateInterface $form_state, array &$complete_form): void
+    public static function validate_datelist(array &$element, Form_State_Interface $form_state, array &$complete_form): void
     {
         $input_exists = false;
-        $input = NestedArray::getValue($form_state->getValues(), $element['#parents'], $input_exists);
-        $title = static::getElementTitle($element, $complete_form);
-
+        $input = Nested_Array::get_value($form_state->get_values(), $element['#parents'], $input_exists);
+        $title = static::get_element_title($element, $complete_form);
         if ($input_exists) {
-            $all_empty = static::checkEmptyInputs($input, $element['#date_part_order']);
-
+            $all_empty = static::check_empty_inputs($input, $element['#date_part_order']);
             // If there's empty input and the field is not required, set it to empty.
             if (empty($input['year']) && empty($input['month']) && empty($input['day']) && !$element['#required']) {
-                $form_state->setValueForElement($element, null);
-            }
-            // If there's empty input and the field is required, set an error.
-            elseif (empty($input['year']) && empty($input['month']) && empty($input['day']) && $element['#required']) {
-                $form_state->setError($element, t('The %field date is required.', ['%field' => $title]));
+                $form_state->set_value_for_element($element, null);
+            } elseif (empty($input['year']) && empty($input['month']) && empty($input['day']) && $element['#required']) {
+                $form_state->set_error($element, t('The %field date is required.', ['%field' => $title]));
             } elseif (!empty($all_empty)) {
                 foreach ($all_empty as $value) {
-                    $form_state->setError($element, t('The %field date is incomplete.', ['%field' => $title]));
-                    $form_state->setError($element[$value], t('A value must be selected for %part.', ['%part' => $value]));
+                    $form_state->set_error($element, t('The %field date is incomplete.', ['%field' => $title]));
+                    $form_state->set_error($element[$value], t('A value must be selected for %part.', ['%part' => $value]));
                 }
             } else {
                 // If the input is valid, set it.
                 $date = $input['object'];
-                if ($date instanceof DrupalDateTime && !$date->hasErrors()) {
-                    $form_state->setValueForElement($element, $date);
-                }
-                // If the input is invalid and an error doesn't exist, set one.
-                elseif ($form_state->getError($element) === null) {
-                    $form_state->setError($element, t('The %field date is invalid.', ['%field' => $title]));
+                if ($date instanceof Drupal_Date_Time && !$date->has_errors()) {
+                    $form_state->set_value_for_element($element, $date);
+                } elseif ($form_state->get_error($element) === null) {
+                    $form_state->set_error($element, t('The %field date is invalid.', ['%field' => $title]));
                 }
             }
         }
     }
-
     /**
      * Checks the input array for empty values.
      *
@@ -322,17 +269,16 @@ class Datelist extends DateElementBase
      * @return array
      *   Array of keys from the input array that have no value, may be empty.
      */
-    protected static function checkEmptyInputs(array $input, $parts): array
+    protected static function check_empty_inputs(array $input, $parts): array
     {
         // The object key does not represent an input value, see
         // \Drupal\Core\Datetime\Element\Datelist::valueCallback().
         unset($input['object']);
         // Filters out empty array values, any valid value would have a string
         // length.
-        $filtered_input = FilterArray::removeEmptyStrings($input);
+        $filtered_input = Filter_Array::remove_empty_strings($input);
         return array_diff($parts, array_keys($filtered_input));
     }
-
     /**
      * Rounds minutes and seconds to nearest requested value.
      *
@@ -346,10 +292,10 @@ class Datelist extends DateElementBase
      *   input date is a DrupalDateTime instance. Otherwise the date is returned
      *   unchanged.
      */
-    protected static function incrementRound(&$date, $increment)
+    protected static function increment_round(&$date, $increment)
     {
         // Round minutes and seconds, if necessary.
-        if ($date instanceof DrupalDateTime && $increment > 1) {
+        if ($date instanceof Drupal_Date_Time && $increment > 1) {
             $day = intval($date->format('j'));
             $hour = intval($date->format('H'));
             $second = intval(round(intval($date->format('s')) / $increment) * $increment);
@@ -363,15 +309,14 @@ class Datelist extends DateElementBase
                 $hour += 1;
                 $minute = 0;
             }
-            $date->setTime($hour, $minute, $second);
+            $date->set_time($hour, $minute, $second);
             if ($hour == 24) {
                 $day += 1;
                 $year = $date->format('Y');
                 $month = $date->format('n');
-                $date->setDate($year, $month, $day);
+                $date->set_date($year, $month, $day);
             }
         }
         return $date;
     }
-
 }

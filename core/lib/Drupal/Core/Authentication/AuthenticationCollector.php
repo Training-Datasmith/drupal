@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Authentication;
 
 /**
  * A collector class for authentication providers.
  */
-class AuthenticationCollector implements AuthenticationCollectorInterface
+class Authentication_Collector implements Authentication_Collector_Interface
 {
     /**
      * Array of all registered authentication providers, keyed by ID.
@@ -15,74 +14,63 @@ class AuthenticationCollector implements AuthenticationCollectorInterface
      * @var \Drupal\Core\Authentication\AuthenticationProviderInterface[]
      */
     protected $providers;
-
     /**
      * Array of all providers and their priority.
      *
      * @var array
      */
-    protected $providerOrders = [];
-
+    protected $provider_orders = [];
     /**
      * Sorted list of registered providers.
      *
      * @var \Drupal\Core\Authentication\AuthenticationProviderInterface[]
      */
-    protected $sortedProviders;
-
+    protected $sorted_providers;
     /**
      * List of providers which are allowed on routes with no _auth option.
      *
      * @var string[]
      */
-    protected $globalProviders;
-
+    protected $global_providers;
     /**
      * {@inheritdoc}
      */
-    public function addProvider(AuthenticationProviderInterface $provider, $provider_id, $priority = 0, $global = false): void
+    public function add_provider(Authentication_Provider_Interface $provider, $provider_id, $priority = 0, $global = false): void
     {
         $this->providers[$provider_id] = $provider;
-        $this->providerOrders[$priority][$provider_id] = $provider;
+        $this->provider_orders[$priority][$provider_id] = $provider;
         // Force the providers to be re-sorted.
-        $this->sortedProviders = null;
-
+        $this->sorted_providers = null;
         if ($global) {
-            $this->globalProviders[$provider_id] = true;
+            $this->global_providers[$provider_id] = true;
         }
     }
-
     /**
      * {@inheritdoc}
      */
-    public function isGlobal($provider_id): bool
+    public function is_global($provider_id): bool
     {
-        return isset($this->globalProviders[$provider_id]);
+        return isset($this->global_providers[$provider_id]);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getProvider($provider_id)
+    public function get_provider($provider_id)
     {
         return $this->providers[$provider_id] ?? null;
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getSortedProviders()
+    public function get_sorted_providers()
     {
-        if (!isset($this->sortedProviders)) {
+        if (!isset($this->sorted_providers)) {
             // Sort the providers according to priority.
-            krsort($this->providerOrders);
-
+            krsort($this->provider_orders);
             // Merge nested providers from $this->providers into
             // $this->sortedProviders.
-            $this->sortedProviders = array_merge(...$this->providerOrders);
+            $this->sorted_providers = array_merge(...$this->provider_orders);
         }
-
-        return $this->sortedProviders;
+        return $this->sorted_providers;
     }
-
 }

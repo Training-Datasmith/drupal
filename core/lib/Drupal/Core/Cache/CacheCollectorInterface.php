@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -18,7 +17,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheCollectorInterface
+interface Cache_Collector_Interface
 {
     /**
      * Gets value from the cache.
@@ -30,7 +29,6 @@ interface CacheCollectorInterface
      *   The corresponding cache data.
      */
     public function get($key);
-
     /**
      * Sets cache data.
      *
@@ -43,7 +41,6 @@ interface CacheCollectorInterface
      *   The data to be set.
      */
     public function set($key, $value);
-
     /**
      * Deletes the element.
      *
@@ -54,7 +51,6 @@ interface CacheCollectorInterface
      *   Key that identifies the data.
      */
     public function delete($key);
-
     /**
      * Returns whether data exists for this key.
      *
@@ -62,17 +58,14 @@ interface CacheCollectorInterface
      *   Key that identifies the data.
      */
     public function has($key);
-
     /**
      * Resets the local cache.
      *
      * Does not clear the persistent cache.
      */
     public function reset();
-
     /**
      * Clears the collected cache entry.
      */
     public function clear();
-
 }

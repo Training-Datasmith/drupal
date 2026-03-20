@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Asset;
 
 /**
  * Interface defining a service that dumps an (optimized) asset.
  */
-interface AssetDumperInterface
+interface Asset_Dumper_Interface
 {
     /**
      * Dumps an (optimized) asset to persistent storage.
@@ -21,5 +20,4 @@ interface AssetDumperInterface
      *   A URI to access the dumped asset.
      */
     public function dump($data, $file_extension);
-
 }

@@ -1,21 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Condition;
 
-use Drupal\Component\Plugin\CategorizingPluginManagerInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Component\Plugin\Categorizing_Plugin_Manager_Interface;
+use Drupal\Core\Cache\Cache_Backend_Interface;
 use Drupal\Core\Condition\Attribute\Condition;
-use Drupal\Core\Executable\ExecutableException;
-use Drupal\Core\Executable\ExecutableInterface;
-use Drupal\Core\Executable\ExecutableManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
-use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Plugin\FilteredPluginManagerInterface;
-use Drupal\Core\Plugin\FilteredPluginManagerTrait;
-
+use Drupal\Core\Executable\Executable_Exception;
+use Drupal\Core\Executable\Executable_Interface;
+use Drupal\Core\Executable\Executable_Manager_Interface;
+use Drupal\Core\Extension\Module_Handler_Interface;
+use Drupal\Core\Plugin\Categorizing_Plugin_Manager_Trait;
+use Drupal\Core\Plugin\Default_Plugin_Manager;
+use Drupal\Core\Plugin\Filtered_Plugin_Manager_Interface;
+use Drupal\Core\Plugin\Filtered_Plugin_Manager_Trait;
 /**
  * A plugin manager for condition plugins.
  *
@@ -25,11 +23,10 @@ use Drupal\Core\Plugin\FilteredPluginManagerTrait;
  *
  * @ingroup plugin_api
  */
-class ConditionManager extends DefaultPluginManager implements ExecutableManagerInterface, CategorizingPluginManagerInterface, FilteredPluginManagerInterface
+class Condition_Manager extends Default_Plugin_Manager implements Executable_Manager_Interface, Categorizing_Plugin_Manager_Interface, Filtered_Plugin_Manager_Interface
 {
-    use CategorizingPluginManagerTrait;
-    use FilteredPluginManagerTrait;
-
+    use Categorizing_Plugin_Manager_Trait;
+    use Filtered_Plugin_Manager_Trait;
     /**
      * Constructs a ConditionManager object.
      *
@@ -41,48 +38,36 @@ class ConditionManager extends DefaultPluginManager implements ExecutableManager
      * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
      *   The module handler to invoke the alter hook with.
      */
-    public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler)
+    public function __construct(\Traversable $namespaces, Cache_Backend_Interface $cache_backend, Module_Handler_Interface $module_handler)
     {
-        $this->alterInfo('condition_info');
-        $this->setCacheBackend($cache_backend, 'condition_plugins');
-
-        parent::__construct(
-            'Plugin/Condition',
-            $namespaces,
-            $module_handler,
-            ConditionInterface::class,
-            Condition::class,
-            \Drupal\Core\Condition\Annotation\Condition::class
-        );
+        $this->alter_info('condition_info');
+        $this->set_cache_backend($cache_backend, 'condition_plugins');
+        parent::__construct('Plugin/Condition', $namespaces, $module_handler, Condition_Interface::class, Condition::class, \Drupal\Core\Condition\Annotation\Condition::class);
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getType(): string
+    protected function get_type(): string
     {
         return 'condition';
     }
-
     /**
      * {@inheritdoc}
      */
-    public function createInstance($plugin_id, array $configuration = [])
+    public function create_instance($plugin_id, array $configuration = [])
     {
-        $plugin = $this->getFactory()->createInstance($plugin_id, $configuration);
-        return $plugin->setExecutableManager($this);
+        $plugin = $this->get_factory()->create_instance($plugin_id, $configuration);
+        return $plugin->set_executable_manager($this);
     }
-
     /**
      * {@inheritdoc}
      */
-    public function execute(ExecutableInterface $condition)
+    public function execute(Executable_Interface $condition)
     {
-        if ($condition instanceof ConditionInterface) {
+        if ($condition instanceof Condition_Interface) {
             $result = $condition->evaluate();
-            return $condition->isNegated() ? !$result : $result;
+            return $condition->is_negated() ? !$result : $result;
         }
-        throw new ExecutableException('This manager object can only execute condition plugins');
+        throw new Executable_Exception('This manager object can only execute condition plugins');
     }
-
 }

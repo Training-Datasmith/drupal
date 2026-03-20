@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Core\Dependency_Injection;
 
-namespace Drupal\Core\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * Defines a common interface for dependency container injection.
  *
  * This interface gives classes who need services a factory method for
  * instantiation rather than defining a new service.
  */
-interface ContainerInjectionInterface
+interface Container_Injection_Interface
 {
     /**
      * Instantiates a new instance of this class.
@@ -25,6 +23,5 @@ interface ContainerInjectionInterface
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      *   The service container this instance should use.
      */
-    public static function create(ContainerInterface $container);
-
+    public static function create(Container_Interface $container);
 }

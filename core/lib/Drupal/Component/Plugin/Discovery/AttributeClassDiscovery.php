@@ -1,35 +1,30 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Plugin\Discovery;
 
-use Drupal\Component\Discovery\MissingClassDetectionClassLoader;
-use Drupal\Component\FileCache\FileCacheFactory;
-use Drupal\Component\FileCache\FileCacheInterface;
-use Drupal\Component\Plugin\Attribute\AttributeInterface;
+use Drupal\Component\Discovery\Missing_Class_Detection_Class_Loader;
+use Drupal\Component\File_Cache\File_Cache_Factory;
+use Drupal\Component\File_Cache\File_Cache_Interface;
+use Drupal\Component\Plugin\Attribute\Attribute_Interface;
 use Drupal\Component\Plugin\Attribute\Plugin;
-
 /**
  * Defines a discovery mechanism to find plugins with attributes.
  */
-class AttributeClassDiscovery implements DiscoveryInterface
+class Attribute_Class_Discovery implements Discovery_Interface
 {
-    use DiscoveryTrait;
-
+    use Discovery_Trait;
     /**
      * The file cache object.
      */
-    protected FileCacheInterface $fileCache;
-
+    protected File_Cache_Interface $file_cache;
     /**
      * An array of classes to skip.
      *
      * This must be static because once a class has been autoloaded by PHP, it
      * cannot be unregistered again.
      */
-    protected static array $skipClasses = [];
-
+    protected static array $skip_classes = [];
     /**
      * List of root namespaces abbreviated to two levels.
      *
@@ -42,8 +37,7 @@ class AttributeClassDiscovery implements DiscoveryInterface
      *
      * @var list<string>
      */
-    protected readonly array $rootTwoLevelNamespaces;
-
+    protected readonly array $root_two_level_namespaces;
     /**
      * Constructs a new instance.
      *
@@ -54,15 +48,12 @@ class AttributeClassDiscovery implements DiscoveryInterface
      *   (optional) The name of the attribute that contains the plugin definition.
      *   Defaults to 'Drupal\Component\Plugin\Attribute\Plugin'.
      */
-    public function __construct(
-        protected readonly array $pluginNamespaces = [],
-        protected readonly string $pluginDefinitionAttributeName = Plugin::class,
-    ) {
-        $file_cache_suffix = str_replace('\\', '_', $this->pluginDefinitionAttributeName);
-        $this->fileCache = FileCacheFactory::get('attribute_discovery:' . $this->getFileCacheSuffix($file_cache_suffix));
-        $this->rootTwoLevelNamespaces = array_unique(array_map($this->getTwoLevelNamespace(...), array_keys($this->getPluginNamespaces())));
+    public function __construct(protected readonly array $plugin_namespaces = [], protected readonly string $plugin_definition_attribute_name = Plugin::class)
+    {
+        $file_cache_suffix = str_replace('\\', '_', $this->plugin_definition_attribute_name);
+        $this->file_cache = File_Cache_Factory::get('attribute_discovery:' . $this->get_file_cache_suffix($file_cache_suffix));
+        $this->root_two_level_namespaces = array_unique(array_map($this->get_two_level_namespace(...), array_keys($this->get_plugin_namespaces())));
     }
-
     /**
      * Gets the file cache suffix.
      *
@@ -75,47 +66,41 @@ class AttributeClassDiscovery implements DiscoveryInterface
      * @return string
      *   The file cache suffix.
      */
-    protected function getFileCacheSuffix(string $default_suffix): string
+    protected function get_file_cache_suffix(string $default_suffix): string
     {
         return $default_suffix;
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    public function getDefinitions(): array
+    public function get_definitions(): array
     {
         $definitions = [];
-
-        $autoloader = new MissingClassDetectionClassLoader();
-        spl_autoload_register($autoloader->loadClass(...));
-
+        $autoloader = new Missing_Class_Detection_Class_Loader();
+        spl_autoload_register($autoloader->load_class(...));
         // Search for classes within all PSR-4 namespace locations.
-        foreach ($this->getPluginNamespaces() as $namespace => $dirs) {
+        foreach ($this->get_plugin_namespaces() as $namespace => $dirs) {
             foreach ($dirs as $dir) {
                 if (file_exists($dir)) {
-                    $iterator = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS)
-                    );
+                    $iterator = new \Recursive_Iterator_Iterator(new \Recursive_Directory_Iterator($dir, \Recursive_Directory_Iterator::SKIP_DOTS));
                     foreach ($iterator as $fileinfo) {
-                        assert($fileinfo instanceof \SplFileInfo);
-                        if ($fileinfo->getExtension() === 'php') {
-                            if ($cached = $this->fileCache->get($fileinfo->getPathName())) {
+                        assert($fileinfo instanceof \Spl_File_Info);
+                        if ($fileinfo->get_extension() === 'php') {
+                            if ($cached = $this->file_cache->get($fileinfo->get_path_name())) {
                                 if (isset($cached['id'])) {
                                     // Explicitly unserialize this to create a new object
                                     // instance.
                                     $dependencies = isset($cached['dependencies']) ? unserialize($cached['dependencies']) : [];
-                                    if (!$this->hasMissingDependencies($dependencies ?? [])) {
+                                    if (!$this->has_missing_dependencies($dependencies ?? [])) {
                                         $definitions[$cached['id']] = unserialize($cached['content']);
                                     }
                                 }
                                 continue;
                             }
-
-                            $sub_path = $iterator->getSubIterator()->getSubPath();
+                            $sub_path = $iterator->get_sub_iterator()->get_sub_path();
                             $sub_path = $sub_path ? str_replace(DIRECTORY_SEPARATOR, '\\', $sub_path) . '\\' : '';
-                            $class = $namespace . '\\' . $sub_path . $fileinfo->getBasename('.php');
+                            $class = $namespace . '\\' . $sub_path . $fileinfo->get_basename('.php');
                             // Plugins may rely on Attribute classes defined by modules that
                             // are not installed. In such a case, a 'class not found' error
                             // may be thrown from reflection. However, this is an unavoidable
@@ -143,11 +128,10 @@ class AttributeClassDiscovery implements DiscoveryInterface
                             // Drupal requires PHP 8.5.
                             // @see https://github.com/php/php-src/issues/17959
                             // @see https://github.com/php/php-src/commit/8731c95b35f6838bacd12a07c50886e020aad5a6
-                            if (array_key_exists($class, self::$skipClasses)) {
-                                $missing_classes = self::$skipClasses[$class];
+                            if (array_key_exists($class, self::$skip_classes)) {
+                                $missing_classes = self::$skip_classes[$class];
                                 foreach ($missing_classes as $missing_class) {
-                                    $missing_class_namespace = $this->getTwoLevelNamespace($missing_class);
-
+                                    $missing_class_namespace = $this->get_two_level_namespace($missing_class);
                                     // If we arrive here a second time, and the namespace is still
                                     // unavailable, ensure discovery is skipped. Without this
                                     // explicit check for already checked classes, an invalid
@@ -157,7 +141,7 @@ class AttributeClassDiscovery implements DiscoveryInterface
                                     // namespace has become available in the meantime, assume that
                                     // the class actually should be discovered since this probably
                                     // means the optional module it depends on has been enabled.
-                                    if (!in_array($missing_class_namespace, $this->rootTwoLevelNamespaces)) {
+                                    if (!in_array($missing_class_namespace, $this->root_two_level_namespaces)) {
                                         $autoloader->reset();
                                         continue 2;
                                     }
@@ -165,54 +149,48 @@ class AttributeClassDiscovery implements DiscoveryInterface
                             }
                             try {
                                 $class_exists = class_exists($class, true);
-                                if (!$class_exists || \count($autoloader->getMissingTraits()) > 0) {
+                                if (!$class_exists || \count($autoloader->get_missing_traits()) > 0) {
                                     // @todo remove this workaround once PHP treats missing traits
                                     // as catchable fatal errors.
-                                    if (\count($autoloader->getMissingTraits()) > 0) {
-                                        self::$skipClasses[$class] = $autoloader->getMissingTraits();
+                                    if (\count($autoloader->get_missing_traits()) > 0) {
+                                        self::$skip_classes[$class] = $autoloader->get_missing_traits();
                                     }
                                     $autoloader->reset();
                                     continue;
                                 }
                             } catch (\Error $e) {
-                                if (!$autoloader->hasMissingClass()) {
+                                if (!$autoloader->has_missing_class()) {
                                     // @todo Add test coverage for unexpected Error exceptions in
                                     // https://www.drupal.org/project/drupal/issues/3520811.
                                     $autoloader->reset();
-                                    spl_autoload_unregister($autoloader->loadClass(...));
+                                    spl_autoload_unregister($autoloader->load_class(...));
                                     throw $e;
                                 }
                                 $autoloader->reset();
                                 continue;
                             }
-                            $result = $this->parseClass($class, $fileinfo);
+                            $result = $this->parse_class($class, $fileinfo);
                             ['id' => $id, 'content' => $content] = $result;
                             if ($id) {
-                                if (!$this->hasMissingDependencies($result['dependencies'] ?? [])) {
+                                if (!$this->has_missing_dependencies($result['dependencies'] ?? [])) {
                                     $definitions[$id] = $content;
                                 }
                                 // Explicitly serialize this to create a new object instance.
-                                if (!isset(self::$skipClasses[$class])) {
-                                    $this->fileCache->set($fileinfo->getPathName(), [
-                                      'id' => $id,
-                                      'content' => serialize($content),
-                                      'dependencies' => serialize($result['dependencies'] ?? null),
-                                    ]);
+                                if (!isset(self::$skip_classes[$class])) {
+                                    $this->file_cache->set($fileinfo->get_path_name(), ['id' => $id, 'content' => serialize($content), 'dependencies' => serialize($result['dependencies'] ?? null)]);
                                 }
                             } else {
                                 // Store a NULL object, so that the file is not parsed again.
-                                $this->fileCache->set($fileinfo->getPathName(), [null]);
+                                $this->file_cache->set($fileinfo->get_path_name(), [null]);
                             }
                         }
                     }
                 }
             }
         }
-        spl_autoload_unregister($autoloader->loadClass(...));
-
+        spl_autoload_unregister($autoloader->load_class(...));
         return $definitions;
     }
-
     /**
      * Parses attributes from a class.
      *
@@ -229,28 +207,26 @@ class AttributeClassDiscovery implements DiscoveryInterface
      * @throws \ReflectionException
      * @throws \Error
      */
-    protected function parseClass(string $class, \SplFileInfo $fileinfo): array
+    protected function parse_class(string $class, \Spl_File_Info $fileinfo): array
     {
         // @todo Consider performance improvements over using reflection.
         // @see https://www.drupal.org/project/drupal/issues/3395260.
         $reflection_class = new \ReflectionClass($class);
-
         $id = $content = null;
-        if ($attributes = $reflection_class->getAttributes($this->pluginDefinitionAttributeName, \ReflectionAttribute::IS_INSTANCEOF)) {
+        if ($attributes = $reflection_class->get_attributes($this->plugin_definition_attribute_name, \Reflection_Attribute::IS_INSTANCEOF)) {
             /** @var \Drupal\Component\Plugin\Attribute\AttributeInterface $attribute */
-            $attribute = $attributes[0]->newInstance();
-            $this->prepareAttributeDefinition($attribute, $class);
-            if (($dependencies = $this->getClassDependencies($reflection_class))) {
+            $attribute = $attributes[0]->new_instance();
+            $this->prepare_attribute_definition($attribute, $class);
+            if ($dependencies = $this->get_class_dependencies($reflection_class)) {
                 // Include the dependencies in the plugin definition content in case
                 // plugins need to know about them.
-                $attribute->setDependencies($dependencies);
+                $attribute->set_dependencies($dependencies);
             }
-            $id = $attribute->getId();
+            $id = $attribute->get_id();
             $content = $attribute->get();
         }
         return ['id' => $id, 'content' => $content, 'dependencies' => $dependencies ?? null];
     }
-
     /**
      * Prepares the attribute definition.
      *
@@ -259,22 +235,20 @@ class AttributeClassDiscovery implements DiscoveryInterface
      * @param string $class
      *   The class used for the plugin.
      */
-    protected function prepareAttributeDefinition(AttributeInterface $attribute, string $class): void
+    protected function prepare_attribute_definition(Attribute_Interface $attribute, string $class): void
     {
-        $attribute->setClass($class);
+        $attribute->set_class($class);
     }
-
     /**
      * Gets an array of PSR-4 namespaces to search for plugin classes.
      *
      * @return string[][]
      *   An array of namespaces to search.
      */
-    protected function getPluginNamespaces(): array
+    protected function get_plugin_namespaces(): array
     {
-        return $this->pluginNamespaces;
+        return $this->plugin_namespaces;
     }
-
     /**
      * Gets a string containing the first two levels of a class name or namespace.
      *
@@ -284,11 +258,10 @@ class AttributeClassDiscovery implements DiscoveryInterface
      * @return string
      *   A namespace string containing only two levels.
      */
-    protected function getTwoLevelNamespace(string $namespace): string
+    protected function get_two_level_namespace(string $namespace): string
     {
         return implode('\\', array_slice(explode('\\', $namespace), 0, 2));
     }
-
     /**
      * Gets the list of class, interface, and trait dependencies for the class.
      *
@@ -301,29 +274,26 @@ class AttributeClassDiscovery implements DiscoveryInterface
      *   'provider', the values for the type are provider names. NULL if there are
      *   no dependencies.
      */
-    protected function getClassDependencies(\ReflectionClass $reflection_class): ?array
+    protected function get_class_dependencies(\ReflectionClass $reflection_class): ?array
     {
         $dependencies = [];
-        if (($interfaces = $reflection_class->getInterfaceNames())) {
+        if ($interfaces = $reflection_class->get_interface_names()) {
             $dependencies['interface'] = $interfaces;
         }
-        if (($traits = $reflection_class->getTraitNames())) {
+        if ($traits = $reflection_class->get_trait_names()) {
             $dependencies['trait'] = $traits;
         }
-
         $child_class = $reflection_class;
-        while (($parent_class = $child_class->getParentClass())) {
-            $dependencies['class'][] = $parent_class->getName();
-            if (($traits = $parent_class->getTraitNames())) {
+        while ($parent_class = $child_class->get_parent_class()) {
+            $dependencies['class'][] = $parent_class->get_name();
+            if ($traits = $parent_class->get_trait_names()) {
                 $dependencies['trait'] ??= [];
                 $dependencies['trait'] = array_unique(array_merge($dependencies['trait'], $traits));
             }
             $child_class = $parent_class;
         }
-
         return $dependencies ?: null;
     }
-
     /**
      * Whether the plugin definition has missing dependencies.
      *
@@ -333,23 +303,20 @@ class AttributeClassDiscovery implements DiscoveryInterface
      * @return bool
      *   TRUE if any dependencies are missing. FALSE otherwise.
      */
-    protected function hasMissingDependencies(array $dependencies): bool
+    protected function has_missing_dependencies(array $dependencies): bool
     {
         foreach ($dependencies as $type_dependencies) {
             foreach ($type_dependencies as $dependency) {
-                $namespace = $this->getTwoLevelNamespace($dependency);
+                $namespace = $this->get_two_level_namespace($dependency);
                 if (!str_starts_with($namespace, 'Drupal')) {
                     // Not checking non-Drupal dependencies.
                     continue;
                 }
-
-                if (!in_array($namespace, $this->rootTwoLevelNamespaces)) {
+                if (!in_array($namespace, $this->root_two_level_namespaces)) {
                     return true;
                 }
             }
         }
-
         return false;
     }
-
 }

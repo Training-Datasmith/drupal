@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Database\Event;
 
 /**
  * Represents the start of a statement execution as an event.
  */
-class StatementExecutionStartEvent extends DatabaseEvent
+class Statement_Execution_Start_Event extends Database_Event
 {
     /**
      * Constructs a StatementExecutionStartEvent object.
@@ -29,15 +28,8 @@ class StatementExecutionStartEvent extends DatabaseEvent
      *   A normalized debug backtrace entry representing the last non-db method
      *   called.
      */
-    public function __construct(
-        public readonly int $statementObjectId,
-        public readonly string $key,
-        public readonly string $target,
-        public readonly string $queryString,
-        public readonly array $args,
-        public readonly array $caller,
-    ) {
+    public function __construct(public readonly int $statement_object_id, public readonly string $key, public readonly string $target, public readonly string $query_string, public readonly array $args, public readonly array $caller)
+    {
         parent::__construct();
     }
-
 }

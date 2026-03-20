@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Utility;
 
 /**
@@ -33,31 +32,27 @@ class Image
      * @return bool
      *   TRUE if $dimensions was modified, FALSE otherwise.
      */
-    public static function scaleDimensions(array &$dimensions, $width = null, $height = null, $upscale = false): bool
+    public static function scale_dimensions(array &$dimensions, $width = null, $height = null, $upscale = false): bool
     {
         $aspect = $dimensions['height'] / $dimensions['width'];
-
         // Calculate one of the dimensions from the other target dimension,
         // ensuring the same aspect ratio as the source dimensions. If one of the
         // target dimensions is missing, that is the one that is calculated. If both
         // are specified then the dimension calculated is the one that would not be
         // calculated to be bigger than its target.
-        if (($width && !$height) || ($width && $height && $aspect < $height / $width)) {
+        if ($width && !$height || $width && $height && $aspect < $height / $width) {
             $height = (int) round($width * $aspect);
         } else {
             $width = (int) round($height / $aspect);
         }
-
         // Don't upscale if the option isn't enabled.
         if (!$upscale && ($width >= $dimensions['width'] || $height >= $dimensions['height'])) {
             return false;
         }
-
         $dimensions['width'] = $width;
         $dimensions['height'] = $height;
         return true;
     }
-
     /**
      * Returns the offset in pixels from the anchor.
      *
@@ -74,7 +69,7 @@ class Image
      * @throws \InvalidArgumentException
      *   When the $anchor argument is not valid.
      */
-    public static function getKeywordOffset(string $anchor, int $current_size, int $new_size): int
+    public static function get_keyword_offset(string $anchor, int $current_size, int $new_size): int
     {
         return match ($anchor) {
             'bottom', 'right' => $current_size - $new_size,
@@ -83,5 +78,4 @@ class Image
             default => throw new \InvalidArgumentException("Invalid anchor '{$anchor}' provided to getKeywordOffset()"),
         };
     }
-
 }

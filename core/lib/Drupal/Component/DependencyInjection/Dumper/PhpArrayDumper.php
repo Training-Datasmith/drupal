@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Drupal\Component\Dependency_Injection\Dumper;
 
-namespace Drupal\Component\DependencyInjection\Dumper;
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Symfony\Component\Dependency_Injection\Container_Interface;
 /**
  * PhpArrayDumper dumps a service container as a PHP array.
  *
@@ -18,62 +16,54 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @see \Drupal\Component\DependencyInjection\PhpArrayContainer
  */
-class PhpArrayDumper extends OptimizedPhpArrayDumper
+class Php_Array_Dumper extends Optimized_Php_Array_Dumper
 {
     /**
      * {@inheritdoc}
      */
-    public function getArray()
+    public function get_array()
     {
         $this->serialize = false;
-        return parent::getArray();
+        return parent::get_array();
     }
-
     /**
      * {@inheritdoc}
      * @return mixed[]
      */
-    protected function dumpCollection($collection, &$resolve = false): array
+    protected function dump_collection($collection, &$resolve = false): array
     {
         $code = [];
-
         foreach ($collection as $key => $value) {
             if (is_array($value)) {
-                $code[$key] = $this->dumpCollection($value);
+                $code[$key] = $this->dump_collection($value);
             } else {
-                $code[$key] = $this->dumpValue($value);
+                $code[$key] = $this->dump_value($value);
             }
         }
-
         return $code;
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string
+    protected function get_service_call($id, $invalid_behavior = Container_Interface::EXCEPTION_ON_INVALID_REFERENCE): string
     {
-        if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
+        if ($invalid_behavior !== Container_Interface::EXCEPTION_ON_INVALID_REFERENCE) {
             return '@?' . $id;
         }
-
         return '@' . $id;
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function getParameterCall($name): string
+    protected function get_parameter_call($name): string
     {
         return '%' . $name . '%';
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function supportsMachineFormat(): bool
+    protected function supports_machine_format(): bool
     {
         return false;
     }
-
 }

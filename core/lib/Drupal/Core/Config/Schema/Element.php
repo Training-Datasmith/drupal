@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config\Schema;
 
-use Drupal\Core\Config\TypedConfigManagerInterface;
-use Drupal\Core\TypedData\TypedData;
-use Drupal\Core\TypedData\TypedDataManagerInterface;
-
+use Drupal\Core\Config\Typed_Config_Manager_Interface;
+use Drupal\Core\Typed_Data\Typed_Data;
+use Drupal\Core\Typed_Data\Typed_Data_Manager_Interface;
 /**
  * Defines a generic configuration element.
  */
-abstract class Element extends TypedData
+abstract class Element extends Typed_Data
 {
     /**
      * The configuration value.
@@ -19,7 +17,6 @@ abstract class Element extends TypedData
      * @var mixed
      */
     protected $value;
-
     /**
      * Gets the typed configuration manager.
      *
@@ -29,15 +26,13 @@ abstract class Element extends TypedData
      * @return \Drupal\Core\Config\TypedConfigManagerInterface
      *   The typed configuration manager.
      */
-    public function getTypedDataManager()
+    public function get_typed_data_manager()
     {
-        if (empty($this->typedDataManager)) {
-            $this->setTypedDataManager(\Drupal::service('config.typed'));
+        if (empty($this->typed_data_manager)) {
+            $this->set_typed_data_manager(\Drupal::service('config.typed'));
         }
-
-        return $this->typedDataManager;
+        return $this->typed_data_manager;
     }
-
     /**
      * Sets the typed config manager.
      *
@@ -52,11 +47,10 @@ abstract class Element extends TypedData
      *
      * @return $this
      */
-    public function setTypedDataManager(TypedDataManagerInterface $typed_data_manager)
+    public function set_typed_data_manager(Typed_Data_Manager_Interface $typed_data_manager)
     {
-        assert($typed_data_manager instanceof TypedConfigManagerInterface, '$typed_data_manager should be an instance of \Drupal\Core\Config\TypedConfigManagerInterface.');
-        $this->typedDataManager = $typed_data_manager;
+        assert($typed_data_manager instanceof Typed_Config_Manager_Interface, '$typed_data_manager should be an instance of \Drupal\Core\Config\TypedConfigManagerInterface.');
+        $this->typed_data_manager = $typed_data_manager;
         return $this;
     }
-
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Config;
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-
+use Symfony\Component\Event_Dispatcher\Event_Subscriber_Interface;
 /**
  * Defines a base event listener implementation configuration overrides.
  */
-abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
+abstract class Config_Factory_Override_Base implements Event_Subscriber_Interface
 {
     /**
      * Reacts to the ConfigCollectionEvents::COLLECTION_INFO event.
@@ -17,44 +15,39 @@ abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
      * @param \Drupal\Core\Config\ConfigCollectionInfo $collection_info
      *   The configuration collection info event.
      */
-    abstract public function addCollections(ConfigCollectionInfo $collection_info);
-
+    abstract public function add_collections(Config_Collection_Info $collection_info);
     /**
      * Actions to be performed to configuration override on configuration save.
      *
      * @param \Drupal\Core\Config\ConfigCrudEvent $event
      *   The config CRUD event.
      */
-    abstract public function onConfigSave(ConfigCrudEvent $event);
-
+    abstract public function on_config_save(Config_Crud_Event $event);
     /**
      * Actions to be performed to configuration override on configuration delete.
      *
      * @param \Drupal\Core\Config\ConfigCrudEvent $event
      *   The config CRUD event.
      */
-    abstract public function onConfigDelete(ConfigCrudEvent $event);
-
+    abstract public function on_config_delete(Config_Crud_Event $event);
     /**
      * Actions to be performed to configuration override on configuration rename.
      *
      * @param \Drupal\Core\Config\ConfigRenameEvent $event
      *   The config rename event.
      */
-    abstract public function onConfigRename(ConfigRenameEvent $event);
-
+    abstract public function on_config_rename(Config_Rename_Event $event);
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents(): array
+    public static function get_subscribed_events(): array
     {
-        $events[ConfigCollectionEvents::COLLECTION_INFO][] = ['addCollections'];
-        $events[ConfigEvents::SAVE][] = ['onConfigSave', 20];
-        $events[ConfigEvents::DELETE][] = ['onConfigDelete', 20];
-        $events[ConfigEvents::RENAME][] = ['onConfigRename', 20];
+        $events[Config_Collection_Events::COLLECTION_INFO][] = ['addCollections'];
+        $events[Config_Events::SAVE][] = ['onConfigSave', 20];
+        $events[Config_Events::DELETE][] = ['onConfigDelete', 20];
+        $events[Config_Events::RENAME][] = ['onConfigRename', 20];
         return $events;
     }
-
     /**
      * Filters data in the override based on what is currently in configuration.
      *
@@ -63,19 +56,18 @@ abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
      * @param \Drupal\Core\Config\StorableConfigBase $override
      *   Override object corresponding to the configuration to filter data in.
      */
-    protected function filterOverride(Config $config, StorableConfigBase $override)
+    protected function filter_override(Config $config, Storable_Config_Base $override)
     {
         $override_data = $override->get();
-        $changed = $this->filterNestedArray($config->get(), $override_data);
+        $changed = $this->filter_nested_array($config->get(), $override_data);
         if (empty($override_data)) {
             // If no override values are left that would apply, remove the override.
             $override->delete();
         } elseif ($changed) {
             // Otherwise set the filtered override values back.
-            $override->setData($override_data)->save(true);
+            $override->set_data($override_data)->save(true);
         }
     }
-
     /**
      * Filters data in nested arrays.
      *
@@ -87,7 +79,7 @@ abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
      * @return bool
      *   TRUE if $override_data was changed, FALSE otherwise.
      */
-    protected function filterNestedArray(array $original_data, array &$override_data)
+    protected function filter_nested_array(array $original_data, array &$override_data)
     {
         $changed = false;
         foreach ($override_data as $key => $value) {
@@ -99,7 +91,7 @@ abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
                 if (is_array($original_data[$key])) {
                     // Do the filtering one level deeper.
                     // Ensure that we track $changed along the way.
-                    if ($this->filterNestedArray($original_data[$key], $override_data[$key])) {
+                    if ($this->filter_nested_array($original_data[$key], $override_data[$key])) {
                         $changed = true;
                     }
                     // If no overrides are left under this level, remove the level.
@@ -117,5 +109,4 @@ abstract class ConfigFactoryOverrideBase implements EventSubscriberInterface
         }
         return $changed;
     }
-
 }

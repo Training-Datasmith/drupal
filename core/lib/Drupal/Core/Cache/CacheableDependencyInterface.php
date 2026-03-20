@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Core\Cache;
 
 /**
@@ -14,7 +13,7 @@ namespace Drupal\Core\Cache;
  *
  * @ingroup cache
  */
-interface CacheableDependencyInterface
+interface Cacheable_Dependency_Interface
 {
     /**
      * The cache contexts associated with this object.
@@ -31,8 +30,7 @@ interface CacheableDependencyInterface
      *
      * @see \Drupal\Core\Cache\Context\CacheContextsManager::convertTokensToKeys()
      */
-    public function getCacheContexts();
-
+    public function get_cache_contexts();
     /**
      * The cache tags associated with this object.
      *
@@ -41,8 +39,7 @@ interface CacheableDependencyInterface
      * @return list<string>
      *   A set of cache tags.
      */
-    public function getCacheTags();
-
+    public function get_cache_tags();
     /**
      * The maximum age for which this object may be cached.
      *
@@ -51,6 +48,5 @@ interface CacheableDependencyInterface
      *   An object may be cached permanently by returning
      *   \Drupal\Core\Cache\Cache::PERMANENT.
      */
-    public function getCacheMaxAge();
-
+    public function get_cache_max_age();
 }

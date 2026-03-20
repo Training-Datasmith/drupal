@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Drupal\Component\Annotation;
 
 /**
@@ -9,7 +8,7 @@ namespace Drupal\Component\Annotation;
  *
  * @Annotation
  */
-class PluginID extends AnnotationBase
+class Plugin_Id extends Annotation_Base
 {
     /**
      * The plugin ID.
@@ -19,25 +18,18 @@ class PluginID extends AnnotationBase
      * @var string
      */
     public $value;
-
     /**
      * {@inheritdoc}
      */
     public function get(): array
     {
-        return [
-          'id' => $this->value,
-          'class' => $this->class,
-          'provider' => $this->provider,
-        ];
+        return ['id' => $this->value, 'class' => $this->class, 'provider' => $this->provider];
     }
-
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function get_id()
     {
         return $this->value;
     }
-
 }

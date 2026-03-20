@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 // phpcs:ignoreFile
-
 /**
  * @file
  *
@@ -24,45 +23,37 @@ declare(strict_types=1);
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 namespace Drupal\Component\Annotation\Doctrine;
 
 use function array_key_exists;
 use function class_exists;
-
-final class AnnotationRegistry
+final class Annotation_Registry
 {
     /**
      * An array of classes which cannot be found
      *
      * @var null[] indexed by class name
      */
-    private static array $failedToAutoload = [];
-
+    private static array $failed_to_autoload = [];
     public static function reset(): void
     {
-        self::$failedToAutoload = [];
+        self::$failed_to_autoload = [];
     }
-
     /**
      * Autoload an annotation class silently.
      */
-    public static function loadAnnotationClass(string $class): bool
+    public static function load_annotation_class(string $class): bool
     {
         if (class_exists($class, false)) {
             return true;
         }
-
-        if (array_key_exists($class, self::$failedToAutoload)) {
+        if (array_key_exists($class, self::$failed_to_autoload)) {
             return false;
         }
-
         if (class_exists($class)) {
             return true;
         }
-
-        self::$failedToAutoload[$class] = null;
-
+        self::$failed_to_autoload[$class] = null;
         return false;
     }
 }
