@@ -10,7 +10,7 @@ services:
     tags:
       - { name: breadcrumb_builder, priority: 1002 }
   taxonomy_term.taxonomy_term_route_context:
-    class: Drupal\taxonomy\ContextProvider\TermRouteContext
+    class: Drupal\taxonomy\Context_Provider\Term_Route_Context
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }

@@ -2,4 +2,4 @@ services:
   _defaults:
     autoconfigure: true
   # A test subscriber for the database API events.
-  Drupal\database_test\EventSubscriber\DatabaseEventSubscriber: ~
+  Drupal\database_test\Event_Subscriber\Database_Event_Subscriber: ~

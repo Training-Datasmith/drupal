@@ -1,8 +1,8 @@
 block_content.add_form:
   path: '/block/add/{block_content_type}'
   defaults:
-    _controller: '\Drupal\block_content\Controller\BlockContentController::addForm'
-    _title_callback: '\Drupal\block_content\Controller\BlockContentController::getAddFormTitle'
+    _controller: '\Drupal\block_content\Controller\Block_Content_Controller::addForm'
+    _title_callback: '\Drupal\block_content\Controller\Block_Content_Controller::getAddFormTitle'
   options:
     _admin_route: TRUE
   requirements:

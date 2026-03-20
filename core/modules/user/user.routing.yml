@@ -9,7 +9,7 @@ user.register:
 user.logout:
   path: '/user/logout'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::logout'
+    _controller: '\Drupal\user\Controller\User_Controller::logout'
   requirements:
     _user_is_logged_in: 'TRUE'
     _csrf_token: 'TRUE'
@@ -19,14 +19,14 @@ user.logout:
 user.logout.confirm:
   path: '/user/logout/confirm'
   defaults:
-    _form: '\Drupal\user\Form\UserLogoutConfirm'
+    _form: '\Drupal\user\Form\User_Logout_Confirm'
   requirements:
     _user_is_logged_in: 'TRUE'
 
 user.admin_index:
   path: '/admin/config/people'
   defaults:
-    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _controller: '\Drupal\system\Controller\System_Controller::systemAdminMenuBlockPage'
     _title: 'People'
   requirements:
     _permission: 'access administration pages'
@@ -42,7 +42,7 @@ entity.user.admin_form:
 user.role.settings:
   path: '/admin/people/role-settings'
   defaults:
-    _form: '\Drupal\user\Form\RoleSettingsForm'
+    _form: '\Drupal\user\Form\Role_Settings_Form'
     _title: 'Role settings'
   requirements:
     _permission: 'administer permissions'
@@ -66,7 +66,7 @@ user.admin_create:
 user.admin_permissions:
   path: '/admin/people/permissions'
   defaults:
-    _form: '\Drupal\user\Form\UserPermissionsForm'
+    _form: '\Drupal\user\Form\User_Permissions_Form'
     _title: 'Permissions'
   requirements:
     _permission: 'administer permissions'
@@ -74,17 +74,17 @@ user.admin_permissions:
 user.admin_permissions.module:
   path: '/admin/people/permissions/module/{modules}'
   defaults:
-    _form: '\Drupal\user\Form\UserPermissionsModuleSpecificForm'
+    _form: '\Drupal\user\Form\User_Permissions_Module_Specific_Form'
     _title: 'Module Permissions'
   requirements:
     _permission: 'administer permissions'
     modules: '[a-z][a-z0-9_,]*'
-    _custom_access: '\Drupal\user\Form\UserPermissionsModuleSpecificForm::access'
+    _custom_access: '\Drupal\user\Form\User_Permissions_Module_Specific_Form::access'
 
 entity.user_role.edit_permissions_form:
   path: '/admin/people/permissions/{user_role}'
   defaults:
-    _form: '\Drupal\user\Form\UserPermissionsRoleSpecificForm'
+    _form: '\Drupal\user\Form\User_Permissions_Role_Specific_Form'
     _title: 'Edit role'
   requirements:
     _entity_access: 'user_role.update'
@@ -92,7 +92,7 @@ entity.user_role.edit_permissions_form:
 user.multiple_cancel_confirm:
   path: '/admin/people/cancel'
   defaults:
-    _form: '\Drupal\user\Form\UserMultipleCancelConfirm'
+    _form: '\Drupal\user\Form\User_Multiple_Cancel_Confirm'
     _title: 'Cancel user'
   requirements:
     _permission: 'administer users'
@@ -132,7 +132,7 @@ entity.user_role.delete_form:
 user.pass:
   path: '/user/password'
   defaults:
-    _form: '\Drupal\user\Form\UserPasswordForm'
+    _form: '\Drupal\user\Form\User_Password_Form'
     _title: 'Reset your password'
   requirements:
     _access: 'TRUE'
@@ -142,7 +142,7 @@ user.pass:
 user.pass.http:
   path: '/user/password'
   defaults:
-    _controller: \Drupal\user\Controller\UserAuthenticationController::resetPassword
+    _controller: \Drupal\user\Controller\User_Authentication_Controller::resetPassword
   methods: [POST]
   requirements:
     _access: 'TRUE'
@@ -151,7 +151,7 @@ user.pass.http:
 user.page:
   path: '/user'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::userPage'
+    _controller: '\Drupal\user\Controller\User_Controller::userPage'
     _title: 'My account'
   requirements:
     _user_is_logged_in: 'TRUE'
@@ -159,7 +159,7 @@ user.page:
 user.edit:
   path: '/user/edit'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::userEditPage'
+    _controller: '\Drupal\user\Controller\User_Controller::userEditPage'
     _title: 'Edit account'
   requirements:
     _user_is_logged_in: 'TRUE'
@@ -167,7 +167,7 @@ user.edit:
 user.login:
   path: '/user/login'
   defaults:
-    _form: '\Drupal\user\Form\UserLoginForm'
+    _form: '\Drupal\user\Form\User_Login_Form'
     _title: 'Log in'
   requirements:
     _user_is_logged_in: 'FALSE'
@@ -177,7 +177,7 @@ user.login:
 user.login.http:
   path: '/user/login'
   defaults:
-    _controller: \Drupal\user\Controller\UserAuthenticationController::login
+    _controller: \Drupal\user\Controller\User_Authentication_Controller::login
   methods: [POST]
   requirements:
     _user_is_logged_in: 'FALSE'
@@ -186,7 +186,7 @@ user.login.http:
 user.login_status.http:
   path: '/user/login_status'
   defaults:
-    _controller: \Drupal\user\Controller\UserAuthenticationController::loginStatus
+    _controller: \Drupal\user\Controller\User_Authentication_Controller::loginStatus
   methods: [GET]
   requirements:
     _access: 'TRUE'
@@ -195,7 +195,7 @@ user.login_status.http:
 user.logout.http:
   path: '/user/logout'
   defaults:
-    _controller: \Drupal\user\Controller\UserAuthenticationController::logout
+    _controller: \Drupal\user\Controller\User_Authentication_Controller::logout
   methods: [POST]
   requirements:
     _user_is_logged_in: 'TRUE'
@@ -206,7 +206,7 @@ user.cancel_confirm:
   path: '/user/{user}/cancel/confirm/{timestamp}/{hashed_pass}'
   defaults:
     _title: 'Confirm account cancellation'
-    _controller: '\Drupal\user\Controller\UserController::confirmCancel'
+    _controller: '\Drupal\user\Controller\User_Controller::confirmCancel'
     timestamp: 0
     hashed_pass: ''
   requirements:
@@ -216,7 +216,7 @@ user.cancel_confirm:
 user.reset.login:
   path: '/user/reset/{uid}/{timestamp}/{hash}/login'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::resetPassLogin'
+    _controller: '\Drupal\user\Controller\User_Controller::resetPassLogin'
     _title: 'Reset password'
   requirements:
     _user_is_logged_in: 'FALSE'
@@ -227,7 +227,7 @@ user.reset.login:
 user.reset:
   path: '/user/reset/{uid}/{timestamp}/{hash}'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::resetPass'
+    _controller: '\Drupal\user\Controller\User_Controller::resetPass'
     _title: 'Reset password'
   requirements:
     _access: 'TRUE'
@@ -238,7 +238,7 @@ user.reset:
 user.reset.form:
   path: '/user/reset/{uid}'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::getResetPassForm'
+    _controller: '\Drupal\user\Controller\User_Controller::getResetPassForm'
     _title: 'Reset password'
   requirements:
     _user_is_logged_in: 'FALSE'
@@ -249,6 +249,6 @@ user.reset.form:
 user.well-known.change_password:
   path: '/.well-known/change-password'
   defaults:
-    _controller: '\Drupal\user\Controller\UserController::userEditPage'
+    _controller: '\Drupal\user\Controller\User_Controller::userEditPage'
   requirements:
     _user_is_logged_in: 'TRUE'

@@ -11,7 +11,7 @@ drupal.contextual-links:
       css/contextual.icons.theme.css: {}
   drupalSettings:
     # These placeholder values will be set by
-    # \Drupal\contextual\Element\ContextualLinksPlaceholder::preRenderPlaceholder().
+    # \Drupal\contextual\Element\Contextual_Links_Placeholder::preRenderPlaceholder().
     contextual:
       theme: null
   dependencies:

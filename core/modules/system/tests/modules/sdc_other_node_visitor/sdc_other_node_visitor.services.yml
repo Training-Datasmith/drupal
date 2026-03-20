@@ -1,5 +1,5 @@
 services:
   sdc_other_node_visitor.twig.extension.profiler:
-    class: Drupal\sdc_other_node_visitor\Twig\Extension\TestProfilerExtension
+    class: Drupal\sdc_other_node_visitor\Twig\Extension\Test_Profiler_Extension
     tags:
       - { name: twig.extension, priority: 100 }

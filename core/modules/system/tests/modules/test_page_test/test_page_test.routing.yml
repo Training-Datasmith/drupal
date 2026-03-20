@@ -2,7 +2,7 @@ test_page_test.test_page:
   path: '/test-page'
   defaults:
     _title: 'Test front page'
-    _controller: '\Drupal\test_page_test\Controller\TestPageTestController::testPage'
+    _controller: '\Drupal\test_page_test\Controller\Test_Page_Test_Controller::testPage'
   requirements:
     _access: 'TRUE'
 
@@ -56,7 +56,7 @@ test_page_test.field_xpath:
   path: '/test-field-xpath'
   defaults:
     _title: 'Table and form elements for field xpath assertion testing'
-    _form: '\Drupal\test_page_test\Form\TestForm'
+    _form: '\Drupal\test_page_test\Form\Test_Form'
   requirements:
     _access: 'TRUE'
 
@@ -104,6 +104,6 @@ test_page_test.test_page_var_dump:
   path: '/test-page-var-dump'
   defaults:
     _title: 'Test front page with var dump'
-    _controller: '\Drupal\test_page_test\Controller\TestPageTestController::testPageVarDump'
+    _controller: '\Drupal\test_page_test\Controller\Test_Page_Test_Controller::testPageVarDump'
   requirements:
     _access: 'TRUE'

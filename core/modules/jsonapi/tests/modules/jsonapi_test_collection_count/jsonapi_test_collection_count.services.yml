@@ -1,6 +1,6 @@
 services:
   count.jsonapi.resource_type.repository:
-    class: Drupal\jsonapi_test_collection_count\ResourceType\CountableResourceTypeRepository
+    class: Drupal\jsonapi_test_collection_count\Resource_Type\Countable_Resource_Type_Repository
     public: false
     decorates: jsonapi.resource_type.repository
     parent: jsonapi.resource_type.repository

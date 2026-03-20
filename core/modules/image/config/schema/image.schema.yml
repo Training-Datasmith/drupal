@@ -50,7 +50,7 @@ image.effect.image_convert:
       type: string
       constraints:
         Choice:
-          callback: 'Drupal\Core\ImageToolkit\ImageToolkitManager::getAllValidExtensions'
+          callback: 'Drupal\Core\Image_Toolkit\Image_Toolkit_Manager::getAllValidExtensions'
 
 image.effect.image_convert_avif:
   type: image.effect.image_convert

@@ -17,4 +17,4 @@ date_time:
   weight: -10
 general:
   label: 'General'
-  class: \Drupal\Core\Field\FallbackFieldTypeCategory
+  class: \Drupal\Core\Field\Fallback_Field_Type_Category

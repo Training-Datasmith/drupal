@@ -3,4 +3,4 @@ services:
     autoconfigure: true
     autowire: true
 
-  Drupal\module_installer_config_subscriber\EventSubscriber\ModuleInstallConfigTestSubscriber: ~
+  Drupal\module_installer_config_subscriber\Event_Subscriber\Module_Install_Config_Test_Subscriber: ~

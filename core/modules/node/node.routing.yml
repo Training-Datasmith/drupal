@@ -1,7 +1,7 @@
 node.multiple_delete_confirm:
   path: '/admin/content/node/delete'
   defaults:
-    _form: '\Drupal\node\Form\DeleteMultiple'
+    _form: '\Drupal\node\Form\Delete_Multiple'
     entity_type_id: 'node'
   requirements:
     _entity_delete_multiple_access: 'node'
@@ -9,7 +9,7 @@ node.multiple_delete_confirm:
 entity.node.delete_multiple_form:
   path: '/admin/content/node/delete'
   defaults:
-    _form: '\Drupal\node\Form\DeleteMultiple'
+    _form: '\Drupal\node\Form\Delete_Multiple'
     entity_type_id: 'node'
   requirements:
     _entity_delete_multiple_access: 'node'
@@ -17,7 +17,7 @@ entity.node.delete_multiple_form:
 entity.node.preview:
   path: '/node/preview/{node_preview}/{view_mode_id}'
   defaults:
-    _controller: '\Drupal\node\Controller\NodePreviewController::view'
+    _controller: '\Drupal\node\Controller\Node_Preview_Controller::view'
   requirements:
     _node_preview_access: '{node_preview}'
   options:
@@ -30,7 +30,7 @@ entity.node.version_history:
   path: '/node/{node}/revisions'
   defaults:
     _title: 'Revisions'
-    _controller: '\Drupal\node\Controller\NodeController::revisionOverview'
+    _controller: '\Drupal\node\Controller\Node_Controller::revisionOverview'
   requirements:
     _entity_access: 'node.view all revisions'
     node: \d+
@@ -43,7 +43,7 @@ entity.node.version_history:
 entity.node.revision:
   path: '/node/{node}/revisions/{node_revision}/view'
   defaults:
-    _controller: '\Drupal\node\Controller\NodeController::revisionShow'
+    _controller: '\Drupal\node\Controller\Node_Controller::revisionShow'
   requirements:
     _entity_access: 'node_revision.view revision'
     node: \d+
@@ -57,7 +57,7 @@ entity.node.revision:
 node.revision_revert_confirm:
   path: '/node/{node}/revisions/{node_revision}/revert'
   defaults:
-    _form: '\Drupal\node\Form\NodeRevisionRevertForm'
+    _form: '\Drupal\node\Form\Node_Revision_Revert_Form'
     _title: 'Revert to earlier revision'
   requirements:
     _entity_access: 'node_revision.revert revision'
@@ -73,7 +73,7 @@ node.revision_revert_confirm:
 node.revision_revert_translation_confirm:
   path: '/node/{node}/revisions/{node_revision}/revert/{langcode}'
   defaults:
-    _form: '\Drupal\node\Form\NodeRevisionRevertTranslationForm'
+    _form: '\Drupal\node\Form\Node_Revision_Revert_Translation_Form'
     _title: 'Revert to earlier revision of a translation'
   requirements:
     _entity_access: 'node_revision.revert revision'
@@ -89,7 +89,7 @@ node.revision_revert_translation_confirm:
 node.revision_delete_confirm:
   path: '/node/{node}/revisions/{node_revision}/delete'
   defaults:
-    _form: '\Drupal\node\Form\NodeRevisionDeleteForm'
+    _form: '\Drupal\node\Form\Node_Revision_Delete_Form'
     _title: 'Delete earlier revision'
   requirements:
     _entity_access: 'node_revision.delete revision'
@@ -122,7 +122,7 @@ entity.node_type.edit_form:
   path: '/admin/structure/types/manage/{node_type}'
   defaults:
     _entity_form: 'node_type.edit'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+    _title_callback: '\Drupal\Core\Entity\Controller\Entity_Controller::title'
   requirements:
     _permission: 'administer content types'
 
@@ -137,7 +137,7 @@ entity.node_type.delete_form:
 node.configure_rebuild_confirm:
   path: '/admin/reports/status/rebuild'
   defaults:
-    _form: '\Drupal\node\Form\RebuildPermissionsForm'
+    _form: '\Drupal\node\Form\Rebuild_Permissions_Form'
   requirements:
     _permission: 'rebuild node access permissions'
 

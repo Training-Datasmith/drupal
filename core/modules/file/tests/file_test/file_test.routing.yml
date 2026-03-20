@@ -1,18 +1,18 @@
 file.test:
   path: '/file-test/upload'
   defaults:
-    _form: '\Drupal\file_test\Form\FileTestForm'
+    _form: '\Drupal\file_test\Form\File_Test_Form'
   requirements:
     _access: 'TRUE'
 file.save_upload_from_form_test:
   path: '/file-test/save_upload_from_form_test'
   defaults:
-    _form: '\Drupal\file_test\Form\FileTestSaveUploadFromForm'
+    _form: '\Drupal\file_test\Form\File_Test_Save_Upload_From_Form'
   requirements:
     _access: 'TRUE'
 file.required_test:
   path: '/file-test/upload_required'
   defaults:
-    _form: '\Drupal\file_test\Form\FileRequiredTestForm'
+    _form: '\Drupal\file_test\Form\File_Required_Test_Form'
   requirements:
     _access: 'TRUE'

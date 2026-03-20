@@ -2,7 +2,7 @@ path_encoded_test.colon:
   path: '/hi/llama:party'
   defaults:
     _title: 'Colon'
-    _controller: '\Drupal\path_encoded_test\Controller\PathEncodedTestController::simple'
+    _controller: '\Drupal\path_encoded_test\Controller\Path_Encoded_Test_Controller::simple'
   requirements:
     _access: 'TRUE'
 
@@ -10,7 +10,7 @@ path_encoded_test.at_sign:
   path: '/blog/@Dries'
   defaults:
     _title: 'At sign'
-    _controller: '\Drupal\path_encoded_test\Controller\PathEncodedTestController::simple'
+    _controller: '\Drupal\path_encoded_test\Controller\Path_Encoded_Test_Controller::simple'
   requirements:
     _access: 'TRUE'
 
@@ -18,6 +18,6 @@ path_encoded_test.parentheses:
   path: '/cat(box)'
   defaults:
     _title: 'At sign'
-    _controller: '\Drupal\path_encoded_test\Controller\PathEncodedTestController::simple'
+    _controller: '\Drupal\path_encoded_test\Controller\Path_Encoded_Test_Controller::simple'
   requirements:
     _access: 'TRUE'

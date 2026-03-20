@@ -5,31 +5,31 @@ services:
   _defaults:
     autoconfigure: true
   cache.dynamic_page_cache:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache_factory', 'get']
     arguments: [dynamic_page_cache]
   variation_cache.dynamic_page_cache:
-    class: Drupal\Core\Cache\VariationCacheInterface
+    class: Drupal\Core\Cache\Variation_Cache_Interface
     factory: ['@variation_cache_factory', 'get']
     arguments: [dynamic_page_cache]
   dynamic_page_cache_subscriber:
-    class: Drupal\dynamic_page_cache\EventSubscriber\DynamicPageCacheSubscriber
+    class: Drupal\dynamic_page_cache\Event_Subscriber\Dynamic_Page_Cache_Subscriber
     arguments: ['@dynamic_page_cache_request_policy', '@dynamic_page_cache_response_policy', '@variation_cache.dynamic_page_cache', '@cache_contexts_manager', '%renderer.config%']
 
   # Request & response policies.
   dynamic_page_cache_request_policy:
-    class: Drupal\dynamic_page_cache\PageCache\RequestPolicy\DefaultRequestPolicy
+    class: Drupal\dynamic_page_cache\Page_Cache\Request_Policy\Default_Request_Policy
     tags:
       - { name: service_collector, tag: dynamic_page_cache_request_policy, call: addPolicy}
   dynamic_page_cache_response_policy:
-    class: Drupal\Core\PageCache\ChainResponsePolicy
+    class: Drupal\Core\Page_Cache\Chain_Response_Policy
     tags:
       - { name: service_collector, tag: dynamic_page_cache_response_policy, call: addPolicy}
     lazy: true
   dynamic_page_cache_deny_admin_routes:
-    class: Drupal\dynamic_page_cache\PageCache\ResponsePolicy\DenyAdminRoutes
+    class: Drupal\dynamic_page_cache\Page_Cache\Response_Policy\Deny_Admin_Routes
     arguments: ['@current_route_match']
     public: false
     tags:

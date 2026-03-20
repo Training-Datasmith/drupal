@@ -23,8 +23,8 @@ block_content.type.*:
   constraints:
     FullyValidatable: ~
 
-# @see \Drupal\block_content\Plugin\Block\BlockContentBlock
-# @eee \Drupal\block_content\Plugin\Derivative\BlockContent
+# @see \Drupal\block_content\Plugin\Block\Block_Content_Block
+# @eee \Drupal\block_content\Plugin\Derivative\Block_Content
 block.settings.block_content:*:
   type: block_settings
   label: 'Content block'

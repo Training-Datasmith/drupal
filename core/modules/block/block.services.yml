@@ -5,11 +5,11 @@ services:
   _defaults:
     autoconfigure: true
   theme.negotiator.block.admin_demo:
-    class: Drupal\block\Theme\AdminDemoNegotiator
+    class: Drupal\block\Theme\Admin_Demo_Negotiator
     tags:
       - { name: theme_negotiator, priority: 1000 }
   block.page_display_variant_subscriber:
-    class: Drupal\block\EventSubscriber\BlockPageDisplayVariantSubscriber
+    class: Drupal\block\Event_Subscriber\Block_Page_Display_Variant_Subscriber
   block.repository:
     class: Drupal\block\BlockRepository
     arguments: ['@entity_type.manager', '@theme.manager', '@context.handler']

@@ -7,7 +7,7 @@ locale_test.no_translation:
     test:
       type: string
       label: 'Test'
-      # See \Drupal\Tests\locale\Kernel\LocaleConfigSubscriberTest
+      # See \Drupal\Tests\locale\Kernel\Locale_Config_Subscriber_Test
       translatable: true
 
 locale_test.translation:
@@ -17,7 +17,7 @@ locale_test.translation:
     test:
       type: string
       label: 'Test'
-      # See \Drupal\Tests\locale\Kernel\LocaleConfigSubscriberTest
+      # See \Drupal\Tests\locale\Kernel\Locale_Config_Subscriber_Test
       translatable: true
 
 locale_test.translation_multiple:
@@ -27,7 +27,7 @@ locale_test.translation_multiple:
     test:
       type: string
       label: 'Test'
-      # See \Drupal\Tests\locale\Kernel\LocaleConfigSubscriberTest
+      # See \Drupal\Tests\locale\Kernel\Locale_Config_Subscriber_Test
       translatable: true
     test_multiple:
       type: mapping

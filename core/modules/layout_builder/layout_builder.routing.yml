@@ -1,7 +1,7 @@
 layout_builder.choose_section:
   path: '/layout_builder/choose/section/{section_storage_type}/{section_storage}/{delta}'
   defaults:
-    _controller: '\Drupal\layout_builder\Controller\ChooseSectionController::build'
+    _controller: '\Drupal\layout_builder\Controller\Choose_Section_Controller::build'
     _title: 'Choose a layout for this section'
   requirements:
     _layout_builder_access: 'view'
@@ -14,7 +14,7 @@ layout_builder.choose_section:
 layout_builder.add_section:
   path: '/layout_builder/add/section/{section_storage_type}/{section_storage}/{delta}/{plugin_id}'
   defaults:
-    _controller: '\Drupal\layout_builder\Controller\AddSectionController::build'
+    _controller: '\Drupal\layout_builder\Controller\Add_Section_Controller::build'
   requirements:
     _layout_builder_access: 'view'
   options:
@@ -27,7 +27,7 @@ layout_builder.configure_section:
   path: '/layout_builder/configure/section/{section_storage_type}/{section_storage}/{delta}/{plugin_id}'
   defaults:
     _title: 'Configure section'
-    _form: '\Drupal\layout_builder\Form\ConfigureSectionForm'
+    _form: '\Drupal\layout_builder\Form\Configure_Section_Form'
     # Adding a new section requires a plugin_id, while configuring an existing
     # section does not.
     plugin_id: null
@@ -42,7 +42,7 @@ layout_builder.configure_section:
 layout_builder.remove_section:
   path: '/layout_builder/remove/section/{section_storage_type}/{section_storage}/{delta}'
   defaults:
-    _form: '\Drupal\layout_builder\Form\RemoveSectionForm'
+    _form: '\Drupal\layout_builder\Form\Remove_Section_Form'
   requirements:
     _layout_builder_access: 'view'
   options:
@@ -54,7 +54,7 @@ layout_builder.remove_section:
 layout_builder.choose_block:
   path: '/layout_builder/choose/block/{section_storage_type}/{section_storage}/{delta}/{region}'
   defaults:
-    _controller: '\Drupal\layout_builder\Controller\ChooseBlockController::build'
+    _controller: '\Drupal\layout_builder\Controller\Choose_Block_Controller::build'
     _title: 'Choose a block'
   requirements:
     _layout_builder_access: 'view'
@@ -67,7 +67,7 @@ layout_builder.choose_block:
 layout_builder.add_block:
   path: '/layout_builder/add/block/{section_storage_type}/{section_storage}/{delta}/{region}/{plugin_id}'
   defaults:
-    _form: '\Drupal\layout_builder\Form\AddBlockForm'
+    _form: '\Drupal\layout_builder\Form\Add_Block_Form'
     _title: 'Configure block'
   requirements:
     _layout_builder_access: 'add_block'
@@ -80,7 +80,7 @@ layout_builder.add_block:
 layout_builder.choose_inline_block:
   path: '/layout_builder/choose/inline-block/{section_storage_type}/{section_storage}/{delta}/{region}'
   defaults:
-    _controller: '\Drupal\layout_builder\Controller\ChooseBlockController::inlineBlockList'
+    _controller: '\Drupal\layout_builder\Controller\Choose_Block_Controller::inlineBlockList'
     _title: 'Add a new content block'
   requirements:
     _layout_builder_access: 'add_block'
@@ -93,7 +93,7 @@ layout_builder.choose_inline_block:
 layout_builder.update_block:
   path: '/layout_builder/update/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
   defaults:
-    _form: '\Drupal\layout_builder\Form\UpdateBlockForm'
+    _form: '\Drupal\layout_builder\Form\Update_Block_Form'
     _title: 'Configure block'
   requirements:
     _layout_builder_access: 'view'
@@ -106,8 +106,8 @@ layout_builder.update_block:
 layout_builder.move_block_form:
   path: '/layout_builder/move/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
   defaults:
-    _title_callback: '\Drupal\layout_builder\Form\MoveBlockForm::title'
-    _form: '\Drupal\layout_builder\Form\MoveBlockForm'
+    _title_callback: '\Drupal\layout_builder\Form\Move_Block_Form::title'
+    _form: '\Drupal\layout_builder\Form\Move_Block_Form'
   requirements:
     _layout_builder_access: 'view'
   options:
@@ -119,7 +119,7 @@ layout_builder.move_block_form:
 layout_builder.remove_block:
   path: '/layout_builder/remove/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
   defaults:
-    _form: '\Drupal\layout_builder\Form\RemoveBlockForm'
+    _form: '\Drupal\layout_builder\Form\Remove_Block_Form'
   requirements:
     _layout_builder_access: 'view'
   options:
@@ -131,7 +131,7 @@ layout_builder.remove_block:
 layout_builder.move_block:
   path: '/layout_builder/move/block/{section_storage_type}/{section_storage}/{delta_from}/{delta_to}/{region_to}/{block_uuid}/{preceding_block_uuid}'
   defaults:
-    _controller: '\Drupal\layout_builder\Controller\MoveBlockController::build'
+    _controller: '\Drupal\layout_builder\Controller\Move_Block_Controller::build'
     delta_from: null
     delta_to: null
     region_from: null

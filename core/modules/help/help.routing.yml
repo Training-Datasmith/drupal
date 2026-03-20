@@ -1,7 +1,7 @@
 help.main:
   path: '/admin/help'
   defaults:
-    _controller: '\Drupal\help\Controller\HelpController::helpMain'
+    _controller: '\Drupal\help\Controller\Help_Controller::helpMain'
     _title: 'Help'
   requirements:
     _permission: 'access help pages'
@@ -9,7 +9,7 @@ help.main:
 help.page:
   path: '/admin/help/{name}'
   defaults:
-    _controller: '\Drupal\help\Controller\HelpController::helpPage'
+    _controller: '\Drupal\help\Controller\Help_Controller::helpPage'
     _title: 'Help'
   requirements:
     _permission: 'access help pages'
@@ -17,6 +17,6 @@ help.page:
 help.help_topic:
   path: '/admin/help/topic/{id}'
   defaults:
-    _controller: '\Drupal\help\Controller\HelpTopicPluginController::viewHelpTopic'
+    _controller: '\Drupal\help\Controller\Help_Topic_Plugin_Controller::viewHelpTopic'
   requirements:
     _permission: 'access help pages'

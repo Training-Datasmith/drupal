@@ -2,7 +2,7 @@ comment_test.report:
   path: '/comment/{comment}/report'
   defaults:
     _title: 'Report'
-    _controller: '\Drupal\comment_test\Controller\CommentTestController::commentReport'
+    _controller: '\Drupal\comment_test\Controller\Comment_Test_Controller::commentReport'
   requirements:
     _access: 'TRUE'
     _csrf_token: 'TRUE'

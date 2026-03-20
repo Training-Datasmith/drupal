@@ -5,10 +5,10 @@ services:
   _defaults:
     autoconfigure: true
   plugin.manager.core.layout:
-    class: Drupal\Core\Layout\LayoutPluginManager
+    class: Drupal\Core\Layout\Layout_Plugin_Manager
     arguments: ['@container.namespaces', '@cache.discovery', '@module_handler', '@theme_handler']
-  Drupal\Core\Layout\LayoutPluginManagerInterface: '@plugin.manager.core.layout'
+  Drupal\Core\Layout\Layout_Plugin_Manager_Interface: '@plugin.manager.core.layout'
   layout.icon_builder:
-    class: Drupal\Core\Layout\Icon\SvgIconBuilder
+    class: Drupal\Core\Layout\Icon\Svg_Icon_Builder
     shared: false
-  Drupal\Core\Layout\Icon\IconBuilderInterface: '@layout.icon_builder'
+  Drupal\Core\Layout\Icon\Icon_Builder_Interface: '@layout.icon_builder'

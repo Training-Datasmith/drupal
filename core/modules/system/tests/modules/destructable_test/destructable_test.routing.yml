@@ -1,7 +1,7 @@
 destructable:
   path: '/destructable'
   defaults:
-    _controller: '\Drupal\destructable_test\Controller\CallsDestructableServiceController::render'
+    _controller: '\Drupal\destructable_test\Controller\Calls_Destructable_Service_Controller::render'
     _title: 'Calls destructable service'
   requirements:
     _access: 'TRUE'

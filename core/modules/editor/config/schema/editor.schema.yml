@@ -18,7 +18,7 @@ editor.editor.*:
       constraints:
         PluginExists:
           manager: plugin.manager.editor
-          interface: Drupal\editor\Plugin\EditorPluginInterface
+          interface: Drupal\editor\Plugin\Editor_Plugin_Interface
     settings:
       type: editor.settings.[%parent.editor]
     image_upload:
@@ -64,7 +64,7 @@ editor.image_upload_settings.1:
           match: false
           message: 'The image upload directory is not allowed to span multiple lines or contain control characters.'
     max_size:
-      # @see \Drupal\file\Plugin\Validation\Constraint\FileSizeLimitConstraintValidator
+      # @see \Drupal\file\Plugin\Validation\Constraint\File_Size_Limit_Constraint_Validator
       type: bytes
       label: 'Maximum file size'
       nullable: true

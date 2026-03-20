@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   paramconverter.views_ui:
-    class: Drupal\views_ui\ParamConverter\ViewUIConverter
+    class: Drupal\views_ui\Param_Converter\View_UI_Converter
     arguments: ['@entity_type.manager', '@tempstore.shared', '@config.factory', '@router.admin_context', '@entity.repository']
     tags:
       - { name: paramconverter, priority: 10 }

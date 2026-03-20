@@ -5,6 +5,6 @@ version: VERSION
 base theme: starterkit_theme
 libraries-override:
   # A malformed library asset name. Should throw a
-  # \Drupal\Core\Asset\Exception\InvalidLibrariesOverrideSpecificationException.
+  # \Drupal\Core\Asset\Exception\Invalid_Libraries_Override_Specification_Exception.
   core/drupal.dialog:
     css: false

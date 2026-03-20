@@ -1,6 +1,6 @@
 sdc_test.array_render:
   path: '/sdc-test-component'
   defaults:
-    _controller: '\Drupal\sdc_test\Controller\ServerEndpointController::renderArray'
+    _controller: '\Drupal\sdc_test\Controller\Server_Endpoint_Controller::renderArray'
   requirements:
     _access: 'TRUE'

@@ -1,7 +1,7 @@
 off_canvas_test.links:
   path: '/off-canvas-test-links'
   defaults:
-    _controller: '\Drupal\off_canvas_test\Controller\TestController::linksDisplay'
+    _controller: '\Drupal\off_canvas_test\Controller\Test_Controller::linksDisplay'
     _title: 'Links'
   requirements:
     _access: 'TRUE'
@@ -9,7 +9,7 @@ off_canvas_test.links:
 off_canvas_test.thing1:
   path: '/off-canvas-thing1'
   defaults:
-    _controller: '\Drupal\off_canvas_test\Controller\TestController::thing1'
+    _controller: '\Drupal\off_canvas_test\Controller\Test_Controller::thing1'
     _title: 'Thing 1'
   requirements:
     _access: 'TRUE'
@@ -17,13 +17,13 @@ off_canvas_test.thing1:
 off_canvas_test.thing2:
   path: '/off-canvas-thing2'
   defaults:
-    _controller: '\Drupal\off_canvas_test\Controller\TestController::thing2'
+    _controller: '\Drupal\off_canvas_test\Controller\Test_Controller::thing2'
   requirements:
     _access: 'TRUE'
 
 off_canvas_test.dialog_links:
   path: '/off-canvas-dialog-links'
   defaults:
-    _controller: '\Drupal\off_canvas_test\Controller\TestController::otherDialogLinks'
+    _controller: '\Drupal\off_canvas_test\Controller\Test_Controller::otherDialogLinks'
   requirements:
     _access: 'TRUE'

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by \Drupal\Tests\update\Functional\UpdateSemverContribTestBase.
+This fixture is used by \Drupal\Tests\update\Functional\Update_Semver_Contrib_Test_Base.
 It should be the same as semver_test.1.o.xml with the exception of the value of
 the supported branches element. In this fixture legacy version sre not
 supported.

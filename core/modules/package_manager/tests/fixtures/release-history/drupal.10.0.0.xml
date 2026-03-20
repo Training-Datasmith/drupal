@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 This fixture is used by:
-- \Drupal\Tests\package_manager\Kernel\ProjectInfoTest
-- \Drupal\Tests\auto_updates\Functional\UpdaterFormTest
+- \Drupal\Tests\package_manager\Kernel\Project_Info_Test
+- \Drupal\Tests\auto_updates\Functional\Updater_Form_Test
 
 Contains metadata about the following (fake) releases of Drupal core, all of which are secure, in order:
 - 10.0.0

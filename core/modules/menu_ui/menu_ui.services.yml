@@ -5,5 +5,5 @@ services:
   _defaults:
     autoconfigure: true
   menu_ui.menu_tree_manipulators:
-    class: Drupal\menu_ui\Menu\MenuUiMenuTreeManipulators
-  Drupal\menu_ui\Menu\MenuUiMenuTreeManipulators: '@menu_ui.menu_tree_manipulators'
+    class: Drupal\menu_ui\Menu\Menu_Ui_Menu_Tree_Manipulators
+  Drupal\menu_ui\Menu\Menu_Ui_Menu_Tree_Manipulators: '@menu_ui.menu_tree_manipulators'

@@ -1,11 +1,11 @@
 ckeditor5.upload_image:
   path: '/ckeditor5/upload-image/{editor}'
   defaults:
-    _controller: '\Drupal\ckeditor5\Controller\CKEditor5ImageController::upload'
+    _controller: '\Drupal\ckeditor5\Controller\CK_Editor5Image_Controller::upload'
   methods: [POST]
   requirements:
     _entity_access: 'editor.use'
-    _custom_access: '\Drupal\ckeditor5\Controller\CKEditor5ImageController::imageUploadEnabledAccess'
+    _custom_access: '\Drupal\ckeditor5\Controller\CK_Editor5Image_Controller::imageUploadEnabledAccess'
     _csrf_token: 'TRUE'
   options:
     parameters:
@@ -15,11 +15,11 @@ ckeditor5.upload_image:
 ckeditor5.media_entity_metadata:
   path: '/ckeditor5/{editor}/media-entity-metadata'
   defaults:
-    _controller: '\Drupal\ckeditor5\Controller\CKEditor5MediaController::mediaEntityMetadata'
+    _controller: '\Drupal\ckeditor5\Controller\CK_Editor5Media_Controller::mediaEntityMetadata'
   methods: [GET]
   requirements:
     _entity_access: 'editor.use'
-    _custom_access: '\Drupal\ckeditor5\Controller\CKEditor5MediaController::access'
+    _custom_access: '\Drupal\ckeditor5\Controller\CK_Editor5Media_Controller::access'
     _csrf_token: 'TRUE'
   options:
     parameters:
@@ -29,11 +29,11 @@ ckeditor5.media_entity_metadata:
 ckeditor5.entity_link_suggestions:
   path: '/ckeditor5/{editor}/entity-link-suggestions'
   defaults:
-    _controller: '\Drupal\ckeditor5\Controller\EntityLinkSuggestionsController::suggestions'
+    _controller: '\Drupal\ckeditor5\Controller\Entity_Link_Suggestions_Controller::suggestions'
   methods: [GET]
   requirements:
     _entity_access: 'editor.use'
-    _custom_access: '\Drupal\ckeditor5\Controller\EntityLinkSuggestionsController::formatUsesEntityLinksFilter'
+    _custom_access: '\Drupal\ckeditor5\Controller\Entity_Link_Suggestions_Controller::formatUsesEntityLinksFilter'
     # The returned information relies on entity reference selection plugins ensuring only entities are returned that the
     # current user is allowed to see.
     _csrf_token: 'TRUE'

@@ -5,15 +5,15 @@ services:
   _defaults:
     autoconfigure: true
   cache.toolbar:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache_factory', 'get']
     arguments: [toolbar]
   toolbar.page_cache_request_policy.allow_toolbar_path:
-    class: Drupal\toolbar\PageCache\AllowToolbarPath
+    class: Drupal\toolbar\Page_Cache\Allow_Toolbar_Path
     tags:
       - { name: page_cache_request_policy }
   toolbar.menu_tree:
-    class: Drupal\toolbar\Menu\ToolbarMenuLinkTree
+    class: Drupal\toolbar\Menu\Toolbar_Menu_Link_Tree
     arguments: ['@menu.tree_storage', '@plugin.manager.menu.link', '@router.route_provider', '@menu.active_trail', '@callable_resolver']

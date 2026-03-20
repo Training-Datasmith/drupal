@@ -1,4 +1,4 @@
-# See \Drupal\config\Tests\ConfigInstallProfileOverrideTest
+# See \Drupal\config\Tests\Config_Install_Profile_Override_Test
 id: override
 label: Default
 weight: 0

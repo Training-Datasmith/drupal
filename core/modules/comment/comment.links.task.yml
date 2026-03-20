@@ -26,7 +26,7 @@ comment.admin_new:
 comment.admin_approval:
   title: 'Unapproved comments'
   route_name: comment.admin_approval
-  class: Drupal\comment\Plugin\Menu\LocalTask\UnapprovedComments
+  class: Drupal\comment\Plugin\Menu\Local_Task\Unapproved_Comments
   parent_id: comment.admin
   weight: 1
   cache_tags:

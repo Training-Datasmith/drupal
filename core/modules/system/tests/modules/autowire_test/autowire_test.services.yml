@@ -22,6 +22,6 @@ services:
   # - One type-hinted to TestInjectionInterface.
   # - One type-hinted to TestInjection2.
   # - One type-hinted to \Drupal\Core\Database\Connection.
-  # - One type-hinted to \Symfony\Component\HttpKernel\KernelInterface.
+  # - One type-hinted to \Symfony\Component\Http_Kernel\Kernel_Interface.
   Drupal\autowire_test\TestService:
     autowire: true

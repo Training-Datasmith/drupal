@@ -5,20 +5,20 @@ services:
   _defaults:
     autoconfigure: true
   access_check.cron:
-    class: Drupal\system\Access\CronAccessCheck
+    class: Drupal\system\Access\Cron_Access_Check
     tags:
       - { name: access_check, applies_to: _access_system_cron }
   access_check.db_update:
-    class: Drupal\system\Access\DbUpdateAccessCheck
+    class: Drupal\system\Access\Db_Update_Access_Check
     tags:
       - { name: access_check, applies_to: _access_system_update }
   access_check.admin_menu_block_page:
-    class: Drupal\system\Access\SystemAdminMenuBlockAccessCheck
+    class: Drupal\system\Access\System_Admin_Menu_Block_Access_Check
     arguments: ['@menu.link_tree', '@router', '@plugin.manager.menu.link']
     tags:
       - { name: access_check, applies_to: _access_admin_menu_block_page }
   access_check.admin_overview_page:
-    class: Drupal\system\Access\SystemAdminMenuBlockAccessCheck
+    class: Drupal\system\Access\System_Admin_Menu_Block_Access_Check
     arguments: ['@menu.link_tree', '@router', '@plugin.manager.menu.link' ]
     tags:
       - { name: access_check, applies_to: _access_admin_overview_page }
@@ -32,57 +32,57 @@ services:
     tags:
       - { name: breadcrumb_builder, priority: 0 }
   path_processor.files:
-    class: Drupal\system\PathProcessor\PathProcessorFiles
+    class: Drupal\system\Path_Processor\Path_Processor_Files
     tags:
       - { name: path_processor_inbound, priority: 200 }
   system.admin_path.route_subscriber:
-    class: Drupal\system\EventSubscriber\AdminRouteSubscriber
+    class: Drupal\system\Event_Subscriber\Admin_Route_Subscriber
   theme.negotiator.system.batch:
-    class: Drupal\system\Theme\BatchNegotiator
+    class: Drupal\system\Theme\Batch_Negotiator
     arguments: ['@batch.storage', '@request_stack']
     tags:
       - { name: theme_negotiator, priority: 1000 }
   theme.negotiator.system.db_update:
-    class: Drupal\system\Theme\DbUpdateNegotiator
+    class: Drupal\system\Theme\Db_Update_Negotiator
     arguments: ['@config.factory', '@theme_handler']
     tags:
       - { name: theme_negotiator, priority: 100 }
-  Drupal\system\Theme\SystemAdminThemePreprocess:
-    class: Drupal\system\Theme\SystemAdminThemePreprocess
+  Drupal\system\Theme\System_Admin_Theme_Preprocess:
+    class: Drupal\system\Theme\System_Admin_Theme_Preprocess
     autowire: true
   system.config_subscriber:
     class: Drupal\system\SystemConfigSubscriber
     arguments: ['@router.builder']
   system.config_cache_tag:
-    class: Drupal\system\EventSubscriber\ConfigCacheTag
+    class: Drupal\system\Event_Subscriber\Config_Cache_Tag
     arguments: ['@theme_handler', '@cache_tags.invalidator', '@theme.registry']
   system.timezone_resolver:
     class: Drupal\system\TimeZoneResolver
     arguments: ['@current_user', '@config.factory']
   system.file_event.subscriber:
-    class: Drupal\system\EventSubscriber\SecurityFileUploadEventSubscriber
+    class: Drupal\system\Event_Subscriber\Security_File_Upload_Event_Subscriber
     arguments: ['@config.factory']
   logger.channel.system:
     parent: logger.channel_base
     arguments: ['system']
   system.sa_fetcher:
-    class: Drupal\system\SecurityAdvisories\SecurityAdvisoriesFetcher
+    class: Drupal\system\Security_Advisories\Security_Advisories_Fetcher
     arguments: ['@config.factory', '@keyvalue.expirable', '@http_client', '@extension.list.module', '@extension.list.theme', '@extension.list.profile', '@logger.channel.system', '@settings']
-  Drupal\system\SecurityAdvisories\SecurityAdvisoriesFetcher: '@system.sa_fetcher'
+  Drupal\system\Security_Advisories\Security_Advisories_Fetcher: '@system.sa_fetcher'
   system.advisories_config_subscriber:
-    class: Drupal\system\EventSubscriber\AdvisoriesConfigSubscriber
+    class: Drupal\system\Event_Subscriber\Advisories_Config_Subscriber
     arguments: ['@system.sa_fetcher']
-  Drupal\system\Routing\MenuLinksetRoutes: '@system.menus.route_subscriber'
+  Drupal\system\Routing\Menu_Linkset_Routes: '@system.menus.route_subscriber'
   system.menus.route_subscriber:
-    class: Drupal\system\Routing\MenuLinksetRoutes
+    class: Drupal\system\Routing\Menu_Linkset_Routes
     arguments: ['%authentication_providers%', '@config.factory', '@router.builder']
   Drupal\system\ModuleAdminLinksHelper: '@system.module_admin_links_helper'
   system.module_admin_links_helper:
     class: Drupal\system\ModuleAdminLinksHelper
     arguments: ['@menu.link_tree', '@cache.memory']
   system.module_admin_links_memory_cache:
-    class: Drupal\Core\Cache\MemoryCache\MemoryCache
+    class: Drupal\Core\Cache\Memory_Cache\Memory_Cache
     arguments: ['@datetime.time']
     deprecated: The "%service_id%" service is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. Inject "cache.memory" instead. See https://www.drupal.org/node/3047289
   system.access_route_alter_subscriber:
-    class: Drupal\system\EventSubscriber\AccessRouteAlterSubscriber
+    class: Drupal\system\Event_Subscriber\Access_Route_Alter_Subscriber

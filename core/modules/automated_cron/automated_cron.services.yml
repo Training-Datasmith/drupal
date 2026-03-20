@@ -6,4 +6,4 @@ services:
     autoconfigure: true
     autowire: true
   automated_cron.subscriber:
-    class: Drupal\automated_cron\EventSubscriber\AutomatedCron
+    class: Drupal\automated_cron\Event_Subscriber\Automated_Cron

@@ -1,4 +1,4 @@
-# See \Drupal\config\Tests\ConfigInstallProfileOverrideTest
+# See \Drupal\config\Tests\Config_Install_Profile_Override_Test
 # This configuration entity has dependencies which would be met.
 id: override_unmet
 label: Default

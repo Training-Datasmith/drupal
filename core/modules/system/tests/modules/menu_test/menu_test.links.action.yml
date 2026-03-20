@@ -6,14 +6,14 @@ menu_test_local_action4:
 
 menu_test.local_action5:
   route_name: menu_test.local_action5
-  class: '\Drupal\menu_test\Plugin\Menu\LocalAction\TestLocalAction'
+  class: '\Drupal\menu_test\Plugin\Menu\Local_Action\Test_Local_Action'
   weight: 10
   appears_on:
     - menu_test.local_action1
 
 menu_test.local_action.cache_check:
   route_name: menu_test.local_action5
-  class: '\Drupal\menu_test\Plugin\Menu\LocalAction\TestLocalActionWithConfig'
+  class: '\Drupal\menu_test\Plugin\Menu\Local_Action\Test_Local_Action_With_Config'
   cache_tags:
     - config:menu_test.links.action
   appears_on:
@@ -30,15 +30,15 @@ menu_test.local_action4:
   route_name: menu_test.local_action4
   title: 'My dynamic title action'
   weight: -20
-  class: '\Drupal\menu_test\Plugin\Menu\LocalAction\TestLocalAction4'
+  class: '\Drupal\menu_test\Plugin\Menu\Local_Action\Test_Local_Action4'
   appears_on:
     - menu_test.local_action1
 
 menu_test.local_action_derivative:
   route_name: menu_test.local_action4
   weight: -20
-  deriver: Drupal\menu_test\Plugin\Derivative\LocalActionTest
-  class: Drupal\Core\Menu\LocalActionDefault
+  deriver: Drupal\menu_test\Plugin\Derivative\Local_Action_Test
+  class: Drupal\Core\Menu\Local_Action_Default
   appears_on:
     - menu_test.local_action1
 
@@ -46,7 +46,7 @@ menu_test.local_action6:
   route_name: menu_test.local_action4
   title: 'Dynamic local action with user input'
   weight: -15
-  class: '\Drupal\menu_test\Plugin\Menu\LocalAction\TestLocalAction5'
+  class: '\Drupal\menu_test\Plugin\Menu\Local_Action\Test_Local_Action5'
   appears_on:
     - menu_test.local_action1
 

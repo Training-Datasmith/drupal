@@ -2,4 +2,4 @@ services:
   _defaults:
     autoconfigure: true
   big_pipe_test_subscriber:
-    class: Drupal\big_pipe_test\EventSubscriber\BigPipeTestSubscriber
+    class: Drupal\big_pipe_test\Event_Subscriber\Big_Pipe_Test_Subscriber

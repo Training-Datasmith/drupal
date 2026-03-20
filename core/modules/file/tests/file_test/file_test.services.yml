@@ -2,25 +2,25 @@ services:
   _defaults:
     autoconfigure: true
   stream_wrapper.dummy_readonly:
-    class: Drupal\file_test\StreamWrapper\DummyReadOnlyStreamWrapper
+    class: Drupal\file_test\Stream_Wrapper\Dummy_Read_Only_Stream_Wrapper
     tags:
       - { name: stream_wrapper, scheme: dummy-readonly }
   stream_wrapper.dummy_remote:
-    class: Drupal\file_test\StreamWrapper\DummyRemoteStreamWrapper
+    class: Drupal\file_test\Stream_Wrapper\Dummy_Remote_Stream_Wrapper
     tags:
       - { name: stream_wrapper, scheme: dummy-remote }
   stream_wrapper.dummy:
-    class: Drupal\file_test\StreamWrapper\DummyStreamWrapper
+    class: Drupal\file_test\Stream_Wrapper\Dummy_Stream_Wrapper
     tags:
       - { name: stream_wrapper, scheme: dummy }
   stream_wrapper.dummy_external_readonly:
-    class: Drupal\file_test\StreamWrapper\DummyExternalReadOnlyWrapper
+    class: Drupal\file_test\Stream_Wrapper\Dummy_External_Read_Only_Wrapper
     tags:
       - { name: stream_wrapper, scheme: dummy-external-readonly }
   stream_wrapper.dummy_multiple:
-    class: Drupal\file_test\StreamWrapper\DummyMultipleStreamWrapper
+    class: Drupal\file_test\Stream_Wrapper\Dummy_Multiple_Stream_Wrapper
     tags:
       - { name: stream_wrapper, scheme: dummy1 }
       - { name: stream_wrapper, scheme: dummy2 }
-  Drupal\file_test\EventSubscriber\DummyMimeTypeMapLoadedSubscriber:
+  Drupal\file_test\Event_Subscriber\Dummy_Mime_Type_Map_Loaded_Subscriber:
     autowire: true

@@ -1,6 +1,6 @@
 toolbar.subtrees:
   path: '/toolbar/subtrees/{hash}'
   defaults:
-    _controller: '\Drupal\toolbar\Controller\ToolbarController::subtreesAjax'
+    _controller: '\Drupal\toolbar\Controller\Toolbar_Controller::subtreesAjax'
   requirements:
-    _custom_access: '\Drupal\toolbar\Controller\ToolbarController::checkSubTreeAccess'
+    _custom_access: '\Drupal\toolbar\Controller\Toolbar_Controller::checkSubTreeAccess'

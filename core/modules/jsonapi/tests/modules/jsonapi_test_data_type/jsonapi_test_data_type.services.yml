@@ -1,10 +1,10 @@
 services:
   serializer.normalizer.string.jsonapi_test_data_type:
-    class: Drupal\jsonapi_test_data_type\Normalizer\StringNormalizer
+    class: Drupal\jsonapi_test_data_type\Normalizer\String_Normalizer
     tags:
       # The priority must be higher than serializer.normalizer.primitive_data.
       - { name: normalizer , priority: 1000 }
   serializer.normalizer.traversable_object.jsonapi_test_data_type:
-    class: Drupal\jsonapi_test_data_type\Normalizer\TraversableObjectNormalizer
+    class: Drupal\jsonapi_test_data_type\Normalizer\Traversable_Object_Normalizer
     tags:
       - { name: normalizer }

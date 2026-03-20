@@ -5,10 +5,10 @@ services:
   _defaults:
     autoconfigure: true
   access_check.settings_tray.block.has_overrides:
-    class: Drupal\settings_tray\Access\BlockHasOverridesAccessCheck
+    class: Drupal\settings_tray\Access\Block_Has_Overrides_Access_Check
     tags:
       - { name: access_check, applies_to: _access_block_has_overrides_settings_tray_form }
   access_check.settings_tray.block.settings_tray_form:
-    class: Drupal\settings_tray\Access\BlockPluginHasSettingsTrayFormAccessCheck
+    class: Drupal\settings_tray\Access\Block_Plugin_Has_Settings_Tray_Form_Access_Check
     tags:
       - { name: access_check, applies_to: _access_block_plugin_has_settings_tray_form }

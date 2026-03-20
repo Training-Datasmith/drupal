@@ -1,6 +1,6 @@
 mailer_transport_factory_functional_test.transport_info:
   path: '/mailer-transport-factory-functional-test/transport-info'
   defaults:
-    _controller: '\Drupal\mailer_transport_factory_functional_test\Controller\TransportInfoController::transportInfo'
+    _controller: '\Drupal\mailer_transport_factory_functional_test\Controller\Transport_Info_Controller::transportInfo'
   requirements:
     _access: 'TRUE'

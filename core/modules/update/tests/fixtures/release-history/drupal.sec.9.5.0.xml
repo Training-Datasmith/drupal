@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by Drupal\Tests\update\Functional\UpdateSemverCoreTest.
+This fixture is used by Drupal\Tests\update\Functional\Update_Semver_Core_Test.
 
 It contains 2 releases:
 

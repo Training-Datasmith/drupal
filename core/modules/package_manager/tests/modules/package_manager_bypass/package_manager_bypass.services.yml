@@ -2,6 +2,6 @@ services:
   _defaults:
     autowire: true
   Drupal\package_manager_bypass\LoggingBeginner:
-    decorates: 'PhpTuf\ComposerStager\API\Core\BeginnerInterface'
+    decorates: 'Php_Tuf\Composer_Stager\API\Core\Beginner_Interface'
   Drupal\package_manager_bypass\LoggingCommitter:
-    decorates: 'PhpTuf\ComposerStager\API\Core\CommitterInterface'
+    decorates: 'Php_Tuf\Composer_Stager\API\Core\Committer_Interface'

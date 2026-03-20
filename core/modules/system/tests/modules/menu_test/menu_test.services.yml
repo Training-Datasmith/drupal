@@ -1,11 +1,11 @@
 services:
   theme.negotiator.test_theme:
-    class: Drupal\menu_test\Theme\TestThemeNegotiator
+    class: Drupal\menu_test\Theme\Test_Theme_Negotiator
     tags:
       - { name: theme_negotiator }
 
   access_check.menu_test_session:
-    class: Drupal\menu_test\Access\AccessCheck
+    class: Drupal\menu_test\Access\Access_Check
     arguments: ['@request_stack']
     tags:
       - { name: access_check, applies_to: _menu_test_session_access }

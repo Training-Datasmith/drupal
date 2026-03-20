@@ -6,7 +6,7 @@ user.page:
 user.logout:
   weight: 10
   menu_name: account
-  class: Drupal\user\Plugin\Menu\LoginLogoutMenuLink
+  class: Drupal\user\Plugin\Menu\Login_Logout_Menu_Link
 entity.user.collection:
   title: People
   route_name: entity.user.collection

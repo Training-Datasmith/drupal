@@ -2,15 +2,15 @@ services:
   _defaults:
     autoconfigure: true
   theme_test.subscriber:
-    class: Drupal\theme_test\EventSubscriber\ThemeTestSubscriber
+    class: Drupal\theme_test\Event_Subscriber\Theme_Test_Subscriber
     arguments: ['@current_route_match', '@renderer']
 
   theme.negotiator.test_custom_theme:
-    class: Drupal\theme_test\Theme\CustomThemeNegotiator
+    class: Drupal\theme_test\Theme\Custom_Theme_Negotiator
     tags:
       - { name: theme_negotiator }
 
   theme.negotiator.high_priority:
-    class: Drupal\theme_test\Theme\HighPriorityThemeNegotiator
+    class: Drupal\theme_test\Theme\High_Priority_Theme_Negotiator
     tags:
       - { name: theme_negotiator, priority: 1000 }

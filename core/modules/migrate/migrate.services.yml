@@ -5,41 +5,41 @@ services:
   _defaults:
     autoconfigure: true
   migrate.plugin_event_subscriber:
-    class: Drupal\migrate\Plugin\PluginEventSubscriber
+    class: Drupal\migrate\Plugin\Plugin_Event_Subscriber
   cache.migrate:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache_factory', 'get']
     arguments: [migrate]
   plugin.manager.migrate.source:
-    class: Drupal\migrate\Plugin\MigrateSourcePluginManager
+    class: Drupal\migrate\Plugin\Migrate_Source_Plugin_Manager
     arguments: [source, '@container.namespaces', '@cache.discovery', '@module_handler']
   plugin.manager.migrate.process:
-    class: Drupal\migrate\Plugin\MigratePluginManager
+    class: Drupal\migrate\Plugin\Migrate_Plugin_Manager
     arguments:
       - process
       - '@container.namespaces'
       - '@cache.discovery'
       - '@module_handler'
-      - 'Drupal\migrate\Attribute\MigrateProcess'
-      - 'Drupal\migrate\Annotation\MigrateProcessPlugin'
+      - 'Drupal\migrate\Attribute\Migrate_Process'
+      - 'Drupal\migrate\Annotation\Migrate_Process_Plugin'
   plugin.manager.migrate.destination:
-    class: Drupal\migrate\Plugin\MigrateDestinationPluginManager
+    class: Drupal\migrate\Plugin\Migrate_Destination_Plugin_Manager
     arguments: [destination, '@container.namespaces', '@cache.discovery', '@module_handler', '@entity_type.manager']
   plugin.manager.migrate.id_map:
-    class: Drupal\migrate\Plugin\MigratePluginManager
+    class: Drupal\migrate\Plugin\Migrate_Plugin_Manager
     arguments: [id_map, '@container.namespaces', '@cache.discovery', '@module_handler']
   cache.discovery_migration:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache_factory', 'get']
     arguments: [discovery_migration]
   plugin.manager.migration:
-    class: Drupal\migrate\Plugin\MigrationPluginManager
+    class: Drupal\migrate\Plugin\Migration_Plugin_Manager
     arguments: ['@module_handler', '@cache.discovery_migration', '@language_manager']
-  Drupal\migrate\Plugin\MigrationPluginManagerInterface: '@plugin.manager.migration'
+  Drupal\migrate\Plugin\Migration_Plugin_Manager_Interface: '@plugin.manager.migration'
   Drupal\migrate\MigrateBuildDependencyInterface: '@plugin.manager.migration'
   migrate.lookup:
     class: Drupal\migrate\MigrateLookup

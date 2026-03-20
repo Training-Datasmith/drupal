@@ -69,14 +69,14 @@ system.cron:
           type: integer
           label: 'Requirements warning period'
           constraints:
-            # @see \Drupal\system\Hook\SystemRequirementsHooks
+            # @see \Drupal\system\Hook\System_Requirements_Hooks
             Range:
               min: 60
         requirements_error:
           type: integer
           label: 'Requirements error period'
           constraints:
-            # @see \Drupal\system\Hook\SystemRequirementsHooks
+            # @see \Drupal\system\Hook\System_Requirements_Hooks
             Range:
               min: 300
     logging:
@@ -94,7 +94,7 @@ system.date:
       label: 'First day of week'
       constraints:
         Range:
-          # @see \Drupal\system\Form\RegionalForm::buildForm()
+          # @see \Drupal\system\Form\Regional_Form::buildForm()
           min: 0
           max: 6
     country:
@@ -106,7 +106,7 @@ system.date:
           type: string
           label: 'Default country'
           constraints:
-            # @see \Drupal\system\Form\RegionalForm::buildForm()
+            # @see \Drupal\system\Form\Regional_Form::buildForm()
             CountryCode: []
     timezone:
       type: mapping
@@ -117,7 +117,7 @@ system.date:
           label: 'Default time zone'
           nullable: true
           constraints:
-            # @see \Drupal\system\Form\RegionalForm::buildForm()
+            # @see \Drupal\system\Form\Regional_Form::buildForm()
             Choice:
               callback: 'DateTimeZone::listIdentifiers'
         user:
@@ -157,13 +157,13 @@ system.diff:
           type: integer
           label: 'Number of leading lines in a diff'
           constraints:
-            # @see \Drupal\Component\Diff\DiffFormatter
+            # @see \Drupal\Component\Diff\Diff_Formatter
             PositiveOrZero: ~
         lines_trailing:
           type: integer
           label: 'Number of trailing lines in a diff'
           constraints:
-            # @see \Drupal\Component\Diff\DiffFormatter
+            # @see \Drupal\Component\Diff\Diff_Formatter
             PositiveOrZero: ~
 
 system.logging:
@@ -303,7 +303,7 @@ system.action.*:
       type: string
       label: 'Type'
       # Action can be specified without type.
-      # @see \Drupal\action_test\Plugin\Action\NoType
+      # @see \Drupal\action_test\Plugin\Action\No_Type
       nullable: true
       constraints:
         NotBlank:
@@ -314,7 +314,7 @@ system.action.*:
       constraints:
         PluginExists:
           manager: plugin.manager.action
-          interface: 'Drupal\Core\Action\ActionInterface'
+          interface: 'Drupal\Core\Action\Action_Interface'
     configuration:
       type: action.configuration.[%parent.plugin]
 
@@ -356,7 +356,7 @@ system.image:
       constraints:
         PluginExists:
           manager: 'image.toolkit.manager'
-          interface: '\Drupal\Core\ImageToolkit\ImageToolkitInterface'
+          interface: '\Drupal\Core\Image_Toolkit\Image_Toolkit_Interface'
 
 system.image.gd:
   type: config_object
@@ -368,7 +368,7 @@ system.image.gd:
       type: integer
       label: 'JPEG quality'
       constraints:
-        # @see \Drupal\system\Plugin\ImageToolkit\GDToolkit::buildConfigurationForm()
+        # @see \Drupal\system\Plugin\Image_Toolkit\GD_Toolkit::buildConfigurationForm()
         Range:
           min: 0
           max: 100
@@ -388,7 +388,7 @@ system.mail:
         constraints:
           PluginExists:
             manager: plugin.manager.mail
-            interface: 'Drupal\Core\Mail\MailInterface'
+            interface: 'Drupal\Core\Mail\Mail_Interface'
     mailer_dsn:
       type: mailer_dsn
       label: 'Symfony mailer transport DSN'
@@ -410,7 +410,7 @@ system.advisories:
       type: integer
       label: 'How often to check for security advisories, in hours'
       # Minimum can be set to 0 as it just means the advisories will be retrieved on every call.
-      # @see \Drupal\system\SecurityAdvisories\SecurityAdvisoriesFetcher::getSecurityAdvisories
+      # @see \Drupal\system\Security_Advisories\Security_Advisories_Fetcher::getSecurityAdvisories
       constraints:
         PositiveOrZero: ~
 

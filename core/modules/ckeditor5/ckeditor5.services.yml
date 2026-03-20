@@ -5,9 +5,9 @@ services:
   _defaults:
     autoconfigure: true
   plugin.manager.ckeditor5.plugin:
-    class: Drupal\ckeditor5\Plugin\CKEditor5PluginManager
+    class: Drupal\ckeditor5\Plugin\CK_Editor5Plugin_Manager
     parent: default_plugin_manager
-  Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface: '@plugin.manager.ckeditor5.plugin'
+  Drupal\ckeditor5\Plugin\CK_Editor5Plugin_Manager_Interface: '@plugin.manager.ckeditor5.plugin'
   ckeditor5.smart_default_settings:
     class: Drupal\ckeditor5\SmartDefaultSettings
     arguments:
@@ -17,7 +17,7 @@ services:
       - '@current_user'
   Drupal\ckeditor5\SmartDefaultSettings: '@ckeditor5.smart_default_settings'
   ckeditor5.ckeditor5_cache_tag:
-    class: Drupal\ckeditor5\EventSubscriber\CKEditor5CacheTag
+    class: Drupal\ckeditor5\Event_Subscriber\CK_Editor5Cache_Tag
     arguments: ['@cache_tags.invalidator']
   logger.channel.ckeditor5:
     parent: logger.channel_base

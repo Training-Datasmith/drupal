@@ -50,8 +50,8 @@ user.admin_permissions:
   base_route: entity.user.collection
 
 entity.bundle.permission_form:
-  class: \Drupal\Core\Menu\LocalTaskDefault
-  deriver: \Drupal\user\Plugin\Derivative\UserLocalTask
+  class: \Drupal\Core\Menu\Local_Task_Default
+  deriver: \Drupal\user\Plugin\Derivative\User_Local_Task
 
 entity.user_role.collection:
   title: 'Roles'

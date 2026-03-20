@@ -1,12 +1,12 @@
 csrf_race_test.csrftoken:
   path: '/csrf_race/get_csrf_token/{num}'
   defaults:
-    _controller: '\Drupal\csrf_race_test\Controller\TestController::getCsrfToken'
+    _controller: '\Drupal\csrf_race_test\Controller\Test_Controller::getCsrfToken'
   requirements:
     _access: 'TRUE'
 csrf_race_test.test:
   path: '/csrf_race/test'
   defaults:
-    _controller: '\Drupal\csrf_race_test\Controller\TestController::testMethod'
+    _controller: '\Drupal\csrf_race_test\Controller\Test_Controller::testMethod'
   requirements:
     _access: 'TRUE'

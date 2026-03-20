@@ -18,7 +18,7 @@ entity.filter_format.edit_form:
   path: '/admin/config/content/formats/manage/{filter_format}'
   defaults:
     _entity_form: filter_format.edit
-    _title_callback: '\Drupal\filter\Controller\FilterController::getLabel'
+    _title_callback: '\Drupal\filter\Controller\Filter_Controller::getLabel'
   requirements:
     _entity_access: 'filter_format.update'
 

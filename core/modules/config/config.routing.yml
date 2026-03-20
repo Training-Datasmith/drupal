@@ -1,7 +1,7 @@
 config.sync:
   path: '/admin/config/development/configuration'
   defaults:
-    _form: '\Drupal\config\Form\ConfigSync'
+    _form: '\Drupal\config\Form\Config_Sync'
     _title: 'Synchronize'
   requirements:
     _permission: 'synchronize configuration'
@@ -9,7 +9,7 @@ config.sync:
 config.diff:
   path: '/admin/config/development/configuration/sync/diff/{source_name}/{target_name}'
   defaults:
-    _controller: '\Drupal\config\Controller\ConfigController::diff'
+    _controller: '\Drupal\config\Controller\Config_Controller::diff'
     target_name: NULL
   requirements:
     _permission: 'synchronize configuration'
@@ -17,7 +17,7 @@ config.diff:
 config.diff_collection:
   path: '/admin/config/development/configuration/sync/diff_collection/{collection}/{source_name}/{target_name}'
   defaults:
-    _controller: '\Drupal\config\Controller\ConfigController::diff'
+    _controller: '\Drupal\config\Controller\Config_Controller::diff'
     target_name: NULL
   requirements:
     _permission: 'synchronize configuration'
@@ -25,14 +25,14 @@ config.diff_collection:
 config.export_download:
   path: '/admin/config/development/configuration/full/export-download'
   defaults:
-    _controller: '\Drupal\config\Controller\ConfigController::downloadExport'
+    _controller: '\Drupal\config\Controller\Config_Controller::downloadExport'
   requirements:
     _permission: 'export configuration'
 
 config.export_full:
   path: '/admin/config/development/configuration/full/export'
   defaults:
-    _form: '\Drupal\config\Form\ConfigExportForm'
+    _form: '\Drupal\config\Form\Config_Export_Form'
     _title: 'Export'
   requirements:
     _permission: 'export configuration'
@@ -40,7 +40,7 @@ config.export_full:
 config.import_full:
   path: '/admin/config/development/configuration/full/import'
   defaults:
-    _form: '\Drupal\config\Form\ConfigImportForm'
+    _form: '\Drupal\config\Form\Config_Import_Form'
     _title: 'Import'
   requirements:
     _permission: 'import configuration'
@@ -49,7 +49,7 @@ config.import_single:
   path: '/admin/config/development/configuration/single/import'
   defaults:
     _title: 'Single import'
-    _form: '\Drupal\config\Form\ConfigSingleImportForm'
+    _form: '\Drupal\config\Form\Config_Single_Import_Form'
   requirements:
     _permission: 'import configuration'
 
@@ -57,7 +57,7 @@ config.export_single:
   path: '/admin/config/development/configuration/single/export/{config_type}/{config_name}'
   defaults:
     _title: 'Single export'
-    _form: '\Drupal\config\Form\ConfigSingleExportForm'
+    _form: '\Drupal\config\Form\Config_Single_Export_Form'
     config_type: ''
     config_name: ''
   requirements:

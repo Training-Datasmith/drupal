@@ -13,18 +13,18 @@ services:
     arguments: ['@entity_type.manager', '@entity_type.bundle.info']
   Drupal\content_moderation\ModerationInformationInterface: '@content_moderation.moderation_information'
   access_check.latest_revision:
-    class: Drupal\content_moderation\Access\LatestRevisionCheck
+    class: Drupal\content_moderation\Access\Latest_Revision_Check
     arguments: ['@content_moderation.moderation_information']
     tags:
       - { name: access_check, applies_to: _content_moderation_latest_version }
   content_moderation.config_import_subscriber:
-    class: Drupal\content_moderation\EventSubscriber\ConfigImportSubscriber
+    class: Drupal\content_moderation\Event_Subscriber\Config_Import_Subscriber
     arguments: ['@config.manager', '@entity_type.manager']
   content_moderation.route_subscriber:
-    class: Drupal\content_moderation\Routing\ContentModerationRouteSubscriber
+    class: Drupal\content_moderation\Routing\Content_Moderation_Route_Subscriber
     arguments: ['@entity_type.manager']
   content_moderation.workspace_subscriber:
-    class: Drupal\content_moderation\EventSubscriber\WorkspaceSubscriber
+    class: Drupal\content_moderation\Event_Subscriber\Workspace_Subscriber
     arguments: ['@entity_type.manager', '@?workspaces.tracker']
-  Drupal\content_moderation\EventSubscriber\DefaultContentSubscriber:
+  Drupal\content_moderation\Event_Subscriber\Default_Content_Subscriber:
     autowire: true

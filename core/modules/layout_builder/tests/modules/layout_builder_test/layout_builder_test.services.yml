@@ -1,5 +1,5 @@
 services:
   layout_builder_test.i_have_runtime_contexts:
-    class: Drupal\layout_builder_test\ContextProvider\IHaveRuntimeContexts
+    class: Drupal\layout_builder_test\Context_Provider\I_Have_Runtime_Contexts
     tags:
       - { name: 'context_provider' }

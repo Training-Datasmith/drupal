@@ -2,5 +2,5 @@ services:
   _defaults:
     autoconfigure: true
   hold_test.response:
-    class: Drupal\hold_test\EventSubscriber\HoldTestSubscriber
+    class: Drupal\hold_test\Event_Subscriber\Hold_Test_Subscriber
     arguments: ['%site.path%']

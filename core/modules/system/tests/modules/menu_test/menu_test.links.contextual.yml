@@ -2,7 +2,7 @@ menu_test.contextual_hidden_manage:
   title: 'List links - contextual'
   group: menu_test_menu
   route_name: menu_test.contextual_hidden_manage
-  class: '\Drupal\menu_test\Plugin\Menu\ContextualLink\TestContextualLink'
+  class: '\Drupal\menu_test\Plugin\Menu\Contextual_Link\Test_Contextual_Link'
   weight: 2
 
 menu_test.contextual_hidden_manage_edit:

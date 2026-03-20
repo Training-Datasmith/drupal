@@ -107,12 +107,12 @@ file.formatter.media:
     loop:
       type: boolean
       label: 'Loop'
-    # @see \Drupal\file\Plugin\Field\FieldFormatter\FileMediaFormatterBase::settingsForm
+    # @see \Drupal\file\Plugin\Field\Field_Formatter\File_Media_Formatter_Base::settingsForm
     multiple_file_display_type:
       type: string
       label: 'Display of multiple files'
       constraints:
-        # @see \Drupal\file\Plugin\Field\FieldFormatter\FileMediaFormatterBase::settingsSummary()
+        # @see \Drupal\file\Plugin\Field\Field_Formatter\File_Media_Formatter_Base::settingsSummary()
         Choice:
           choices:
             # Multiple file display: Multiple HTML tags

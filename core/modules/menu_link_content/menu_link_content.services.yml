@@ -5,4 +5,4 @@ services:
   _defaults:
     autoconfigure: true
     autowire: true
-  Drupal\menu_link_content\EventSubscriber\DefaultContentSubscriber: ~
+  Drupal\menu_link_content\Event_Subscriber\Default_Content_Subscriber: ~

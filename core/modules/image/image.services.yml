@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   path_processor.image_styles:
-    class: Drupal\image\PathProcessor\PathProcessorImageStyles
+    class: Drupal\image\Path_Processor\Path_Processor_Image_Styles
     arguments: ['@stream_wrapper_manager']
     tags:
       - { name: path_processor_inbound, priority: 300 }

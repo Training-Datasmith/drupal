@@ -5,20 +5,20 @@ services:
   _defaults:
     autoconfigure: true
   field_ui.subscriber:
-    class: Drupal\field_ui\Routing\RouteSubscriber
+    class: Drupal\field_ui\Routing\Route_Subscriber
     arguments: ['@entity_type.manager']
   access_check.field_ui.view_mode:
-    class: Drupal\field_ui\Access\ViewModeAccessCheck
+    class: Drupal\field_ui\Access\View_Mode_Access_Check
     arguments: ['@entity_type.manager']
     tags:
       - { name: access_check, applies_to: _field_ui_view_mode_access }
   access_check.field_ui.form_mode:
-    class: Drupal\field_ui\Access\FormModeAccessCheck
+    class: Drupal\field_ui\Access\Form_Mode_Access_Check
     arguments: ['@entity_type.manager']
     tags:
       - { name: access_check, applies_to: _field_ui_form_mode_access }
   access_check.field_ui.field_reuse:
-    class: Drupal\field_ui\Access\FieldReuseAccessCheck
+    class: Drupal\field_ui\Access\Field_Reuse_Access_Check
     autowire: true
     tags:
       - { name: access_check, applies_to: _field_ui_field_reuse_access }

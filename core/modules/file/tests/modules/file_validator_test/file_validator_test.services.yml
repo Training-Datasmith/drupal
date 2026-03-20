@@ -2,6 +2,6 @@ services:
   _defaults:
     autoconfigure: true
   file_validation_test_subscriber:
-    class: Drupal\file_validator_test\EventSubscriber\FileValidationTestSubscriber
+    class: Drupal\file_validator_test\Event_Subscriber\File_Validation_Test_Subscriber
   file_validation_sanitization_subscriber:
-    class: Drupal\file_validator_test\EventSubscriber\FileSanitizationEventSubscriber
+    class: Drupal\file_validator_test\Event_Subscriber\File_Sanitization_Event_Subscriber

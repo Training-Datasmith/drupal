@@ -1,13 +1,13 @@
 node_access_test_auto_bubbling:
   path: '/node_access_test_auto_bubbling'
   defaults:
-    _controller: '\Drupal\node_access_test_auto_bubbling\Controller\NodeAccessTestAutoBubblingController::latest'
+    _controller: '\Drupal\node_access_test_auto_bubbling\Controller\Node_Access_Test_Auto_Bubbling_Controller::latest'
   requirements:
     _access: 'TRUE'
 node_access_test_auto_bubbling.node_access:
   path: '/node_access_test_auto_bubbling_node_access/{node}'
   defaults:
-    _controller: '\Drupal\node_access_test_auto_bubbling\Controller\NodeAccessTestAutoBubblingController::nodeAccessCacheability'
+    _controller: '\Drupal\node_access_test_auto_bubbling\Controller\Node_Access_Test_Auto_Bubbling_Controller::nodeAccessCacheability'
   requirements:
     # Access checking intentionally happens in the controller instead of here.
     _access: 'TRUE'

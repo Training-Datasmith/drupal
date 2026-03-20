@@ -34,16 +34,16 @@ services:
       - { name: string_translator }
       - { name: needs_destruction }
   stream_wrapper.translations:
-    class: Drupal\locale\StreamWrapper\TranslationsStream
+    class: Drupal\locale\Stream_Wrapper\Translations_Stream
     tags:
       - { name: stream_wrapper, scheme: translations }
   locale.config_subscriber:
     class: Drupal\locale\LocaleConfigSubscriber
     arguments: ['@config.factory', '@locale.config_manager']
   locale.locale_translation_cache_tag:
-    class: Drupal\locale\EventSubscriber\LocaleTranslationCacheTag
+    class: Drupal\locale\Event_Subscriber\Locale_Translation_Cache_Tag
     arguments: ['@cache_tags.invalidator']
-  Drupal\locale\EventSubscriber\ConfigSubscriber:
+  Drupal\locale\Event_Subscriber\Config_Subscriber:
     autowire: true
   Drupal\locale\LocaleSource:
     autowire: true

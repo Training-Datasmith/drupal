@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 This fixture is used by:
-- \Drupal\Tests\auto_updates_extensions\Functional\UpdaterFormTest
-- \Drupal\Tests\auto_updates_extensions\Kernel\Validator\UpdateReleaseValidatorTest
-- \Drupal\Tests\package_manager\Kernel\ProjectInfoTest
-- \Drupal\Tests\package_manager\Kernel\SupportedReleaseValidatorTest
-- \Drupal\Tests\auto_updates\Functional\AvailableUpdatesReportTest
-- \Drupal\Tests\auto_updates\Functional\UpdaterFormNoRecommendedReleaseMessageTest
-- \Drupal\Tests\auto_updates\Functional\UpdaterFormTest
-- \Drupal\Tests\auto_updates\Kernel\CronUpdaterTest
-- \Drupal\Tests\auto_updates\Kernel\StatusCheck\VersionPolicyValidatorTest
-- \Drupal\Tests\auto_updates\Kernel\StatusCheck\VersionPolicy\SupportedBranchInstalledTest
+- \Drupal\Tests\auto_updates_extensions\Functional\Updater_Form_Test
+- \Drupal\Tests\auto_updates_extensions\Kernel\Validator\Update_Release_Validator_Test
+- \Drupal\Tests\package_manager\Kernel\Project_Info_Test
+- \Drupal\Tests\package_manager\Kernel\Supported_Release_Validator_Test
+- \Drupal\Tests\auto_updates\Functional\Available_Updates_Report_Test
+- \Drupal\Tests\auto_updates\Functional\Updater_Form_No_Recommended_Release_Message_Test
+- \Drupal\Tests\auto_updates\Functional\Updater_Form_Test
+- \Drupal\Tests\auto_updates\Kernel\Cron_Updater_Test
+- \Drupal\Tests\auto_updates\Kernel\Status_Check\Version_Policy_Validator_Test
+- \Drupal\Tests\auto_updates\Kernel\Status_Check\Version_Policy\Supported_Branch_Installed_Test
 
 Contains metadata about the following (fake) releases of Drupal core, all of which are secure, in order:
 - 9.8.2

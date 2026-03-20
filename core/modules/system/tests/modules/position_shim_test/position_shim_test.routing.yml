@@ -1,7 +1,7 @@
 position_test_page:
   path: '/position-shim-test'
   defaults:
-    _controller: '\Drupal\position_shim_test\Controller\PositionShimTestController::build'
+    _controller: '\Drupal\position_shim_test\Controller\Position_Shim_Test_Controller::build'
     _title: 'position testing'
   requirements:
     _access: 'TRUE'
@@ -9,7 +9,7 @@ position_test_page:
 position_test_ported_jqueryui:
   path: '/position-shim-test-ported-from-jqueryui'
   defaults:
-    _controller: '\Drupal\position_shim_test\Controller\PositionShimTestPortedJqueryTestsController::build'
+    _controller: '\Drupal\position_shim_test\Controller\Position_Shim_Test_Ported_Jquery_Tests_Controller::build'
     _title: 'ported position testing'
   requirements:
     _access: 'TRUE'

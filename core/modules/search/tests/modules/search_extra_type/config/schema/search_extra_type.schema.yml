@@ -8,7 +8,7 @@ search_extra_type.settings:
       type: string
       label: 'String'
 
-# Plugin \Drupal\search_extra_type\Plugin\Search\SearchExtraTypeSearch
+# Plugin \Drupal\search_extra_type\Plugin\Search\Search_Extra_Type_Search
 search.plugin.search_extra_type_search:
   type: mapping
   label: 'Extra type settings'

@@ -1,7 +1,7 @@
 update_test.503:
   path: '/503-error'
   defaults:
-    _controller: '\Drupal\update_test\Controller\UpdateTestController::updateError'
+    _controller: '\Drupal\update_test\Controller\Update_Test_Controller::updateError'
   requirements:
     _access: 'TRUE'
 
@@ -9,7 +9,7 @@ update_test.update_test:
   path: '/update-test/{project_name}/{version}'
   defaults:
     _title: 'Update test'
-    _controller: '\Drupal\update_test\Controller\UpdateTestController::updateTest'
+    _controller: '\Drupal\update_test\Controller\Update_Test_Controller::updateTest'
     version: NULL
     project_name: NULL
   requirements:

@@ -8,7 +8,7 @@ services:
   broken_class_with_missing_dependency:
     class: Drupal\error_service_test\LonelyMonkeyClass
   logger.broken:
-    class: Drupal\error_service_test\Logger\TestLog
+    class: Drupal\error_service_test\Logger\Test_Log
     tags:
       - { name: logger }
       - { name: backend_overridable }

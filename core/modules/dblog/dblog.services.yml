@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   logger.dblog:
-    class: Drupal\dblog\Logger\DbLog
+    class: Drupal\dblog\Logger\Db_Log
     arguments: ['@database', '@logger.log_message_parser']
     tags:
       - { name: logger }

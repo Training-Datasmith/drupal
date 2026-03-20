@@ -1,21 +1,21 @@
 error_test.generate_warnings:
   path: '/error-test/generate-warnings'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::generateWarnings'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::generateWarnings'
   requirements:
     _access: 'TRUE'
 
 error_test.generate_fatal_errors:
   path: '/error-test/generate-fatal-errors'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::generateFatalErrors'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::generateFatalErrors'
   requirements:
     _access: 'TRUE'
 
 error_test.generate_warnings_with_report:
   path: '/error-test/generate-warnings-with-report'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::generateWarnings'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::generateWarnings'
     collect_errors: TRUE
   requirements:
     _access: 'TRUE'
@@ -23,20 +23,20 @@ error_test.generate_warnings_with_report:
 error_test.trigger_exception:
   path: '/error-test/trigger-exception'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::triggerException'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::triggerException'
   requirements:
     _access: 'TRUE'
 
 error_test.trigger_pdo_exception:
   path: '/error-test/trigger-pdo-exception'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::triggerPDOException'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::triggerPDOException'
   requirements:
     _access: 'TRUE'
 
 error_test.trigger_renderer_exception:
   path: '/error-test/trigger-renderer-exception'
   defaults:
-    _controller: '\Drupal\error_test\Controller\ErrorTestController::triggerRendererException'
+    _controller: '\Drupal\error_test\Controller\Error_Test_Controller::triggerRendererException'
   requirements:
     _access: 'TRUE'

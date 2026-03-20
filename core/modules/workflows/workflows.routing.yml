@@ -17,7 +17,7 @@ entity.workflow.edit_state_form:
 entity.workflow.delete_state_form:
   path: '/admin/config/workflow/workflows/manage/{workflow}/state/{workflow_state}/delete'
   defaults:
-    _form: '\Drupal\workflows\Form\WorkflowStateDeleteForm'
+    _form: '\Drupal\workflows\Form\Workflow_State_Delete_Form'
     _title: 'Delete state'
   requirements:
     _workflow_access: 'delete-state'
@@ -41,7 +41,7 @@ entity.workflow.edit_transition_form:
 entity.workflow.delete_transition_form:
   path: '/admin/config/workflow/workflows/manage/{workflow}/transition/{workflow_transition}/delete'
   defaults:
-    _form: '\Drupal\workflows\Form\WorkflowTransitionDeleteForm'
+    _form: '\Drupal\workflows\Form\Workflow_Transition_Delete_Form'
     _title: 'Delete transition'
   requirements:
     _workflow_access: 'delete-transition'

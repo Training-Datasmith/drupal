@@ -2,4 +2,4 @@ services:
   _defaults:
     autoconfigure: true
   config_translation_test_event_subscriber:
-    class: Drupal\config_translation_test\EventSubscriber\ConfigTranslationTestSubscriber
+    class: Drupal\config_translation_test\Event_Subscriber\Config_Translation_Test_Subscriber

@@ -1,6 +1,6 @@
 services:
   module_cache_bin.cache_bin:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache.backend.database', 'get']

@@ -1,5 +1,5 @@
 services:
   jsonapi_test_meta_events.meta_subscriber:
-    class: Drupal\jsonapi_test_meta_events\EventSubscriber\MetaEventSubscriber
+    class: Drupal\jsonapi_test_meta_events\Event_Subscriber\Meta_Event_Subscriber
     tags:
       - { name: event_subscriber }

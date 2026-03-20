@@ -5,13 +5,13 @@ services:
   _defaults:
     autoconfigure: true
   http_middleware.page_cache:
-    class: Drupal\page_cache\StackMiddleware\PageCache
+    class: Drupal\page_cache\Stack_Middleware\Page_Cache
     arguments: ['@cache.page', '@page_cache_request_policy', '@page_cache_response_policy']
     tags:
       - { name: http_middleware, priority: 200 }
 
   cache.page:
-    class: Drupal\Core\Cache\CacheBackendInterface
+    class: Drupal\Core\Cache\Cache_Backend_Interface
     tags:
       - { name: cache.bin }
     factory: ['@cache_factory', 'get']

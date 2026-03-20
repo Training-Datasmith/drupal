@@ -31,7 +31,7 @@ core.entity_form_mode.*.*:
       label: 'ID'
       # Form mode IDs can only contain lowercase letters, numbers, and underscores
       # prefixed by entity type name this form mode is used for and a dot.
-      # @see \Drupal\field_ui\Form\EntityDisplayModeFormBase::form()
+      # @see \Drupal\field_ui\Form\Entity_Display_Mode_Form_Base::form()
       constraints:
         Regex:
           pattern: '/^[a-z0-9_]+\.[a-z0-9_]+$/'
@@ -52,7 +52,7 @@ core.entity_form_mode.*.*:
       constraints:
         PluginExists:
           manager: entity_type.manager
-          interface: Drupal\Core\Entity\ContentEntityInterface
+          interface: Drupal\Core\Entity\Content_Entity_Interface
     cache:
       type: boolean
       label: 'Cache'
@@ -99,7 +99,7 @@ field_formatter:
       constraints:
         PluginExists:
           manager: plugin.manager.field.formatter
-          interface: 'Drupal\Core\Field\FormatterInterface'
+          interface: 'Drupal\Core\Field\Formatter_Interface'
     label:
       type: string
       label: 'Label setting machine name'
@@ -161,7 +161,7 @@ core.entity_form_display.*.*.*:
             constraints:
               PluginExists:
                 manager: plugin.manager.field.widget
-                interface: '\Drupal\Core\Field\WidgetInterface'
+                interface: '\Drupal\Core\Field\Widget_Interface'
           weight:
             type: weight
             label: 'Weight'

@@ -27,35 +27,35 @@ services:
     arguments: ['@entity_type.manager', '@cache.default']
   Drupal\workspaces\WorkspaceRepositoryInterface: '@workspaces.repository'
 
-  Drupal\workspaces\Provider\WorkspaceProviderCollector:
+  Drupal\workspaces\Provider\Workspace_Provider_Collector:
     autowire: true
-  Drupal\workspaces\Provider\DefaultWorkspaceProvider:
+  Drupal\workspaces\Provider\Default_Workspace_Provider:
     autowire: true
 
   workspaces.negotiator.session:
-    class: Drupal\workspaces\Negotiator\SessionWorkspaceNegotiator
+    class: Drupal\workspaces\Negotiator\Session_Workspace_Negotiator
     autowire: true
     tags:
       - { name: workspace_negotiator, priority: 50 }
   workspaces.negotiator.query_parameter:
-    class: Drupal\workspaces\Negotiator\QueryParameterWorkspaceNegotiator
+    class: Drupal\workspaces\Negotiator\Query_Parameter_Workspace_Negotiator
     parent: workspaces.negotiator.session
     tags:
       - { name: workspace_negotiator, priority: 100 }
 
   access_check.workspaces.active_workspace:
-    class: Drupal\workspaces\Access\ActiveWorkspaceCheck
+    class: Drupal\workspaces\Access\Active_Workspace_Check
     arguments: ['@workspaces.manager']
     tags:
       - { name: access_check, applies_to: _has_active_workspace }
 
   workspaces.entity_schema_listener:
-    class: Drupal\workspaces\EventSubscriber\EntitySchemaSubscriber
+    class: Drupal\workspaces\Event_Subscriber\Entity_Schema_Subscriber
     arguments: ['@entity.definition_update_manager', '@entity.last_installed_schema.repository', '@workspaces.information']
   workspaces.workspace_subscriber:
-    class: Drupal\workspaces\EventSubscriber\WorkspaceRequestSubscriber
+    class: Drupal\workspaces\Event_Subscriber\Workspace_Request_Subscriber
     arguments: ['@router.route_provider', '@workspaces.manager']
-  Drupal\workspaces\EventSubscriber\WorkspaceSwitchSubscriber:
+  Drupal\workspaces\Event_Subscriber\Workspace_Switch_Subscriber:
     autowire: true
 
   cache_context.workspace:
@@ -75,7 +75,7 @@ services:
 
   workspaces.entity.query.sql:
     decorates: entity.query.sql
-    class: Drupal\workspaces\EntityQuery\QueryFactory
+    class: Drupal\workspaces\Entity_Query\Query_Factory
     arguments: ['@database', '@workspaces.manager', '@workspaces.information']
     public: false
     decoration_priority: 50
@@ -95,10 +95,10 @@ services:
     # Decorate the entity form controller to handle entity operations inside a
     # workspace.
     decorates: controller.entity_form
-    class: Drupal\workspaces\Controller\WorkspacesHtmlEntityFormController
+    class: Drupal\workspaces\Controller\Workspaces_Html_Entity_Form_Controller
     public: false
     arguments: ['@.inner', '@workspaces.manager', '@workspaces.information', '@typed_data_manager']
-  Drupal\workspaces\Controller\WorkspacesHtmlEntityFormController: '@workspaces.controller.entity_form'
+  Drupal\workspaces\Controller\Workspaces_Html_Entity_Form_Controller: '@workspaces.controller.entity_form'
 
   Drupal\workspaces\WorkspacesCron:
     decorates: cron

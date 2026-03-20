@@ -26,11 +26,11 @@ editor.settings.ckeditor5:
         type: ckeditor5.plugin.[%key]
   constraints:
     FullyValidatable: ~
-    # Each enabled CKEditor 5 plugin that implements \Drupal\ckeditor5\Plugin\CKEditor5PluginConfigurableInterface
+    # Each enabled CKEditor 5 plugin that implements \Drupal\ckeditor5\Plugin\CK_Editor5Plugin_Configurable_Interface
     # must exist in here.
     CKEditor5EnabledConfigurablePlugins: []
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Language
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Language
 ckeditor5.plugin.ckeditor5_language:
   type: mapping
   label: 'Language'
@@ -54,7 +54,7 @@ ckeditor5.plugin.ckeditor5_language:
             # Languages configured at /admin/config/regional/language for the site.
             - site_configured
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Heading
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Heading
 ckeditor5.plugin.ckeditor5_heading:
   type: mapping
   label: Headings
@@ -73,9 +73,9 @@ ckeditor5.plugin.ckeditor5_heading:
         label: 'Heading type'
         constraints:
           Choice:
-            callback: \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Heading::validChoices
+            callback: \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Heading::validChoices
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ImageResize
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Image_Resize
 ckeditor5.plugin.ckeditor5_imageResize:
   type: mapping
   label: Image Resize
@@ -88,7 +88,7 @@ ckeditor5.plugin.ckeditor5_imageResize:
       constraints:
         NotNull: []
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\SourceEditing
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Source_Editing
 ckeditor5.plugin.ckeditor5_sourceEditing:
   type: mapping
   label: Source Editing
@@ -106,7 +106,7 @@ ckeditor5.plugin.ckeditor5_sourceEditing:
           SourceEditingRedundantTags: []
           SourceEditingPreventSelfXssConstraint: []
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Alignment
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Alignment
 ckeditor5.plugin.ckeditor5_alignment:
   type: mapping
   label: Alignments
@@ -131,7 +131,7 @@ ckeditor5.plugin.ckeditor5_alignment:
               - right
               - justify
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\List_Plugin
 ckeditor5.plugin.ckeditor5_list:
   type: mapping
   label: List
@@ -166,7 +166,7 @@ ckeditor5.plugin.ckeditor5_list:
       constraints:
         NotNull: []
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Media
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Media
 ckeditor5.plugin.media_media:
   type: mapping
   label: Media
@@ -179,7 +179,7 @@ ckeditor5.plugin.media_media:
       constraints:
         NotNull: []
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\CodeBlock
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Code_Block
 ckeditor5.plugin.ckeditor5_codeBlock:
   type: mapping
   label: Code Block
@@ -206,7 +206,7 @@ ckeditor5.plugin.ckeditor5_codeBlock:
             type: string
             label: 'Language key'
 
-# Plugin \Drupal\ckeditor5\Plugin\CKEditor5Plugin\Style
+# Plugin \Drupal\ckeditor5\Plugin\CK_Editor5Plugin\Style
 ckeditor5.plugin.ckeditor5_style:
   type: mapping
   label: Style

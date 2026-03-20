@@ -1,6 +1,6 @@
 contextual_test:
   path: '/contextual-tests'
   defaults:
-    _controller: '\Drupal\contextual_test\Controller\TestController::render'
+    _controller: '\Drupal\contextual_test\Controller\Test_Controller::render'
   requirements:
     _access: 'TRUE'

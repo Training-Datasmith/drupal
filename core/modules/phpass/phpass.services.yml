@@ -6,6 +6,6 @@ services:
     autoconfigure: true
   phpass.password:
     public: false
-    class: Drupal\phpass\Password\PhpassHashedPassword
+    class: Drupal\phpass\Password\Phpass_Hashed_Password
     decorates: password
     arguments: ['@.inner']

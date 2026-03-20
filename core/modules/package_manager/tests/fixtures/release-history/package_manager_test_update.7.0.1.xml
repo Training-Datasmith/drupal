@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 This fixture is used by:
-- \Drupal\Tests\package_manager\Kernel\SupportedReleaseValidatorTest
-- \Drupal\Tests\package_manager\Kernel\ProjectInfoTest
+- \Drupal\Tests\package_manager\Kernel\Supported_Release_Validator_Test
+- \Drupal\Tests\package_manager\Kernel\Project_Info_Test
 
 Contains metadata about the following (fake) releases of package_manager_test_update module, all of which are secure, in order:
 - 7.0.1

@@ -1,14 +1,14 @@
 media.oembed_iframe:
   path: '/media/oembed'
   defaults:
-    _controller: '\Drupal\media\Controller\OEmbedIframeController::render'
+    _controller: '\Drupal\media\Controller\O_Embed_Iframe_Controller::render'
   requirements:
     _permission: 'view media'
 
 media.settings:
   path: '/admin/config/media/media-settings'
   defaults:
-    _form: '\Drupal\media\Form\MediaSettingsForm'
+    _form: '\Drupal\media\Form\Media_Settings_Form'
     _title: 'Media settings'
   requirements:
     _permission: 'administer media'
@@ -16,8 +16,8 @@ media.settings:
 media.filter.preview:
   path: '/media/{filter_format}/preview'
   defaults:
-    _controller: '\Drupal\media\Controller\MediaFilterController::preview'
+    _controller: '\Drupal\media\Controller\Media_Filter_Controller::preview'
   methods: [GET]
   requirements:
     _entity_access: 'filter_format.use'
-    _custom_access: '\Drupal\media\Controller\MediaFilterController::formatUsesMediaEmbedFilter'
+    _custom_access: '\Drupal\media\Controller\Media_Filter_Controller::formatUsesMediaEmbedFilter'

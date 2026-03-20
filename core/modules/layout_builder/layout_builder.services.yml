@@ -9,50 +9,50 @@ services:
     arguments: ['@tempstore.shared']
   Drupal\layout_builder\LayoutTempstoreRepositoryInterface: '@layout_builder.tempstore_repository'
   access_check.entity.layout_builder_access:
-    class: Drupal\layout_builder\Access\LayoutBuilderAccessCheck
+    class: Drupal\layout_builder\Access\Layout_Builder_Access_Check
     arguments: ['@current_route_match']
     tags:
       - { name: access_check, applies_to: _layout_builder_access }
   plugin.manager.layout_builder.section_storage:
-    class: Drupal\layout_builder\SectionStorage\SectionStorageManager
+    class: Drupal\layout_builder\Section_Storage\Section_Storage_Manager
     parent: default_plugin_manager
     arguments: ['@context.handler']
-  Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface: '@plugin.manager.layout_builder.section_storage'
+  Drupal\layout_builder\Section_Storage\Section_Storage_Manager_Interface: '@plugin.manager.layout_builder.section_storage'
   layout_builder.routes:
-    class: Drupal\layout_builder\Routing\LayoutBuilderRoutes
+    class: Drupal\layout_builder\Routing\Layout_Builder_Routes
     arguments: ['@plugin.manager.layout_builder.section_storage']
   layout_builder.tempstore.route_enhancer:
-    class: Drupal\layout_builder\Routing\LayoutTempstoreRouteEnhancer
+    class: Drupal\layout_builder\Routing\Layout_Tempstore_Route_Enhancer
     arguments: ['@layout_builder.tempstore_repository']
     tags:
       - { name: route_enhancer }
   layout_builder.param_converter:
-    class: Drupal\layout_builder\Routing\LayoutSectionStorageParamConverter
+    class: Drupal\layout_builder\Routing\Layout_Section_Storage_Param_Converter
     arguments: ['@plugin.manager.layout_builder.section_storage']
     tags:
       - { name: paramconverter, priority: 10 }
   cache_context.layout_builder_is_active:
-    class: Drupal\layout_builder\Cache\LayoutBuilderIsActiveCacheContext
+    class: Drupal\layout_builder\Cache\Layout_Builder_Is_Active_Cache_Context
     arguments: ['@current_route_match']
     tags:
       - { name: cache.context}
   cache_context.route.name.is_layout_builder_ui:
-    class: Drupal\layout_builder\Cache\LayoutBuilderUiCacheContext
+    class: Drupal\layout_builder\Cache\Layout_Builder_Ui_Cache_Context
     arguments: ['@current_route_match']
     tags:
       - { name: cache.context }
   layout_builder.extra_fields.invalidator:
-    class: Drupal\layout_builder\Cache\ExtraFieldBlockCacheTagInvalidator
+    class: Drupal\layout_builder\Cache\Extra_Field_Block_Cache_Tag_Invalidator
     arguments: ['@plugin.manager.block']
     public: false
     tags:
       - { name: cache_tags_invalidator }
   layout_builder.sample_entity_generator:
-    class: Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator
+    class: Drupal\layout_builder\Entity\Layout_Builder_Sample_Entity_Generator
     arguments: ['@tempstore.shared', '@entity_type.manager']
-  Drupal\layout_builder\Entity\SampleEntityGeneratorInterface: '@layout_builder.sample_entity_generator'
+  Drupal\layout_builder\Entity\Sample_Entity_Generator_Interface: '@layout_builder.sample_entity_generator'
   layout_builder.render_block_component_subscriber:
-    class: Drupal\layout_builder\EventSubscriber\BlockComponentRenderArray
+    class: Drupal\layout_builder\Event_Subscriber\Block_Component_Render_Array
     arguments: ['@current_user']
   logger.channel.layout_builder:
     parent: logger.channel_base
@@ -62,7 +62,7 @@ services:
     arguments: ['@database']
   Drupal\layout_builder\InlineBlockUsageInterface: '@inline_block.usage'
   layout_builder.element.prepare_layout:
-    class: Drupal\layout_builder\EventSubscriber\PrepareLayout
+    class: Drupal\layout_builder\Event_Subscriber\Prepare_Layout
     arguments: ['@layout_builder.tempstore_repository', '@messenger']
-  Drupal\layout_builder\EventSubscriber\DefaultContentSubscriber:
+  Drupal\layout_builder\Event_Subscriber\Default_Content_Subscriber:
     autowire: true

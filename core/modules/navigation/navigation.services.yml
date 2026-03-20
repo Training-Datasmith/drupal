@@ -23,7 +23,7 @@ services:
   Drupal\navigation\NavigationRenderer: '@navigation.renderer'
 
   navigation.menu_tree:
-    class: Drupal\navigation\Menu\NavigationMenuLinkTree
+    class: Drupal\navigation\Menu\Navigation_Menu_Link_Tree
     arguments:
       [
         '@menu.tree_storage',
@@ -49,5 +49,5 @@ services:
     parent: default_plugin_manager
   Drupal\navigation\TopBarItemManagerInterface: '@plugin.manager.top_bar_item'
 
-  Drupal\navigation\Menu\NavigationMenuLinkTreeManipulators:
+  Drupal\navigation\Menu\Navigation_Menu_Link_Tree_Manipulators:
     autowire: true

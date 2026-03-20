@@ -13,12 +13,12 @@ menu_test.local_task_test_tasks_settings:
 menu_test.local_task_test_tasks_settings_dynamic:
   route_name: menu_test.local_task_test_tasks_settings_dynamic
   base_route: menu_test.local_task_test_tasks_view
-  class: \Drupal\menu_test\Plugin\Menu\LocalTask\TestTaskWithUserInput
+  class: \Drupal\menu_test\Plugin\Menu\Local_Task\Test_Task_With_User_Input
 menu_test.local_task_test_tasks_settings_sub1:
   route_name: menu_test.local_task_test_tasks_settings_sub1
   title: sub1
   parent_id: menu_test.local_task_test_tasks_settings
-  class: Drupal\menu_test\Plugin\Menu\LocalTask\TestTasksSettingsSub1
+  class: Drupal\menu_test\Plugin\Menu\Local_Task\Test_Tasks_Settings_Sub1
   weight: -10
 menu_test.local_task_test_tasks_settings_sub2:
   route_name: menu_test.local_task_test_tasks_settings_sub2
@@ -33,7 +33,7 @@ menu_test.local_task_test_tasks_settings_derived:
   route_name: menu_test.local_task_test_tasks_settings_derived
   title: derived
   parent_id: menu_test.local_task_test_tasks_settings
-  deriver: Drupal\menu_test\Plugin\Derivative\LocalTaskTest
+  deriver: Drupal\menu_test\Plugin\Derivative\Local_Task_Test
   weight: 50
 menu_test.local_task_test.placeholder_sub1:
   route_name: menu_test.local_task_test_placeholder_sub1
@@ -61,7 +61,7 @@ menu_test.tasks_default_derived:
   route_name: menu_test.router_test1
   title: 'Derived'
   base_route: menu_test.tasks_default
-  deriver: '\Drupal\menu_test\Plugin\Derivative\LocalTaskTestWithUnsafeTitle'
+  deriver: '\Drupal\menu_test\Plugin\Derivative\Local_Task_Test_With_Unsafe_Title'
 
 menu_test.tasks_tasks_tab:
   route_name: menu_test.tasks_tasks
@@ -95,4 +95,4 @@ menu_test.router_test3:
 menu_test.router_test4:
   route_name: menu_test.router_test4
   base_route: menu_test.router_test1
-  class: \Drupal\menu_test\Plugin\Menu\LocalTask\TestTaskWithUserInput
+  class: \Drupal\menu_test\Plugin\Menu\Local_Task\Test_Task_With_User_Input

@@ -21,34 +21,34 @@ ignore:
 # Basic scalar data types from typed data.
 boolean:
   label: 'Boolean'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\BooleanData'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Boolean_Data'
 email:
   label: 'Email'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\Email'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Email'
   constraints:
     Email:
       message: "%value is not a valid email address."
 integer:
   label: 'Integer'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\IntegerData'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Integer_Data'
 timestamp:
   label: 'Timestamp'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\Timestamp'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Timestamp'
 float:
   label: 'Float'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\FloatData'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Float_Data'
 string:
   label: 'String'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\StringData'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\String_Data'
 uri:
   label: 'Uri'
-  class: '\Drupal\Core\TypedData\Plugin\DataType\Uri'
+  class: '\Drupal\Core\Typed_Data\Plugin\Data_Type\Uri'
 
 # Container data types for lists with known and unknown keys.
 mapping:
   label: Mapping
   class: '\Drupal\Core\Config\Schema\Mapping'
-  definition_class: '\Drupal\Core\TypedData\MapDataDefinition'
+  definition_class: '\Drupal\Core\Typed_Data\Map_Data_Definition'
   mapping: {}
   constraints:
     # By default, allow the explicitly listed mapping keys, and require their
@@ -58,7 +58,7 @@ mapping:
 sequence:
   label: Sequence
   class: '\Drupal\Core\Config\Schema\Sequence'
-  definition_class: '\Drupal\Core\Config\Schema\SequenceDataDefinition'
+  definition_class: '\Drupal\Core\Config\Schema\Sequence_Data_Definition'
 
 # Simple extended data types:
 
@@ -158,7 +158,7 @@ machine_name:
       pattern: '/^[a-z0-9_]+$/'
       message: "The %value machine name is not valid."
     Length:
-      # @see \Drupal\Core\Config\Entity\ConfigEntityStorage::MAX_ID_LENGTH
+      # @see \Drupal\Core\Config\Entity\Config_Entity_Storage::MAX_ID_LENGTH
       max: 166
 
 # A language identifier.
@@ -168,7 +168,7 @@ langcode:
   constraints:
     NotNull: []
     Choice:
-      callback: 'Drupal\Core\TypedData\Plugin\DataType\LanguageReference::getAllValidLangcodes'
+      callback: 'Drupal\Core\Typed_Data\Plugin\Data_Type\Language_Reference::getAllValidLangcodes'
 
 # A number of bytes; either a plain number or with a size indication such as "MB".
 # @see \Drupal\Component\Utility\Bytes
@@ -254,7 +254,7 @@ filter:
       constraints:
         PluginExists:
           manager: plugin.manager.filter
-          interface: 'Drupal\filter\Plugin\FilterInterface'
+          interface: 'Drupal\filter\Plugin\Filter_Interface'
     provider:
       type: string
       label: 'Provider'
@@ -496,7 +496,7 @@ condition.plugin:
       constraints:
         PluginExists:
           manager: plugin.manager.condition
-          interface: 'Drupal\Core\Condition\ConditionInterface'
+          interface: 'Drupal\Core\Condition\Condition_Interface'
     negate:
       type: boolean
       label: 'Negate'
@@ -577,7 +577,7 @@ field_config_base:
       constraints:
         PluginExists:
           manager: 'entity_type.manager'
-          interface: '\Drupal\Core\Entity\FieldableEntityInterface'
+          interface: '\Drupal\Core\Entity\Fieldable_Entity_Interface'
     bundle:
       type: string
       label: 'Bundle'
@@ -613,7 +613,7 @@ field_config_base:
       constraints:
         PluginExists:
           manager: plugin.manager.field.field_type
-          interface: '\Drupal\Core\Field\FieldItemInterface'
+          interface: '\Drupal\Core\Field\Field_Item_Interface'
   constraints:
     FullyValidatable: ~
 
@@ -807,7 +807,7 @@ field.field_settings.entity_reference:
       constraints:
         PluginExists:
           manager: plugin.manager.entity_reference_selection
-          interface: 'Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface'
+          interface: 'Drupal\Core\Entity\Entity_Reference_Selection\Selection_Interface'
           # @todo Remove this line and explicitly require valid entity reference
           # selection plugin IDs in https://drupal.org/i/3420198.
           allowFallback: true
@@ -990,7 +990,7 @@ field.value.language:
       label: 'Language value'
       constraints:
         Choice:
-          callback: 'Drupal\Core\TypedData\Plugin\DataType\LanguageReference::getAllValidLangcodes'
+          callback: 'Drupal\Core\Typed_Data\Plugin\Data_Type\Language_Reference::getAllValidLangcodes'
 
 # Text with a text format.
 text_format:

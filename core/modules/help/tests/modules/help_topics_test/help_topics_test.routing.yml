@@ -1,7 +1,7 @@
 help_topics_test.test_route:
   path: '/help_topics_test/{int_param<\d+>}'
   defaults:
-    _controller: '\Drupal\help_topics_test\Controller\HelpTopicsTestController::testPage'
+    _controller: '\Drupal\help_topics_test\Controller\Help_Topics_Test_Controller::testPage'
     _title: 'Page for testing URLs in topics'
   requirements:
     _permission: 'access test help'

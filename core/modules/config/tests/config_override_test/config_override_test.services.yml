@@ -1,6 +1,6 @@
 services:
   cache_context.pirate_day:
-    class: Drupal\config_override_test\Cache\PirateDayCacheContext
+    class: Drupal\config_override_test\Cache\Pirate_Day_Cache_Context
     tags:
       - { name: cache.context }
   config_override_test.overrider:

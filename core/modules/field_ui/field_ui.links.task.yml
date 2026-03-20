@@ -4,8 +4,8 @@ entity.field_storage_config.collection:
   base_route: entity.field_storage_config.collection
 
 field_ui.fields:
-  class: \Drupal\Core\Menu\LocalTaskDefault
-  deriver: \Drupal\field_ui\Plugin\Derivative\FieldUiLocalTask
+  class: \Drupal\Core\Menu\Local_Task_Default
+  deriver: \Drupal\field_ui\Plugin\Derivative\Field_Ui_Local_Task
 
 entity.entity_view_mode.edit_form:
   title: 'Edit'

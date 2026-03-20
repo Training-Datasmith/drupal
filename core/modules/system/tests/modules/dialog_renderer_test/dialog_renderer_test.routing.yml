@@ -1,7 +1,7 @@
 dialog_renderer_test.links:
   path: '/dialog_renderer-test-links'
   defaults:
-    _controller: '\Drupal\dialog_renderer_test\Controller\TestController::linksDisplay'
+    _controller: '\Drupal\dialog_renderer_test\Controller\Test_Controller::linksDisplay'
     _title: 'Links'
   requirements:
     _access: 'TRUE'
@@ -9,7 +9,7 @@ dialog_renderer_test.links:
 dialog_renderer_test.modal_content:
   path: '/dialog_renderer-content'
   defaults:
-    _controller: '\Drupal\dialog_renderer_test\Controller\TestController::modalContent'
+    _controller: '\Drupal\dialog_renderer_test\Controller\Test_Controller::modalContent'
     _title: 'Thing 1'
   requirements:
     _access: 'TRUE'
@@ -17,7 +17,7 @@ dialog_renderer_test.modal_content:
 dialog_renderer_test.modal_content_link:
   path: '/dialog_renderer-content-link'
   defaults:
-    _controller: '\Drupal\dialog_renderer_test\Controller\TestController::modalContentLink'
+    _controller: '\Drupal\dialog_renderer_test\Controller\Test_Controller::modalContentLink'
     _title: 'Thing 2'
   requirements:
     _access: 'TRUE'
@@ -25,7 +25,7 @@ dialog_renderer_test.modal_content_link:
 dialog_renderer_test.modal_content_input:
   path: '/dialog_renderer-content-input'
   defaults:
-    _controller: '\Drupal\dialog_renderer_test\Controller\TestController::modalContentInput'
+    _controller: '\Drupal\dialog_renderer_test\Controller\Test_Controller::modalContentInput'
     _title: 'Thing 3'
   requirements:
     _access: 'TRUE'
@@ -33,7 +33,7 @@ dialog_renderer_test.modal_content_input:
 dialog_renderer_test.collapsed_opener:
   path: '/dialog_renderer-collapsed-opener'
   defaults:
-    _controller: '\Drupal\dialog_renderer_test\Controller\TestController::collapsedOpener'
+    _controller: '\Drupal\dialog_renderer_test\Controller\Test_Controller::collapsedOpener'
     _title: 'Collapsed Openers'
   requirements:
     _access: 'TRUE'
@@ -41,7 +41,7 @@ dialog_renderer_test.collapsed_opener:
 dialog_renderer_test.modal_form:
   path: '/dialog_renderer-form'
   defaults:
-    _form: '\Drupal\dialog_renderer_test\Form\TestForm'
+    _form: '\Drupal\dialog_renderer_test\Form\Test_Form'
     _title: 'Modal Form'
   requirements:
     _access: 'TRUE'

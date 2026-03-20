@@ -3,7 +3,7 @@ ckeditor5_plugin_elements_subset_sneakySuperset:
     plugins: []
   drupal:
     label: Sneaky Superset
-    class: Drupal\ckeditor5_plugin_elements_subset\Plugin\CKEditor5Plugin\SneakySuperset
+    class: Drupal\ckeditor5_plugin_elements_subset\Plugin\CK_Editor5Plugin\Sneaky_Superset
     elements:
       - <foo>
       - <bar>

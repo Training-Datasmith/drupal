@@ -5,4 +5,4 @@ services:
   _defaults:
     autoconfigure: true
     autowire: true
-  Drupal\path\EventSubscriber\DefaultContentSubscriber: ~
+  Drupal\path\Event_Subscriber\Default_Content_Subscriber: ~

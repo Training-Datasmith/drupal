@@ -7,30 +7,30 @@ services:
     autowire: true
 
   file.event.subscriber:
-    class: Drupal\file\EventSubscriber\FileEventSubscriber
+    class: Drupal\file\Event_Subscriber\File_Event_Subscriber
   file.usage:
-    class: Drupal\file\FileUsage\DatabaseFileUsageBackend
+    class: Drupal\file\File_Usage\Database_File_Usage_Backend
     tags:
       - { name: backend_overridable }
-  Drupal\file\FileUsage\FileUsageInterface: '@file.usage'
+  Drupal\file\File_Usage\File_Usage_Interface: '@file.usage'
   file.upload_handler:
-    class: Drupal\file\Upload\FileUploadHandler
-  Drupal\file\Upload\FileUploadHandlerInterface: '@file.upload_handler'
+    class: Drupal\file\Upload\File_Upload_Handler
+  Drupal\file\Upload\File_Upload_Handler_Interface: '@file.upload_handler'
   file.repository:
     class: Drupal\file\FileRepository
   Drupal\file\FileRepositoryInterface: '@file.repository'
   file.recursive_validator_factory:
-    class: Drupal\file\Validation\RecursiveValidatorFactory
-  Drupal\file\Validation\RecursiveValidatorFactory: '@file.recursive_validator_factory'
+    class: Drupal\file\Validation\Recursive_Validator_Factory
+  Drupal\file\Validation\Recursive_Validator_Factory: '@file.recursive_validator_factory'
   file.recursive_validator:
-    class: Symfony\Component\Validator\Validator\ValidatorInterface
+    class: Symfony\Component\Validator\Validator\Validator_Interface
     factory: [ '@file.recursive_validator_factory', 'createValidator' ]
   file.validator:
-    class: Drupal\file\Validation\FileValidator
-  Drupal\file\Validation\FileValidatorInterface: '@file.validator'
+    class: Drupal\file\Validation\File_Validator
+  Drupal\file\Validation\File_Validator_Interface: '@file.validator'
   file.input_stream_file_writer:
-    class: Drupal\file\Upload\InputStreamFileWriter
-  Drupal\file\Upload\InputStreamFileWriterInterface: '@file.input_stream_file_writer'
-  Drupal\file\EventSubscriber\DefaultContentSubscriber:
+    class: Drupal\file\Upload\Input_Stream_File_Writer
+  Drupal\file\Upload\Input_Stream_File_Writer_Interface: '@file.input_stream_file_writer'
+  Drupal\file\Event_Subscriber\Default_Content_Subscriber:
     calls:
       - [setLogger, ['@logger.channel.file']]

@@ -109,7 +109,7 @@ search.page.*:
       constraints:
         PluginExists:
           manager: plugin.manager.search
-          interface: 'Drupal\search\Plugin\SearchInterface'
+          interface: 'Drupal\search\Plugin\Search_Interface'
     configuration:
       type: search.plugin.[%parent.plugin]
 
@@ -123,7 +123,7 @@ block.settings.search_form_block:
       type: string
       label: 'Search page'
       # Optional: falls back to the default search page.
-      # @see \Drupal\search\Form\SearchBlockForm::buildForm()
+      # @see \Drupal\search\Form\Search_Block_Form::buildForm()
       # @see \Drupal\search\SearchPageRepositoryInterface::getDefaultSearchPage()
       nullable: true
       constraints:

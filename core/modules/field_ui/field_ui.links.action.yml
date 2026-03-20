@@ -15,5 +15,5 @@ field_ui.entity_form_mode_add:
     - entity.entity_form_mode.collection
 
 field_ui.field_storage_config_add:
-  class: \Drupal\Core\Menu\LocalActionDefault
-  deriver: \Drupal\field_ui\Plugin\Derivative\FieldUiLocalAction
+  class: \Drupal\Core\Menu\Local_Action_Default
+  deriver: \Drupal\field_ui\Plugin\Derivative\Field_Ui_Local_Action

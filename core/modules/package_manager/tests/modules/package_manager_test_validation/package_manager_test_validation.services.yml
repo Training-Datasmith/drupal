@@ -1,6 +1,6 @@
 services:
   package_manager_test_validation.subscriber:
-    class: Drupal\package_manager_test_validation\EventSubscriber\TestSubscriber
+    class: Drupal\package_manager_test_validation\Event_Subscriber\Test_Subscriber
     arguments:
       - '@state'
     tags:
@@ -15,4 +15,4 @@ services:
     arguments:
       - '@.inner'
       - '@state'
-    decorates: 'PhpTuf\ComposerStager\API\Finder\Service\ExecutableFinderInterface'
+    decorates: 'Php_Tuf\Composer_Stager\API\Finder\Service\Executable_Finder_Interface'

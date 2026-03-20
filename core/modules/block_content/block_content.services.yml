@@ -11,9 +11,9 @@ services:
       - { name: needs_destruction }
   Drupal\block_content\BlockContentUuidLookup: '@block_content.uuid_lookup'
   block_content.bc_subscriber:
-    class: Drupal\block_content\Routing\RouteSubscriber
+    class: Drupal\block_content\Routing\Route_Subscriber
     arguments: ['@entity_type.manager', '@module_handler']
   access_check.block_content_reusable:
-    class: Drupal\block_content\Access\BlockContentIsReusableAccessCheck
+    class: Drupal\block_content\Access\Block_Content_Is_Reusable_Access_Check
     tags:
       - { name: access_check, applies_to: _block_content_reusable, needs_incoming_request: TRUE }

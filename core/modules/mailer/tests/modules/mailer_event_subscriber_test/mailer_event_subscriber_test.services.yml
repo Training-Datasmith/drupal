@@ -1,6 +1,6 @@
 services:
   mailer_event_subscriber_test.message_event_test_subscriber:
-    class: Drupal\mailer_event_subscriber_test\EventSubscriber\MessageEventTestSubscriber
+    class: Drupal\mailer_event_subscriber_test\Event_Subscriber\Message_Event_Test_Subscriber
     arguments: ['@state']
     tags:
       - { name: 'event_subscriber' }

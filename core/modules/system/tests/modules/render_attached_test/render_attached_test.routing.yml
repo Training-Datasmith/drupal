@@ -1,34 +1,34 @@
 render_attached.teapot:
   path: '/render_attached_test/teapot'
   defaults:
-    _controller: '\Drupal\render_attached_test\Controller\RenderAttachedTestController::teapotHeaderStatus'
+    _controller: '\Drupal\render_attached_test\Controller\Render_Attached_Test_Controller::teapotHeaderStatus'
   requirements:
     _access: 'TRUE'
 
 render_attached.header:
   path: '/render_attached_test/header'
   defaults:
-    _controller: '\Drupal\render_attached_test\Controller\RenderAttachedTestController::header'
+    _controller: '\Drupal\render_attached_test\Controller\Render_Attached_Test_Controller::header'
   requirements:
     _access: 'TRUE'
 
 render_attached.head:
   path: '/render_attached_test/head'
   defaults:
-    _controller: '\Drupal\render_attached_test\Controller\RenderAttachedTestController::head'
+    _controller: '\Drupal\render_attached_test\Controller\Render_Attached_Test_Controller::head'
   requirements:
     _access: 'TRUE'
 
 render_attached.html_header_link:
   path: '/render_attached_test/html_header_link'
   defaults:
-    _controller: '\Drupal\render_attached_test\Controller\RenderAttachedTestController::htmlHeaderLink'
+    _controller: '\Drupal\render_attached_test\Controller\Render_Attached_Test_Controller::htmlHeaderLink'
   requirements:
     _access: 'TRUE'
 
 render_attached.feed_single:
   path: '/render_attached_test/feed'
   defaults:
-    _controller: '\Drupal\render_attached_test\Controller\RenderAttachedTestController::feed'
+    _controller: '\Drupal\render_attached_test\Controller\Render_Attached_Test_Controller::feed'
   requirements:
     _access: 'TRUE'

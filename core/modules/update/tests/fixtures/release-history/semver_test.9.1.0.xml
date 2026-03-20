@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by \Drupal\Tests\update\Functional\UpdateSemverContribTestBase.
+This fixture is used by \Drupal\Tests\update\Functional\Update_Semver_Contrib_Test_Base.
  It should be the same as semver_test.1.o.xml with the exception the major
  version numbers. In this file the major versions are 8 an 9 instead of 7 and 8.
 -->

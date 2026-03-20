@@ -2,6 +2,6 @@ mailer_capture_test.send-mail:
   path: '/mailer-capture-test/send-mail'
   defaults:
     _title: 'Send Mail'
-    _form: '\Drupal\mailer_capture_test\Form\MailerCaptureTestForm'
+    _form: '\Drupal\mailer_capture_test\Form\Mailer_Capture_Test_Form'
   requirements:
     _access: 'TRUE'

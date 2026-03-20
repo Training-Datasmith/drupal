@@ -15,15 +15,15 @@ services:
       - [initLanguageManager]
   Drupal\language\LanguageNegotiatorInterface: '@language_negotiator'
   language.config_subscriber:
-    class: Drupal\language\EventSubscriber\ConfigSubscriber
+    class: Drupal\language\Event_Subscriber\Config_Subscriber
     arguments: ['@language_manager', '@language.default', '@config.factory', '@language_negotiator']
   language.config_factory_override:
-    class: Drupal\language\Config\LanguageConfigFactoryOverride
+    class: Drupal\language\Config\Language_Config_Factory_Override
     arguments: ['@config.storage', '@event_dispatcher', '@config.typed', '@language.default', '%language.default_values%', '%language.translate_english%']
     tags:
       - { name: config.factory.override, priority: -254 }
-  Drupal\language\Config\LanguageConfigFactoryOverrideInterface: '@language.config_factory_override'
-  Drupal\Core\Config\ConfigFactoryOverrideInterface: '@language.config_factory_override'
+  Drupal\language\Config\Language_Config_Factory_Override_Interface: '@language.config_factory_override'
+  Drupal\Core\Config\Config_Factory_Override_Interface: '@language.config_factory_override'
   language_converter:
     class: Drupal\language\LanguageConverter
     arguments: ['@language_manager']

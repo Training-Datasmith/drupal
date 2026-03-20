@@ -3,7 +3,7 @@ layout_twocol_section:
   path: layouts/twocol_section
   template: layout--twocol-section
   library: layout_builder/twocol_section
-  class: '\Drupal\layout_builder\Plugin\Layout\TwoColumnLayout'
+  class: '\Drupal\layout_builder\Plugin\Layout\Two_Column_Layout'
   category: 'Columns: 2'
   default_region: first
   icon_map:
@@ -19,7 +19,7 @@ layout_threecol_section:
   path: layouts/threecol_section
   template: layout--threecol-section
   library: layout_builder/threecol_section
-  class: '\Drupal\layout_builder\Plugin\Layout\ThreeColumnLayout'
+  class: '\Drupal\layout_builder\Plugin\Layout\Three_Column_Layout'
   category: 'Columns: 3'
   default_region: second
   icon_map:

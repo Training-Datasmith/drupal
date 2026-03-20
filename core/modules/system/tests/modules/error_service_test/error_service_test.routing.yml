@@ -1,6 +1,6 @@
 error_service_test.broken_class:
   path: broken-service-class
   defaults:
-    _controller: \Drupal\error_service_test\Controller\LonelyMonkeyController::testBrokenClass
+    _controller: \Drupal\error_service_test\Controller\Lonely_Monkey_Controller::testBrokenClass
   requirements:
     _access: 'TRUE'

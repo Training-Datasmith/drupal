@@ -2,6 +2,6 @@ announce_feed_test.json_test:
   path: '/announce-feed-json/{json_name}'
   defaults:
     _title: 'Announce Feed test'
-    _controller: '\Drupal\announce_feed_test\Controller\AnnounceTestController::setFeedConfig'
+    _controller: '\Drupal\announce_feed_test\Controller\Announce_Test_Controller::setFeedConfig'
   requirements:
     _access: 'TRUE'

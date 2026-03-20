@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   plugin.manager.editor:
-    class: Drupal\editor\Plugin\EditorManager
+    class: Drupal\editor\Plugin\Editor_Manager
     parent: default_plugin_manager
     arguments:
       $entityTypeManager: '@entity_type.manager'
@@ -14,5 +14,5 @@ services:
     arguments: ['@plugin.manager.editor', '@module_handler']
   Drupal\editor\Element: '@element.editor'
   editor.config_translation_mapper_subscriber:
-    class: Drupal\editor\EventSubscriber\EditorConfigTranslationSubscriber
+    class: Drupal\editor\Event_Subscriber\Editor_Config_Translation_Subscriber
     arguments: ['@config.factory']

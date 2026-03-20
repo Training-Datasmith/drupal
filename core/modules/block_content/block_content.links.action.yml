@@ -10,4 +10,4 @@ block_content_add_action:
   appears_on:
     - block.admin_library
     - entity.block_content.collection
-  class: \Drupal\block_content\Plugin\Menu\LocalAction\BlockContentAddLocalAction
+  class: \Drupal\block_content\Plugin\Menu\Local_Action\Block_Content_Add_Local_Action

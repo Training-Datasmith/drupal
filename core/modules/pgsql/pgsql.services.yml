@@ -3,5 +3,5 @@ parameters:
 
 services:
   pgsql.entity.query.sql:
-    class: Drupal\pgsql\EntityQuery\QueryFactory
+    class: Drupal\pgsql\Entity_Query\Query_Factory
     arguments: ['@database']

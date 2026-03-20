@@ -5,7 +5,7 @@ services:
     autowire: true
 
   theme.negotiator.contextual_links:
-    class: Drupal\contextual\Theme\ContextualLinksNegotiator
+    class: Drupal\contextual\Theme\Contextual_Links_Negotiator
     tags:
       - { name: theme_negotiator }
 

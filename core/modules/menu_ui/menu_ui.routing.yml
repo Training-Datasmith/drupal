@@ -9,14 +9,14 @@ entity.menu.collection:
 menu_ui.parent_options_js:
   path: '/admin/structure/menu/parents'
   defaults:
-    _controller: '\Drupal\menu_ui\Controller\MenuController::getParentOptions'
+    _controller: '\Drupal\menu_ui\Controller\Menu_Controller::getParentOptions'
   requirements:
     _permission: 'administer menu'
 
 menu_ui.link_edit:
   path: '/admin/structure/menu/link/{menu_link_plugin}/edit'
   defaults:
-    _form: '\Drupal\menu_ui\Form\MenuLinkEditForm'
+    _form: '\Drupal\menu_ui\Form\Menu_Link_Edit_Form'
     _title: 'Edit menu link'
   options:
     parameters:
@@ -28,7 +28,7 @@ menu_ui.link_edit:
 menu_ui.link_reset:
   path: '/admin/structure/menu/link/{menu_link_plugin}/reset'
   defaults:
-    _form: '\Drupal\menu_ui\Form\MenuLinkResetForm'
+    _form: '\Drupal\menu_ui\Form\Menu_Link_Reset_Form'
     _title: 'Reset menu link'
   options:
     parameters:
@@ -36,7 +36,7 @@ menu_ui.link_reset:
         type: menu_link_plugin
   requirements:
     _permission: 'administer menu'
-    _custom_access: '\Drupal\menu_ui\Form\MenuLinkResetForm::linkIsResettable'
+    _custom_access: '\Drupal\menu_ui\Form\Menu_Link_Reset_Form::linkIsResettable'
 
 entity.menu.add_form:
   path: '/admin/structure/menu/add'
@@ -50,7 +50,7 @@ entity.menu.edit_form:
   path: '/admin/structure/menu/manage/{menu}'
   defaults:
     _entity_form: 'menu.edit'
-    _title_callback: '\Drupal\menu_ui\Controller\MenuController::menuTitle'
+    _title_callback: '\Drupal\menu_ui\Controller\Menu_Controller::menuTitle'
   requirements:
     _entity_access: 'menu.update'
 

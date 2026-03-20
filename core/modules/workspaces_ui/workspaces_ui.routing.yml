@@ -15,12 +15,12 @@ entity.workspace.activate_form:
     _admin_route: TRUE
   requirements:
     _entity_access: 'workspace.view'
-    _custom_access: '\Drupal\workspaces_ui\Form\WorkspaceActivateForm::checkAccess'
+    _custom_access: '\Drupal\workspaces_ui\Form\Workspace_Activate_Form::checkAccess'
 
 entity.workspace.publish_form:
   path: '/admin/config/workflow/workspaces/manage/{workspace}/publish'
   defaults:
-    _form: '\Drupal\workspaces_ui\Form\WorkspacePublishForm'
+    _form: '\Drupal\workspaces_ui\Form\Workspace_Publish_Form'
     _title: 'Publish workspace'
   options:
     _admin_route: TRUE
@@ -33,7 +33,7 @@ entity.workspace.publish_form:
 entity.workspace.merge_form:
   path: '/admin/config/workflow/workspaces/manage/{source_workspace}/{target_workspace}/merge'
   defaults:
-    _form: '\Drupal\workspaces_ui\Form\WorkspaceMergeForm'
+    _form: '\Drupal\workspaces_ui\Form\Workspace_Merge_Form'
     _title: 'Merge workspace'
   options:
     _admin_route: TRUE
@@ -48,7 +48,7 @@ entity.workspace.merge_form:
 workspaces.switch_to_live:
   path: '/admin/config/workflow/workspaces/switch-to-live'
   defaults:
-    _form: '\Drupal\workspaces_ui\Form\SwitchToLiveForm'
+    _form: '\Drupal\workspaces_ui\Form\Switch_To_Live_Form'
     _title: 'Switch to Live'
   requirements:
     _user_is_logged_in: 'TRUE'

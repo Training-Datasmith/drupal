@@ -2,14 +2,14 @@ common_test.l_active_class:
   path: '/common-test/type-link-active-class'
   defaults:
     _title: 'Test active link class'
-    _controller: '\Drupal\common_test\Controller\CommonTestController::typeLinkActiveClass'
+    _controller: '\Drupal\common_test\Controller\Common_Test_Controller::typeLinkActiveClass'
   requirements:
     _access: 'TRUE'
 
 common_test.destination:
   path: '/common-test/destination'
   defaults:
-    _controller: '\Drupal\common_test\Controller\CommonTestController::destination'
+    _controller: '\Drupal\common_test\Controller\Common_Test_Controller::destination'
   requirements:
     _access: 'TRUE'
 
@@ -17,7 +17,7 @@ common_test.js_and_css_querystring:
   path: '/common-test/query-string'
   defaults:
     _title: 'Test querystring'
-    _controller: '\Drupal\common_test\Controller\CommonTestController::jsAndCssQuerystring'
+    _controller: '\Drupal\common_test\Controller\Common_Test_Controller::jsAndCssQuerystring'
   requirements:
     _access: 'TRUE'
 
@@ -25,6 +25,6 @@ common_test.page_attachments:
   path: '/common/attachments-test'
   defaults:
     _title: 'Attachments test'
-    _controller: '\Drupal\common_test\Controller\CommonTestController::attachments'
+    _controller: '\Drupal\common_test\Controller\Common_Test_Controller::attachments'
   requirements:
     _access: 'TRUE'

@@ -2,7 +2,7 @@ ajax_test.dialog_contents:
   path: '/ajax-test/dialog-contents'
   defaults:
     _title: 'AJAX Dialog contents routing'
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::dialogContents'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::dialogContents'
   requirements:
     _access: 'TRUE'
 
@@ -10,7 +10,7 @@ ajax_test.ajax_render_types:
   path: '/ajax-test/dialog-contents-types/{type}'
   defaults:
     _title: 'AJAX Dialog contents routing'
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::renderTypes'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::renderTypes'
   requirements:
     _access: 'TRUE'
 
@@ -18,70 +18,70 @@ ajax_test.dialog_form:
   path: '/ajax-test/dialog-form'
   defaults:
     _title: 'Ajax Form contents'
-    _form: '\Drupal\ajax_test\Form\AjaxTestForm'
+    _form: '\Drupal\ajax_test\Form\Ajax_Test_Form'
   requirements:
     _access: 'TRUE'
 
 ajax_test.dialog:
   path: '/ajax-test/dialog'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::dialog'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::dialog'
   requirements:
     _access: 'TRUE'
 
 ajax_test.insert_links_block_wrapper:
   path: '/ajax-test/insert-block-wrapper'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::insertLinksBlockWrapper'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::insertLinksBlockWrapper'
   requirements:
     _access: 'TRUE'
 
 ajax_test.insert_links_inline_wrapper:
   path: '/ajax-test/insert-inline-wrapper'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::insertLinksInlineWrapper'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::insertLinksInlineWrapper'
   requirements:
     _access: 'TRUE'
 
 ajax_test.insert_links_table_wrapper:
   path: '/ajax-test/insert-table-wrapper'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::insertLinksTableWrapper'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::insertLinksTableWrapper'
   requirements:
     _access: 'TRUE'
 
 ajax_test.dialog_close:
   path: '/ajax-test/dialog-close'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::dialogClose'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::dialogClose'
   requirements:
     _access: 'TRUE'
 
 ajax_test.render:
   path: '/ajax-test/render'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::render'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::render'
   requirements:
     _access: 'TRUE'
 
 ajax_test.admin.theme:
   path: '/admin/ajax-test/theme'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::theme'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::theme'
   requirements:
     _access: 'TRUE'
 
 ajax_test.order:
   path: '/ajax-test/order'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::order'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::order'
   requirements:
     _access: 'TRUE'
 
 ajax_test.render_error:
   path: '/ajax-test/render-error'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::renderError'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::renderError'
   requirements:
     _access: 'TRUE'
 
@@ -89,7 +89,7 @@ ajax_test.message_form:
   path: '/ajax-test/message'
   defaults:
     _title: 'Ajax Message Form'
-    _form: '\Drupal\ajax_test\Form\AjaxTestMessageCommandForm'
+    _form: '\Drupal\ajax_test\Form\Ajax_Test_Message_Command_Form'
   requirements:
     _access: 'TRUE'
 
@@ -97,7 +97,7 @@ ajax_test.focus_first_form:
   path: '/ajax-test/focus-first'
   defaults:
     _title: 'Ajax Focus First Form'
-    _form: '\Drupal\ajax_test\Form\AjaxTestFocusFirstForm'
+    _form: '\Drupal\ajax_test\Form\Ajax_Test_Focus_First_Form'
   requirements:
     _access: 'TRUE'
 
@@ -105,42 +105,42 @@ ajax_test.promise:
   path: '/ajax-test/promise-form'
   defaults:
     _title: 'Ajax Form Command Promise'
-    _form: '\Drupal\ajax_test\Form\AjaxTestFormPromise'
+    _form: '\Drupal\ajax_test\Form\Ajax_Test_Form_Promise'
   requirements:
     _access: 'TRUE'
 
 ajax_test.global_events:
   path: '/ajax-test/global-events'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::globalEvents'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::globalEvents'
   requirements:
     _access: 'TRUE'
 
 ajax_test.global_events_clear_log:
   path: '/ajax-test/global-events/clear-log'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::globalEventsClearLog'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::globalEventsClearLog'
   requirements:
     _access: 'TRUE'
 
 ajax_test.exception_link:
   path: '/ajax-test/exception-link'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::exceptionLink'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::exceptionLink'
   requirements:
     _access: 'TRUE'
 
 ajax_test.throw_exception:
   path: '/ajax-test/throw-exception'
   defaults:
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::throwException'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::throwException'
   requirements:
     _access: 'TRUE'
 
 ajax_test.http_methods:
   path: '/ajax-test/http-methods'
   defaults:
-    _controller: Drupal\ajax_test\Controller\AjaxTestController::httpMethods
+    _controller: Drupal\ajax_test\Controller\Ajax_Test_Controller::httpMethods
   requirements:
     _access: 'TRUE'
   options:
@@ -149,7 +149,7 @@ ajax_test.http_methods:
 ajax_test.http_methods.dialog:
   path: '/ajax-test/http-methods-dialog'
   defaults:
-    _controller: Drupal\ajax_test\Controller\AjaxTestController::httpMethodsDialog
+    _controller: Drupal\ajax_test\Controller\Ajax_Test_Controller::httpMethodsDialog
   requirements:
     _access: 'TRUE'
 
@@ -157,14 +157,14 @@ ajax_test.link_page.dialog:
   path: '/ajax-test/link-page-dialog'
   defaults:
     _title: 'AJAX link page'
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::linkPageDialog'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::linkPageDialog'
   requirements:
     _access: 'TRUE'
 
 ajax_test.link_page.dialog_contents:
   path: '/ajax-test/link-page-dialog-contents'
   defaults:
-    _title_callback: '\Drupal\ajax_test\Controller\AjaxTestController::linkPageDialogTitle'
-    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::httpMethodsDialog'
+    _title_callback: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::linkPageDialogTitle'
+    _controller: '\Drupal\ajax_test\Controller\Ajax_Test_Controller::httpMethodsDialog'
   requirements:
     _access: 'TRUE'

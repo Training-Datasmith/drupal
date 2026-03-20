@@ -1,7 +1,7 @@
 entity.taxonomy_term.add_form:
   path: '/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/add'
   defaults:
-    _controller: '\Drupal\taxonomy\Controller\TaxonomyController::addForm'
+    _controller: '\Drupal\taxonomy\Controller\Taxonomy_Controller::addForm'
     _title: 'Add term'
   requirements:
     _entity_create_access: 'taxonomy_term:{taxonomy_vocabulary}'
@@ -33,7 +33,7 @@ entity.taxonomy_term.canonical:
   defaults:
     _entity_view: 'taxonomy_term.full'
     _title: 'Taxonomy term'
-    _title_callback: '\Drupal\taxonomy\Controller\TaxonomyController::termTitle'
+    _title_callback: '\Drupal\taxonomy\Controller\Taxonomy_Controller::termTitle'
   requirements:
     _entity_access: 'taxonomy_term.view'
     taxonomy_term: \d+

@@ -9,7 +9,7 @@ services:
     arguments: ['@entity_type.manager', '@request_stack', '@views.executable', '@form_builder', '@media_library.opener_resolver']
   Drupal\media_library\MediaLibraryUiBuilder: '@media_library.ui_builder'
   media_library.route_subscriber:
-    class: Drupal\media_library\Routing\RouteSubscriber
+    class: Drupal\media_library\Routing\Route_Subscriber
   media_library.opener_resolver:
     class: Drupal\media_library\OpenerResolver
     tags:

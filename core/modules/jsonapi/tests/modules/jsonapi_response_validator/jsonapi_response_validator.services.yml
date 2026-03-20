@@ -1,7 +1,7 @@
 services:
   _defaults:
     autoconfigure: true
-  Drupal\jsonapi_response_validator\EventSubscriber\ResourceResponseValidator:
+  Drupal\jsonapi_response_validator\Event_Subscriber\Resource_Response_Validator:
     arguments: ['@logger.channel.jsonapi', '@module_handler', '%app.root%']
     tags:
       - { name: event_subscriber }

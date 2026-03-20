@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   node.route_subscriber:
-    class: Drupal\node\Routing\RouteSubscriber
+    class: Drupal\node\Routing\Route_Subscriber
   node.grant_storage:
     class: Drupal\node\NodeGrantDatabaseStorage
     autowire: true
@@ -13,31 +13,31 @@ services:
       - { name: backend_overridable }
   Drupal\node\NodeGrantDatabaseStorageInterface: '@node.grant_storage'
   access_check.node.preview:
-    class: Drupal\node\Access\NodePreviewAccessCheck
+    class: Drupal\node\Access\Node_Preview_Access_Check
     arguments: ['@entity_type.manager']
     tags:
       - { name: access_check, applies_to: _node_preview_access }
   node.admin_path.route_subscriber:
-    class: Drupal\node\EventSubscriber\NodeAdminRouteSubscriber
+    class: Drupal\node\Event_Subscriber\Node_Admin_Route_Subscriber
     arguments: ['@config.factory', '@router.builder']
   node_preview:
-    class: Drupal\node\ParamConverter\NodePreviewConverter
+    class: Drupal\node\Param_Converter\Node_Preview_Converter
     arguments: ['@tempstore.private']
     tags:
       - { name: paramconverter }
     lazy: true
   cache_context.user.node_grants:
-    class: Drupal\node\Cache\NodeAccessGrantsCacheContext
+    class: Drupal\node\Cache\Node_Access_Grants_Cache_Context
     arguments: ['@current_user', '@entity_type.manager']
     tags:
       - { name: cache.context }
   node.node_route_context:
-    class: Drupal\node\ContextProvider\NodeRouteContext
+    class: Drupal\node\Context_Provider\Node_Route_Context
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }
   node.view_all_nodes_memory_cache:
-    class: Drupal\Core\Cache\MemoryCache\MemoryCache
+    class: Drupal\Core\Cache\Memory_Cache\Memory_Cache
     autowire: true
   Drupal\node\NodeBulkUpdate:
     autowire: true

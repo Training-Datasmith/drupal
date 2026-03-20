@@ -2,7 +2,7 @@ ajax_forms_test.get_form:
   path: '/ajax_forms_test_get_form'
   defaults:
     _title: 'AJAX forms simple form test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestSimpleForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Simple_Form'
   requirements:
     _access: 'TRUE'
 
@@ -10,7 +10,7 @@ ajax_forms_test.commands_form:
   path: '/ajax_forms_test_ajax_commands_form'
   defaults:
     _title: 'AJAX forms AJAX commands test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestCommandsForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Commands_Form'
   requirements:
     _access: 'TRUE'
 
@@ -18,7 +18,7 @@ ajax_forms_test.validation_test:
   path: '/ajax_validation_test'
   defaults:
     _title: 'AJAX Validation Test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestValidationForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Validation_Form'
   requirements:
     _access: 'TRUE'
 
@@ -26,7 +26,7 @@ ajax_forms_test.lazy_load_form:
   path: '/ajax_forms_test_lazy_load_form'
   defaults:
     _title: 'AJAX forms lazy load test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestLazyLoadForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Lazy_Load_Form'
   requirements:
     _access: 'TRUE'
 
@@ -34,7 +34,7 @@ ajax_forms_test.image_button_form:
   path: '/ajax_forms_image_button_form'
   defaults:
     _title: 'AJAX forms image button test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestImageButtonForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Image_Button_Form'
   requirements:
     _access: 'TRUE'
 
@@ -42,7 +42,7 @@ ajax_forms_test.ajax_element_form:
   path: '/ajax_forms_test_ajax_element_form'
   defaults:
     _title: 'AJAX forms elements test'
-    _form: '\Drupal\ajax_forms_test\Form\AjaxFormsTestAjaxElementsForm'
+    _form: '\Drupal\ajax_forms_test\Form\Ajax_Forms_Test_Ajax_Elements_Form'
   requirements:
     _access: 'TRUE'
 
@@ -50,6 +50,6 @@ ajax_forms_test.dialog_form_link:
   path: '/ajax_forms_test_dialog_form_link'
   defaults:
     _title: 'Dialog form link test'
-    _controller: '\Drupal\ajax_forms_test\Controller\DialogFormLink::makeDialogFormLink'
+    _controller: '\Drupal\ajax_forms_test\Controller\Dialog_Form_Link::makeDialogFormLink'
   requirements:
     _access: 'TRUE'

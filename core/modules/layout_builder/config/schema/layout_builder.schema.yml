@@ -23,7 +23,7 @@ layout_builder.section:
       constraints:
         PluginExists:
           manager: plugin.manager.core.layout
-          interface: '\Drupal\Core\Layout\LayoutInterface'
+          interface: '\Drupal\Core\Layout\Layout_Interface'
     layout_settings:
       type: layout_plugin.settings.[%parent.layout_id]
       label: 'Layout settings'

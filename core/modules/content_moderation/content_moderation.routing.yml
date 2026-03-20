@@ -1,7 +1,7 @@
 content_moderation.admin_moderated_content:
   path: '/admin/content/moderated'
   defaults:
-    _controller: '\Drupal\content_moderation\Controller\ModeratedContentController::nodeListing'
+    _controller: '\Drupal\content_moderation\Controller\Moderated_Content_Controller::nodeListing'
     _title: 'Moderated content'
   requirements:
     _module_dependencies: 'node'
@@ -10,7 +10,7 @@ content_moderation.admin_moderated_content:
 content_moderation.workflow_type_edit_form:
   path: '/admin/config/workflow/workflows/manage/{workflow}/type/{entity_type_id}'
   defaults:
-    _form: '\Drupal\content_moderation\Form\ContentModerationConfigureEntityTypesForm'
-    _title_callback: '\Drupal\content_moderation\Form\ContentModerationConfigureEntityTypesForm::getTitle'
+    _form: '\Drupal\content_moderation\Form\Content_Moderation_Configure_Entity_Types_Form'
+    _title_callback: '\Drupal\content_moderation\Form\Content_Moderation_Configure_Entity_Types_Form::getTitle'
   requirements:
     _permission: 'administer workflows'

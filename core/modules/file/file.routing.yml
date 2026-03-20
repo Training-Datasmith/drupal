@@ -1,6 +1,6 @@
 file.ajax_progress:
   path: '/file/progress/{key}'
   defaults:
-    _controller: '\Drupal\file\Controller\FileWidgetAjaxController::progress'
+    _controller: '\Drupal\file\Controller\File_Widget_Ajax_Controller::progress'
   requirements:
     _permission: 'access content'

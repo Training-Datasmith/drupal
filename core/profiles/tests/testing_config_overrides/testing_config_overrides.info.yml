@@ -3,7 +3,7 @@ type: profile
 description: 'Minimal profile for running tests with config overrides in a profile.'
 version: VERSION
 # This profile is copied to a non-core location by
-# \Drupal\Tests\config\Functional\ConfigInstallProfileUnmetDependenciesTest.
+# \Drupal\Tests\config\Functional\Config_Install_Profile_Unmet_Dependencies_Test.
 core_version_requirement: '*'
 hidden: true
 install:

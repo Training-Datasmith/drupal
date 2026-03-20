@@ -1,5 +1,5 @@
 media.tasks:
-  deriver: 'Drupal\media\Plugin\Derivative\DynamicLocalTasks'
+  deriver: 'Drupal\media\Plugin\Derivative\Dynamic_Local_Tasks'
 
 entity.media_type.edit_form:
   title: Edit

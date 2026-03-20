@@ -1,5 +1,5 @@
 services:
   http_middleware.alter_content_middleware:
-    class: Drupal\http_middleware_test\StackMiddleware\AlterContentMiddleware
+    class: Drupal\http_middleware_test\Stack_Middleware\Alter_Content_Middleware
     tags:
       - { name: http_middleware, priority: 100 }

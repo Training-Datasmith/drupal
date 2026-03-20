@@ -33,7 +33,7 @@ entity.image_style.flush_form:
 image.effect_delete:
   path: '/admin/config/media/image-styles/manage/{image_style}/effects/{image_effect}/delete'
   defaults:
-    _form: '\Drupal\image\Form\ImageEffectDeleteForm'
+    _form: '\Drupal\image\Form\Image_Effect_Delete_Form'
     _title: 'Delete image effect'
   requirements:
     _permission: 'administer image styles'
@@ -49,7 +49,7 @@ entity.image_style.collection:
 image.style_private:
   path: '/system/files/styles/{image_style}/{scheme}'
   defaults:
-    _controller:  '\Drupal\image\Controller\ImageStyleDownloadController::deliver'
+    _controller:  '\Drupal\image\Controller\Image_Style_Download_Controller::deliver'
     required_derivative_scheme: 'private'
   requirements:
     _access: 'TRUE'
@@ -59,7 +59,7 @@ image.style_private:
 image.effect_add_form:
   path: '/admin/config/media/image-styles/manage/{image_style}/add/{image_effect}'
   defaults:
-    _form: '\Drupal\image\Form\ImageEffectAddForm'
+    _form: '\Drupal\image\Form\Image_Effect_Add_Form'
     _title: 'Add image effect'
   requirements:
     _permission: 'administer image styles'
@@ -67,10 +67,10 @@ image.effect_add_form:
 image.effect_edit_form:
   path: '/admin/config/media/image-styles/manage/{image_style}/effects/{image_effect}'
   defaults:
-    _form: '\Drupal\image\Form\ImageEffectEditForm'
+    _form: '\Drupal\image\Form\Image_Effect_Edit_Form'
     _title: 'Edit image effect'
   requirements:
     _permission: 'administer image styles'
 
 route_callbacks:
-  - '\Drupal\image\Routing\ImageStyleRoutes::routes'
+  - '\Drupal\image\Routing\Image_Style_Routes::routes'

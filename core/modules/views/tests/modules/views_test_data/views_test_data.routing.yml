@@ -1,14 +1,14 @@
 views_test_data.element:
   path: '/views_test_data_element_form'
   defaults:
-    _form: '\Drupal\views_test_data\Form\ViewsTestDataElementForm'
+    _form: '\Drupal\views_test_data\Form\Views_Test_Data_Element_Form'
   requirements:
     _access: 'TRUE'
 
 views_test_data.element_embed:
   path: '/views_test_data_element_embed_form'
   defaults:
-    _form: '\Drupal\views_test_data\Form\ViewsTestDataElementEmbedForm'
+    _form: '\Drupal\views_test_data\Form\Views_Test_Data_Element_Embed_Form'
   requirements:
     _access: 'TRUE'
 
@@ -16,7 +16,7 @@ views_test_data.form_multiple:
   path: '/views_test_form_multiple'
   defaults:
     _title: 'Test Views Form Multiple'
-    _controller: '\Drupal\views_test_data\Controller\ViewsTestFormMultipleController::testPage'
+    _controller: '\Drupal\views_test_data\Controller\Views_Test_Form_Multiple_Controller::testPage'
   requirements:
     _access: 'TRUE'
 
@@ -24,6 +24,6 @@ views_test_data.error_form_page:
   path: '/views_test_data_error_form_page'
   defaults:
     _title: 'Test Views Form Exposed Errors'
-    _controller: '\Drupal\views_test_data\Controller\ViewsTestDataController::errorFormPage'
+    _controller: '\Drupal\views_test_data\Controller\Views_Test_Data_Controller::errorFormPage'
   requirements:
     _access: 'TRUE'

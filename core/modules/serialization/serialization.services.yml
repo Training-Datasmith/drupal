@@ -8,30 +8,30 @@ services:
     class: Drupal\serialization\Serializer\Serializer
     arguments: [{  }, {  }]
   serializer.normalizer.config_entity:
-    class: Drupal\serialization\Normalizer\ConfigEntityNormalizer
+    class: Drupal\serialization\Normalizer\Config_Entity_Normalizer
     tags:
       - { name: normalizer }
     arguments: ['@entity_type.manager', '@entity_type.repository', '@entity_field.manager']
   serializer.normalizer.content_entity:
-    class: Drupal\serialization\Normalizer\ContentEntityNormalizer
+    class: Drupal\serialization\Normalizer\Content_Entity_Normalizer
     tags:
       - { name: normalizer }
     arguments: ['@entity_type.manager', '@entity_type.repository', '@entity_field.manager']
   serializer.normalizer.entity:
-    class: Drupal\serialization\Normalizer\EntityNormalizer
+    class: Drupal\serialization\Normalizer\Entity_Normalizer
     tags:
       - { name: normalizer }
     arguments: ['@entity_type.manager', '@entity_type.repository', '@entity_field.manager']
   serializer.normalizer.primitive_data:
-    class: Drupal\serialization\Normalizer\PrimitiveDataNormalizer
+    class: Drupal\serialization\Normalizer\Primitive_Data_Normalizer
     tags:
       - { name: normalizer, priority: 5 }
   serializer.normalizer.complex_data:
-    class: Drupal\serialization\Normalizer\ComplexDataNormalizer
+    class: Drupal\serialization\Normalizer\Complex_Data_Normalizer
     tags:
       - { name: normalizer }
   serializer.normalizer.entity_reference_field_item:
-    class: Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer
+    class: Drupal\serialization\Normalizer\Entity_Reference_Field_Item_Normalizer
     tags:
       # Set the priority lower than the hal entity reference field item
       # normalizer, so that we do not replace that for hal_json but higher than
@@ -40,77 +40,77 @@ services:
       - { name: normalizer, priority: 8 }
     arguments: ['@entity.repository']
   serialization.normalizer.field_item:
-    class: Drupal\serialization\Normalizer\FieldItemNormalizer
+    class: Drupal\serialization\Normalizer\Field_Item_Normalizer
     tags:
       # Priority must be lower than serializer.normalizer.field_item.hal and any
       # field type specific normalizer such as
       # serializer.normalizer.entity_reference_field_item.
       - { name: normalizer, priority: 6 }
   serialization.normalizer.field:
-    class: Drupal\serialization\Normalizer\FieldNormalizer
+    class: Drupal\serialization\Normalizer\Field_Normalizer
     tags:
       # Priority must be lower than serializer.normalizer.field.hal.
       - { name: normalizer, priority: 6 }
   serializer.normalizer.list:
-    class: Drupal\serialization\Normalizer\ListNormalizer
+    class: Drupal\serialization\Normalizer\List_Normalizer
     tags:
       # Priority must be higher than serialization.normalizer.field but less
       # than hal field normalizer.
       - { name: normalizer, priority: 9 }
   serializer.normalizer.timestamp_item:
-    class: Drupal\serialization\Normalizer\TimestampItemNormalizer
+    class: Drupal\serialization\Normalizer\Timestamp_Item_Normalizer
     tags:
       # Priority must be higher than serializer.normalizer.field_item and lower
       # than hal normalizers.
       - { name: normalizer, priority: 8 }
   serializer.normalizer.timestamp:
-    class: Drupal\serialization\Normalizer\TimestampNormalizer
+    class: Drupal\serialization\Normalizer\Timestamp_Normalizer
     arguments: ['@config.factory']
     tags:
       # Priority must be higher than serializer.normalizer.primitive_data.
       - { name: normalizer, priority: 20 }
   serializer.normalizer.datetimeiso8601:
-    class: \Drupal\serialization\Normalizer\DateTimeIso8601Normalizer
+    class: \Drupal\serialization\Normalizer\Date_Time_Iso8601Normalizer
     arguments: ['@config.factory']
     tags:
       # Priority must be higher than serializer.normalizer.primitive_data.
       - { name: normalizer, priority: 20 }
   serializer.normalizer.password_field_item:
-    class: Drupal\serialization\Normalizer\NullNormalizer
-    arguments: ['Drupal\Core\Field\Plugin\Field\FieldType\PasswordItem']
+    class: Drupal\serialization\Normalizer\Null_Normalizer
+    arguments: ['Drupal\Core\Field\Plugin\Field\Field_Type\Password_Item']
     tags:
       - { name: normalizer, priority: 20 }
   serializer.normalizer.safe_string:
-    class: Drupal\serialization\Normalizer\MarkupNormalizer
+    class: Drupal\serialization\Normalizer\Markup_Normalizer
     tags:
       - { name: normalizer }
   serializer.normalizer.typed_data:
-    class: Drupal\serialization\Normalizer\TypedDataNormalizer
+    class: Drupal\serialization\Normalizer\Typed_Data_Normalizer
     tags:
       - { name: normalizer }
   serializer.encoder.json:
-    class: Drupal\serialization\Encoder\JsonEncoder
+    class: Drupal\serialization\Encoder\Json_Encoder
     tags:
       - { name: encoder, format: json }
   serializer.encoder.xml:
-    class: Drupal\serialization\Encoder\XmlEncoder
+    class: Drupal\serialization\Encoder\Xml_Encoder
     tags:
       - { name: encoder, format: xml }
   serializer.entity_resolver:
-    class: Drupal\serialization\EntityResolver\ChainEntityResolver
-  Drupal\serialization\EntityResolver\ChainEntityResolverInterface: '@serializer.entity_resolver'
+    class: Drupal\serialization\Entity_Resolver\Chain_Entity_Resolver
+  Drupal\serialization\Entity_Resolver\Chain_Entity_Resolver_Interface: '@serializer.entity_resolver'
   serializer.entity_resolver.uuid:
-    class: Drupal\serialization\EntityResolver\UuidResolver
+    class: Drupal\serialization\Entity_Resolver\Uuid_Resolver
     tags:
       - { name: entity_resolver}
     arguments: ['@entity.repository']
   serialization.entity_resolver.target_id:
-    class: Drupal\serialization\EntityResolver\TargetIdResolver
+    class: Drupal\serialization\Entity_Resolver\Target_Id_Resolver
     tags:
       - { name: entity_resolver}
   serialization.exception.default:
-    class: Drupal\serialization\EventSubscriber\DefaultExceptionSubscriber
+    class: Drupal\serialization\Event_Subscriber\Default_Exception_Subscriber
     arguments: ['@serializer', '%serializer.formats%']
   serialization.user_route_alter_subscriber:
-    class: Drupal\serialization\EventSubscriber\UserRouteAlterSubscriber
+    class: Drupal\serialization\Event_Subscriber\User_Route_Alter_Subscriber
     arguments: ['%serializer.formats%']

@@ -5,7 +5,7 @@ services:
   _defaults:
     autoconfigure: true
   path_alias.path_processor:
-    class: Drupal\path_alias\PathProcessor\AliasPathProcessor
+    class: Drupal\path_alias\Path_Processor\Alias_Path_Processor
     tags:
       - { name: path_processor_inbound, priority: 100 }
       - { name: path_processor_outbound, priority: 300 }

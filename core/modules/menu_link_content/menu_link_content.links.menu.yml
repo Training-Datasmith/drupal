@@ -1,4 +1,4 @@
 menu_link_content:
-  class: \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent
-  form_class: \Drupal\menu_link_content\Form\MenuLinkContentForm
-  deriver: \Drupal\menu_link_content\Plugin\Deriver\MenuLinkContentDeriver
+  class: \Drupal\menu_link_content\Plugin\Menu\Menu_Link_Content
+  form_class: \Drupal\menu_link_content\Form\Menu_Link_Content_Form
+  deriver: \Drupal\menu_link_content\Plugin\Deriver\Menu_Link_Content_Deriver

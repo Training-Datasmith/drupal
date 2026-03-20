@@ -23,13 +23,13 @@ core.menu.static_menu_link_overrides:
             label: 'Parent'
             # Menu link plugins specify the empty string if there is no parent.
             # So this can be an empty string('') or valid menu link plugin ID.
-            # @see \Drupal\Core\Menu\MenuLinkInterface::getParent()
+            # @see \Drupal\Core\Menu\Menu_Link_Interface::getParent()
             constraints:
               AtLeastOneOf:
                 constraints:
                   - PluginExists:
                       manager: plugin.manager.menu.link
-                      interface: 'Drupal\Core\Menu\MenuLinkInterface'
+                      interface: 'Drupal\Core\Menu\Menu_Link_Interface'
                   - IdenticalTo:
                       value: ''
           weight:

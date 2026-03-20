@@ -1,2 +1,2 @@
 layout_builder_ui:
-  deriver: '\Drupal\layout_builder\Plugin\Derivative\LayoutBuilderLocalTaskDeriver'
+  deriver: '\Drupal\layout_builder\Plugin\Derivative\Layout_Builder_Local_Task_Deriver'

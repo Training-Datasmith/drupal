@@ -1,4 +1,4 @@
 services:
   _defaults:
     autoconfigure: true
-  Drupal\user_route_alter_test\Routing\RouteSubscriber: ~
+  Drupal\user_route_alter_test\Routing\Route_Subscriber: ~

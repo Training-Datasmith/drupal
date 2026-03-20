@@ -33,7 +33,7 @@ entity.shortcut_set.edit_form:
 shortcut.link_add_inline:
   path: '/admin/config/user-interface/shortcut/manage/{shortcut_set}/add-link-inline'
   defaults:
-    _controller: '\Drupal\shortcut\Controller\ShortcutSetController::addShortcutLinkInline'
+    _controller: '\Drupal\shortcut\Controller\Shortcut_Set_Controller::addShortcutLinkInline'
   requirements:
     _entity_access: 'shortcut_set.update'
     _csrf_token: 'TRUE'
@@ -49,7 +49,7 @@ entity.shortcut_set.customize_form:
 shortcut.link_add:
   path: '/admin/config/user-interface/shortcut/manage/{shortcut_set}/add-link'
   defaults:
-    _controller: '\Drupal\shortcut\Controller\ShortcutController::addForm'
+    _controller: '\Drupal\shortcut\Controller\Shortcut_Controller::addForm'
     _title: 'Add link'
   requirements:
     _entity_create_access: 'shortcut:{shortcut_set}'
@@ -75,7 +75,7 @@ entity.shortcut.edit_form:
 entity.shortcut.link_delete_inline:
   path: '/admin/config/user-interface/shortcut/link/{shortcut}/delete-inline'
   defaults:
-    _controller: '\Drupal\shortcut\Controller\ShortcutController::deleteShortcutLinkInline'
+    _controller: '\Drupal\shortcut\Controller\Shortcut_Controller::deleteShortcutLinkInline'
   requirements:
     _entity_access: 'shortcut.delete'
     _csrf_token: 'TRUE'
@@ -93,10 +93,10 @@ entity.shortcut.delete_form:
 shortcut.set_switch:
   path: '/user/{user}/shortcuts'
   defaults:
-    _form: '\Drupal\shortcut\Form\SwitchShortcutSet'
+    _form: '\Drupal\shortcut\Form\Switch_Shortcut_Set'
     _title: 'Shortcuts'
   requirements:
-    _custom_access: '\Drupal\shortcut\Form\SwitchShortcutSet::checkAccess'
+    _custom_access: '\Drupal\shortcut\Form\Switch_Shortcut_Set::checkAccess'
   options:
     _admin_route: TRUE
     user: \d+

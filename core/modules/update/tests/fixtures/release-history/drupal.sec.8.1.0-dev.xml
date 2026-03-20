@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by \Drupal\Tests\update\Kernel\DevReleaseTest. 8.0. and 8.1. are supported branches.
+This fixture is used by \Drupal\Tests\update\Kernel\Dev_Release_Test. 8.0. and 8.1. are supported branches.
 It contains following releases:
 - 8.1.0-dev: Installed Version
 - 8.1.1: Security Release

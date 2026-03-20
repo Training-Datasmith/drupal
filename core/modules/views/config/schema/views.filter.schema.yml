@@ -139,7 +139,7 @@ views.filter.entity_reference:
       constraints:
         PluginExists:
           manager: plugin.manager.entity_reference_selection
-          interface: 'Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface'
+          interface: 'Drupal\Core\Entity\Entity_Reference_Selection\Selection_Interface'
     widget:
       type: string
       label: 'Selection type'

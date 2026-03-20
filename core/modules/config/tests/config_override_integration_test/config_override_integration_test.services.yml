@@ -1,6 +1,6 @@
 services:
   cache_context.config_override_integration_test:
-    class: Drupal\config_override_integration_test\Cache\ConfigOverrideIntegrationTestCacheContext
+    class: Drupal\config_override_integration_test\Cache\Config_Override_Integration_Test_Cache_Context
     tags:
       - { name: cache.context }
   config_override_integration_test.config_override:

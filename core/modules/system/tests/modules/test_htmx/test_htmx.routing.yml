@@ -2,7 +2,7 @@ test_htmx.attachments.page:
   path: '/htmx-test-attachments/page'
   defaults:
     _title: 'Page'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::page'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::page'
   requirements:
     _permission: 'access content'
 
@@ -10,7 +10,7 @@ test_htmx.attachments.before:
   path: '/htmx-test-attachments/before'
   defaults:
     _title: 'Page'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::before'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::before'
   requirements:
     _permission: 'access content'
 
@@ -18,7 +18,7 @@ test_htmx.attachments.after:
   path: '/htmx-test-attachments/after'
   defaults:
     _title: 'Page'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::after'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::after'
   requirements:
     _permission: 'access content'
 
@@ -26,7 +26,7 @@ test_htmx.attachments.wrapper:
   path: '/htmx-test-attachments/wrapper'
   defaults:
     _title: 'Minimal Response'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::withWrapperFormat'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::withWrapperFormat'
   requirements:
     _permission: 'access content'
 
@@ -34,7 +34,7 @@ test_htmx.attachments.body:
   path: '/htmx-test-attachments/body'
   defaults:
     _title: 'Body testing'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::selectBody'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::selectBody'
   requirements:
     _permission: 'access content'
 
@@ -42,7 +42,7 @@ test_htmx.attachments.replace:
   path: '/htmx-test-attachments/replace'
   defaults:
     _title: 'Ajax Content'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::replace'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::replace'
   requirements:
     _permission: 'access content'
 
@@ -50,7 +50,7 @@ test_htmx.attachments.route_option:
   path: '/htmx-test-attachments/route-option'
   defaults:
     _title: 'Using _htmx_route option'
-    _controller: '\Drupal\test_htmx\Controller\HtmxTestAttachmentsController::replace'
+    _controller: '\Drupal\test_htmx\Controller\Htmx_Test_Attachments_Controller::replace'
   requirements:
     _permission: 'access content'
   options:
@@ -60,7 +60,7 @@ test_htmx.attachments.ajax:
   path: '/htmx-test-attachments/ajax'
   defaults:
     _title: 'Ajax'
-    _form: '\Drupal\test_htmx\Form\HtmxTestAjaxForm'
+    _form: '\Drupal\test_htmx\Form\Htmx_Test_Ajax_Form'
   requirements:
     _permission: 'access content'
 
@@ -68,7 +68,7 @@ test_htmx.form_builder_test:
   path: '/htmx-test-attachments/form-builder-test/{type}/{selected}'
   defaults:
     _title: 'Test dynamic HTMX form'
-    _form: '\Drupal\test_htmx\Form\HtmxTestForm'
+    _form: '\Drupal\test_htmx\Form\Htmx_Test_Form'
     type: NULL
     selected: NULL
   requirements:

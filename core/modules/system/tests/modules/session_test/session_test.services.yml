@@ -2,19 +2,19 @@ services:
   _defaults:
     autoconfigure: true
   session_test.subscriber:
-    class: Drupal\session_test\EventSubscriber\SessionTestSubscriber
+    class: Drupal\session_test\Event_Subscriber\Session_Test_Subscriber
   session_test.session_handler.test_proxy:
-    class: Drupal\session_test\Session\TestSessionHandlerProxy
+    class: Drupal\session_test\Session\Test_Session_Handler_Proxy
     tags:
       - { name: session_handler_proxy }
   session_test.session_handler.test_proxy2:
-    class: Drupal\session_test\Session\TestSessionHandlerProxy
+    class: Drupal\session_test\Session\Test_Session_Handler_Proxy
     arguments: ['test_argument']
     tags:
       - { name: session_handler_proxy, priority: 20 }
   session_test.session_handler_proxy_trace:
     class: ArrayObject
   session_test.session_bag:
-    class: Drupal\session_test\Session\TestSessionBag
+    class: Drupal\session_test\Session\Test_Session_Bag
     tags:
       - { name: session_bag }

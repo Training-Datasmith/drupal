@@ -1,7 +1,7 @@
 batch_test.redirect:
   path: '/batch-test/redirect'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testRedirect'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testRedirect'
     _title: 'Redirect'
   requirements:
     _access:  'TRUE'
@@ -9,7 +9,7 @@ batch_test.redirect:
 batch_test.large_percentage:
   path: '/batch-test/large-percentage'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testLargePercentage'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testLargePercentage'
     _title: 'Simple page with batch over 100% complete'
   requirements:
     _access:  'TRUE'
@@ -17,7 +17,7 @@ batch_test.large_percentage:
 batch_test.nested_programmatic:
   path: '/batch-test/nested-programmatic/{value}'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testNestedDrupalFormSubmit'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testNestedDrupalFormSubmit'
     _title: 'Nested programmatic'
     value: '1'
   requirements:
@@ -26,7 +26,7 @@ batch_test.nested_programmatic:
 batch_test.no_form:
   path: '/batch-test/no-form'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testNoForm'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testNoForm'
     _title: 'Simple page'
   requirements:
     _access: 'TRUE'
@@ -34,7 +34,7 @@ batch_test.no_form:
 batch_test.finish_redirect:
   path: '/batch-test/finish-redirect'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testFinishRedirect'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testFinishRedirect'
     _title: 'Simple page with finish redirect call'
   requirements:
     _access: 'TRUE'
@@ -42,7 +42,7 @@ batch_test.finish_redirect:
 batch_test.test_form:
   path: '/batch-test'
   defaults:
-    _form: '\Drupal\batch_test\Form\BatchTestSimpleForm'
+    _form: '\Drupal\batch_test\Form\Batch_Test_Simple_Form'
     _title: 'Batch test'
   requirements:
     _access: 'TRUE'
@@ -50,7 +50,7 @@ batch_test.test_form:
 batch_test.multistep:
   path: '/batch-test/multistep'
   defaults:
-    _form: '\Drupal\batch_test\Form\BatchTestMultiStepForm'
+    _form: '\Drupal\batch_test\Form\Batch_Test_Multi_Step_Form'
     _title: 'Multistep'
   requirements:
     _access: 'TRUE'
@@ -58,7 +58,7 @@ batch_test.multistep:
 batch_test.chained:
   path: '/batch-test/chained'
   defaults:
-    _form: '\Drupal\batch_test\Form\BatchTestChainedForm'
+    _form: '\Drupal\batch_test\Form\Batch_Test_Chained_Form'
     _title: 'Chained'
   requirements:
     _access: 'TRUE'
@@ -66,7 +66,7 @@ batch_test.chained:
 batch_test.programmatic:
   path: '/batch-test/programmatic/{value}'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testProgrammatic'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testProgrammatic'
     _title: 'Programmatic'
     value: '1'
   requirements:
@@ -75,13 +75,13 @@ batch_test.programmatic:
 batch_test.test_theme:
   path: '/admin/batch-test/test-theme'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testThemeBatch'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testThemeBatch'
   requirements:
     _access: 'TRUE'
 
 batch_test.test_title:
   path: '/batch-test/test-title'
   defaults:
-    _controller: '\Drupal\batch_test\Controller\BatchTestController::testTitleBatch'
+    _controller: '\Drupal\batch_test\Controller\Batch_Test_Controller::testTitleBatch'
   requirements:
     _access: 'TRUE'

@@ -5,7 +5,7 @@ version: VERSION
 base theme: starterkit_theme
 libraries-override:
   # drupalSettings libraries override. Should throw a
-  # \Drupal\Core\Asset\Exception\InvalidLibrariesOverrideSpecificationException.
+  # \Drupal\Core\Asset\Exception\Invalid_Libraries_Override_Specification_Exception.
   core/drupal.ajax:
     drupalSettings:
       ajaxPageState: { }

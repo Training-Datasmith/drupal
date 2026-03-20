@@ -96,7 +96,7 @@ language.entity.*:
       constraints:
         NotBlank: []
         Regex:
-          # @see \Drupal\Core\Language\LanguageInterface::VALID_LANGCODE_REGEX
+          # @see \Drupal\Core\Language\Language_Interface::VALID_LANGCODE_REGEX
           pattern: '/[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*/'
           message: 'This is not a valid language code.'
     label:
@@ -106,8 +106,8 @@ language.entity.*:
       type: string
       label: 'Direction'
       constraints:
-        # @see \Drupal\Core\Language\LanguageInterface::DIRECTION_LTR and
-        # \Drupal\Core\Language\LanguageInterface::DIRECTION_RTL
+        # @see \Drupal\Core\Language\Language_Interface::DIRECTION_LTR and
+        # \Drupal\Core\Language\Language_Interface::DIRECTION_RTL
         Choice:
           choices: [ 'ltr', 'rtl' ]
     weight:
@@ -134,7 +134,7 @@ language.content_settings.*.*:
       constraints:
         PluginExists:
           manager: entity_type.manager
-          interface: Drupal\Core\Entity\ContentEntityInterface
+          interface: Drupal\Core\Entity\Content_Entity_Interface
     target_bundle:
       type:  string
       label: 'Bundle'
@@ -147,7 +147,7 @@ language.content_settings.*.*:
       constraints:
         Choice:
           # The "default language" has a different list of allowed values.
-          callback: '\Drupal\language\Entity\ContentLanguageSettings::getAllValidDefaultLangcodes'
+          callback: '\Drupal\language\Entity\Content_Language_Settings::getAllValidDefaultLangcodes'
     language_alterable:
       type: boolean
       label: 'Allow to alter the language'

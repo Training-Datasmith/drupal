@@ -188,7 +188,7 @@ menu_test.child:
 
 menu_test.unsafe:
   route_name: menu_test.menu_name_test
-  deriver: '\Drupal\menu_test\Plugin\Derivative\MenuLinkTestWithUnsafeTitle'
+  deriver: '\Drupal\menu_test\Plugin\Derivative\Menu_Link_Test_With_Unsafe_Title'
 
 menu_test.access_check:
   title: 'Test custom route access check'

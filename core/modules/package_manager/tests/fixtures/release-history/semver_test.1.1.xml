@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by \Drupal\Tests\package_manager\Kernel\SupportedReleaseValidatorTest.
+This fixture is used by \Drupal\Tests\package_manager\Kernel\Supported_Release_Validator_Test.
 
 Contains metadata about the following (fake) releases of semver_test module, all of which are secure, in order:
 - 8.2.0, which is in an unsupported branch

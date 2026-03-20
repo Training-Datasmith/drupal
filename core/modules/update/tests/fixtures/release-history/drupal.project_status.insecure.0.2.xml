@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-This fixture is used by Drupal\Tests\update\Kernel\UpdateCalculateProjectDataTest. This fixture has project
+This fixture is used by Drupal\Tests\update\Kernel\Update_Calculate_Project_Data_Test. This fixture has project
 that has been labeled insecure by the Drupal security team.
 
 It contains 2 releases:

@@ -1,6 +1,6 @@
 # Themes are not supposed to provide/install this kind of config normally.
 # This exists for testing purposes only.
-# @see \Drupal\KernelTests\Core\Theme\ThemeInstallerTest
+# @see \Drupal\Kernel_Tests\Core\Theme\Theme_Installer_Test
 langcode: en
 status: true
 dependencies:

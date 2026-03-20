@@ -8,7 +8,7 @@ media_library.ui:
 media_library.settings:
   path: '/admin/config/media/media-library'
   defaults:
-    _form: '\Drupal\media_library\Form\SettingsForm'
+    _form: '\Drupal\media_library\Form\Settings_Form'
     _title: 'Media Library settings'
   requirements:
     _permission: 'administer media'
