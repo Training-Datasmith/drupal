@@ -174,9 +174,24 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
      */
     protected static $fields_to_skip_from_translation_changes_check = [];
     /**
-     * {@inheritdoc}
+     * Constructs a ContentEntityBase object.
+     *
+     * @param array $values
+     *   An array of field values to initialize the entity with, keyed by field
+     *   machine name. Each value may be a scalar or a langcode-keyed array of
+     *   values for translatable fields.
+     * @param string $entity_type
+     *   The machine name of the entity type (e.g. 'node', 'user').
+     * @param string|bool $bundle
+     *   (optional) The bundle machine name (e.g. 'article'). Defaults to FALSE,
+     *   in which case the entity type ID is used as the bundle.
+     * @param string[] $translations
+     *   (optional) An array of language codes representing the available
+     *   translations of this entity beyond the default language.
+     *
+     * @since 8.0.0
      */
-    public function __construct(array $values, $entity_type, $bundle = false, $translations = [])
+    public function __construct(array $values, string $entity_type, string|bool $bundle = false, array $translations = [])
     {
         $this->entity_type_id = $entity_type;
         $this->entity_keys['bundle'] = $bundle ?: $this->entity_type_id;
@@ -270,9 +285,22 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
         $this->new_revision = true;
     }
     /**
-     * {@inheritdoc}
+     * Marks the entity to be saved as a new revision on the next save().
+     *
+     * When set to TRUE, a new revision will be created regardless of whether
+     * any field values have changed. When set to FALSE after a previous call
+     * to setNewRevision(TRUE), the loaded revision ID is restored so that
+     * saving will update the existing revision.
+     *
+     * @param bool $value
+     *   TRUE to create a new revision on next save, FALSE to update in place.
+     *
+     * @throws \LogicException
+     *   If the entity type does not support revisions.
+     *
+     * @since 8.0.0
      */
-    public function set_new_revision($value = true): void
+    public function set_new_revision(bool $value = true): void
     {
         if (!$this->get_entity_type()->has_key('revision')) {
             throw new \LogicException("Entity type {$this->get_entity_type_id()} does not support revisions.");
@@ -422,9 +450,22 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
         return $this->get_entity_key('revision');
     }
     /**
-     * {@inheritdoc}
+     * Checks whether this entity object can be translated.
+     *
+     * Returns TRUE only when all three conditions are met:
+     *  1. The entity's bundle is configured as translatable.
+     *  2. The entity's default language is not a locked language (e.g. 'und').
+     *  3. The site has more than one language installed.
+     *
+     * Note: this checks *runtime* translatability for this entity instance. Use
+     * EntityTypeInterface::isTranslatable() to check the type-level setting.
+     *
+     * @return bool
+     *   TRUE if this entity can be translated in the current site configuration.
+     *
+     * @since 8.0.0
      */
-    public function is_translatable()
+    public function is_translatable(): bool
     {
         // Check the bundle is translatable, the entity has a language defined, and
         // the site has more than one language.
@@ -472,25 +513,54 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
         $this->enforce_revision_translation_affected = [];
     }
     /**
-     * {@inheritdoc}
+     * Validates all field values against entity constraint definitions.
+     *
+     * Delegates to the TypedData validation system. All field constraints,
+     * including required fields, allowed values, and entity-level constraints,
+     * are checked. Sets the internal $validated flag to TRUE so that
+     * pre_save() does not reject the entity if validation is required.
+     *
+     * @return \Drupal\Core\Entity\EntityConstraintViolationListInterface
+     *   A list of constraint violations. An empty list means the entity is valid.
+     *
+     * @see \Drupal\Core\Entity\ContentEntityBase::setValidationRequired()
+     *
+     * @complexity O(f) where f is the number of field items across all fields.
+     * @since 8.0.0
      */
-    public function validate()
+    public function validate(): \Drupal\Core\Entity\Entity_Constraint_Violation_List_Interface
     {
         $this->validated = true;
         $violations = $this->get_typed_data()->validate();
         return new Entity_Constraint_Violation_List($this, $violations);
     }
     /**
-     * {@inheritdoc}
+     * Returns whether entity validation is required before saving.
+     *
+     * @return bool
+     *   TRUE if calling validate() is required before save(), FALSE otherwise.
+     *
+     * @since 8.7.0
      */
-    public function is_validation_required()
+    public function is_validation_required(): bool
     {
         return (bool) $this->validation_required;
     }
     /**
-     * {@inheritdoc}
+     * Sets whether entity validation must be performed before saving.
+     *
+     * When set to TRUE, calling pre_save() without a prior validate() call
+     * will throw a LogicException.
+     *
+     * @param bool $required
+     *   TRUE to require validation before save, FALSE to allow saving without
+     *   explicit validation.
+     *
+     * @return $this
+     *
+     * @since 8.7.0
      */
-    public function set_validation_required($required)
+    public function set_validation_required(bool $required): static
     {
         $this->validation_required = $required;
         return $this;
@@ -554,16 +624,40 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
         return $this->get_entity_key('uuid');
     }
     /**
-     * {@inheritdoc}
+     * Checks whether the entity has a field with the given name.
+     *
+     * @param string $field_name
+     *   The machine name of the field to check (e.g. 'title', 'body').
+     *
+     * @return bool
+     *   TRUE if a field definition exists for this field name on this entity
+     *   type and bundle, FALSE otherwise.
+     *
+     * @since 8.0.0
      */
-    public function has_field($field_name)
+    public function has_field(string $field_name): bool
     {
         return (bool) $this->get_field_definition($field_name);
     }
     /**
-     * {@inheritdoc}
+     * Gets the value of a named field, respecting the entity's active language.
+     *
+     * Returns the field item list for the currently active translation. For
+     * non-translatable fields this is always the default-language value.
+     *
+     * @param string $field_name
+     *   The machine name of the field to retrieve (e.g. 'title', 'uid').
+     *
+     * @return \Drupal\Core\Field\FieldItemListInterface
+     *   The field item list object for the active translation.
+     *
+     * @throws \InvalidArgumentException
+     *   If the field name does not exist on this entity type/bundle, or if
+     *   the current translation has been marked as removed.
+     *
+     * @since 8.0.0
      */
-    public function get($field_name)
+    public function get(string $field_name): \Drupal\Core\Field\Field_Item_List_Interface
     {
         if (!isset($this->fields[$field_name][$this->active_langcode])) {
             return $this->get_translated_field($field_name, $this->active_langcode);
@@ -571,12 +665,29 @@ abstract class Content_Entity_Base extends Entity_Base implements \IteratorAggre
         return $this->fields[$field_name][$this->active_langcode];
     }
     /**
-     * Gets a translated field.
+     * Gets a translated field item list for a given name and language code.
      *
-     * @return \Drupal\Core\Field\FieldItemListInterface<\Drupal\Core\Field\FieldItemInterface>
-     *   The translated field.
+     * Instantiates the field item list object on first access and caches it in
+     * $this->fields for subsequent calls. Non-translatable fields are always
+     * stored under LanguageInterface::LANGCODE_DEFAULT and aliases are created
+     * for all other language codes.
+     *
+     * @param string $name
+     *   The machine name of the field (e.g. 'title', 'body').
+     * @param string $langcode
+     *   The language code to retrieve the field for, or
+     *   LanguageInterface::LANGCODE_DEFAULT for the entity's default language.
+     *
+     * @return \Drupal\Core\Field\FieldItemListInterface
+     *   The field item list for the requested language.
+     *
+     * @throws \InvalidArgumentException
+     *   If the translation is marked as removed, or the field name is unknown.
+     *
+     * @complexity O(1) after initial instantiation; O(m) on first access where
+     *   m is the number of field items to populate.
      */
-    protected function get_translated_field($name, $langcode)
+    protected function get_translated_field(string $name, string $langcode)
     {
         if ($this->translations[$this->active_langcode]['status'] == static::TRANSLATION_REMOVED) {
             throw new \InvalidArgumentException("The entity object refers to a removed translation ({$this->active_langcode}) and cannot be manipulated.");

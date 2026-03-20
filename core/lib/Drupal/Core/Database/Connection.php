@@ -250,7 +250,39 @@ abstract class Connection
      * @return array
      *   An array of default query options.
      */
-    protected function default_options()
+    /**
+     * Returns the default query options for any given query.
+     *
+     * A given query can be customized with a number of option flags in an
+     * associative array:
+     * - fetch: This element controls how rows from a result set will be
+     *   returned. Legal values include one of the enumeration cases of FetchAs or
+     *   a string representing the name of a class. If a string is specified, each
+     *   record will be fetched into a new object of that class. The behavior of
+     *   all other values is described in the FetchAs enum.
+     * - allow_delimiter_in_query: By default, queries which have the ; delimiter
+     *   any place in them will cause an exception. This reduces the chance of SQL
+     *   injection attacks that terminate the original query and add one or more
+     *   additional queries (such as inserting new user accounts). In rare cases,
+     *   such as creating an SQL function, a ; is needed and can be allowed by
+     *   changing this option to TRUE.
+     * - allow_square_brackets: By default, queries which contain square brackets
+     *   will have them replaced with the identifier quote character for the
+     *   database type. In rare cases, such as creating an SQL function, []
+     *   characters might be needed and can be allowed by changing this option to
+     *   TRUE.
+     * - pdo: By default, queries will execute with the client connection options
+     *   set on the connection. In particular cases, it could be necessary to
+     *   override the driver options on the statement level. In such case, pass
+     *   the required setting as an array here, and they will be passed to the
+     *   prepared statement.
+     *
+     * @return array{fetch: \Drupal\Core\Database\Statement\Fetch_As, allow_delimiter_in_query: bool, allow_square_brackets: bool, pdo: array}
+     *   An array of default query options.
+     *
+     * @since 8.0.0
+     */
+    protected function default_options(): array
     {
         return ['fetch' => Fetch_As::Object, 'allow_delimiter_in_query' => false, 'allow_square_brackets' => false, 'pdo' => []];
     }
@@ -266,7 +298,7 @@ abstract class Connection
      *   An array of the connection information. The exact list of
      *   properties is driver-dependent.
      */
-    public function get_connection_options()
+    public function get_connection_options(): array
     {
         return $this->connection_options;
     }
@@ -328,7 +360,7 @@ abstract class Connection
      * @return string
      *   The properly-prefixed string.
      */
-    public function prefix_tables($sql)
+    public function prefix_tables(string $sql): string
     {
         return str_replace(['{', '}'], $this->table_placeholder_replacements, $sql);
     }
@@ -352,7 +384,7 @@ abstract class Connection
      * @internal
      *   This method should only be called by database API code.
      */
-    public function quote_identifiers($sql)
+    public function quote_identifiers(string $sql): string
     {
         return str_replace(['[', ']'], $this->identifier_quotes, $sql);
     }
@@ -365,7 +397,7 @@ abstract class Connection
      * @return string
      *   The fully qualified table name.
      */
-    public function get_full_qualified_table_name(string $table)
+    public function get_full_qualified_table_name(string $table): string
     {
         $options = $this->get_connection_options();
         $prefix = $this->get_prefix();
@@ -476,7 +508,7 @@ abstract class Connection
      * @return string|null
      *   The target string of this connection, or NULL if no target is set.
      */
-    public function get_target()
+    public function get_target(): ?string
     {
         return $this->target;
     }
@@ -498,7 +530,7 @@ abstract class Connection
      * @return string|null
      *   The key of this connection, or NULL if no key is set.
      */
-    public function get_key()
+    public function get_key(): ?string
     {
         return $this->key;
     }
@@ -519,7 +551,7 @@ abstract class Connection
      *   The current logging object for this connection. If there isn't one,
      *   NULL is returned.
      */
-    public function get_logger()
+    public function get_logger(): ?Log
     {
         return $this->logger;
     }
@@ -534,7 +566,7 @@ abstract class Connection
      * @return string
      *   A sanitized comment string.
      */
-    public function make_comment($comments)
+    public function make_comment(array $comments): string
     {
         if (empty($comments)) {
             return '';
@@ -575,7 +607,7 @@ abstract class Connection
      * @return string
      *   A sanitized version of the query comment string.
      */
-    protected function filter_comment($comment = '')
+    protected function filter_comment(string $comment = ''): string
     {
         // Change semicolons to period to avoid triggering multi-statement check.
         return strtr($comment, ['*' => ' * ', ';' => '.']);
@@ -606,8 +638,13 @@ abstract class Connection
      * @throws \InvalidArgumentException
      *
      * @see \Drupal\Core\Database\Connection::defaultOptions()
+     *
+     * @complexity O(n) where n is the size of the result set. Avoid calling
+     *   in tight loops; prefer query builders with limits/paging.
+     * @performance Caches prepared statements per query string. Repeated
+     *   calls with the same SQL but different args are efficient.
      */
-    public function query($query, array $args = [], array $options = [])
+    public function query(string $query, array $args = [], array $options = []): ?Statement_Interface
     {
         assert(is_string($query), 'The \'$query\' argument to ' . __METHOD__ . '() must be a string');
         assert(!isset($options['return']), 'Passing "return" option to query() has no effect. See https://www.drupal.org/node/3185520');
@@ -736,7 +773,7 @@ abstract class Connection
      *
      * @see \Drupal\Core\Database\Query\Select
      */
-    public function select($table, $alias = null, array $options = [])
+    public function select(string|\Drupal\Core\Database\Query\Select_Interface $table, ?string $alias = null, array $options = []): Select
     {
         assert(is_string($alias) || $alias === null, 'The \'$alias\' argument to ' . __METHOD__ . '() must be a string or NULL');
         return new Select($this, $table, $alias, $options);
@@ -757,7 +794,7 @@ abstract class Connection
      * @see \Drupal\Core\Database\Query\Insert
      * @see \Drupal\Core\Database\Connection::defaultOptions()
      */
-    public function insert($table, array $options = [])
+    public function insert(string $table, array $options = []): Insert
     {
         return new Insert($this, $table, $options);
     }
@@ -804,7 +841,7 @@ abstract class Connection
      *
      * @see \Drupal\Core\Database\Query\Merge
      */
-    public function merge($table, array $options = [])
+    public function merge(string $table, array $options = []): Merge
     {
         return new Merge($this, $table, $options);
     }
@@ -838,7 +875,7 @@ abstract class Connection
      * @see \Drupal\Core\Database\Query\Update
      * @see \Drupal\Core\Database\Connection::defaultOptions()
      */
-    public function update($table, array $options = [])
+    public function update(string $table, array $options = []): Update
     {
         return new Update($this, $table, $options);
     }
@@ -858,7 +895,7 @@ abstract class Connection
      * @see \Drupal\Core\Database\Query\Delete
      * @see \Drupal\Core\Database\Connection::defaultOptions()
      */
-    public function delete($table, array $options = [])
+    public function delete(string $table, array $options = []): Delete
     {
         return new Delete($this, $table, $options);
     }
@@ -875,7 +912,7 @@ abstract class Connection
      *
      * @see \Drupal\Core\Database\Query\Truncate
      */
-    public function truncate($table, array $options = [])
+    public function truncate(string $table, array $options = []): Truncate
     {
         return new Truncate($this, $table, $options);
     }
@@ -899,7 +936,7 @@ abstract class Connection
      *
      * @see \Drupal\Core\Database\Query\Condition
      */
-    public function condition($conjunction)
+    public function condition(string $conjunction): Condition
     {
         // Creating an instance of the class Drupal\Core\Database\Query\Condition
         // should only be created from the database layer. This will allow database
@@ -919,7 +956,7 @@ abstract class Connection
      * @return string
      *   The sanitized database name.
      */
-    public function escape_database($database)
+    public function escape_database(string $database): string
     {
         $database = preg_replace('/[^A-Za-z0-9_]+/', '', $database);
         [$start_quote, $end_quote] = $this->identifier_quotes;
@@ -942,7 +979,7 @@ abstract class Connection
      * @see \Drupal\Core\Database\Connection::prefixTables()
      * @see \Drupal\Core\Database\Connection::setPrefix()
      */
-    public function escape_table($table)
+    public function escape_table(string $table): string
     {
         if (!isset($this->escaped_tables[$table])) {
             $this->escaped_tables[$table] = preg_replace('/[^A-Za-z0-9_.]+/', '', $table);
@@ -962,7 +999,7 @@ abstract class Connection
      * @return string
      *   The sanitized field name.
      */
-    public function escape_field($field)
+    public function escape_field(string $field): string
     {
         if (!isset($this->escaped_fields[$field])) {
             $escaped = preg_replace('/[^A-Za-z0-9_.]+/', '', $field);
@@ -987,7 +1024,7 @@ abstract class Connection
      * @return string
      *   The sanitized alias name.
      */
-    public function escape_alias($field)
+    public function escape_alias(string $field): string
     {
         if (!isset($this->escaped_aliases[$field])) {
             [$start_quote, $end_quote] = $this->identifier_quotes;
@@ -1020,7 +1057,7 @@ abstract class Connection
      * @return string
      *   The escaped string.
      */
-    public function escape_like($string)
+    public function escape_like(string $string): string
     {
         return addcslashes($string, '\%_');
     }
@@ -1064,7 +1101,7 @@ abstract class Connection
      * @return bool
      *   TRUE if we're currently in a transaction, FALSE otherwise.
      */
-    public function in_transaction()
+    public function in_transaction(): bool
     {
         return $this->transaction_manager()->in_transaction();
     }
@@ -1079,7 +1116,7 @@ abstract class Connection
      *
      * @see \Drupal\Core\Database\Transaction
      */
-    public function start_transaction(string $name = '')
+    public function start_transaction(string $name = ''): \Drupal\Core\Database\Transaction\Transaction_Interface
     {
         return $this->transaction_manager()->push($name);
     }

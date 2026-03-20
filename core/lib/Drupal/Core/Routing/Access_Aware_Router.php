@@ -68,10 +68,27 @@ class AccessAwareRouter implements AccessAwareRouterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Matches the given request to a route and performs an access check.
+     *
+     * Delegates route matching to the decorated Symfony router, then runs
+     * Drupal's access manager against the resolved route and its parameters.
+     * If access is denied, an HTTP 403 exception is thrown. If the response
+     * is cacheable (GET/HEAD), a CacheableAccessDeniedHttpException is thrown
+     * instead so that the Page Cache can cache the 403 response.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The incoming HTTP request to match and access-check.
+     *
+     * @return array<string, mixed>
+     *   The route parameters after access checking. The array includes all
+     *   request attributes set by both the router and the access check.
      *
      * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-     *   Thrown when access checking failed.
+     *   Thrown when the current user does not have access to the matched route.
+     * @throws \Symfony\Component\Routing\Exception\ResourceNotFoundException
+     *   Thrown when no route matches the request.
+     *
+     * @since 8.0.0
      */
     public function matchRequest(Request $request): array
     {
@@ -84,10 +101,22 @@ class AccessAwareRouter implements AccessAwareRouterInterface
     }
 
     /**
-     * Apply access check service to the route and parameters in the request.
+     * Runs the access manager against the route and parameters in the request.
+     *
+     * The access result is stored as a request attribute under the key
+     * AccessAwareRouterInterface::ACCESS_RESULT. A previously stored result
+     * (e.g. from a master request) will not be overwritten by a subrequest.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
-     *   The request to access check.
+     *   The request whose route and parameters will be access-checked. The
+     *   ACCESS_RESULT attribute will be set on this request.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+     *   Thrown if the access result is not allowed.
+     * @throws \Drupal\Core\Http\Exception\CacheableAccessDeniedHttpException
+     *   Thrown instead for cacheable GET/HEAD requests that are denied.
+     *
+     * @since 8.0.0
      */
     protected function checkAccess(Request $request)
     {
@@ -116,7 +145,23 @@ class AccessAwareRouter implements AccessAwareRouterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Generates a URL for a named route with the given parameters.
+     *
+     * Delegates directly to the decorated Symfony router. No access check is
+     * performed during URL generation — generation is purely structural.
+     *
+     * @param string $name
+     *   The route name (e.g. 'entity.node.canonical').
+     * @param array<string, mixed> $parameters
+     *   An array of route parameters to substitute into the route pattern.
+     * @param int $referenceType
+     *   One of UrlGeneratorInterface::ABSOLUTE_URL, ABSOLUTE_PATH,
+     *   RELATIVE_PATH, or NETWORK_PATH. Defaults to ABSOLUTE_PATH.
+     *
+     * @return string
+     *   The generated URL string.
+     *
+     * @since 8.0.0
      */
     public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH): string
     {
@@ -124,10 +169,24 @@ class AccessAwareRouter implements AccessAwareRouterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Matches a raw path string to a route and performs an access check.
+     *
+     * Converts the path string to a synthetic Request object and delegates to
+     * matchRequest(). Prefer matchRequest() when a real Request is available.
+     *
+     * @param string $pathinfo
+     *   The URL path to match, e.g. '/node/1'.
+     *
+     * @return array<string, mixed>
+     *   The matched route parameters after access checking.
      *
      * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-     *   Thrown when access checking failed.
+     *   Thrown when the current user does not have access to the matched route.
+     * @throws \Symfony\Component\Routing\Exception\ResourceNotFoundException
+     *   Thrown when the path does not match any known route, including when
+     *   the raw path causes a BadRequestException (e.g. malformed UTF-8).
+     *
+     * @since 8.0.0
      */
     public function match($pathinfo): array
     {

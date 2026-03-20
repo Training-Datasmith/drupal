@@ -48,13 +48,29 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
     protected $indexes = [];
 
     /**
-     * Creates a new field definition.
+     * Creates a new field definition for the given field type.
+     *
+     * Instantiates the definition and populates it with default storage and
+     * field settings from the field type plugin manager. The resulting object
+     * can be further configured via fluent setter methods and then registered
+     * on an entity type via hook_entity_base_field_info().
+     *
+     * Example:
+     * @code
+     * $fields['status'] = BaseFieldDefinition::create('boolean')
+     *   ->setLabel(t('Published'))
+     *   ->setDefaultValue(TRUE)
+     *   ->setRevisionable(TRUE);
+     * @endcode
      *
      * @param string $type
-     *   The type of the field.
+     *   The plugin ID of the field type (e.g. 'string', 'boolean', 'entity_reference').
+     *   Must be a registered field_type plugin.
      *
      * @return static
-     *   A new field definition object.
+     *   A new, empty field definition of the given type with default settings applied.
+     *
+     * @since 8.0.0
      */
     public static function create($type): static
     {
@@ -80,10 +96,15 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
      *
      * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
      *   The field storage definition to base the new field definition upon.
+     *   All copyable properties (type, cardinality, constraints, label, etc.)
+     *   are transferred to the new BaseFieldDefinition.
      *
-     * @return $this
+     * @return static
+     *   A new BaseFieldDefinition instance populated from the storage definition.
+     *
+     * @since 8.0.0
      */
-    public static function createFromFieldStorageDefinition(FieldStorageDefinitionInterface $definition)
+    public static function createFromFieldStorageDefinition(FieldStorageDefinitionInterface $definition): static
     {
         return static::create($definition->getType())
           ->setCardinality($definition->getCardinality())
@@ -110,9 +131,18 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
     }
 
     /**
-     * {@inheritdoc}
+     * Returns the machine name of this field.
+     *
+     * The field name is the key used to access field values on entity objects
+     * (e.g. $entity->field_name). For base fields it is set by setName(); for
+     * configurable fields it is set from the field storage configuration.
+     *
+     * @return string
+     *   The field machine name (e.g. 'title', 'body', 'field_tags').
+     *
+     * @since 8.0.0
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->definition['field_name'];
     }
@@ -133,9 +163,14 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
     }
 
     /**
-     * {@inheritdoc}
+     * Returns the field type plugin ID for this field.
+     *
+     * @return string
+     *   The field type plugin ID (e.g. 'string', 'boolean', 'entity_reference').
+     *
+     * @since 8.0.0
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
