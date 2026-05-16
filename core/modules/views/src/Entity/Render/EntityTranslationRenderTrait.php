@@ -25,7 +25,7 @@ trait EntityTranslationRenderTrait {
    * @return \Drupal\views\Entity\Render\EntityTranslationRendererBase
    *   The configured renderer.
    */
-  protected function getEntityTranslationRenderer(): \Drupal\views\Entity\Render\ConfigurableLanguageRenderer|\\Drupal\views\Entity\Render\TranslationLanguageRenderer|\\Drupal\views\Entity\Render\DefaultLanguageRenderer {
+  protected function getEntityTranslationRenderer(): \Drupal\views\Entity\Render\ConfigurableLanguageRenderer|\Drupal\views\Entity\Render\TranslationLanguageRenderer|\Drupal\views\Entity\Render\DefaultLanguageRenderer {
     if (!isset($this->entityTranslationRenderer)) {
       $view = $this->getView();
       $rendering_language = $view->display_handler->getOption('rendering_language');
