@@ -37,7 +37,7 @@ class AdminPathConfigEntityConverter extends EntityConverter
      * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
      *   The entity repository.
      */
-    public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Routing\AdminContext $adminContext, \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository = null)
+    public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Routing\AdminContext $adminContext, ?\Drupal\Core\Entity\EntityRepositoryInterface $entity_repository = null)
     {
         parent::__construct($entity_type_manager, $entity_repository);
     }
