@@ -241,8 +241,6 @@ abstract class FilterFormatFormBase extends EntityForm
                 user_role_change_permissions($rid, [$permission => $enabled]);
             }
         }
-
-        return $this->entity;
     }
 
     /**

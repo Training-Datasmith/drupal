@@ -36,7 +36,6 @@ class FilterFormatEditForm extends FilterFormatFormBase
     {
         parent::submitForm($form, $form_state);
         $this->messenger()->addStatus($this->t('The text format %format has been updated.', ['%format' => $this->entity->label()]));
-        return $this->entity;
     }
 
 }

@@ -155,7 +155,6 @@ abstract class SearchPageFormBase extends EntityForm
         if ($this->plugin instanceof PluginFormInterface) {
             $this->plugin->submitConfigurationForm($form, $form_state);
         }
-        return $this->entity;
     }
 
     /**
