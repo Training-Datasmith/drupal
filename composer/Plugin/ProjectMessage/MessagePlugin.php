@@ -51,14 +51,14 @@ class MessagePlugin implements PluginInterface, EventSubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public function deactivate(Composer $composer, IOInterface $io)
+    public function deactivate(Composer $composer, IOInterface $io): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function uninstall(Composer $composer, IOInterface $io)
+    public function uninstall(Composer $composer, IOInterface $io): void
     {
     }
 
