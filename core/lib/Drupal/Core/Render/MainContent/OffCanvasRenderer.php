@@ -19,13 +19,6 @@ use Symfony\Component\HttpFoundation\Request;
 class OffCanvasRenderer extends DialogRenderer
 {
     /**
-     * The renderer.
-     *
-     * @var \Drupal\Core\Render\RendererInterface
-     */
-    protected $renderer;
-
-    /**
      * Constructs a new OffCanvasRenderer.
      *
      * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver

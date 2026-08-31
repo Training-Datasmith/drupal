@@ -220,7 +220,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface
             'xss' => Xss::filter($value),
             'xss_admin' => Xss::filterAdmin($value),
             'url' => Html::escape(UrlHelper::stripDangerousProtocols($value)),
-            default => Html::escape($value),
+            default => Html::escape(is_scalar($value) || $value instanceof \Stringable ? (string) $value : ''),
         };
         return ViewsRenderPipelineMarkup::create($value);
     }
@@ -616,7 +616,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface
     /**
      * {@inheritdoc}
      */
-    public function query()
+    public function query(): void
     {
     }
 

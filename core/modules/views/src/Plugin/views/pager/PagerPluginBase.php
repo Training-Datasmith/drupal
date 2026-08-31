@@ -239,7 +239,7 @@ abstract class PagerPluginBase extends PluginBase
      *
      * This is called during the build phase and can directly modify the query.
      */
-    public function query()
+    public function query(): void
     {
     }
 

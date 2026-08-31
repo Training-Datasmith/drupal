@@ -72,7 +72,7 @@ class BaseFieldDefinitionTest extends BaseFieldDefinition
     /**
      * {@inheritdoc}
      */
-    public static function create($type)
+    public static function create($type): static
     {
         return new static([]);
     }

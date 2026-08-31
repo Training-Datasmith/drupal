@@ -24,7 +24,7 @@ class AjaxTestImageEffect extends ConfigurableImageEffectBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'test_parameter' => 0,

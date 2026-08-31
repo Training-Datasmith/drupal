@@ -38,7 +38,7 @@ class ComplexTestType extends WorkflowTypeBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return parent::defaultConfiguration() + [
           'example_setting' => '',

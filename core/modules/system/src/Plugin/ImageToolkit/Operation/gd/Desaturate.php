@@ -31,7 +31,7 @@ class Desaturate extends GDImageToolkitOperationBase
     /**
      * {@inheritdoc}
      */
-    protected function execute(array $arguments)
+    protected function execute(array $arguments): bool
     {
         // PHP installations using non-bundled GD do not have imagefilter.
         if (!function_exists('imagefilter')) {

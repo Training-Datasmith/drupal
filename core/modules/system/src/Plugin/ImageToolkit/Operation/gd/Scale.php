@@ -83,7 +83,7 @@ class Scale extends Resize
     /**
      * {@inheritdoc}
      */
-    protected function execute(array $arguments = [])
+    protected function execute(array $arguments = []): bool
     {
         // Don't scale if we don't change the dimensions at all.
         if (!($arguments['width'] !== $this->getToolkit()->getWidth() || $arguments['height'] !== $this->getToolkit()->getHeight())) {

@@ -236,7 +236,6 @@ class UserAuthTest extends UnitTestCase
         $frontend_url = "https://$site_domain";
         $backend_url = "https://api.$site_domain";
         $request = Request::create($backend_url);
-        $response = new TrustedRedirectResponse($frontend_url);
 
         $request_context = $this->createStub(RequestContext::class);
         $request_context
@@ -246,6 +245,8 @@ class UserAuthTest extends UnitTestCase
         $container = new ContainerBuilder();
         $container->set('router.request_context', $request_context);
         \Drupal::setContainer($container);
+
+        $response = new TrustedRedirectResponse($frontend_url);
 
         $session_mock = $this->createMock(SessionInterface::class);
         $session_mock
@@ -290,7 +291,6 @@ class UserAuthTest extends UnitTestCase
         $frontend_url = "https://$site_domain";
         $backend_url = "https://api.$site_domain";
         $request = Request::create($backend_url);
-        $response = new TrustedRedirectResponse($frontend_url . '#a_fragment');
 
         $request_context = $this->createStub(RequestContext::class);
         $request_context
@@ -300,6 +300,8 @@ class UserAuthTest extends UnitTestCase
         $container = new ContainerBuilder();
         $container->set('router.request_context', $request_context);
         \Drupal::setContainer($container);
+
+        $response = new TrustedRedirectResponse($frontend_url . '#a_fragment');
 
         $session_mock = $this->createMock(SessionInterface::class);
         $session_mock

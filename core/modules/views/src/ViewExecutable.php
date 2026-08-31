@@ -2254,7 +2254,7 @@ class ViewExecutable
         $fields = $this->displayHandlers->get($display_id)->getOption($types[$type]['plural']);
 
         if (empty($id)) {
-            $id = static::generateHandlerId($field, $fields);
+            $id = static::generateHandlerId($field, $fields ?? []);
         }
 
         // If the desired type is not found, use the original value directly.

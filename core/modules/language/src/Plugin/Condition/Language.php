@@ -145,7 +145,7 @@ class Language extends ConditionPluginBase implements ContainerFactoryPluginInte
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return ['langcodes' => []] + parent::defaultConfiguration();
     }

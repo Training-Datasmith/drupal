@@ -82,7 +82,7 @@ class FieldFormButtonTest extends FieldPluginBase
     /**
      * {@inheritdoc}
      */
-    public function query()
+    public function query(): void
     {
         // Do nothing.
     }

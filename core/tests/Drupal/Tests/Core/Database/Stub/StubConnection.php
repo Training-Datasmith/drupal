@@ -65,7 +65,7 @@ class StubConnection extends Connection
     /**
      * {@inheritdoc}
      */
-    public function driver()
+    public function driver(): string
     {
         return $this->driver;
     }

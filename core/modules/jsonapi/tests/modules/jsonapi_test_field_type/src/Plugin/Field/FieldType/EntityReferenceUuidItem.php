@@ -164,7 +164,7 @@ class EntityReferenceUuidItem extends EntityReferenceItem
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         // Avoid loading the entity by first checking the 'target_uuid'.
         if ($this->target_uuid !== null) {

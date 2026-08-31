@@ -18,7 +18,7 @@ class ListDataDefinition extends DataDefinition implements ListDataDefinitionInt
      * @return static
      *   A new List Data Definition object.
      */
-    public static function create($item_type)
+    public static function create($item_type): static
     {
         return static::createFromItemType($item_type);
     }
@@ -26,7 +26,7 @@ class ListDataDefinition extends DataDefinition implements ListDataDefinitionInt
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($type)
+    public static function createFromDataType($type): static
     {
         $definition = parent::createFromDataType($type);
         // If nothing else given, default to a list of 'any' items.
@@ -64,11 +64,12 @@ class ListDataDefinition extends DataDefinition implements ListDataDefinitionInt
     /**
      * {@inheritdoc}
      */
-    public function setDataType($type): void
+    public function setDataType($type): static
     {
         if ($type != 'list') {
             throw new \LogicException('Lists must always be of data type "list".');
         }
+        return $this;
     }
 
     /**

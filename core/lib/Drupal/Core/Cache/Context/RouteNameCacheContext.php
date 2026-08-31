@@ -22,7 +22,7 @@ class RouteNameCacheContext extends RouteCacheContext
     /**
      * {@inheritdoc}
      */
-    public function getContext()
+    public function getContext(): string
     {
         return $this->routeMatch->getRouteName();
     }

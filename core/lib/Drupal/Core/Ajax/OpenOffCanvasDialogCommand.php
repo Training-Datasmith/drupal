@@ -72,7 +72,7 @@ class OpenOffCanvasDialogCommand extends OpenDialogCommand
     /**
      * {@inheritdoc}
      */
-    public function render()
+    public function render(): array
     {
         $build = parent::render();
         $build['effect'] = 'fade';

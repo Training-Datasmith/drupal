@@ -116,7 +116,7 @@ class EntityBundle extends ConditionPluginBase implements ContainerFactoryPlugin
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'bundles' => [],

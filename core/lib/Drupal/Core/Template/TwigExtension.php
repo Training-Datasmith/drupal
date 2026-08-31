@@ -325,10 +325,10 @@ class TwigExtension extends AbstractExtension
     public function isUrlGenerationSafe(Node $args_node)
     {
         // Support named arguments.
-        $parameter_node = $args_node->hasNode('parameters') ? $args_node->getNode('parameters') : ($args_node->hasNode(1) ? $args_node->getNode(1) : null);
+        $parameter_node = $args_node->hasNode('parameters') ? $args_node->getNode('parameters') : ($args_node->hasNode('1') ? $args_node->getNode('1') : null);
 
         if (!isset($parameter_node) || $parameter_node instanceof ArrayExpression && count($parameter_node) <= 2 &&
-            (!$parameter_node->hasNode(1) || $parameter_node->getNode(1) instanceof ConstantExpression)) {
+            (!$parameter_node->hasNode('1') || $parameter_node->getNode('1') instanceof ConstantExpression)) {
             return ['html'];
         }
 

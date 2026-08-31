@@ -70,7 +70,7 @@ class HtmlResponse extends Response implements CacheableResponseInterface, Attac
             $content = $content['#markup'];
         }
 
-        return parent::setContent($content);
+        return parent::setContent(is_string($content) ? $content : (string) $content);
     }
 
 }

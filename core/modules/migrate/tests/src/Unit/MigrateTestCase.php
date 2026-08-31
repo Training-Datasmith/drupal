@@ -61,8 +61,8 @@ abstract class MigrateTestCase extends UnitTestCase
           ->disableOriginalConstructor()
           ->getMock();
 
-        $migration->method('checkRequirements')
-          ->willReturn(true);
+        $migration->expects($this->any())
+          ->method('checkRequirements');
 
         $migration->method('getIdMap')
           ->willReturn($this->idMap);

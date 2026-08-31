@@ -44,7 +44,7 @@ class Statement extends StatementPrefetchIterator implements StatementInterface
                             // in the automatic cast.
                             $value = sprintf('%F', $value);
                         }
-                        $query = substr_replace($query, $value, strpos($query, '?'), 1);
+                        $query = substr_replace($query, (string) $value, strpos($query, '?'), 1);
                     } else {
                         $placeholder = ':db_statement_placeholder_' . $count++;
                         $query = substr_replace($query, $placeholder, strpos($query, '?'), 1);

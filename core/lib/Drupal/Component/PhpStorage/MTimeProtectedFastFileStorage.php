@@ -65,7 +65,7 @@ class MTimeProtectedFastFileStorage extends FileStorage
     /**
      * {@inheritdoc}
      */
-    public function save($name, $data)
+    public function save($name, $data): bool
     {
         $this->ensureDirectory($this->directory);
 

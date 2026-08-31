@@ -36,7 +36,7 @@ class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage
     /**
      * {@inheritdoc}
      */
-    public function load($name)
+    public function load($name): bool
     {
         if (($filename = $this->checkFile($name)) !== false) {
             // Inline parent::load() to avoid an expensive getFullPath() call.

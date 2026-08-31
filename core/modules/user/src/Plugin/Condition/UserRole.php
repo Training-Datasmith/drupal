@@ -46,7 +46,7 @@ class UserRole extends ConditionPluginBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'roles' => [],

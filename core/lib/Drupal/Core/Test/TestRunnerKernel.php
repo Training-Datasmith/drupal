@@ -18,7 +18,7 @@ class TestRunnerKernel extends DrupalKernel
     /**
      * {@inheritdoc}
      */
-    public static function createFromRequest(Request $request, $class_loader, $environment = 'test_runner', $allow_dumping = true, $app_root = null)
+    public static function createFromRequest(Request $request, $class_loader, $environment = 'test_runner', $allow_dumping = true, $app_root = null): static
     {
         return parent::createFromRequest($request, $class_loader, $environment, $allow_dumping, $app_root);
     }
@@ -37,7 +37,7 @@ class TestRunnerKernel extends DrupalKernel
     /**
      * {@inheritdoc}
      */
-    public function boot()
+    public function boot(): static
     {
         // Ensure that required Settings exist.
         if (!Settings::getAll()) {
@@ -52,7 +52,7 @@ class TestRunnerKernel extends DrupalKernel
 
         // Remove Drupal's error/exception handlers; they are designed for HTML
         // and there is no storage nor a (watchdog) logger here.
-        if (get_error_handler() === '_drupal_error_handler') {
+        if (\get_error_handler() === '_drupal_error_handler') {
             restore_error_handler();
         }
         restore_exception_handler();
@@ -89,13 +89,12 @@ class TestRunnerKernel extends DrupalKernel
     /**
      * {@inheritdoc}
      */
-    public function discoverServiceProviders()
+    public function discoverServiceProviders(): void
     {
         parent::discoverServiceProviders();
         // The test runner does not require an installed Drupal site to exist.
         // Therefore, its environment is identical to that of the early installer.
         $this->serviceProviderClasses['app']['Test'] = 'Drupal\Core\Installer\InstallerServiceProvider';
-        return $this->serviceProviderClasses;
     }
 
 }

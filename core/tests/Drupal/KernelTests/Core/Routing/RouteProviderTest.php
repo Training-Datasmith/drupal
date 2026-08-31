@@ -801,7 +801,7 @@ class TestRouteProvider extends RouteProvider
     /**
      * {@inheritdoc}
      */
-    public function getCandidateOutlines(array $parts)
+    public function getCandidateOutlines(array $parts): array
     {
         return parent::getCandidateOutlines($parts);
     }

@@ -102,7 +102,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
     /**
      * {@inheritdoc}
      */
-    public static function createFromItemType($item_type)
+    public static function createFromItemType($item_type): static
     {
         // The data type of a field item is in the form of "field_item:$field_type".
         $parts = explode(':', $item_type, 2);

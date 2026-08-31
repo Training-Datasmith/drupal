@@ -32,7 +32,7 @@ class DrupalKernelTest extends KernelTestBase
      */
     protected function tearDown(): void
     {
-        if (get_error_handler() === '_drupal_error_handler') {
+        if (\get_error_handler() === '_drupal_error_handler') {
             restore_error_handler();
         }
         parent::tearDown();

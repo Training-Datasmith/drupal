@@ -623,7 +623,7 @@ class TestDefaultTableMapping extends DefaultTableMapping
     /**
      * {@inheritdoc}
      */
-    public function setFieldNames($table_name, array $field_names)
+    public function setFieldNames($table_name, array $field_names): static
     {
         return parent::setFieldNames($table_name, $field_names);
     }
@@ -631,7 +631,7 @@ class TestDefaultTableMapping extends DefaultTableMapping
     /**
      * {@inheritdoc}
      */
-    public function setExtraColumns($table_name, array $column_names)
+    public function setExtraColumns($table_name, array $column_names): static
     {
         return parent::setExtraColumns($table_name, $column_names);
     }

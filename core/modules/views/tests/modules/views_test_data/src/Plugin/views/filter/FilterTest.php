@@ -45,7 +45,7 @@ class FilterTest extends FilterPluginBase
     /**
      * {@inheritdoc}
      */
-    public function query()
+    public function query(): void
     {
         // Call the parent if this option is enabled.
         if ($this->options['test_enable']) {

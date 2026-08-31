@@ -130,7 +130,7 @@ class SearchExtraTypeSearch extends ConfigurableSearchPluginBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'boost' => 'bi',

@@ -118,7 +118,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->value);
     }

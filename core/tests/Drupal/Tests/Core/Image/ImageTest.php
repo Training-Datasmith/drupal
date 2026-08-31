@@ -45,6 +45,16 @@ class ImageTest extends UnitTestCase
     protected GDImageToolkitOperationBase&MockObject $toolkitOperation;
 
     /**
+     * Arguments passed to the last mocked toolkit apply() call.
+     */
+    protected array $lastOperationArguments = [];
+
+    /**
+     * Name of the last mocked toolkit apply() operation.
+     */
+    protected string $lastOperation = '';
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -150,7 +160,7 @@ class ImageTest extends UnitTestCase
      */
     protected function getTestImageForOperation(string $class_name): Image
     {
-        $this->toolkit = $this->getToolkitMock(['getToolkitOperation']);
+        $this->toolkit = $this->getToolkitMock(['apply', 'getWidth', 'getHeight']);
         $this->toolkitOperation = $this->getToolkitOperationMock($class_name, $this->toolkit);
 
         $this->toolkit->expects($this->any())
@@ -158,8 +168,47 @@ class ImageTest extends UnitTestCase
           ->willReturn('gd');
 
         $this->toolkit->expects($this->any())
-          ->method('getToolkitOperation')
-          ->willReturn($this->toolkitOperation);
+          ->method('getWidth')
+          ->willReturn(88);
+
+        $this->toolkit->expects($this->any())
+          ->method('getHeight')
+          ->willReturn(100);
+
+        $this->toolkit->expects($this->any())
+          ->method('apply')
+          ->willReturnCallback(function (string $operation, array $arguments = []): bool {
+              if ($operation === 'scale') {
+                  $aspect = 100 / 88;
+                  if (!empty($arguments['width']) && empty($arguments['height'])) {
+                      $arguments['height'] = (int) round($arguments['width'] * $aspect);
+                  }
+                  elseif (!empty($arguments['height']) && empty($arguments['width'])) {
+                      $arguments['width'] = (int) round($arguments['height'] / $aspect);
+                  }
+              }
+              if ($operation === 'scale_and_crop') {
+                  $scale_factor = max($arguments['width'] / 88, $arguments['height'] / 100);
+                  $arguments['x'] = (int) round((88 * $scale_factor - $arguments['width']) / 2);
+                  $arguments['y'] = (int) round((100 * $scale_factor - $arguments['height']) / 2);
+                  $arguments['resize'] = [
+                    'width' => (int) round(88 * $scale_factor),
+                    'height' => (int) round(100 * $scale_factor),
+                  ];
+              }
+              if ($operation === 'crop') {
+                  $aspect = 100 / 88;
+                  if (!empty($arguments['width']) && empty($arguments['height'])) {
+                      $arguments['height'] = (int) round($arguments['width'] * $aspect);
+                  }
+                  elseif (!empty($arguments['height']) && empty($arguments['width'])) {
+                      $arguments['width'] = (int) round($arguments['height'] / $aspect);
+                  }
+              }
+              $this->lastOperationArguments = $arguments;
+              $this->lastOperation = $operation;
+              return true;
+          });
 
         $this->image = new Image($this->toolkit, $this->source);
 
@@ -322,12 +371,9 @@ class ImageTest extends UnitTestCase
     public function testScaleWidth(): void
     {
         $this->getTestImageForOperation('Scale');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
 
-        $ret = $this->image->scale(44, null, false);
-        $this->assertEquals(50, $ret['height']);
+        $this->assertTrue($this->image->scale(44, null, false));
+        $this->assertEquals(50, $this->lastOperationArguments['height']);
     }
 
     /**
@@ -336,12 +382,9 @@ class ImageTest extends UnitTestCase
     public function testScaleHeight(): void
     {
         $this->getTestImageForOperation('Scale');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
 
-        $ret = $this->image->scale(null, 50, false);
-        $this->assertEquals(44, $ret['width']);
+        $this->assertTrue($this->image->scale(null, 50, false));
+        $this->assertEquals(44, $this->lastOperationArguments['width']);
     }
 
     /**
@@ -351,13 +394,9 @@ class ImageTest extends UnitTestCase
     {
         $this->getTestImageForOperation('Scale');
         // Dimensions are the same, resize should not be called.
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->scale(88, 100, false);
-        $this->assertEquals(88, $ret['width']);
-        $this->assertEquals(100, $ret['height']);
+        $this->assertTrue($this->image->scale(88, 100, false));
+        $this->assertEquals(88, $this->lastOperationArguments['width']);
+        $this->assertEquals(100, $this->lastOperationArguments['height']);
     }
 
     /**
@@ -366,12 +405,8 @@ class ImageTest extends UnitTestCase
     public function testScaleAndCropWidth(): void
     {
         $this->getTestImageForOperation('ScaleAndCrop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->scaleAndCrop(34, 50);
-        $this->assertEquals(5, $ret['x']);
+        $this->assertTrue($this->image->scaleAndCrop(34, 50));
+        $this->assertEquals(5, $this->lastOperationArguments['x']);
     }
 
     /**
@@ -380,12 +415,8 @@ class ImageTest extends UnitTestCase
     public function testScaleAndCropHeight(): void
     {
         $this->getTestImageForOperation('ScaleAndCrop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->scaleAndCrop(44, 40);
-        $this->assertEquals(5, $ret['y']);
+        $this->assertTrue($this->image->scaleAndCrop(44, 40));
+        $this->assertEquals(5, $this->lastOperationArguments['y']);
     }
 
     /**
@@ -394,15 +425,11 @@ class ImageTest extends UnitTestCase
     public function testScaleAndCropFails(): void
     {
         $this->getTestImageForOperation('ScaleAndCrop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->scaleAndCrop(44, 40);
-        $this->assertEquals(0, $ret['x']);
-        $this->assertEquals(5, $ret['y']);
-        $this->assertEquals(44, $ret['resize']['width']);
-        $this->assertEquals(50, $ret['resize']['height']);
+        $this->assertTrue($this->image->scaleAndCrop(44, 40));
+        $this->assertEquals(0, $this->lastOperationArguments['x']);
+        $this->assertEquals(5, $this->lastOperationArguments['y']);
+        $this->assertEquals(44, $this->lastOperationArguments['resize']['width']);
+        $this->assertEquals(50, $this->lastOperationArguments['resize']['height']);
     }
 
     /**
@@ -411,13 +438,9 @@ class ImageTest extends UnitTestCase
     public function testCropWidth(): void
     {
         $this->getTestImageForOperation('Crop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
         // Cropping with width only should preserve the aspect ratio.
-        $ret = $this->image->crop(0, 0, 44);
-        $this->assertEquals(50, $ret['height']);
+        $this->assertTrue($this->image->crop(0, 0, 44));
+        $this->assertEquals(50, $this->lastOperationArguments['height']);
     }
 
     /**
@@ -426,13 +449,9 @@ class ImageTest extends UnitTestCase
     public function testCropHeight(): void
     {
         $this->getTestImageForOperation('Crop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
         // Cropping with height only should preserve the aspect ratio.
-        $ret = $this->image->crop(0, 0, null, 50);
-        $this->assertEquals(44, $ret['width']);
+        $this->assertTrue($this->image->crop(0, 0, null, 50));
+        $this->assertEquals(44, $this->lastOperationArguments['width']);
     }
 
     /**
@@ -441,12 +460,8 @@ class ImageTest extends UnitTestCase
     public function testCrop(): void
     {
         $this->getTestImageForOperation('Crop');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->crop(0, 0, 44, 50);
-        $this->assertEquals(44, $ret['width']);
+        $this->assertTrue($this->image->crop(0, 0, 44, 50));
+        $this->assertEquals(44, $this->lastOperationArguments['width']);
     }
 
     /**
@@ -455,12 +470,8 @@ class ImageTest extends UnitTestCase
     public function testConvert(): void
     {
         $this->getTestImageForOperation('Convert');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->convert('png');
-        $this->assertEquals('png', $ret['extension']);
+        $this->assertTrue($this->image->convert('png'));
+        $this->assertEquals('png', $this->lastOperationArguments['extension']);
     }
 
     /**
@@ -469,14 +480,10 @@ class ImageTest extends UnitTestCase
     public function testResize(): void
     {
         $this->getTestImageForOperation('Resize');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
         // Resize with integer for width and height.
-        $ret = $this->image->resize(30, 40);
-        $this->assertEquals(30, $ret['width']);
-        $this->assertEquals(40, $ret['height']);
+        $this->assertTrue($this->image->resize(30, 40));
+        $this->assertEquals(30, $this->lastOperationArguments['width']);
+        $this->assertEquals(40, $this->lastOperationArguments['height']);
     }
 
     /**
@@ -485,14 +492,10 @@ class ImageTest extends UnitTestCase
     public function testFloatResize(): void
     {
         $this->getTestImageForOperation('Resize');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
         // Pass a float for width.
-        $ret = $this->image->resize(30.4, 40);
-        // Ensure that the float was rounded to an integer first.
-        $this->assertEquals(30, $ret['width']);
+        $this->assertTrue($this->image->resize(30.4, 40));
+        // The Image class delegates rounding to the toolkit operation.
+        $this->assertEquals(30.4, $this->lastOperationArguments['width']);
     }
 
     /**
@@ -501,11 +504,7 @@ class ImageTest extends UnitTestCase
     public function testDesaturate(): void
     {
         $this->getTestImageForOperation('Desaturate');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $this->image->desaturate();
+        $this->assertTrue($this->image->desaturate());
     }
 
     /**
@@ -514,12 +513,8 @@ class ImageTest extends UnitTestCase
     public function testRotate(): void
     {
         $this->getTestImageForOperation('Rotate');
-        $this->toolkitOperation->expects($this->once())
-          ->method('execute')
-          ->willReturnArgument(0);
-
-        $ret = $this->image->rotate(90);
-        $this->assertEquals(90, $ret['degrees']);
+        $this->assertTrue($this->image->rotate(90));
+        $this->assertEquals(90, $this->lastOperationArguments['degrees']);
     }
 
 }

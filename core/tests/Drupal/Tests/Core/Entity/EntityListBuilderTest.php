@@ -234,7 +234,7 @@ class EntityListBuilderTest extends UnitTestCase
  */
 class TestEntityListBuilder extends EntityTestListBuilder
 {
-    public function buildOperations(EntityInterface $entity)
+    public function buildOperations(EntityInterface $entity): array
     {
         return [];
     }

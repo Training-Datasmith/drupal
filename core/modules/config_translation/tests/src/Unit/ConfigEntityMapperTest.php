@@ -200,7 +200,7 @@ class ConfigEntityMapperTest extends UnitTestCase
           ->willReturn($entity_type);
 
         $result = $this->configEntityMapper->getTypeName();
-        $this->assertSame('test', $result);
+        $this->assertSame('test', $result->getUntranslatedString());
     }
 
     /**
@@ -219,7 +219,7 @@ class ConfigEntityMapperTest extends UnitTestCase
           ->willReturn($entity_type);
 
         $result = $this->configEntityMapper->getTypeLabel();
-        $this->assertSame('test', $result);
+        $this->assertSame('test', $result->getUntranslatedString());
     }
 
     /**

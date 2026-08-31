@@ -515,7 +515,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
     /**
      * {@inheritdoc}
      */
-    public static function createFromItemType($item_type)
+    public static function createFromItemType($item_type): static
     {
         // Forward to the field definition class for creating new data definitions
         // via the typed manager.
@@ -525,7 +525,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($type)
+    public static function createFromDataType($type): static
     {
         // Forward to the field definition class for creating new data definitions
         // via the typed manager.

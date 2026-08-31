@@ -70,21 +70,21 @@ abstract class ArgumentValidatorPluginBase extends PluginBase
     /**
      * Provides the default form for setting options.
      */
-    public function buildOptionsForm(&$form, FormStateInterface $form_state)
+    public function buildOptionsForm(&$form, FormStateInterface $form_state): void
     {
     }
 
     /**
      * Provides the default form for validating options.
      */
-    public function validateOptionsForm(&$form, FormStateInterface $form_state)
+    public function validateOptionsForm(&$form, FormStateInterface $form_state): void
     {
     }
 
     /**
      * Provides the default form for submitting options.
      */
-    public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = [])
+    public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []): void
     {
     }
 

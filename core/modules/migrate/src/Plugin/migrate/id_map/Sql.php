@@ -1036,7 +1036,8 @@ class Sql extends PluginBase implements MigrateIdMapInterface, ContainerFactoryP
 
         // If there's a bundle, it means we have a derived migration and we need to
         // find all the mapping tables from the related derived migrations.
-        if ($base_id = substr($this->migration->id(), 0, strpos($this->migration->id(), (string) $this::DERIVATIVE_SEPARATOR))) {
+        $separator_position = strpos($this->migration->id(), (string) $this::DERIVATIVE_SEPARATOR);
+        if ($separator_position !== false && ($base_id = substr($this->migration->id(), 0, $separator_position))) {
             $migrations = $this->migrationPluginManager->getDefinitions();
             foreach ($migrations as $migration_id => $migration) {
                 if ($migration['id'] === $base_id) {

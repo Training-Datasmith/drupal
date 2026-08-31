@@ -15,7 +15,7 @@ class EntityTestViewsData extends EntityViewsData
     /**
      * {@inheritdoc}
      */
-    public function getViewsData()
+    public function getViewsData(): array
     {
         $views_data = parent::getViewsData();
 

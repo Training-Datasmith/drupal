@@ -70,7 +70,7 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return ['pages' => ''] + parent::defaultConfiguration();
     }

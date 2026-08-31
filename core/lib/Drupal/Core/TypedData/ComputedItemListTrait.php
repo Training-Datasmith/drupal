@@ -42,7 +42,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function getValue()
+    public function getValue(): array
     {
         $this->ensureComputedValue();
         return parent::getValue();
@@ -63,7 +63,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function getString()
+    public function getString(): string
     {
         $this->ensureComputedValue();
         return parent::getString();
@@ -93,7 +93,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function set($index, $value)
+    public function set($index, $value): static
     {
         $this->ensureComputedValue();
         return parent::set($index, $value);
@@ -111,7 +111,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function removeItem($index)
+    public function removeItem($index): static
     {
         $this->ensureComputedValue();
         return parent::removeItem($index);
@@ -120,7 +120,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         $this->ensureComputedValue();
         return parent::isEmpty();
@@ -156,7 +156,7 @@ trait ComputedItemListTrait
     /**
      * {@inheritdoc}
      */
-    public function applyDefaultValue($notify = true)
+    public function applyDefaultValue($notify = true): static
     {
         // Default values do not make sense for computed item lists. However, this
         // method can be overridden if needed.

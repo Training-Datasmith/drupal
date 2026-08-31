@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Core\Plugin\Discovery;
 
+use Drupal\Component\Discovery\YamlDirectoryDiscovery as ComponentYamlDirectoryDiscovery;
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
 use Drupal\Component\Plugin\Discovery\DiscoveryTrait;
 use Drupal\Core\Discovery\YamlDiscovery as CoreYamlDiscovery;
@@ -27,7 +28,7 @@ class YamlDiscovery implements DiscoveryInterface
     /**
      * YAML file discovery and parsing handler.
      */
-    protected \Drupal\Core\Discovery\YamlDiscovery $discovery;
+    protected CoreYamlDiscovery|ComponentYamlDirectoryDiscovery $discovery;
 
     /**
      * Contains an array of translatable properties passed along to t().

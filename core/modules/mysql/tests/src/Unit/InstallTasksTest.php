@@ -78,9 +78,9 @@ class InstallTasksTest extends UnitTestCase
             /**
              * {@inheritdoc}
              */
-            protected function t($string, array $args = [], array $options = [])
+            protected function t($string, array $args = [], array $options = []): \Drupal\Core\StringTranslation\TranslatableMarkup
             {
-                return $string;
+                return new \Drupal\Core\StringTranslation\TranslatableMarkup($string, $args, $options);
             }
 
         };
@@ -114,9 +114,9 @@ class InstallTasksTest extends UnitTestCase
             /**
              * {@inheritdoc}
              */
-            protected function t($string, array $args = [], array $options = [])
+            protected function t($string, array $args = [], array $options = []): \Drupal\Core\StringTranslation\TranslatableMarkup
             {
-                return $string;
+                return new \Drupal\Core\StringTranslation\TranslatableMarkup($string, $args, $options);
             }
 
         };
@@ -141,7 +141,7 @@ class InstallTasksTest extends UnitTestCase
         $name = $tasks->name();
 
         $this->assertSame($expected_minimum_version, $minimum_version);
-        $this->assertSame($expected_name, $name);
+        $this->assertSame($expected_name, $name->getUntranslatedString());
 
     }
 
@@ -175,7 +175,7 @@ class InstallTasksTest extends UnitTestCase
     public function testNameWithNoConnection(): void
     {
         $tasks = $this->createTasksNoConnection();
-        $this->assertSame('MySQL, MariaDB, or equivalent', $tasks->name());
+        $this->assertSame('MySQL, MariaDB, or equivalent', $tasks->name()->getUntranslatedString());
     }
 
 }

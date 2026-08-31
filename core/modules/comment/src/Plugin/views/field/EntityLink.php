@@ -52,7 +52,7 @@ class EntityLink extends FieldPluginBase
     /**
      * {@inheritdoc}
      */
-    public function query()
+    public function query(): void
     {
     }
 

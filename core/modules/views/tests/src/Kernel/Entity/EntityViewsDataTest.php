@@ -878,7 +878,7 @@ class EntityViewsDataWithDeprecations extends EntityViewsData
     /**
      * {@inheritdoc}
      */
-    public function getViewsData()
+    public function getViewsData(): array
     {
         // Deprecated method.
         // @phpstan-ignore-next-line

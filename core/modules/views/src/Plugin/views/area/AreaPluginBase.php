@@ -126,7 +126,7 @@ abstract class AreaPluginBase extends HandlerBase
      * @return bool
      *   Return TRUE if the area is empty, else FALSE.
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->options['empty']);
     }

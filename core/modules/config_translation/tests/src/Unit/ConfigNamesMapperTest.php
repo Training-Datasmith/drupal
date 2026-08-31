@@ -281,7 +281,7 @@ class ConfigNamesMapperTest extends UnitTestCase
         $expected = new Route(
             '/admin/config/system/site-information/translate/{langcode}/add',
             [
-            '_form' => '\Drupal\config_translation\Form\ConfigTranslationAddForm',
+            '_form' => 'Drupal\config_translation\Form\ConfigTranslationAddForm',
             'plugin_id' => 'system.site_information_settings',
       ],
             [
@@ -323,7 +323,7 @@ class ConfigNamesMapperTest extends UnitTestCase
         $expected = new Route(
             '/admin/config/system/site-information/translate/{langcode}/edit',
             [
-            '_form' => '\Drupal\config_translation\Form\ConfigTranslationEditForm',
+            '_form' => 'Drupal\config_translation\Form\ConfigTranslationEditForm',
             'plugin_id' => 'system.site_information_settings',
       ],
             [
@@ -365,7 +365,7 @@ class ConfigNamesMapperTest extends UnitTestCase
         $expected = new Route(
             '/admin/config/system/site-information/translate/{langcode}/delete',
             [
-            '_form' => '\Drupal\config_translation\Form\ConfigTranslationDeleteForm',
+            '_form' => 'Drupal\config_translation\Form\ConfigTranslationDeleteForm',
             'plugin_id' => 'system.site_information_settings',
       ],
             [

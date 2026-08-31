@@ -72,7 +72,7 @@ abstract class DisplayExtenderPluginBase extends PluginBase
     /**
      * Inject anything into the query that the display_extender handler needs.
      */
-    public function query()
+    public function query(): void
     {
     }
 

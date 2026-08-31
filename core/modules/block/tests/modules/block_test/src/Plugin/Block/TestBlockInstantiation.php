@@ -23,7 +23,7 @@ class TestBlockInstantiation extends BlockBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'display_message' => 'no message set',
@@ -41,7 +41,7 @@ class TestBlockInstantiation extends BlockBase
     /**
      * {@inheritdoc}
      */
-    public function blockForm($form, FormStateInterface $form_state)
+    public function blockForm($form, FormStateInterface $form_state): array
     {
         $form['display_message'] = [
           '#type' => 'textfield',
@@ -62,7 +62,7 @@ class TestBlockInstantiation extends BlockBase
     /**
      * {@inheritdoc}
      */
-    public function build()
+    public function build(): array
     {
         return [
           '#children' => $this->configuration['display_message'],

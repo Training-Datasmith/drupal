@@ -61,7 +61,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($data_type)
+    public static function createFromDataType($data_type): static
     {
         $parts = explode(':', $data_type);
         if ($parts[0] != 'entity') {

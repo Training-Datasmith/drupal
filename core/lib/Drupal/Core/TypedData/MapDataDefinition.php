@@ -31,7 +31,7 @@ class MapDataDefinition extends ComplexDataDefinitionBase
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($data_type)
+    public static function createFromDataType($data_type): static
     {
         return static::create($data_type);
     }

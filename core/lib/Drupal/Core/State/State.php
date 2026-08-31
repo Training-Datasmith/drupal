@@ -126,7 +126,7 @@ class State extends CacheCollector implements StateInterface
     {
         $this->keyValueStore->setMultiple($data);
         foreach ($data as $key => $value) {
-            $this->registerKeySetDuringRequest($key, $value, parent::get($key));
+            $this->registerKeySetDuringRequest((string) $key, $value, parent::get($key));
             parent::set($key, $value);
             $this->persist($key);
         }

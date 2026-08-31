@@ -70,7 +70,7 @@ class Test extends MediaSourceBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return parent::defaultConfiguration() + [
           'test_config_value' => 'This is default value.',

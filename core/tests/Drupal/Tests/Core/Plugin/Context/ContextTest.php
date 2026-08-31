@@ -119,8 +119,7 @@ class ContextTest extends UnitTestCase
         $container->set('cache_contexts_manager', $cache_context_manager);
         $cache_context_manager->expects($this->any())
           ->method('validateTokens')
-          ->with(['route'])
-          ->willReturn(['route']);
+          ->with(['route']);
         \Drupal::setContainer($container);
 
         $this->contextDefinition = $this->createMock('Drupal\Core\Plugin\Context\ContextDefinitionInterface');

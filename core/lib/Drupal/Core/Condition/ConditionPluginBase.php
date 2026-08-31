@@ -115,7 +115,7 @@ abstract class ConditionPluginBase extends ExecutablePluginBase implements Condi
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'negate' => false,

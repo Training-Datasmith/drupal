@@ -143,9 +143,12 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
     /**
      * {@inheritdoc}
      */
-    public function getTitle(): string
+    public function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup
     {
-        return $this->entity->label() . ' ' . $this->pluginDefinition['title'];
+        return $this->t('@label @title', [
+          '@label' => $this->entity->label(),
+          '@title' => $this->pluginDefinition['title'],
+        ]);
     }
 
     /**
@@ -179,19 +182,21 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
     /**
      * {@inheritdoc}
      */
-    public function getTypeName()
+    public function getTypeName(): \Drupal\Core\StringTranslation\TranslatableMarkup
     {
         $entity_type_info = $this->entityTypeManager->getDefinition($this->entityType);
-        return $entity_type_info->getLabel();
+        $label = $entity_type_info->getLabel();
+        return $label instanceof \Drupal\Core\StringTranslation\TranslatableMarkup ? $label : new \Drupal\Core\StringTranslation\TranslatableMarkup((string) $label);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTypeLabel()
+    public function getTypeLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup
     {
         $entityType = $this->entityTypeManager->getDefinition($this->entityType);
-        return $entityType->getLabel();
+        $label = $entityType->getLabel();
+        return $label instanceof \Drupal\Core\StringTranslation\TranslatableMarkup ? $label : new \Drupal\Core\StringTranslation\TranslatableMarkup((string) $label);
     }
 
     /**

@@ -23,7 +23,7 @@ class WorkflowCustomAccessType extends WorkflowTypeBase
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'states' => [

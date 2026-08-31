@@ -49,7 +49,7 @@ class PreprocessPagerTest extends UnitTestCase
         $url_generator->method('generateFromRoute')->willReturn('');
 
         $pager_manager->method('getPager')->willReturn($pager);
-        $pager_manager->method('getUpdatedParameters')->willReturn('');
+        $pager_manager->method('getUpdatedParameters')->willReturn([]);
 
         $request_stack = $this->createMock(RequestStack::class);
         $request = Request::createFromGlobals();

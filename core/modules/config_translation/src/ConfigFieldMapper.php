@@ -26,7 +26,7 @@ class ConfigFieldMapper extends ConfigEntityMapper
     /**
      * {@inheritdoc}
      */
-    public function getBaseRouteParameters()
+    public function getBaseRouteParameters(): array
     {
         $parameters = parent::getBaseRouteParameters();
         $base_entity_info = $this->entityTypeManager->getDefinition($this->pluginDefinition['base_entity_type']);

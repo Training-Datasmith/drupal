@@ -66,7 +66,7 @@ class Config extends StorableConfigBase
     /**
      * {@inheritdoc}
      */
-    public function initWithData(array $data): static
+    public function initWithData(array $data): self
     {
         parent::initWithData($data);
         $this->resetOverriddenData();
@@ -95,7 +95,7 @@ class Config extends StorableConfigBase
     /**
      * {@inheritdoc}
      */
-    public function setData(array $data): static
+    public function setData(array $data): self
     {
         parent::setData($data);
         $this->resetOverriddenData();
@@ -113,7 +113,7 @@ class Config extends StorableConfigBase
      * @return $this
      *   The configuration object.
      */
-    public function setSettingsOverride(array $data): static
+    public function setSettingsOverride(array $data): self
     {
         $this->settingsOverrides = $data;
         $this->resetOverriddenData();
@@ -129,7 +129,7 @@ class Config extends StorableConfigBase
      * @return $this
      *   The configuration object.
      */
-    public function setModuleOverride(array $data): static
+    public function setModuleOverride(array $data): self
     {
         $this->moduleOverrides = $data;
         $this->resetOverriddenData();
@@ -147,7 +147,7 @@ class Config extends StorableConfigBase
      * @return $this
      *   The configuration object.
      */
-    protected function setOverriddenData(): static
+    protected function setOverriddenData(): self
     {
         $this->overriddenData = $this->data;
         if (isset($this->moduleOverrides) && is_array($this->moduleOverrides)) {
@@ -168,7 +168,7 @@ class Config extends StorableConfigBase
      * @return $this
      *   The configuration object.
      */
-    protected function resetOverriddenData(): static
+    protected function resetOverriddenData(): self
     {
         unset($this->overriddenData);
         return $this;
@@ -177,7 +177,7 @@ class Config extends StorableConfigBase
     /**
      * {@inheritdoc}
      */
-    public function set($key, $value): static
+    public function set($key, $value): self
     {
         parent::set($key, $value);
         $this->resetOverriddenData();
@@ -187,7 +187,7 @@ class Config extends StorableConfigBase
     /**
      * {@inheritdoc}
      */
-    public function clear($key): static
+    public function clear($key): self
     {
         parent::clear($key);
         $this->resetOverriddenData();
@@ -197,7 +197,7 @@ class Config extends StorableConfigBase
     /**
      * {@inheritdoc}
      */
-    public function save($has_trusted_data = false): static
+    public function save($has_trusted_data = false): self
     {
         // Validate the configuration object name before saving.
         static::validateName($this->name);
@@ -239,7 +239,7 @@ class Config extends StorableConfigBase
      * @return $this
      *   The configuration object.
      */
-    public function delete(): static
+    public function delete(): self
     {
         $this->data = [];
         $this->storage->delete($this->name);

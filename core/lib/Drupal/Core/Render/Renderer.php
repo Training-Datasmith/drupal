@@ -185,7 +185,7 @@ class Renderer implements RendererInterface
     {
         // Replace the placeholder with its rendered markup, and merge its
         // bubbleable metadata with the main elements'.
-        $elements['#markup'] = Markup::create(str_replace($placeholder, $markup, $elements['#markup']));
+        $elements['#markup'] = Markup::create(str_replace($placeholder, (string) $markup, (string) $elements['#markup']));
         $elements = $this->mergeBubbleableMetadata($elements, $placeholder_element);
 
         // Remove the placeholder that we've just rendered.
@@ -866,11 +866,11 @@ class Renderer implements RendererInterface
     protected function ensureMarkupIsSafe(array $elements): array
     {
         if (isset($elements['#plain_text'])) {
-            $elements['#markup'] = Markup::create(Html::escape($elements['#plain_text']));
+            $elements['#markup'] = Markup::create(Html::escape((string) $elements['#plain_text']));
         } elseif (!($elements['#markup'] instanceof MarkupInterface)) {
             // The default behavior is to XSS filter using the admin tag list.
             $tags = $elements['#allowed_tags'] ?? Xss::getAdminTagList();
-            $elements['#markup'] = Markup::create(Xss::filter($elements['#markup'], $tags));
+            $elements['#markup'] = Markup::create(Xss::filter((string) $elements['#markup'], $tags));
         }
 
         return $elements;

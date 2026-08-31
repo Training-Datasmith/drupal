@@ -41,7 +41,7 @@ class CurrentThemeCondition extends ConditionPluginBase implements ContainerFact
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return ['theme' => ''] + parent::defaultConfiguration();
     }

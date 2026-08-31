@@ -34,13 +34,6 @@ use Drupal\Core\TypedData\TypedData;
 class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface
 {
     /**
-     * The data definition.
-     *
-     * @var \Drupal\Core\TypedData\ComplexDataDefinitionInterface
-     */
-    protected $definition;
-
-    /**
      * An array of values for the contained properties.
      *
      * @var array

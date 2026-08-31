@@ -72,7 +72,7 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'source_field' => '',

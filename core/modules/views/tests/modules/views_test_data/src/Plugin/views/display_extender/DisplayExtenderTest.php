@@ -101,7 +101,7 @@ class DisplayExtenderTest extends DisplayExtenderPluginBase
     /**
      * {@inheritdoc}
      */
-    public function query()
+    public function query(): void
     {
         $this->testState['query'] = true;
     }

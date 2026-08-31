@@ -30,7 +30,7 @@ class LayoutTestPlugin extends LayoutDefault implements PluginFormInterface
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'setting_1' => 'Default',

@@ -8,6 +8,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\responsive_image\ResponsiveImageStyleForm;
 use Drupal\responsive_image\ResponsiveImageStyleInterface;
@@ -254,7 +255,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
         }
         // Extract all the styles from the image style mappings.
         $styles = ImageStyle::loadMultiple($this->getImageStyleIds());
-        array_walk($styles, function (\Drupal\image\Entity\ImageStyle $style): void {
+        array_walk($styles, function (ConfigEntityInterface $style): void {
             $this->addDependency('config', $style->getConfigDependencyName());
         });
         return $this;

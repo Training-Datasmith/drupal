@@ -72,7 +72,7 @@ class UriItem extends StringItem
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         $value = $this->getValue();
         if (!isset($value['value']) || $value['value'] === '') {

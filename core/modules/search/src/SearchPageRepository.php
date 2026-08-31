@@ -75,7 +75,10 @@ class SearchPageRepository implements SearchPageRepositoryInterface
         $default = $this->configFactory->get('search.settings')->get('default_page');
 
         // Otherwise, use the first active search page.
-        return $default ?? (is_array($search_pages) ? reset($search_pages) : false);
+        if ($default && is_array($search_pages) && isset($search_pages[$default])) {
+            return $default;
+        }
+        return is_array($search_pages) ? reset($search_pages) : false;
     }
 
     /**

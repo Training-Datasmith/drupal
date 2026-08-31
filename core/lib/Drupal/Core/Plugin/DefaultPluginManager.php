@@ -122,7 +122,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    */
         protected $subdir,
         protected \Traversable $namespaces,
-        protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, /**
+        protected ?\Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler = null, /**
    * The interface each plugin should implement.
    */
         protected $pluginInterface = null,
@@ -367,7 +367,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
      */
     protected function alterDefinitions(&$definitions)
     {
-        if ($this->alterHook) {
+        if ($this->alterHook && $this->moduleHandler) {
             $this->moduleHandler->alter($this->alterHook, $definitions);
         }
     }
@@ -380,7 +380,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
      */
     protected function providerExists($provider)
     {
-        return $this->moduleHandler->moduleExists($provider);
+        return $this->moduleHandler?->moduleExists($provider) ?? false;
     }
 
     /**

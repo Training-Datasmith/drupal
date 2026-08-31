@@ -64,7 +64,7 @@ class BlockRepository implements BlockRepositoryInterface
         // Merge it with the actual values to maintain the region ordering.
         $assignments = array_intersect_key(array_merge($empty, $full), $empty);
         foreach ($assignments as &$assignment) {
-            uasort($assignment, Drupal\block\Entity\Block::sort(...));
+            uasort($assignment, \Drupal\block\Entity\Block::sort(...));
         }
         return $assignments;
     }

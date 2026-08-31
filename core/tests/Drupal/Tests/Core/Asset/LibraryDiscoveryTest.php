@@ -92,7 +92,7 @@ class LibraryDiscoveryTest extends UnitTestCase
      */
     public function testAssetLibraryDeprecation(): void
     {
-        $previous_error_handler = get_error_handler();
+        $previous_error_handler = \get_error_handler();
         set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
             // Convert deprecation error into a catchable exception.
             if ($severity === E_USER_DEPRECATED) {

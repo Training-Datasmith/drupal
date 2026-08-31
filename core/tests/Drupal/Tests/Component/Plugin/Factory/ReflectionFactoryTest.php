@@ -155,7 +155,7 @@ class StubReflectionFactory extends ReflectionFactory
     /**
      * {@inheritdoc}
      */
-    public static function getPluginClass($plugin_id, $plugin_definition = null, $required_interface = null)
+    public static function getPluginClass($plugin_id, $plugin_definition = null, $required_interface = null): string
     {
         // Return the class name from the plugin definition.
         return $plugin_definition[$plugin_id]['class'];

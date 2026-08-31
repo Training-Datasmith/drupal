@@ -234,7 +234,7 @@ class LocalTaskManagerTest extends UnitTestCase
 
         $this->argumentResolver->expects($this->once())
           ->method('getArguments')
-          ->with($this->request, [$menu_local_task, 'getTitle'])
+          ->with($this->request, $this->isInstanceOf(\Closure::class))
           ->willReturn([]);
 
         $this->manager->getTitle($menu_local_task);

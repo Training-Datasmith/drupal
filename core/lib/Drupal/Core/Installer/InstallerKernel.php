@@ -94,7 +94,7 @@ class InstallerKernel extends DrupalKernel
     /**
      * {@inheritdoc}
      */
-    protected function attachSynthetic(ContainerInterface $container): void
+    protected function attachSynthetic(ContainerInterface $container): ContainerInterface
     {
         parent::attachSynthetic($container);
 
@@ -103,6 +103,7 @@ class InstallerKernel extends DrupalKernel
         // when multiple modules are being installed.
         // @todo Move this to the parent class after https://www.drupal.org/i/2066993
         $this->container?->reset();
+        return $container;
     }
 
     /**

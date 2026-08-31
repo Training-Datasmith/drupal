@@ -30,7 +30,7 @@ trait ToStringTrait
     /**
      * For test purposes, wrap die() in an overridable method.
      */
-    protected function _die(): never
+    protected function _die(): string
     {
         die();
     }

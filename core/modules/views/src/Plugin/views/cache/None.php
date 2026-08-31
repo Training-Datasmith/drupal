@@ -42,7 +42,7 @@ class None extends CachePluginBase
      *
      * Replace the cache set logic so it does not set a cache item at all.
      */
-    public function cacheSet($type)
+    public function cacheSet($type): void
     {
     }
 

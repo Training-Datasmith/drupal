@@ -64,7 +64,7 @@ class NullArgument extends ArgumentPluginBase
     /**
      * {@inheritdoc}
      */
-    public function query($group_by = false)
+    public function query($group_by = false): void
     {
     }
 

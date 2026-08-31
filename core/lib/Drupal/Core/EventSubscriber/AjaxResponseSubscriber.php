@@ -102,7 +102,7 @@ class AjaxResponseSubscriber implements EventSubscriberInterface
             // most Ajax requests bound using the Form API will be protected by having
             // the URL flagged as trusted in Drupal.settings, so this header is used
             // only for things like custom markup that gets Ajax behaviors attached.
-            $response->headers->set('X-Drupal-Ajax-Token', 1);
+            $response->headers->set('X-Drupal-Ajax-Token', '1');
         }
     }
 

@@ -41,7 +41,7 @@ class SneakySuperset extends CKEditor5PluginDefault implements CKEditor5PluginEl
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'configured_subset' => [],

@@ -33,7 +33,7 @@ trait ConfigurableTrait
      *
      * @var array
      */
-    protected $configuration;
+    protected array $configuration;
 
     /**
      * Gets this plugin's configuration.

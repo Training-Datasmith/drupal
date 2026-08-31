@@ -27,7 +27,7 @@ class FieldItemDataDefinition extends DataDefinition implements FieldItemDataDef
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($data_type)
+    public static function createFromDataType($data_type): static
     {
         // The data type of a field item is in the form of "field_item:$field_type".
         $parts = explode(':', $data_type, 2);

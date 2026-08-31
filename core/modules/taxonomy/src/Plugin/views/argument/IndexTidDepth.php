@@ -92,7 +92,7 @@ class IndexTidDepth extends ArgumentPluginBase implements ContainerFactoryPlugin
     /**
      * {@inheritdoc}
      */
-    public function query($group_by = false)
+    public function query($group_by = false): void
     {
         $this->ensureMyTable();
 

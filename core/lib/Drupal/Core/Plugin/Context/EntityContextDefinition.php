@@ -44,7 +44,7 @@ class EntityContextDefinition extends ContextDefinition
     /**
      * {@inheritdoc}
      */
-    protected function getConstraintObjects()
+    protected function getConstraintObjects(): array
     {
         if (!$this->getConstraint('EntityType')) {
             $this->addConstraint('EntityType', [
@@ -57,7 +57,7 @@ class EntityContextDefinition extends ContextDefinition
     /**
      * {@inheritdoc}
      */
-    protected function getSampleValues()
+    protected function getSampleValues(): \Generator
     {
         // Get the constraints from the context's definition.
         $constraints = $this->getConstraintObjects();

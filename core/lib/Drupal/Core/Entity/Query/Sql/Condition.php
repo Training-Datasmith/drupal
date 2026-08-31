@@ -21,13 +21,6 @@ class Condition extends ConditionBase
     protected $nestedInsideOrCondition = false;
 
     /**
-     * The SQL entity query object this condition belongs to.
-     *
-     * @var \Drupal\Core\Entity\Query\Sql\Query
-     */
-    protected $query;
-
-    /**
      * The current SQL query, set by parent condition compile() method calls.
      */
     protected SelectInterface $sqlQuery;

@@ -287,7 +287,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'from_canonical',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\DiscardLayoutChangesForm',
+              '_form' => 'Drupal\layout_builder\Form\DiscardLayoutChangesForm',
         ],
               [
               '_layout_builder_access' => 'view',
@@ -308,7 +308,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'from_canonical',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\RevertOverridesForm',
+              '_form' => 'Drupal\layout_builder\Form\RevertOverridesForm',
         ],
               [
               '_layout_builder_access' => 'view',
@@ -350,7 +350,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'with_string_id',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\DiscardLayoutChangesForm',
+              '_form' => 'Drupal\layout_builder\Form\DiscardLayoutChangesForm',
         ],
               [
               '_layout_builder_access' => 'view',
@@ -370,7 +370,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'with_string_id',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\RevertOverridesForm',
+              '_form' => 'Drupal\layout_builder\Form\RevertOverridesForm',
         ],
               [
               '_layout_builder_access' => 'view',
@@ -412,7 +412,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'with_integer_id',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\DiscardLayoutChangesForm',
+              '_form' => 'Drupal\layout_builder\Form\DiscardLayoutChangesForm',
         ],
               [
               '_layout_builder_access' => 'view',
@@ -433,7 +433,7 @@ class OverridesSectionStorageTest extends UnitTestCase
               'entity_type_id' => 'with_integer_id',
               'section_storage_type' => 'overrides',
               'section_storage' => '',
-              '_form' => '\Drupal\layout_builder\Form\RevertOverridesForm',
+              '_form' => 'Drupal\layout_builder\Form\RevertOverridesForm',
         ],
               [
               '_layout_builder_access' => 'view',

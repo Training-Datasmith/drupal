@@ -56,7 +56,7 @@ class MultiValueTestItem extends FieldItemBase
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         $item = $this->getValue();
         return empty($item['value1']) && empty($item['value2']);

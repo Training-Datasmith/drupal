@@ -103,7 +103,7 @@ class DateTimeNormalizer extends NormalizerBase implements DenormalizerInterface
         // zone), only one will ever match.
         $allowed_formats = $context['datetime_allowed_formats'] ?? $this->allowedFormats;
         foreach ($allowed_formats as $format) {
-            $date = \DateTime::createFromFormat($format, $data);
+            $date = \DateTime::createFromFormat($format, (string) $data);
             $errors = \DateTime::getLastErrors();
             if ($date !== false && empty($errors['errors']) && empty($errors['warnings'])) {
                 return $date;

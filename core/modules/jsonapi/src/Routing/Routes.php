@@ -213,7 +213,7 @@ class Routes implements ContainerInjectionInterface
 
         // File upload routes are only necessary for resource types that have file
         // fields.
-        $has_file_field = array_reduce($resource_type->getRelatableResourceTypes(), fn (false $carry, array $target_resource_types) => $carry || static::hasNonInternalFileTargetResourceTypes($target_resource_types), false);
+        $has_file_field = array_reduce($resource_type->getRelatableResourceTypes(), fn (bool $carry, array $target_resource_types) => $carry || static::hasNonInternalFileTargetResourceTypes($target_resource_types), false);
         if (!$has_file_field) {
             return $routes;
         }
@@ -435,7 +435,7 @@ class Routes implements ContainerInjectionInterface
      */
     protected static function hasNonInternalTargetResourceTypes(array $resource_types): bool
     {
-        return array_reduce($resource_types, fn (false $carry, ResourceType $target) => $carry || !$target->isInternal(), false);
+        return array_reduce($resource_types, fn (bool $carry, ResourceType $target) => $carry || !$target->isInternal(), false);
     }
 
     /**
@@ -450,7 +450,7 @@ class Routes implements ContainerInjectionInterface
      */
     protected static function hasNonInternalFileTargetResourceTypes(array $resource_types): bool
     {
-        return array_reduce($resource_types, fn (false $carry, ResourceType $target) => $carry || (!$target->isInternal() && $target->getEntityTypeId() === 'file'), false);
+        return array_reduce($resource_types, fn (bool $carry, ResourceType $target) => $carry || (!$target->isInternal() && $target->getEntityTypeId() === 'file'), false);
     }
 
     /**

@@ -18,7 +18,7 @@ final class Settings
     /**
      * Singleton instance.
      */
-    private static self $instance;
+    private static ?self $instance = null;
 
     /**
      * Information about all deprecated settings, keyed by legacy settings name.

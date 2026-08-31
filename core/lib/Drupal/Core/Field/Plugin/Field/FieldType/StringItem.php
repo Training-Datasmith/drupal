@@ -104,7 +104,7 @@ class StringItem extends StringItemBase
 
         // The minimum length is either 10% of the maximum length, or 15 characters
         // long, whichever is greater.
-        $min_length = max(ceil($max_length * 0.10), 15);
+        $min_length = (int) max(ceil($max_length * 0.10), 15);
 
         // Reduce the max length to allow us to add a period.
         $max_length -= 1;
@@ -115,7 +115,7 @@ class StringItem extends StringItemBase
         // the bias towards minimum length is increased. This is because the default
         // maximum length of 255 is often used for fields that include shorter
         // values (i.e. title).
-        $length = mt_rand($min_length, mt_rand($min_length, $max_length >= 255 ? mt_rand($min_length, $max_length) : $max_length));
+        $length = mt_rand($min_length, mt_rand($min_length, (int) ($max_length >= 255 ? mt_rand($min_length, $max_length) : $max_length)));
 
         $string = $random->sentences(1);
         while (mb_strlen($string) < $length) {

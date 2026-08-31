@@ -16,13 +16,6 @@ use Drupal\Core\Entity\EntityListBuilder;
 class ConfigEntityListBuilder extends EntityListBuilder
 {
     /**
-     * The config entity storage class.
-     *
-     * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
-     */
-    protected $storage;
-
-    /**
      * {@inheritdoc}
      */
     public function load()
@@ -39,7 +32,7 @@ class ConfigEntityListBuilder extends EntityListBuilder
     /**
      * {@inheritdoc}
      */
-    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */)
+    protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array
     {
         $args = func_get_args();
         $cacheability = $args[1] ?? new CacheableMetadata();

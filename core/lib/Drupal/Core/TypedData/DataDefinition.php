@@ -29,7 +29,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($type)
+    public static function createFromDataType($type): static
     {
         return self::create($type);
     }

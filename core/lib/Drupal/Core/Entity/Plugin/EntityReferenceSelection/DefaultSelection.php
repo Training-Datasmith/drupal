@@ -78,7 +78,7 @@ class DefaultSelection extends SelectionPluginBase implements ContainerFactoryPl
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           // For the 'target_bundles' setting, a NULL value is equivalent to "allow

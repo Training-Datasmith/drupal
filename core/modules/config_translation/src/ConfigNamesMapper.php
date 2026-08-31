@@ -479,7 +479,7 @@ class ConfigNamesMapper extends PluginBase implements ConfigMapperInterface, Con
     /**
      * {@inheritdoc}
      */
-    public function getContextualLinkGroup(): null
+    public function getContextualLinkGroup(): ?string
     {
         return null;
     }

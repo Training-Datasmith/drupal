@@ -559,7 +559,7 @@ abstract class ExtensionList
     public function checkIncompatibility($name)
     {
         $extension = $this->get($name);
-        return $extension->info['core_incompatible'] || (isset($extension->info['php']) && version_compare(phpversion(), $extension->info['php']) < 0);
+        return $extension->info['core_incompatible'] || (isset($extension->info['php']) && version_compare(phpversion(), (string) $extension->info['php']) < 0);
     }
 
     /**

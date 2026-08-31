@@ -136,7 +136,7 @@ class View extends AreaPluginBase
     /**
      * {@inheritdoc}
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return $this->isEmpty ?? parent::isEmpty();
     }

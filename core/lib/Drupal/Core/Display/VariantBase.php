@@ -76,7 +76,7 @@ abstract class VariantBase extends ConfigurablePluginBase implements VariantInte
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'label' => '',

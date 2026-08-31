@@ -151,7 +151,7 @@ class LocalActionManagerTest extends UnitTestCase
 
         $this->argumentResolver->expects($this->once())
           ->method('getArguments')
-          ->with($this->request, [$local_action, 'getTitle'])
+          ->with($this->request, $this->isInstanceOf(\Closure::class))
           ->willReturn(['test']);
 
         $this->localActionManager->getTitle($local_action);
@@ -187,17 +187,12 @@ class LocalActionManagerTest extends UnitTestCase
             $plugin->expects($this->any())
               ->method('getTitle')
               ->willReturn($plugin_definition['title']);
-            $this->argumentResolver->expects($this->any())
-              ->method('getArguments')
-              ->with($this->request, [$plugin, 'getTitle'])
-              ->willReturn([]);
-
             $plugin->expects($this->any())
               ->method('getWeight')
               ->willReturn($plugin_definition['weight']);
             $this->argumentResolver->expects($this->any())
               ->method('getArguments')
-              ->with($this->request, [$plugin, 'getTitle'])
+              ->with($this->request, $this->isInstanceOf(\Closure::class))
               ->willReturn([]);
             $map[] = [$plugin_id, [], $plugin];
         }
@@ -244,7 +239,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 1',
                 'url' => Url::fromRoute('test_route_2'),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 0,
@@ -283,7 +278,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 1',
                 'url' => Url::fromRoute('test_route_2'),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 0,
@@ -323,7 +318,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 1',
                 'url' => Url::fromRoute('test_route_2'),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 1,
@@ -333,7 +328,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 2',
                 'url' => Url::fromRoute('test_route_3'),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 0,
@@ -375,7 +370,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 1',
                 'url' => Url::fromRoute('test_route_2', ['test1']),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 1,
@@ -385,7 +380,7 @@ class LocalActionManagerTest extends UnitTestCase
               '#link' => [
                 'title' => 'Plugin ID 2',
                 'url' => Url::fromRoute('test_route_2', ['test2']),
-                'localized_options' => '',
+                'localized_options' => [],
               ],
               '#access' => AccessResult::forbidden()->cachePerPermissions(),
               '#weight' => 0,

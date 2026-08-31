@@ -27,7 +27,7 @@ class DataReferenceDefinition extends DataDefinition implements DataReferenceDef
      *
      * @return static
      */
-    public static function create($target_data_type)
+    public static function create($target_data_type): static
     {
         // This assumes implementations use a "TYPE_reference" naming pattern.
         $definition = parent::create($target_data_type . '_reference');
@@ -37,7 +37,7 @@ class DataReferenceDefinition extends DataDefinition implements DataReferenceDef
     /**
      * {@inheritdoc}
      */
-    public static function createFromDataType($data_type)
+    public static function createFromDataType($data_type): static
     {
         if (!str_ends_with($data_type, '_reference')) {
             throw new \InvalidArgumentException('Data type must be of the form "{TARGET_TYPE}_reference"');

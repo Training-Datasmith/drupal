@@ -314,13 +314,10 @@ class EntityFieldManagerTest extends UnitTestCase
         $field_storage_definition = $this->prophesize(FieldStorageDefinitionInterface::class);
         $field_storage_definition->getName()->willReturn('field_storage');
 
-        $base_field_definition = $this->prophesize(BaseFieldDefinition::class);
-        $base_field_definition->setProvider('example_module')->shouldBeCalled();
-        $base_field_definition->setName('base_field')->shouldBeCalled();
-        $base_field_definition->setTargetEntityTypeId('test_entity_type')->shouldBeCalled();
+        $base_field_definition = BaseFieldDefinition::create('boolean');
 
         $definitions = [
-          'base_field' => $base_field_definition->reveal(),
+          'base_field' => $base_field_definition,
           'field_storage' => $field_storage_definition->reveal(),
         ];
 
@@ -339,10 +336,13 @@ class EntityFieldManagerTest extends UnitTestCase
 
         $expected = [
           'id' => $field_definition,
-          'base_field' => $base_field_definition->reveal(),
+          'base_field' => $base_field_definition,
           'field_storage' => $field_storage_definition->reveal(),
         ];
         $this->assertSame($expected, $this->entityFieldManager->getFieldStorageDefinitions('test_entity_type'));
+        $this->assertSame('example_module', $base_field_definition->getProvider());
+        $this->assertSame('base_field', $base_field_definition->getName());
+        $this->assertSame('test_entity_type', $base_field_definition->getTargetEntityTypeId());
     }
 
     /**
@@ -579,29 +579,24 @@ class EntityFieldManagerTest extends UnitTestCase
 
         // @todo Mock FieldDefinitionInterface once it exposes a proper provider
         //   setter. See https://www.drupal.org/node/2346329.
-        $field_definition = $this->prophesize(BaseFieldDefinition::class);
-
-        // We expect two calls as the field definition will be returned from both
-        // base and bundle entity field info hook implementations.
-        $field_definition->getProvider()->shouldBeCalled();
-        $field_definition->setProvider($module)->shouldBeCalledTimes(2);
-        $field_definition->setName(0)->shouldBeCalledTimes(2);
-        $field_definition->setTargetEntityTypeId('test_entity_type')->shouldBeCalled();
-        $field_definition->setTargetBundle(null)->shouldBeCalled();
-        $field_definition->setTargetBundle('test_bundle')->shouldBeCalled();
+        $field_definition = BaseFieldDefinition::create('boolean');
 
         $this->moduleHandler->invokeAllWith(Argument::type('string'), Argument::any())
           ->will(function ($arguments) use ($field_definition, $module): void {
               [, $callback] = $arguments;
               $callback(
                   function () use ($field_definition) {
-                      return [$field_definition->reveal()];
+                      return [0 => $field_definition];
                   },
                   $module,
               );
           });
 
         $this->entityFieldManager->getFieldDefinitions('test_entity_type', 'test_bundle');
+        $this->assertSame($module, $field_definition->getProvider());
+        $this->assertSame(0, $field_definition->getName());
+        $this->assertSame('test_entity_type', $field_definition->getTargetEntityTypeId());
+        $this->assertSame('test_bundle', $field_definition->getTargetBundle());
     }
 
     /**

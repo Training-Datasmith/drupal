@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeRepositoryInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
@@ -38,9 +39,12 @@ class EntityNormalizer extends ComplexDataNormalizer implements DenormalizerInte
     /**
      * {@inheritdoc}
      */
-    public function denormalize(array $data, $class, $format = null, array $context = []): mixed
+    public function denormalize(mixed $data, ?string $type, ?string $format = null, array $context = []): mixed
     {
-        $entity_type_id = $this->determineEntityTypeId($class, $context);
+        $entity_type_id = $this->determineEntityTypeId($type, $context);
+        if (!is_string($entity_type_id) || $entity_type_id === '') {
+            throw new UnexpectedValueException('The entity type ID is required for denormalization.');
+        }
         $entity_type_definition = $this->getEntityTypeDefinition($entity_type_id);
 
         // The bundle property will be required to denormalize a bundleable

@@ -16,7 +16,7 @@ class Connection extends CoreConnection
     /**
      * {@inheritdoc}
      */
-    public function driver()
+    public function driver(): string
     {
         return 'dummydb';
     }
@@ -24,7 +24,7 @@ class Connection extends CoreConnection
     /**
      * {@inheritdoc}
      */
-    public function databaseType()
+    public function databaseType(): string
     {
         return 'dummydb';
     }

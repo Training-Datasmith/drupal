@@ -9,6 +9,47 @@
 
 declare(strict_types=1);
 
+// PHP 8.5 added get_error_handler() and get_exception_handler(). Provide
+// polyfills for PHP 8.4 environments.
+// @see https://www.php.net/manual/en/function.get-error-handler.php
+if (!function_exists('get_error_handler')) {
+    /**
+     * No-op error handler used by the get_error_handler() polyfill.
+     */
+    function _drupal_noop_error_handler(): void
+    {
+    }
+
+    /**
+     * Returns the current error handler function, if any.
+     */
+    function get_error_handler(): ?callable
+    {
+        $handler = set_error_handler('_drupal_noop_error_handler');
+        restore_error_handler();
+        return $handler;
+    }
+}
+
+if (!function_exists('get_exception_handler')) {
+    /**
+     * No-op exception handler used by the get_exception_handler() polyfill.
+     */
+    function _drupal_noop_exception_handler(\Throwable $exception): void
+    {
+    }
+
+    /**
+     * Returns the current exception handler function, if any.
+     */
+    function get_exception_handler(): ?callable
+    {
+        $handler = set_exception_handler('_drupal_noop_exception_handler');
+        restore_exception_handler();
+        return $handler;
+    }
+}
+
 use Drupal\TestTools\ErrorHandler\BootstrapErrorHandler;
 use Drupal\TestTools\Extension\DeprecationBridge\DeprecationHandler;
 use PHPUnit\Runner\ErrorHandler as PhpUnitErrorHandler;

@@ -31,7 +31,7 @@ class YamlDiscoveryDecorator extends YamlDiscovery
     /**
      * {@inheritdoc}
      */
-    public function getDefinitions(): float|int|array
+    public function getDefinitions(): array
     {
         return parent::getDefinitions() + $this->decorated->getDefinitions();
     }

@@ -113,8 +113,11 @@ class ViewsData
      * @return array
      *   An array of table data.
      */
-    public function get(?string $key)
+    public function get(string|int|null $key)
     {
+        if ($key !== null && !is_string($key)) {
+            $key = (string) $key;
+        }
         if (!$key) {
             throw new \InvalidArgumentException('A valid cache entry key is required. Use getAll() to get all table data.');
         }

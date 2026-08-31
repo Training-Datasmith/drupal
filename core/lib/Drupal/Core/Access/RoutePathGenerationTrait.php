@@ -44,7 +44,7 @@ trait RoutePathGenerationTrait
         // parameters array.
         foreach ($parameters as $param => $value) {
             if (null !== $value) {
-                $path = str_replace("{{$param}}", $value, $path);
+                $path = str_replace("{{$param}}", (string) $value, $path);
             }
         }
 

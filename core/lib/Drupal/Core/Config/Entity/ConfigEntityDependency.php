@@ -63,7 +63,10 @@ class ConfigEntityDependency
         // Add a dependency on the provider module (which defines this config
         // entity type, such as 'node' in the case of 'node.type' configuration).
         if ($type == 'module') {
-            $dependencies[] = substr($this->name, 0, strpos($this->name, '.'));
+            $dot = strpos($this->name, '.');
+            if ($dot !== false) {
+                $dependencies[] = substr($this->name, 0, $dot);
+            }
         }
         return $dependencies;
     }

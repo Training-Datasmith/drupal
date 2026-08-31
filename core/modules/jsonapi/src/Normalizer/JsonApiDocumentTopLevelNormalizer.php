@@ -61,7 +61,7 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
     /**
      * {@inheritdoc}
      */
-    public function denormalize(array $data, $class, $format = null, array $context = []): mixed
+    public function denormalize(mixed $data, ?string $type, ?string $format = null, array $context = []): mixed
     {
         $resource_type = $context['resource_type'];
 

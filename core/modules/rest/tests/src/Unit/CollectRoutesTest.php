@@ -134,8 +134,7 @@ class CollectRoutesTest extends UnitTestCase
 
         $style_plugin->expects($this->once())
           ->method('init')
-          ->with($view_executable)
-          ->willReturn(true);
+          ->with($view_executable);
 
         $style_manager->expects($this->once())
           ->method('createInstance')

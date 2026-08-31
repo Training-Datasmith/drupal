@@ -356,7 +356,7 @@ class TestRouteBuilder extends RouteBuilder
     /**
      * {@inheritdoc}
      */
-    protected function getRouteDefinitions()
+    protected function getRouteDefinitions(): array
     {
         return $this->yamlDiscovery->findAll();
     }

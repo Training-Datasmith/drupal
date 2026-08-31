@@ -472,7 +472,10 @@ class DateHelper
      */
     public static function daysInMonth($date = null)
     {
-        $date ??= 'now';
+        if ($date === 0 || $date === '0') {
+            return null;
+        }
+        $date = self::normalizeDateArgument($date);
         if (!$date instanceof DrupalDateTime) {
             $date = new DrupalDateTime($date);
         }
@@ -494,7 +497,10 @@ class DateHelper
      */
     public static function daysInYear($date = null): ?int
     {
-        $date ??= 'now';
+        if ($date === 0 || $date === '0') {
+            return null;
+        }
+        $date = self::normalizeDateArgument($date);
         if (!$date instanceof DrupalDateTime) {
             $date = new DrupalDateTime($date);
         }
@@ -519,7 +525,10 @@ class DateHelper
      */
     public static function dayOfWeek($date = null)
     {
-        $date ??= 'now';
+        if ($date === 0 || $date === '0') {
+            return null;
+        }
+        $date = self::normalizeDateArgument($date);
         if (!$date instanceof DrupalDateTime) {
             $date = new DrupalDateTime($date);
         }
@@ -545,7 +554,10 @@ class DateHelper
      */
     public static function dayOfWeekName($date = null, $abbr = true)
     {
-        $date ??= 'now';
+        if ($date === 0 || $date === '0') {
+            return null;
+        }
+        $date = self::normalizeDateArgument($date);
         if (!$date instanceof DrupalDateTime) {
             $date = new DrupalDateTime($date);
         }
@@ -555,6 +567,23 @@ class DateHelper
             return $days[$dow];
         }
         return null;
+    }
+
+    /**
+     * Normalizes a date argument for date helper methods.
+     *
+     * @param mixed $date
+     *   A date string, DrupalDateTime object, FALSE, or an empty string.
+     *
+     * @return mixed
+     *   A date string or DrupalDateTime object.
+     */
+    private static function normalizeDateArgument(mixed $date): mixed
+    {
+        if ($date === false || $date === '') {
+            return 'now';
+        }
+        return $date ?? 'now';
     }
 
 }

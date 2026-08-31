@@ -299,7 +299,7 @@ class ConfigEntityStorageTest extends UnitTestCase
         $this->moduleHandler->invokeAll('entity_insert', [$entity, 'test_entity_type'])
           ->shouldBeCalled();
 
-        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn([]);
 
         $return = $this->entityStorage->save($entity);
@@ -368,7 +368,7 @@ class ConfigEntityStorageTest extends UnitTestCase
         $this->moduleHandler->invokeAll('entity_update', [$entity, 'test_entity_type'])
           ->shouldBeCalled();
 
-        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn([$entity->id()]);
 
         $return = $this->entityStorage->save($entity);
@@ -425,7 +425,7 @@ class ConfigEntityStorageTest extends UnitTestCase
         $entity->set('id', 'bar');
         $this->assertSame('foo', $entity->getOriginalId());
 
-        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', 'bar')->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn([$entity->id()]);
 
         $return = $this->entityStorage->save($entity);
@@ -488,7 +488,7 @@ class ConfigEntityStorageTest extends UnitTestCase
         $this->configFactory->get('the_provider.the_config_prefix.foo')
           ->willReturn($config_object->reveal());
 
-        $this->entityQuery->condition('uuid', null)->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', null)->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn(['baz']);
 
         $entity = $this->getMockEntity(['id' => 'foo']);
@@ -539,7 +539,7 @@ class ConfigEntityStorageTest extends UnitTestCase
           ->willReturn($config_object->reveal())
           ->shouldBeCalled();
 
-        $this->entityQuery->condition('uuid', null)->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', null)->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn(['baz']);
 
         $entity = $this->getMockEntity(['id' => 'foo']);
@@ -574,7 +574,7 @@ class ConfigEntityStorageTest extends UnitTestCase
           ->willReturn($config_object->reveal());
         $this->configFactory->rename(Argument::cetera())->shouldNotBeCalled();
 
-        $this->entityQuery->condition('uuid', 'baz')->willReturn($this->entityQuery);
+        $this->entityQuery->condition('uuid', 'baz')->willReturn($this->entityQuery->reveal());
         $this->entityQuery->execute()->willReturn(['foo']);
 
         $entity = $this->getMockEntity(['id' => 'foo']);

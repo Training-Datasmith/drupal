@@ -28,7 +28,7 @@ class Uuid
      */
     public static function isValid($uuid): bool
     {
-        return (bool) preg_match('/^' . self::VALID_PATTERN . '$/', $uuid);
+        return (bool) preg_match('/^' . self::VALID_PATTERN . '$/', (string) $uuid);
     }
 
 }

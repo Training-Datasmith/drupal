@@ -87,7 +87,7 @@ class MenuAccessControlHandlerTest extends KernelTestBase
         // RefinableCacheableDependencyTrait::addCacheContexts() only needs the
         // container to perform an assertion, but we can't use the container here,
         // so disable assertions for the purposes of this test.
-        $assertions = ini_set('zend.assertions', 0);
+        @ini_set('zend.assertions', '0');
 
         $data = [
           'no permission + unlocked' => [
@@ -127,10 +127,6 @@ class MenuAccessControlHandlerTest extends KernelTestBase
             AccessResult::allowed()->addCacheContexts(['user.permissions']),
           ],
         ];
-
-        if ($assertions !== false) {
-            ini_set('zend.assertions', $assertions);
-        }
 
         return $data;
     }

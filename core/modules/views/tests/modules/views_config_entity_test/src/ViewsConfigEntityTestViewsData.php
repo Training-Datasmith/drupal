@@ -15,7 +15,7 @@ class ViewsConfigEntityTestViewsData implements EntityViewsDataInterface
     /**
      * {@inheritdoc}
      */
-    public function getViewsData()
+    public function getViewsData(): array
     {
         return [];
     }

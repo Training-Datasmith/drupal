@@ -1784,7 +1784,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
             } else {
                 // Create a token key based on array element structure.
                 $token_string = !empty($parent_keys) ? implode('.', $parent_keys) . '.' . $param : $param;
-                $tokens['{{ arguments.' . $token_string . ' }}'] = strip_tags(Html::decodeEntities($val));
+                $tokens['{{ arguments.' . $token_string . ' }}'] = strip_tags(Html::decodeEntities((string) $val));
             }
         }
 

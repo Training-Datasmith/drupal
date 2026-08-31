@@ -47,7 +47,7 @@ class LruMemoryCache extends MemoryCache
     /**
      * {@inheritdoc}
      */
-    public function getMultiple(&$cids, $allow_invalid = false)
+    public function getMultiple(&$cids, $allow_invalid = false): array
     {
         $ret = parent::getMultiple($cids, $allow_invalid);
         $this->handleCacheHits($ret);

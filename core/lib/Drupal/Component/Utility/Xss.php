@@ -139,6 +139,7 @@ class Xss
      */
     public static function filter($string, ?array $allowed_html_tags = null): ?string
     {
+        $string = (string) $string;
         if (is_null($allowed_html_tags)) {
             $allowed_html_tags = static::$htmlTags;
         }

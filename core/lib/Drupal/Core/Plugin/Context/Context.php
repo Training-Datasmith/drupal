@@ -28,13 +28,6 @@ class Context extends ComponentContext implements ContextInterface
     protected $contextData;
 
     /**
-     * The definition to which a context must conform.
-     *
-     * @var \Drupal\Core\Plugin\Context\ContextDefinitionInterface
-     */
-    protected $contextDefinition;
-
-    /**
      * The cacheability metadata.
      */
     protected \Drupal\Core\Cache\CacheableMetadata $cacheabilityMetadata;

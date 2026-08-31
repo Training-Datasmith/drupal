@@ -109,7 +109,7 @@ class ResourceIdentifierNormalizer extends NormalizerBase implements Denormalize
                 throw new BadRequestHttpException('Invalid body payload for the relationship.');
             }
             // Leave the invalid elements.
-            $invalid_elements = array_filter($data['data'], fn (array $element) => empty($element['type']) || empty($element['id']));
+            $invalid_elements = array_filter($data['data'], fn ($element) => !is_array($element) || empty($element['type']) || empty($element['id']));
             if ($invalid_elements) {
                 throw new BadRequestHttpException('Invalid body payload for the relationship.');
             }

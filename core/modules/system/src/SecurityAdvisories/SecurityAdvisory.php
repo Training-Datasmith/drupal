@@ -83,7 +83,7 @@ final class SecurityAdvisory
             $data['title'],
             $data['project'],
             $data['type'],
-            $data['is_psa'],
+            (bool) $data['is_psa'],
             $data['link'],
             $data['insecure']
         );

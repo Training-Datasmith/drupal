@@ -43,8 +43,9 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
      * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
      *   The cache backend for the definitions.
      */
-    public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, CacheBackendInterface $cache_backend)
+    public function __construct(\Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, CacheBackendInterface $cache_backend)
     {
+        $this->moduleHandler = $moduleHandler;
         $this->factory = new ContainerFactory($this, $this->pluginInterface);
         $this->alterInfo('migration_plugins');
         $this->setCacheBackend($cache_backend, 'migration_plugins');

@@ -17,7 +17,7 @@ abstract class SelectionPluginBase extends ConfigurablePluginBase implements Sel
     /**
      * {@inheritdoc}
      */
-    public function defaultConfiguration()
+    public function defaultConfiguration(): array
     {
         return [
           'target_type' => null,

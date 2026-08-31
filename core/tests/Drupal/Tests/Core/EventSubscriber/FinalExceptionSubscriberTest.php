@@ -60,7 +60,7 @@ class TestDefaultExceptionSubscriber extends FinalExceptionSubscriber
         return true;
     }
 
-    protected function simplifyFileInError($error)
+    protected function simplifyFileInError(array $error): array
     {
         return $error;
     }
